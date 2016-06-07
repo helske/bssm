@@ -1,0 +1,13 @@
+src-i386/
+src-x64/
+.Rproj.user
+.Rhistory
+.RData
+*.o
+*.so
+*.dll
+*.Rproj
+bssm_devel.Rproj
+.project
+inst/doc
+CopyOfsrc

@@ -1,0 +1,130 @@
+---
+title: "bssm: Bayesian Inference of Exponential Family State Space Models in R"
+author: 
+  - name: Jouni Helske and Matti Vihola
+    affiliation: University of Jyväskylä, Department of Mathematics and Statistics, Finland
+date: "March 24, 2016"
+output: html_document
+bibliography: bssm.bib
+vignette: |
+  %\VignetteIndexEntry{Bayesian Inference of Exponential Family State Space Models in R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{ggplot2}
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+The R package `bssm` is designed for Bayesian inference of exponential family state space models of form
+
+$$
+\begin{aligned}
+p(y_t | Z_t \alpha_t, x'_t\beta) \qquad (\textrm{observation equation})\\
+\alpha_{t+1} = T_t \alpha_t + R_t \eta_t, \qquad (\textrm{transition equation})
+\end{aligned}
+$$
+
+where $\eta_t \sim N(0, I_k)$ and $\alpha_1 \sim N(a_1, P_1)$ independently of each other, $x_t$ contains the exogenous covariate values at time time, with $\beta$ corresponding to the regression coefficients. Currently, following observational level distributions are supported:
+
+* Gaussian distribution: $p(y_t | Z_t \alpha_t, x_t\beta) = x'_t \beta + Z_t \alpha_t + H_t \epsilon_t$ with $\epsilon_t \sim N(0, 1)$.
+
+* Poisson distribution: $p(y_t | Z_t \alpha_t, x_t \beta) = \textrm{Poisson}(\phi_t \textrm{exp}(x'_t \beta + Z_t \alpha_t))$, where $\phi_t$ is the exposure at time $t$.
+
+* Binomial distribution: $p(y_t | Z_t \alpha_t, x_t \beta) = \textrm{binomial}(\phi_t, \textrm{exp}(x'_t \beta + Z_t \alpha_t) / (1 + \textrm{exp}(x'_t \beta + Z_t \alpha_t)))$, where $\phi_t$ is the size and $\textrm{exp}(x_t \beta + Z_t \alpha_t) / (1 + \textrm{exp}(x'_t \beta + Z_t \alpha_t))$ is the probability of the success.
+
+* Binomial distribution: $p(y_t | Z_t \alpha_t, x_t \beta) = \textrm{negative binomial}(\textrm{exp}(x'_t \beta + Z_t \alpha_t), \phi)$, where $\textrm{exp}(x'_t \beta + Z_t \alpha_t)$ is the expected value and $\phi_t$ is the dispersion parameter.
+
+The `bssm` package aims to provide easy-to-use functions for fully Bayesian inference, especially forecasting, of common time series models such basic structural time series model (BSM) [@Harvey1989] with exogenous covariates, making it straighforward and efficient to make predictions and other inference in a Bayesian setting.
+
+The Bayesian framework of `bssm` is based on Markov chain Monte Carlo (MCMC) approach with adaptive random walk Metropolis updating, using RAM algorithm by [@Vihola2012]. This approach seems to work very well in practice, and it allows an efficient "black-box" type of modelling were the user does not need to be too concerned of "tuning" of the MCMC algoritm. The priors for the unknown model parameters $\theta$ (regression coefficients $\beta$ and unknown elements in system matrices of the observation or state equations) are currently  assumed to be uniform on some user-defined closed interval $[a, b]$, although this assumption could be relaxed in the future.
+
+# MCMC algorithm for Gaussian state space models
+
+For Gaussian models given the parameters $\theta$, the likelihood of the model can be computed using the well known Kalman filter recursions. The complete adaptive MCMC algorithm of `bssm` for Gaussian models is as follows (modified from [@Vihola2012]).
+
+Given the target acceptance rate $\alpha^{\ast}$ (e.g. 0.234) and $\gamma \in (0,1]$, at iteration $i$
+
+1. Compute the proposal $\theta'_i = \theta_{i-1} + S_{i-1} u_i$, where $u_i$ is simulated from the standard $d$-dimensional Gaussian distribution and $S_{i-1}$ is a lower diagonal matrix with positive diagonal elements. 
+2. Accept the proposal with probability $\alpha_i := \min\{1, p(y | \theta'_i) / p(y | \theta_{i-1})\}$.
+3. If the proposal $\theta'_i$ is accepted, set $\theta_i = \theta'_i$ and simulate a realization (or multiple realizations) of the states $\alpha$ from $p(\alpha | y, \theta'_i)$ using the simulation smoothing algorithm by [@DK2002]. Otherwise, set $\theta_i = \theta_{i-1}$ and $(\alpha_1,\ldots,\alpha_n)_i = (\alpha_1,\ldots,\alpha_n)_{i-1}$.
+4. Compute (using Cholesky update or downdate algorithm) the Cholesky factor matrix $S_i$ satisfying the equation
+$$
+S_i S_i^T = S_{i-1}\left(I + \min\{1, d i^{-\gamma}\} (\alpha_i - \alpha^{\ast}) \frac{u_i u_i^T}{\|u_i\|^2}\right) S_{i-1}^T.
+$$
+
+If the interest is in the posterior means and variances of the states, we can replace the simulation smoothing in step 3 with standard fixed interval smoothing which gives the smoothed estimates (expected values and variances) of the states given the data and the model parameters. From these, the posterior means and variances of the states can be computed straightforwardly.
+
+# Non-Gaussian models
+
+For non-Gaussian models we focus on exponential family models so that we can use the Laplace approximation of the observational density, giving us an approximating Gaussian model which has the same mode of $p(\alpha | y)$ as the original model. This is based on [@DK2000]. This approximating Gaussian model seems to work very well in practice, and thus we can use it in MCMC scheme directly, which results in an approximate Bayesian inference. We can also use the approximating model together with importance sampling which produces exact Bayesian inference on $p(\alpha, \theta | y)$. We can factor the likelihood of the non-Gaussian model as [@DK2012]
+$$
+\begin{aligned}
+p(y | \theta) &= \int g(\alpha, y | \theta)\textrm{d}\alpha \\
+&= g(y | \theta) E_g\left[\frac{p(y| \alpha, \theta)}{g(y| \alpha, \theta)}\right],
+\end{aligned}
+$$
+where $g(y | \theta)$ is the likelihood of the Gaussian approximating model and the expectation is taken with respect to the Gaussian density $g(\alpha|y, \theta)$. Equivalently we can write
+$$
+\begin{aligned} \label{logp}
+\log p(y | \theta) &= \log g(y | \theta) + \log E_g\left[\frac{p(y| \alpha, \theta)}{g(y| \alpha, \theta)}\right] \\
+&= \log g(y | \theta) + \log \frac{p(y| \hat \alpha, \theta)}{g(y| \hat \alpha, \theta)}+ \log E_g\left[\frac{p(y| \alpha, \theta) / p(y | \hat \alpha, \theta)}{g(y| \alpha, \theta) / g(y | \hat \alpha, \theta)}\right]\\
+&=\log g(y | \theta) + \log \hat w + \log E_g w^{\ast}\\
+&\approx \log g(y | \theta) + \log \hat w  + \log \frac{1}{N}\sum_{j=1}^N w_j^{\ast},
+\end{aligned}
+$$
+where $\hat \alpha$ is the conditional mode estimate obtained from the approximating Gaussian model. For approximating inference without the importance sampling we simply omit the term $\log \frac{1}{N}\sum_{j=1}^N w_i^{\ast}$.
+In principle, using the exact Bayesian inference we should simulate multiple realizations of the states $\alpha$ in each iteration of MCMC in order to compute $\log \frac{1}{N}\sum_{j=1}^N w_j^{\ast}$. Fortunately, we can use so called delayed acceptance approach [@Christen2005; @Banterle2015] which speeds up the computation considerably:
+
+1. Make initial acceptance of the given proposal $\theta'_i$ with probability 
+$\min\left\{1, \frac{g(y | \theta'_i) \hat w_i }{g(y | \theta_{i-1}) \hat w_{i-1}}\right\}$.
+2. If accepted, perform the importance sampling of the states $\alpha$ and make the delayed acceptance with probability $\min\{1, \sum_{j=1}^N w_{i,j}^{\ast'} / \sum_{j=1}^N w_{i-1,j}^{\ast}\}$.
+3. If the delayed acceptance is successful, set $\theta_i = \theta'_i$ and sample one (or multiple) realization of the previously simulated states with weights $w_{i,j}, j = 1, \ldots, N$ (with replacement in case of multiple samples are stored). Otherwise, set $\theta_i = \theta_{i-1}$ and similarly for the states.
+
+## Prediction intervals
+
+For predicting future observations, one can extend the time series data with missing values which are handled straightforwardly by Kalman filter. This gives us point predictions in form of expected values, but for prediction intervals, no analytical formulas are available as the posterior distribution of the state is not necessarily normal. A standard way of obtaining the prediction intervals is to simulate future observations and use empirical quantiles for the limits of prediction interval. However, this is computationally expensive as a very large number of simulations is needed for accurate values of tail probabilities. In addition of standard quantile method, the `bssm` package contains alternative method for Gaussian models based on the parametric method by [@HelskeNyblom2015, @Helske2016]. Here, instead of simulating the future values, we compute the expected values and variances of the future values using the Kalman filtering, and then solve simple equation based on the cumulative distribution function of Normal distribution. 
+
+For Gaussian models with fixed number of MCMC iterations, the parametric method gives considerably more accurate results with approximately equal computational burden. It is also possible to use the parametric method for non-Gaussian models as well, but as we need the importance sampling step for the estimation of the inverse link-function of the model (such as $\phi_t \exp(Z_t\alpha_t)$ in Poisson case), the method is computationally slightly more intensive than the quantile method.
+
+# Example
+
+Here is a short example:
+
+```{r UKgas}
+library("bssm")
+set.seed(123)
+
+init_sd <- 0.1 * sd(log10(UKgas))
+model <- bsm(log10(UKgas), sd_y = init_sd, sd_level = init_sd,
+  sd_slope = init_sd, sd_seasonal = init_sd)
+mcmc_out <- run_mcmc(model, n_iter = 1e5, seed = 123)
+mcmc_out$acceptance_rate
+summary(mcmc_out$theta)
+plot(mcmc_out$theta)
+# posterior mode estimates (diffuse priors):
+mcmc_out$theta[which.max(mcmc_out$logLik), ]
+# posterior covariance matrix:
+cov(mcmc_out$theta)
+# compare to shape of the proposal distribution:
+cor(mcmc_out$theta)
+cov2cor(mcmc_out$S %*% t(mcmc_out$S))
+
+# smoothed trend 
+ts.plot(model$y, rowMeans(mcmc_out$alpha[, "level", ]), col = 1:2)
+
+# predictions
+pred <- predict(model, n_iter = 10000, n_ahead = 40, 
+  probs = c(0.025, 0.1, 0.9, 0.975), S = mcmc_out$S)
+ts.plot(log10(UKgas), pred$mean, pred$intervals[,-3], 
+  col = c(1, 2, c(3, 4, 4, 3)), lty = c(1, 1, rep(2, 4)))
+# with ggplot2
+require("ggplot2")
+autoplot(pred, interval_colour = "red", alpha_fill = 0.2)
+```
+
+
+# References

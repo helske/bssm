@@ -1,0 +1,12 @@
+^\.git$
+^.*\.Rproj$
+^\.Rproj\.user$
+^README\.md$
+^\.gitignore$
+^\.travis\.yml$
+^testing$
+^papers$
+^vignettes$
+^pdfs$
+^CopyOfsrc
+
