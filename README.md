@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/helske/bssm.png?branch=master)](https://travis-ci.org/helske/bssm)
-
 bssm: an R Package for Bayesian Inference of Exponential Family State Space Models
 ==========================================================================
 
