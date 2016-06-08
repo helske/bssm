@@ -452,36 +452,40 @@ predict.ng_bstsm <- function(object, n_iter, nsim_states, lower_prior, upper_pri
   y <- c(object$y, rep(NA, n_ahead))
 
   if (length(object$beta) > 0) {
-    if (is.null(newdata) || nrow(newdata) != n_ahead ||
-        ncol(newdata) != length(object$beta)) {
-      stop("Model contains regression part but newdata is missing or its dimensions do not match with n_ahead and length of beta. ")
+    if (!is.null(newdata) && (nrow(newdata) != n_ahead ||
+        ncol(newdata) != length(object$beta))) {
+      stop("Model contains regression part but dimensions of newdata does not match with n_ahead and length of beta. ")
+    }
+    if (is.null(newdata)) {
+      newdata <- matrix(0, n_ahead, length(object$beta))
     }
     object$xreg <- rbind(object$xreg, newdata)
   }
   if (nb) {
-    object$phi <- c(object$phi,
-      rep(object$phi[length(object$phi)], n_ahead))
+    phi <- c(object$phi, rep(object$phi[length(object$phi)], n_ahead))
   } else {
     if (is.null(newphi)) {
-      object$phi <- c(object$phi,
-        rep(object$phi[length(object$phi)], n_ahead))
+      phi <- c(object$phi, rep(1, n_ahead))
     } else {
       if (length(newphi) != n_ahead) {
         stop("Length of newphi is not equal to n_ahead. ")
       } else {
-        object$phi <- c(object$phi, newphi)
+        phi <- c(object$phi, newphi)
       }
     }
   }
   probs <- sort(unique(c(probs, 0.5)))
   out <- ng_bstsm_predict2(y, object$Z, object$T, object$R,
-    object$a1, object$P1, object$phi,
+    object$a1, object$P1, phi,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     lower_prior, upper_prior, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
     object$slope, object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
     c(object$init_signal, rep(log(0.1), n_ahead)), seed, log_space)
 
+  if (interval == 1 && (object$distribution != "negative binomial")) {
+    object$y <- object$y / object$phi
+  }
   pred <- list(y = object$y, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
     intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = object$period,
       names = paste0(100 * probs, "%")))

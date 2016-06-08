@@ -6,12 +6,19 @@
 #' @param ... Ignored.
 #' @export
 autoplot.predict_bssm <- function(object, plot_mean = TRUE,
-  plot_median = TRUE, ynew, fit,
+  plot_median = TRUE, y, fit,
   obs_colour = "black", mean_colour = "red", median_colour = "blue",
-  fit_colour = "red", interval_colour = "#000000", alpha_fill = 0.25,  ...) {
+  fit_colour = "red", interval_colour = "#000000", alpha_fill = 0.25,
+  y_label = "observations", title = NULL, ...) {
 
-  if (!missing(ynew)) {
-    object$y <- ynew
+  if (!missing(y)) {
+    if (!is.ts(y)) {
+      y <- ts(y, start = start(object$y), frequency = frequency(object$y))
+    }
+    object$y <- y
+  }
+  if (!missing(fit) && !is.ts(fit)) {
+    fit <- ts(fit, start = start(object$y), frequency = frequency(object$y))
   }
   plot_fit <- !missing(fit)
   d <- ts.union(object$y, if (plot_mean) object$mean, object$interval, if (plot_fit) fit)
@@ -50,5 +57,5 @@ autoplot.predict_bssm <- function(object, plot_mean = TRUE,
     p <- p + geom_line(aes(time, fit), colour = fit_colour,
       d[1:length(fit), ], inherit.aes = FALSE)
   }
-  p
+  p + ylab(y_label) + labs(title = title)
 }
