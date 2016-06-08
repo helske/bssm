@@ -4,7 +4,7 @@ bssm: R Package for Fully Bayesian Inference of Exponential Family State Space M
 
 Efficient methods for Bayesian inference of state space models where the observation density is Gaussian, Poisson, binomial or negative binomial, and where the state dynamics are Gaussian.
 
-See [vignette](https://github.com/helske/bssm/raw/master/vignettes/bssm.pdf) for details and examples.
+See [vignette](http://helske.github.io/pdfs/bssm.pdf) for details and examples.
 
 Current Status
 ==========================================================================
