@@ -1,10 +1,15 @@
 ---
 title: "bssm: Bayesian Inference of Exponential Family State Space Models in R"
-author: 
-  - name: Jouni Helske and Matti Vihola
-    affiliation: University of Jyväskylä, Department of Mathematics and Statistics, Finland
-date: "March 24, 2016"
-output: html_document
+author: |
+  | Jouni Helske and Matti Vihola
+  | University of Jyväskylä, Department of Mathematics and Statistics, Finland
+date: "June 8, 2016"
+output: 
+  pdf_document:
+    fig_caption: yes
+    fig_crop: no
+    fig_height: 6
+    fig_width: 8
 bibliography: bssm.bib
 vignette: |
   %\VignetteIndexEntry{Bayesian Inference of Exponential Family State Space Models in R}
@@ -99,7 +104,7 @@ library("bssm")
 set.seed(123)
 
 init_sd <- 0.1 * sd(log10(UKgas))
-model <- bsm(log10(UKgas), sd_y = init_sd, sd_level = init_sd,
+model <- bsm(log10(UKgas), sd_y = init_sd,
   sd_slope = init_sd, sd_seasonal = init_sd)
 mcmc_out <- run_mcmc(model, n_iter = 1e5, seed = 123)
 mcmc_out$acceptance_rate
@@ -112,16 +117,26 @@ cov(mcmc_out$theta)
 # compare to shape of the proposal distribution:
 cor(mcmc_out$theta)
 cov2cor(mcmc_out$S %*% t(mcmc_out$S))
+```
 
-# smoothed trend 
+Smoothed trend:
+
+```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component."}
 ts.plot(model$y, rowMeans(mcmc_out$alpha[, "level", ]), col = 1:2)
+```
 
-# predictions
-pred <- predict(model, n_iter = 10000, n_ahead = 40, 
+Prediction intervals:
+
+```{r predict, dev.args=list(pointsize = 10), fig.cap="Mean predictions and prediction intervals."}
+pred <- predict(model, n_iter = 1e4, n_ahead = 40, 
   probs = c(0.025, 0.1, 0.9, 0.975), S = mcmc_out$S)
 ts.plot(log10(UKgas), pred$mean, pred$intervals[,-3], 
   col = c(1, 2, c(3, 4, 4, 3)), lty = c(1, 1, rep(2, 4)))
-# with ggplot2
+```
+
+With \texttt{ggplot2}:
+
+```{r predict2, dev.args=list(pointsize = 10), fig.cap="Prediction plots with ggplot2."}
 require("ggplot2")
 autoplot(pred, interval_colour = "red", alpha_fill = 0.2)
 ```
