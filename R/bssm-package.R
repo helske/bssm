@@ -11,6 +11,18 @@
 #' @aliases bssm
 #' @importFrom Rcpp evalCpp
 #' @importFrom coda mcmc effectiveSize
-#' @importFrom stats logLik as.ts end frequency quantile start ts tsp tsp<- pnorm dnorm sd
+#' @importFrom stats logLik as.ts end frequency quantile start ts tsp tsp<- sd
 #' @useDynLib bssm
+NULL
+#' Deaths by drowning in Finland in 1969-2014
+#'
+#' Dataset containing number of deaths by drowning in Finland in 1969-2014,
+#' yearly average summer temperatures (June to August) and
+#' corresponding population sizes (in hundreds of thousands).
+#'
+#' @name drownings
+#' @docType data
+#' @format A time series object containing 46 observations and.
+#' @source Statistics Finland \url{http://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
+#' @keywords datasets
 NULL
