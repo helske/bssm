@@ -3,13 +3,19 @@
 #' @importFrom ggplot2 autoplot ggplot geom_line geom_ribbon
 #' @method autoplot predict_bssm
 #' @param object Object of class \code{predict_bssm}.
+#' @param plot_mean Draw mean predictions. Default is \code{TRUE}.
+#' @param plot_median Draw median predictions. Default is \code{TRUE}.
+#' @param y Optional values for observations. Defaults to \code{object$y}.
+#' @param fit Optional values for fitted values such as smoothed estimates of past observations.
+#' @param obs_color, mean_color, median_color, fit_color, interval_color Colors for corssponding components of the plot.
+#' @param alpha_fill Alpha value for controlling the transparency of the intervals.
 #' @param ... Ignored.
 #' @export
 autoplot.predict_bssm <- function(object, plot_mean = TRUE,
   plot_median = TRUE, y, fit,
-  obs_colour = "black", mean_colour = "red", median_colour = "blue",
-  fit_colour = "red", interval_colour = "#000000", alpha_fill = 0.25,
-  y_label = "observations", title = NULL, ...) {
+  obs_color = "black", mean_color = "red", median_color = "blue",
+  fit_color = "red", interval_color = "#000000", alpha_fill = 0.25,
+   ...) {
 
   if (!missing(y)) {
     if (!is.ts(y)) {
@@ -28,14 +34,8 @@ autoplot.predict_bssm <- function(object, plot_mean = TRUE,
   names(d) <-  c("time", "y", if (plot_mean) "mean",
     paste0("a",sub("%","", colnames(object$intervals))), if (plot_fit) "fit")
 
-  # if (plot_fit) {
-  #   d[nrow(d) - length(object$mean), "fit"] <-  d[nrow(d) - length(object$mean), "fit"]
-  # } else {
-  #   d[nrow(d) - length(object$mean), -(1:2)] <-  d[nrow(d) - length(object$mean), "y"]
-  # }
-
   p <- ggplot(d[1:length(object$y), ], aes(time, y)) +
-    geom_line(colour = obs_colour) +
+    geom_line(colour = obs_color) +
     scale_x_continuous(limits = range(times)) +
     scale_y_continuous(limits = range(d[,-1], na.rm = TRUE))
   intv <- names(d)[-(1:(2 + plot_mean))]
@@ -43,19 +43,19 @@ autoplot.predict_bssm <- function(object, plot_mean = TRUE,
   for (i in 1:n_intvs) {
     p <- p + geom_ribbon(aes_string(x = "time", ymin = intv[i], ymax = rev(intv)[i]),
       data = d[(nrow(d) - length(object$mean)):nrow(d), ], inherit.aes = FALSE,
-      fill = interval_colour, alpha = alpha_fill)
+      fill = interval_color, alpha = alpha_fill)
   }
   if (plot_mean) {
-    p <- p + geom_line(aes(time, mean), colour = mean_colour,
+    p <- p + geom_line(aes(time, mean), colour = mean_color,
       d[(nrow(d) - length(object$mean)):nrow(d), ], inherit.aes = FALSE)
   }
   if (plot_median) {
-    p <- p + geom_line(aes_string(x = "time", "a50"), colour = median_colour,
+    p <- p + geom_line(aes_string(x = "time", "a50"), colour = median_color,
       d[(nrow(d) - length(object$mean)):nrow(d), ], inherit.aes = FALSE)
   }
   if (plot_fit) {
-    p <- p + geom_line(aes(time, fit), colour = fit_colour,
+    p <- p + geom_line(aes(time, fit), colour = fit_color,
       d[1:length(fit), ], inherit.aes = FALSE)
   }
-  p + ylab(y_label) + labs(title = title)
+  p
 }

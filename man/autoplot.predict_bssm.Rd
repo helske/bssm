@@ -5,12 +5,24 @@
 \title{Plot predictions based on bssm package}
 \usage{
 \method{autoplot}{predict_bssm}(object, plot_mean = TRUE,
-  plot_median = TRUE, ynew, fit, obs_colour = "black",
-  mean_colour = "red", median_colour = "blue", fit_colour = "red",
-  interval_colour = "#000000", alpha_fill = 0.25, ...)
+  plot_median = TRUE, y, fit, obs_color = "black", mean_color = "red",
+  median_color = "blue", fit_color = "red", interval_color = "#000000",
+  alpha_fill = 0.25, ...)
 }
 \arguments{
 \item{object}{Object of class \code{predict_bssm}.}
+
+\item{plot_mean}{Draw mean predictions. Default is \code{TRUE}.}
+
+\item{plot_median}{Draw median predictions. Default is \code{TRUE}.}
+
+\item{y}{Optional values for observations. Defaults to \code{object$y}.}
+
+\item{fit}{Optional values for fitted values such as smoothed estimates of past observations.}
+
+\item{obs_color, }{mean_color, median_color, fit_color, interval_color Colors for corssponding components of the plot.}
+
+\item{alpha_fill}{Alpha value for controlling the transparency of the intervals.}
 
 \item{...}{Ignored.}
 }
