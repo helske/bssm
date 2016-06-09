@@ -329,16 +329,19 @@ logLik.ng_bstsm <- function(object, ...) {
 }
 
 #' @method run_mcmc ng_bstsm
-#' @rdname run_mcmc
+#' @rdname run_mcmc_ng
+#' @param log_space Generate proposals for standard deviations in log-space. Default is \code{FALSE}.
+#' @param n_store Number of samples to store from the simulation smoother per iteration.
+#' Default is 1.
+#' @param method Use \code{"standard"} MCMC or \code{"delayed acceptance"} approach.
 #' @export
-run_mcmc.ng_bstsm <- function(object, n_iter,
-  lower_prior, upper_prior,
-  nsim_states = 1, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, method = "delayed acceptance",
-  seed = sample(.Machine$integer.max, size = 1), n_store = 1, n_threads = 1,
-  thread_seeds = sample(.Machine$integer.max, size = n_threads), log_space = FALSE, ...) {
+run_mcmc.ng_bstsm <- function(object, n_iter, nsim_states = 1,
+  lower_prior, upper_prior, n_burnin = floor(n_iter/2),
+  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
+  seed = sample(.Machine$integer.max, size = 1), log_space = FALSE,
+  n_store = 1, method = "delayed acceptance",  ...) {
 
-  method <- match.arg(method, c("full", "delayed acceptance"))
+  method <- match.arg(method, c("standard", "delayed acceptance"))
 
   if (missing(lower_prior)) {
     lower_prior <- object$lower_prior
@@ -367,7 +370,7 @@ run_mcmc.ng_bstsm <- function(object, n_iter,
   }
 
   out <- switch(method,
-    full = {
+    standard = {
       out <- ng_bstsm_mcmc_full(object$y, object$Z, object$T, object$R,
         object$a1, object$P1, object$phi,
         pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
@@ -413,11 +416,10 @@ run_mcmc.ng_bstsm <- function(object, n_iter,
 #' @rdname predict.ngssm
 #' @export
 predict.ng_bstsm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
-  newdata = NULL,
-  newphi = NULL, n_ahead = 1, interval = "mean", probs = c(0.05, 0.95),
-  return_MCSE = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
+  newdata = NULL, n_ahead = 1, interval = "mean", probs = c(0.05, 0.95),
+  n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S,
-  seed = sample(.Machine$integer.max, size = 1), log_space = FALSE, ...) {
+  seed = sample(.Machine$integer.max, size = 1), newphi = NULL, log_space = FALSE, ...) {
 
   interval <- pmatch(interval, c("mean", "response"))
 

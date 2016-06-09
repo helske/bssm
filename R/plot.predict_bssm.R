@@ -7,7 +7,7 @@
 #' @param plot_median Draw median predictions. Default is \code{TRUE}.
 #' @param y Optional values for observations. Defaults to \code{object$y}.
 #' @param fit Optional values for fitted values such as smoothed estimates of past observations.
-#' @param obs_color, mean_color, median_color, fit_color, interval_color Colors for corssponding components of the plot.
+#' @param obs_color,mean_color,median_color,fit_color,interval_color Colors for corssponding components of the plot.
 #' @param alpha_fill Alpha value for controlling the transparency of the intervals.
 #' @param ... Ignored.
 #' @export

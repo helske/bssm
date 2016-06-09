@@ -42,7 +42,10 @@ kfilter <- function(object, ...) {
 #' from the conditional distribution \eqn{p(\alpha | y, \theta)}.
 #'
 #' @param object Object of class \code{gssm} or \code{bstsm}
-#' @param nsim Number of samples.
+#' @param nsim Number of samples. Simulation smoother uses one antithetic
+#' variable, ideally making the first and second halves of the resulting array to be
+#' negatively correlated (see the example).
+#' @param seed Seed for Boost random number generator.
 #' @param ... Ignored.
 #' @return Matrix containing the smoothed estimates of states, list
 #' with the smoothed states and the variances, or an array  containing the
@@ -61,7 +64,13 @@ smoother <- function(object, ...) {
 
 #' @export
 #' @rdname smoother
-sim_smoother <- function(object, nsim, ...) {
+#' @examples
+#' # need to give upper_prior as we have only NA's in y...
+#' model <- bsm(rep(NA, 30), upper_prior = c(10, 10), sd_level = 1, sd_y = 1, slope = FALSE)
+#' sim <- sim_smoother(model, 4)
+#' ts.plot(sim[, 1, ])
+#' cor(sim[, 1, ])
+sim_smoother <- function(object, nsim, seed, ...) {
   UseMethod("sim_smoother", object)
 }
 
@@ -69,42 +78,16 @@ sim_smoother <- function(object, nsim, ...) {
 #'
 #' Adaptive Markov chain Monte Carlo simulation of state space models using
 #' Robust Adaptive Metropolis algorithm by Vihola (2012).
-#' Function
 #'
-#' @param object Object of class \code{gssm} or \code{bstsm}.
-#' @param n_iter Number of MCMC iterations.
-#' @param type Type of output. Default is \code{"full"}, which returns
-#' samples from the posterior \eqn{p(\alpha, \theta}. Option
-#' \code{"parameters"} samples only parameters \eqn{\theta} (which includes the
-#' regression coefficients \eqn{\beta}). This can be used for faster inference of
-#' \eqn{\theta} only, or as an preliminary run for obtaining
-#' initial values for \code{S}. Option \code{"summary"} does not simulate
-#' states directly computes the  posterior means and variances of states using
-#' fast Kalman smoothing. This is slightly faster, memory  efficient and
-#' more accurate than calculations based on simulation smoother.
-
-#' @param lower_prior,upper_prior Bounds of the uniform prior for parameters
-#' \eqn{\theta}. Optional for \code{bstsm} objects.
-#' @param nsim_states Number of simulations of states per MCMC iteration. Only
-#' used when \code{type = "full"}.
-#' @param n_burnin Length of the burn-in period which is disregarded from the
-#' results. Defaults to \code{n_iter / 10}.
-#' @param n_thin Thinning rate. Defaults to 1. Increase for long time series in
-#' order to save memory.
-#' @param gamma Tuning parameter for the adaptation of RAM algorithm. Must be
-#' between 0 and 1 (not checked).
-#' @param target_acceptance Target acceptance ratio for RAM.
-#' @param S Initial value for the lower triangular matrix of RAM
-#' algorithm, so that the covariance matrix of the Gaussian proposal
-#' distribution is \eqn{SS'}.
-#' @param ... Ignored.
+#' @param object Object of class \code{gssm}, \code{bstsm}, \code{ngssm}, or \code{ng_bsm}.
+#' @param ... Arguments to be passed to methods.
+#' See \code{\link{run_mcmc.gssm}} and \code{\link{run_mcmc.ngssm}} for details.
 #' @export
 #' @rdname run_mcmc
 #' @references Vihola, Matti (2012). "Robust adaptive Metropolis algorithm with
 #' coerced acceptance rate". Statistics and Computing, Volume 22, Issue 5,
 #' pages 997--1008.
-run_mcmc <- function(object, n_iter, type, lower_prior, upper_prior, nsim_states,
-  n_burnin, n_thin, gamma, target_acceptance, S, ...) {
+run_mcmc <- function(object, ...) {
   UseMethod("run_mcmc", object)
 }
 

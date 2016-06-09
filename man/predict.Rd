@@ -20,7 +20,7 @@
   seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
-\item{object}{Object of class \code{gssm} or \code{bstsm}.}
+\item{object}{Model object.}
 
 \item{n_iter}{Number of MCMC iterations.}
 
@@ -31,34 +31,43 @@
 \eqn{\theta}. Optional for \code{bstsm} objects.}
 
 \item{newdata}{Matrix containing the covariate values for the future time
-points.}
+points. Defaults to zero matrix of appropriate size.}
 
 \item{n_ahead}{Number of steps ahead at which to predict.}
 
 \item{interval}{Compute predictions on \code{"mean"} ("confidence interval") or
 \code{"response"} ("prediction interval"). Defaults to \code{"response"}.}
 
-\item{probs}{Desired quantiles. Defaults to \code{c(0.05, 0.95)}.}
+\item{probs}{Desired quantiles. Defaults to \code{c(0.05, 0.95)}. Always includes median 0.5.}
 
-\item{method}{Either \code{"parametric"} (default) or \code{"quantile"}.}
+\item{method}{Either \code{"parametric"} (default) or \code{"quantile"}.
+Only used in Gaussian case.}
+
+\item{return_MCSE}{For method \code{"parametric"}, if \code{TRUE}, the Monte Carlo
+standard errors are also returned.}
 
 \item{nsim_states}{Number of simulations of states per MCMC iteration. Only
 used when \code{type = "full"}.}
 
 \item{n_burnin}{Length of the burn-in period which is disregarded from the
-results. Defaults to \code{n_iter / 10}.}
+results. Defaults to \code{n_iter / 2}.}
 
-\item{n_thin}{Thinning rate. Defaults to 1. Increase for long time series in
+\item{n_thin}{Thinning rate. Defaults to 1. Increase for large models in
 order to save memory.}
 
 \item{gamma}{Tuning parameter for the adaptation of RAM algorithm. Must be
 between 0 and 1 (not checked).}
 
-\item{target_acceptance}{Target acceptance ratio for RAM.}
+\item{target_acceptance}{Target acceptance ratio for RAM. Defaults to 0.234.}
 
 \item{S}{Initial value for the lower triangular matrix of RAM
 algorithm, so that the covariance matrix of the Gaussian proposal
 distribution is \eqn{SS'}.}
+
+\item{seed}{Seed for Boost random number generator.
+#' @param ... Ignored.}
+
+\item{log_space}{Generate proposals for standard deviations in log-space. Default is \code{FALSE}.}
 
 \item{...}{Ignored.}
 
@@ -80,7 +89,7 @@ same dimension as the corresponding elements of the model object.}
 }
 \value{
 List containing the mean predictions, quantiles and Monte Carlo
-standard errors.
+standard errors .
 }
 \description{
 Posterior intervals of future observations or their means

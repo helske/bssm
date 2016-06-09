@@ -154,7 +154,6 @@ kfilter.gssm <- function(object, ...) {
   out
 }
 #' @method fast_smoother gssm
-#' @rdname smoother
 #' @export
 fast_smoother.gssm <- function(object, ...) {
   if (!is.null(object$y) && ncol(object$y) > 1) {
@@ -167,7 +166,6 @@ fast_smoother.gssm <- function(object, ...) {
   ts(out, start = start(object$y), frequency = frequency(object$y))
 }
 #' @method sim_smoother gssm
-#' @rdname smoother
 #' @export
 sim_smoother.gssm <- function(object, nsim = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -184,7 +182,6 @@ sim_smoother.gssm <- function(object, nsim = 1,
 }
 
 #' @method smoother gssm
-#' @rdname smoother
 #' @export
 smoother.gssm <- function(object, ...) {
 
@@ -201,9 +198,10 @@ smoother.gssm <- function(object, ...) {
   out
 }
 
+#' Bayesian Inference of State Space Models using MCMC with RAM
 #'
-#' For general univariate Gaussian models, all \code{NA} values in \code{Z},
-#' \code{T}, and \code{R} are estimated without any constraints
+#' For general univariate Gaussian models, all \code{NA} values in
+#' \code{Z}, \code{H}, \code{T}, and \code{R} are estimated without any constraints
 #' (expect the bounds given by the uniform priors).
 #'
 #' Note that currently it is not possible to set some parameters equal to each
@@ -211,18 +209,50 @@ smoother.gssm <- function(object, ...) {
 #' cannot be used (the corresponding errors are usually assumed i.i.d.).
 #'
 #' Note that the proposal for all parameters is multivariate Gaussian,
-#' with uniform priors for each parameters.
+#' with uniform priors for each parameters. For \code{\link{bsm}} models,
+#' generating proposals for standard deviations in log-scale is also possible
+#' with argument \code{log_space = TRUE}.
 #'
 #' @method run_mcmc gssm
-#' @rdname run_mcmc
+#' @rdname run_mcmc_g
+#' @param object Model object.
+#' @param n_iter Number of MCMC iterations.
 #' @param Z_est,H_est,T_est,R_est Arrays or matrices containing \code{NA}
 #' values marking the unknown parameters which are to be estimated. Must be of
 #' same dimension as the corresponding elements of the model object.
+#' @param nsim_states Number of simulations of states per MCMC iteration. Only
+#' used when \code{type = "full"}.
+#' @param type Type of output. Default is \code{"full"}, which returns
+#' samples from the posterior \eqn{p(\alpha, \theta}. Option
+#' \code{"parameters"} samples only parameters \eqn{\theta} (which includes the
+#' regression coefficients \eqn{\beta}). This can be used for faster inference of
+#' \eqn{\theta} only, or as an preliminary run for obtaining
+#' initial values for \code{S}. Option \code{"summary"} does not simulate
+#' states directly computes the  posterior means and variances of states using
+#' fast Kalman smoothing. This is slightly faster, memory  efficient and
+#' more accurate than calculations based on simulation smoother.
+#' @param lower_prior,upper_prior Bounds of the uniform prior for parameters
+#' \eqn{\theta}. Optional for \code{bstsm} objects.
+#' @param n_burnin Length of the burn-in period which is disregarded from the
+#' results. Defaults to \code{n_iter / 2}.
+#' @param n_thin Thinning rate. Defaults to 1. Increase for large models in
+#' order to save memory.
+#' @param gamma Tuning parameter for the adaptation of RAM algorithm. Must be
+#' between 0 and 1 (not checked).
+#' @param target_acceptance Target acceptance ratio for RAM. Defaults to 0.234.
+#' @param S Initial value for the lower triangular matrix of RAM
+#' algorithm, so that the covariance matrix of the Gaussian proposal
+#' distribution is \eqn{SS'}.
+#' @param seed Seed for Boost random number generator.
+#' #' @param ... Ignored.
 #' @export
-run_mcmc.gssm <- function(object, n_iter, type = "full", lower_prior, upper_prior,
-  nsim_states = 1, n_burnin = floor(n_iter / 2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, Z_est, H_est, T_est, R_est,
+run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
+  nsim_states = 1, type = "full", lower_prior, upper_prior,
+  n_burnin = floor(n_iter / 2), n_thin = 1, gamma = 2/3,
+  target_acceptance = 0.234, S,
   seed = sample(.Machine$integer.max, size = 1), ...) {
+
+  type <- match.arg(type, c("full", "parameters", "summary"))
 
   if (!is.null(object$y) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
@@ -265,7 +295,6 @@ run_mcmc.gssm <- function(object, n_iter, type = "full", lower_prior, upper_prio
     S <- diag(Z_n + H_n + T_n + R_n)
   }
 
-  type <- match.arg(type, c("full", "parameters", "summary"))
   out <- switch(type,
     full = {
       out <- guvssm_mcmc_full(object$y, object$Z, object$H, object$T, object$R,
@@ -307,16 +336,21 @@ run_mcmc.gssm <- function(object, n_iter, type = "full", lower_prior, upper_prio
 #' as empirical quantiles the posterior sample, or parametric method by
 #' Helske (2016).
 #'
+#' @param object Model object.
 #' @param n_ahead Number of steps ahead at which to predict.
 #' @param interval Compute predictions on \code{"mean"} ("confidence interval") or
 #' \code{"response"} ("prediction interval"). Defaults to \code{"response"}.
-#' @param probs Desired quantiles. Defaults to \code{c(0.05, 0.95)}.
+#' @param probs Desired quantiles. Defaults to \code{c(0.05, 0.95)}. Always includes median 0.5.
 #' @param newdata Matrix containing the covariate values for the future time
-#' points.
+#' points. Defaults to zero matrix of appropriate size.
 #' @param method Either \code{"parametric"} (default) or \code{"quantile"}.
+#' Only used in Gaussian case.
+#' @param return_MCSE For method \code{"parametric"}, if \code{TRUE}, the Monte Carlo
+#' standard errors are also returned.
+#' @param ... Ignored.
 #' @inheritParams run_mcmc.gssm
 #' @return List containing the mean predictions, quantiles and Monte Carlo
-#' standard errors.
+#' standard errors .
 #' @method predict gssm
 #' @rdname predict
 #' @export

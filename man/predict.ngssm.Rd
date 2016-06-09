@@ -6,20 +6,20 @@
 \title{Predictions for Non-Gaussian State Space Models}
 \usage{
 \method{predict}{ng_bstsm}(object, n_iter, nsim_states, lower_prior,
-  upper_prior, newdata = NULL, newphi = NULL, n_ahead = 1,
-  interval = "mean", probs = c(0.05, 0.95), return_MCSE = TRUE,
-  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size =
-  1), log_space = FALSE, ...)
+  upper_prior, newdata = NULL, n_ahead = 1, interval = "mean",
+  probs = c(0.05, 0.95), n_burnin = floor(n_iter/2), n_thin = 1,
+  gamma = 2/3, target_acceptance = 0.234, S,
+  seed = sample(.Machine$integer.max, size = 1), newphi = NULL,
+  log_space = FALSE, ...)
 
 \method{predict}{ngssm}(object, n_iter, nsim_states, lower_prior, upper_prior,
-  newdata = NULL, newphi = NULL, n_ahead = 1, interval = "mean",
-  probs = c(0.05, 0.95), return_MCSE = TRUE, n_burnin = floor(n_iter/2),
-  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, Z_est, H_est,
-  T_est, R_est, seed = sample(.Machine$integer.max, size = 1), ...)
+  newdata = NULL, n_ahead = 1, interval = "mean", probs = c(0.05, 0.95),
+  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
+  target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size =
+  1), newphi = NULL, Z_est, T_est, R_est, ...)
 }
 \arguments{
-\item{object}{Object of class \code{gssm} or \code{bstsm}.}
+\item{object}{Model object.}
 
 \item{n_iter}{Number of MCMC iterations.}
 
@@ -33,49 +33,44 @@ used when \code{type = "full"}.}
 \eqn{\theta}. Optional for \code{bstsm} objects.}
 
 \item{newdata}{Matrix containing the covariate values for the future time
-points.}
-
-\item{newphi}{Vector of length \code{n_ahead} defining the future values of \eqn{\phi}.}
+points. Defaults to zero matrix of appropriate size.}
 
 \item{n_ahead}{Number of steps ahead at which to predict.}
 
 \item{interval}{Compute predictions on \code{"mean"} ("confidence interval") or
 \code{"response"} ("prediction interval"). Defaults to \code{"response"}.}
 
-\item{probs}{Desired quantiles. Defaults to \code{c(0.05, 0.95)}.}
+\item{probs}{Desired quantiles. Defaults to \code{c(0.05, 0.95)}. Always includes median 0.5.}
 
 \item{n_burnin}{Length of the burn-in period which is disregarded from the
-results. Defaults to \code{n_iter / 10}.}
+results. Defaults to \code{n_iter / 2}.}
 
-\item{n_thin}{Thinning rate. Defaults to 1. Increase for long time series in
+\item{n_thin}{Thinning rate. Defaults to 1. Increase for large models in
 order to save memory.}
 
 \item{gamma}{Tuning parameter for the adaptation of RAM algorithm. Must be
 between 0 and 1 (not checked).}
 
-\item{target_acceptance}{Target acceptance ratio for RAM.}
+\item{target_acceptance}{Target acceptance ratio for RAM. Defaults to 0.234.}
 
 \item{S}{Initial value for the lower triangular matrix of RAM
 algorithm, so that the covariance matrix of the Gaussian proposal
 distribution is \eqn{SS'}.}
 
+\item{seed}{Seed for Boost random number generator.
+#' @param ... Ignored.}
+
+\item{newphi}{Vector of length \code{n_ahead} defining the future values of \eqn{\phi}.
+Defaults to 1, expect for negative binomial distribution, where the initial
+value is taken from \code{object$phi}.}
+
+\item{log_space}{Generate proposals for standard deviations in log-space. Default is \code{FALSE}.}
+
 \item{...}{Ignored.}
 
-\item{Z_est}{Arrays or matrices containing \code{NA}
-values marking the unknown parameters which are to be estimated. Must be of
-same dimension as the corresponding elements of the model object.}
-
-\item{H_est}{Arrays or matrices containing \code{NA}
-values marking the unknown parameters which are to be estimated. Must be of
-same dimension as the corresponding elements of the model object.}
-
-\item{T_est}{Arrays or matrices containing \code{NA}
-values marking the unknown parameters which are to be estimated. Must be of
-same dimension as the corresponding elements of the model object.}
-
-\item{R_est}{Arrays or matrices containing \code{NA}
-values marking the unknown parameters which are to be estimated. Must be of
-same dimension as the corresponding elements of the model object.}
+\item{Z_est, T_est, R_est}{Matrices or arrays with same dimensions as the
+corresponding system matrices in \code{object}, where \code{NA} values
+identify the unknown parameters for estimation.}
 }
 \value{
 List containing the mean predictions, quantiles and Monte Carlo

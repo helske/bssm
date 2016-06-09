@@ -170,13 +170,39 @@ initial_signal <- function(y, phi, distribution) {
   }
   y
 }
-
+#' Bayesian Inference of State Space Models using MCMC with RAM
+#'
+#' Adaptive Markov chain Monte Carlo simulation of state space models using
+#' Robust Adaptive Metropolis algorithm by Vihola (2012).
+#'
 #' @method run_mcmc ngssm
-#' @rdname run_mcmc
+#' @rdname run_mcmc_ng
+#' @param object Model object.
+#' @param n_iter Number of MCMC iterations.
+#' @param Z_est,T_est,R_est Matrices or arrays with same dimensions as the
+#' corresponding system matrices in \code{object}, where \code{NA} values
+#' identify the unknown parameters for estimation.
+#' @param nsim_states Number of simulations of states per MCMC iteration. Only
+#' used when \code{type = "full"}.
+#' @param lower_prior,upper_prior Bounds of the uniform prior for parameters
+#' \eqn{\theta}. Optional for \code{bstsm} objects.
+#' @param n_burnin Length of the burn-in period which is disregarded from the
+#' results. Defaults to \code{n_iter / 2}.
+#' @param n_thin Thinning rate. Defaults to 1. Increase for large models in
+#' order to save memory.
+#' @param gamma Tuning parameter for the adaptation of RAM algorithm. Must be
+#' between 0 and 1 (not checked).
+#' @param target_acceptance Target acceptance ratio for RAM. Defaults to 0.234.
+#' @param S Initial value for the lower triangular matrix of RAM
+#' algorithm, so that the covariance matrix of the Gaussian proposal
+#' distribution is \eqn{SS'}.
+#' @param seed Seed for Boost random number generator.
+#' @param ... Ignored.
 #' @export
-run_mcmc.ngssm <- function(object, n_iter, lower_prior, upper_prior,
+run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, lower_prior, upper_prior,
   nsim_states = 1, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, Z_est, T_est, R_est, seed = sample(.Machine$integer.max, size = 1), ...) {
+  target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size = 1),
+   ...) {
 
   if (!is.null(object$y) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
@@ -252,14 +278,19 @@ run_mcmc.ngssm <- function(object, n_iter, lower_prior, upper_prior,
 #' @rdname predict.ngssm
 #' @inheritParams predict.gssm
 #' @param newphi Vector of length \code{n_ahead} defining the future values of \eqn{\phi}.
+#' Defaults to 1, expect for negative binomial distribution, where the initial
+#' value is taken from \code{object$phi}.
+#' @param Z_est,T_est,R_est Matrices or arrays with same dimensions as the
+#' corresponding system matrices in \code{object}, where \code{NA} values
+#' identify the unknown parameters for estimation.
 #' @export
 predict.ngssm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
   newdata = NULL,
-  newphi = NULL, n_ahead = 1, interval = "mean",
-  probs = c(0.05, 0.95), return_MCSE = TRUE,
+ n_ahead = 1, interval = "mean",
+  probs = c(0.05, 0.95),
   n_burnin = floor(n_iter / 2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S, Z_est, H_est, T_est, R_est,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
+  gamma = 2/3, target_acceptance = 0.234, S,
+  seed = sample(.Machine$integer.max, size = 1),  newphi = NULL, Z_est, T_est, R_est, ...) {
 
   if (!is.null(object$y) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")

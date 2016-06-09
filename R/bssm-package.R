@@ -11,7 +11,8 @@
 #' @aliases bssm
 #' @importFrom Rcpp evalCpp
 #' @importFrom coda mcmc effectiveSize
-#' @importFrom stats logLik as.ts end frequency quantile start ts tsp tsp<- sd
+#' @importFrom ggplot2  aes aes_string scale_x_continuous scale_y_continuous
+#' @importFrom stats as.ts dnorm  end frequency is.ts logLik pnorm quantile start time ts ts.union tsp tsp<- sd
 #' @useDynLib bssm
 NULL
 #' Deaths by drowning in Finland in 1969-2014

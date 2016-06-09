@@ -255,7 +255,6 @@ kfilter.bstsm <- function(object, ...) {
   out
 }
 #' @method fast_smoother bstsm
-#' @rdname smoother
 #' @export
 fast_smoother.bstsm <- function(object, ...) {
 
@@ -267,7 +266,6 @@ fast_smoother.bstsm <- function(object, ...) {
   ts(out, start = start(object$y), frequency = object$period)
 }
 #' @method sim_smoother bstsm
-#' @rdname smoother
 #' @export
 sim_smoother.bstsm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
 
@@ -280,7 +278,6 @@ sim_smoother.bstsm <- function(object, nsim = 1, seed = sample(.Machine$integer.
 }
 
 #' @method smoother bstsm
-#' @rdname smoother
 #' @export
 smoother.bstsm <- function(object, ...) {
 
@@ -295,7 +292,8 @@ smoother.bstsm <- function(object, ...) {
 }
 
 #' @method run_mcmc bstsm
-#' @rdname run_mcmc
+#' @rdname run_mcmc_g
+#' @param log_space Generate proposals for standard deviations in log-space. Default is \code{FALSE}.
 #' @export
 #' @examples
 #' init_sd <- 0.1 * sd(log10(UKgas))
@@ -311,8 +309,8 @@ smoother.bstsm <- function(object, ...) {
 #' pred <- predict(model, n_iter = 5000, n_ahead = 8, S = mcmc_out$S)
 #' ts.plot(pred$y, pred$mean, pred$interval, col = c(1, 2, 2, 2),
 #'   lty = c(1, 1, 2, 2))
-run_mcmc.bstsm <- function(object, n_iter, type = "full", lower_prior, upper_prior,
-  nsim_states = 1, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
+run_mcmc.bstsm <- function(object, n_iter, nsim_states = 1, type = "full",
+  lower_prior, upper_prior, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size = 1),
   log_space = FALSE, ...) {
 

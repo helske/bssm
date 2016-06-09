@@ -20,7 +20,7 @@
 
 \item{fit}{Optional values for fitted values such as smoothed estimates of past observations.}
 
-\item{obs_color, }{mean_color, median_color, fit_color, interval_color Colors for corssponding components of the plot.}
+\item{obs_color, mean_color, median_color, fit_color, interval_color}{Colors for corssponding components of the plot.}
 
 \item{alpha_fill}{Alpha value for controlling the transparency of the intervals.}
 
