@@ -10,7 +10,7 @@ as_gssm.SSModel <- function(model, kappa = 1e5, ...) {
   if (any(model$distribution != "gaussian")) {
     stop("SSModel object contains non-Gaussian series.")
   }
-  if (attr(model, "n") > 1) {
+  if (attr(model, "p") > 1) {
     stop("Only univariate time series are supported.")
   }
 
