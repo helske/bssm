@@ -4,9 +4,5 @@
 ^README\.md$
 ^\.gitignore$
 ^\.travis\.yml$
-^testing$
-^papers$
-^vignettes$
-^pdfs$
-^CopyOfsrc
+vignettes\bssm.pdf
 
