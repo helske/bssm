@@ -296,7 +296,12 @@ arma::mat guvssm::precomp_fast_smoother(const arma::vec& Ft, const arma::mat& Kt
       rt.col(t - 1) = T.slice(t * Ttv).t() * rt.col(t);
     }
   }
-  at.col(0) = a1 + P1 * (Z.col(0) / Ft(0) * vt(0) + Lt.slice(0).t() * rt.col(0));
+  if (arma::is_finite(y(0))){
+    arma::mat L = T.slice(0) * (arma::eye(m, m) - Kt.col(0) * Z.col(0).t());
+    at.col(0) = a1 + P1 * (Z.col(0) / Ft(0) * vt(0) + L.t() * rt.col(0));
+  } else {
+    at.col(0) = a1 + P1 * T.slice(0).t() * rt.col(0);
+  }
 
   for (unsigned int t = 0; t < (n - 1); t++) {
     at.col(t + 1) = T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
