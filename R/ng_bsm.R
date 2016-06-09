@@ -334,6 +334,7 @@ logLik.ng_bstsm <- function(object, ...) {
 #' @param n_store Number of samples to store from the simulation smoother per iteration.
 #' Default is 1.
 #' @param method Use \code{"standard"} MCMC or \code{"delayed acceptance"} approach.
+#' @inheritParams run_mcmc.gssm
 #' @export
 run_mcmc.ng_bstsm <- function(object, n_iter, nsim_states = 1,
   lower_prior, upper_prior, n_burnin = floor(n_iter/2),
