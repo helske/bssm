@@ -190,9 +190,12 @@ arma::mat guvssm::fast_smoother(void) {
       rt.col(t - 1) = T.slice(t * Ttv).t() * rt.col(t);
     }
   }
-  arma::mat L = T.slice(0) * (arma::eye(m, m) - Kt.col(0) * Z.col(0).t());
-  at.col(0) = a1 + P1 * (Z.col(0) / Ft(0) * vt(0) + L.t() * rt.col(0));
-
+  if (arma::is_finite(y(0))){
+    arma::mat L = T.slice(0) * (arma::eye(m, m) - Kt.col(0) * Z.col(0).t());
+    at.col(0) = a1 + P1 * (Z.col(0) / Ft(0) * vt(0) + L.t() * rt.col(0));
+  } else {
+    at.col(0) = a1 + P1 * T.slice(0).t() * rt.col(0);
+  }
   for (unsigned int t = 0; t < (n - 1); t++) {
     at.col(t + 1) = T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
   }
@@ -244,9 +247,12 @@ arma::mat guvssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt) {
       rt.col(t - 1) = T.slice(t * Ttv).t() * rt.col(t);
     }
   }
-  Lt.slice(0) = T.slice(0) * (arma::eye(m, m) - Kt.col(0) * Z.col(0).t());
-  at.col(0) = a1 + P1 * (Z.col(0) / Ft(0) * vt(0) + Lt.slice(0).t() * rt.col(0));
-
+  if (arma::is_finite(y(0))){
+    arma::mat L = T.slice(0) * (arma::eye(m, m) - Kt.col(0) * Z.col(0).t());
+    at.col(0) = a1 + P1 * (Z.col(0) / Ft(0) * vt(0) + L.t() * rt.col(0));
+  } else {
+    at.col(0) = a1 + P1 * T.slice(0).t() * rt.col(0);
+  }
   for (unsigned int t = 0; t < (n - 1); t++) {
     at.col(t + 1) = T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
   }
@@ -876,7 +882,7 @@ List guvssm::predict(arma::vec theta_lwr,
     }
     double change = accept_prob - target_acceptance;
     u = S * u * sqrt(std::min(1.0, npar * pow(i, -gamma)) * std::abs(change)) /
-      arma::norm(u);
+    arma::norm(u);
 
     if(change > 0) {
       S = cholupdate(S, u);
@@ -1008,7 +1014,7 @@ arma::mat guvssm::predict2(arma::vec theta_lwr,
 
     double change = accept_prob - target_acceptance;
     u = S * u * sqrt(std::min(1.0, npar * pow(i, -gamma)) * std::abs(change)) /
-      arma::norm(u);
+    arma::norm(u);
 
     if(change > 0) {
       S = cholupdate(S, u);
