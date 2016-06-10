@@ -138,7 +138,7 @@ With \texttt{ggplot2}:
 
 ```{r predict2, dev.args=list(pointsize = 10), fig.cap="Prediction plots with ggplot2."}
 require("ggplot2")
-autoplot(pred, interval_colour = "red", alpha_fill = 0.2)
+autoplot(pred, interval_color = "red", alpha_fill = 0.2)
 ```
 
 
