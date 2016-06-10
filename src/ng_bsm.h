@@ -1,17 +1,17 @@
-#ifndef NGBSTSM_H
-#define NGBSTSM_H
+#ifndef NGBSM_H
+#define NGBSM_H
 
-#include "nguvssm.h"
+#include "ngssm.h"
 
-class ng_bstsm: public nguvssm {
+class ng_bsm: public ngssm {
 
 public:
 
-  ng_bstsm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
+  ng_bsm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::vec, bool, bool, bool, arma::uvec, arma::mat, arma::vec,
     unsigned int, unsigned int);
 
-  ng_bstsm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
+  ng_bsm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::vec, bool, bool, bool, arma::uvec, arma::mat, arma::vec,
     unsigned int, unsigned int, bool);
 

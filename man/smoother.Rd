@@ -13,7 +13,7 @@ smoother(object, ...)
 sim_smoother(object, nsim, seed, ...)
 }
 \arguments{
-\item{object}{Object of class \code{gssm} or \code{bstsm}}
+\item{object}{Model object.}
 
 \item{...}{Ignored.}
 

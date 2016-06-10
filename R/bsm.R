@@ -31,7 +31,7 @@
 #' coefficients. Defaults to zero for lower bound and and \code{sd(y)} for
 #' upper bound of standard deviations and (-Inf, Inf) for regression
 #' coefficients.
-#' @return Object of class \code{bstsm}.
+#' @return Object of class \code{bsm}.
 #' @export
 bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL, beta = NULL,
   period = frequency(y), slope = TRUE, seasonal = frequency(y) > 1, a1, P1,
@@ -227,23 +227,23 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL, beta 
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
     a1 = a1, P1 = P1, xreg = xreg, beta = beta,
     slope = slope, seasonal = seasonal, period = period, fixed = !is.na(fixed),
-    lower_prior = lower_prior, upper_prior = upper_prior), class = "bstsm")
+    lower_prior = lower_prior, upper_prior = upper_prior), class = "bsm")
 }
 
-#' @method logLik bstsm
+#' @method logLik bsm
 #' @rdname logLik
 #' @export
-logLik.bstsm <- function(object, ...) {
-  bstsm_loglik(object$y, object$Z, object$H, object$T, object$R, object$a1,
+logLik.bsm <- function(object, ...) {
+  bsm_loglik(object$y, object$Z, object$H, object$T, object$R, object$a1,
     object$P1, object$slope, object$seasonal, object$fixed, object$xreg, object$beta)
 }
 
-#' @method kfilter bstsm
+#' @method kfilter bsm
 #' @rdname kfilter
 #' @export
-kfilter.bstsm <- function(object, ...) {
+kfilter.bsm <- function(object, ...) {
 
-  out <- bstsm_filter(object$y, object$Z, object$H, object$T, object$R,
+  out <- bsm_filter(object$y, object$Z, object$H, object$T, object$R,
     object$a1, object$P1, object$slope, object$seasonal, object$fixed,
     object$xreg, object$beta)
 
@@ -254,22 +254,22 @@ kfilter.bstsm <- function(object, ...) {
   out$att <- ts(out$att, start = start(object$y), frequency = object$period)
   out
 }
-#' @method fast_smoother bstsm
+#' @method fast_smoother bsm
 #' @export
-fast_smoother.bstsm <- function(object, ...) {
+fast_smoother.bsm <- function(object, ...) {
 
-  out <- bstsm_fast_smoother(object$y, object$Z, object$H, object$T,
+  out <- bsm_fast_smoother(object$y, object$Z, object$H, object$T,
     object$R, object$a1, object$P1, object$slope, object$seasonal, object$fixed,
     object$xreg, object$beta)
 
   colnames(out) <- names(object$a1)
   ts(out, start = start(object$y), frequency = object$period)
 }
-#' @method sim_smoother bstsm
+#' @method sim_smoother bsm
 #' @export
-sim_smoother.bstsm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
+sim_smoother.bsm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
 
-  out <- bstsm_sim_smoother(object$y, object$Z, object$H, object$T, object$R,
+  out <- bsm_sim_smoother(object$y, object$Z, object$H, object$T, object$R,
     object$a1, object$P1, nsim, object$slope, object$seasonal, object$fixed,
     object$xreg, object$beta, seed)
 
@@ -277,11 +277,11 @@ sim_smoother.bstsm <- function(object, nsim = 1, seed = sample(.Machine$integer.
   aperm(out, c(2, 1, 3))
 }
 
-#' @method smoother bstsm
+#' @method smoother bsm
 #' @export
-smoother.bstsm <- function(object, ...) {
+smoother.bsm <- function(object, ...) {
 
-  out <- bstsm_smoother(object$y, object$Z, object$H, object$T, object$R,
+  out <- bsm_smoother(object$y, object$Z, object$H, object$T, object$R,
     object$a1, object$P1, object$slope, object$seasonal, object$fixed,
     object$xreg, object$beta)
 
@@ -291,7 +291,7 @@ smoother.bstsm <- function(object, ...) {
   out
 }
 
-#' @method run_mcmc bstsm
+#' @method run_mcmc bsm
 #' @rdname run_mcmc_g
 #' @param log_space Generate proposals for standard deviations in log-space. Default is \code{FALSE}.
 #' @param n_threads Number of threads for state simulation.
@@ -312,7 +312,7 @@ smoother.bstsm <- function(object, ...) {
 #' pred <- predict(model, n_iter = 5000, n_ahead = 8, S = mcmc_out$S)
 #' ts.plot(pred$y, pred$mean, pred$interval, col = c(1, 2, 2, 2),
 #'   lty = c(1, 1, 2, 2))
-run_mcmc.bstsm <- function(object, n_iter, nsim_states = 1, type = "full",
+run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
   lower_prior, upper_prior, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size = 1),
   log_space = FALSE, n_threads = 1,
@@ -347,7 +347,7 @@ run_mcmc.bstsm <- function(object, n_iter, nsim_states = 1, type = "full",
 
   out <- switch(type,
     full = {
-      out <- bstsm_mcmc_full(object$y, object$Z, object$H, object$T, object$R,
+      out <- bsm_mcmc_full(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
         object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space)
@@ -357,14 +357,14 @@ run_mcmc.bstsm <- function(object, n_iter, nsim_states = 1, type = "full",
       out
     },
     parallel = {
-      out <- bstsm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
+      out <- bsm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
         object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space)
       if (log_space && n_sd_par > 0) {
         out$theta[, 1:n_sd_par] <- exp(out$theta[, 1:n_sd_par])
       }
-      out$alpha <-  aperm(bstsm_sample_states(object$y, object$Z, object$H, object$T, object$R,
+      out$alpha <-  aperm(bsm_sample_states(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, t(out$theta), nsim_states, object$slope,
         object$seasonal, object$fixed, object$xreg, object$beta,
         n_threads, thread_seeds), c(2, 1, 3))
@@ -373,14 +373,14 @@ run_mcmc.bstsm <- function(object, n_iter, nsim_states = 1, type = "full",
       out
     },
     parameters = {
-      bstsm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
+      bsm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
         object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space)
 
     },
     summary = {
-      out <- bstsm_mcmc_summary(object$y, object$Z, object$H, object$T, object$R,
+      out <- bsm_mcmc_summary(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
         object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space)
@@ -402,10 +402,10 @@ run_mcmc.bstsm <- function(object, n_iter, nsim_states = 1, type = "full",
   out
 }
 
-#' @method predict bstsm
+#' @method predict bsm
 #' @rdname predict
 #' @export
-predict.bstsm <- function(object, n_iter, lower_prior, upper_prior, newdata = NULL,
+predict.bsm <- function(object, n_iter, lower_prior, upper_prior, newdata = NULL,
   n_ahead = 1, interval = "response", probs = c(0.05, 0.95),
   method = "parametric", return_MCSE = TRUE, nsim_states = 1, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
@@ -451,7 +451,7 @@ predict.bstsm <- function(object, n_iter, lower_prior, upper_prior, newdata = NU
   }
   probs <- sort(unique(c(probs, 0.5)))
   if (method == "parametric") {
-    out <- bstsm_predict(y, object$Z, object$H, object$T, object$R,
+    out <- bsm_predict(y, object$Z, object$H, object$T, object$R,
       object$a1, object$P1, lower_prior, upper_prior, n_iter,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
       object$slope, object$seasonal, object$fixed, object$xreg, object$beta,
@@ -482,7 +482,7 @@ predict.bstsm <- function(object, n_iter, lower_prior, upper_prior, newdata = NU
           names = paste0(100 * probs, "%")))
     }
   } else {
-    out <- bstsm_predict2(y, object$Z, object$H, object$T, object$R,
+    out <- bsm_predict2(y, object$Z, object$H, object$T, object$R,
       object$a1, object$P1, lower_prior, upper_prior, n_iter, nsim_states,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
       object$slope, object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space)

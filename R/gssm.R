@@ -118,8 +118,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta = NULL, state_names) {
 #'
 #' Computes the log-likelihood of exponential family state space model.
 #'
-#'
-#' @param object Object of class \code{gssm} or \code{bstsm}.
+#' @param object Model object.
 #' @param ... Ignored.
 #' @importFrom stats logLik
 #' @method logLik gssm
@@ -129,7 +128,7 @@ logLik.gssm <- function(object, ...) {
   if (!is.null(object$y) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
   }
-  guvssm_loglik(object$y, object$Z, object$H, object$T, object$R, object$a1,
+  gsmm_loglik(object$y, object$Z, object$H, object$T, object$R, object$a1,
     object$P1, object$xreg, object$beta)
 
 }
@@ -143,7 +142,7 @@ kfilter.gssm <- function(object, ...) {
     stop("not yet implemented for multivariate models.")
   }
 
-  out <- guvssm_filter(object$y, object$Z, object$H, object$T, object$R,
+  out <- gsmm_filter(object$y, object$Z, object$H, object$T, object$R,
     object$a1, object$P1, object$xreg, object$beta)
 
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
@@ -159,7 +158,7 @@ fast_smoother.gssm <- function(object, ...) {
   if (!is.null(object$y) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
   }
-  out <- guvssm_fast_smoother(object$y, object$Z, object$H, object$T,
+  out <- gsmm_fast_smoother(object$y, object$Z, object$H, object$T,
     object$R, object$a1, object$P1, object$xreg, object$beta)
 
   colnames(out) <- names(object$a1)
@@ -174,7 +173,7 @@ sim_smoother.gssm <- function(object, nsim = 1,
     stop("not yet implemented for multivariate models.")
   }
 
-  out <- guvssm_sim_smoother(object$y, object$Z, object$H, object$T, object$R,
+  out <- gsmm_sim_smoother(object$y, object$Z, object$H, object$T, object$R,
     object$a1, object$P1, nsim, object$xreg, object$beta, seed)
 
   rownames(out) <- names(object$a1)
@@ -189,7 +188,7 @@ smoother.gssm <- function(object, ...) {
     stop("not yet implemented for multivariate models.")
   }
 
-  out <- guvssm_smoother(object$y, object$Z, object$H, object$T, object$R,
+  out <- gsmm_smoother(object$y, object$Z, object$H, object$T, object$R,
     object$a1, object$P1, object$xreg, object$beta)
 
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
@@ -232,7 +231,7 @@ smoother.gssm <- function(object, ...) {
 #' fast Kalman smoothing. This is slightly faster, memory  efficient and
 #' more accurate than calculations based on simulation smoother.
 #' @param lower_prior,upper_prior Bounds of the uniform prior for parameters
-#' \eqn{\theta}. Optional for \code{bstsm} objects.
+#' \eqn{\theta}. Optional for \code{bsm} objects.
 #' @param n_burnin Length of the burn-in period which is disregarded from the
 #' results. Defaults to \code{n_iter / 2}.
 #' @param n_thin Thinning rate. Defaults to 1. Increase for large models in
@@ -297,7 +296,7 @@ run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
 
   out <- switch(type,
     full = {
-      out <- guvssm_mcmc_full(object$y, object$Z, object$H, object$T, object$R,
+      out <- gsmm_mcmc_full(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind,
         H_ind, T_ind, R_ind, object$xreg, object$beta, seed)
@@ -306,13 +305,13 @@ run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
       out
     },
     parameters = {
-      guvssm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
+      gsmm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind,
         R_ind, object$xreg, object$beta, seed)
     },
     summary = {
-      out <- guvssm_mcmc_summary(object$y, object$Z, object$H, object$T, object$R,
+      out <- gsmm_mcmc_summary(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind,
         R_ind, object$xreg, object$beta, seed)
@@ -417,7 +416,7 @@ predict.gssm <- function(object, n_iter, lower_prior, upper_prior, newdata = NUL
   probs <- sort(unique(c(probs, 0.5)))
   if (method == "parametric") {
 
-    out <- guvssm_predict(y, object$Z,  object$H, object$T, object$R,
+    out <- gsmm_predict(y, object$Z,  object$H, object$T, object$R,
       object$a1, object$P1, lower_prior, upper_prior, n_iter,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
       Z_ind, H_ind, T_ind, R_ind, object$xreg, object$beta, probs, seed)
@@ -448,7 +447,7 @@ predict.gssm <- function(object, n_iter, lower_prior, upper_prior, newdata = NUL
     }
   } else {
 
-    out <- guvssm_predict2(y, object$Z, object$H, object$T, object$R,
+    out <- gsmm_predict2(y, object$Z, object$H, object$T, object$R,
       object$a1, object$P1, lower_prior, upper_prior, n_iter, nsim_states,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
       Z_ind, H_ind, T_ind, R_ind, object$xreg, object$beta, seed)

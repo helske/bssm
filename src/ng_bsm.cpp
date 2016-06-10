@@ -1,28 +1,28 @@
-#include "ng_bstsm.h"
+#include "ng_bsm.h"
 
 //general constructor
-ng_bstsm::ng_bstsm(arma::vec y, arma::mat Z, arma::cube T,
+ng_bsm::ng_bsm(arma::vec y, arma::mat Z, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi, bool slope, bool seasonal,
   bool noise, arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int distribution,
   unsigned int seed, bool log_space) :
-  nguvssm(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, seed),
+  ngssm(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, seed),
   slope(slope), seasonal(seasonal), noise(noise), fixed(fixed), level_est(fixed(0) == 0),
   slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0),
   log_space(log_space) {
 }
 
 //without log_space
-ng_bstsm::ng_bstsm(arma::vec y, arma::mat Z, arma::cube T,
+ng_bsm::ng_bsm(arma::vec y, arma::mat Z, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi, bool slope, bool seasonal,
   bool noise, arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int distribution,
   unsigned int seed) :
-  nguvssm(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, seed),
+  ngssm(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, seed),
   slope(slope), seasonal(seasonal), noise(noise), fixed(fixed), level_est(fixed(0) == 0),
   slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0),
   log_space(false) {
 }
 
-double ng_bstsm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
+double ng_bsm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
   double q = 0.0;
   if(log_space && (sum(fixed) < 3 || noise)) {
     if (level_est) {
@@ -41,7 +41,7 @@ double ng_bstsm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
   return q;
 }
 
-void ng_bstsm::update_model(arma::vec theta) {
+void ng_bsm::update_model(arma::vec theta) {
 
   if (sum(fixed) < 3 || noise) {
     if (log_space) {
@@ -79,7 +79,7 @@ void ng_bstsm::update_model(arma::vec theta) {
 
 }
 
-arma::vec ng_bstsm::get_theta(void) {
+arma::vec ng_bsm::get_theta(void) {
 
   unsigned int npar = level_est + slope_est + seasonal_est + noise +
     xreg.n_cols + (distribution == 3);

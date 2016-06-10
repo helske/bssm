@@ -1,14 +1,14 @@
-#ifndef NGUVSSM_H
-#define NGUVSSM_H
+#ifndef NGSSM_H
+#define NGSSM_H
 
-#include "guvssm.h"
+#include "gssm.h"
 
-class nguvssm: public guvssm {
+class ngssm: public gssm {
 public:
 
-  nguvssm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
+  ngssm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::vec, arma::mat, arma::vec, unsigned int, unsigned int);
-  nguvssm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
+  ngssm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::vec, arma::mat, arma::vec, unsigned int, arma::uvec,
     arma::uvec, arma::uvec, unsigned int);
 

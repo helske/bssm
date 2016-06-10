@@ -43,7 +43,7 @@ kfilter <- function(object, ...) {
 #' \code{sim_smoother} performs simulation smoothing i.e. simulates the states
 #' from the conditional distribution \eqn{p(\alpha | y, \theta)}.
 #'
-#' @param object Object of class \code{gssm} or \code{bstsm}
+#' @param object Model object.
 #' @param nsim Number of samples. Simulation smoother uses one antithetic
 #' variable, ideally making the first and second halves of the resulting array to be
 #' negatively correlated (see the example).
@@ -81,7 +81,7 @@ sim_smoother <- function(object, nsim, seed, ...) {
 #' Adaptive Markov chain Monte Carlo simulation of state space models using
 #' Robust Adaptive Metropolis algorithm by Vihola (2012).
 #'
-#' @param object Object of class \code{gssm}, \code{bstsm}, \code{ngssm}, or \code{ng_bsm}.
+#' @param object Object of class \code{gssm}, \code{bsm}, \code{ngssm}, or \code{ng_bsm}.
 #' @param ... Arguments to be passed to methods.
 #' See \code{\link{run_mcmc.gssm}} and \code{\link{run_mcmc.ngssm}} for details.
 #' @export

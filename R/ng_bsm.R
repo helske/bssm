@@ -37,7 +37,7 @@
 #' coefficients. Defaults to zero for lower bound and and
 #' \code{sd(init_signal)} for upper bound of standard deviations and
 #' (-1e4, 1e4) for regression coefficients.
-#' @return Object of class \code{ng_bstsm}.
+#' @return Object of class \code{ng_bsm}.
 #' @export
 #' @examples
 #' model <- ng_bsm(Seatbelts[, "VanKilled"], distribution = "poisson",
@@ -314,29 +314,29 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     a1 = a1, P1 = P1, phi = phi, xreg = xreg, beta = beta,
     slope = slope, seasonal = seasonal, noise = noise, period = period, fixed = !is.na(fixed),
     lower_prior = lower_prior, upper_prior = upper_prior,
-    distribution = distribution, init_signal = init_signal), class = "ng_bstsm")
+    distribution = distribution, init_signal = init_signal), class = "ng_bsm")
 }
 
-#' @method logLik ng_bstsm
+#' @method logLik ng_bsm
 #' @rdname logLik
 #' @inheritParams logLik.ngssm
 #' @export
-logLik.ng_bstsm <- function(object, nsim_states,
+logLik.ng_bsm <- function(object, nsim_states,
   seed = 1, ...) {
 
-  ng_bstsm_loglik(object$y, object$Z, object$T, object$R, object$a1,
+  ng_bsm_loglik(object$y, object$Z, object$T, object$R, object$a1,
     object$P1, object$phi, object$slope, object$seasonal, object$noise, object$fixed,
     object$xreg, object$beta,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     object$init_signal, nsim_states, seed)
 }
 
-#' @method kfilter ng_bstsm
+#' @method kfilter ng_bsm
 #' @rdname kfilter
 #' @export
-kfilter.ng_bstsm <- function(object, ...) {
+kfilter.ng_bsm <- function(object, ...) {
 
-  out <- ng_bstsm_filter(object$y, object$Z, object$T, object$R,
+  out <- ng_bsm_filter(object$y, object$Z, object$T, object$R,
     object$a1, object$P1, object$phi, object$slope, object$seasonal, object$noise,
     object$fixed,  object$xreg, object$beta,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
@@ -349,7 +349,7 @@ kfilter.ng_bstsm <- function(object, ...) {
   out$att <- ts(out$att, start = start(object$y), frequency = object$period)
   out
 }
-#' @method run_mcmc ng_bstsm
+#' @method run_mcmc ng_bsm
 #' @rdname run_mcmc_ng
 #' @param log_space Generate proposals for standard deviations in log-space. Default is \code{FALSE}.
 #' @param n_store Number of samples to store from the simulation smoother per iteration.
@@ -357,7 +357,7 @@ kfilter.ng_bstsm <- function(object, ...) {
 #' @param method Use \code{"standard"} MCMC or \code{"delayed acceptance"} approach.
 #' @inheritParams run_mcmc.ngssm
 #' @export
-run_mcmc.ng_bstsm <- function(object, n_iter, nsim_states = 1,
+run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1,
   lower_prior, upper_prior, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
   seed = sample(.Machine$integer.max, size = 1), log_space = FALSE,
@@ -393,7 +393,7 @@ run_mcmc.ng_bstsm <- function(object, n_iter, nsim_states = 1,
 
   out <- switch(method,
     standard = {
-      out <- ng_bstsm_mcmc_full(object$y, object$Z, object$T, object$R,
+      out <- ng_bsm_mcmc_full(object$y, object$Z, object$T, object$R,
         object$a1, object$P1, object$phi,
         pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
         lower_prior, upper_prior, n_iter,
@@ -406,7 +406,7 @@ run_mcmc.ng_bstsm <- function(object, n_iter, nsim_states = 1,
       out
     },
     "delayed acceptance" = {
-      out <- ng_bstsm_mcmc_full(object$y, object$Z, object$T, object$R,
+      out <- ng_bsm_mcmc_full(object$y, object$Z, object$T, object$R,
         object$a1, object$P1, object$phi,
         pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
         lower_prior, upper_prior, n_iter,
@@ -434,10 +434,10 @@ run_mcmc.ng_bstsm <- function(object, n_iter, nsim_states = 1,
   out
 }
 
-#' @method predict ng_bstsm
+#' @method predict ng_bsm
 #' @rdname predict.ngssm
 #' @export
-predict.ng_bstsm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
+predict.ng_bsm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
   newdata = NULL, n_ahead = 1, interval = "mean", probs = c(0.05, 0.95),
   n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S,
@@ -499,7 +499,7 @@ predict.ng_bstsm <- function(object, n_iter, nsim_states, lower_prior, upper_pri
     }
   }
   probs <- sort(unique(c(probs, 0.5)))
-  out <- ng_bstsm_predict2(y, object$Z, object$T, object$R,
+  out <- ng_bsm_predict2(y, object$Z, object$T, object$R,
     object$a1, object$P1, phi,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     lower_prior, upper_prior, n_iter,

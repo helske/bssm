@@ -145,7 +145,7 @@ logLik.ngssm <- function(object, nsim_states,
     stop("not yet implemented for multivariate models.")
   }
 
-  nguvssm_loglik(object$y, object$Z, object$T, object$R, object$a1,
+  ngssm_loglik(object$y, object$Z, object$T, object$R, object$a1,
     object$P1, object$phi, object$xreg, object$beta,
     pmatch(object$distribution, c("poisson", "binomial")),
     initial_signal(object$y, object$phi, object$distribution), nsim_states, seed)
@@ -204,7 +204,7 @@ initial_signal <- function(y, phi, distribution) {
 #' @param nsim_states Number of simulations of states per MCMC iteration. Only
 #' used when \code{type = "full"}.
 #' @param lower_prior,upper_prior Bounds of the uniform prior for parameters
-#' \eqn{\theta}. Optional for \code{bstsm} objects.
+#' \eqn{\theta}. Optional for \code{bsm} objects.
 #' @param n_burnin Length of the burn-in period which is disregarded from the
 #' results. Defaults to \code{n_iter / 2}.
 #' @param n_thin Thinning rate. Defaults to 1. Increase for large models in
@@ -262,7 +262,7 @@ run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, lower_prior, upp
     stop("Number of unknown parameters is not equal to the length of the prior vector.")
   }
 
-  out <- nguvssm_mcmc_full(object$y, object$Z, object$T, object$R,
+  out <- ngssm_mcmc_full(object$y, object$Z, object$T, object$R,
     object$a1, object$P1, object$phi, pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     lower_prior, upper_prior, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, T_ind,
@@ -375,7 +375,7 @@ predict.ngssm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
   object$phi <- c(object$phi, newphi)
   probs <- sort(unique(c(probs, 0.5)))
 
-  out <- nguvssm_predict2(y, object$Z, object$T, object$R,
+  out <- ngssm_predict2(y, object$Z, object$T, object$R,
     object$a1, object$P1, object$phi, pmatch(object$distribution, c("poisson", "binomial")),
     lower_prior, upper_prior, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,

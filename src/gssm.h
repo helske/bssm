@@ -1,15 +1,15 @@
-#ifndef GUVSSM_H
-#define GUVSSM_H
+#ifndef GSSM_H
+#define GSSM_H
 
 #include "bssm.h"
 
-class guvssm {
+class gssm {
 
 public:
 
-  guvssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
+  gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::mat, arma::vec, unsigned int);
-  guvssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
+  gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::mat, arma::vec, arma::uvec, arma::uvec, arma::uvec,
     arma::uvec, unsigned int);
 
@@ -76,6 +76,6 @@ public:
 
 };
 
-arma::cube sample_states(guvssm mod, const arma::mat& theta,
+arma::cube sample_states(gssm mod, const arma::mat& theta,
   unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds);
 #endif

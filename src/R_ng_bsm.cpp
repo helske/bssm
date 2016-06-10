@@ -1,13 +1,13 @@
-#include "ng_bstsm.h"
+#include "ng_bsm.h"
 
 // [[Rcpp::export]]
-double ng_bstsm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
+double ng_bsm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope,
   bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   unsigned int distribution, arma::vec init_signal, unsigned int nsim_states,
   unsigned int seed) {
 
-  ng_bstsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
+  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
     distribution, seed);
 
   if (nsim_states == 0) {
@@ -33,12 +33,12 @@ double ng_bstsm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List ng_bstsm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
+List ng_bsm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec &phi, bool slope,
   bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   unsigned int distribution, arma::vec init_signal) {
 
-  ng_bstsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
+  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
     distribution,1);
 
   double logLik = model.approx(init_signal, 1000, 1e-12);
@@ -63,7 +63,7 @@ List ng_bstsm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List ng_bstsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
+List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
   unsigned int distribution,
   arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter,
@@ -73,7 +73,7 @@ List ng_bstsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::vec& init_signal, unsigned int method, unsigned int seed, bool log_space) {
 
 
-  ng_bstsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
+  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
     distribution, seed, log_space);
 
   if (method == 1) {
@@ -88,7 +88,7 @@ List ng_bstsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-arma::mat ng_bstsm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
+arma::mat ng_bsm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
   unsigned int distribution, arma::vec& theta_lwr,
   arma::vec& theta_upr, unsigned int n_iter, unsigned int nsim_states,
@@ -98,7 +98,7 @@ arma::mat ng_bstsm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::mat& xreg, arma::vec& beta, arma::vec& init_signal, unsigned int seed,
   bool log_space) {
 
-  ng_bstsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
+  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
     distribution, seed, log_space);
 
   return model.predict2(theta_lwr, theta_upr, n_iter, nsim_states, n_burnin,

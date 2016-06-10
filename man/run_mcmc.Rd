@@ -7,7 +7,7 @@
 run_mcmc(object, ...)
 }
 \arguments{
-\item{object}{Object of class \code{gssm}, \code{bstsm}, \code{ngssm}, or \code{ng_bsm}.}
+\item{object}{Object of class \code{gssm}, \code{bsm}, \code{ngssm}, or \code{ng_bsm}.}
 
 \item{...}{Arguments to be passed to methods.
 See \code{\link{run_mcmc.gssm}} and \code{\link{run_mcmc.ngssm}} for details.}

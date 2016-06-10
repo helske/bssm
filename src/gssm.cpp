@@ -1,6 +1,6 @@
-#include "guvssm.h"
+#include "gssm.h"
 //general constructor
-guvssm::guvssm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
+gssm::gssm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::mat xreg,
   arma::vec beta, unsigned int seed) :
   y(y), Z(Z), H(H), T(T), R(R), a1(a1), P1(P1), Ztv(Z.n_cols > 1),
@@ -18,7 +18,7 @@ guvssm::guvssm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
 
 
 //general constructor with parameter indices
-guvssm::guvssm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
+gssm::gssm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::mat xreg,
   arma::vec beta, arma::uvec Z_ind, arma::uvec H_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
@@ -37,26 +37,26 @@ guvssm::guvssm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
 }
 
 
-double guvssm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
+double gssm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
   return 0.0;
 }
 
-void guvssm::compute_RR(void){
+void gssm::compute_RR(void){
   for (unsigned int t = 0; t < R.n_slices; t++) {
     RR.slice(t) = R.slice(t * Rtv) * R.slice(t * Rtv).t();
   }
 }
-void guvssm::compute_HH(void){
+void gssm::compute_HH(void){
   HH = square(H);
 }
 
-void guvssm::compute_xbeta(void){
+void gssm::compute_xbeta(void){
   xbeta = xreg * beta;
 }
 
 
 
-void guvssm::update_model(arma::vec theta) {
+void gssm::update_model(arma::vec theta) {
 
   if (Z_ind.n_elem > 0) {
     Z.elem(Z_ind) = theta.subvec(0, Z_ind.n_elem - 1);
@@ -85,7 +85,7 @@ void guvssm::update_model(arma::vec theta) {
   }
 }
 
-arma::vec guvssm::get_theta(void) {
+arma::vec gssm::get_theta(void) {
 
   arma::vec theta(Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem + R_ind.n_elem);
 
@@ -110,7 +110,7 @@ arma::vec guvssm::get_theta(void) {
   return theta;
 }
 
-double guvssm::log_likelihood(void) {
+double gssm::log_likelihood(void) {
 
   double logLik = 0;
 
@@ -126,7 +126,7 @@ double guvssm::log_likelihood(void) {
 }
 
 
-double guvssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
+double gssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
   arma::cube& Ptt) {
 
   double logLik = 0;
@@ -149,7 +149,7 @@ double guvssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
 /* Fast state smoothing, only returns smoothed estimates of states
  * which are needed in simulation smoother
  */
-arma::mat guvssm::fast_smoother(void) {
+arma::mat gssm::fast_smoother(void) {
 
   arma::mat at(m, n);
   arma::mat Pt(m, m);
@@ -208,7 +208,7 @@ arma::mat guvssm::fast_smoother(void) {
  * in subsequent calls of smoother in simulation smoother.
  */
 
-arma::mat guvssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt) {
+arma::mat gssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt) {
 
   arma::mat at(m, n);
   arma::mat Pt(m, m);
@@ -263,7 +263,7 @@ arma::mat guvssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt) {
 /* Fast state smoothing which uses precomputed Ft, Kt and Lt.
  */
 
-arma::mat guvssm::precomp_fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
+arma::mat gssm::precomp_fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
   const arma::cube& Lt) {
 
   arma::mat at(m, n);
@@ -310,7 +310,7 @@ arma::mat guvssm::precomp_fast_smoother(const arma::vec& Ft, const arma::mat& Kt
   return at;
 }
 
-arma::cube guvssm::sim_smoother(unsigned int nsim) {
+arma::cube gssm::sim_smoother(unsigned int nsim) {
 
   arma::vec y_tmp = y;
 
@@ -427,7 +427,7 @@ arma::cube guvssm::sim_smoother(unsigned int nsim) {
   return asim;
 }
 
-void guvssm::smoother(arma::mat& at, arma::cube& Pt) {
+void gssm::smoother(arma::mat& at, arma::cube& Pt) {
 
 
   at.col(0) = a1;
@@ -489,7 +489,7 @@ void guvssm::smoother(arma::mat& at, arma::cube& Pt) {
 }
 
 
-List guvssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
+List gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat S) {
 
@@ -593,7 +593,7 @@ List guvssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
 }
 
 
-List guvssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
+List gssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat S) {
 
@@ -686,7 +686,7 @@ List guvssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
 
 }
 
-List guvssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
+List gssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat S) {
 
@@ -799,7 +799,7 @@ List guvssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
     Named("S") = S,  Named("logLik") = ll_store);
 }
 
-List guvssm::predict(arma::vec theta_lwr,
+List gssm::predict(arma::vec theta_lwr,
   arma::vec theta_upr, unsigned int n_iter,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat S, unsigned int n_ahead,
@@ -915,7 +915,7 @@ List guvssm::predict(arma::vec theta_lwr,
 }
 
 
-arma::mat guvssm::predict2(arma::vec theta_lwr,
+arma::mat gssm::predict2(arma::vec theta_lwr,
   arma::vec theta_upr, unsigned int n_iter, unsigned int nsim_states,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat S, unsigned int n_ahead,
@@ -1041,7 +1041,7 @@ arma::mat guvssm::predict2(arma::vec theta_lwr,
 
 }
 // [[Rcpp::plugins(openmp)]]
-arma::cube sample_states(guvssm mod, const arma::mat& theta,
+arma::cube sample_states(gssm mod, const arma::mat& theta,
   unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds) {
 
   unsigned n_iter = theta.n_cols;

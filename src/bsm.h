@@ -1,16 +1,16 @@
-#ifndef BSTSM_H
-#define BSTSM_H
+#ifndef BSM_H
+#define BSM_H
 
-#include "guvssm.h"
+#include "gssm.h"
 
-class bstsm: public guvssm {
+class bsm: public gssm {
 
 public:
 
-  bstsm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
+  bsm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
     arma::mat, bool, bool, arma::uvec, arma::mat, arma::vec, unsigned int);
 
-  bstsm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
+  bsm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
     arma::mat, bool, bool, arma::uvec, arma::mat, arma::vec, unsigned int, bool);
 
   double proposal(const arma::vec&, const arma::vec&);
@@ -31,7 +31,7 @@ private:
 
 };
 
-arma::cube sample_states(bstsm mod, const arma::mat& theta,
+arma::cube sample_states(bsm mod, const arma::mat& theta,
   unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds);
 
 #endif

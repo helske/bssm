@@ -1,22 +1,22 @@
-#include "bstsm.h"
+#include "bsm.h"
 
 //general constructor
-bstsm::bstsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
+bsm::bsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, bool slope, bool seasonal,
   arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int seed, bool log_space) :
-  guvssm(y, Z, H, T, R, a1, P1, xreg, beta, seed), slope(slope), seasonal(seasonal),
+  gssm(y, Z, H, T, R, a1, P1, xreg, beta, seed), slope(slope), seasonal(seasonal),
   fixed(fixed), level_est(fixed(0) == 0), slope_est(slope && fixed(1) == 0),
   seasonal_est(seasonal && fixed(2) == 0), log_space(log_space) {
 }
 // without log_space
-bstsm::bstsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
+bsm::bsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, bool slope, bool seasonal,
   arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int seed) :
-  guvssm(y, Z, H, T, R, a1, P1, xreg, beta, seed), slope(slope), seasonal(seasonal),
+  gssm(y, Z, H, T, R, a1, P1, xreg, beta, seed), slope(slope), seasonal(seasonal),
   fixed(fixed), level_est(fixed(0) == 0), slope_est(slope && fixed(1) == 0),
   seasonal_est(seasonal && fixed(2) == 0), log_space(false) {
 }
-double bstsm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
+double bsm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
 
   double q = 0.0;
 
@@ -37,7 +37,7 @@ double bstsm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
   return q;
 }
 
-void bstsm::update_model(arma::vec theta) {
+void bsm::update_model(arma::vec theta) {
 
   if (log_space) {
     theta.subvec(0, theta.n_elem - xreg.n_cols - 1) =
@@ -69,7 +69,7 @@ void bstsm::update_model(arma::vec theta) {
 
 }
 
-arma::vec bstsm::get_theta(void) {
+arma::vec bsm::get_theta(void) {
 
   unsigned int npar = 1 + level_est + slope_est + seasonal_est + xreg.n_cols;
 
@@ -102,7 +102,7 @@ arma::vec bstsm::get_theta(void) {
   return theta;
 }
 
-double bstsm::log_likelihood(void) {
+double bsm::log_likelihood(void) {
 
   double logLik = 0;
   arma::vec at = a1;
@@ -117,7 +117,7 @@ double bstsm::log_likelihood(void) {
 }
 
 
-double bstsm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
+double bsm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
   arma::cube& Ptt) {
 
   double logLik = 0;
@@ -139,7 +139,7 @@ double bstsm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
 
 
 // [[Rcpp::plugins(openmp)]]
-arma::cube sample_states(bstsm mod, const arma::mat& theta,
+arma::cube sample_states(bsm mod, const arma::mat& theta,
   unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds) {
 
   unsigned n_iter = theta.n_cols;

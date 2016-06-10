@@ -1,31 +1,31 @@
-#include "nguvssm.h"
+#include "ngssm.h"
 
 
 //general constructor
-nguvssm::nguvssm(arma::vec y, arma::mat Z, arma::cube T,
+ngssm::ngssm(arma::vec y, arma::mat Z, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi, arma::mat xreg,
   arma::vec beta, unsigned int distribution, unsigned int seed) :
-  guvssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, seed),
+  gssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, seed),
   phi(phi), distribution(distribution), ng_y(y), max_iter(100), conv_tol(1.0e-8) {
 }
 
 //general constructor with parameter indices
-nguvssm::nguvssm(arma::vec y, arma::mat Z, arma::cube T,
+ngssm::ngssm(arma::vec y, arma::mat Z, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi, arma::mat xreg,
   arma::vec beta, unsigned int distribution, arma::uvec Z_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
-  guvssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, Z_ind,
+  gssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, Z_ind,
     arma::umat(0,0), T_ind, R_ind, seed), phi(phi),
     distribution(distribution), ng_y(y), max_iter(100), conv_tol(1.0e-8) {
 }
 
 
-double nguvssm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
+double ngssm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
   return 0.0;
 }
 
 // find approximating Gaussian model
-double nguvssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) {
+double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) {
 
   // signal_t = Z_t * alpha_t
   arma::mat Kt(m, n, arma::fill::zeros);
@@ -66,7 +66,7 @@ double nguvssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol
 
 // compute new values of pseudo y and H given the signal
 // and the new signal using Kalman smoothing
-arma::vec nguvssm::approx_iter(arma::vec& signal) {
+arma::vec ngssm::approx_iter(arma::vec& signal) {
 
   // new pseudo y and H
   switch(distribution) {
@@ -100,7 +100,7 @@ arma::vec nguvssm::approx_iter(arma::vec& signal) {
 
 // compute log[p(signal)] for the first time and store Kt and Ft which does not depend
 // on the signal (observation vector)
-double nguvssm::logp_signal(arma::vec& signal, arma::mat& Kt, arma::vec& Ft) {
+double ngssm::logp_signal(arma::vec& signal, arma::mat& Kt, arma::vec& Ft) {
 
   double logLik = 0.0;
 
@@ -123,7 +123,7 @@ double nguvssm::logp_signal(arma::vec& signal, arma::mat& Kt, arma::vec& Ft) {
 }
 
 // fast computation of log[p(signal)] using the precomputed Kt and Ft
-double nguvssm::precomp_logp_signal(arma::vec& signal, const arma::mat& Kt, const arma::vec& Ft) {
+double ngssm::precomp_logp_signal(arma::vec& signal, const arma::mat& Kt, const arma::vec& Ft) {
 
 
   double logLik = 0.0;
@@ -143,7 +143,7 @@ double nguvssm::precomp_logp_signal(arma::vec& signal, const arma::mat& Kt, cons
 }
 
 // log[p(y | signal)]
-double nguvssm::logp_y(arma::vec& signal) {
+double ngssm::logp_y(arma::vec& signal) {
 
   double logp = 0.0;
 
@@ -176,7 +176,7 @@ double nguvssm::logp_y(arma::vec& signal) {
 
 
 // update system matrices given theta
-void nguvssm::update_model(arma::vec theta) {
+void ngssm::update_model(arma::vec theta) {
 
   // !! add phi when adding other distributions !!
   //
@@ -207,7 +207,7 @@ void nguvssm::update_model(arma::vec theta) {
 }
 
 // pick up theta from system matrices
-arma::vec nguvssm::get_theta(void) {
+arma::vec ngssm::get_theta(void) {
 
   // !! add phi when adding other distributions !!
   arma::vec theta(Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem + (distribution == 3));
@@ -238,7 +238,7 @@ arma::vec nguvssm::get_theta(void) {
 
 
 
-List nguvssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
+List ngssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat S,
   const arma::vec init_signal) {
@@ -383,7 +383,7 @@ List nguvssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
 }
 
 // delayed acceptance, always targets p(theta, alpha | y)
-List nguvssm::mcmc_da(arma::vec theta_lwr, arma::vec theta_upr,
+List ngssm::mcmc_da(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat S,
   const arma::vec init_signal) {
@@ -522,7 +522,7 @@ List nguvssm::mcmc_da(arma::vec theta_lwr, arma::vec theta_upr,
 }
 
 
-arma::mat nguvssm::predict2(arma::vec theta_lwr,
+arma::mat ngssm::predict2(arma::vec theta_lwr,
   arma::vec theta_upr, unsigned int n_iter, unsigned int nsim_states,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat S, unsigned int n_ahead,
@@ -762,7 +762,7 @@ arma::mat nguvssm::predict2(arma::vec theta_lwr,
 
 }
 //compute unnormalized log-weights
-arma::vec nguvssm::importance_weights(const arma::cube& alphasim) {
+arma::vec ngssm::importance_weights(const arma::cube& alphasim) {
 
   arma::vec weights(alphasim.n_slices, arma::fill::zeros);
 
@@ -816,7 +816,7 @@ arma::vec nguvssm::importance_weights(const arma::cube& alphasim) {
 
 //compute the inverse of the link function for future observations
 // t = n - n_ahead, ..., n
-arma::mat nguvssm::invlink(const arma::cube& alpha, const arma::vec& weights,
+arma::mat ngssm::invlink(const arma::cube& alpha, const arma::vec& weights,
   const unsigned int n_ahead) {
 
   unsigned int nsim = alpha.n_slices;

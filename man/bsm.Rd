@@ -51,7 +51,7 @@ upper bound of standard deviations and (-Inf, Inf) for regression
 coefficients.}
 }
 \value{
-Object of class \code{bstsm}.
+Object of class \code{bsm}.
 }
 \description{
 Constructs a basic structural model with local level or local trend component

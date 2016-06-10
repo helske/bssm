@@ -58,7 +58,7 @@ coefficients. Defaults to zero for lower bound and and
 (-1e4, 1e4) for regression coefficients.}
 }
 \value{
-Object of class \code{ng_bstsm}.
+Object of class \code{ng_bsm}.
 }
 \description{
 Constructs a non-Gaussian basic structural model with local level or

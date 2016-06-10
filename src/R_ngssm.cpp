@@ -1,13 +1,13 @@
-#include "nguvssm.h"
+#include "ngssm.h"
 
 // [[Rcpp::export]]
-double nguvssm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
+double ngssm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
   arma::mat& xreg, arma::vec& beta, unsigned int distribution,
   arma::vec init_signal, unsigned int nsim_states,
   unsigned int seed) {
 
-  nguvssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, seed);
+  ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, seed);
 
   if (nsim_states == 0) {
     model.conv_tol = 1.0e-12;
@@ -32,12 +32,12 @@ double nguvssm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List nguvssm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
+List ngssm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
   arma::mat& xreg, arma::vec& beta, unsigned int distribution,
   arma::vec init_signal) {
 
-  nguvssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution,1);
+  ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution,1);
 
   double logLik = model.approx(init_signal, 1000, 1e-12);
 
@@ -60,7 +60,7 @@ List nguvssm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List nguvssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
+List ngssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
   unsigned int distribution,
   arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter,
@@ -69,7 +69,7 @@ List nguvssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::uvec Z_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg,
   arma::vec& beta, arma::vec& init_signal, unsigned int seed) {
 
-  nguvssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, Z_ind,
+  ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, Z_ind,
     T_ind, R_ind, seed);
 
   return model.mcmc_da(theta_lwr, theta_upr, n_iter, nsim_states, n_burnin,
@@ -78,7 +78,7 @@ List nguvssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-arma::mat nguvssm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
+arma::mat ngssm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
   unsigned int distribution, arma::vec& theta_lwr,
   arma::vec& theta_upr, unsigned int n_iter, unsigned int nsim_states,
@@ -89,7 +89,7 @@ arma::mat nguvssm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
   unsigned int seed) {
 
 
-  nguvssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, Z_ind,
+  ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, Z_ind,
     T_ind, R_ind, seed);
 
   return model.predict2(theta_lwr, theta_upr, n_iter, nsim_states, n_burnin,
