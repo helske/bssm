@@ -1,19 +1,3 @@
-#' Coerce to gssm Object
-#'
-#' Converts Gaussian \code{SSModel} object of \code{KFAS} package to \code{gssm}
-#' object.
-#'
-#' @param model Object of class \code{SSModel}.
-#' @param kappa For \code{SSModel} object, a prior variance for initial state u
-#' sed to replace exact diffuse elements of the original model.
-#' @param ... Ignored.
-#' @return Object of class \code{gssm}.
-#' @export
-#' @rdname as_gssm
-as_gssm <- function(model, ...) {
-  UseMethod("as_gssm", model)
-}
-
 #' Kalman Filtering
 #'
 #' Function \code{kfilter} runs the Kalman filter for the given model

@@ -1,7 +1,7 @@
 #include "gssm.h"
 
 // [[Rcpp::export]]
-double gssm_loglik(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
+double gssm_loglik(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::mat& xreg, arma::vec& beta) {
 
  gssm model(y, Z, H, T, R, a1, P1, xreg, beta, 1);
@@ -10,7 +10,7 @@ double gssm_loglik(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List gssm_filter(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
+List gssm_filter(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::mat& xreg, arma::vec& beta) {
 
 
@@ -35,7 +35,7 @@ List gssm_filter(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
 
 
 // [[Rcpp::export]]
-arma::mat gssm_fast_smoother(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
+arma::mat gssm_fast_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::mat& xreg, arma::vec& beta) {
 
   gssm model(y, Z, H, T, R, a1, P1, xreg, beta, 1);
@@ -43,7 +43,7 @@ arma::mat gssm_fast_smoother(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cu
 }
 
 // [[Rcpp::export]]
-arma::cube gssm_sim_smoother(arma::vec& y, arma::cube& Z, arma::vec& H,
+arma::cube gssm_sim_smoother(arma::vec& y, arma::mat& Z, arma::vec& H,
   arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, unsigned int nsim,
   arma::mat& xreg, arma::vec& beta, unsigned int seed) {
 
@@ -53,7 +53,7 @@ arma::cube gssm_sim_smoother(arma::vec& y, arma::cube& Z, arma::vec& H,
 
 
 // [[Rcpp::export]]
-List gssm_smoother(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
+List gssm_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::mat& xreg, arma::vec& beta) {
 
   gssm model(y, Z, H, T, R, a1, P1, xreg, beta,1);
@@ -69,7 +69,7 @@ List gssm_smoother(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List gssm_mcmc_full(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
+List gssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1,
   arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
@@ -84,7 +84,7 @@ List gssm_mcmc_full(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List gssm_mcmc_param(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
+List gssm_mcmc_param(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1,
   arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter,
   unsigned int n_burnin, unsigned int n_thin,
@@ -100,7 +100,7 @@ List gssm_mcmc_param(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List gssm_mcmc_summary(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
+List gssm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& theta_lwr,
   arma::vec& theta_upr, unsigned int n_iter, unsigned int n_thin,
   unsigned int n_burnin, double gamma, double target_acceptance, arma::mat& S,
@@ -115,7 +115,7 @@ List gssm_mcmc_summary(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List gssm_predict(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
+List gssm_predict(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& theta_lwr,
   arma::vec& theta_upr, unsigned int n_iter,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
@@ -130,7 +130,7 @@ List gssm_predict(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-arma::mat gssm_predict2(arma::vec& y, arma::cube& Z, arma::vec& H, arma::cube& T,
+arma::mat gssm_predict2(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& theta_lwr,
   arma::vec& theta_upr, unsigned int n_iter, unsigned int nsim_states,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
