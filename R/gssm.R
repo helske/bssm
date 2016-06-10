@@ -128,7 +128,7 @@ logLik.gssm <- function(object, ...) {
   if (!is.null(object$y) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
   }
-  gsmm_loglik(object$y, object$Z, object$H, object$T, object$R, object$a1,
+  gssm_loglik(object$y, object$Z, object$H, object$T, object$R, object$a1,
     object$P1, object$xreg, object$beta)
 
 }
@@ -142,7 +142,7 @@ kfilter.gssm <- function(object, ...) {
     stop("not yet implemented for multivariate models.")
   }
 
-  out <- gsmm_filter(object$y, object$Z, object$H, object$T, object$R,
+  out <- gssm_filter(object$y, object$Z, object$H, object$T, object$R,
     object$a1, object$P1, object$xreg, object$beta)
 
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
@@ -158,7 +158,7 @@ fast_smoother.gssm <- function(object, ...) {
   if (!is.null(object$y) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
   }
-  out <- gsmm_fast_smoother(object$y, object$Z, object$H, object$T,
+  out <- gssm_fast_smoother(object$y, object$Z, object$H, object$T,
     object$R, object$a1, object$P1, object$xreg, object$beta)
 
   colnames(out) <- names(object$a1)
@@ -173,7 +173,7 @@ sim_smoother.gssm <- function(object, nsim = 1,
     stop("not yet implemented for multivariate models.")
   }
 
-  out <- gsmm_sim_smoother(object$y, object$Z, object$H, object$T, object$R,
+  out <- gssm_sim_smoother(object$y, object$Z, object$H, object$T, object$R,
     object$a1, object$P1, nsim, object$xreg, object$beta, seed)
 
   rownames(out) <- names(object$a1)
@@ -188,7 +188,7 @@ smoother.gssm <- function(object, ...) {
     stop("not yet implemented for multivariate models.")
   }
 
-  out <- gsmm_smoother(object$y, object$Z, object$H, object$T, object$R,
+  out <- gssm_smoother(object$y, object$Z, object$H, object$T, object$R,
     object$a1, object$P1, object$xreg, object$beta)
 
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
@@ -296,7 +296,7 @@ run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
 
   out <- switch(type,
     full = {
-      out <- gsmm_mcmc_full(object$y, object$Z, object$H, object$T, object$R,
+      out <- gssm_mcmc_full(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind,
         H_ind, T_ind, R_ind, object$xreg, object$beta, seed)
@@ -305,13 +305,13 @@ run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
       out
     },
     parameters = {
-      gsmm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
+      gssm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind,
         R_ind, object$xreg, object$beta, seed)
     },
     summary = {
-      out <- gsmm_mcmc_summary(object$y, object$Z, object$H, object$T, object$R,
+      out <- gssm_mcmc_summary(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind,
         R_ind, object$xreg, object$beta, seed)
@@ -416,7 +416,7 @@ predict.gssm <- function(object, n_iter, lower_prior, upper_prior, newdata = NUL
   probs <- sort(unique(c(probs, 0.5)))
   if (method == "parametric") {
 
-    out <- gsmm_predict(y, object$Z,  object$H, object$T, object$R,
+    out <- gssm_predict(y, object$Z,  object$H, object$T, object$R,
       object$a1, object$P1, lower_prior, upper_prior, n_iter,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
       Z_ind, H_ind, T_ind, R_ind, object$xreg, object$beta, probs, seed)
@@ -447,7 +447,7 @@ predict.gssm <- function(object, n_iter, lower_prior, upper_prior, newdata = NUL
     }
   } else {
 
-    out <- gsmm_predict2(y, object$Z, object$H, object$T, object$R,
+    out <- gssm_predict2(y, object$Z, object$H, object$T, object$R,
       object$a1, object$P1, lower_prior, upper_prior, n_iter, nsim_states,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
       Z_ind, H_ind, T_ind, R_ind, object$xreg, object$beta, seed)
