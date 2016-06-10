@@ -108,7 +108,7 @@ ngssm <- function(y, Z, T, R, a1, P1,
   if (missing(state_names)) {
     state_names <- paste("State", 1:m)
   }
- rownames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
+  rownames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
     rownames(P1) <- colnames(P1) <- state_names
 
 
@@ -136,7 +136,7 @@ ngssm <- function(y, Z, T, R, a1, P1,
 #' @rdname logLik
 #' @export
 logLik.ngssm <- function(object, ...) {
-  if (!is.null(object$y) && ncol(object$y) > 1) {
+  if (!is.null(ncol(object$y)) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
   }
 
@@ -202,9 +202,9 @@ initial_signal <- function(y, phi, distribution) {
 run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, lower_prior, upper_prior,
   nsim_states = 1, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size = 1),
-   ...) {
+  ...) {
 
-  if (!is.null(object$y) && ncol(object$y) > 1) {
+  if (!is.null(ncol(object$y)) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
   }
 
@@ -243,15 +243,15 @@ run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, lower_prior, upp
     stop("Number of unknown parameters is not equal to the length of the prior vector.")
   }
 
-      out <- nguvssm_mcmc_full(object$y, object$Z, object$T, object$R,
-        object$a1, object$P1, object$phi, pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
-        lower_prior, upper_prior, n_iter,
-        nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, T_ind,
-        R_ind, object$xreg, object$beta, initial_signal(object$y, object$phi, object$distribution), seed)
+  out <- nguvssm_mcmc_full(object$y, object$Z, object$T, object$R,
+    object$a1, object$P1, object$phi, pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
+    lower_prior, upper_prior, n_iter,
+    nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, T_ind,
+    R_ind, object$xreg, object$beta, initial_signal(object$y, object$phi, object$distribution), seed)
 
-      out$alpha <- aperm(out$alpha, c(2, 1, 3))
-      colnames(out$alpha) <- names(object$a1)
-      out
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  colnames(out$alpha) <- names(object$a1)
+  out
 
   out$S <- matrix(out$S, length(lower_prior), length(lower_prior))
   if (nb) {
@@ -286,13 +286,13 @@ run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, lower_prior, upp
 #' @export
 predict.ngssm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
   newdata = NULL,
- n_ahead = 1, interval = "mean",
+  n_ahead = 1, interval = "mean",
   probs = c(0.05, 0.95),
   n_burnin = floor(n_iter / 2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S,
   seed = sample(.Machine$integer.max, size = 1),  newphi = NULL, Z_est, T_est, R_est, ...) {
 
-  if (!is.null(object$y) && ncol(object$y) > 1) {
+  if (!is.null(ncol(object$y)) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
   }
 
