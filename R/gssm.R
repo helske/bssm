@@ -244,7 +244,7 @@ smoother.gssm <- function(object, ...) {
 #' algorithm, so that the covariance matrix of the Gaussian proposal
 #' distribution is \eqn{SS'}.
 #' @param seed Seed for Boost random number generator.
-#' #' @param ... Ignored.
+#' @param ... Ignored.
 #' @export
 run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
   nsim_states = 1, type = "full", lower_prior, upper_prior,

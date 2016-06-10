@@ -17,8 +17,8 @@ public:
   void update_model(arma::vec);
   arma::vec get_theta(void);
 
-  virtual double log_likelihood(void);
-  virtual double filter(arma::mat&, arma::mat&, arma::cube&, arma::cube&);
+  double log_likelihood(void);
+  double filter(arma::mat&, arma::mat&, arma::cube&, arma::cube&);
 
 private:
   const bool slope;
@@ -30,5 +30,8 @@ private:
   const bool log_space;
 
 };
+
+arma::cube sample_states(bstsm mod, const arma::mat& theta,
+  unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds);
 
 #endif

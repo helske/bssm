@@ -1,6 +1,7 @@
 #ifndef BSSM_H
 #define BSSM_H
 
+#include <omp.h>
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(cpp11)]]

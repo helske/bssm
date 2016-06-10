@@ -148,3 +148,15 @@ List bstsm_predict(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   return model.predict(theta_lwr, theta_upr, n_iter, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval, probs);
 }
+
+// [[Rcpp::export]]
+arma::cube bstsm_sample_states(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1,
+  arma::mat& theta, unsigned int nsim_states, bool slope,
+  bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
+  unsigned int n_threads, arma::uvec seeds) {
+
+  bstsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, 1);
+
+  return sample_states(model, theta, nsim_states, n_threads, seeds);
+}

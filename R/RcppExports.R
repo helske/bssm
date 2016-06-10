@@ -41,6 +41,10 @@ bstsm_predict <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n
     .Call('bssm_bstsm_predict', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, slope, seasonal, fixed, xreg, beta, probs, seed, log_space)
 }
 
+bstsm_sample_states <- function(y, Z, H, T, R, a1, P1, theta, nsim_states, slope, seasonal, fixed, xreg, beta, n_threads, seeds) {
+    .Call('bssm_bstsm_sample_states', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta, nsim_states, slope, seasonal, fixed, xreg, beta, n_threads, seeds)
+}
+
 cholupdate <- function(L, u) {
     .Call('bssm_cholupdate', PACKAGE = 'bssm', L, u)
 }

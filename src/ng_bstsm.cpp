@@ -1,5 +1,4 @@
 #include "ng_bstsm.h"
-#include <omp.h>
 
 //general constructor
 ng_bstsm::ng_bstsm(arma::vec y, arma::mat Z, arma::cube T,

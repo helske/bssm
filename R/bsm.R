@@ -294,6 +294,9 @@ smoother.bstsm <- function(object, ...) {
 #' @method run_mcmc bstsm
 #' @rdname run_mcmc_g
 #' @param log_space Generate proposals for standard deviations in log-space. Default is \code{FALSE}.
+#' @param n_threads Number of threads for state simulation.
+#' @param thread_seeds Seeds for threads.
+#' @inheritParams run_mcmc.gssm
 #' @export
 #' @examples
 #' init_sd <- 0.1 * sd(log10(UKgas))
@@ -312,9 +315,10 @@ smoother.bstsm <- function(object, ...) {
 run_mcmc.bstsm <- function(object, n_iter, nsim_states = 1, type = "full",
   lower_prior, upper_prior, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size = 1),
-  log_space = FALSE, ...) {
+  log_space = FALSE, n_threads = 1,
+  thread_seeds = sample(.Machine$integer.max, size = n_threads), ...) {
 
-  type <- match.arg(type, c("full", "parameters", "summary"))
+  type <- match.arg(type, c("full", "parameters", "summary", "parallel"))
 
   if (missing(lower_prior)) {
     lower_prior <- object$lower_prior
@@ -352,6 +356,22 @@ run_mcmc.bstsm <- function(object, n_iter, nsim_states = 1, type = "full",
       colnames(out$alpha) <- names(object$a1)
       out
     },
+    parallel = {
+      out <- bstsm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
+        object$a1, object$P1, lower_prior, upper_prior, n_iter,
+        n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
+        object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space)
+      if (log_space && n_sd_par > 0) {
+        out$theta[, 1:n_sd_par] <- exp(out$theta[, 1:n_sd_par])
+      }
+      out$alpha <-  aperm(bstsm_sample_states(object$y, object$Z, object$H, object$T, object$R,
+        object$a1, object$P1, t(out$theta), nsim_states, object$slope,
+        object$seasonal, object$fixed, object$xreg, object$beta,
+        n_threads, thread_seeds), c(2, 1, 3))
+
+      colnames(out$alpha) <- names(object$a1)
+      out
+    },
     parameters = {
       bstsm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
@@ -370,7 +390,7 @@ run_mcmc.bstsm <- function(object, n_iter, nsim_states = 1, type = "full",
         frequency = object$period)
       out
     })
-  if (log_space && n_sd_par > 0) {
+  if (log_space && type != "parallel" && n_sd_par > 0) {
     out$theta[, 1:n_sd_par] <- exp(out$theta[, 1:n_sd_par])
   }
   out$S <- matrix(out$S, length(lower_prior), length(lower_prior))

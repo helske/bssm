@@ -76,5 +76,6 @@ public:
 
 };
 
-arma::vec simtest(guvssm);
+arma::cube sample_states(guvssm mod, const arma::mat& theta,
+  unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds);
 #endif

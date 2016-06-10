@@ -64,8 +64,7 @@ between 0 and 1 (not checked).}
 algorithm, so that the covariance matrix of the Gaussian proposal
 distribution is \eqn{SS'}.}
 
-\item{seed}{Seed for Boost random number generator.
-#' @param ... Ignored.}
+\item{seed}{Seed for Boost random number generator.}
 
 \item{log_space}{Generate proposals for standard deviations in log-space. Default is \code{FALSE}.}
 

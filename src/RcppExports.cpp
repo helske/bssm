@@ -285,6 +285,32 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// bstsm_sample_states
+arma::cube bstsm_sample_states(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::mat& theta, unsigned int nsim_states, bool slope, bool seasonal, arma::uvec fixed, arma::mat& xreg, arma::vec& beta, unsigned int n_threads, arma::uvec seeds);
+RcppExport SEXP bssm_bstsm_sample_states(SEXP ySEXP, SEXP ZSEXP, SEXP HSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP thetaSEXP, SEXP nsim_statesSEXP, SEXP slopeSEXP, SEXP seasonalSEXP, SEXP fixedSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP n_threadsSEXP, SEXP seedsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type H(HSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type T(TSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type R(RSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type a1(a1SEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type P1(P1SEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< bool >::type slope(slopeSEXP);
+    Rcpp::traits::input_parameter< bool >::type seasonal(seasonalSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type fixed(fixedSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type xreg(xregSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_threads(n_threadsSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type seeds(seedsSEXP);
+    __result = Rcpp::wrap(bstsm_sample_states(y, Z, H, T, R, a1, P1, theta, nsim_states, slope, seasonal, fixed, xreg, beta, n_threads, seeds));
+    return __result;
+END_RCPP
+}
 // cholupdate
 arma::mat cholupdate(arma::mat L, arma::vec u);
 RcppExport SEXP bssm_cholupdate(SEXP LSEXP, SEXP uSEXP) {
