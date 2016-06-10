@@ -16,15 +16,17 @@ as_gssm <- function(model, ...) {
 
 #' Kalman Filtering
 #'
-#' Kalman filtering of linear Gaussian models.
-#'
-#' \code{kfilter} runs the Kalman filter for the given model
+#' Function \code{kfilter} runs the Kalman filter for the given model
 #' (and it's parameters), and returns the filtered estimates  and
 #' one-step-ahead predictions of the states \eqn{\alpha_t} given the
 #' model parameters and data up to time \eqn{t}.
-#' @param object Object of class \code{gssm} or \code{bstsm}
+#'
+#' For non-Gaussian models, the filtering is based on the approximate Gaussian model.
+#'
+#' @param object Model object
 #' @param ... Ignored.
-#' @return List containing theone-step-ahead predictions \code{at} and filtered
+#' @return List containing the log-likelihood (approximate in non-Gaussian ce),
+#' one-step-ahead predictions \code{at} and filtered
 #' estimates \code{att} of states, and the corresponding variances \code{Pt} and
 #'  \code{Ptt}.
 #' @export

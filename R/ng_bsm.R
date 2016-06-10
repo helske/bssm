@@ -331,6 +331,24 @@ logLik.ng_bstsm <- function(object, nsim_states,
     object$init_signal, nsim_states, seed)
 }
 
+#' @method kfilter ng_bstsm
+#' @rdname kfilter
+#' @export
+kfilter.ng_bstsm <- function(object, ...) {
+
+  out <- ng_bstsm_filter(object$y, object$Z, object$T, object$R,
+    object$a1, object$P1, object$phi, object$slope, object$seasonal, object$noise,
+    object$fixed,  object$xreg, object$beta,
+    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
+    object$init_signal)
+
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <-
+    rownames(out$Ptt) <- names(object$a1)
+  out$at <- ts(out$at, start = start(object$y), frequency = object$period)
+  out$att <- ts(out$att, start = start(object$y), frequency = object$period)
+  out
+}
 #' @method run_mcmc ng_bstsm
 #' @rdname run_mcmc_ng
 #' @param log_space Generate proposals for standard deviations in log-space. Default is \code{FALSE}.

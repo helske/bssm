@@ -41,7 +41,7 @@ List ng_bstsm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
   ng_bstsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
     distribution,1);
 
-  double logLik = model.approx(init_signal, model.max_iter, model.conv_tol);
+  double logLik = model.approx(init_signal, 1000, 1e-12);
 
   arma::mat at(a1.n_elem, y.n_elem + 1);
   arma::mat att(a1.n_elem, y.n_elem);

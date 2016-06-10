@@ -151,6 +151,20 @@ logLik.ngssm <- function(object, nsim_states,
     initial_signal(object$y, object$phi, object$distribution), nsim_states, seed)
 
 }
+kfilter.ngssm <- function(object, ...) {
+
+  out <- ng_ngss_filter(object$y, object$Z, object$T, object$R,
+    object$a1, object$P1, object$phi, object$xreg, object$beta,
+    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
+    initial_signal(object$y, object$phi, object$distribution))
+
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <-
+    rownames(out$Ptt) <- names(object$a1)
+  out$at <- ts(out$at, start = start(object$y), frequency = object$period)
+  out$att <- ts(out$att, start = start(object$y), frequency = object$period)
+  out
+}
 
 #' @importFrom stats qlogis
 initial_signal <- function(y, phi, distribution) {
