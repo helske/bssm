@@ -153,7 +153,7 @@ logLik.ngssm <- function(object, nsim_states,
 }
 kfilter.ngssm <- function(object, ...) {
 
-  out <- ng_ngss_filter(object$y, object$Z, object$T, object$R,
+  out <- ngssm_filter(object$y, object$Z, object$T, object$R,
     object$a1, object$P1, object$phi, object$xreg, object$beta,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     initial_signal(object$y, object$phi, object$distribution))
