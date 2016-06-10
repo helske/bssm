@@ -614,8 +614,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // ng_bstsm_loglik
-double ng_bstsm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope, bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta, unsigned int distribution, arma::vec init_signal);
-RcppExport SEXP bssm_ng_bstsm_loglik(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP slopeSEXP, SEXP seasonalSEXP, SEXP noiseSEXP, SEXP fixedSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP distributionSEXP, SEXP init_signalSEXP) {
+double ng_bstsm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope, bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta, unsigned int distribution, arma::vec init_signal, unsigned int nsim_states, unsigned int seed);
+RcppExport SEXP bssm_ng_bstsm_loglik(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP slopeSEXP, SEXP seasonalSEXP, SEXP noiseSEXP, SEXP fixedSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP distributionSEXP, SEXP init_signalSEXP, SEXP nsim_statesSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -634,7 +634,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec& >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type distribution(distributionSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
-    __result = Rcpp::wrap(ng_bstsm_loglik(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal));
+    Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
+    __result = Rcpp::wrap(ng_bstsm_loglik(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed));
     return __result;
 END_RCPP
 }
@@ -739,8 +741,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // nguvssm_loglik
-double nguvssm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi, arma::mat& xreg, arma::vec& beta, unsigned int distribution, arma::vec init_signal);
-RcppExport SEXP bssm_nguvssm_loglik(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP distributionSEXP, SEXP init_signalSEXP) {
+double nguvssm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi, arma::mat& xreg, arma::vec& beta, unsigned int distribution, arma::vec init_signal, unsigned int nsim_states, unsigned int seed);
+RcppExport SEXP bssm_nguvssm_loglik(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP distributionSEXP, SEXP init_signalSEXP, SEXP nsim_statesSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -755,7 +757,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec& >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type distribution(distributionSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
-    __result = Rcpp::wrap(nguvssm_loglik(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init_signal));
+    Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
+    __result = Rcpp::wrap(nguvssm_loglik(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init_signal, nsim_states, seed));
     return __result;
 END_RCPP
 }

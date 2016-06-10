@@ -6,7 +6,7 @@ nguvssm::nguvssm(arma::vec y, arma::mat Z, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi, arma::mat xreg,
   arma::vec beta, unsigned int distribution, unsigned int seed) :
   guvssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, seed),
-  phi(phi), distribution(distribution), ng_y(y), max_iter(100), conv_tol(1.0e-4) {
+  phi(phi), distribution(distribution), ng_y(y), max_iter(100), conv_tol(1.0e-8) {
 }
 
 //general constructor with parameter indices
@@ -16,7 +16,7 @@ nguvssm::nguvssm(arma::vec y, arma::mat Z, arma::cube T,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
   guvssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, Z_ind,
     arma::umat(0,0), T_ind, R_ind, seed), phi(phi),
-    distribution(distribution), ng_y(y), max_iter(100), conv_tol(1.0e-4) {
+    distribution(distribution), ng_y(y), max_iter(100), conv_tol(1.0e-8) {
 }
 
 

@@ -319,13 +319,16 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 
 #' @method logLik ng_bstsm
 #' @rdname logLik
+#' @inheritParams logLik.ngssm
 #' @export
-logLik.ng_bstsm <- function(object, ...) {
+logLik.ng_bstsm <- function(object, nsim_states,
+  seed = 1, ...) {
+
   ng_bstsm_loglik(object$y, object$Z, object$T, object$R, object$a1,
     object$P1, object$phi, object$slope, object$seasonal, object$noise, object$fixed,
     object$xreg, object$beta,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
-    object$init_signal)
+    object$init_signal, nsim_states, seed)
 }
 
 #' @method run_mcmc ng_bstsm

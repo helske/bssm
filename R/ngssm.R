@@ -134,8 +134,13 @@ ngssm <- function(y, Z, T, R, a1, P1,
 
 #' @method logLik ngssm
 #' @rdname logLik
+#' @param nsim_states Number of samples for importance sampling. If 0, approximate log-likelihood is returned.
+#' @param seed Seed for Boost random number generator. Compared to other functions of the package, here the
+#' default seed is fixed (as 1) in order to work properly in optimization algorithms.
 #' @export
-logLik.ngssm <- function(object, ...) {
+logLik.ngssm <- function(object, nsim_states,
+  seed = 1, ...) {
+
   if (!is.null(ncol(object$y)) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
   }
@@ -143,7 +148,7 @@ logLik.ngssm <- function(object, ...) {
   nguvssm_loglik(object$y, object$Z, object$T, object$R, object$a1,
     object$P1, object$phi, object$xreg, object$beta,
     pmatch(object$distribution, c("poisson", "binomial")),
-    initial_signal(object$y, object$phi, object$distribution))
+    initial_signal(object$y, object$phi, object$distribution), nsim_states, seed)
 
 }
 

@@ -97,8 +97,8 @@ intervals <- function(means, sds, probs, n_ahead) {
     .Call('bssm_intervals', PACKAGE = 'bssm', means, sds, probs, n_ahead)
 }
 
-ng_bstsm_loglik <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal) {
-    .Call('bssm_ng_bstsm_loglik', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal)
+ng_bstsm_loglik <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed) {
+    .Call('bssm_ng_bstsm_loglik', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed)
 }
 
 ng_bstsm_filter <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal) {
@@ -113,8 +113,8 @@ ng_bstsm_predict2 <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, 
     .Call('bssm_ng_bstsm_predict2', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, slope, seasonal, noise, fixed, xreg, beta, init_signal, seed, log_space)
 }
 
-nguvssm_loglik <- function(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init_signal) {
-    .Call('bssm_nguvssm_loglik', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init_signal)
+nguvssm_loglik <- function(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init_signal, nsim_states, seed) {
+    .Call('bssm_nguvssm_loglik', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init_signal, nsim_states, seed)
 }
 
 nguvssm_filter <- function(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init_signal) {

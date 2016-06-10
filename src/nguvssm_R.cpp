@@ -4,13 +4,31 @@
 double nguvssm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
   arma::mat& xreg, arma::vec& beta, unsigned int distribution,
-  arma::vec init_signal) {
+  arma::vec init_signal, unsigned int nsim_states,
+  unsigned int seed) {
 
-  nguvssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution,1);
+  nguvssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, seed);
+
+  if (nsim_states == 0) {
+    model.conv_tol = 1.0e-12;
+    model.max_iter = 1000;
+  }
 
   double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
-
-  return model.log_likelihood() + ll;
+  double ll_w = 0;
+  if (nsim_states > 1) {
+    arma::cube alpha = model.sim_smoother(nsim_states);
+    double ll_approx_u = 0.0;
+    for (unsigned int t = 0; t < model.n; t++) {
+      if (arma::is_finite(model.ng_y(t))) {
+        ll_approx_u += model.ng_y(t) * init_signal(t) - model.phi(t) * exp(init_signal(t)) +
+          0.5 * pow(model.y(t) - init_signal(t), 2) / model.HH(t);
+      }
+    }
+    arma::vec weights = exp(model.importance_weights(alpha) - ll_approx_u);
+    ll_w = log(sum(weights) / nsim_states);
+  }
+  return model.log_likelihood() + ll + ll_w;
 }
 
 // [[Rcpp::export]]

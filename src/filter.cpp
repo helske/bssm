@@ -1,5 +1,5 @@
 #include "bssm.h"
-
+// stand-alone Kalman filter
 double uv_filter_update(const double y, arma::subview_col<double> Z, const double HH, const double xbeta,
   arma::subview_col<double> at, arma::mat& Pt, arma::subview_col<double> att, arma::mat& Ptt) {
   double logLik = 0;
