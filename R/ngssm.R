@@ -32,14 +32,8 @@
 ngssm <- function(y, Z, T, R, a1, P1,
   distribution, phi = 1, xreg = NULL, beta = NULL, state_names) {
 
-  if (length(dim(y)) != 2) {
-    p <- 1
-    n <- length(y)
-    dim(y) <- c(n, p)
-  } else {
-    n <- dim(y)[1]
-    p <- dim(y)[2]
-  }
+  check_y(y)
+  n <- length(y)
 
   if (p > 1) {
     stop("multivariate models are not yet supported. ")

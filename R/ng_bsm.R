@@ -66,9 +66,8 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   period = frequency(y), slope = TRUE, seasonal = frequency(y) > 1, a1, P1,
   lower_prior, upper_prior) {
 
-  if (!is.null(dim(y)[2]) && dim(y)[2] > 1) {
-    stop("Argument y must a univariate time series. ")
-  }
+  check_y(y)
+  n <- length(y)
 
   if (period == 1) {
     seasonal <- FALSE
@@ -83,12 +82,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   if (missing(sd_noise)) {
     noise <- FALSE
   } else {
-    if (length(sd_noise) != 1) {
-      stop("Argument sd_noise must be of length one. ")
-    }
-    if (sd_noise < 0) {
-      stop("Argument sd_noise must be non-negative. ")
-    }
+    check_sd(sd_noise, "noise")
     noise <- TRUE
   }
 
@@ -97,12 +91,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     fixed[1] <- 0
     sd_level <- 0
   } else {
-    if (length(sd_level) != 1) {
-      stop("Argument sd_level must be of length one. ")
-    }
-    if (sd_level < 0) {
-      stop("Argument sd_level must be non-negative. ")
-    }
+    check_sd(sd_level, "level")
   }
 
   if (slope) {
@@ -110,12 +99,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
       fixed[2] <- 0
       sd_slope <- 0
     } else {
-      if (length(sd_slope) != 1) {
-        stop("Argument sd_slope must be of length one. ")
-      }
-      if (sd_slope < 0) {
-        stop("Argument sd_slope must be non-negative. ")
-      }
+      check_sd(sd_slope, "slope")
     }
   } else sd_slope <- 0
 
@@ -124,12 +108,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
       fixed[3] <- 0
       sd_seasonal <- 0
     } else {
-      if (length(sd_seasonal) != 1) {
-        stop("Argument sd_seasonal must be of length one. ")
-      }
-      if (sd_seasonal < 0) {
-        stop("Argument sd_seasonal must be non-negative. ")
-      }
+      check_sd(sd_seasonal, "seasonal")
     }
     seasonal_names <- paste0("seasonal_", 1:(period - 1))
   } else {
@@ -137,7 +116,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     sd_seasonal <- 0
   }
 
-  n <- length(y)
+
   m <- as.integer(1L + slope + seasonal * (period - 1) + noise)
 
   if (missing(a1)) {
@@ -233,10 +212,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   if (min(lower_prior[1:(npar_R)], upper_prior[1:(npar_R)]) < 0) {
     stop("Negative value in prior boundaries for standard deviations. ")
   }
-  # if (nb && min(lower_prior[length(lower_prior)],
-  #   upper_prior[length(lower_prior)]) <= 0) {
-  #   stop("Non-positive value in prior boundaries for dispersion parameter of negative binomial distribution. ")
-  # }
+
   R <- matrix(0, m, max(1, npar_R))
 
   #level

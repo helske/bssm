@@ -37,14 +37,10 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL, beta 
   period = frequency(y), slope = TRUE, seasonal = frequency(y) > 1, a1, P1,
   lower_prior, upper_prior) {
 
+  check_y(y)
+  n <- length(y)
 
-  if (!is.null(dim(y)[2]) && dim(y)[2] > 1) {
-    stop("Argument y must a univariate time series. ")
-  }
-
-  if (length(sd_y) != 1) {
-    stop("Argument sd_y must be of length one. ")
-  }
+  check_sd(sd_y, "y")
 
   if (period == 1) {
     seasonal <- FALSE
@@ -60,9 +56,7 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL, beta 
     fixed[1] <- 0
     sd_level <- 0
   } else {
-    if (length(sd_level) != 1) {
-      stop("Argument sd_level must be of length one. ")
-    }
+    check_sd(sd_level, "level")
   }
 
   if (slope) {
@@ -70,9 +64,7 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL, beta 
       fixed[2] <- 0
       sd_slope <- 0
     } else {
-      if (length(sd_slope) != 1) {
-        stop("Argument sd_slope must be of length one. ")
-      }
+      check_sd(sd_slope, "slope")
     }
   } else sd_slope <- 0
 
@@ -81,9 +73,7 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL, beta 
       fixed[3] <- 0
       sd_seasonal <- 0
     } else {
-      if (length(sd_seasonal) != 1) {
-        stop("Argument sd_seasonal must be of length one. ")
-      }
+      check_sd(sd_seasonal, "seasonal")
     }
     seasonal_names <- paste0("seasonal_", 1:(period - 1))
   } else {
@@ -91,7 +81,7 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL, beta 
     sd_seasonal <- 0
   }
 
-  n <- length(y)
+
   m <- as.integer(1L + slope + seasonal * (period - 1))
 
   if (missing(a1)) {
@@ -157,7 +147,8 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL, beta 
     lower_prior <- c(rep(0, 1 + npar_R), rep(-Inf, length(beta)))
   }
   if (missing(upper_prior)) {
-    upper_prior <- c(rep(2 * sd(y, na.rm = TRUE), 1 + npar_R), rep(Inf, length(beta)))
+    upper_prior <- c(rep(2 * min(sd(y, na.rm = TRUE), Inf, na.rm = TRUE),
+      1 + npar_R), rep(Inf, length(beta)))
     autoprior <- TRUE
   } else autoprior <- FALSE
 

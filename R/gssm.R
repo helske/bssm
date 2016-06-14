@@ -28,14 +28,9 @@
 #' @export
 gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta = NULL, state_names) {
 
-  if (!is.null(dim(y)[2]) && dim(y)[2] > 1) {
-    stop("Only univariate time series are supported.")
-  }
+  check_y(y)
+
   n <- length(y)
-  class(y) <- "ts"
-  if (is.null(tsp(y))) {
-    tsp(y) <- c(1, n, 1)
-  }
 
   if (length(Z) == 1) {
     dim(Z) <- c(1, 1)
@@ -110,7 +105,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta = NULL, state_names) {
     names(beta) <- colnames(xreg)
   }
 
-  structure(list(y = y, Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
+  structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
     xreg = xreg, beta = beta), class = "gssm")
 }
 
