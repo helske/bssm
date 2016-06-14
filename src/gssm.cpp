@@ -712,7 +712,6 @@ List gssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
   arma::mat theta_store(npar, n_samples);
   arma::vec ll_store(n_samples);
   unsigned int j = 0;
-
   if (n_burnin == 0){
     alphahat = alphahat_i;
     for (unsigned int t = 0; t < n; t++) {
@@ -789,8 +788,8 @@ List gssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
     }
 
   }
+  Vt += Valpha / (j + 1); // Var[E(alpha)] + E[Var(alpha)]
 
-  Vt += Valpha / (j + 1);
   arma::inplace_trans(alphahat);
   arma::inplace_trans(theta_store);
   return List::create(Named("alphahat") = alphahat,

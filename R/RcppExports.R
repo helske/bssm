@@ -29,8 +29,8 @@ bsm_mcmc_param <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, 
     .Call('bssm_bsm_mcmc_param', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space)
 }
 
-bsm_mcmc_summary <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space) {
-    .Call('bssm_bsm_mcmc_summary', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space)
+bsm_mcmc_summary <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space) {
+    .Call('bssm_bsm_mcmc_summary', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space)
 }
 
 bsm_predict2 <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, slope, seasonal, fixed, xreg, beta, seed, log_space) {

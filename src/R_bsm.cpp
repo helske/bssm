@@ -107,8 +107,8 @@ List bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
 // [[Rcpp::export]]
 List bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& theta_lwr,
-  arma::vec& theta_upr, unsigned int n_iter, unsigned int n_thin,
-  unsigned int n_burnin, double gamma, double target_acceptance, arma::mat& S,
+  arma::vec& theta_upr, unsigned int n_iter, unsigned int n_burnin,
+  unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   bool slope, bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   unsigned int seed, bool log_space) {
 
