@@ -18,14 +18,7 @@ double ngssm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
   double ll_w = 0;
   if (nsim_states > 1) {
     arma::cube alpha = model.sim_smoother(nsim_states);
-    double ll_approx_u = 0.0;
-    for (unsigned int t = 0; t < model.n; t++) {
-      if (arma::is_finite(model.ng_y(t))) {
-        ll_approx_u += model.ng_y(t) * init_signal(t) - model.phi(t) * exp(init_signal(t)) +
-          0.5 * pow(model.y(t) - init_signal(t), 2) / model.HH(t);
-      }
-    }
-    arma::vec weights = exp(model.importance_weights(alpha) - ll_approx_u);
+    arma::vec weights = exp(model.importance_weights(alpha, init_signal));
     ll_w = log(sum(weights) / nsim_states);
   }
   return model.log_likelihood() + ll + ll_w;

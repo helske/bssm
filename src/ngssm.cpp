@@ -264,13 +264,7 @@ List ngssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
 
 
   if (nsim_states > 1) {
-    double ll_approx_u = 0.0;
-    for (unsigned int t = 0; t < n; t++) {
-      if (arma::is_finite(ng_y(t))) {
-        ll_approx_u += ng_y(t) * signal(t) - phi(t) * exp(signal(t)) + 0.5 * pow(y(t) - signal(t), 2) / HH(t);
-      }
-    }
-    arma::vec weights = exp(importance_weights(alpha) - ll_approx_u);
+    arma::vec weights = exp(importance_weights(alpha, signal));
     std::discrete_distribution<> sample(weights.begin(), weights.end());
     ind = sample(engine);
     ll += log(sum(weights) / nsim_states);
@@ -314,14 +308,8 @@ List ngssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
 
       // if nsim_states = 1, target hat_p(theta, alpha | y)
       if (nsim_states > 1) {
-        double ll_approx_u = 0.0;
-        for (unsigned int t = 0; t < n; t++) {
-          if (arma::is_finite(ng_y(t))) {
-            ll_approx_u += ng_y(t) * signal(t) - phi(t) * exp(signal(t)) + 0.5 * pow(y(t) - signal(t), 2) / HH(t);
-          }
-        }
         alpha_prop = sim_smoother(nsim_states);
-        arma::vec weights = exp(importance_weights(alpha_prop) - ll_approx_u);
+        arma::vec weights = exp(importance_weights(alpha_prop, signal));
         ll_prop += log(sum(weights) / nsim_states);
         std::discrete_distribution<> sample(weights.begin(), weights.end());
         ind_prop = sample(engine);
@@ -401,14 +389,8 @@ List ngssm::mcmc_da(arma::vec theta_lwr, arma::vec theta_upr,
   arma::vec signal = init_signal;
   double ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
   double ll = ll_approx + log_likelihood();
-  double ll_approx_u = 0.0;
-  for (unsigned int t = 0; t < n; t++) {
-    if (arma::is_finite(ng_y(t))) {
-      ll_approx_u += ng_y(t) * signal(t) - phi(t) * exp(signal(t)) + 0.5 * pow(y(t) - signal(t), 2) / HH(t);
-    }
-  }
   arma::cube alpha = sim_smoother(nsim_states);
-  arma::vec weights = exp(importance_weights(alpha) - ll_approx_u);
+  arma::vec weights = exp(importance_weights(alpha, signal));
   double ll_w = log(sum(weights) / nsim_states);
 
   std::discrete_distribution<> sample(weights.begin(), weights.end());
@@ -458,13 +440,7 @@ List ngssm::mcmc_da(arma::vec theta_lwr, arma::vec theta_upr,
     if (inrange && (unif(engine) < accept_prob)) {
       // simulate states
       arma::cube alpha_prop = sim_smoother(nsim_states);
-      ll_approx_u = 0.0;
-      for (unsigned int t = 0; t < n; t++) {
-        if (arma::is_finite(ng_y(t))) {
-          ll_approx_u += ng_y(t) * signal(t) - phi(t) * exp(signal(t)) + 0.5 * pow(y(t) - signal(t), 2) / HH(t);
-        }
-      }
-      arma::vec weights = exp(importance_weights(alpha_prop) - ll_approx_u);
+      arma::vec weights = exp(importance_weights(alpha_prop, signal));
       double ll_w_prop = log(sum(weights) / nsim_states);
       // delayed acceptance ratio
       double pp = std::min(1.0, exp(ll_w_prop - ll_w));
@@ -542,13 +518,7 @@ arma::mat ngssm::predict2(arma::vec theta_lwr,
   double ll_w = 0;
   if (nsim_states > 1) {
     arma::cube alpha = sim_smoother(nsim_states);
-    double ll_approx_u = 0.0;
-    for (unsigned int t = 0; t < n; t++) {
-      if (arma::is_finite(ng_y(t))) {
-        ll_approx_u += ng_y(t) * signal(t) - phi(t) * exp(signal(t)) + 0.5 * pow(y(t) - signal(t), 2) / HH(t);
-      }
-    }
-    arma::vec weights = exp(importance_weights(alpha) - ll_approx_u);
+    arma::vec weights = exp(importance_weights(alpha, signal));
     ll_w = log(sum(weights) / nsim_states);
     // sample from p(alpha | y)
     std::discrete_distribution<> sample(weights.begin(), weights.end());
@@ -652,13 +622,7 @@ arma::mat ngssm::predict2(arma::vec theta_lwr,
     if (inrange && (unif(engine) < accept_prob)) {
       if (nsim_states > 1) {
         arma::cube alpha = sim_smoother(nsim_states);
-        double ll_approx_u = 0.0;
-        for (unsigned int t = 0; t < n; t++) {
-          if (arma::is_finite(ng_y(t))) {
-            ll_approx_u += ng_y(t) * signal(t) - phi(t) * exp(signal(t)) + 0.5 * pow(y(t) - signal(t), 2) / HH(t);
-          }
-        }
-        arma::vec weights = exp(importance_weights(alpha) - ll_approx_u);
+        arma::vec weights = exp(importance_weights(alpha, signal));
         double ll_w_prop = log(sum(weights) / nsim_states);
         double pp = std::min(1.0, exp(ll_w_prop - ll_w));
         //accept_prob *= pp;
@@ -740,7 +704,7 @@ arma::mat ngssm::predict2(arma::vec theta_lwr,
 
     double change = accept_prob - target_acceptance;
     u = S * u * sqrt(std::min(1.0, npar * pow(i, -gamma)) * std::abs(change)) /
-    arma::norm(u);
+      arma::norm(u);
 
     if(change > 0) {
       S = cholupdate(S, u);
@@ -761,11 +725,38 @@ arma::mat ngssm::predict2(arma::vec theta_lwr,
   return pred_store;
 
 }
-//compute unnormalized log-weights
-arma::vec ngssm::importance_weights(const arma::cube& alphasim) {
+//compute log-weights normalized with log[p(y|alphahat)/g(y|alphahat)]
+arma::vec ngssm::importance_weights(const arma::cube& alphasim, const arma::vec& signal) {
 
   arma::vec weights(alphasim.n_slices, arma::fill::zeros);
 
+  double ll_approx_u = 0.0;
+  switch(distribution) {
+  case 1  :
+    for (unsigned int t = 0; t < n; t++) {
+      if (arma::is_finite(ng_y(t))) {
+        ll_approx_u += ng_y(t) * signal(t) - phi(t) * exp(signal(t)) +
+          0.5 * pow(y(t) - signal(t), 2) / HH(t);
+      }
+    }
+    break;
+  case 2  :
+    for (unsigned int t = 0; t < n; t++) {
+      if (arma::is_finite(ng_y(t))) {
+        ll_approx_u += ng_y(t) * signal(t) - phi(t) * log(1 + exp(signal(t))) +
+          0.5 * std::pow(y(t) - signal(t), 2) / HH(t);
+      }
+    }
+    break;
+  case 3  :
+    for (unsigned int t = 0; t < n; t++) {
+      if (arma::is_finite(ng_y(t))) {
+        ll_approx_u += ng_y(t) * signal(t) - (ng_y(t) + phi(t)) * log(phi(t) + exp(signal(t))) +
+          0.5 * std::pow(y(t) - signal(t), 2) / HH(t);
+      }
+    }
+    break;
+  }
   switch(distribution) {
   case 1  :
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
@@ -773,14 +764,8 @@ arma::vec ngssm::importance_weights(const arma::cube& alphasim) {
         if (arma::is_finite(ng_y(t))) {
           double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
             alphasim.slice(i).col(t) + xbeta(t));
-          weights(i) += ng_y(t) * simsignal  - phi(t) * exp(simsignal) + 0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
-
-          // weights(i) += R::dpois(ng_y(t), exp(signal) * phi(t), 1) -
-          //   R::dnorm(y(t), signal, H(t), 1);
-          //ng_y(t) * signal  - phi(t) * exp(signal) - R::dnorm(y(t), signal, H(t), 1) ;
-          // + log(H(t)) + 0.5 * std::pow(y(t) - signal, 2) / HH(t);
-
-
+          weights(i) += ng_y(t) * simsignal  - phi(t) * exp(simsignal) +
+            0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
         }
       }
     }
@@ -791,8 +776,8 @@ arma::vec ngssm::importance_weights(const arma::cube& alphasim) {
         if (arma::is_finite(ng_y(t))) {
           double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
             alphasim.slice(i).col(t) + xbeta(t));
-          weights(i) += R::dbinom(ng_y(t), phi(t), exp(simsignal) / (1.0 + exp(simsignal)), 1) -
-            R::dnorm(y(t), simsignal, H(t), 1);
+          weights(i) += ng_y(t) * simsignal - phi(t) * log(1 + exp(simsignal)) +
+            0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
         }
       }
     }
@@ -803,15 +788,15 @@ arma::vec ngssm::importance_weights(const arma::cube& alphasim) {
         if (arma::is_finite(ng_y(t))) {
           double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
             alphasim.slice(i).col(t) + xbeta(t));
-          weights(i) += R::dnbinom_mu(ng_y(t), phi(t), exp(simsignal), 1) -
-            R::dnorm(y(t), simsignal, H(t), 1);
+          weights(i) += ng_y(t) * simsignal - (ng_y(t) + phi(t)) * log(phi(t) + exp(simsignal)) +
+            0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
         }
       }
     }
     break;
   }
 
-  return weights;
+  return weights - ll_approx_u;
 }
 
 //compute the inverse of the link function for future observations
