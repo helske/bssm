@@ -127,7 +127,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     }
   }
   if (missing(P1)) {
-    P1 <- diag(1e5, m)
+    P1 <- diag(1e3, m)
   } else {
     if (!identical(dim(P1), c(m, m))) {
       stop("Argument P1 must be m x m matrix, where m = ", m)
@@ -161,21 +161,26 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   }
 
   if (is.null(xreg)) {
+
     xreg <- matrix(0, 0, 0)
     beta <- numeric(0)
+
   } else {
-    if (is.null(dim(xreg))) {
+    if (is.null(dim(xreg)) && length(xreg) == n) {
       xreg <- matrix(xreg, n, 1)
-    } else {
-      if (nrow(xreg) != n)
-        stop("Number of rows in xreg is not equal to the length of the series y.")
     }
+    check_xreg(xreg, n)
+
     if (is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
+
     if (missing(beta)) {
       beta <- numeric(ncol(xreg))
+    } else {
+      check_beta(beta, ncol(xreg))
     }
+
     names(beta) <- colnames(xreg)
   }
 
@@ -195,7 +200,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   init_signal <- initial_signal(y, phi, distribution)
 
   if (missing(lower_prior)) {
-    lower_prior <- c(rep(0, npar_R), rep(-1e4, length(beta) + nb))
+    lower_prior <- c(rep(0, npar_R), rep(-1e3, length(beta) + nb))
   }
 
   if (missing(upper_prior)) {
@@ -206,7 +211,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     } else {
       sds <- 2 * sd(init_signal)
     }
-    upper_prior <- c(rep(sds, npar_R), rep(1e4, length(beta) + nb))
+    upper_prior <- c(rep(sds, npar_R), rep(1e3, length(beta) + nb))
   } else autoprior <- FALSE
 
   if (min(lower_prior[1:(npar_R)], upper_prior[1:(npar_R)]) < 0) {

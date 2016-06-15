@@ -92,7 +92,7 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL, beta 
     }
   }
   if (missing(P1)) {
-    P1 <- diag(1e5, m)
+    P1 <- diag(1e3, m)
   } else {
     if (!identical(dim(P1), c(m, m))) {
       stop("Argument P1 must be m x m matrix, where m = ", m)
@@ -123,32 +123,39 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL, beta 
     diag(T[(2 + slope + 1):m, (2 + slope):(m - 1)]) <- 1
   }
   if (is.null(xreg)) {
-    xreg <- matrix(0,0,0)
+
+    xreg <- matrix(0, 0, 0)
     beta <- numeric(0)
+
   } else {
-    if (is.null(dim(xreg))) {
+
+    if (is.null(dim(xreg)) && length(xreg) == n) {
       xreg <- matrix(xreg, n, 1)
-    } else {
-      if (nrow(xreg) != n)
-        stop("Number of rows in xreg is not equal to the length of the series y.")
     }
+
+    check_xreg(xreg, n)
+
     if (is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
+
     if (missing(beta)) {
       beta <- numeric(ncol(xreg))
+    } else {
+      check_beta(beta, ncol(xreg))
     }
+
     names(beta) <- colnames(xreg)
   }
 
   npar_R <- sum(is.na(fixed) & c(TRUE, slope, seasonal))
 
   if (missing(lower_prior)) {
-    lower_prior <- c(rep(0, 1 + npar_R), rep(-Inf, length(beta)))
+    lower_prior <- c(rep(0, 1 + npar_R), rep(-1e3, length(beta)))
   }
   if (missing(upper_prior)) {
     upper_prior <- c(rep(2 * min(sd(y, na.rm = TRUE), Inf, na.rm = TRUE),
-      1 + npar_R), rep(Inf, length(beta)))
+      1 + npar_R), rep(1e3, length(beta)))
     autoprior <- TRUE
   } else autoprior <- FALSE
 

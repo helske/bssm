@@ -87,21 +87,28 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta = NULL, state_names) {
     rownames(P1) <- colnames(P1) <- state_names
 
   if (is.null(xreg)) {
-    xreg <- matrix(0,0,0)
+
+    xreg <- matrix(0, 0, 0)
     beta <- numeric(0)
+
   } else {
-    if (is.null(dim(xreg))) {
+
+    if (is.null(dim(xreg)) && length(xreg) == n) {
       xreg <- matrix(xreg, n, 1)
-    } else {
-      if (nrow(xreg) != n)
-        stop("Number of rows in xreg is not equal to the length of the series y.")
     }
+
+    check_xreg(xreg, n)
+
     if (is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
+
     if (missing(beta)) {
       beta <- numeric(ncol(xreg))
+    } else {
+      check_beta(beta, ncol(xreg))
     }
+
     names(beta) <- colnames(xreg)
   }
 

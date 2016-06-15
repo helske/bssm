@@ -35,25 +35,17 @@ ngssm <- function(y, Z, T, R, a1, P1,
   check_y(y)
   n <- length(y)
 
-  if (p > 1) {
-    stop("multivariate models are not yet supported. ")
-  }
-  if ( p > 1 && is.null(colnames(y))) {
-    colnames(y) <- paste0("Series ", 1:p)
-  }
-  class(y) <- if (p > 1) c("mts", "ts", "matrix") else "ts"
-  if (is.null(tsp(y))) {
-    tsp(y) <- c(1, n, 1)
-  }
-  if (length(Z) == 1 && p == 1) {
-    dim(Z) <- c(1, 1, 1)
+
+
+  if (length(Z) == 1) {
+    dim(Z) <- c(1, 1)
     m <- 1
   } else {
-    if ((length(Z) == 1) || !(dim(Z)[1] == p) || !dim(Z)[3] %in% c(1, NA, n))
-      stop("Argument Z must be a (p x m) matrix, (p x m x 1) or (p x m x n) array,
-        where p is the number of time series, m is the number of states. ")
-    m <- dim(Z)[2]
-    dim(Z) <- c(p, m, (n - 1) * (max(dim(Z)[3], 0, na.rm = TRUE) > 1) + 1)
+    if (!(dim(Z)[2] %in% c(1, NA, n)))
+      stop("Argument Z must be a vector of length m, or  (m x 1) or (m x n) matrix,
+        where m is the number of states and n is the length of the series. ")
+    m <- dim(Z)[1]
+    dim(Z) <- c(m, (n - 1) * (max(dim(Z)[2], 0, na.rm = TRUE) > 1) + 1)
   }
   if (length(T) == 1 && m == 1) {
     dim(T) <- c(1, 1, 1)
@@ -107,18 +99,24 @@ ngssm <- function(y, Z, T, R, a1, P1,
 
 
   if (is.null(xreg)) {
+
     xreg <- matrix(0,0,0)
     beta <- numeric(0)
+
   } else {
-    if (is.null(dim(xreg))) {
+
+    if (is.null(dim(xreg)) && length(xreg) == n) {
       xreg <- matrix(xreg, n, 1)
-    } else {
-      if (nrow(xreg) != n)
-        stop("Number of rows in xreg is not equal to the length of the series y.")
     }
+
+    check_xreg(xreg, n)
+
     if (is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    } else {
+      check_beta(beta, ncol(xreg))
     }
+
     names(beta) <- colnames(xreg)
   }
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi,
