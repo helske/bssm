@@ -28,21 +28,23 @@ arma::mat intervals(arma::mat& means, arma::mat& sds, arma::vec& probs, unsigned
 
   arma::mat intv(n_ahead, probs.n_elem);
 
-  for (unsigned int j = 0; j < probs.n_elem; j++) {
-    double guess = 0.0;
-    for (unsigned int k = 0; k < means.n_rows; k++) {
-      guess += R::qnorm(probs(j), means(k, 0), sds(k, 0), 1, 0);
-    }
-    guess /= means.n_rows;
-    for (unsigned int i = 0; i < n_ahead; i++) {
-      boost::uintmax_t maxit = 100;
+  for (unsigned int i = 0; i < n_ahead; i++) {
+    for (unsigned int j = 0; j < probs.n_elem; j++) {
+      double guess = 0.0;
+      for (unsigned int k = 0; k < means.n_rows; k++) {
+        guess += R::qnorm(probs(j), means(k, i), sds(k, i), 1, 0);
+      }
+      guess /= means.n_rows;
+      boost::uintmax_t maxit = 1000;
       objective_gaussian f(means.col(i), sds.col(i), probs(j));
-      std::pair<double, double> r = boost::math::tools::bracket_and_solve_root(f, guess, 2.0, true, tol, maxit);
-
+      std::pair<double, double> r =
+        boost::math::tools::bracket_and_solve_root(f, guess, 2.0, true, tol, maxit);
+      if(maxit >= 1000) {
+        r = boost::math::tools::bracket_and_solve_root(f, -guess, 2.0, true, tol, maxit);
+      }
       intv(i, j) = r.first + (r.second - r.first) / 2.0;
       guess = intv(i, j);
     }
   }
-
   return intv;
 }
