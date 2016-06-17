@@ -56,6 +56,56 @@ List ng_bsm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
+arma::mat ng_bsm_fast_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec &phi, bool slope,
+  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
+  unsigned int distribution, arma::vec init_signal) {
+
+  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
+    distribution, 1);
+
+  double logLik = model.approx(init_signal, 1000, 1e-12);
+
+  return model.fast_smoother().t();
+}
+
+// [[Rcpp::export]]
+arma::cube ng_bsm_sim_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec &phi, unsigned nsim, bool slope,
+  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
+  unsigned int distribution, arma::vec init_signal, unsigned int seed) {
+
+  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
+    distribution, seed);
+  double logLik = model.approx(init_signal, 1000, 1e-12);
+
+  return model.sim_smoother(nsim);
+}
+
+
+// [[Rcpp::export]]
+List ng_bsm_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec &phi, bool slope,
+  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
+  unsigned int distribution, arma::vec init_signal) {
+
+  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
+    distribution, 1);
+
+  double logLik = model.approx(init_signal, 1000, 1e-12);
+
+  arma::mat alphahat(a1.n_elem, y.n_elem);
+  arma::cube Vt(a1.n_elem, a1.n_elem, y.n_elem);
+
+  model.smoother(alphahat, Vt);
+  arma::inplace_trans(alphahat);
+
+  return List::create(
+    Named("alphahat") = alphahat,
+    Named("Vt") = Vt);
+}
+
+// [[Rcpp::export]]
 List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
   unsigned int distribution,

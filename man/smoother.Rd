@@ -35,6 +35,9 @@ computes only smoothed estimates of the states, and function
 \code{sim_smoother} performs simulation smoothing i.e. simulates the states
 from the conditional distribution \eqn{p(\alpha | y, \theta)}.
 }
+\details{
+For non-Gaussian models, the smoothing is based on the approximate Gaussian model.
+}
 \examples{
 # need to give upper_prior as we have only NA's in y...
 model <- bsm(rep(NA, 30), upper_prior = c(10, 10), sd_level = 1, sd_y = 1, slope = FALSE)

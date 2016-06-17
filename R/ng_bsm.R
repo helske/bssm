@@ -330,6 +330,50 @@ kfilter.ng_bsm <- function(object, ...) {
   out$att <- ts(out$att, start = start(object$y), frequency = object$period)
   out
 }
+
+#' @method fast_smoother ng_bsm
+#' @export
+fast_smoother.ng_bsm <- function(object, ...) {
+
+  out <- ng_bsm_fast_smoother(object$y, object$Z, object$T,
+    object$R, object$a1, object$P1, object$phi, object$slope, object$seasonal,
+    object$noise, object$fixed, object$xreg, object$beta,
+    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
+    object$init_signal)
+
+  colnames(out) <- names(object$a1)
+  ts(out, start = start(object$y), frequency = object$period)
+}
+#' @method sim_smoother ng_bsm
+#' @export
+sim_smoother.ng_bsm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
+
+  out <- ng_bsm_sim_smoother(object$y, object$Z, object$T, object$R,
+    object$a1, object$P1, object$phi, nsim, object$slope, object$seasonal,
+    object$noise, object$fixed, object$xreg, object$beta,
+    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
+    object$init_signal, seed)
+
+  rownames(out) <- names(object$a1)
+  aperm(out, c(2, 1, 3))
+}
+
+#' @method smoother ng_bsm
+#' @export
+smoother.ng_bsm <- function(object, ...) {
+
+  out <- ng_bsm_smoother(object$y, object$Z, object$T, object$R,
+    object$a1, object$P1, object$phi, object$slope, object$seasonal,
+    object$noise, object$fixed, object$xreg, object$beta,
+    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
+    object$init_signal)
+
+  colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
+  out$alphahat <- ts(out$alphahat, start = start(object$y),
+    frequency = object$period)
+  out
+}
+
 #' @method run_mcmc ng_bsm
 #' @rdname run_mcmc_ng
 #' @param log_space Generate proposals for standard deviations in log-space. Default is \code{FALSE}.

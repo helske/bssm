@@ -27,6 +27,8 @@ kfilter <- function(object, ...) {
 #' \code{sim_smoother} performs simulation smoothing i.e. simulates the states
 #' from the conditional distribution \eqn{p(\alpha | y, \theta)}.
 #'
+#' For non-Gaussian models, the smoothing is based on the approximate Gaussian model.
+#'
 #' @param object Model object.
 #' @param nsim Number of samples. Simulation smoother uses one antithetic
 #' variable, ideally making the first and second halves of the resulting array to be

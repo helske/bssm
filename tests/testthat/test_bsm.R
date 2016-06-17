@@ -32,3 +32,13 @@ test_that("results are comparable to KFAS",{
   expect_equivalent(out_KFAS$alphahat, out_bssm$alphahat)
   expect_equal(out_KFAS$V, out_bssm$Vt, tolerance = 1e-5, check.attributes = FALSE)
 })
+
+
+test_that("different smoothers give identical results",{
+  model_bssm <- bsm(log10(AirPassengers), P1 = diag(1e2,13),
+    sd_y = 0.005, sd_level = 0.01, sd_seasonal = 0.005)
+
+  expect_error(out_bssm1 <- smoother(model_bssm), NA)
+  expect_error(out_bssm2 <- fast_smoother(model_bssm), NA)
+  expect_equivalent(out_bssm2, out_bssm1$alphahat)
+})

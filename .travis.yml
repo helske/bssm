@@ -1,0 +1,12 @@
+language: r
+r:
+  - oldrel
+  - release
+  - devel
+r_packages:
+  - covr
+
+after_success:
+  - Rscript -e 'covr::codecov()'
+
+r_check_args: "--as-cran --run-dontrun"

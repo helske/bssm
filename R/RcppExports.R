@@ -93,6 +93,18 @@ ng_bsm_filter <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed
     .Call('bssm_ng_bsm_filter', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal)
 }
 
+ng_bsm_fast_smoother <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal) {
+    .Call('bssm_ng_bsm_fast_smoother', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal)
+}
+
+ng_bsm_sim_smoother <- function(y, Z, T, R, a1, P1, phi, nsim, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, seed) {
+    .Call('bssm_ng_bsm_sim_smoother', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, nsim, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, seed)
+}
+
+ng_bsm_smoother <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal) {
+    .Call('bssm_ng_bsm_smoother', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal)
+}
+
 ng_bsm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space) {
     .Call('bssm_ng_bsm_mcmc_full', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space)
 }
