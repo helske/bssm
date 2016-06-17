@@ -39,18 +39,17 @@ test_that("MCMC results are correct",{
 
   expect_error(out <- run_mcmc(model_bssm, n_iter = 5), NA)
 
-  testvalues <- structure(
-    c(-32.0549000294351, -29.7677152890342, -30.6035140701869),
-    .Dim = c(3L, 1L))
+  testvalues <- structure(c(-30.5898254659741,
+    -30.559873871786, -30.5130394688329), .Dim = c(3L, 1L))
   expect_equivalent(testvalues, out$logLik)
 
-  testvalues <- structure(c(1.92994662744397, 1.92144209410961, 1.92311870965196
+  testvalues <- structure(c(1.92994662744397, 1.91792908167773, 1.89920013178759
   ), .Dim = c(3L, 1L), .Dimnames = list(NULL, "sd_level"), mcpar = c(3,
     5, 1), class = "mcmc")
   expect_equivalent(testvalues, out$theta)
 
-  testvalues <- c(-1.88946906575704, -2.27440000655681, -0.0889180484569738,
-    -1.7798944305367, -0.516822307442448, 0.388771271837778)
+  testvalues <- c(-1.75817378464323, -2.09820472708178, 0.0321910079468918,
+    -1.78009326390443, -0.516269445583639, -0.0681578155549925)
   expect_equivalent(testvalues, out$alpha[c(1,10,20,25, 31, 60)])
 
   expect_error(out2 <- run_mcmc(model_bssm, n_iter = 5, nsim_states = 10), NA)
