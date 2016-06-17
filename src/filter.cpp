@@ -26,7 +26,7 @@ void uv_filter_predict(const arma::mat& T, const arma::mat& RR, arma::subview_co
 }
 
 
-double uv_filter(const double y, arma::subview_col<double> Z, const double HH, const double xbeta,
+double uv_filter(const double y, const arma::vec& Z, const double HH, const double xbeta,
   const arma::mat& T, const arma::mat& RR, arma::vec& at, arma::mat& Pt) {
 
   double logLik = 0;
@@ -43,7 +43,3 @@ double uv_filter(const double y, arma::subview_col<double> Z, const double HH, c
   }
   return logLik;
 }
-
-
-
-

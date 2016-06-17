@@ -113,14 +113,11 @@ arma::vec gssm::get_theta(void) {
 double gssm::log_likelihood(void) {
 
   double logLik = 0;
-
   arma::vec at = a1;
   arma::mat Pt = P1;
-
   for (unsigned int t = 0; t < n; t++) {
-    // update
-    logLik += uv_filter(y(t), Z.col(t * Ztv), HH(t * Htv),
-      xbeta(t), T.slice(t * Ttv), RR.slice(t * Rtv), at, Pt);
+    logLik += uv_filter(y(t), Z.unsafe_col(t * Ztv), HH(t * Htv),
+      xbeta(t), T.slice(t * Ttv), T.slice(t * Rtv), at, Pt);
   }
   return logLik;
 }
@@ -886,7 +883,7 @@ List gssm::predict(arma::vec theta_lwr,
     }
     double change = accept_prob - target_acceptance;
     u = S * u * sqrt(std::min(1.0, npar * pow(i, -gamma)) * std::abs(change)) /
-    arma::norm(u);
+      arma::norm(u);
 
     if(change > 0) {
       S = cholupdate(S, u);
@@ -1018,7 +1015,7 @@ arma::mat gssm::predict2(arma::vec theta_lwr,
 
     double change = accept_prob - target_acceptance;
     u = S * u * sqrt(std::min(1.0, npar * pow(i, -gamma)) * std::abs(change)) /
-    arma::norm(u);
+      arma::norm(u);
 
     if(change > 0) {
       S = cholupdate(S, u);

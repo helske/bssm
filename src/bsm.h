@@ -22,9 +22,9 @@ public:
   // extract theta from the model
   arma::vec get_theta(void);
 
-  // log-likelihood of the approximating Gaussian model
+  // log-likelihood
   double log_likelihood(void);
-  // Kalman filtering based on the approximating Gaussian model
+  // Kalman filtering
   double filter(arma::mat&, arma::mat&, arma::cube&, arma::cube&);
 
 private:

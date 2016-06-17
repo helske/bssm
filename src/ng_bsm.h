@@ -19,6 +19,9 @@ public:
   void update_model(arma::vec);
   arma::vec get_theta(void);
 
+  // log-likelihood of the approximating Gaussian model
+  double log_likelihood(void);
+
 private:
   const bool slope;
   const bool seasonal;

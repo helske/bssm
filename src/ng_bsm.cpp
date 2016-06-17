@@ -121,3 +121,16 @@ arma::vec ng_bsm::get_theta(void) {
   return theta;
 }
 
+// from approximating model
+double ng_bsm::log_likelihood(void) {
+
+  double logLik = 0;
+  arma::vec at = a1;
+  arma::mat Pt = P1;
+  for (unsigned int t = 0; t < n; t++) {
+    logLik += uv_filter(y(t), Z.unsafe_col(0), HH(t),
+      xbeta(t), T.slice(0), RR.slice(0), at, Pt);
+  }
+  return logLik;
+}
+

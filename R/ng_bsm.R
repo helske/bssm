@@ -45,7 +45,7 @@
 #'   xreg = Seatbelts[, "law"])
 #' \dontrun{
 #' set.seed(123)
-#' mcmc_out <- run_mcmc(model, n_iter = 5000)
+#' mcmc_out <- run_mcmc(model, n_iter = 5000, nsim = 100)
 #' mcmc_out$acceptance_rate
 #' plot(mcmc_out$theta)
 #' summary(mcmc_out$theta)
@@ -368,10 +368,14 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1,
       sd_init <- abs(log(sd_init))
     }
     S <- diag(pmin(c(rep(0.1 * sd_init, length.out = n_sd_par),
-      pmax(1, abs(object$beta)), if(nb) 1),
+      pmax(1, abs(object$beta)), if (nb) 1),
       abs(upper_prior - lower_prior)), length(lower_prior))
   }
-
+  if (nsim_states < 2) {
+    #approximate inference
+    method <- "standard"
+    nsim_states <- 1
+  }
   out <- switch(method,
     standard = {
       out <- ng_bsm_mcmc_full(object$y, object$Z, object$T, object$R,

@@ -107,15 +107,12 @@ double bsm::log_likelihood(void) {
   double logLik = 0;
   arma::vec at = a1;
   arma::mat Pt = P1;
-
   for (unsigned int t = 0; t < n; t++) {
-    // update
-    logLik += uv_filter(y(t), Z.col(0), HH(0),
+    logLik += uv_filter(y(t), Z.unsafe_col(0), HH(0),
       xbeta(t), T.slice(0), RR.slice(0), at, Pt);
   }
   return logLik;
 }
-
 
 double bsm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
   arma::cube& Ptt) {
@@ -134,7 +131,6 @@ double bsm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
       Ptt.slice(t), at.col(t + 1),  Pt.slice(t + 1));
   }
   return logLik;
-
 }
 
 
