@@ -10,7 +10,7 @@ See [vignette](http://helske.github.io/pdfs/bssm.pdf) for details and examples.
 
 Current Status
 ==========================================================================
-Under heavy development. You can install the latest development version by using the devtools package:
+Under development. You can install the latest development version by using the devtools package:
 
 ```R
 install.packages("devtools")
