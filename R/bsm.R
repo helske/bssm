@@ -355,18 +355,15 @@ run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
       out
     },
     parallel = {
-      out <- bsm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
+      out <- bsm_mcmc_parallel_full(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
-        object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space)
+        object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space,
+        nsim_states, n_threads, thread_seeds)
       if (log_space && n_sd_par > 0) {
         out$theta[, 1:n_sd_par] <- exp(out$theta[, 1:n_sd_par])
       }
-      out$alpha <-  aperm(bsm_sample_states(object$y, object$Z, object$H, object$T, object$R,
-        object$a1, object$P1, t(out$theta), nsim_states, object$slope,
-        object$seasonal, object$fixed, object$xreg, object$beta,
-        n_threads, thread_seeds), c(2, 1, 3))
-
+      out$alpha <-  aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
       out
     },

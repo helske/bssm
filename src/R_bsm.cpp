@@ -111,7 +111,7 @@ List bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat& S, bool slope,
   bool seasonal, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int seed, bool log_space) {
+  unsigned int seed, bool log_space, bool sample_states) {
 
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
 
@@ -131,6 +131,36 @@ List bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
     Named("S") = S,  Named("logLik") = ll_store);
 }
 
+
+// [[Rcpp::export]]
+List bsm_mcmc_parallel_full(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1,
+  arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter,
+  unsigned int n_burnin, unsigned int n_thin,
+  double gamma, double target_acceptance, arma::mat& S, bool slope,
+  bool seasonal, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
+  unsigned int seed, bool log_space, unsigned int nsim_states,
+  unsigned int n_threads, arma::uvec seeds) {
+
+  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
+
+  unsigned int npar = theta_lwr.n_elem;
+  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+  arma::mat theta_store(npar, n_samples);
+  arma::vec ll_store(n_samples);
+
+  double acceptance_rate = model.mcmc_param(theta_lwr, theta_upr, n_iter,
+    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store);
+
+  arma::cube alpha = sample_states(model, theta_store, nsim_states, n_threads, seeds);
+
+  arma::inplace_trans(theta_store);
+
+  return List::create(Named("alpha") = alpha,
+    Named("theta") = theta_store,
+    Named("acceptance_rate") = acceptance_rate,
+    Named("S") = S,  Named("logLik") = ll_store);
+}
 
 // [[Rcpp::export]]
 List bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
