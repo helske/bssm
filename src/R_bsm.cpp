@@ -85,8 +85,23 @@ List bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
 
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
 
-  return model.mcmc_full(theta_lwr, theta_upr, n_iter, nsim_states, n_burnin,
-    n_thin, gamma, target_acceptance, S);
+  unsigned int npar = theta_lwr.n_elem;
+  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+  arma::mat theta_store(npar, n_samples);
+  arma::cube alpha_store(model.m, model.n, nsim_states * n_samples);
+  arma::vec ll_store(n_samples);
+
+  double acceptance_rate = model.mcmc_full(theta_lwr, theta_upr, n_iter,
+    nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, alpha_store,
+    theta_store, ll_store);
+
+  arma::inplace_trans(theta_store);
+
+  return List::create(Named("alpha") = alpha_store,
+    Named("theta") = theta_store,
+    Named("acceptance_rate") = acceptance_rate,
+    Named("S") = S,  Named("logLik") = ll_store);
+
 }
 
 // [[Rcpp::export]]
@@ -99,8 +114,21 @@ List bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   unsigned int seed, bool log_space) {
 
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
-  return model.mcmc_param(theta_lwr, theta_upr, n_iter, n_burnin,
-    n_thin, gamma, target_acceptance, S);
+
+  unsigned int npar = theta_lwr.n_elem;
+  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+  arma::mat theta_store(npar, n_samples);
+  arma::vec ll_store(n_samples);
+
+  double acceptance_rate = model.mcmc_param(theta_lwr, theta_upr, n_iter,
+    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store);
+
+  arma::inplace_trans(theta_store);
+
+  return List::create(
+    Named("theta") = theta_store,
+    Named("acceptance_rate") = acceptance_rate,
+    Named("S") = S,  Named("logLik") = ll_store);
 }
 
 
@@ -113,8 +141,23 @@ List bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   unsigned int seed, bool log_space) {
 
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
-  return model.mcmc_summary(theta_lwr, theta_upr, n_iter, n_burnin, n_thin,
-    gamma, target_acceptance, S);
+
+  unsigned int npar = theta_lwr.n_elem;
+  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+  arma::mat theta_store(npar, n_samples);
+  arma::vec ll_store(n_samples);
+  arma::mat alphahat(model.m, model.n, arma::fill::zeros);
+  arma::cube Vt(model.m, model.m, model.n, arma::fill::zeros);
+
+  double acceptance_rate = model.mcmc_summary(theta_lwr, theta_upr, n_iter, n_burnin, n_thin,
+    gamma, target_acceptance, S, alphahat, Vt, theta_store, ll_store);
+
+  arma::inplace_trans(alphahat);
+  arma::inplace_trans(theta_store);
+  return List::create(Named("alphahat") = alphahat,
+    Named("Vt") = Vt, Named("theta") = theta_store,
+    Named("acceptance_rate") = acceptance_rate,
+    Named("S") = S,  Named("logLik") = ll_store);
 }
 
 

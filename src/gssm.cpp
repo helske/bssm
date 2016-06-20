@@ -487,16 +487,14 @@ void gssm::smoother(arma::mat& at, arma::cube& Pt) {
 }
 
 
-List gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
+double gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin,
-  unsigned int n_thin, double gamma, double target_acceptance, arma::mat S) {
+  unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
+  arma::cube& alpha_store, arma::mat& theta_store, arma::vec& ll_store) {
 
   unsigned int npar = theta_lwr.n_elem;
 
-  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
-  arma::mat theta_store(npar, n_samples);
-  arma::cube alpha_store(m, n, nsim_states * n_samples);
-  arma::vec ll_store(n_samples);
+  unsigned int n_samples = ll_store.n_elem;
   double acceptance_rate = 0.0;
 
   arma::vec theta = get_theta();
@@ -581,25 +579,25 @@ List gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
     }
 
   }
-  arma::inplace_trans(theta_store);
-
-  return List::create(Named("alpha") = alpha_store,
-    Named("theta") = theta_store,
-    Named("acceptance_rate") = acceptance_rate / (n_iter - n_burnin),
-    Named("S") = S,  Named("logLik") = ll_store);
-
+  // arma::inplace_trans(theta_store);
+  //
+  // return List::create(Named("alpha") = alpha_store,
+  //   Named("theta") = theta_store,
+  //   Named("acceptance_rate") = acceptance_rate / (n_iter - n_burnin),
+  //   Named("S") = S,  Named("logLik") = ll_store);
+  return acceptance_rate / (n_iter - n_burnin);
 }
 
 
-List gssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
+double gssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int n_burnin,
-  unsigned int n_thin, double gamma, double target_acceptance, arma::mat S) {
+  unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
+  arma::mat& theta_store, arma::vec& ll_store) {
 
   unsigned int npar = theta_lwr.n_elem;
 
-  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
-  arma::mat theta_store(npar, n_samples);
-  arma::vec ll_store(n_samples);
+  unsigned int n_samples = ll_store.n_elem;
+
   double acceptance_rate = 0.0;
 
   arma::vec theta = get_theta();
@@ -677,123 +675,43 @@ List gssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
     }
 
   }
-  arma::inplace_trans(theta_store);
-  return List::create(Named("theta") = theta_store,
-    Named("acceptance_rate") = acceptance_rate / (n_iter - n_burnin),
-    Named("S") = S,  Named("logLik") = ll_store);
+  return acceptance_rate / (n_iter - n_burnin);
 
 }
 
-List gssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
+double gssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int n_burnin,
-  unsigned int n_thin, double gamma, double target_acceptance, arma::mat S) {
+  unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
+  arma::mat& alphahat, arma::cube& Vt, arma::mat& theta_store,
+  arma::vec& ll_store) {
 
   unsigned int npar = theta_lwr.n_elem;
-  arma::vec theta = get_theta();
+  unsigned int n_samples = ll_store.n_elem;
 
-  arma::mat alphahat(m, n, arma::fill::zeros);
-  arma::cube Vt(m, m, n, arma::fill::zeros);
+  double acceptance_rate = mcmc_param(theta_lwr, theta_upr, n_iter,
+    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store);
+
   arma::cube Valpha(m, m, n, arma::fill::zeros);
-
   arma::mat alphahat_i(m, n, arma::fill::zeros);
   arma::cube Vt_i(m, m, n, arma::fill::zeros);
 
-  smoother(alphahat_i, Vt_i);
+  arma::vec theta = theta_store.col(0);
+  update_model(theta);
 
-  double ll = log_likelihood();
-
-  double acceptance_rate = 0.0;
-  double accept_prob = 0;
-  double ll_prop = 0;
-
-  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
-  arma::mat theta_store(npar, n_samples);
-  arma::vec ll_store(n_samples);
-  unsigned int j = 0;
-  if (n_burnin == 0){
-    alphahat = alphahat_i;
+  for (unsigned int i = 0; i < n_samples; i++) {
+    arma::vec theta = theta_store.col(i);
+    update_model(theta);
+    smoother(alphahat_i, Vt_i);
+    arma::mat diff = (alphahat_i - alphahat);
+    alphahat += diff / (i + 1);
     for (unsigned int t = 0; t < n; t++) {
-      Valpha.slice(t) = alphahat_i.col(t) * alphahat_i.col(t).t();
+      Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
     }
-    Vt = Vt_i;
-    theta_store.col(0) = theta;
-    ll_store(0) = ll;
-    acceptance_rate++;
-    j++;
+    Vt += (Vt_i - Vt) / (i + 1);
   }
-  std::normal_distribution<> normal(0.0, 1.0);
-  std::uniform_real_distribution<> unif(0.0, 1.0);
-  for (unsigned int i = 1; i < n_iter; i++) {
-    // sample from standard normal distribution
-    arma::vec u(npar);
-    for(unsigned int ii = 0; ii < npar; ii++) {
-      u(ii) = normal(engine);
-    }
-    // propose new theta
-    arma::vec theta_prop = theta + S * u;
-    // check prior
-    bool inrange = sum(theta_prop >= theta_lwr && theta_prop <= theta_upr) == npar;
+  Vt += Valpha / (n_samples); // Var[E(alpha)] + E[Var(alpha)]
 
-
-    if (inrange) {
-      // update parameters
-      update_model(theta_prop);
-      // compute log-likelihood with proposed theta
-      ll_prop = log_likelihood();
-      //compute the acceptance probability
-      // use explicit min(...) as we need this value later
-      double q = proposal(theta, theta_prop);
-      accept_prob = std::min(1.0, exp(ll_prop - ll + q));
-    } else accept_prob = 0;
-
-    //accept
-    if (inrange && unif(engine) < accept_prob) {
-      if (i >= n_burnin) {
-        acceptance_rate++;
-      }
-      ll = ll_prop;
-      theta = theta_prop;
-      smoother(alphahat_i, Vt_i);
-    }
-
-    if ((i >= n_burnin) && (i % n_thin == 0)) {
-      theta_store.col(j) = theta;
-      ll_store(j) = ll;
-      arma::mat diff = (alphahat_i - alphahat);
-      alphahat += diff / (j + 1);
-      for (unsigned int t = 0; t < n; t++) {
-        Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
-      }
-      Vt += (Vt_i - Vt) / (j + 1);
-      j++;
-    }
-
-    double change = accept_prob - target_acceptance;
-    u = S * u / arma::norm(u) * sqrt(std::min(1.0, npar * pow(i, -gamma)) * std::abs(change));
-
-    if(change > 0) {
-      S = cholupdate(S, u);
-
-    } else {
-      if(change < 0){
-        //update S unless numerical problems occur
-        arma::mat Stmp = choldowndate(S, u);
-        arma::uvec cond = arma::find(arma::diagvec(Stmp) < 0);
-        if (cond.n_elem == 0) {
-          S = Stmp;
-        }
-      }
-    }
-
-  }
-  Vt += Valpha / (j + 1); // Var[E(alpha)] + E[Var(alpha)]
-
-  arma::inplace_trans(alphahat);
-  arma::inplace_trans(theta_store);
-  return List::create(Named("alphahat") = alphahat,
-    Named("Vt") = Vt, Named("theta") = theta_store,
-    Named("acceptance_rate") = acceptance_rate / (n_iter - n_burnin),
-    Named("S") = S,  Named("logLik") = ll_store);
+  return acceptance_rate;
 }
 
 List gssm::predict(arma::vec theta_lwr,

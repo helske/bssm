@@ -28,12 +28,15 @@ public:
   virtual arma::cube sim_smoother(unsigned int);
   virtual void smoother(arma::mat&, arma::cube&);
 
-  virtual List mcmc_full(arma::vec, arma::vec, unsigned int, unsigned int,
-    unsigned int, unsigned int, double, double, arma::mat);
-  virtual List mcmc_param(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, double, double, arma::mat);
-  virtual List mcmc_summary(arma::vec, arma::vec, unsigned int, unsigned int,
-    unsigned int, double, double, arma::mat);
+  virtual double mcmc_full(arma::vec, arma::vec, unsigned int, unsigned int,
+    unsigned int, unsigned int, double, double, arma::mat&,
+    arma::cube&, arma::mat&, arma::vec&);
+  virtual double mcmc_param(arma::vec, arma::vec, unsigned int,
+    unsigned int, unsigned int, double, double, arma::mat&,
+    arma::mat&, arma::vec&);
+  virtual double mcmc_summary(arma::vec, arma::vec, unsigned int, unsigned int,
+    unsigned int, double, double, arma::mat&, arma::mat&, arma::cube&,
+    arma::mat&, arma::vec&);
   virtual arma::mat predict2(arma::vec, arma::vec, unsigned int, unsigned int,
     unsigned int, unsigned int, double, double, arma::mat, unsigned int,
     unsigned int);

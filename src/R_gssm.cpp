@@ -4,9 +4,9 @@
 double gssm_loglik(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::mat& xreg, arma::vec& beta) {
 
- gssm model(y, Z, H, T, R, a1, P1, xreg, beta, 1);
+  gssm model(y, Z, H, T, R, a1, P1, xreg, beta, 1);
 
- return model.log_likelihood();
+  return model.log_likelihood();
 }
 
 // [[Rcpp::export]]
@@ -73,14 +73,29 @@ List gssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1,
   arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
-  double gamma, double target_acceptance, arma::mat& S, arma::uvec Z_ind,
+  double gamma, double target_acceptance, arma::mat S, arma::uvec Z_ind,
   arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg,
   arma::vec& beta, unsigned int seed) {
 
   gssm model(y, Z, H, T, R, a1, P1, xreg, beta, Z_ind, H_ind, T_ind, R_ind, seed);
 
-  return model.mcmc_full(theta_lwr, theta_upr, n_iter, nsim_states, n_burnin,
-    n_thin, gamma, target_acceptance, S);
+  unsigned int npar = theta_lwr.n_elem;
+  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+  arma::mat theta_store(npar, n_samples);
+  arma::cube alpha_store(model.m, model.n, nsim_states * n_samples);
+  arma::vec ll_store(n_samples);
+
+  double acceptance_rate = model.mcmc_full(theta_lwr, theta_upr, n_iter,
+    nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, alpha_store,
+    theta_store, ll_store);
+
+  arma::inplace_trans(theta_store);
+
+  return List::create(Named("alpha") = alpha_store,
+    Named("theta") = theta_store,
+    Named("acceptance_rate") = acceptance_rate,
+    Named("S") = S,  Named("logLik") = ll_store);
+
 }
 
 // [[Rcpp::export]]
@@ -88,29 +103,54 @@ List gssm_mcmc_param(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1,
   arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter,
   unsigned int n_burnin, unsigned int n_thin,
-  double gamma, double target_acceptance, arma::mat& S, arma::uvec Z_ind,
+  double gamma, double target_acceptance, arma::mat S, arma::uvec Z_ind,
   arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg,
   arma::vec& beta, unsigned int seed) {
 
   gssm model(y, Z, H, T, R, a1, P1, xreg, beta, Z_ind, H_ind, T_ind, R_ind, seed);
 
-  return model.mcmc_param(theta_lwr, theta_upr, n_iter, n_burnin,
-    n_thin, gamma, target_acceptance, S);
-}
+  unsigned int npar = theta_lwr.n_elem;
+  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+  arma::mat theta_store(npar, n_samples);
+  arma::vec ll_store(n_samples);
 
+  double acceptance_rate = model.mcmc_param(theta_lwr, theta_upr, n_iter,
+    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store);
+
+  arma::inplace_trans(theta_store);
+
+  return List::create(
+    Named("theta") = theta_store,
+    Named("acceptance_rate") = acceptance_rate,
+    Named("S") = S,  Named("logLik") = ll_store);
+}
 
 // [[Rcpp::export]]
 List gssm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& theta_lwr,
   arma::vec& theta_upr, unsigned int n_iter, unsigned int n_thin,
-  unsigned int n_burnin, double gamma, double target_acceptance, arma::mat& S,
+  unsigned int n_burnin, double gamma, double target_acceptance, arma::mat S,
   arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind,
   arma::mat& xreg, arma::vec& beta, unsigned int seed) {
 
   gssm model(y, Z, H, T, R, a1, P1, xreg, beta, Z_ind, H_ind, T_ind, R_ind, seed);
 
-  return model.mcmc_summary(theta_lwr, theta_upr, n_iter, n_burnin, n_thin,
-    gamma, target_acceptance, S);
+  unsigned int npar = theta_lwr.n_elem;
+  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+  arma::mat theta_store(npar, n_samples);
+  arma::vec ll_store(n_samples);
+  arma::mat alphahat(model.m, model.n, arma::fill::zeros);
+  arma::cube Vt(model.m, model.m, model.n, arma::fill::zeros);
+
+  double acceptance_rate = model.mcmc_summary(theta_lwr, theta_upr, n_iter, n_burnin, n_thin,
+    gamma, target_acceptance, S, alphahat, Vt, theta_store, ll_store);
+
+  arma::inplace_trans(alphahat);
+  return List::create(Named("alphahat") = alphahat,
+    Named("Vt") = Vt, Named("theta") = theta_store,
+    Named("acceptance_rate") = acceptance_rate,
+    Named("S") = S,  Named("logLik") = ll_store);
+
 }
 
 
