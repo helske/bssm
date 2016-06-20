@@ -129,7 +129,7 @@ double ng_bsm::log_likelihood(void) {
   arma::mat Pt = P1;
   for (unsigned int t = 0; t < n; t++) {
     logLik += uv_filter(y(t), Z.unsafe_col(0), HH(t),
-      xbeta(t), T.slice(0), RR.slice(0), at, Pt);
+      xbeta(t), T.slice(0), RR.slice(0), at, Pt, zero_tol);
   }
   return logLik;
 }

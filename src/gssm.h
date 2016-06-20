@@ -35,8 +35,8 @@ public:
   virtual List mcmc_summary(arma::vec, arma::vec, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat);
   virtual arma::mat predict2(arma::vec, arma::vec, unsigned int, unsigned int,
-     unsigned int, unsigned int, double, double, arma::mat, unsigned int,
-     unsigned int);
+    unsigned int, unsigned int, double, double, arma::mat, unsigned int,
+    unsigned int);
   virtual List predict(arma::vec, arma::vec, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat, unsigned int,
     unsigned int, arma::vec);
@@ -73,7 +73,7 @@ public:
   arma::uvec T_ind;
   arma::uvec R_ind;
   std::mt19937 engine;
-
+  const double zero_tol;
 };
 
 arma::cube sample_states(gssm mod, const arma::mat& theta,

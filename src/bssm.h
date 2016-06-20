@@ -19,14 +19,14 @@ arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& pro
 
 double uv_filter_update(const double y, arma::subview_col<double> Z, const double HH,
   const double xbeta, arma::subview_col<double> at, arma::mat& Pt,
-  arma::subview_col<double> att, arma::mat& Ptt);
+  arma::subview_col<double> att, arma::mat& Ptt, const double zero_tol);
 
 void uv_filter_predict(const arma::mat& T, const arma::mat& RR,
   arma::subview_col<double> att, arma::mat& Ptt,
   arma::subview_col<double> at, arma::mat& Pt);
 
 double uv_filter(const double y, const arma::vec& Z, const double HH, const double xbeta,
-  const arma::mat& T, const arma::mat& RR, arma::vec& at, arma::mat& Pt);
+  const arma::mat& T, const arma::mat& RR, arma::vec& at, arma::mat& Pt, const double zero_tol);
 
 
 #endif
