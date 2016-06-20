@@ -695,9 +695,6 @@ double gssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
   arma::mat alphahat_i(m, n, arma::fill::zeros);
   arma::cube Vt_i(m, m, n, arma::fill::zeros);
 
-  arma::vec theta = theta_store.col(0);
-  update_model(theta);
-
   for (unsigned int i = 0; i < n_samples; i++) {
     arma::vec theta = theta_store.col(i);
     update_model(theta);
@@ -709,7 +706,7 @@ double gssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
     }
     Vt += (Vt_i - Vt) / (i + 1);
   }
-  Vt += Valpha / (n_samples); // Var[E(alpha)] + E[Var(alpha)]
+  Vt += Valpha / n_samples; // Var[E(alpha)] + E[Var(alpha)]
 
   return acceptance_rate;
 }
