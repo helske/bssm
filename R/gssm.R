@@ -357,7 +357,7 @@ run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
 #' @export
 predict.gssm <- function(object, n_iter, lower_prior, upper_prior, newdata = NULL,
   n_ahead = 1, interval = "response",
-  probs = c(0.05, 0.95), method = "parametric", return_MCSE = TRUE, nsim_states = 1,
+  probs = c(0.05, 0.95), method = "quantile", return_MCSE = TRUE, nsim_states = 1,
   n_burnin = floor(n_iter / 2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, Z_est, H_est, T_est, R_est,
   seed = sample(.Machine$integer.max, size = 1), ...) {

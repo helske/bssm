@@ -6,7 +6,7 @@ using namespace Rcpp;
 
 
 struct objective_gaussian {
-  objective_gaussian(arma::vec means, arma::vec sds, double prob) : means(means), sds(sds), prob(prob) {}
+  objective_gaussian(const arma::vec& means, const arma::vec& sds, double prob) : means(means), sds(sds), prob(prob) {}
 
   double operator()(double b) const {
     return sum(pnorm(as<NumericVector>(wrap((b - means)/sds))))/means.n_elem - prob;
@@ -21,7 +21,7 @@ private:
 // [[Rcpp::depends(BH)]]
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
-arma::mat intervals(arma::mat& means, arma::mat& sds, arma::vec& probs, unsigned int n_ahead) {
+arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead) {
 
   int digits = std::numeric_limits<double>::digits;
   boost::math::tools::eps_tolerance<double> tol(digits);

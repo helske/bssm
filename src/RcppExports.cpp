@@ -31,14 +31,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // intervals
-arma::mat intervals(arma::mat& means, arma::mat& sds, arma::vec& probs, unsigned int n_ahead);
+arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
 RcppExport SEXP bssm_intervals(SEXP meansSEXP, SEXP sdsSEXP, SEXP probsSEXP, SEXP n_aheadSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< arma::mat& >::type means(meansSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type sds(sdsSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type probs(probsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type sds(sdsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type n_ahead(n_aheadSEXP);
     __result = Rcpp::wrap(intervals(means, sds, probs, n_ahead));
     return __result;

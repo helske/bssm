@@ -15,7 +15,7 @@ arma::mat cholupdate(arma::mat L, arma::vec u);
 
 arma::mat choldowndate(arma::mat L, arma::vec u);
 
-arma::mat intervals(arma::mat& means, arma::mat& sds, arma::vec& probs, unsigned int n_ahead);
+arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
 
 double uv_filter_update(const double y, arma::subview_col<double> Z, const double HH,
   const double xbeta, arma::subview_col<double> at, arma::mat& Pt,
