@@ -643,7 +643,7 @@ arma::mat ngssm::predict2(arma::vec theta_lwr,
       }
     }
     if ((i >= n_burnin) && (i % n_thin == 0)) {
-
+      update_model(theta);
       for (unsigned int ii = j * nsim_states; ii < (j + 1) * nsim_states; ii++) {
         for (unsigned int t = 0; t < n_ahead; t++) {
           pred_store(t, ii) = arma::as_scalar(Z.col(Ztv * (n - n_ahead + t)).t() *
@@ -651,7 +651,6 @@ arma::mat ngssm::predict2(arma::vec theta_lwr,
         }
       }
       if(xreg.n_cols > 0) {
-        update_model(theta);
         for (unsigned int ii = j * nsim_states; ii < (j + 1) * nsim_states; ii++) {
           pred_store.col(ii) += xbeta.subvec(n - n_ahead, n - 1);
         }
