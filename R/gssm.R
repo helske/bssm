@@ -455,7 +455,7 @@ predict.gssm <- function(object, n_iter, lower_prior, upper_prior, newdata = NUL
       Z_ind, H_ind, T_ind, R_ind, object$xreg, object$beta, seed)
 
     pred <- list(y = object$y, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
-      intervals = ts(t(apply(out, 1, quantile, probs, type = 9)), end = endtime, frequency = object$period,
+      intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = object$period,
         names = paste0(100 * probs, "%")))
 
   }

@@ -483,7 +483,7 @@ predict.bsm <- function(object, n_iter, lower_prior, upper_prior, newdata = NULL
       object$slope, object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space)
 
     pred <- list(y = object$y, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
-      intervals = ts(t(apply(out, 1, quantile, probs, type = 9)), end = endtime, frequency = object$period,
+      intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = object$period,
         names = paste0(100 * probs, "%")))
   }
   class(pred) <- "predict_bssm"

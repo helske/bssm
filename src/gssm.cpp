@@ -857,7 +857,7 @@ arma::mat gssm::predict2(arma::vec theta_lwr,
     }
     if (interval == 2) {
       for (unsigned int t = 0; t < n_ahead; t++) {
-        arma::vec u2(nsim_states);
+        arma::rowvec u2(nsim_states);
         for(unsigned int ii = 0; ii < nsim_states; ii++) {
           u2(ii) = normal(engine);
         }
@@ -918,7 +918,7 @@ arma::mat gssm::predict2(arma::vec theta_lwr,
       }
       if (interval == 2) {
         for (unsigned int t = 0; t < n_ahead; t++) {
-          arma::vec u2(nsim_states);
+          arma::rowvec u2(nsim_states);
           for(unsigned int ii = 0; ii < nsim_states; ii++) {
             u2(ii) = normal(engine);
           }
