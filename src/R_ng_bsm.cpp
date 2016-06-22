@@ -111,22 +111,50 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   unsigned int distribution,
   arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
-  double gamma, double target_acceptance, arma::mat& S, bool slope,
+  double gamma, double target_acceptance, arma::mat S, bool slope,
   bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  arma::vec& init_signal, unsigned int method, unsigned int seed, bool log_space) {
+  arma::vec& init_signal, unsigned int method, unsigned int seed, bool log_space,
+  unsigned int n_threads, arma::uvec seeds) {
 
 
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
     distribution, seed, log_space);
 
-  if (method == 1) {
+  switch(method) {
+  case 1 :
     return model.mcmc_full(theta_lwr, theta_upr, n_iter,
       nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal);
-  } else {
+    break;
+  case 2 :
     return model.mcmc_da(theta_lwr, theta_upr, n_iter,
       nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal);
+  break;
+  case 3 :
+    unsigned int npar = theta_lwr.n_elem;
+    unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+    arma::mat theta_store(npar, n_samples);
+    arma::vec ll_store(n_samples);
+    arma::mat y_store(model.n, n_samples);
+    arma::mat H_store(model.n, n_samples);
+    arma::vec ll_approx_u_store(n_samples);
+    
+    double acceptance_rate = model.mcmc_approx(theta_lwr, theta_upr, n_iter,
+      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, 
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store);
+    
+    arma::vec weights_store(n_iter);
+    arma::cube alpha_store(model.m, model.n, n_iter);
+    
+    is_correction(model, theta_store, y_store, H_store, ll_approx_u_store, nsim_states, n_threads, seeds, weights_store, alpha_store);
+    
+    arma::inplace_trans(theta_store);
+    return List::create(Named("alpha") = alpha_store,
+      Named("theta") = theta_store,
+      Named("acceptance_rate") = acceptance_rate,
+      Named("S") = S,  Named("logLik") = ll_store);
+   break; 
   }
-
+return List::create(Named("just_in_case") = "should be impossible to see this... Restructure the function later");
 }
 
 
