@@ -38,8 +38,4 @@ private:
 
 };
 
-// sample states from the posterior
-arma::cube sample_states(bsm mod, const arma::mat& theta,
-  unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds);
-
 #endif

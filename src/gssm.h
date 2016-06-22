@@ -79,6 +79,4 @@ public:
   const double zero_tol;
 };
 
-arma::cube sample_states(gssm mod, const arma::mat& theta,
-  unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds);
 #endif

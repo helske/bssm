@@ -28,5 +28,8 @@ void uv_filter_predict(const arma::mat& T, const arma::mat& RR,
 double uv_filter(const double y, const arma::vec& Z, const double HH, const double xbeta,
   const arma::mat& T, const arma::mat& RR, arma::vec& at, arma::mat& Pt, const double zero_tol);
 
+template <typename T> 
+arma::cube sample_states(T mod, const arma::mat& theta,
+  unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds);
 
 #endif
