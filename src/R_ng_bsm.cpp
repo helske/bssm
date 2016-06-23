@@ -142,8 +142,8 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
       nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, 
       theta_store, ll_store, y_store, H_store, ll_approx_u_store);
     
-    arma::vec weights_store(n_iter);
-    arma::cube alpha_store(model.m, model.n, n_iter);
+    arma::vec weights_store(n_samples);
+    arma::cube alpha_store(model.m, model.n, n_samples);
     
     is_correction(model, theta_store, y_store, H_store, ll_approx_u_store, nsim_states, n_threads, seeds, weights_store, alpha_store);
     
@@ -151,7 +151,7 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
     return List::create(Named("alpha") = alpha_store,
       Named("theta") = theta_store,
       Named("acceptance_rate") = acceptance_rate,
-      Named("S") = S,  Named("logLik") = ll_store);
+      Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
    break; 
   }
 return List::create(Named("just_in_case") = "should be impossible to see this... Restructure the function later");

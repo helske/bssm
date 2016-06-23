@@ -457,6 +457,8 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1,
         object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
         object$init_signal, 3, seed, log_space, n_threads, seeds)
       
+      # out$theta <- sample(1:nrow(out$theta), size = nrow(out$theta), 
+      #   replace = TRUE, prob = out$weights)
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
       out
