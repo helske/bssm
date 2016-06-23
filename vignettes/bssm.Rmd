@@ -35,17 +35,17 @@ $$
 
 where $\eta_t \sim N(0, I_k)$ and $\alpha_1 \sim N(a_1, P_1)$ independently of each other, $x_t$ contains the exogenous covariate values at time time, with $\beta$ corresponding to the regression coefficients. Currently, following observational level distributions are supported:
 
-* Gaussian distribution: $p(y_t | Z_t \alpha_t, x_t\beta) = x'_t \beta + Z_t \alpha_t + H_t \epsilon_t$ with $\epsilon_t \sim N(0, 1)$.
+* Gaussian distribution: $p(y_t | Z_t \alpha_t, x'_t\beta) = x'_t \beta + Z_t \alpha_t + H_t \epsilon_t$ with $\epsilon_t \sim N(0, 1)$.
 
-* Poisson distribution: $p(y_t | Z_t \alpha_t, x_t \beta) = \textrm{Poisson}(\phi_t \textrm{exp}(x'_t \beta + Z_t \alpha_t))$, where $\phi_t$ is the exposure at time $t$.
+* Poisson distribution: $p(y_t | Z_t \alpha_t, x'_t \beta) = \textrm{Poisson}(\phi_t \textrm{exp}(x'_t \beta + Z_t \alpha_t))$, where $\phi_t$ is the exposure at time $t$.
 
-* Binomial distribution: $p(y_t | Z_t \alpha_t, x_t \beta) = \textrm{binomial}(\phi_t, \textrm{exp}(x'_t \beta + Z_t \alpha_t) / (1 + \textrm{exp}(x'_t \beta + Z_t \alpha_t)))$, where $\phi_t$ is the size and $\textrm{exp}(x_t \beta + Z_t \alpha_t) / (1 + \textrm{exp}(x'_t \beta + Z_t \alpha_t))$ is the probability of the success.
+* Binomial distribution: $p(y_t | Z_t \alpha_t, x'_t \beta) = \textrm{binomial}(\phi_t, \textrm{exp}(x'_t \beta + Z_t \alpha_t) / (1 + \textrm{exp}(x'_t \beta + Z_t \alpha_t)))$, where $\phi_t$ is the size and $\textrm{exp}(x_t \beta + Z_t \alpha_t) / (1 + \textrm{exp}(x'_t \beta + Z_t \alpha_t))$ is the probability of the success.
 
-* Negative binomial distribution: $p(y_t | Z_t \alpha_t, x_t \beta) = \textrm{negative binomial}(\textrm{exp}(x'_t \beta + Z_t \alpha_t), \phi)$, where $\textrm{exp}(x'_t \beta + Z_t \alpha_t)$ is the expected value and $\phi_t$ is the dispersion parameter.
+* Negative binomial distribution: $p(y_t | Z_t \alpha_t, x'_t \beta) = \textrm{negative binomial}(\textrm{exp}(x'_t \beta + Z_t \alpha_t), \phi)$, where $\textrm{exp}(x'_t \beta + Z_t \alpha_t)$ is the expected value and $\phi_t$ is the dispersion parameter.
 
 The `bssm` package aims to provide easy-to-use functions for fully Bayesian inference of common time series models such basic structural time series model (BSM) [@Harvey1989] with exogenous covariates, making it straighforward and efficient to make predictions and other inference in a Bayesian setting.
 
-The Bayesian framework of `bssm` is based on Markov chain Monte Carlo (MCMC) approach with adaptive random walk Metropolis updating, using RAM algorithm by [@Vihola2012]. This approach seems to work very well in practice, and it allows an efficient "black-box" type of modelling were the user does not need to be too concerned of "tuning" of the MCMC algoritm. The priors for the unknown model parameters $\theta$ (regression coefficients $\beta$ and unknown elements in system matrices of the observation or state equations) are currently  assumed to be uniform on some user-defined closed interval $[a, b]$, although this assumption could be relaxed in the future.
+The Bayesian framework of `bssm` is based on Markov chain Monte Carlo (MCMC) approach with adaptive random walk Metropolis updating, using RAM algorithm by [@Vihola2012]. This approach seems to work very well in practice, and it allows an efficient "black-box" type of modelling were the user does not need to be too concerned of "tuning" of the MCMC algoritm. The priors for the unknown model parameters $\theta$ (regression coefficients $\beta$ and unknown elements in system matrices of the observation or state equations) are currently  assumed to be uniform on some user-defined closed interval $[a, b]$, although this assumption will be relaxed in the future.
 
 # MCMC algorithm for Gaussian state space models
 
@@ -93,8 +93,6 @@ $\min\left\{1, \frac{g(y | \theta'_i) \hat w_i }{g(y | \theta_{i-1}) \hat w_{i-1
 
 For predicting future observations, one can extend the time series data with missing values which are handled straightforwardly by Kalman filter. This gives us point predictions in form of expected values, but for prediction intervals, no analytical formulas are available as the posterior distribution of the state is not necessarily normal. A standard way of obtaining the prediction intervals is to simulate future observations and use empirical quantiles for the limits of prediction interval. However, this is can be computationally expensive as a large number of simulations is needed for accurate values of tail probabilities. In addition of standard quantile method, the `bssm` package contains alternative method for Gaussian models based on the parametric method by [@HelskeNyblom2015, @Helske2016]. Here, instead of simulating the future values, we compute the expected values and variances of the future values using the Kalman filtering, and then solve simple equation based on the cumulative distribution function of Normal distribution. 
 
-For Gaussian models with fixed number of MCMC iterations, the parametric method gives considerably more accurate results with approximately equal computational burden. It is also possible to use the parametric method for non-Gaussian models as well, but as we need the importance sampling step for the estimation of the inverse link-function of the model (such as $\phi_t \exp(Z_t\alpha_t)$ in Poisson case), the method is computationally slightly more intensive than the quantile method.
-
 # Example
 
 Here is a short example:
@@ -106,7 +104,7 @@ set.seed(123)
 init_sd <- 0.1 * sd(log10(UKgas))
 model <- bsm(log10(UKgas), sd_y = init_sd,
   sd_slope = init_sd, sd_seasonal = init_sd)
-mcmc_out <- run_mcmc(model, n_iter = 1e5, seed = 123)
+mcmc_out <- run_mcmc(model, n_iter = 1e5)
 mcmc_out$acceptance_rate
 summary(mcmc_out$theta)
 plot(mcmc_out$theta)
