@@ -460,6 +460,8 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1,
     c(c("sd_level", "sd_slope", "sd_seasonal", "sd_noise")[names_ind],
       colnames(object$xreg), if (nb) "nb_dispersion")
   out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
+  out$call <- match.call()
+  class(out) <- "mcmc_output"
   out
 }
 

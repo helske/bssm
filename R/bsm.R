@@ -394,6 +394,8 @@ run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
     c(c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind],
       colnames(object$xreg))
   out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
+  out$call <- match.call()
+  class(out) <- "mcmc_output"
   out
 }
 

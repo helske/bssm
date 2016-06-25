@@ -326,6 +326,8 @@ run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
   )
   out$S <- matrix(out$S, length(lower_prior), length(lower_prior))
   out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
+  out$call <- match.call()
+  class(out) <- "mcmc_output"
   out
 }
 

@@ -262,6 +262,8 @@ run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, lower_prior, upp
 
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   colnames(out$alpha) <- names(object$a1)
+  out$call <- match.call()
+  class(out) <- "mcmc_output"
   out
 
   out$S <- matrix(out$S, length(lower_prior), length(lower_prior))
