@@ -9,9 +9,12 @@
 print.mcmc_output <- function(x, ...) {
 
   cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"), 
-    "\n\n", sep = "")
+    "\n", sep = "")
 
-  cat("\nAcceptance rate after the burnin period: ", paste(x$acceptance_rate,"\n\n", sep = ""))
+  cat("\n", "Iterations = ", start(x$theta), ":", end(x$theta), "\n", sep = "")
+  cat("Thinning interval =", thin(x$theta), "\n")
+  
+  cat("\nAcceptance rate after the burnin period: ", paste(x$acceptance_rate,"\n", sep = ""))
   
   cat("\nSummary for theta:\n\n")
   
@@ -21,12 +24,13 @@ print.mcmc_output <- function(x, ...) {
   
   print(effectiveSize(x$theta))
   
+  alpha <- mcmc(matrix(x$alpha[nrow(x$alpha),,], ncol = ncol(x$alpha)))
+  
   cat(paste0("\nSummary for alpha_",nrow(x$alpha)), ":\n\n", sep="")
   
-  print(summary(mcmc(t(x$alpha[nrow(x$alpha),,])))$stat)
+  print(summary(alpha)$stat)
   
   cat(paste0("\nEffective sample sizes for alpha_",nrow(x$alpha)), ":\n\n", sep="")
   
-  print(effectiveSize(mcmc(t(x$alpha[nrow(x$alpha),,]))))
-  
+  print(effectiveSize(alpha))
 }
