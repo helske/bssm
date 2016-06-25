@@ -2,7 +2,7 @@
 % Please edit documentation in R/print_mcmc.R
 \name{print.mcmc_output}
 \alias{print.mcmc_output}
-\title{Title}
+\title{Print Results from MCMC Run}
 \usage{
 \method{print}{mcmc_output}(x, ...)
 }
@@ -12,6 +12,6 @@
 \item{...}{Ignored.}
 }
 \description{
-Title
+Prints some basic summaries from the MCMC run by  \code{\link{run_mcmc}}.
 }
 

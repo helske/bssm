@@ -24,7 +24,7 @@ print.mcmc_output <- function(x, ...) {
   
   print(effectiveSize(x$theta))
   
-  alpha <- mcmc(matrix(x$alpha[nrow(x$alpha),,], ncol = ncol(x$alpha)))
+  alpha <- mcmc(matrix(x$alpha[nrow(x$alpha),,], ncol = ncol(x$alpha), dimnames = list(NULL, colnames(x$alpha))))
   
   cat(paste0("\nSummary for alpha_",nrow(x$alpha)), ":\n\n", sep="")
   

@@ -10,7 +10,7 @@
 #' @name bssm
 #' @aliases bssm
 #' @importFrom Rcpp evalCpp
-#' @importFrom coda mcmc effectiveSize
+#' @importFrom coda mcmc effectiveSize thin
 #' @importFrom ggplot2  aes aes_string scale_x_continuous scale_y_continuous
 #' @importFrom stats as.ts dnorm  end frequency is.ts logLik pnorm quantile start time ts ts.union tsp tsp<- sd
 #' @useDynLib bssm
