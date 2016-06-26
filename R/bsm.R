@@ -33,6 +33,17 @@
 #' coefficients.
 #' @return Object of class \code{bsm}.
 #' @export
+#' @examples 
+#' 
+#' init_sd <- 0.1 * sd(log10(UKgas))
+#' model <- bsm(log10(UKgas), sd_y = init_sd, sd_level = init_sd,
+#'   sd_slope = init_sd, sd_seasonal = init_sd)
+#' 
+#' mcmc_out <- run_mcmc(model, n_iter = 5000)
+#' summary(mcmc_out$theta)$stat
+#' mcmc_out$theta[which.max(mcmc_out$logLik), ]
+#' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)
+#' 
 bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL, beta = NULL,
   period = frequency(y), slope = TRUE, seasonal = frequency(y) > 1, a1, P1,
   lower_prior, upper_prior) {
@@ -405,6 +416,19 @@ run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
 #' @method predict bsm
 #' @rdname predict
 #' @export
+#' @examples 
+#' require("graphics")
+#' y <- log10(JohnsonJohnson)
+#' model <- bsm(y, sd_y = init_sd, sd_level = init_sd,
+#'   sd_slope = init_sd, sd_seasonal = init_sd)
+#' 
+#' pred1 <- predict(model, n_iter = 5000, n_ahead = 8)
+#' pred2 <- predict(StructTS(y, type = "BSM"), n.ahead = 8)
+#' 
+#' ts.plot(pred1$mean, pred1$intervals[,-2], pred2$pred + 
+#' cbind(0, -qnorm(0.95) * pred2$se, qnorm(0.95) * pred2$se), 
+#'   col = c(1, 1, 1, 2, 2, 2))
+#'
 predict.bsm <- function(object, n_iter, lower_prior, upper_prior, newdata = NULL,
   n_ahead = 1, interval = "response", probs = c(0.05, 0.95),
   method = "quantile", return_MCSE = TRUE, nsim_states = 1, n_burnin = floor(n_iter/2),
