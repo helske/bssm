@@ -129,6 +129,9 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   if (missing(P1)) {
     P1 <- diag(1e3, m)
   } else {
+    if (is.null(dim(P1)) && length(P1) == 1L) {
+      P1 <- matrix(P1)
+    }
     if (!identical(dim(P1), c(m, m))) {
       stop("Argument P1 must be m x m matrix, where m = ", m)
     }
