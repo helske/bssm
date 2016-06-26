@@ -57,4 +57,16 @@ Object of class \code{bsm}.
 Constructs a basic structural model with local level or local trend component
 and seasonal component.
 }
+\examples{
+
+init_sd <- 0.1 * sd(log10(UKgas))
+model <- bsm(log10(UKgas), sd_y = init_sd, sd_level = init_sd,
+  sd_slope = init_sd, sd_seasonal = init_sd)
+
+mcmc_out <- run_mcmc(model, n_iter = 5000)
+summary(mcmc_out$theta)$stat
+mcmc_out$theta[which.max(mcmc_out$logLik), ]
+sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)
+
+}
 

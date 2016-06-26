@@ -419,6 +419,7 @@ run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
 #' @examples 
 #' require("graphics")
 #' y <- log10(JohnsonJohnson)
+#' init_sd <- 0.1
 #' model <- bsm(y, sd_y = init_sd, sd_level = init_sd,
 #'   sd_slope = init_sd, sd_seasonal = init_sd)
 #' 

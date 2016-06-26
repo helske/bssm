@@ -97,4 +97,19 @@ computed using either the quantile method where the intervals are computed
 as empirical quantiles the posterior sample, or parametric method by
 Helske (2016).
 }
+\examples{
+require("graphics")
+y <- log10(JohnsonJohnson)
+init_sd <- 0.1
+model <- bsm(y, sd_y = init_sd, sd_level = init_sd,
+  sd_slope = init_sd, sd_seasonal = init_sd)
+
+pred1 <- predict(model, n_iter = 5000, n_ahead = 8)
+pred2 <- predict(StructTS(y, type = "BSM"), n.ahead = 8)
+
+ts.plot(pred1$mean, pred1$intervals[,-2], pred2$pred + 
+cbind(0, -qnorm(0.95) * pred2$se, qnorm(0.95) * pred2$se), 
+  col = c(1, 1, 1, 2, 2, 2))
+
+}
 

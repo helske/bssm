@@ -3,7 +3,7 @@ title: "bssm: Bayesian Inference of Exponential Family State Space Models in R"
 author: |
   | Jouni Helske and Matti Vihola
   | University of Jyväskylä, Department of Mathematics and Statistics, Finland
-date: "June 8, 2016"
+date: "June 26, 2016"
 output: 
   pdf_document:
     fig_caption: yes
@@ -104,14 +104,17 @@ set.seed(123)
 init_sd <- 0.1 * sd(log10(UKgas))
 model <- bsm(log10(UKgas), sd_y = init_sd,
   sd_slope = init_sd, sd_seasonal = init_sd)
-mcmc_out <- run_mcmc(model, n_iter = 1e5)
-mcmc_out$acceptance_rate
-summary(mcmc_out$theta)
+mcmc_out <- run_mcmc(model, n_iter = 1e4)
+mcmc_out
+
 plot(mcmc_out$theta)
+
 # posterior mode estimates (diffuse priors):
 mcmc_out$theta[which.max(mcmc_out$logLik), ]
+
 # posterior covariance matrix:
 cov(mcmc_out$theta)
+
 # compare to shape of the proposal distribution:
 cor(mcmc_out$theta)
 cov2cor(mcmc_out$S %*% t(mcmc_out$S))
