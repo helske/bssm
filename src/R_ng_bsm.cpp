@@ -10,7 +10,7 @@ double ng_bsm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
     distribution, seed);
 
-  if (nsim_states == 0) {
+  if (nsim_states < 2) {
     model.conv_tol = 1.0e-12;
     model.max_iter = 1000;
   }
