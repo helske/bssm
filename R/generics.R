@@ -79,3 +79,11 @@ run_mcmc <- function(object, ...) {
   UseMethod("run_mcmc", object)
 }
 
+#' Importance Sampling from non-Gaussian State Space Model
+#' 
+#' Returns \code{nsim} samples from the approximating Gaussian model with corresponding (scaled) importance weights.
+#' @export
+#' @rdname importance_sample
+importance_sample <- function(object, nsim, seed, ...) {
+  UseMethod("importance_sample", object)
+}

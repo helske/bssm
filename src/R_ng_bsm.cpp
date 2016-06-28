@@ -148,3 +148,23 @@ arma::mat ng_bsm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
     n_thin, gamma, target_acceptance, S, n_ahead, interval, init_signal);
 
 }
+
+// [[Rcpp::export]]
+List ng_bsm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope,
+  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
+  unsigned int distribution, arma::vec init_signal, unsigned int nsim_states,
+  unsigned int seed) {
+  
+  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
+    distribution, seed);
+  
+  double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
+
+  arma::cube alpha = model.sim_smoother(nsim_states);
+  arma::vec weights = exp(model.importance_weights(alpha, init_signal));
+  
+  return List::create(
+    Named("alpha") = alpha,
+    Named("weights") = weights);
+}
