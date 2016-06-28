@@ -2,7 +2,8 @@
 % Please edit documentation in R/gssm.R
 \name{gssm}
 \alias{gssm}
-\title{Univariate Gaussian State Space Models}
+\title{Construct an object of class \code{gssm} by defining the corresponding terms
+of the observation and state equation:}
 \usage{
 gssm(y, Z, H, T, R, a1, P1, xreg = NULL, beta = NULL, state_names)
 }
@@ -36,13 +37,10 @@ value in MCMC. Defaults to vector of zeros.}
 Object of class \code{gssm}.
 }
 \description{
-Construct an object of class \code{gssm} by defining the corresponding terms
-of the observation and state equation:
-}
-\details{
 \deqn{y_t = Z_t \alpha_t + H_t \epsilon_t, (\textrm{observation equation})}
 \deqn{\alpha_{t+1} = T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
-
+}
+\details{
 where \eqn{\epsilon_t \sim N(0, 1)}, \eqn{\eta_t \sim N(0, I_k)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
 }

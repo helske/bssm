@@ -71,7 +71,7 @@ model <- ng_bsm(Seatbelts[, "VanKilled"], distribution = "poisson",
   xreg = Seatbelts[, "law"])
 \dontrun{
 set.seed(123)
-mcmc_out <- run_mcmc(model, n_iter = 5000, nsim = 100)
+mcmc_out <- run_mcmc(model, n_iter = 5000, nsim = 20)
 mcmc_out$acceptance_rate
 plot(mcmc_out$theta)
 summary(mcmc_out$theta)

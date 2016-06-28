@@ -56,7 +56,7 @@ between 0 and 1 (not checked).}
 algorithm, so that the covariance matrix of the Gaussian proposal
 distribution is \eqn{SS'}.}
 
-\item{seed}{Seed for Boost random number generator.}
+\item{seed}{Seed for the random number generator.}
 
 \item{newphi}{Vector of length \code{n_ahead} defining the future values of \eqn{\phi}.
 Defaults to 1, expect for negative binomial distribution, where the initial

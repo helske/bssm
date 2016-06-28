@@ -1,4 +1,3 @@
-#' Univariate Gaussian State Space Models
 #'
 #' Construct an object of class \code{gssm} by defining the corresponding terms
 #' of the observation and state equation:
@@ -244,7 +243,7 @@ smoother.gssm <- function(object, ...) {
 #' @param S Initial value for the lower triangular matrix of RAM
 #' algorithm, so that the covariance matrix of the Gaussian proposal
 #' distribution is \eqn{SS'}.
-#' @param seed Seed for Boost random number generator.
+#' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @export
 run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,

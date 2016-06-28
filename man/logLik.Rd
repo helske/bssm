@@ -22,7 +22,7 @@
 
 \item{nsim_states}{Number of samples for importance sampling. If 0, approximate log-likelihood is returned.}
 
-\item{seed}{Seed for Boost random number generator. Compared to other functions of the package, here the
+\item{seed}{Seed for the random number generator. Compared to other functions of the package, here the
 default seed is fixed (as 1) in order to work properly in optimization algorithms.}
 }
 \description{

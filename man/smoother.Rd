@@ -21,7 +21,7 @@ sim_smoother(object, nsim, seed, ...)
 variable, ideally making the first and second halves of the resulting array to be
 negatively correlated (see the example).}
 
-\item{seed}{Seed for Boost random number generator.}
+\item{seed}{Seed for the random number generator.}
 }
 \value{
 Matrix containing the smoothed estimates of states, list

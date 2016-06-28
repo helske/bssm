@@ -127,7 +127,7 @@ ngssm <- function(y, Z, T, R, a1, P1,
 #' @method logLik ngssm
 #' @rdname logLik
 #' @param nsim_states Number of samples for importance sampling. If 0, approximate log-likelihood is returned.
-#' @param seed Seed for Boost random number generator. Compared to other functions of the package, here the
+#' @param seed Seed for the random number generator. Compared to other functions of the package, here the
 #' default seed is fixed (as 1) in order to work properly in optimization algorithms.
 #' @export
 logLik.ngssm <- function(object, nsim_states,
@@ -207,7 +207,7 @@ initial_signal <- function(y, phi, distribution) {
 #' @param S Initial value for the lower triangular matrix of RAM
 #' algorithm, so that the covariance matrix of the Gaussian proposal
 #' distribution is \eqn{SS'}.
-#' @param seed Seed for Boost random number generator.
+#' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @export
 run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, lower_prior, upper_prior,

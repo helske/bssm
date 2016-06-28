@@ -10,6 +10,15 @@ importance_sample(object, nsim, seed, ...)
 \method{importance_sample}{ng_bsm}(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...)
 }
+\arguments{
+\item{object}{of class \code{ng_bsm}.}
+
+\item{nsim}{Number of samples.}
+
+\item{seed}{Seed for the random nunber generator.}
+
+\item{...}{Ignored.}
+}
 \description{
 Returns \code{nsim} samples from the approximating Gaussian model with corresponding (scaled) importance weights.
 }

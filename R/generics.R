@@ -33,7 +33,7 @@ kfilter <- function(object, ...) {
 #' @param nsim Number of samples. Simulation smoother uses one antithetic
 #' variable, ideally making the first and second halves of the resulting array to be
 #' negatively correlated (see the example).
-#' @param seed Seed for Boost random number generator.
+#' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @return Matrix containing the smoothed estimates of states, list
 #' with the smoothed states and the variances, or an array  containing the
@@ -82,6 +82,10 @@ run_mcmc <- function(object, ...) {
 #' Importance Sampling from non-Gaussian State Space Model
 #' 
 #' Returns \code{nsim} samples from the approximating Gaussian model with corresponding (scaled) importance weights.
+#' @param object of class \code{ng_bsm}.
+#' @param nsim Number of samples.
+#' @param seed Seed for the random nunber generator.
+#' @param ... Ignored.
 #' @export
 #' @rdname importance_sample
 importance_sample <- function(object, nsim, seed, ...) {
