@@ -693,13 +693,19 @@ double gssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
     n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store);
   
   arma::cube Valpha(m, m, n, arma::fill::zeros);
-  arma::mat alphahat_i(m, n, arma::fill::zeros);
-  arma::cube Vt_i(m, m, n, arma::fill::zeros);
   
-  for (unsigned int i = 0; i < n_samples; i++) {
-    arma::vec theta = theta_store.col(i);
-    update_model(theta);
-    smoother(alphahat_i, Vt_i);
+  arma::vec theta = theta_store.col(0);
+  update_model(theta);
+  smoother(alphahat, Vt);
+  arma::mat alphahat_i = alphahat;
+  arma::cube Vt_i = Vt;
+  for (unsigned int i = 1; i < n_samples; i++) {
+    if(arma::any(theta_store.col(i) != theta_store.col(i-1))) {
+  
+      arma::vec theta = theta_store.col(i);
+      update_model(theta);
+      smoother(alphahat_i, Vt_i);
+    }
     arma::mat diff = (alphahat_i - alphahat);
     alphahat += diff / (i + 1);
     for (unsigned int t = 0; t < n; t++) {
