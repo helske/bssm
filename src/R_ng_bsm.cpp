@@ -160,7 +160,7 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
     break;
   case 4 : {
     unsigned int npar = theta_lwr.n_elem;
-    unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+    unsigned int n_samples = floor(n_iter - n_burnin);
     arma::mat theta_store(npar, n_samples);
     arma::vec ll_store(n_samples);
     arma::mat y_store(model.n, n_samples);
@@ -174,7 +174,7 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
       theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
 
     arma::vec weights_store(counts.n_elem);
-    arma::cube alpha_store(model.m, model.n, counts.n_elem);
+    arma::cube alpha_store(model.m, model.n, n_samples);
 
     is_correction(model, theta_store, y_store, H_store, ll_approx_u_store, counts,
       nsim_states, n_threads, seeds, weights_store, alpha_store);

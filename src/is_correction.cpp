@@ -10,9 +10,10 @@ void is_correction(T mod, const arma::mat& theta, const arma::mat& y_store, cons
 
   unsigned n_iter = theta.n_cols;
 
+  arma::uvec cum_counts = arma::cumsum(counts);
 #pragma omp parallel num_threads(n_threads) default(none) \
   shared(ll_approx_u, n_iter, nsim_states, y_store, H_store, theta, \
-    weights_store, alpha_store, seeds, counts) firstprivate(mod)
+    weights_store, alpha_store, seeds, counts, cum_counts) firstprivate(mod)
   {
     if (seeds.n_elem == 1) {
       mod.engine = std::mt19937(seeds(0));
@@ -34,7 +35,11 @@ void is_correction(T mod, const arma::mat& theta, const arma::mat& y_store, cons
       weights_store(i) = arma::mean(weights);
       std::discrete_distribution<> sample(weights.begin(), weights.end());
 
-      alpha_store.slice(i) = alpha.slice(sample(mod.engine));
+      
+      for (unsigned int ii = 0; ii < counts(i); ii++) {
+        alpha_store.slice(cum_counts(i) - counts(i) + ii) = alpha.slice(sample(mod.engine));  
+      }
+      
 
     }
   }

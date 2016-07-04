@@ -5,7 +5,7 @@
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(cpp11)]]
-#define ARMA_NO_DEBUG
+//#define ARMA_NO_DEBUG
 
 const double LOG2PI = std::log(2.0 * M_PI);
 
