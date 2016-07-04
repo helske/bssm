@@ -32,4 +32,9 @@ template <typename T>
 arma::cube sample_states(T mod, const arma::mat& theta,
   unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds);
 
+template <typename T> 
+void is_correction(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
+  const arma::vec& ll_approx_u,  unsigned int nsim_states,
+  unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, arma::cube& alpha_store);
+
 #endif

@@ -380,8 +380,6 @@ smoother.ng_bsm <- function(object, ...) {
 #' @method run_mcmc ng_bsm
 #' @rdname run_mcmc_ng
 #' @param log_space Generate proposals for standard deviations in log-space. Default is \code{FALSE}.
-#' @param n_store Number of samples to store from the simulation smoother per iteration.
-#' Default is 1.
 #' @param method Use \code{"standard"} MCMC or \code{"delayed acceptance"} approach.
 #' @inheritParams run_mcmc.ngssm
 #' @export
@@ -389,9 +387,10 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1,
   lower_prior, upper_prior, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
   seed = sample(.Machine$integer.max, size = 1), log_space = FALSE,
-  n_store = 1, method = "delayed acceptance",  ...) {
+  method = "delayed acceptance",  n_threads = 1, 
+  seeds = sample(.Machine$integer.max, size = n_threads), ...) {
 
-  method <- match.arg(method, c("standard", "delayed acceptance"))
+  method <- match.arg(method, c("standard", "delayed acceptance", "IS corrected"))
 
   if (missing(lower_prior)) {
     lower_prior <- object$lower_prior
@@ -423,6 +422,8 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1,
     method <- "standard"
     nsim_states <- 1
   }
+  
+  # this is stupid, correct!
   out <- switch(method,
     standard = {
       out <- ng_bsm_mcmc_full(object$y, object$Z, object$T, object$R,
@@ -431,7 +432,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1,
         lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
         object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
-        object$init_signal, 1, seed, log_space)
+        object$init_signal, 1, seed, log_space, n_threads, seeds)
 
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
@@ -444,12 +445,28 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1,
         lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
         object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
-        object$init_signal, 2, seed, log_space)
+        object$init_signal, 2, seed, log_space, n_threads, seeds)
 
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
       out
-    })
+    },
+    "IS corrected" = {
+      out <- ng_bsm_mcmc_full(object$y, object$Z, object$T, object$R,
+        object$a1, object$P1, object$phi,
+        pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
+        lower_prior, upper_prior, n_iter,
+        nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
+        object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
+        object$init_signal, 3, seed, log_space, n_threads, seeds)
+      
+      # out$theta <- sample(1:nrow(out$theta), size = nrow(out$theta), 
+      #   replace = TRUE, prob = out$weights)
+      out$alpha <- aperm(out$alpha, c(2, 1, 3))
+      colnames(out$alpha) <- names(object$a1)
+      out
+    }
+    )
   if (log_space && n_sd_par > 0) {
     out$theta[, 1:n_sd_par] <- exp(out$theta[, 1:n_sd_par])
   }
