@@ -9,7 +9,7 @@ gssm::gssm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
   RR(arma::cube(m, m, Rtv * (n - 1) + 1)), xreg(xreg), beta(beta),
   xbeta(arma::vec(n, arma::fill::zeros)), engine(seed), zero_tol(1e-8) {
-  
+
   if(xreg.n_cols > 0) {
     compute_xbeta();
   }
@@ -30,7 +30,7 @@ gssm::gssm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   xbeta(arma::vec(n, arma::fill::zeros)),
   Z_ind(Z_ind), H_ind(H_ind), T_ind(T_ind), R_ind(R_ind), engine(seed),
   zero_tol(1e-8) {
-  
+
   if(xreg.n_cols > 0) {
     compute_xbeta();
   }
@@ -59,7 +59,7 @@ void gssm::compute_xbeta(void){
 
 
 void gssm::update_model(arma::vec theta) {
-  
+
   if (Z_ind.n_elem > 0) {
     Z.elem(Z_ind) = theta.subvec(0, Z_ind.n_elem - 1);
   }
@@ -74,7 +74,7 @@ void gssm::update_model(arma::vec theta) {
     R.elem(R_ind) = theta.subvec(Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem,
       Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem + R_ind.n_elem - 1);
   }
-  
+
   if (H_ind.n_elem  > 0) {
     compute_HH();
   }
@@ -88,9 +88,9 @@ void gssm::update_model(arma::vec theta) {
 }
 
 arma::vec gssm::get_theta(void) {
-  
+
   arma::vec theta(Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem + R_ind.n_elem);
-  
+
   if (Z_ind.n_elem > 0) {
     theta.subvec(0, Z_ind.n_elem - 1) = Z.elem(Z_ind);
   }
@@ -113,7 +113,7 @@ arma::vec gssm::get_theta(void) {
 }
 
 double gssm::log_likelihood(void) {
-  
+
   double logLik = 0;
   arma::vec at = a1;
   arma::mat Pt = P1;
@@ -127,12 +127,12 @@ double gssm::log_likelihood(void) {
 
 double gssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
   arma::cube& Ptt) {
-  
+
   double logLik = 0;
-  
+
   at.col(0) = a1;
   Pt.slice(0) = P1;
-  
+
   for (unsigned int t = 0; t < n; t++) {
     // update
     logLik += uv_filter_update(y(t), Z.col(t * Ztv), HH(t * Htv),
@@ -142,24 +142,24 @@ double gssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
       Ptt.slice(t), at.col(t + 1),  Pt.slice(t + 1));
   }
   return logLik;
-  
+
 }
 
 /* Fast state smoothing, only returns smoothed estimates of states
  * which are needed in simulation smoother
  */
 arma::mat gssm::fast_smoother(void) {
-  
+
   arma::mat at(m, n);
   arma::mat Pt(m, m);
-  
+
   arma::vec vt(n);
   arma::vec Ft(n);
   arma::mat Kt(m, n);
-  
+
   at.col(0) = a1;
   Pt = P1;
-  
+
   for (unsigned int t = 0; t < (n - 1); t++) {
     Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt * Z.col(t * Ztv) + HH(t * Htv));
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol) {
@@ -180,7 +180,7 @@ arma::mat gssm::fast_smoother(void) {
   }
   arma::mat rt(m, n);
   rt.col(n - 1).zeros();
-  
+
   for (int t = (n - 1); t > 0; t--) {
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol){
       arma::mat L = T.slice(t * Ttv) * (arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t());
@@ -198,7 +198,7 @@ arma::mat gssm::fast_smoother(void) {
   for (unsigned int t = 0; t < (n - 1); t++) {
     at.col(t + 1) = T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
   }
-  
+
   return at;
 }
 
@@ -208,15 +208,15 @@ arma::mat gssm::fast_smoother(void) {
  */
 
 arma::mat gssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt) {
-  
+
   arma::mat at(m, n);
   arma::mat Pt(m, m);
-  
+
   arma::vec vt(n);
-  
+
   at.col(0) = a1;
   Pt = P1;
-  
+
   for (unsigned int t = 0; t < (n - 1); t++) {
     Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt * Z.col(t * Ztv) + HH(t * Htv));
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol) {
@@ -237,7 +237,7 @@ arma::mat gssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt) {
   }
   arma::mat rt(m, n);
   rt.col(n - 1).zeros();
-  
+
   for (int t = (n - 1); t > 0; t--) {
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol){
       Lt.slice(t) = T.slice(t * Ttv) * (arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t());
@@ -255,7 +255,7 @@ arma::mat gssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt) {
   for (unsigned int t = 0; t < (n - 1); t++) {
     at.col(t + 1) = T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
   }
-  
+
   return at;
 }
 
@@ -264,15 +264,15 @@ arma::mat gssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt) {
 
 arma::mat gssm::precomp_fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
   const arma::cube& Lt) {
-  
+
   arma::mat at(m, n);
   arma::mat Pt(m, m);
-  
+
   arma::vec vt(n);
-  
+
   at.col(0) = a1;
   Pt = P1;
-  
+
   for (unsigned int t = 0; t < (n - 1); t++) {
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol) {
       vt(t) = arma::as_scalar(y(t) - Z.col(t * Ztv).t() * at.col(t) - xbeta(t));
@@ -287,7 +287,7 @@ arma::mat gssm::precomp_fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
   }
   arma::mat rt(m, n);
   rt.col(n - 1).zeros();
-  
+
   for (int t = (n - 1); t > 0; t--) {
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol){
       rt.col(t - 1) = Z.col(t * Ztv) / Ft(t) * vt(t) + Lt.slice(t).t() * rt.col(t);
@@ -301,41 +301,41 @@ arma::mat gssm::precomp_fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
   } else {
     at.col(0) = a1 + P1 * T.slice(0).t() * rt.col(0);
   }
-  
+
   for (unsigned int t = 0; t < (n - 1); t++) {
     at.col(t + 1) = T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
   }
-  
+
   return at;
 }
 
 arma::cube gssm::sim_smoother(unsigned int nsim) {
-  
+
   arma::vec y_tmp = y;
-  
+
   arma::uvec nonzero = arma::find(P1.diag() > 0);
   arma::mat L_P1(m, m, arma::fill::zeros);
   if (nonzero.n_elem > 0) {
     L_P1.submat(nonzero, nonzero) =
       arma::chol(P1.submat(nonzero, nonzero), "lower");
   }
-  
+
   arma::cube asim(m, n, nsim);
-  
+
   std::normal_distribution<> normal(0.0, 1.0);
-  
+
   if (nsim > 1) {
     arma::vec Ft(n);
     arma::mat Kt(m, n);
     arma::cube Lt(m, m, n);
-    
+
     arma::mat alphahat = fast_smoother2(Ft, Kt, Lt);
-    
+
     unsigned int nsim2 = std::floor(nsim / 2);
-    
+
     for(unsigned int i = 0; i < nsim2; i++) {
       arma::mat aplus(m, n);
-      
+
       arma::vec um(m);
       for(unsigned int j = 0; j < m; j++) {
         um(j) = normal(engine);
@@ -356,15 +356,15 @@ arma::cube gssm::sim_smoother(unsigned int nsim) {
         y(n - 1) = arma::as_scalar(Z.col((n - 1) * Ztv).t() * aplus.col(n - 1) + xbeta(n - 1)) +
           H((n - 1) * Htv) * normal(engine);
       }
-      
+
       asim.slice(i) = -precomp_fast_smoother(Ft, Kt, Lt) + aplus;
       asim.slice(i + nsim2) = alphahat - asim.slice(i);
       asim.slice(i) += alphahat;
     }
     if ((2 * nsim2) < nsim) {
-      
+
       arma::mat aplus(m, n);
-      
+
       arma::vec um(m);
       for(unsigned int j = 0; j < m; j++) {
         um(j) = normal(engine);
@@ -385,10 +385,10 @@ arma::cube gssm::sim_smoother(unsigned int nsim) {
         y(n - 1) = arma::as_scalar(Z.col((n - 1) * Ztv).t() * aplus.col(n - 1) + xbeta(n - 1)) +
           H((n - 1) * Htv) * normal(engine);
       }
-      
+
       asim.slice(nsim - 1) = alphahat - precomp_fast_smoother(Ft, Kt, Lt) + aplus;
     }
-    
+
   } else {
     // for _single simulation_ this version is faster:
     //no xbeta as it is not part of the states
@@ -416,25 +416,25 @@ arma::cube gssm::sim_smoother(unsigned int nsim) {
       y(n - 1) -= arma::as_scalar(Z.col((n - 1) * Ztv).t() * asim.slice(0).col(n - 1)) +
         H((n - 1) * Htv) * normal(engine);
     }
-    
+
     asim.slice(0) += fast_smoother();
-    
+
   }
-  
+
   y = y_tmp;
-  
+
   return asim;
 }
 
 void gssm::smoother(arma::mat& at, arma::cube& Pt) {
-  
-  
+
+
   at.col(0) = a1;
   Pt.slice(0) = P1;
   arma::vec vt(n);
   arma::vec Ft(n);
   arma::mat Kt(m, n);
-  
+
   for (unsigned int t = 0; t < (n - 1); t++) {
     Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt.slice(t) * Z.col(t * Ztv) +
       HH(t * Htv));
@@ -457,11 +457,11 @@ void gssm::smoother(arma::mat& at, arma::cube& Pt) {
     vt(t) = arma::as_scalar(y(t) - Z.col(t * Ztv).t() * at.col(t) - xbeta(t));
     Kt.col(t) = Pt.slice(t) * Z.col(t * Ztv) / Ft(t);
   }
-  
-  
+
+
   arma::vec rt(m, arma::fill::zeros);
   arma::mat Nt(m, m, arma::fill::zeros);
-  
+
   for (int t = (n - 1); t > 0; t--) {
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol){
       arma::mat L = T.slice(t * Ttv) * (arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t());
@@ -484,7 +484,7 @@ void gssm::smoother(arma::mat& at, arma::cube& Pt) {
   }
   at.col(0) += Pt.slice(0) * rt;
   Pt.slice(0) -= arma::symmatu(Pt.slice(0) * Nt * Pt.slice(0));
-  
+
 }
 
 
@@ -492,21 +492,21 @@ double gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   arma::cube& alpha_store, arma::mat& theta_store, arma::vec& ll_store) {
-  
+
   unsigned int npar = theta_lwr.n_elem;
-  
+
   unsigned int n_samples = ll_store.n_elem;
   double acceptance_rate = 0.0;
-  
+
   arma::vec theta = get_theta();
-  
+
   // everything is conditional on beta
   double ll = log_likelihood();
-  
+
   arma::cube alpha = sim_smoother(nsim_states);
-  
+
   unsigned int j = 0;
-  
+
   if (n_burnin == 0) {
     theta_store.col(0) = theta;
     alpha_store.slices(0, nsim_states - 1) = alpha;
@@ -514,12 +514,12 @@ double gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
     acceptance_rate++;
     j++;
   }
-  
+
   double accept_prob = 0;
   double ll_prop = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
-  
+
   for (unsigned int i = 1; i < n_iter; i++) {
     // sample from standard normal distribution
     arma::vec u(npar);
@@ -530,7 +530,7 @@ double gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
     arma::vec theta_prop = theta + S * u;
     // check prior
     bool inrange = sum(theta_prop >= theta_lwr && theta_prop <= theta_upr) == npar;
-    
+
     if (inrange) {
       // update parameters
       update_model(theta_prop);
@@ -541,8 +541,8 @@ double gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
       double q = proposal(theta, theta_prop);
       accept_prob = std::min(1.0, exp(ll_prop - ll + q));
     } else accept_prob = 0;
-    
-    
+
+
     //accept
     if (inrange && unif(engine) < accept_prob) {
       if (i >= n_burnin) {
@@ -559,15 +559,15 @@ double gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
       alpha_store.slices(j * nsim_states, (j + 1) * nsim_states - 1) = alpha;
       j++;
     }
-    
+
     double change = accept_prob - target_acceptance;
     u = S * u / arma::norm(u) * sqrt(std::min(1.0, npar * pow(i, -gamma)) *
       std::abs(change));
-    
-    
+
+
     if(change > 0) {
       S = cholupdate(S, u);
-      
+
     } else {
       if(change < 0){
         //update S unless numerical problems occur
@@ -578,7 +578,7 @@ double gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
         }
       }
     }
-    
+
   }
   // arma::inplace_trans(theta_store);
   //
@@ -594,30 +594,30 @@ double gssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   arma::mat& theta_store, arma::vec& ll_store) {
-  
+
   unsigned int npar = theta_lwr.n_elem;
-  
+
   unsigned int n_samples = ll_store.n_elem;
-  
+
   double acceptance_rate = 0.0;
-  
+
   arma::vec theta = get_theta();
   double ll = log_likelihood();
-  
+
   unsigned int j = 0;
-  
+
   if (n_burnin == 0) {
     theta_store.col(0) = theta;
     ll_store(0) = ll;
     acceptance_rate++;
     j++;
   }
-  
+
   double accept_prob = 0;
   double ll_prop = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
-  
+
   for (unsigned int i = 1; i < n_iter; i++) {
     // sample from standard normal distribution
     arma::vec u(npar);
@@ -628,7 +628,7 @@ double gssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
     arma::vec theta_prop = theta + S * u;
     // check prior
     bool inrange = sum(theta_prop >= theta_lwr && theta_prop <= theta_upr) == npar;
-    
+
     if (inrange) {
       // update parameters
       update_model(theta_prop);
@@ -639,8 +639,8 @@ double gssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
       double q = proposal(theta, theta_prop);
       accept_prob = std::min(1.0, exp(ll_prop - ll + q));
     } else accept_prob = 0;
-    
-    
+
+
     //accept
     if (inrange && unif(engine) < accept_prob) {
       if (i >= n_burnin) {
@@ -655,15 +655,15 @@ double gssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
       theta_store.col(j) = theta;
       j++;
     }
-    
+
     double change = accept_prob - target_acceptance;
     u = S * u / arma::norm(u) * sqrt(std::min(1.0, npar * pow(i, -gamma)) *
       std::abs(change));
-    
-    
+
+
     if(change > 0) {
       S = cholupdate(S, u);
-      
+
     } else {
       if(change < 0){
         //update S unless numerical problems occur
@@ -674,26 +674,136 @@ double gssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
         }
       }
     }
-    
+
   }
   return acceptance_rate / (n_iter - n_burnin);
-  
+
 }
 
+double gssm::mcmc_param2(arma::vec theta_lwr, arma::vec theta_upr,
+  unsigned int n_iter, unsigned int n_burnin,
+  unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
+  arma::mat& theta_store, arma::vec& ll_store, arma::uvec& counts) {
+
+  if (n_thin > 1) {
+    Rcpp::stop("Thinning not allowed in block MCMC.");
+  }
+
+  unsigned int npar = theta_lwr.n_elem;
+
+  unsigned int n_samples = ll_store.n_elem;
+
+  double acceptance_rate = 0.0;
+
+  arma::vec theta = get_theta();
+  double ll = log_likelihood();
+
+  unsigned int n_unique = 0;
+
+  if (n_burnin == 0) {
+    theta_store.col(0) = theta;
+    ll_store(0) = ll;
+    counts(0) = 1;
+    acceptance_rate++;
+  }
+
+  double accept_prob = 0;
+  double ll_prop = 0;
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+
+
+  for (unsigned int i = 1; i < n_iter; i++) {
+    // sample from standard normal distribution
+    arma::vec u(npar);
+    for(unsigned int ii = 0; ii < npar; ii++) {
+      u(ii) = normal(engine);
+    }
+    // propose new theta
+    arma::vec theta_prop = theta + S * u;
+    // check prior
+    bool inrange = sum(theta_prop >= theta_lwr && theta_prop <= theta_upr) == npar;
+
+    if (inrange) {
+      // update parameters
+      update_model(theta_prop);
+      // compute log-likelihood with proposed theta
+      ll_prop = log_likelihood();
+      //compute the acceptance probability
+      // use explicit min(...) as we need this value later
+      double q = proposal(theta, theta_prop);
+      accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+    } else accept_prob = 0;
+
+
+    //accept
+    if (inrange && unif(engine) < accept_prob) {
+      ll = ll_prop;
+      theta = theta_prop;
+      if (i >= n_burnin) {
+        n_unique++;
+        acceptance_rate++;
+        counts(n_unique) = 1;
+        ll_store(n_unique) = ll;
+        theta_store.col(n_unique) = theta;
+      }
+    } else {
+      if (i >= n_burnin) {
+        //first storing
+        if(acceptance_rate == 0 && n_unique == 0) {
+          acceptance_rate++;
+          counts(0) = 1;
+          ll_store(0) = ll;
+          theta_store.col(0) = theta;
+        } else {
+          counts(n_unique) = counts(n_unique) + 1;
+        }
+      }
+    }
+
+
+    double change = accept_prob - target_acceptance;
+    u = S * u / arma::norm(u) * sqrt(std::min(1.0, npar * pow(i, -gamma)) *
+      std::abs(change));
+
+
+    if(change > 0) {
+      S = cholupdate(S, u);
+
+    } else {
+      if(change < 0){
+        //update S unless numerical problems occur
+        arma::mat Stmp = choldowndate(S, u);
+        arma::uvec cond = arma::find(arma::diagvec(Stmp) < 0);
+        if (cond.n_elem == 0) {
+          S = Stmp;
+        }
+      }
+    }
+
+  }
+
+  theta_store.resize(npar, n_unique + 1);
+  ll_store.resize(n_unique + 1);
+  counts.resize(n_unique + 1);
+
+  return acceptance_rate / (n_iter - n_burnin);
+
+}
 double gssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   arma::mat& alphahat, arma::cube& Vt, arma::mat& theta_store,
   arma::vec& ll_store) {
-  
+
   unsigned int npar = theta_lwr.n_elem;
   unsigned int n_samples = ll_store.n_elem;
-  
+
   double acceptance_rate = mcmc_param(theta_lwr, theta_upr, n_iter,
     n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store);
-  
+
   arma::cube Valpha(m, m, n, arma::fill::zeros);
-  
+
   arma::vec theta = theta_store.col(0);
   update_model(theta);
   smoother(alphahat, Vt);
@@ -701,7 +811,7 @@ double gssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
   arma::cube Vt_i = Vt;
   for (unsigned int i = 1; i < n_samples; i++) {
     if(arma::any(theta_store.col(i) != theta_store.col(i-1))) {
-  
+
       arma::vec theta = theta_store.col(i);
       update_model(theta);
       smoother(alphahat_i, Vt_i);
@@ -714,7 +824,7 @@ double gssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
     Vt += (Vt_i - Vt) / (i + 1);
   }
   Vt += Valpha / n_samples; // Var[E(alpha)] + E[Var(alpha)]
-  
+
   return acceptance_rate;
 }
 
@@ -723,25 +833,25 @@ List gssm::predict(arma::vec theta_lwr,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat S, unsigned int n_ahead,
   unsigned int interval, arma::vec probs) {
-  
+
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
-  
+
   unsigned int npar = theta_lwr.n_elem;
   arma::vec theta = get_theta();
-  
-  
-  
+
+
+
   arma::mat y_mean(n_ahead, n_samples);
   arma::mat y_var(n_ahead, n_samples);
-  
+
   arma::mat at(m, n + 1);
   arma::cube Pt(m, m, n + 1);
   arma::mat att(m, n);
   arma::cube Ptt(m, m, n);
   filter(at, att, Pt, Ptt);
-  
+
   unsigned int j = 0;
-  
+
   if (n_burnin == 0){
     for (unsigned int t = n - n_ahead; t < n; t++) {
       y_mean(t - n + n_ahead, j) = arma::as_scalar(Z.col(Ztv * t).t() * at.col(t));
@@ -755,7 +865,7 @@ List gssm::predict(arma::vec theta_lwr,
     }
     j++;
   }
-  
+
   double ll = log_likelihood();
   double accept_prob = 0;
   double ll_prop = 0;
@@ -771,7 +881,7 @@ List gssm::predict(arma::vec theta_lwr,
     arma::vec theta_prop = theta + S * u;
     // check prior
     bool inrange = sum(theta_prop >= theta_lwr && theta_prop <= theta_upr) == npar;
-    
+
     if (inrange) {
       // update parameters
       update_model(theta_prop);
@@ -782,14 +892,14 @@ List gssm::predict(arma::vec theta_lwr,
       double q = proposal(theta, theta_prop);
       accept_prob = std::min(1.0, exp(ll_prop - ll + q));
     } else accept_prob = 0;
-    
+
     //accept
     if (inrange && unif(engine) < accept_prob) {
       ll = ll_prop;
       theta = theta_prop;
       filter(at, att, Pt, Ptt);
     }
-    
+
     if ((i >= n_burnin) && (i % n_thin == 0)) {
       update_model(theta);
       for (unsigned int t = n - n_ahead; t < n; t++) {
@@ -807,10 +917,10 @@ List gssm::predict(arma::vec theta_lwr,
     double change = accept_prob - target_acceptance;
     u = S * u * sqrt(std::min(1.0, npar * pow(i, -gamma)) * std::abs(change)) /
       arma::norm(u);
-    
+
     if(change > 0) {
       S = cholupdate(S, u);
-      
+
     } else {
       if(change < 0){
         //update S unless numerical problems occur
@@ -821,10 +931,10 @@ List gssm::predict(arma::vec theta_lwr,
         }
       }
     }
-    
+
   }
-  
-  
+
+
   arma::inplace_trans(y_mean);
   arma::inplace_trans(y_var);
   y_var = sqrt(y_var);
@@ -839,18 +949,18 @@ arma::mat gssm::predict2(arma::vec theta_lwr,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat S, unsigned int n_ahead,
   unsigned int interval) {
-  
+
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
-  
+
   arma::mat pred_store(n_ahead, nsim_states * n_samples);
-  
+
   unsigned int npar = theta_lwr.n_elem;
   arma::vec theta = get_theta();
   arma::cube alpha = sim_smoother(nsim_states).tube(0, n - n_ahead, m - 1,  n - 1);
-  
+
   unsigned int j = 0;
   std::normal_distribution<> normal(0.0, 1.0);
-  
+
   if (n_burnin == 0){
     for (unsigned int ii = 0; ii < nsim_states; ii++) {
       for (unsigned int t = 0; t < n_ahead; t++) {
@@ -873,11 +983,11 @@ arma::mat gssm::predict2(arma::vec theta_lwr,
     }
     j++;
   }
-  
+
   double ll = log_likelihood();
   double accept_prob = 0;
   double ll_prop = 0;
-  
+
   std::uniform_real_distribution<> unif(0.0, 1.0);
   for (unsigned int i = 1; i < n_iter; i++) {
     // sample from standard normal distribution
@@ -889,7 +999,7 @@ arma::mat gssm::predict2(arma::vec theta_lwr,
     arma::vec theta_prop = theta + S * u;
     // check prior
     bool inrange = sum(theta_prop >= theta_lwr && theta_prop <= theta_upr) == npar;
-    
+
     if (inrange) {
       // update parameters
       update_model(theta_prop);
@@ -900,24 +1010,24 @@ arma::mat gssm::predict2(arma::vec theta_lwr,
       double q = proposal(theta, theta_prop);
       accept_prob = std::min(1.0, exp(ll_prop - ll + q));
     } else accept_prob = 0;
-    
+
     //accept
     if (inrange && unif(engine) < accept_prob) {
       ll = ll_prop;
       theta = theta_prop;
       alpha = sim_smoother(nsim_states).tube(0, n - n_ahead, m - 1,  n - 1);
     }
-    
+
     if ((i >= n_burnin) && (i % n_thin == 0)) {
       update_model(theta);
-      
+
       for (unsigned int ii = j * nsim_states; ii < (j + 1) * nsim_states; ii++) {
         for (unsigned int t = 0; t < n_ahead; t++) {
           pred_store(t, ii) = arma::as_scalar(Z.col(Ztv * (n - n_ahead + t)).t() *
             alpha.slice(ii - j * nsim_states).col(t));
         }
       }
-      
+
       if(xreg.n_cols > 0) {
         for (unsigned int ii = j * nsim_states; ii < (j + 1) * nsim_states; ii++) {
           pred_store.col(ii) +=  xbeta.subvec(n - n_ahead, n - 1);
@@ -935,14 +1045,14 @@ arma::mat gssm::predict2(arma::vec theta_lwr,
       }
       j++;
     }
-    
+
     double change = accept_prob - target_acceptance;
     u = S * u * sqrt(std::min(1.0, npar * pow(i, -gamma)) * std::abs(change)) /
       arma::norm(u);
-    
+
     if(change > 0) {
       S = cholupdate(S, u);
-      
+
     } else {
       if(change < 0){
         //update S unless numerical problems occur
@@ -953,10 +1063,10 @@ arma::mat gssm::predict2(arma::vec theta_lwr,
         }
       }
     }
-    
+
   }
-  
+
   return pred_store;
-  
+
 }
 

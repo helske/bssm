@@ -387,10 +387,10 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1,
   lower_prior, upper_prior, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
   seed = sample(.Machine$integer.max, size = 1), log_space = FALSE,
-  method = "delayed acceptance",  n_threads = 1, 
+  method = "delayed acceptance",  n_threads = 1,
   seeds = sample(.Machine$integer.max, size = n_threads), ...) {
 
-  method <- match.arg(method, c("standard", "delayed acceptance", "IS corrected"))
+  method <- match.arg(method, c("standard", "DA", "IS1", "IS2"))
 
   if (missing(lower_prior)) {
     lower_prior <- object$lower_prior
@@ -422,7 +422,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1,
     method <- "standard"
     nsim_states <- 1
   }
-  
+
   # this is stupid, correct!
   out <- switch(method,
     standard = {
@@ -438,7 +438,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1,
       colnames(out$alpha) <- names(object$a1)
       out
     },
-    "delayed acceptance" = {
+    "DA" = {
       out <- ng_bsm_mcmc_full(object$y, object$Z, object$T, object$R,
         object$a1, object$P1, object$phi,
         pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
@@ -451,7 +451,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1,
       colnames(out$alpha) <- names(object$a1)
       out
     },
-    "IS corrected" = {
+    "IS1" = {
       out <- ng_bsm_mcmc_full(object$y, object$Z, object$T, object$R,
         object$a1, object$P1, object$phi,
         pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
@@ -459,8 +459,23 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
         object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
         object$init_signal, 3, seed, log_space, n_threads, seeds)
-      
-      # out$theta <- sample(1:nrow(out$theta), size = nrow(out$theta), 
+
+      # out$theta <- sample(1:nrow(out$theta), size = nrow(out$theta),
+      #   replace = TRUE, prob = out$weights)
+      out$alpha <- aperm(out$alpha, c(2, 1, 3))
+      colnames(out$alpha) <- names(object$a1)
+      out
+    },
+    "IS2" = {
+      out <- ng_bsm_mcmc_full(object$y, object$Z, object$T, object$R,
+        object$a1, object$P1, object$phi,
+        pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
+        lower_prior, upper_prior, n_iter,
+        nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
+        object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
+        object$init_signal, 4, seed, log_space, n_threads, seeds)
+
+      # out$theta <- sample(1:nrow(out$theta), size = nrow(out$theta),
       #   replace = TRUE, prob = out$weights)
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
@@ -577,7 +592,7 @@ predict.ng_bsm <- function(object, n_iter, nsim_states, lower_prior, upper_prior
 #' @export
 importance_sample.ng_bsm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
-  
+
   ng_bsm_importance_sample(object$y, object$Z, object$T, object$R, object$a1,
     object$P1, object$phi, object$slope, object$seasonal, object$noise, object$fixed,
     object$xreg, object$beta,

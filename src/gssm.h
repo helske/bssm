@@ -34,6 +34,11 @@ public:
   virtual double mcmc_param(arma::vec, arma::vec, unsigned int,
     unsigned int, unsigned int, double, double, arma::mat&,
     arma::mat&, arma::vec&);
+
+  virtual double mcmc_param2(arma::vec, arma::vec, unsigned int,
+    unsigned int, unsigned int, double, double, arma::mat&,
+    arma::mat&, arma::vec&, arma::uvec&);
+
   virtual double mcmc_summary(arma::vec, arma::vec, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat&, arma::mat&, arma::cube&,
     arma::mat&, arma::vec&);

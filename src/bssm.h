@@ -28,13 +28,13 @@ void uv_filter_predict(const arma::mat& T, const arma::mat& RR,
 double uv_filter(const double y, const arma::vec& Z, const double HH, const double xbeta,
   const arma::mat& T, const arma::mat& RR, arma::vec& at, arma::mat& Pt, const double zero_tol);
 
-template <typename T> 
-arma::cube sample_states(T mod, const arma::mat& theta,
+template <typename T>
+arma::cube sample_states(T mod, const arma::mat& theta, const arma::uvec& counts,
   unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds);
 
-template <typename T> 
+template <typename T>
 void is_correction(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
-  const arma::vec& ll_approx_u,  unsigned int nsim_states,
+  const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, arma::cube& alpha_store);
 
 #endif

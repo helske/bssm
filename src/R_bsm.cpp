@@ -144,20 +144,22 @@ List bsm_mcmc_parallel_full(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube
 
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
 
+  n_thin = 1; // no thinning allowed, make check in R
   unsigned int npar = theta_lwr.n_elem;
-  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+  unsigned int n_samples = floor((n_iter - n_burnin));
   arma::mat theta_store(npar, n_samples);
   arma::vec ll_store(n_samples);
+  arma::uvec counts(n_samples, arma::fill::zeros);
 
-  double acceptance_rate = model.mcmc_param(theta_lwr, theta_upr, n_iter,
-    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store);
+  double acceptance_rate = model.mcmc_param2(theta_lwr, theta_upr, n_iter,
+    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store, counts);
 
-  arma::cube alpha = sample_states(model, theta_store, nsim_states, n_threads, seeds);
+  arma::cube alpha = sample_states(model, theta_store, counts, nsim_states, n_threads, seeds);
 
   arma::inplace_trans(theta_store);
 
   return List::create(Named("alpha") = alpha,
-    Named("theta") = theta_store,
+    Named("theta") = theta_store, Named("counts") = counts,
     Named("acceptance_rate") = acceptance_rate,
     Named("S") = S,  Named("logLik") = ll_store);
 }
@@ -229,7 +231,9 @@ arma::cube bsm_sample_states(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cub
   bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   unsigned int n_threads, arma::uvec seeds) {
 
+  arma::uvec counts(theta.n_cols, arma::fill::ones);
+
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, 1);
 
-  return sample_states(model, theta, nsim_states, n_threads, seeds);
+  return sample_states(model, theta, counts, nsim_states, n_threads, seeds);
 }

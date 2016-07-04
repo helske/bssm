@@ -36,9 +36,15 @@ public:
   double mcmc_approx(arma::vec, arma::vec,
     unsigned int, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat&,
-    const arma::vec, arma::mat&, arma::vec&, 
+    const arma::vec, arma::mat&, arma::vec&,
     arma::mat&, arma::mat&, arma::vec&);
-    
+
+  double mcmc_approx2(arma::vec, arma::vec,
+      unsigned int, unsigned int, unsigned int,
+      unsigned int, double, double, arma::mat&,
+      const arma::vec, arma::mat&, arma::vec&,
+      arma::mat&, arma::mat&, arma::vec&, arma::uvec&);
+
   arma::vec phi;
   unsigned int distribution;
   const arma::vec ng_y;
