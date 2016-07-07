@@ -119,7 +119,7 @@ double gssm::log_likelihood(void) {
   arma::mat Pt = P1;
   for (unsigned int t = 0; t < n; t++) {
     logLik += uv_filter(y(t), Z.unsafe_col(t * Ztv), HH(t * Htv),
-      xbeta(t), T.slice(t * Ttv), T.slice(t * Rtv), at, Pt, zero_tol);
+      xbeta(t), T.slice(t * Ttv), RR.slice(t * Rtv), at, Pt, zero_tol);
   }
   return logLik;
 }

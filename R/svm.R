@@ -13,19 +13,17 @@
 #' @param lower_prior,upper_prior Prior bounds for uniform priors on mean, phi, and sds.
 #' @return Object of class \code{svm}.
 #' @export
-svm <- function(y, mean, phi, sigma, sd_ar, lower_prior, upper_prior) {
+svm <- function(y, ar, sd_ar, sigma, xreg = NULL, beta = NULL, lower_prior, upper_prior) {
 
   check_y(y)
   n <- length(y)
 
-  if (missing(mean)) {
-    mean <- 0
-  }
-  if (missing(phi)) {
-    phi <- 0.5
+
+  if (missing(ar)) {
+    ar <- 0.5
   } else {
-    if (abs(phi) >= 1) {
-      stop("Argument phi must be between -1 and 1.")
+    if (abs(ar) >= 1) {
+      stop("Argument ar must be between -1 and 1.")
     }
   }
   if (missing(sigma)) {
@@ -43,33 +41,81 @@ svm <- function(y, mean, phi, sigma, sd_ar, lower_prior, upper_prior) {
     }
   }
 
-  a1 <- 0
-  P1 <- matrix(sd_ar^2 / (1 - phi^2))
+  if (is.null(xreg)) {
 
-  Z <- array(1, c(1,1,1))
-  T <- array(phi, c(1,1,1))
+    xreg <- matrix(0, 0, 0)
+    beta <- numeric(0)
+
+  } else {
+    if (is.null(dim(xreg)) && length(xreg) == n) {
+      xreg <- matrix(xreg, n, 1)
+    }
+    check_xreg(xreg, n)
+
+    if (is.null(colnames(xreg))) {
+      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    }
+
+    if (missing(beta)) {
+      beta <- numeric(ncol(xreg))
+    } else {
+      check_beta(beta, ncol(xreg))
+    }
+
+    names(beta) <- colnames(xreg)
+  }
+
+  a1 <- 0
+  P1 <- matrix(sd_ar^2 / (1 - ar^2))
+
+  Z <- matrix(1)
+  T <- array(ar, c(1,1,1))
   R <- array(sd_ar, c(1,1,1))
 
   init_signal <- (log(pmax(1e-4,y^2)) - log(sigma^2))
 
   if (missing(lower_prior)) {
-    lower_prior <- c(-1e4, 1e-8, 1e-8, 1e-8)
+    lower_prior <- c(1e-8, 1e-8, 1e-8, rep(-1e4,length(beta)))
   }
 
   if (missing(upper_prior)) {
-    upper_prior <- c(1e4, 1 - 1e-8, 1e4, 1e4)
+    upper_prior <- c(1 - 1e-8, 1e4, 1e4, rep(1e4,length(beta)))
   }
 
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- "signal"
 
   names(lower_prior) <- names(upper_prior) <-
-    c("mean", "phi", "sigma", "sd_ar")
+    c("ar", "sd_ar", "sigma", names(beta))
 
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
-    a1 = a1, P1 = P1, mean = mean, sigma = sigma,
+    a1 = a1, P1 = P1, sigma = sigma, xreg = xreg, beta = beta,
     lower_prior = lower_prior, upper_prior = upper_prior,
     init_signal = init_signal), class = "svm")
+}
+
+#' @method logLik svm
+#' @rdname logLik
+#' @inheritParams logLik.ngssm
+#' @export
+logLik.svm <- function(object, nsim_states,
+  seed = 1, ...) {
+  svm_loglik(object$y, object$Z, object$T, object$R,
+    object$a1, object$P1, rep(object$sigma, length(object$y)),
+    object$xreg, object$beta, object$init_signal, nsim_states, seed)
+}
+
+#' @method smoother svm
+#' @export
+smoother.svm <- function(object, ...) {
+
+  out <- svm_smoother(object$y, object$Z, object$T, object$R,
+    object$a1, object$P1, rep(object$sigma, length(object$y)),
+    object$xreg, object$beta, object$init_signal)
+
+  colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
+  out$alphahat <- ts(out$alphahat, start = start(object$y))
+  out
 }
 
 #' @method run_mcmc svm
@@ -93,7 +139,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1,
   }
 
   if (missing(S)) {
-    S <- diag(4)
+    S <- diag(c(0.1,0.1,0.1, rep(1,length(object$beta))))
   }
   if (nsim_states < 2) {
     #approximate inference
@@ -105,7 +151,8 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1,
   out <- switch(method,
     standard = {
       out <- svm_mcmc_full(object$y, object$Z, object$T, object$R,
-        object$a1, object$P1, object$mean, object$sigma,
+        object$a1, object$P1,
+        rep(object$sigma, length(object$y)), object$xreg, object$beta,
         lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, 1, seed, n_threads, seeds)
@@ -116,7 +163,8 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1,
     },
     "DA" = {
       out <- svm_mcmc_full(object$y, object$Z, object$T, object$R,
-        object$a1, object$P1,object$mean, object$sigma,
+        object$a1, object$P1,
+        rep(object$sigma, length(object$y)), object$xreg, object$beta,
         lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, 2, seed, n_threads, seeds)
@@ -129,7 +177,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1,
   out$S <- matrix(out$S, length(lower_prior), length(lower_prior))
 
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-
-    c("mean", "phi", "sigma", "sd_ar")
+    c("ar", "sd_ar", "sigma", names(object$beta))
   out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
   out$call <- match.call()
   class(out) <- "mcmc_output"

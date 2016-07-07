@@ -21,7 +21,6 @@ List gssm_filter(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube Ptt(a1.n_elem, a1.n_elem, y.n_elem);
 
   double logLik = model.filter(at, att, Pt, Ptt);
-
   arma::inplace_trans(at);
   arma::inplace_trans(att);
 
