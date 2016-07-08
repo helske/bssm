@@ -58,7 +58,7 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
   // log[g(pseudo_y | signal)]
   for (unsigned int t = 0; t < n; t++) {
     if (arma::is_finite(ng_y(t))) {
-      ll += R::dnorm(y(t), signal(t), H(t), 1);
+      ll += R::dnorm(y(t), signal(t) + xbeta(t), H(t), 1);
     }
   }
   // log[p(y | signal)] - log[g(pseudo_y | signal)]
@@ -77,7 +77,7 @@ arma::vec ngssm::approx_iter(arma::vec& signal) {
     break;
   case 2  :
     HH = pow(1.0 + exp(signal + xbeta), 2) / (phi % exp(signal + xbeta));
-    y = ng_y % HH + signal + xbeta- 1.0 - exp(signal + xbeta);
+    y = ng_y % HH + signal + xbeta - 1.0 - exp(signal + xbeta);
     break;
   case 3  :
     HH = 1.0 / phi + 1.0 / exp(signal + xbeta);

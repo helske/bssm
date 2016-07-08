@@ -459,7 +459,7 @@ arma::cube gssm::sim_smoother(unsigned int nsim, bool demean) {
         H((n - 1) * Htv) * normal(engine);
     }
 
-    asim.slice(0) += fast_smoother(false);
+    asim.slice(0) += fast_smoother(demean);
 
   }
 
