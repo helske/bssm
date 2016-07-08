@@ -20,7 +20,7 @@ public:
   arma::vec get_theta(void);
 
   // log-likelihood of the approximating Gaussian model
-  double log_likelihood(void);
+  double log_likelihood(bool);
 
 private:
   const bool slope;

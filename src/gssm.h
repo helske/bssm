@@ -19,14 +19,14 @@ public:
   virtual void compute_RR(void);
   virtual void compute_HH(void);
   virtual void compute_xbeta(void);
-  virtual double log_likelihood(void);
-  virtual double filter(arma::mat&, arma::mat&, arma::cube&, arma::cube&);
-  virtual arma::mat fast_smoother(void);
-  virtual arma::mat fast_smoother2(arma::vec&, arma::mat&, arma::cube&);
+  virtual double log_likelihood(bool);
+  virtual double filter(arma::mat&, arma::mat&, arma::cube&, arma::cube&, bool);
+  virtual arma::mat fast_smoother(bool);
+  virtual arma::mat fast_smoother2(arma::vec&, arma::mat&, arma::cube&, bool);
   virtual arma::mat precomp_fast_smoother(const arma::vec&, const arma::mat&,
-    const arma::cube&);
-  virtual arma::cube sim_smoother(unsigned int);
-  virtual void smoother(arma::mat&, arma::cube&);
+    const arma::cube&, bool);
+  virtual arma::cube sim_smoother(unsigned int, bool);
+  virtual void smoother(arma::mat&, arma::cube&, bool);
 
   virtual double mcmc_full(arma::vec, arma::vec, unsigned int, unsigned int,
     unsigned int, unsigned int, double, double, arma::mat&,

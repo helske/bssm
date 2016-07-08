@@ -30,16 +30,16 @@ void is_correction(T mod, const arma::mat& theta, const arma::mat& y_store, cons
       arma::vec theta_i = theta.col(i);
       mod.update_model(theta_i);
 
-      arma::cube alpha = mod.sim_smoother(nsim_states * counts(i));
+      arma::cube alpha = mod.sim_smoother(nsim_states * counts(i), true);
       arma::vec weights = exp(mod.importance_weights2(alpha) - ll_approx_u(i));
       weights_store(i) = arma::mean(weights);
       std::discrete_distribution<> sample(weights.begin(), weights.end());
 
-      
+
       for (unsigned int ii = 0; ii < counts(i); ii++) {
-        alpha_store.slice(cum_counts(i) - counts(i) + ii) = alpha.slice(sample(mod.engine));  
+        alpha_store.slice(cum_counts(i) - counts(i) + ii) = alpha.slice(sample(mod.engine));
       }
-      
+
 
     }
   }

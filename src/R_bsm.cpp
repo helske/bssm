@@ -7,7 +7,7 @@ double bsm_loglik(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
 
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, 1);
 
-  return model.log_likelihood();
+  return model.log_likelihood(true);
 }
 
 // [[Rcpp::export]]
@@ -23,7 +23,7 @@ List bsm_filter(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube Pt(a1.n_elem, a1.n_elem, y.n_elem + 1);
   arma::cube Ptt(a1.n_elem, a1.n_elem, y.n_elem);
 
-  double logLik = model.filter(at, att, Pt, Ptt);
+  double logLik = model.filter(at, att, Pt, Ptt, true);
 
   arma::inplace_trans(at);
   arma::inplace_trans(att);
@@ -43,7 +43,7 @@ arma::mat bsm_fast_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube
   arma::uvec fixed, arma::mat& xreg, arma::vec& beta) {
 
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, 1);
-  return model.fast_smoother().t();
+  return model.fast_smoother(true).t();
 }
 
 // [[Rcpp::export]]
@@ -52,7 +52,7 @@ arma::cube bsm_sim_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube
   bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta, unsigned int seed) {
 
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed);
-  return model.sim_smoother(nsim);
+  return model.sim_smoother(nsim, true);
 }
 
 
@@ -66,7 +66,7 @@ List bsm_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::mat alphahat(a1.n_elem, y.n_elem);
   arma::cube Vt(a1.n_elem, a1.n_elem, y.n_elem);
 
-  model.smoother(alphahat, Vt);
+  model.smoother(alphahat, Vt, true);
   arma::inplace_trans(alphahat);
 
   return List::create(

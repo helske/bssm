@@ -18,11 +18,11 @@ double ng_bsm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
   double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
   double ll_w = 0;
   if (nsim_states > 1) {
-    arma::cube alpha = model.sim_smoother(nsim_states);
+    arma::cube alpha = model.sim_smoother(nsim_states, true);
     arma::vec weights = exp(model.importance_weights(alpha, init_signal));
     ll_w = log(sum(weights) / nsim_states);
   }
-  return model.log_likelihood() + ll + ll_w;
+  return model.log_likelihood(true) + ll + ll_w;
 }
 
 // [[Rcpp::export]]
@@ -41,7 +41,7 @@ List ng_bsm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube Pt(a1.n_elem, a1.n_elem, y.n_elem + 1);
   arma::cube Ptt(a1.n_elem, a1.n_elem, y.n_elem);
 
-  logLik += model.filter(at, att, Pt, Ptt);
+  logLik += model.filter(at, att, Pt, Ptt, true);
 
   arma::inplace_trans(at);
   arma::inplace_trans(att);
@@ -66,7 +66,7 @@ arma::mat ng_bsm_fast_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
 
   double logLik = model.approx(init_signal, 1000, 1e-12);
 
-  return model.fast_smoother().t();
+  return model.fast_smoother(true).t();
 }
 
 // [[Rcpp::export]]
@@ -79,7 +79,7 @@ arma::cube ng_bsm_sim_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
     distribution, seed);
   double logLik = model.approx(init_signal, 1000, 1e-12);
 
-  return model.sim_smoother(nsim);
+  return model.sim_smoother(nsim, true);
 }
 
 
@@ -97,7 +97,7 @@ List ng_bsm_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::mat alphahat(a1.n_elem, y.n_elem);
   arma::cube Vt(a1.n_elem, a1.n_elem, y.n_elem);
 
-  model.smoother(alphahat, Vt);
+  model.smoother(alphahat, Vt, true);
   arma::inplace_trans(alphahat);
 
   return List::create(
@@ -222,7 +222,7 @@ List ng_bsm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
 
   double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
 
-  arma::cube alpha = model.sim_smoother(nsim_states);
+  arma::cube alpha = model.sim_smoother(nsim_states, true);
   arma::vec weights = exp(model.importance_weights(alpha, init_signal));
 
   return List::create(

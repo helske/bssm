@@ -27,7 +27,7 @@ arma::cube sample_states(T mod, const arma::mat& theta, const arma::uvec& counts
       mod.update_model(theta_i);
 
       alpha_store.slices(nsim_states * (cum_counts(i)-counts(i)), nsim_states * cum_counts(i) - 1) =
-        mod.sim_smoother(nsim_states * counts(i));
+        mod.sim_smoother(nsim_states * counts(i), true);
 
     }
   }

@@ -18,7 +18,7 @@ double svm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
   double ll_w = 0;
   arma::vec weights(nsim_states);
   if (nsim_states > 1) {
-    arma::cube alpha = model.sim_smoother(nsim_states);
+    arma::cube alpha = model.sim_smoother(nsim_states, false);
     weights = exp(model.importance_weights(alpha, init_signal));
     ll_w = log(sum(weights) / nsim_states);
   }
@@ -29,7 +29,7 @@ double svm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
  //    Named("weights") = weights,
  //    Named("y") = model.y,
  //    Named("HH") = model.HH, Named("signal") = init_signal);
-return model.log_likelihood() + ll + ll_w;
+return model.log_likelihood(false) + ll + ll_w;
 }
 
 // [[Rcpp::export]]
@@ -44,7 +44,7 @@ List svm_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
     arma::mat alphahat(a1.n_elem, y.n_elem);
     arma::cube Vt(a1.n_elem, a1.n_elem, y.n_elem);
 
-    model.smoother(alphahat, Vt);
+    model.smoother(alphahat, Vt, false);
     arma::inplace_trans(alphahat);
 
     return List::create(

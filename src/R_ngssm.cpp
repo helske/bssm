@@ -17,11 +17,11 @@ double ngssm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
   double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
   double ll_w = 0;
   if (nsim_states > 1) {
-    arma::cube alpha = model.sim_smoother(nsim_states);
+    arma::cube alpha = model.sim_smoother(nsim_states, true);
     arma::vec weights = exp(model.importance_weights(alpha, init_signal));
     ll_w = log(sum(weights) / nsim_states);
   }
-  return model.log_likelihood() + ll + ll_w;
+  return model.log_likelihood(true) + ll + ll_w;
 }
 
 // [[Rcpp::export]]
@@ -39,7 +39,7 @@ List ngssm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube Pt(a1.n_elem, a1.n_elem, y.n_elem + 1);
   arma::cube Ptt(a1.n_elem, a1.n_elem, y.n_elem);
 
-  logLik += model.filter(at, att, Pt, Ptt);
+  logLik += model.filter(at, att, Pt, Ptt, true);
 
   arma::inplace_trans(at);
   arma::inplace_trans(att);

@@ -102,33 +102,50 @@ arma::vec bsm::get_theta(void) {
   return theta;
 }
 
-double bsm::log_likelihood(void) {
+double bsm::log_likelihood(bool demean) {
 
   double logLik = 0;
   arma::vec at = a1;
   arma::mat Pt = P1;
-  for (unsigned int t = 0; t < n; t++) {
-    logLik += uv_filter(y(t), Z.unsafe_col(0), HH(0),
-      xbeta(t), T.slice(0), RR.slice(0), at, Pt, zero_tol);
+  if(demean && xreg.n_cols > 0) {
+    for (unsigned int t = 0; t < n; t++) {
+      logLik += uv_filter(y(t) - xbeta(t), Z.unsafe_col(0), HH(0),
+        T.slice(0), RR.slice(0), at, Pt, zero_tol);
+    }
+  } else {
+    for (unsigned int t = 0; t < n; t++) {
+      logLik += uv_filter(y(t), Z.unsafe_col(0), HH(0),
+        T.slice(0), RR.slice(0), at, Pt, zero_tol);
+    }
   }
   return logLik;
 }
 
 double bsm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
-  arma::cube& Ptt) {
+  arma::cube& Ptt, bool demean) {
 
   double logLik = 0;
 
   at.col(0) = a1;
   Pt.slice(0) = P1;
-
-  for (unsigned int t = 0; t < n; t++) {
-    // update
-    logLik += uv_filter_update(y(t), Z.col(0), HH(0),
-      xbeta(t), at.col(t), Pt.slice(t), att.col(t), Ptt.slice(t), zero_tol);
-    // prediction
-    uv_filter_predict(T.slice(0), RR.slice(0), att.col(t),
-      Ptt.slice(t), at.col(t + 1),  Pt.slice(t + 1));
+  if(demean && xreg.n_cols > 0) {
+    for (unsigned int t = 0; t < n; t++) {
+      // update
+      logLik += uv_filter_update(y(t) - xbeta(t), Z.col(0), HH(0),
+        at.col(t), Pt.slice(t), att.col(t), Ptt.slice(t), zero_tol);
+      // prediction
+      uv_filter_predict(T.slice(0), RR.slice(0), att.col(t),
+        Ptt.slice(t), at.col(t + 1),  Pt.slice(t + 1));
+    }
+  } else {
+    for (unsigned int t = 0; t < n; t++) {
+      // update
+      logLik += uv_filter_update(y(t), Z.col(0), HH(0),
+        at.col(t), Pt.slice(t), att.col(t), Ptt.slice(t), zero_tol);
+      // prediction
+      uv_filter_predict(T.slice(0), RR.slice(0), att.col(t),
+        Ptt.slice(t), at.col(t + 1),  Pt.slice(t + 1));
+    }
   }
   return logLik;
 }

@@ -23,9 +23,9 @@ public:
   arma::vec get_theta(void);
 
   // log-likelihood
-  double log_likelihood(void);
+  double log_likelihood(bool);
   // Kalman filtering
-  double filter(arma::mat&, arma::mat&, arma::cube&, arma::cube&);
+  double filter(arma::mat&, arma::mat&, arma::cube&, arma::cube&, bool);
 
 private:
   const bool slope;

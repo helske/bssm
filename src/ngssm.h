@@ -31,7 +31,6 @@ public:
 
   virtual arma::vec importance_weights(const arma::cube&, const arma::vec&);
   virtual arma::vec importance_weights2(const arma::cube&);
-  virtual arma::mat invlink(const arma::cube&, const arma::vec&, const unsigned int);
 
   double mcmc_approx(arma::vec, arma::vec,
     unsigned int, unsigned int, unsigned int,
