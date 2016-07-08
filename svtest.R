@@ -4,6 +4,13 @@ model <- svm(y, ar=0.9731, sd_ar = 0.1726, sigma = 0.6338)
 model$upper_prior[1]<-0.9999
 model$lower_prior[] <- 0.001
 
+
+system.time(out_st <- run_mcmc(model, 6e4, nsim_states = 1, method = "st")) #267
+system.time(out_DA10b <- run_mcmc(model, 6e4, nsim_states = 10, target=0.344, method = "DA")) #294
+system.time(out_DA50b <- run_mcmc(model, 6e4, nsim_states = 50, target=0.285, method = "DA")) #441
+system.time(out_st10 <- run_mcmc(model, 6e4, nsim_states = 10, method = "st")) #424
+system.time(out_st50 <- run_mcmc(model, 6e4, nsim_states = 50, method = "st")) #948
+
 system.time(out_st <- run_mcmc(model, 6e4, nsim_states = 1, method = "st")) #267
 system.time(out_DA10 <- run_mcmc(model, 6e4, nsim_states = 10, method = "DA")) #294
 system.time(out_DA50 <- run_mcmc(model, 6e4, nsim_states = 50, method = "DA")) #441
@@ -19,21 +26,20 @@ mean(coda::effectiveSize(out_DA50$theta))/441 #=2.8
 mean(coda::effectiveSize(out_DA250$theta))/ 1170#=1.0
 
 
-ess_st <- s_st <- ess_da <- s_da <- matrix(NA, 50, 50)
-seeds <- 1:50
+ess_st <- s_st <- ess_da <- s_da <- matrix(NA, 10, 50)
+seeds <- 1:10
 for (i in 1:50) {
-  for (j in 1:50) {
+  for (j in 1:10) {
     s_st[j,i] <-
-      system.time(res <- run_mcmc(model, method = "st", n_iter = 5e4,
+      system.time(res <- run_mcmc(model, method = "st", n_iter = 1e4,
         nsim_states = i*5, seed = j))[3]
     ess_st[j, i] <- mean(coda::effectiveSize(res$theta))
     s_da[j,i] <-
-      system.time(res <- run_mcmc(model, method = "DA", n_iter = 5e4,
+      system.time(res <- run_mcmc(model, method = "DA", n_iter = 1e4,
         nsim_states = i*5, seed = j))[3]
     ess_da[j, i] <- mean(coda::effectiveSize(res$theta))
-
   }
-  print(i)
+  print(c(mean(ess_st[,i]), mean(ess_da[,i])))
 }
 
 
