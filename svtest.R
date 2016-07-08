@@ -5,11 +5,13 @@ model$upper_prior[1]<-0.9999
 model$lower_prior[] <- 0.001
 
 
-system.time(out_st <- run_mcmc(model, 6e4, nsim_states = 1, method = "st")) #267
-system.time(out_DA10b <- run_mcmc(model, 6e4, nsim_states = 10, target=0.344, method = "DA")) #294
-system.time(out_DA50b <- run_mcmc(model, 6e4, nsim_states = 50, target=0.285, method = "DA")) #441
-system.time(out_st10 <- run_mcmc(model, 6e4, nsim_states = 10, method = "st")) #424
-system.time(out_st50 <- run_mcmc(model, 6e4, nsim_states = 50, method = "st")) #948
+system.time(out_st <- run_mcmc(model, 6e4, nsim_states = 1, method = "st")) #269.84
+system.time(out_DA10b <- run_mcmc(model, 6e4, nsim_states = 10,
+  target=0.344, method = "DA")) #346.07
+system.time(out_DA50b <- run_mcmc(model, 6e4, nsim_states = 50,
+  target=0.285, method = "DA")) #500.11
+system.time(out_st10 <- run_mcmc(model, 6e4, nsim_states = 10, method = "st")) #427.60
+system.time(out_st50 <- run_mcmc(model, 6e4, nsim_states = 50, method = "st")) #960.56
 
 system.time(out_st <- run_mcmc(model, 6e4, nsim_states = 1, method = "st")) #267
 system.time(out_DA10 <- run_mcmc(model, 6e4, nsim_states = 10, method = "DA")) #294
@@ -19,9 +21,11 @@ system.time(out_st50 <- run_mcmc(model, 6e4, nsim_states = 50, method = "st")) #
 system.time(out_DA250 <- run_mcmc(model, 6e4, nsim_states = 250, method = "DA")) #1170
 
 mean(coda::effectiveSize(out_st$theta))
-mean(coda::effectiveSize(out_st10$theta))/424 #=2.2
-mean(coda::effectiveSize(out_st50$theta))/948 #=1.3
-mean(coda::effectiveSize(out_DA10$theta))/294 #=1.2
+mean(coda::effectiveSize(out_st10$theta))/427 #=2.2
+mean(coda::effectiveSize(out_st50$theta))/960 #=1.3
+mean(coda::effectiveSize(out_DA10b$theta))/346 #=1.2
+mean(coda::effectiveSize(out_DA50b$theta))/500 #=2.8
+mean(coda::effectiveSize(out_DA250$theta))/ 1170#=1.0
 mean(coda::effectiveSize(out_DA50$theta))/441 #=2.8
 mean(coda::effectiveSize(out_DA250$theta))/ 1170#=1.0
 
