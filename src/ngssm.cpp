@@ -277,7 +277,7 @@ List ngssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
 
 
   if (nsim_states > 1) {
-    arma::vec weights = exp(importance_weights(alpha, signal));
+    arma::vec weights = exp(importance_weights(alpha) - scaling_factor(signal));
     std::discrete_distribution<> sample(weights.begin(), weights.end());
     ind = sample(engine);
     ll += log(sum(weights) / nsim_states);
@@ -322,7 +322,7 @@ List ngssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
       // if nsim_states = 1, target hat_p(theta, alpha | y)
       if (nsim_states > 1) {
         alpha_prop = sim_smoother(nsim_states, distribution != 0);
-        arma::vec weights = exp(importance_weights(alpha_prop, signal));
+        arma::vec weights = exp(importance_weights(alpha_prop) - scaling_factor(signal));
         ll_prop += log(sum(weights) / nsim_states);
         std::discrete_distribution<> sample(weights.begin(), weights.end());
         ind_prop = sample(engine);
@@ -405,7 +405,7 @@ List ngssm::mcmc_da(arma::vec theta_lwr, arma::vec theta_upr,
 
   double ll = ll_approx + log_likelihood(distribution != 0);
   arma::cube alpha = sim_smoother(nsim_states, distribution != 0);
-  arma::vec weights = exp(importance_weights(alpha, signal));
+  arma::vec weights = exp(importance_weights(alpha) - scaling_factor(signal));
   double ll_w = log(sum(weights) / nsim_states);
 
   std::discrete_distribution<> sample(weights.begin(), weights.end());
@@ -456,7 +456,7 @@ List ngssm::mcmc_da(arma::vec theta_lwr, arma::vec theta_upr,
     if (inrange && (unif(engine) < accept_prob)) {
       // simulate states
       arma::cube alpha_prop = sim_smoother(nsim_states, distribution != 0);
-      arma::vec weights = exp(importance_weights(alpha_prop, signal));
+      arma::vec weights = exp(importance_weights(alpha_prop) - scaling_factor(signal));
       double ll_w_prop = log(sum(weights) / nsim_states);
       // delayed acceptance ratio
       double pp = std::min(1.0, exp(ll_w_prop - ll_w));
@@ -533,7 +533,7 @@ arma::mat ngssm::predict2(arma::vec theta_lwr,
   double ll_w = 0;
   if (nsim_states > 1) {
     arma::cube alpha = sim_smoother(nsim_states, distribution != 0);
-    arma::vec weights = exp(importance_weights(alpha, signal));
+    arma::vec weights = exp(importance_weights(alpha) - scaling_factor(signal));
     ll_w = log(sum(weights) / nsim_states);
     // sample from p(alpha | y)
     std::discrete_distribution<> sample(weights.begin(), weights.end());
@@ -637,7 +637,7 @@ arma::mat ngssm::predict2(arma::vec theta_lwr,
     if (inrange && (unif(engine) < accept_prob)) {
       if (nsim_states > 1) {
         arma::cube alpha = sim_smoother(nsim_states, distribution != 0);
-        arma::vec weights = exp(importance_weights(alpha, signal));
+        arma::vec weights = exp(importance_weights(alpha) - scaling_factor(signal));
         double ll_w_prop = log(sum(weights) / nsim_states);
         double pp = std::min(1.0, exp(ll_w_prop - ll_w));
         //accept_prob *= pp;
@@ -739,48 +739,11 @@ arma::mat ngssm::predict2(arma::vec theta_lwr,
   return pred_store;
 
 }
-//compute log-weights normalized with log[p(y|alphahat)/g(y|alphahat)]
-arma::vec ngssm::importance_weights(const arma::cube& alphasim, const arma::vec& signal) {
+//compute log-weights
+arma::vec ngssm::importance_weights(const arma::cube& alphasim) {
 
   arma::vec weights(alphasim.n_slices, arma::fill::zeros);
 
-  double ll_approx_u = 0.0;
-  switch(distribution) {
-  case 0  :
-    for (unsigned int t = 0; t < n; t++) {
-      if (arma::is_finite(ng_y(t))) {
-        ll_approx_u += -0.5 * (signal(t) +
-          pow((ng_y(t) - xbeta(t)) / phi(t), 2) * exp(-signal(t))) +
-          0.5 * pow(y(t) - signal(t), 2) / HH(t);
-      }
-    }
-    break;
-  case 1  :
-    for (unsigned int t = 0; t < n; t++) {
-      if (arma::is_finite(ng_y(t))) {
-        ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) - phi(t) * exp(signal(t) + xbeta(t)) +
-          0.5 * pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
-      }
-    }
-    break;
-  case 2  :
-    for (unsigned int t = 0; t < n; t++) {
-      if (arma::is_finite(ng_y(t))) {
-        ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) - phi(t) * log(1 + exp(signal(t) + xbeta(t))) +
-          0.5 * std::pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
-      }
-    }
-    break;
-  case 3  :
-    for (unsigned int t = 0; t < n; t++) {
-      if (arma::is_finite(ng_y(t))) {
-        ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) -
-          (ng_y(t) + phi(t)) * log(phi(t) + exp(signal(t) + xbeta(t))) +
-          0.5 * std::pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
-      }
-    }
-    break;
-  }
   switch(distribution) {
   case 0  :
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
@@ -833,54 +796,50 @@ arma::vec ngssm::importance_weights(const arma::cube& alphasim, const arma::vec&
     break;
   }
 
-  return weights - ll_approx_u;
+  return weights;
 }
 
-//compute log-weights without normalization
-arma::vec ngssm::importance_weights2(const arma::cube& alphasim) {
+//compute log[p(y|alphahat)/g(y|alphahat)]
+double ngssm::scaling_factor(const arma::vec& signal) {
 
-  arma::vec weights(alphasim.n_slices, arma::fill::zeros);
-
+  double ll_approx_u = 0.0;
   switch(distribution) {
+  case 0  :
+    for (unsigned int t = 0; t < n; t++) {
+      if (arma::is_finite(ng_y(t))) {
+        ll_approx_u += -0.5 * (signal(t) +
+          pow((ng_y(t) - xbeta(t)) / phi(t), 2) * exp(-signal(t))) +
+          0.5 * pow(y(t) - signal(t), 2) / HH(t);
+      }
+    }
+    break;
   case 1  :
-    for (unsigned int i = 0; i < alphasim.n_slices; i++) {
-      for (unsigned int t = 0; t < n; t++) {
-        if (arma::is_finite(ng_y(t))) {
-          double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
-            alphasim.slice(i).col(t) + xbeta(t));
-          weights(i) += ng_y(t) * simsignal  - phi(t) * exp(simsignal) +
-            0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
-        }
+    for (unsigned int t = 0; t < n; t++) {
+      if (arma::is_finite(ng_y(t))) {
+        ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) - phi(t) * exp(signal(t) + xbeta(t)) +
+          0.5 * pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
       }
     }
     break;
   case 2  :
-    for (unsigned int i = 0; i < alphasim.n_slices; i++) {
-      for (unsigned int t = 0; t < n; t++) {
-        if (arma::is_finite(ng_y(t))) {
-          double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
-            alphasim.slice(i).col(t) + xbeta(t));
-          weights(i) += ng_y(t) * simsignal - phi(t) * log(1 + exp(simsignal)) +
-            0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
-        }
+    for (unsigned int t = 0; t < n; t++) {
+      if (arma::is_finite(ng_y(t))) {
+        ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) - phi(t) * log(1 + exp(signal(t) + xbeta(t))) +
+          0.5 * std::pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
       }
     }
     break;
   case 3  :
-    for (unsigned int i = 0; i < alphasim.n_slices; i++) {
-      for (unsigned int t = 0; t < n; t++) {
-        if (arma::is_finite(ng_y(t))) {
-          double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
-            alphasim.slice(i).col(t) + xbeta(t));
-          weights(i) += ng_y(t) * simsignal - (ng_y(t) + phi(t)) * log(phi(t) + exp(simsignal)) +
-            0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
-        }
+    for (unsigned int t = 0; t < n; t++) {
+      if (arma::is_finite(ng_y(t))) {
+        ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) -
+          (ng_y(t) + phi(t)) * log(phi(t) + exp(signal(t) + xbeta(t))) +
+          0.5 * std::pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
       }
     }
     break;
   }
-
-  return weights;
+  return ll_approx_u;
 }
 
 double ngssm::mcmc_approx(arma::vec theta_lwr, arma::vec theta_upr,
@@ -901,13 +860,7 @@ double ngssm::mcmc_approx(arma::vec theta_lwr, arma::vec theta_upr,
 
   unsigned int j = 0;
 
-  double ll_approx_u = 0.0;
-  for (unsigned int t = 0; t < n; t++) {
-    if (arma::is_finite(ng_y(t))) {
-      ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) -
-        phi(t) * exp(signal(t) + xbeta(t)) + 0.5 * pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
-    }
-  }
+  double ll_approx_u = scaling_factor(signal);
 
   if (n_burnin == 0) {
     theta_store.col(0) = theta;
@@ -961,13 +914,7 @@ double ngssm::mcmc_approx(arma::vec theta_lwr, arma::vec theta_upr,
       }
       ll = ll_prop;
       theta = theta_prop;
-      ll_approx_u = 0.0;
-      for (unsigned int t = 0; t < n; t++) {
-        if (arma::is_finite(ng_y(t))) {
-          ll_approx_u += ng_y(t) * (signal(t) + xbeta(t))-
-            phi(t) * exp(signal(t) + xbeta(t)) + 0.5 * pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
-        }
-      }
+      ll_approx_u = scaling_factor(signal);
     } else {
       y = y_tmp;
       H = H_tmp;

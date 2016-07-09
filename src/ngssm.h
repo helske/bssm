@@ -29,8 +29,8 @@ public:
     unsigned int, unsigned int, double, double, arma::mat, unsigned int,
     unsigned int, arma::vec);
 
-  virtual arma::vec importance_weights(const arma::cube&, const arma::vec&);
-  virtual arma::vec importance_weights2(const arma::cube&);
+  virtual arma::vec importance_weights(const arma::cube&);
+  virtual double scaling_factor(const arma::vec&);
 
   double mcmc_approx(arma::vec, arma::vec,
     unsigned int, unsigned int, unsigned int,

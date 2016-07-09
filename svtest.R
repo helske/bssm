@@ -1,11 +1,11 @@
 library(bssm)
 y <- scan("sv.dat")
-model <- svm(y, ar=0.9731, sd_ar = 0.1726, sigma = 0.6338)
-model$upper_prior[1]<-0.9999
-model$lower_prior[] <- 0.001
+model <- svm(y, xreg = matrix(1,length(y)),ar=0.9731, sd_ar = 0.1726, sigma = 0.6338)
 
 
 system.time(out_st <- run_mcmc(model, 6e4, nsim_states = 1, method = "st")) #269.84
+system.time(out_DA10 <- run_mcmc(model, 6e4, nsim_states = 10, method = "DA")) #294
+system.time(out_DA50 <- run_mcmc(model, 6e4, nsim_states = 50, method = "DA")) #441
 system.time(out_DA10b <- run_mcmc(model, 6e4, nsim_states = 10,
   target=0.344, method = "DA")) #346.07
 system.time(out_DA50b <- run_mcmc(model, 6e4, nsim_states = 50,

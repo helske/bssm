@@ -19,7 +19,7 @@ double ng_bsm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
   double ll_w = 0;
   if (nsim_states > 1) {
     arma::cube alpha = model.sim_smoother(nsim_states, true);
-    arma::vec weights = exp(model.importance_weights(alpha, init_signal));
+    arma::vec weights = exp(model.importance_weights(alpha) - model.scaling_factor(init_signal));
     ll_w = log(sum(weights) / nsim_states);
   }
   return model.log_likelihood(true) + ll + ll_w;
@@ -223,7 +223,8 @@ List ng_bsm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
   double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
 
   arma::cube alpha = model.sim_smoother(nsim_states, true);
-  arma::vec weights = exp(model.importance_weights(alpha, init_signal));
+  arma::vec weights = exp(model.importance_weights(alpha) -
+    model.scaling_factor(init_signal));
 
   return List::create(
     Named("alpha") = alpha,

@@ -19,7 +19,7 @@ double svm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::vec weights(nsim_states);
   if (nsim_states > 1) {
     arma::cube alpha = model.sim_smoother(nsim_states, false);
-    weights = exp(model.importance_weights(alpha, init_signal));
+    weights = exp(model.importance_weights(alpha) - model.scaling_factor(init_signal));
     ll_w = log(sum(weights) / nsim_states);
   }
 
