@@ -129,7 +129,8 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1,
   method = "delayed acceptance",  n_threads = 1,
   seeds = sample(.Machine$integer.max, size = n_threads), ...) {
 
-  method <- match.arg(method, c("standard", "DA", "IS1", "IS2"))
+  method <- match.arg(method, c("standard", "delayed acceptance",
+    "IS correction", "block IS correction"))
 
   if (missing(lower_prior)) {
     lower_prior <- object$lower_prior
@@ -161,7 +162,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1,
       colnames(out$alpha) <- names(object$a1)
       out
     },
-    "DA" = {
+    "delayed acceptance" = {
       out <- svm_mcmc_full(object$y, object$Z, object$T, object$R,
         object$a1, object$P1,
         rep(object$sigma, length(object$y)), object$xreg, object$beta,
@@ -173,7 +174,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1,
       colnames(out$alpha) <- names(object$a1)
       out
     },
-    "IS1" = {
+    "IS correction" = {
       out <- svm_mcmc_full(object$y, object$Z, object$T, object$R,
         object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
         lower_prior, upper_prior, n_iter,
@@ -184,7 +185,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1,
       colnames(out$alpha) <- names(object$a1)
       out
     },
-    "IS2" = {
+    "block IS correction" = {
       out <- ng_bsm_mcmc_full(object$y, object$Z, object$T, object$R,
         object$a1, object$P1,rep(object$sigma, length(object$y)), object$xreg, object$beta,
         lower_prior, upper_prior, n_iter,
