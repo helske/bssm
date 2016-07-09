@@ -56,9 +56,17 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
   }
   ll = 0.0;
   // log[g(pseudo_y | signal)]
+  if (distribution != 0) {
   for (unsigned int t = 0; t < n; t++) {
     if (arma::is_finite(ng_y(t))) {
       ll += R::dnorm(y(t), signal(t) + xbeta(t), H(t), 1);
+    }
+  }
+  } else {
+    for (unsigned int t = 0; t < n; t++) {
+      if (arma::is_finite(ng_y(t))) {
+        ll += R::dnorm(y(t), signal(t), H(t), 1);
+      }
     }
   }
   // log[p(y | signal)] - log[g(pseudo_y | signal)]
