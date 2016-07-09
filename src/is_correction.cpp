@@ -1,6 +1,7 @@
 #include "bssm.h"
 #include "ngssm.h"
 #include "ng_bsm.h"
+#include "svm.h"
 
 // [[Rcpp::plugins(openmp)]]
 template <typename T>
@@ -30,7 +31,7 @@ void is_correction(T mod, const arma::mat& theta, const arma::mat& y_store, cons
       arma::vec theta_i = theta.col(i);
       mod.update_model(theta_i);
 
-      arma::cube alpha = mod.sim_smoother(nsim_states * counts(i), true);
+      arma::cube alpha = mod.sim_smoother(nsim_states * counts(i), mod.distribution != 0);
       arma::vec weights = exp(mod.importance_weights(alpha) - ll_approx_u(i));
       weights_store(i) = arma::mean(weights);
       std::discrete_distribution<> sample(weights.begin(), weights.end());
@@ -50,5 +51,8 @@ template void is_correction<ngssm>(ngssm mod, const arma::mat& theta, const arma
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, arma::cube& alpha_store);
 template void is_correction<ng_bsm>(ng_bsm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
+  const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
+  unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, arma::cube& alpha_store);
+template void is_correction<svm>(svm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, arma::cube& alpha_store);

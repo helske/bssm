@@ -7,11 +7,12 @@ system.time(out_st <- run_mcmc(model, 6e4, nsim_states = 1, method = "st")) #269
 system.time(out_DA10 <- run_mcmc(model, 6e4, nsim_states = 10, method = "DA")) #294
 system.time(out_DA50 <- run_mcmc(model, 6e4, nsim_states = 50, method = "DA")) #441
 system.time(out_DA10b <- run_mcmc(model, 6e4, nsim_states = 10,
-  target=0.344, method = "DA")) #346.07
+  target=out_DA10$acc/0.234, method = "DA")) #346.07
 system.time(out_DA50b <- run_mcmc(model, 6e4, nsim_states = 50,
-  target=0.285, method = "DA")) #500.11
+  target=out_DA50$acc/0.234, method = "DA")) #500.11
 system.time(out_st10 <- run_mcmc(model, 6e4, nsim_states = 10, method = "st")) #427.60
 system.time(out_st50 <- run_mcmc(model, 6e4, nsim_states = 50, method = "st")) #960.56
+system.time(out_IS10 <- run_mcmc(model, 1e4, nsim_states = 10, method = "IS1",n_threads=4)) #960.56
 
 system.time(out_st <- run_mcmc(model, 6e4, nsim_states = 1, method = "st")) #267
 system.time(out_DA10 <- run_mcmc(model, 6e4, nsim_states = 10, method = "DA")) #294

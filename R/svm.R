@@ -172,6 +172,28 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1,
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
       out
+    },
+    "IS1" = {
+      out <- svm_mcmc_full(object$y, object$Z, object$T, object$R,
+        object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
+        lower_prior, upper_prior, n_iter,
+        nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
+        object$init_signal, 3, seed, n_threads, seeds)
+
+      out$alpha <- aperm(out$alpha, c(2, 1, 3))
+      colnames(out$alpha) <- names(object$a1)
+      out
+    },
+    "IS2" = {
+      out <- ng_bsm_mcmc_full(object$y, object$Z, object$T, object$R,
+        object$a1, object$P1,rep(object$sigma, length(object$y)), object$xreg, object$beta,
+        lower_prior, upper_prior, n_iter,
+        nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
+        object$init_signal, 4, seed, n_threads, seeds)
+
+      out$alpha <- aperm(out$alpha, c(2, 1, 3))
+      colnames(out$alpha) <- names(object$a1)
+      out
     }
   )
   out$S <- matrix(out$S, length(lower_prior), length(lower_prior))
