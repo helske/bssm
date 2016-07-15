@@ -120,7 +120,7 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
 
     arma::vec weights_store(counts.n_elem);
     arma::cube alpha_store(model.m, model.n, counts.n_elem);
-
+    
     is_correction(model, theta_store, y_store, H_store, ll_approx_u_store, counts,
       nsim_states, n_threads, seeds, weights_store, alpha_store);
 
@@ -161,4 +161,44 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
     break;
   }
   return List::create(Named("just_in_case") = "should be impossible to see this... Restructure the function later");
+}
+
+
+// [[Rcpp::export]]
+List svm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
+  arma::mat& xreg, arma::vec& beta,
+  unsigned int nsim_states,
+  arma::vec& init_signal, unsigned int seed) {
+  
+  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed);
+  
+  double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
+  
+  arma::cube alpha = model.sim_smoother(nsim_states, false);
+  arma::vec weights = exp(model.importance_weights(alpha) -
+    model.scaling_factor(init_signal));
+  
+  return List::create(
+    Named("alpha") = alpha,
+    Named("weights") = weights,
+    Named("unscaled_log_weights") = model.importance_weights(alpha));
+}
+
+// [[Rcpp::export]]
+List svm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
+  arma::mat& xreg, arma::vec& beta, arma::vec& init_signal, unsigned int max_iter,
+  double conv_tol) {
+  
+  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, 1);
+  
+  double ll = model.approx(init_signal, max_iter, conv_tol);
+
+  
+  return List::create(
+    Named("y") = model.y,
+    Named("H") = model.H,
+    Named("logLik") = ll,
+    Named("signal") = init_signal);
 }

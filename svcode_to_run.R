@@ -44,7 +44,7 @@ is_da_comparison <- function(nsim = 100, n_iter = 1e4, n_burnin = 0, nsim_states
       summary(res$theta)$stat[, 4]^2)
 
     s <- system.time(res <- run_mcmc(model, n_iter = n_iter, n_burnin = n_burnin,
-      nsim_states = nsim_states, target = res$acceptance_rate / 0.234, method = "delayed acceptance"))[3]
+      nsim_states = nsim_states, target = 0.234^2 / res$acceptance_rate, method = "delayed acceptance"))[3]
     results[4, , i] <-   c(s, res$acceptance_rate,
       mean(res$alpha[945,1,]),
       summary(coda::mcmc(res$alpha[945,1,]))$stat[4]^2,

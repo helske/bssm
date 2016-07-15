@@ -91,3 +91,17 @@ run_mcmc <- function(object, ...) {
 importance_sample <- function(object, nsim, seed, ...) {
   UseMethod("importance_sample", object)
 }
+
+
+#' Gaussian Approximation of non-Gaussian State Space Model
+#' 
+#' Returns the approximating Gaussian model.
+#' @param object of class \code{svm}.
+#' @param max_iter Maximum number of iterations.
+#' @param conv_tol Tolerance parameter. Document properly later!
+#' @param ... Ignored.
+#' @export
+#' @rdname gaussian_approx
+gaussian_approx <- function(object, max_iter, conv_tol, ...) {
+  UseMethod("gaussian_approx", object)
+}

@@ -217,3 +217,25 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1,
   class(out) <- "mcmc_output"
   out
 }
+
+
+#' @method importance_sample svm
+#' @rdname importance_sample
+#' @export
+importance_sample.svm <- function(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  svm_importance_sample(object$y, object$Z, object$T, object$R,
+  object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
+  nsim, object$init_signal, seed)
+}
+
+#' @method gaussian_approx svm
+#' @rdname gaussian_approx
+#' @export
+gaussian_approx.svm <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
+  
+ svm_approx_model(object$y, object$Z, object$T, object$R,
+    object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
+    object$init_signal, max_iter, conv_tol)
+}

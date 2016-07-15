@@ -1039,14 +1039,7 @@ double ngssm::mcmc_approx2(arma::vec theta_lwr, arma::vec theta_upr,
 
   y_store.col(0) = y;
   H_store.col(0) = H;
-
-  double ll_approx_u = 0.0;
-  for (unsigned int t = 0; t < n; t++) {
-    if (arma::is_finite(ng_y(t))) {
-      ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) - phi(t) *
-        exp(signal(t) + xbeta(t)) + 0.5 * pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
-    }
-  }
+double ll_approx_u = scaling_factor(signal);
   ll_approx_u_store(0) = ll_approx_u;
   counts(0) = 1;
   unsigned int n_unique = 0;
@@ -1084,13 +1077,7 @@ double ngssm::mcmc_approx2(arma::vec theta_lwr, arma::vec theta_upr,
     if (inrange && (unif(engine) < accept_prob)) {
       ll = ll_prop;
       theta = theta_prop;
-      ll_approx_u = 0.0;
-      for (unsigned int t = 0; t < n; t++) {
-        if (arma::is_finite(ng_y(t))) {
-          ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) - phi(t) *
-            exp(signal(t) + xbeta(t)) + 0.5 * pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
-        }
-      }
+      ll_approx_u = scaling_factor(signal);
       n_unique++;
       acceptance_rate++;
       counts(n_unique) = 1;

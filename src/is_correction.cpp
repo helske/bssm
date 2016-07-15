@@ -34,6 +34,7 @@ void is_correction(T mod, const arma::mat& theta, const arma::mat& y_store, cons
       arma::cube alpha = mod.sim_smoother(nsim_states * counts(i), mod.distribution != 0);
       arma::vec weights = exp(mod.importance_weights(alpha) - ll_approx_u(i));
       weights_store(i) = arma::mean(weights);
+
       std::discrete_distribution<> sample(weights.begin(), weights.end());
 
       alpha_store.slice(i) = alpha.slice(sample(mod.engine));

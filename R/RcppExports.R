@@ -161,3 +161,11 @@ svm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_
     .Call('bssm_svm_mcmc_full', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds)
 }
 
+svm_importance_sample <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed) {
+    .Call('bssm_svm_importance_sample', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed)
+}
+
+svm_approx_model <- function(y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, max_iter, conv_tol) {
+    .Call('bssm_svm_approx_model', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, max_iter, conv_tol)
+}
+
