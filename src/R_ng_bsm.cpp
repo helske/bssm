@@ -258,3 +258,24 @@ List ng_bsm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
     Named("alpha") = alpha,
     Named("weights") = weights);
 }
+
+// [[Rcpp::export]]
+List ng_bsm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope,
+  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
+  unsigned int distribution, arma::vec init_signal, unsigned int max_iter,
+  double conv_tol) {
+  
+  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
+    distribution, 1);
+  
+  double ll = model.approx(init_signal, max_iter, conv_tol);
+  
+  
+  return List::create(
+    Named("y") = model.y,
+    Named("H") = model.H,
+    Named("logLik") = ll,
+    Named("signal") = init_signal);
+}
+

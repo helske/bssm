@@ -181,8 +181,7 @@ List svm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
   
   return List::create(
     Named("alpha") = alpha,
-    Named("weights") = weights,
-    Named("unscaled_log_weights") = model.importance_weights(alpha));
+    Named("weights") = weights);
 }
 
 // [[Rcpp::export]]
