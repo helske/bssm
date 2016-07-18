@@ -370,6 +370,8 @@ List ngssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
         arma::uvec cond = arma::find(arma::diagvec(Stmp) < 0);
         if (cond.n_elem == 0) {
           S = Stmp;
+        } else {
+          Rcout<<"numerical issues in S"<<std::endl;
         }
       }
     }

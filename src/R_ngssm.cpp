@@ -112,7 +112,7 @@ List ngssm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List ngssm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
+List ngssm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
   unsigned int distribution, arma::mat& xreg, arma::vec& beta, arma::vec& init_signal,
   unsigned int max_iter, double conv_tol) {

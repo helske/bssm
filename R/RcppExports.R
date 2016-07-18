@@ -133,6 +133,10 @@ ng_bsm_importance_sample <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, n
     .Call('bssm_ng_bsm_importance_sample', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed)
 }
 
+ng_bsm_approx_model <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, max_iter, conv_tol) {
+    .Call('bssm_ng_bsm_approx_model', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, max_iter, conv_tol)
+}
+
 ngssm_loglik <- function(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init_signal, nsim_states, seed) {
     .Call('bssm_ngssm_loglik', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init_signal, nsim_states, seed)
 }
@@ -147,6 +151,14 @@ ngssm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, th
 
 ngssm_predict2 <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, T_ind, R_ind, xreg, beta, init_signal, seed) {
     .Call('bssm_ngssm_predict2', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, T_ind, R_ind, xreg, beta, init_signal, seed)
+}
+
+ngssm_importance_sample <- function(y, Z, T, R, a1, P1, phi, distribution, xreg, beta, init_signal, nsim_states, seed) {
+    .Call('bssm_ngssm_importance_sample', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, xreg, beta, init_signal, nsim_states, seed)
+}
+
+ngssm_approx_model <- function(y, Z, T, R, a1, P1, phi, distribution, xreg, beta, init_signal, max_iter, conv_tol) {
+    .Call('bssm_ngssm_approx_model', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, xreg, beta, init_signal, max_iter, conv_tol)
 }
 
 svm_loglik <- function(y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, nsim_states, seed) {
