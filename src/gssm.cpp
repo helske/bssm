@@ -610,24 +610,7 @@ double gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
       j++;
     }
 
-    double change = accept_prob - target_acceptance;
-    u = S * u / arma::norm(u) * sqrt(std::min(1.0, npar * pow(i, -gamma)) *
-      std::abs(change));
-
-
-    if(change > 0) {
-      S = cholupdate(S, u);
-
-    } else {
-      if(change < 0){
-        //update S unless numerical problems occur
-        arma::mat Stmp = choldowndate(S, u);
-        arma::uvec cond = arma::find(arma::diagvec(Stmp) < 0);
-        if (cond.n_elem == 0) {
-          S = Stmp;
-        }
-      }
-    }
+    adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
 
   }
   // arma::inplace_trans(theta_store);
@@ -706,24 +689,7 @@ double gssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
       j++;
     }
 
-    double change = accept_prob - target_acceptance;
-    u = S * u / arma::norm(u) * sqrt(std::min(1.0, npar * pow(i, -gamma)) *
-      std::abs(change));
-
-
-    if(change > 0) {
-      S = cholupdate(S, u);
-
-    } else {
-      if(change < 0){
-        //update S unless numerical problems occur
-        arma::mat Stmp = choldowndate(S, u);
-        arma::uvec cond = arma::find(arma::diagvec(Stmp) < 0);
-        if (cond.n_elem == 0) {
-          S = Stmp;
-        }
-      }
-    }
+    adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
 
   }
   return acceptance_rate / (n_iter - n_burnin);
@@ -811,25 +777,7 @@ double gssm::mcmc_param2(arma::vec theta_lwr, arma::vec theta_upr,
       }
     }
 
-
-    double change = accept_prob - target_acceptance;
-    u = S * u / arma::norm(u) * sqrt(std::min(1.0, npar * pow(i, -gamma)) *
-      std::abs(change));
-
-
-    if(change > 0) {
-      S = cholupdate(S, u);
-
-    } else {
-      if(change < 0){
-        //update S unless numerical problems occur
-        arma::mat Stmp = choldowndate(S, u);
-        arma::uvec cond = arma::find(arma::diagvec(Stmp) < 0);
-        if (cond.n_elem == 0) {
-          S = Stmp;
-        }
-      }
-    }
+    adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
 
   }
 
@@ -964,23 +912,8 @@ List gssm::predict(arma::vec theta_lwr,
       }
       j++;
     }
-    double change = accept_prob - target_acceptance;
-    u = S * u * sqrt(std::min(1.0, npar * pow(i, -gamma)) * std::abs(change)) /
-      arma::norm(u);
-
-    if(change > 0) {
-      S = cholupdate(S, u);
-
-    } else {
-      if(change < 0){
-        //update S unless numerical problems occur
-        arma::mat Stmp = choldowndate(S, u);
-        arma::uvec cond = arma::find(arma::diagvec(Stmp) < 0);
-        if (cond.n_elem == 0) {
-          S = Stmp;
-        }
-      }
-    }
+    
+    adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
 
   }
 
@@ -1096,23 +1029,7 @@ arma::mat gssm::predict2(arma::vec theta_lwr,
       j++;
     }
 
-    double change = accept_prob - target_acceptance;
-    u = S * u * sqrt(std::min(1.0, npar * pow(i, -gamma)) * std::abs(change)) /
-      arma::norm(u);
-
-    if(change > 0) {
-      S = cholupdate(S, u);
-
-    } else {
-      if(change < 0){
-        //update S unless numerical problems occur
-        arma::mat Stmp = choldowndate(S, u);
-        arma::uvec cond = arma::find(arma::diagvec(Stmp) < 0);
-        if (cond.n_elem == 0) {
-          S = Stmp;
-        }
-      }
-    }
+    adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
 
   }
 

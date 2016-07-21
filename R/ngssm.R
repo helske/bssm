@@ -385,3 +385,29 @@ predict.ngssm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
   pred
 
 }
+
+#' @method importance_sample ngssm
+#' @rdname importance_sample
+#' @export
+importance_sample.ngssm <- function(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  ngssm_importance_sample(object$y, object$Z, object$T, object$R, object$a1,
+    object$P1, object$phi, 
+    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
+    object$xreg, object$beta,
+    object$init_signal, nsim, seed)
+}
+
+#' @method gaussian_approx ngssm
+#' @rdname gaussian_approx
+#' @export
+gaussian_approx.ngssm<- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
+  
+  ngssm_approx_model(object$y, object$Z, object$T, object$R, object$a1,
+    object$P1, object$phi, 
+    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
+    object$xreg, object$beta,
+    object$init_signal, max_iter, conv_tol)
+}
+

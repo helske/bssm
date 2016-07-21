@@ -125,6 +125,10 @@ ng_bsm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, t
     .Call('bssm_ng_bsm_mcmc_full', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds)
 }
 
+ng_bsm_mcmc_param <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds) {
+    .Call('bssm_ng_bsm_mcmc_param', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds)
+}
+
 ng_bsm_predict2 <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, slope, seasonal, noise, fixed, xreg, beta, init_signal, seed, log_space) {
     .Call('bssm_ng_bsm_predict2', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, slope, seasonal, noise, fixed, xreg, beta, init_signal, seed, log_space)
 }

@@ -169,7 +169,7 @@ List svm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
   arma::mat& xreg, arma::vec& beta,
   unsigned int nsim_states,
-  arma::vec& init_signal, unsigned int seed) {
+  arma::vec init_signal, unsigned int seed) {
   
   svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed);
   
@@ -187,7 +187,7 @@ List svm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
 // [[Rcpp::export]]
 List svm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  arma::mat& xreg, arma::vec& beta, arma::vec& init_signal, unsigned int max_iter,
+  arma::mat& xreg, arma::vec& beta, arma::vec init_signal, unsigned int max_iter,
   double conv_tol) {
   
   svm model(y, Z, T, R, a1, P1, phi, xreg, beta, 1);

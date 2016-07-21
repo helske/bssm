@@ -122,16 +122,22 @@ smoother.svm <- function(object, ...) {
 #' @rdname run_mcmc_ng
 #' @inheritParams run_mcmc.ngssm
 #' @export
-run_mcmc.svm <- function(object, n_iter, nsim_states = 1,
+run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
   lower_prior, upper_prior, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
-  seed = sample(.Machine$integer.max, size = 1),
   method = "delayed acceptance",  n_threads = 1,
-  seeds = sample(.Machine$integer.max, size = n_threads), ...) {
+  seed = sample(.Machine$integer.max, size = 1),
+  thread_seeds = sample(.Machine$integer.max, size = n_threads), ...) {
 
+  type <- match.arg(type, c("full", "parameters", "summary"))
+  
   method <- match.arg(method, c("standard", "delayed acceptance",
     "IS correction", "block IS correction", "IS2"))
 
+  if (n_thin > 1 && method %in% c("block IS correction", "IS2")) {
+    stop ("Cannot use thinning with block-IS algorithm.")
+  }
+  
   if (missing(lower_prior)) {
     lower_prior <- object$lower_prior
   }

@@ -44,6 +44,11 @@ public:
       const arma::vec, arma::mat&, arma::vec&,
       arma::mat&, arma::mat&, arma::vec&, arma::uvec&);
 
+  List mcmc_param(arma::vec, arma::vec,
+    unsigned int, unsigned int, unsigned int,
+    unsigned int, double, double, arma::mat,
+    const arma::vec);
+  
   arma::vec phi;
   unsigned int distribution;
   const arma::vec ng_y;

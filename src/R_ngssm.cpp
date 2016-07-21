@@ -93,9 +93,8 @@ arma::mat ngssm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
 // [[Rcpp::export]]
 List ngssm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
-  unsigned int distribution, arma::mat& xreg, arma::vec& beta, arma::vec& init_signal,
+  unsigned int distribution, arma::mat& xreg, arma::vec& beta, arma::vec init_signal,
   unsigned int nsim_states,  unsigned int seed) {
-  
   
   ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, 1);
   
@@ -114,15 +113,12 @@ List ngssm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
 // [[Rcpp::export]]
 List ngssm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
-  unsigned int distribution, arma::mat& xreg, arma::vec& beta, arma::vec& init_signal,
+  unsigned int distribution, arma::mat& xreg, arma::vec& beta, arma::vec init_signal,
   unsigned int max_iter, double conv_tol) {
-  
   
   ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, 1);
   
-  
   double ll = model.approx(init_signal, max_iter, conv_tol);
-  
   
   return List::create(
     Named("y") = model.y,

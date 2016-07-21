@@ -326,11 +326,12 @@ smoother.bsm <- function(object, ...) {
 #'   lty = c(1, 1, 2, 2))
 run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
   lower_prior, upper_prior, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size = 1),
+  target_acceptance = 0.234, S, 
   log_space = FALSE, n_threads = 1,
+  seed = sample(.Machine$integer.max, size = 1),
   thread_seeds = sample(.Machine$integer.max, size = n_threads), ...) {
 
-  type <- match.arg(type, c("full", "parameters", "summary", "parallel"))
+  type <- match.arg(type, c("full", "parameters", "summary", "parallel_full"))
 
   if (missing(lower_prior)) {
     lower_prior <- object$lower_prior
@@ -368,7 +369,7 @@ run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
       colnames(out$alpha) <- names(object$a1)
       out
     },
-    parallel = {
+    parallel_full = {
       out <- bsm_mcmc_parallel_full(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, object$slope,

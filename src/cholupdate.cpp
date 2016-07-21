@@ -1,6 +1,7 @@
 #include <RcppArmadillo.h>
 using namespace Rcpp;
 
+
 // [[Rcpp::export]]
 arma::mat cholupdate(arma::mat L, arma::vec u) {
   unsigned int n = u.n_elem - 1;
@@ -34,16 +35,26 @@ arma::mat choldowndate(arma::mat L, arma::vec u) {
   return L;
 }
 
-/*** R
-k<-3
-A <- crossprod(matrix(rnorm(k ^ 2), k, k))
-L1 <- t(chol(A))
-u <- rnorm(k)
-library("microbenchmark")
-f <- function(L1, u) t(chol(L1%*%t(L1) + u%*%t(u)))
-f2 <- function(L1, u) t(chol(L1%*%t(L1) - u%*%t(u)))
-bssm:::cholupdate(L1, u)
-f(L1,u)
-bssm:::choldowndate(L1, u)
-f2(L1,u)
-*/
+
+void adjust_S(arma::mat& S, arma::vec& u, double current, double target, unsigned int n, double gamma) {
+  
+  double change = current - target;
+  u = S * u / arma::norm(u) * sqrt(std::min(1.0, u.n_elem * pow(n, -gamma)) *
+    std::abs(change));
+  
+  if(change > 0) {
+    S = cholupdate(S, u);
+    
+  } else {
+    if(change < 0){
+      //downdate S unless numerical problems occur
+      arma::mat Stmp = choldowndate(S, u);
+      arma::uvec cond = arma::find(arma::diagvec(Stmp) < 0);
+      if (cond.n_elem == 0) {
+        S = Stmp;
+      } else {
+        Rcout<<"numerical issues in S."<<std::endl;
+      }
+    }
+  }
+}
