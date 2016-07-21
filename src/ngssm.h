@@ -22,7 +22,7 @@ public:
   virtual arma::vec approx_iter(arma::vec&);
   virtual List mcmc_full(arma::vec, arma::vec, unsigned int,
     unsigned int, unsigned int, unsigned int, double, double, arma::mat, const arma::vec);
-  virtual List mcmc_da(arma::vec, arma::vec, unsigned int,
+  List mcmc_da(arma::vec, arma::vec, unsigned int,
     unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec);
 
   virtual arma::mat predict2(arma::vec, arma::vec, unsigned int, unsigned int,
@@ -48,6 +48,18 @@ public:
     unsigned int, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat,
     const arma::vec);
+  
+  List mcmc_da_param(arma::vec, arma::vec, unsigned int,
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec);
+  
+  List mcmc_summary(arma::vec, arma::vec,
+    unsigned int, unsigned int, unsigned int,
+    unsigned int, double, double, arma::mat,
+    const arma::vec);
+  
+  List mcmc_da_summary(arma::vec, arma::vec, unsigned int,
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec);
+  
   
   arma::vec phi;
   unsigned int distribution;

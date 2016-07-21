@@ -240,7 +240,7 @@ List ng_bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
       nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal);
     break;
   case 2 :
-    return model.mcmc_da(theta_lwr, theta_upr, n_iter,
+    return model.mcmc_da_param(theta_lwr, theta_upr, n_iter,
       nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal);
     break;
   case 3 : {
@@ -259,14 +259,12 @@ List ng_bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
         theta_store, ll_store, y_store, H_store, ll_approx_u_store);
       
       arma::vec weights_store(n_samples);
-      arma::cube alpha_store(model.m, model.n, n_samples);
       
-      
-      is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,
-        counts, nsim_states, n_threads, seeds, weights_store, alpha_store);
+      is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store,
+        counts, nsim_states, n_threads, seeds, weights_store);
       
       arma::inplace_trans(theta_store);
-      return List::create(Named("alpha") = alpha_store,
+      return List::create(
         Named("theta") = theta_store,
         Named("acceptance_rate") = acceptance_rate,
         Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
@@ -288,13 +286,12 @@ List ng_bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
       theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
     
     arma::vec weights_store(counts.n_elem);
-    arma::cube alpha_store(model.m, model.n, counts.n_elem);
     
-    is_correction(model, theta_store, y_store, H_store, ll_approx_u_store, counts,
-      nsim_states, n_threads, seeds, weights_store, alpha_store);
+    is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store, counts,
+      nsim_states, n_threads, seeds, weights_store);
     
     arma::inplace_trans(theta_store);
-    return List::create(Named("alpha") = alpha_store,
+    return List::create(
       Named("theta") = theta_store, Named("counts") = counts,
       Named("acceptance_rate") = acceptance_rate,
       Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
@@ -316,13 +313,12 @@ List ng_bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
       theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
     
     arma::vec weights_store(counts.n_elem);
-    arma::cube alpha_store(model.m, model.n, counts.n_elem);
     
-    is_correction2(model, theta_store, y_store, H_store, ll_approx_u_store, counts,
-      nsim_states, n_threads, seeds, weights_store, alpha_store);
+    is_correction2_param(model, theta_store, y_store, H_store, ll_approx_u_store, counts,
+      nsim_states, n_threads, seeds, weights_store);
     
     arma::inplace_trans(theta_store);
-    return List::create(Named("alpha") = alpha_store,
+    return List::create(
       Named("theta") = theta_store, Named("counts") = counts,
       Named("acceptance_rate") = acceptance_rate,
       Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
