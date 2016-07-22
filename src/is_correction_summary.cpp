@@ -13,6 +13,10 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
   unsigned n_iter = theta.n_cols;
 
   arma::uvec cum_counts = arma::cumsum(counts);
+  alphahat.zeros();
+  Vt.zeros();
+  mean.zeros();
+  Vmean.zeros();
   
 #pragma omp parallel num_threads(n_threads) default(none) \
   shared(ll_approx_u, n_iter, nsim_states, y_store, H_store, theta, \
@@ -36,6 +40,11 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
       arma::cube alpha = mod.sim_smoother(nsim_states * counts(i), mod.distribution != 0);
       arma::vec weights = exp(mod.importance_weights(alpha) - ll_approx_u(i));
       weights_store(i) = arma::mean(weights);
+      arma::mat alphahat_i(mod.m, mod.n);
+      arma::cube Vt_i(mod.m, mod.m, mod.n);
+      running_weighted_summary(alpha, alphahat_i, Vt_i, weights);
+      // Vt += (Vt_i - Vt) / (j + 1);
+      // running_summary(alphahat_i, alphahat, Valpha, j);
       
 
     }

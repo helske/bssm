@@ -1245,23 +1245,23 @@ List ngssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
   
   arma::mat alphahat(m, n, arma::fill::zeros);
   arma::cube Vt(m, m, n, arma::fill::zeros);
-  
+  arma::cube Valpha(m, m, n, arma::fill::zeros);
+  arma::vec weights(nsim_states, arma::fill::ones);
   
   if (nsim_states > 1) {
-    arma::vec weights = exp(importance_weights(alpha) - scaling_factor(signal));
+   weights = exp(importance_weights(alpha) - scaling_factor(signal));
     ll += log(sum(weights) / nsim_states);
   }
   
   unsigned int j = 0;
   
   if (n_burnin == 0) {
-    for(unsigned int ii = 0; ii < nsim_states; ii++) {
-      arma::mat diff = alpha.slice(ii) - alphahat;
-      alphahat += diff / (ii + 1);
-      for (unsigned int t = 0; t < n; t++) {
-        Vt.slice(t) += diff.col(t) * (alpha.slice(ii).col(t) - alphahat.col(t)).t();
-      }
-    }
+    arma::mat alphahat_i(m, n);
+    arma::cube Vt_i(m, m, n);
+    running_weighted_summary(alpha, alphahat_i, Vt_i, weights);
+    Vt += (Vt_i - Vt) / (j + 1);
+    running_summary(alphahat_i, alphahat, Valpha, j);
+    
     theta_store.col(0) = theta;
     ll_store(0) = ll;
     acceptance_rate++;
@@ -1271,6 +1271,7 @@ List ngssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
   double accept_prob = 0;
   double ll_prop = 0;
   arma::cube alpha_prop = alpha;
+  arma::vec weights_prop = weights;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   for (unsigned int i = 1; i < n_iter; i++) {
@@ -1298,8 +1299,8 @@ List ngssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
       // if nsim_states = 1, target hat_p(theta, alpha | y)
       if (nsim_states > 1) {
         alpha_prop = sim_smoother(nsim_states, distribution != 0);
-        arma::vec weights = exp(importance_weights(alpha_prop) - scaling_factor(signal));
-        ll_prop += log(sum(weights) / nsim_states);
+        weights_prop = exp(importance_weights(alpha_prop) - scaling_factor(signal));
+        ll_prop += log(sum(weights_prop) / nsim_states);
       }
       double q = proposal(theta, theta_prop);
       accept_prob = std::min(1.0, exp(ll_prop - ll + q));
@@ -1317,19 +1318,19 @@ List ngssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
         alpha = sim_smoother(1, distribution != 0);
       } else {
         alpha = alpha_prop;
+        weights = weights_prop;
       }
       
     }
     
-    //store
     if ((i >= n_burnin) && (i % n_thin == 0) && j < n_samples) {
-      for(unsigned int ii = 0; ii < nsim_states; ii++) {
-        arma::mat diff = alpha.slice(ii) - alphahat;
-        alphahat += diff / (j*nsim_states + ii + 1);
-        for (unsigned int t = 0; t < n; t++) {
-          Vt.slice(t) += diff.col(t) * (alpha.slice(ii).col(t) - alphahat.col(t)).t();
-        }
-      }
+   
+      arma::mat alphahat_i(m, n);
+      arma::cube Vt_i(m, m, n);
+      running_weighted_summary(alpha, alphahat_i, Vt_i, weights);
+      Vt += (Vt_i - Vt) / (j + 1);
+      running_summary(alphahat_i, alphahat, Valpha, j);
+
       ll_store(j) = ll;
       theta_store.col(j) = theta;
       
@@ -1339,10 +1340,10 @@ List ngssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
     adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
     
   }
- 
+  
  arma::inplace_trans(alphahat);
   arma::inplace_trans(theta_store);
-  return List::create(Named("alphahat") = alphahat, Named("Vt") =  Vt / (n_samples * nsim_states),
+  return List::create(Named("alphahat") = alphahat, Named("Vt") =  Vt + Valpha,
     Named("theta") = theta_store,
     Named("acceptance_rate") = acceptance_rate / (n_iter - n_burnin),
     Named("S") = S,  Named("logLik") = ll_store);
@@ -1373,20 +1374,18 @@ List ngssm::mcmc_da_summary(arma::vec theta_lwr, arma::vec theta_upr,
   
   arma::mat alphahat(m, n, arma::fill::zeros);
   arma::cube Vt(m, m, n, arma::fill::zeros);
-  
+  arma::cube Valpha(m, m, n, arma::fill::zeros);
  
   
   unsigned int j = 0;
   
   if (n_burnin == 0) {
-    // for(unsigned int ii = 0; ii < nsim_states; ii++) {
-    //   arma::mat diff = alpha.slice(ii) - alphahat;
-    //   alphahat += diff / (ii + 1);
-    //   for (unsigned int t = 0; t < n; t++) {
-    //     Vt.slice(t) += diff.col(t) * (alpha.slice(ii).col(t) - alphahat.col(t)).t();
-    //   }
-    // }
-    running_summary(alpha, alphahat, Vt, 0);
+    arma::mat alphahat_i(m, n);
+    arma::cube Vt_i(m, m, n);
+    running_weighted_summary(alpha, alphahat_i, Vt_i, weights);
+    Vt += (Vt_i - Vt) / (j + 1);
+    running_summary(alphahat_i, alphahat, Valpha, j);
+    
     theta_store.col(0) = theta;
     ll_store(0) = ll + ll_w;
     acceptance_rate++;
@@ -1428,8 +1427,8 @@ List ngssm::mcmc_da_summary(arma::vec theta_lwr, arma::vec theta_upr,
     if (inrange && (unif(engine) < accept_prob)) {
       // simulate states
       arma::cube alpha_prop = sim_smoother(nsim_states, distribution != 0);
-      arma::vec weights = exp(importance_weights(alpha_prop) - scaling_factor(signal));
-      double ll_w_prop = log(sum(weights) / nsim_states);
+      arma::vec weights_prop = exp(importance_weights(alpha_prop) - scaling_factor(signal));
+      double ll_w_prop = log(sum(weights_prop) / nsim_states);
       // delayed acceptance ratio
       double pp = std::min(1.0, exp(ll_w_prop - ll_w));
       // accept_prob *= pp; // only count the initial acceptance
@@ -1443,19 +1442,17 @@ List ngssm::mcmc_da_summary(arma::vec theta_lwr, arma::vec theta_upr,
         ll_w = ll_w_prop;
         theta = theta_prop;
         alpha = alpha_prop;
+        weights = weights_prop;
       }
     }
     
     //store
     if ((i >= n_burnin) && (i % n_thin == 0) && j < n_samples) {
-      running_summary(alpha, alphahat, Vt, j * nsim_states);
-      // for(unsigned int ii = 0; ii < nsim_states; ii++) {
-      //   arma::mat diff = alpha.slice(ii) - alphahat;
-      //   alphahat += diff / (j*nsim_states + ii + 1);
-      //   for (unsigned int t = 0; t < n; t++) {
-      //     Vt.slice(t) += diff.col(t) * (alpha.slice(ii).col(t) - alphahat.col(t)).t();
-      //   }
-      // }
+      arma::mat alphahat_i(m, n);
+      arma::cube Vt_i(m, m, n);
+      running_weighted_summary(alpha, alphahat_i, Vt_i, weights);
+      Vt += (Vt_i - Vt) / (j + 1);
+      running_summary(alphahat_i, alphahat, Valpha, j);
       ll_store(j) = ll + ll_w;
       theta_store.col(j) = theta;
       j++;
@@ -1467,7 +1464,7 @@ List ngssm::mcmc_da_summary(arma::vec theta_lwr, arma::vec theta_upr,
   arma::inplace_trans(alphahat);
   arma::inplace_trans(theta_store);
   return List::create(Named("alphahat") = alphahat, 
-    Named("Vt") =  Vt,// / (n_samples * nsim_states),
+    Named("Vt") =  Vt + Valpha,
     Named("theta") = theta_store,
     Named("acceptance_rate") = acceptance_rate / (n_iter - n_burnin),
     Named("S") = S,  Named("logLik") = ll_store);

@@ -189,7 +189,11 @@ svm_approx_model <- function(y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, m
     .Call('bssm_svm_approx_model', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, max_iter, conv_tol)
 }
 
-runnin_summary <- function(x, mean_x, cov_x, n) {
-    invisible(.Call('bssm_runnin_summary', PACKAGE = 'bssm', x, mean_x, cov_x, n))
+running_summary <- function(x, mean_x, cov_x, n) {
+    invisible(.Call('bssm_running_summary', PACKAGE = 'bssm', x, mean_x, cov_x, n))
+}
+
+running_weighted_summary <- function(x, mean_x, cov_x, weights) {
+    invisible(.Call('bssm_running_weighted_summary', PACKAGE = 'bssm', x, mean_x, cov_x, weights))
 }
 

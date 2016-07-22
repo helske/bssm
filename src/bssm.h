@@ -17,8 +17,9 @@ arma::mat choldowndate(arma::mat L, arma::vec u);
 
 void adjust_S(arma::mat& S, arma::vec& u, double current, double target, unsigned int n, double gamma);
 
-void running_summary(arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, unsigned int n);
-
+void running_summary(arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, unsigned int n);
+void running_weighted_summary(arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, arma::vec& weights);
+  
 arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
 
 double uv_filter_update(const double y, arma::subview_col<double> Z, const double HH,
