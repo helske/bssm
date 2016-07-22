@@ -456,7 +456,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1, type = "full",
           "IS correction", "block IS correction", "IS2")), seed, log_space, n_threads, thread_seeds)
     },
     summary = {
-      ng_bsm_mcmc_summary(object$y, object$Z, object$T, object$R,
+      out <- ng_bsm_mcmc_summary(object$y, object$Z, object$T, object$R,
         object$a1, object$P1, object$phi,
         pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
         lower_prior, upper_prior, n_iter,
@@ -464,7 +464,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1, type = "full",
         object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2")), seed, log_space, n_threads, thread_seeds)
-      
+     
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y),
         frequency = object$period)

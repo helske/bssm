@@ -16,7 +16,9 @@ arma::mat cholupdate(arma::mat L, arma::vec u);
 arma::mat choldowndate(arma::mat L, arma::vec u);
 
 void adjust_S(arma::mat& S, arma::vec& u, double current, double target, unsigned int n, double gamma);
-  
+
+void running_summary(arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, unsigned int n);
+
 arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
 
 double uv_filter_update(const double y, arma::subview_col<double> Z, const double HH,
@@ -39,12 +41,6 @@ void is_correction(T mod, const arma::mat& theta, const arma::mat& y_store, cons
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, arma::cube& alpha_store);
 
-
-template <typename T>
-void is_correction2(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
-  const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, arma::cube& alpha_store);
-
 template <typename T>
 void is_correction_param(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
@@ -52,7 +48,9 @@ void is_correction_param(T mod, const arma::mat& theta, const arma::mat& y_store
 
 
 template <typename T>
-void is_correction2_param(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
+void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store);
+  unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, 
+  arma::mat& alphahat, arma::cube& Vt, arma::mat& mean, arma::mat& Vmean);
+
 #endif

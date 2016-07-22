@@ -1233,8 +1233,6 @@ List ngssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
   
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
   arma::mat theta_store(npar, n_samples);
-
- 
   
   arma::vec ll_store(n_samples);
   double acceptance_rate = 0.0;
@@ -1342,8 +1340,9 @@ List ngssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
     
   }
  
+ arma::inplace_trans(alphahat);
   arma::inplace_trans(theta_store);
-  return List::create(Named("alphahat") = alphahat, Named("Vt") =  Vt / n_samples * nsim_states,
+  return List::create(Named("alphahat") = alphahat, Named("Vt") =  Vt / (n_samples * nsim_states),
     Named("theta") = theta_store,
     Named("acceptance_rate") = acceptance_rate / (n_iter - n_burnin),
     Named("S") = S,  Named("logLik") = ll_store);
@@ -1380,13 +1379,14 @@ List ngssm::mcmc_da_summary(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int j = 0;
   
   if (n_burnin == 0) {
-    for(unsigned int ii = 0; ii < nsim_states; ii++) {
-      arma::mat diff = alpha.slice(ii) - alphahat;
-      alphahat += diff / (ii + 1);
-      for (unsigned int t = 0; t < n; t++) {
-        Vt.slice(t) += diff.col(t) * (alpha.slice(ii).col(t) - alphahat.col(t)).t();
-      }
-    }
+    // for(unsigned int ii = 0; ii < nsim_states; ii++) {
+    //   arma::mat diff = alpha.slice(ii) - alphahat;
+    //   alphahat += diff / (ii + 1);
+    //   for (unsigned int t = 0; t < n; t++) {
+    //     Vt.slice(t) += diff.col(t) * (alpha.slice(ii).col(t) - alphahat.col(t)).t();
+    //   }
+    // }
+    running_summary(alpha, alphahat, Vt, 0);
     theta_store.col(0) = theta;
     ll_store(0) = ll + ll_w;
     acceptance_rate++;
@@ -1448,13 +1448,14 @@ List ngssm::mcmc_da_summary(arma::vec theta_lwr, arma::vec theta_upr,
     
     //store
     if ((i >= n_burnin) && (i % n_thin == 0) && j < n_samples) {
-      for(unsigned int ii = 0; ii < nsim_states; ii++) {
-        arma::mat diff = alpha.slice(ii) - alphahat;
-        alphahat += diff / (j*nsim_states + ii + 1);
-        for (unsigned int t = 0; t < n; t++) {
-          Vt.slice(t) += diff.col(t) * (alpha.slice(ii).col(t) - alphahat.col(t)).t();
-        }
-      }
+      running_summary(alpha, alphahat, Vt, j * nsim_states);
+      // for(unsigned int ii = 0; ii < nsim_states; ii++) {
+      //   arma::mat diff = alpha.slice(ii) - alphahat;
+      //   alphahat += diff / (j*nsim_states + ii + 1);
+      //   for (unsigned int t = 0; t < n; t++) {
+      //     Vt.slice(t) += diff.col(t) * (alpha.slice(ii).col(t) - alphahat.col(t)).t();
+      //   }
+      // }
       ll_store(j) = ll + ll_w;
       theta_store.col(j) = theta;
       j++;
@@ -1463,9 +1464,10 @@ List ngssm::mcmc_da_summary(arma::vec theta_lwr, arma::vec theta_upr,
     adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
     
   }
+  arma::inplace_trans(alphahat);
   arma::inplace_trans(theta_store);
   return List::create(Named("alphahat") = alphahat, 
-    Named("Vt") =  Vt / n_samples * nsim_states,
+    Named("Vt") =  Vt,// / (n_samples * nsim_states),
     Named("theta") = theta_store,
     Named("acceptance_rate") = acceptance_rate / (n_iter - n_burnin),
     Named("S") = S,  Named("logLik") = ll_store);

@@ -129,6 +129,10 @@ ng_bsm_mcmc_param <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, 
     .Call('bssm_ng_bsm_mcmc_param', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds)
 }
 
+ng_bsm_mcmc_summary <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds) {
+    .Call('bssm_ng_bsm_mcmc_summary', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds)
+}
+
 ng_bsm_predict2 <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, slope, seasonal, noise, fixed, xreg, beta, init_signal, seed, log_space) {
     .Call('bssm_ng_bsm_predict2', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, slope, seasonal, noise, fixed, xreg, beta, init_signal, seed, log_space)
 }
@@ -183,5 +187,9 @@ svm_importance_sample <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_stat
 
 svm_approx_model <- function(y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, max_iter, conv_tol) {
     .Call('bssm_svm_approx_model', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, max_iter, conv_tol)
+}
+
+runnin_summary <- function(x, mean_x, cov_x, n) {
+    invisible(.Call('bssm_runnin_summary', PACKAGE = 'bssm', x, mean_x, cov_x, n))
 }
 
