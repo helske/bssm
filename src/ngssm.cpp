@@ -1471,3 +1471,71 @@ List ngssm::mcmc_da_summary(arma::vec theta_lwr, arma::vec theta_upr,
   
 }
 
+arma::cube ngssm::invlink(const arma::cube& alpha) {
+  
+  unsigned int nsim = alpha.n_slices;
+  arma::cube y_mean(1, n, nsim);
+  switch(distribution) {
+  case 0  :
+    if(xreg.n_cols > 0) {
+      for (unsigned int i = 0; i < nsim; i++) {
+        for (unsigned int t = 0; t < n; t++) {
+          y_mean(0, t, i) = xbeta(t);
+        }
+      }
+    } else {
+      y_mean.zeros();
+    }
+    break;
+  case 1  :
+    if(xreg.n_cols > 0) {
+      for (unsigned int i = 0; i < nsim; i++) {
+        for (unsigned int t = 0; t < n; t++) {
+          y_mean(0, t, i) = arma::as_scalar(
+            exp(xbeta(t) + Z.col(Ztv * t).t() * alpha.slice(i).col(t)));
+        }
+      }
+    } else {
+      for (unsigned int i = 0; i < nsim; i++) {
+        for (unsigned int t = 0; t < n; t++) {
+          y_mean(0, t, i) = arma::as_scalar(
+            exp(Z.col(Ztv * t).t() * alpha.slice(i).col(t)));
+        }
+      }
+    }
+    break;
+  case 2  :
+    if(xreg.n_cols > 0) {
+      for (unsigned int i = 0; i < nsim; i++) {
+        for (unsigned int t = 0; t < n; t++) {
+          double tmp = arma::as_scalar(exp(xbeta(t) + Z.col(Ztv * t).t() * alpha.slice(i).col(t)));
+          y_mean(0, t, i) = tmp / (1.0 + tmp);
+        }
+      }
+    } else {
+      for (unsigned int i = 0; i < nsim; i++) {
+        for (unsigned int t = 0; t < n; t++) {
+          double tmp = arma::as_scalar(exp(Z.col(Ztv * t).t() * alpha.slice(i).col(t)));
+          y_mean(0, t, i) = tmp / (1.0 + tmp);
+        }
+      }
+    }
+    break;
+  case 3  :
+    if(xreg.n_cols > 0) {
+      for (unsigned int i = 0; i < nsim; i++) {
+        for (unsigned int t = 0; t < n; t++) {
+          y_mean(0, t, i) = arma::as_scalar(exp(xbeta(t) + Z.col(Ztv * t).t() * alpha.slice(i).col(t)));
+        }
+      }
+    } else {
+      for (unsigned int i = 0; i < nsim; i++) {
+        for (unsigned int t = 0; t < n; t++) {
+          y_mean(0, t, i) = arma::as_scalar(exp(Z.col(Ztv * t).t() * alpha.slice(i).col(t)));
+        }
+      }
+    }
+    break;
+  }
+  return y_mean;
+}

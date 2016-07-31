@@ -2,7 +2,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-void running_summary(arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, unsigned int n) {
+void running_summary(const arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, const unsigned int n) {
   
   cov_x *= n;
   
@@ -16,7 +16,7 @@ void running_summary(arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, unsigne
 }
 
 // [[Rcpp::export]]
-void running_weighted_summary(arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, arma::vec& weights) {
+void running_weighted_summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, const arma::vec& weights) {
   
   cov_x.zeros();
   mean_x.zeros();

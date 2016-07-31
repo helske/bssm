@@ -382,6 +382,7 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
      arma::inplace_trans(alphahat);
       arma::inplace_trans(theta_store);
       return List::create(Named("alphahat") = alphahat,  Named("Vt") = Vt,
+        Named("muhat") = mean,  Named("Vmu") = Vmean,
         Named("theta") = theta_store,
         Named("acceptance_rate") = acceptance_rate,
         Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
@@ -414,6 +415,7 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
     arma::inplace_trans(alphahat);
     arma::inplace_trans(theta_store);
     return List::create(Named("alphahat") = alphahat,  Named("Vt") = Vt,
+      Named("muhat") = mean,  Named("Vmu") = Vmean,
       Named("theta") = theta_store, Named("counts") = counts,
       Named("acceptance_rate") = acceptance_rate,
       Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
@@ -447,6 +449,7 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
     arma::inplace_trans(alphahat);
     arma::inplace_trans(theta_store);
     return List::create(Named("alphahat") = alphahat,  Named("Vt") = Vt,
+      Named("muhat") = mean,  Named("Vmu") = Vmean,
       Named("theta") = theta_store, Named("counts") = counts,
       Named("acceptance_rate") = acceptance_rate,
       Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);

@@ -61,6 +61,8 @@ public:
     unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec);
   
   
+  arma::cube invlink(const arma::cube&);
+    
   arma::vec phi;
   unsigned int distribution;
   const arma::vec ng_y;

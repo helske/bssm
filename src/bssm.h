@@ -17,8 +17,8 @@ arma::mat choldowndate(arma::mat L, arma::vec u);
 
 void adjust_S(arma::mat& S, arma::vec& u, double current, double target, unsigned int n, double gamma);
 
-void running_summary(arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, unsigned int n);
-void running_weighted_summary(arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, arma::vec& weights);
+void running_summary(const arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, const unsigned int n);
+void running_weighted_summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, const arma::vec& weights);
   
 arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
 
@@ -52,6 +52,6 @@ template <typename T>
 void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, 
-  arma::mat& alphahat, arma::cube& Vt, arma::mat& mean, arma::cube& Vmean, bool const_nsim);
+  arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_nsim);
 
 #endif

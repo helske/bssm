@@ -1267,27 +1267,27 @@ BEGIN_RCPP
 END_RCPP
 }
 // running_summary
-void running_summary(arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, unsigned int n);
+void running_summary(const arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, const unsigned int n);
 RcppExport SEXP bssm_running_summary(SEXP xSEXP, SEXP mean_xSEXP, SEXP cov_xSEXP, SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::mat& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
     Rcpp::traits::input_parameter< arma::mat& >::type mean_x(mean_xSEXP);
     Rcpp::traits::input_parameter< arma::cube& >::type cov_x(cov_xSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type n(nSEXP);
     running_summary(x, mean_x, cov_x, n);
     return R_NilValue;
 END_RCPP
 }
 // running_weighted_summary
-void running_weighted_summary(arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, arma::vec& weights);
+void running_weighted_summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, const arma::vec& weights);
 RcppExport SEXP bssm_running_weighted_summary(SEXP xSEXP, SEXP mean_xSEXP, SEXP cov_xSEXP, SEXP weightsSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::cube& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type x(xSEXP);
     Rcpp::traits::input_parameter< arma::mat& >::type mean_x(mean_xSEXP);
     Rcpp::traits::input_parameter< arma::cube& >::type cov_x(cov_xSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
     running_weighted_summary(x, mean_x, cov_x, weights);
     return R_NilValue;
 END_RCPP

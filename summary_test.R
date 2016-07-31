@@ -15,10 +15,10 @@ ts.plot(y)
 model <- ng_bsm(y, a1=2, P1=matrix(0,1,1), sd_level=0.001, slope=FALSE, distribution="poisson")
 ###
 
-system.time(o_da <- run_mcmc(model,n_iter=1e6, nsim_states = 10, method ="delayed", type = "summary"))
-system.time(o_is <- run_mcmc(model,n_iter=1e6, nsim_states = 10, method ="IS c", type = "summary"))
-system.time(o_bis <- run_mcmc(model,n_iter=1e6, nsim_states = 10, method ="block", type = "summary"))
-system.time(o_bis2 <- run_mcmc(model,n_iter=1e6, nsim_states = 10, method ="IS2", type = "summary"))
+system.time(o_da <- run_mcmc(model,n_iter=1e7, nsim_states = 50, method ="delayed", type = "summary"))
+system.time(o_is <- run_mcmc(model,n_iter=1e7, nsim_states = 50, method ="IS c", type = "summary"))
+system.time(o_bis <- run_mcmc(model,n_iter=1e7, nsim_states = 50, method ="block", type = "summary"))
+system.time(o_bis2 <- run_mcmc(model,n_iter=1e7, nsim_states = 50, method ="IS2", type = "summary"))
 
 summary(o_da$alphahat-o_is$alphahat)
 summary(o_da$alphahat-o_bis$alphahat)
@@ -28,10 +28,16 @@ all.equal(o_da$alphahat, o_bis2$alphahat)
 
 ts.plot(cbind(o_da$Vt, o_is$Vt, o_bis$Vt, o_bis2$Vt), col=1:4)
 
-system.time(fo_da <- run_mcmc(model,n_iter=1e6, nsim_states = 10, method ="delayed", type = "full"))
-system.time(fo_is <- run_mcmc(model,n_iter=1e6, nsim_states = 10, method ="IS c", type = "full"))
-system.time(fo_bis <- run_mcmc(model,n_iter=1e6, nsim_states = 10, method ="block", type = "full"))
-system.time(fo_bis2 <- run_mcmc(model,n_iter=1e6, nsim_states = 10, method ="IS2", type = "full"))
+
+system.time(bo_da <- run_mcmc(model,n_iter=1e6, nsim_states = 250, method ="delayed", type = "summary"))
+system.time(bo_is <- run_mcmc(model,n_iter=1e6, nsim_states = 250, method ="IS c", type = "summary"))
+system.time(bo_bis <- run_mcmc(model,n_iter=1e6, nsim_states = 250, method ="block", type = "summary"))
+system.time(bo_bis2 <- run_mcmc(model,n_iter=1e6, nsim_states = 250, method ="IS2", type = "summary"))
+
+system.time(fo_da <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="delayed", type = "full"))
+system.time(fo_is <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="IS c", type = "full"))
+system.time(fo_bis <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="block", type = "full"))
+system.time(fo_bis2 <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="IS2", type = "full"))
 
 w1 <- fo_is$weights/sum(fo_is$weights)
 w2 <- fo_bis$weights*fo_bis$counts / sum(fo_bis$weights*fo_bis$counts)
@@ -41,7 +47,10 @@ ts.plot(cbind(o_da$Vt, o_is$Vt, o_bis$Vt, o_bis2$Vt,
   apply(fo_da$alpha[,1,], 1, var),
   apply(fo_is$alpha[,1,], 1, function(x) sum(w1*x^2) - sum(w1*x)^2),
   apply(fo_bis$alpha[,1,], 1, function(x) sum(w2*x^2) - sum(w2*x)^2),
-  apply(fo_bis2$alpha[,1,], 1, function(x) sum(w3*x^2) - sum(w3*x)^2))[40:60,], col=1:8)
+  apply(fo_bis2$alpha[,1,], 1, function(x) sum(w3*x^2) - sum(w3*x)^2)), col=1:8)
+
+ts.plot(cbind(o_da$Vt, o_is$Vt, o_bis$Vt, o_bis2$Vt,
+  bo_da$Vt, bo_is$Vt, bo_bis$Vt, bo_bis2$Vt), col=1:8)
 
 system.time(fo_st <- run_mcmc(model,n_iter=1e6, nsim_states = 25, method ="standard", type = "full"))
 
