@@ -62,6 +62,7 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::vec& init_signal, unsigned int method, unsigned int seed,
   unsigned int n_threads, arma::uvec seeds) {
 
+  
 
   svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed);
 

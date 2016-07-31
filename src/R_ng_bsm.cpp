@@ -364,19 +364,24 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
       arma::mat H_store(model.n, n_samples);
       arma::vec ll_approx_u_store(n_samples);
       
-      arma::uvec counts(n_samples, arma::fill::ones);
+      
       //no thinning allowed!
       double acceptance_rate = model.mcmc_approx(theta_lwr, theta_upr, n_iter,
         nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
         theta_store, ll_store, y_store, H_store, ll_approx_u_store);
       
       arma::vec weights_store(n_samples);
+      arma::mat alphahat(model.m, model.n);
+      arma::cube Vt(model.m, model.m, model.n);
+      arma::mat mean(1, model.n);
+      arma::cube Vmean(1, 1, model.n);
       
-      is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store,
-        counts, nsim_states, n_threads, seeds, weights_store);
-      
+      is_correction_summary(model, theta_store, y_store, H_store, ll_approx_u_store,
+        arma::uvec(n_samples, arma::fill::ones), nsim_states, n_threads, seeds, weights_store, alphahat, Vt, mean, Vmean, true);
+     
+     arma::inplace_trans(alphahat);
       arma::inplace_trans(theta_store);
-      return List::create(
+      return List::create(Named("alphahat") = alphahat,  Named("Vt") = Vt,
         Named("theta") = theta_store,
         Named("acceptance_rate") = acceptance_rate,
         Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
@@ -397,13 +402,18 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
       theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
     
-    arma::vec weights_store(counts.n_elem);
+    arma::vec weights_store(n_samples);
+    arma::mat alphahat(model.m, model.n);
+    arma::cube Vt(model.m, model.m, model.n);
+    arma::mat mean(1, model.n);
+    arma::cube Vmean(1, 1, model.n);
     
-    is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store, counts,
-      nsim_states, n_threads, seeds, weights_store);
+    is_correction_summary(model, theta_store, y_store, H_store, ll_approx_u_store,
+      counts, nsim_states, n_threads, seeds, weights_store, alphahat, Vt, mean, Vmean, false);
     
+    arma::inplace_trans(alphahat);
     arma::inplace_trans(theta_store);
-    return List::create(
+    return List::create(Named("alphahat") = alphahat,  Named("Vt") = Vt,
       Named("theta") = theta_store, Named("counts") = counts,
       Named("acceptance_rate") = acceptance_rate,
       Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
@@ -424,14 +434,19 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
       theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
     
-    arma::vec weights_store(counts.n_elem);
+    arma::vec weights_store(n_samples);
+    arma::mat alphahat(model.m, model.n);
+    arma::cube Vt(model.m, model.m, model.n);
+    arma::mat mean(1, model.n);
+    arma::cube Vmean(1, 1, model.n);
     
-    is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store, 
-      arma::uvec(counts.n_elem, arma::fill::ones),
-      nsim_states, n_threads, seeds, weights_store);
+    is_correction_summary(model, theta_store, y_store, H_store, ll_approx_u_store,
+      counts, nsim_states, n_threads,
+        seeds, weights_store, alphahat, Vt, mean, Vmean, true);
     
+    arma::inplace_trans(alphahat);
     arma::inplace_trans(theta_store);
-    return List::create(
+    return List::create(Named("alphahat") = alphahat,  Named("Vt") = Vt,
       Named("theta") = theta_store, Named("counts") = counts,
       Named("acceptance_rate") = acceptance_rate,
       Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);

@@ -52,6 +52,6 @@ template <typename T>
 void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, 
-  arma::mat& alphahat, arma::cube& Vt, arma::mat& mean, arma::mat& Vmean);
+  arma::mat& alphahat, arma::cube& Vt, arma::mat& mean, arma::cube& Vmean, bool const_nsim);
 
 #endif

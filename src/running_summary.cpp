@@ -30,5 +30,5 @@ void running_weighted_summary(arma::cube& x, arma::mat& mean_x, arma::cube& cov_
       }
       cumsumw = tmp;
     }
-  cov_x = cov_x / cumsumw * x.n_slices / (x.n_slices - 1);
+  cov_x = cov_x / cumsumw;// * x.n_slices / (x.n_slices - 1);
 }
