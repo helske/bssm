@@ -6,44 +6,6 @@
 
 using namespace Rcpp;
 
-// cholupdate
-arma::mat cholupdate(arma::mat L, arma::vec u);
-RcppExport SEXP bssm_cholupdate(SEXP LSEXP, SEXP uSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::mat >::type L(LSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type u(uSEXP);
-    __result = Rcpp::wrap(cholupdate(L, u));
-    return __result;
-END_RCPP
-}
-// choldowndate
-arma::mat choldowndate(arma::mat L, arma::vec u);
-RcppExport SEXP bssm_choldowndate(SEXP LSEXP, SEXP uSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::mat >::type L(LSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type u(uSEXP);
-    __result = Rcpp::wrap(choldowndate(L, u));
-    return __result;
-END_RCPP
-}
-// intervals
-arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
-RcppExport SEXP bssm_intervals(SEXP meansSEXP, SEXP sdsSEXP, SEXP probsSEXP, SEXP n_aheadSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::mat& >::type means(meansSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type sds(sdsSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type n_ahead(n_aheadSEXP);
-    __result = Rcpp::wrap(intervals(means, sds, probs, n_ahead));
-    return __result;
-END_RCPP
-}
 // bsm_loglik
 double bsm_loglik(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, bool slope, bool seasonal, arma::uvec fixed, arma::mat& xreg, arma::vec& beta);
 RcppExport SEXP bssm_bsm_loglik(SEXP ySEXP, SEXP ZSEXP, SEXP HSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP slopeSEXP, SEXP seasonalSEXP, SEXP fixedSEXP, SEXP xregSEXP, SEXP betaSEXP) {
@@ -1032,7 +994,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // ngssm_mcmc_full
-List ngssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi, unsigned int distribution, arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S, arma::uvec Z_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg, arma::vec& beta, arma::vec& init_signal, unsigned int seed);
+List ngssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi, unsigned int distribution, arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S, arma::uvec Z_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg, arma::vec& beta, arma::vec init_signal, unsigned int seed);
 RcppExport SEXP bssm_ngssm_mcmc_full(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP distributionSEXP, SEXP theta_lwrSEXP, SEXP theta_uprSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP Z_indSEXP, SEXP T_indSEXP, SEXP R_indSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP init_signalSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
@@ -1059,14 +1021,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::uvec >::type R_ind(R_indSEXP);
     Rcpp::traits::input_parameter< arma::mat& >::type xreg(xregSEXP);
     Rcpp::traits::input_parameter< arma::vec& >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type init_signal(init_signalSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
     __result = Rcpp::wrap(ngssm_mcmc_full(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, T_ind, R_ind, xreg, beta, init_signal, seed));
     return __result;
 END_RCPP
 }
 // ngssm_predict2
-arma::mat ngssm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi, unsigned int distribution, arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S, unsigned int n_ahead, unsigned int interval, arma::uvec Z_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg, arma::vec& beta, arma::vec& init_signal, unsigned int seed);
+arma::mat ngssm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi, unsigned int distribution, arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S, unsigned int n_ahead, unsigned int interval, arma::uvec Z_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg, arma::vec& beta, arma::vec init_signal, unsigned int seed);
 RcppExport SEXP bssm_ngssm_predict2(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP distributionSEXP, SEXP theta_lwrSEXP, SEXP theta_uprSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP n_aheadSEXP, SEXP intervalSEXP, SEXP Z_indSEXP, SEXP T_indSEXP, SEXP R_indSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP init_signalSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
@@ -1095,7 +1057,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::uvec >::type R_ind(R_indSEXP);
     Rcpp::traits::input_parameter< arma::mat& >::type xreg(xregSEXP);
     Rcpp::traits::input_parameter< arma::vec& >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type init_signal(init_signalSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
     __result = Rcpp::wrap(ngssm_predict2(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, T_ind, R_ind, xreg, beta, init_signal, seed));
     return __result;
@@ -1263,6 +1225,44 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< unsigned int >::type max_iter(max_iterSEXP);
     Rcpp::traits::input_parameter< double >::type conv_tol(conv_tolSEXP);
     __result = Rcpp::wrap(svm_approx_model(y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, max_iter, conv_tol));
+    return __result;
+END_RCPP
+}
+// cholupdate
+arma::mat cholupdate(arma::mat L, arma::vec u);
+RcppExport SEXP bssm_cholupdate(SEXP LSEXP, SEXP uSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type L(LSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type u(uSEXP);
+    __result = Rcpp::wrap(cholupdate(L, u));
+    return __result;
+END_RCPP
+}
+// choldowndate
+arma::mat choldowndate(arma::mat L, arma::vec u);
+RcppExport SEXP bssm_choldowndate(SEXP LSEXP, SEXP uSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type L(LSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type u(uSEXP);
+    __result = Rcpp::wrap(choldowndate(L, u));
+    return __result;
+END_RCPP
+}
+// intervals
+arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
+RcppExport SEXP bssm_intervals(SEXP meansSEXP, SEXP sdsSEXP, SEXP probsSEXP, SEXP n_aheadSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat& >::type means(meansSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type sds(sdsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_ahead(n_aheadSEXP);
+    __result = Rcpp::wrap(intervals(means, sds, probs, n_ahead));
     return __result;
 END_RCPP
 }
