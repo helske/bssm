@@ -1,9 +1,19 @@
-set.seed(1)
-model <- bsm(rep(NA,25), P1=matrix(0,2,2), sd_level=0.01, sd_slope=0.001, sd_y=0)
-y <- rpois(25, exp(sim_smoother(model,1)[,1,1]))
-ts.plot(y)
 
-model <- ng_bsm(y, sd_level=0.01, sd_slope=0.001, distribution="poisson")
+sims <- array(NA, c(100, 1000, 4))
+
+for (i in 1:1000) {
+  sims[,i,1] <- run_mcmc(model,n_iter=1e4, nsim_states = 10, method ="delayed", type = "summary")$Vt
+  sims[,i,2] <- run_mcmc(model,n_iter=1e4, nsim_states = 10, method ="IS c", type = "summary")$Vt
+  sims[,i,3] <- run_mcmc(model,n_iter=1e4, nsim_states = 10, method ="block", type = "summary")$Vt
+  sims[,i,4] <- run_mcmc(model,n_iter=1e4, nsim_states = 10, method ="IS2", type = "summary")$Vt
+  print(i)
+  if(i > 1)
+    print(colMeans(sims[80,1:i,]))
+}
+
+ts.plot(cbind(rowMeans(sims[,,1]),rowMeans(sims[,,2]),rowMeans(sims[,,3]),rowMeans(sims[,,4])))
+
+ts.plot(cbind(apply(sims[,,1],1,var),apply(sims[,,2],1,var),apply(sims[,,3],1,var),apply(sims[,,4],1,var)),col=1:4)
 
 ###
 
@@ -34,6 +44,12 @@ system.time(bo_is <- run_mcmc(model,n_iter=1e6, nsim_states = 250, method ="IS c
 system.time(bo_bis <- run_mcmc(model,n_iter=1e6, nsim_states = 250, method ="block", type = "summary"))
 system.time(bo_bis2 <- run_mcmc(model,n_iter=1e6, nsim_states = 250, method ="IS2", type = "summary"))
 
+
+system.time(co_da <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="delayed", type = "summary"))
+system.time(co_is <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="IS c", type = "summary"))
+system.time(co_bis <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="block", type = "summary"))
+system.time(co_bis2 <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="IS2", type = "summary"))
+
 system.time(fo_da <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="delayed", type = "full"))
 system.time(fo_is <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="IS c", type = "full"))
 system.time(fo_bis <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="block", type = "full"))
@@ -50,7 +66,7 @@ ts.plot(cbind(o_da$Vt, o_is$Vt, o_bis$Vt, o_bis2$Vt,
   apply(fo_bis2$alpha[,1,], 1, function(x) sum(w3*x^2) - sum(w3*x)^2)), col=1:8)
 
 ts.plot(cbind(o_da$Vt, o_is$Vt, o_bis$Vt, o_bis2$Vt,
-  bo_da$Vt, bo_is$Vt, bo_bis$Vt, bo_bis2$Vt), col=1:8)
+  co_da$Vt, co_is$Vt, co_bis$Vt, co_bis2$Vt), col=1:8)
 
 system.time(fo_st <- run_mcmc(model,n_iter=1e6, nsim_states = 25, method ="standard", type = "full"))
 
