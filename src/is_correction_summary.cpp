@@ -54,15 +54,16 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
         arma::mat mu_i(1, mod.n);
         arma::cube Vmu_i(1, 1, mod.n);
         running_weighted_summary(mod.invlink(alpha), mu_i, Vmu_i, weights);
-
+#pragma omp critical
+{
         double w = arma::mean(weights)*counts(i);
-        double tmp = w + cumsumw;
+
 
         arma::mat diff = alphahat_i - alphahat;
         arma::mat diff_mu = mu_i - mu;
 
-#pragma omp critical
-{
+
+  double tmp = w + cumsumw;
   alphahat += diff * w / tmp;
   for (unsigned int t = 0; t < diff.n_cols; t++) {
     Valpha.slice(t) +=  w * diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
@@ -78,10 +79,11 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
 }
 
       }
+    }
       Vt = Vt + Valpha/cumsumw;// * sum(counts) / (sum(counts) - 1);
       Vmu = Vmu + Vmu2/cumsumw;// * sum(counts) / (sum(counts) - 1);
 
-    }
+
 }
 template void is_correction_summary<ngssm>(ngssm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,

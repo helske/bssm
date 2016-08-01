@@ -48,7 +48,11 @@ oo_bis2 <- run_mcmc(model,n_iter=1e4, nsim_states = 10, method ="IS2", type = "s
 ts.plot(oo_da$alphahat, oo_is$alphahat, oo_bis$alphahat, oo_bis2$alpha, col=1:4)
 ts.plot(cbind(oo_da$Vt, oo_is$Vt, oo_bis$Vt, oo_bis2$Vt), col=1:4)
 
-
+x1 <- run_mcmc(model,n_iter=500, nsim_states = 10, method ="block", type = "summary",thread=1:4,n_threads=4,seed=1)
+x2 <- run_mcmc(model,n_iter=500, nsim_states = 10, method ="block", type = "summary",thread=1:4,n_threads=4,seed=1)
+all.equal(x1, x2,tol=0)
+x1$w
+x2$w
 system.time(o_da <- run_mcmc(model,n_iter=1e7, nsim_states = 50, method ="delayed", type = "summary"))
 system.time(o_is <- run_mcmc(model,n_iter=1e7, nsim_states = 50, method ="IS c", type = "summary"))
 system.time(o_bis <- run_mcmc(model,n_iter=1e7, nsim_states = 50, method ="block", type = "summary"))

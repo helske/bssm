@@ -405,7 +405,7 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
       theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
 
-    arma::vec weights_store(n_samples);
+    arma::vec weights_store(counts.n_elem);
     arma::mat alphahat(model.m, model.n);
     arma::cube Vt(model.m, model.m, model.n);
     arma::mat muhat(1, model.n);
@@ -439,7 +439,7 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
       theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
 
-    arma::vec weights_store(n_samples);
+    arma::vec weights_store(counts.n_elem);
     arma::mat alphahat(model.m, model.n);
     arma::cube Vt(model.m, model.m, model.n);
     arma::mat muhat(1, model.n);
