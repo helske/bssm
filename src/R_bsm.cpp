@@ -81,7 +81,7 @@ List bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat& S, bool slope,
   bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int seed, bool log_space) {
+  unsigned int seed, bool log_space, bool end_ram) {
 
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
 
@@ -93,7 +93,7 @@ List bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
 
   double acceptance_rate = model.mcmc_full(theta_lwr, theta_upr, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, alpha_store,
-    theta_store, ll_store);
+    theta_store, ll_store, end_ram);
 
   arma::inplace_trans(theta_store);
 
@@ -111,7 +111,7 @@ List bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat& S, bool slope,
   bool seasonal, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int seed, bool log_space, bool sample_states) {
+  unsigned int seed, bool log_space, bool sample_states, bool end_ram) {
 
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
 
@@ -121,7 +121,7 @@ List bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::vec ll_store(n_samples);
 
   double acceptance_rate = model.mcmc_param(theta_lwr, theta_upr, n_iter,
-    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store);
+    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store, end_ram);
 
   arma::inplace_trans(theta_store);
 
@@ -140,7 +140,7 @@ List bsm_mcmc_parallel_full(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube
   double gamma, double target_acceptance, arma::mat& S, bool slope,
   bool seasonal, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   unsigned int seed, bool log_space, unsigned int nsim_states,
-  unsigned int n_threads, arma::uvec seeds) {
+  unsigned int n_threads, arma::uvec seeds, bool end_ram) {
 
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
 
@@ -152,7 +152,7 @@ List bsm_mcmc_parallel_full(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube
   arma::uvec counts(n_samples, arma::fill::zeros);
 
   double acceptance_rate = model.mcmc_param2(theta_lwr, theta_upr, n_iter,
-    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store, counts);
+    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store, counts, end_ram);
 
   arma::cube alpha = sample_states(model, theta_store, counts, nsim_states, n_threads, seeds);
 
@@ -170,7 +170,7 @@ List bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::vec& theta_upr, unsigned int n_iter, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   bool slope, bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int seed, bool log_space) {
+  unsigned int seed, bool log_space, bool end_ram) {
 
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
 
@@ -182,7 +182,7 @@ List bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube Vt(model.m, model.m, model.n, arma::fill::zeros);
 
   double acceptance_rate = model.mcmc_summary(theta_lwr, theta_upr, n_iter, n_burnin, n_thin,
-    gamma, target_acceptance, S, alphahat, Vt, theta_store, ll_store);
+    gamma, target_acceptance, S, alphahat, Vt, theta_store, ll_store, end_ram);
 
   arma::inplace_trans(alphahat);
   arma::inplace_trans(theta_store);

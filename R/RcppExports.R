@@ -21,20 +21,20 @@ bsm_smoother <- function(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, be
     .Call('bssm_bsm_smoother', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta)
 }
 
-bsm_mcmc_full <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space) {
-    .Call('bssm_bsm_mcmc_full', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space)
+bsm_mcmc_full <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space, end_ram) {
+    .Call('bssm_bsm_mcmc_full', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space, end_ram)
 }
 
-bsm_mcmc_param <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space, sample_states) {
-    .Call('bssm_bsm_mcmc_param', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space, sample_states)
+bsm_mcmc_param <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space, sample_states, end_ram) {
+    .Call('bssm_bsm_mcmc_param', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space, sample_states, end_ram)
 }
 
-bsm_mcmc_parallel_full <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space, nsim_states, n_threads, seeds) {
-    .Call('bssm_bsm_mcmc_parallel_full', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space, nsim_states, n_threads, seeds)
+bsm_mcmc_parallel_full <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space, nsim_states, n_threads, seeds, end_ram) {
+    .Call('bssm_bsm_mcmc_parallel_full', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space, nsim_states, n_threads, seeds, end_ram)
 }
 
-bsm_mcmc_summary <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space) {
-    .Call('bssm_bsm_mcmc_summary', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space)
+bsm_mcmc_summary <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space, end_ram) {
+    .Call('bssm_bsm_mcmc_summary', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, fixed, xreg, beta, seed, log_space, end_ram)
 }
 
 bsm_predict2 <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, slope, seasonal, fixed, xreg, beta, seed, log_space) {
@@ -69,16 +69,16 @@ gssm_smoother <- function(y, Z, H, T, R, a1, P1, xreg, beta) {
     .Call('bssm_gssm_smoother', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, xreg, beta)
 }
 
-gssm_mcmc_full <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed) {
-    .Call('bssm_gssm_mcmc_full', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed)
+gssm_mcmc_full <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed, end_ram) {
+    .Call('bssm_gssm_mcmc_full', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed, end_ram)
 }
 
-gssm_mcmc_param <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed) {
-    .Call('bssm_gssm_mcmc_param', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed)
+gssm_mcmc_param <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed, end_ram) {
+    .Call('bssm_gssm_mcmc_param', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed, end_ram)
 }
 
-gssm_mcmc_summary <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed) {
-    .Call('bssm_gssm_mcmc_summary', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed)
+gssm_mcmc_summary <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed, end_ram) {
+    .Call('bssm_gssm_mcmc_summary', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed, end_ram)
 }
 
 gssm_predict <- function(y, Z, H, T, R, a1, P1, theta_lwr, theta_upr, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, H_ind, T_ind, R_ind, xreg, beta, probs, seed) {
@@ -109,16 +109,16 @@ ng_bsm_smoother <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fix
     .Call('bssm_ng_bsm_smoother', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal)
 }
 
-ng_bsm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds) {
-    .Call('bssm_ng_bsm_mcmc_full', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds)
+ng_bsm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds, end_ram) {
+    .Call('bssm_ng_bsm_mcmc_full', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds, end_ram)
 }
 
-ng_bsm_mcmc_param <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds) {
-    .Call('bssm_ng_bsm_mcmc_param', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds)
+ng_bsm_mcmc_param <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds, end_ram) {
+    .Call('bssm_ng_bsm_mcmc_param', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds, end_ram)
 }
 
-ng_bsm_mcmc_summary <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds) {
-    .Call('bssm_ng_bsm_mcmc_summary', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds)
+ng_bsm_mcmc_summary <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds, end_ram) {
+    .Call('bssm_ng_bsm_mcmc_summary', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, slope, seasonal, noise, fixed, xreg, beta, init_signal, method, seed, log_space, n_threads, seeds, end_ram)
 }
 
 ng_bsm_predict2 <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, slope, seasonal, noise, fixed, xreg, beta, init_signal, seed, log_space) {
@@ -141,8 +141,8 @@ ngssm_filter <- function(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init
     .Call('bssm_ngssm_filter', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init_signal)
 }
 
-ngssm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, T_ind, R_ind, xreg, beta, init_signal, seed) {
-    .Call('bssm_ngssm_mcmc_full', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, T_ind, R_ind, xreg, beta, init_signal, seed)
+ngssm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, T_ind, R_ind, xreg, beta, init_signal, seed, end_ram) {
+    .Call('bssm_ngssm_mcmc_full', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, T_ind, R_ind, xreg, beta, init_signal, seed, end_ram)
 }
 
 ngssm_predict2 <- function(y, Z, T, R, a1, P1, phi, distribution, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, T_ind, R_ind, xreg, beta, init_signal, seed) {
@@ -165,8 +165,8 @@ svm_smoother <- function(y, Z, T, R, a1, P1, phi, xreg, beta, init_signal) {
     .Call('bssm_svm_smoother', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, init_signal)
 }
 
-svm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds) {
-    .Call('bssm_svm_mcmc_full', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds)
+svm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds, end_ram) {
+    .Call('bssm_svm_mcmc_full', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds, end_ram)
 }
 
 svm_importance_sample <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed) {

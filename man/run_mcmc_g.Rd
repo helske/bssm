@@ -7,15 +7,16 @@
 \usage{
 \method{run_mcmc}{bsm}(object, n_iter, nsim_states = 1, type = "full",
   lower_prior, upper_prior, n_burnin = floor(n_iter/2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S, log_space = FALSE,
-  n_threads = 1, seed = sample(.Machine$integer.max, size = 1),
-  thread_seeds = sample(.Machine$integer.max, size = n_threads), ...)
+  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  log_space = FALSE, n_threads = 1, seed = sample(.Machine$integer.max,
+  size = 1), thread_seeds = sample(.Machine$integer.max, size = n_threads),
+  ...)
 
 \method{run_mcmc}{gssm}(object, n_iter, Z_est, H_est, T_est, R_est,
   nsim_states = 1, type = "full", lower_prior, upper_prior,
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size =
-  1), ...)
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
 \item{object}{Model object.}

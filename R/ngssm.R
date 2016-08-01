@@ -212,7 +212,7 @@ initial_signal <- function(y, phi, distribution) {
 #' @export
 run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, lower_prior, upper_prior,
   nsim_states = 1, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size = 1),
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE, seed = sample(.Machine$integer.max, size = 1),
   ...) {
 
   if (!is.null(ncol(object$y)) && ncol(object$y) > 1) {
@@ -391,9 +391,9 @@ predict.ngssm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
 #' @export
 importance_sample.ngssm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
-  
+
   ngssm_importance_sample(object$y, object$Z, object$T, object$R, object$a1,
-    object$P1, object$phi, 
+    object$P1, object$phi,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     object$xreg, object$beta,
     object$init_signal, nsim, seed)
@@ -403,9 +403,9 @@ importance_sample.ngssm <- function(object, nsim,
 #' @rdname gaussian_approx
 #' @export
 gaussian_approx.ngssm<- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
-  
+
   ngssm_approx_model(object$y, object$Z, object$T, object$R, object$a1,
-    object$P1, object$phi, 
+    object$P1, object$phi,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     object$xreg, object$beta,
     object$init_signal, max_iter, conv_tol)

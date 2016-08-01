@@ -114,7 +114,7 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   double gamma, double target_acceptance, arma::mat S, bool slope,
   bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   arma::vec& init_signal, unsigned int method, unsigned int seed, bool log_space,
-  unsigned int n_threads, arma::uvec seeds) {
+  unsigned int n_threads, arma::uvec seeds, bool end_ram) {
 
 
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
@@ -123,11 +123,11 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   switch(method) {
   case 1 :
     return model.mcmc_full(theta_lwr, theta_upr, n_iter,
-      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal);
+      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, end_ram);
     break;
   case 2 :
     return model.mcmc_da(theta_lwr, theta_upr, n_iter,
-      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal);
+      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, end_ram);
   break;
   case 3 : {
     unsigned int npar = theta_lwr.n_elem;
@@ -142,7 +142,7 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
     //no thinning allowed!
     double acceptance_rate = model.mcmc_approx(theta_lwr, theta_upr, n_iter,
       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-      theta_store, ll_store, y_store, H_store, ll_approx_u_store);
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store, end_ram);
 
     arma::vec weights_store(n_samples);
     arma::cube alpha_store(model.m, model.n, n_samples);
@@ -171,7 +171,7 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
     //no thinning allowed!
     double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts, end_ram);
 
     arma::vec weights_store(counts.n_elem);
     arma::cube alpha_store(model.m, model.n, counts.n_elem);
@@ -199,7 +199,7 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
     //no thinning allowed!
     double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts, end_ram);
 
     arma::vec weights_store(counts.n_elem);
     arma::cube alpha_store(model.m, model.n, counts.n_elem);
@@ -229,7 +229,7 @@ List ng_bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
   double gamma, double target_acceptance, arma::mat S, bool slope,
   bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   arma::vec& init_signal, unsigned int method, unsigned int seed, bool log_space,
-  unsigned int n_threads, arma::uvec seeds) {
+  unsigned int n_threads, arma::uvec seeds, bool end_ram) {
 
 
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
@@ -238,11 +238,11 @@ List ng_bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
   switch(method) {
   case 1 :
     return model.mcmc_param(theta_lwr, theta_upr, n_iter,
-      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal);
+      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, end_ram);
     break;
   case 2 :
     return model.mcmc_da_param(theta_lwr, theta_upr, n_iter,
-      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal);
+      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, end_ram);
     break;
   case 3 : {
       unsigned int npar = theta_lwr.n_elem;
@@ -257,7 +257,7 @@ List ng_bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
       //no thinning allowed!
       double acceptance_rate = model.mcmc_approx(theta_lwr, theta_upr, n_iter,
         nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-        theta_store, ll_store, y_store, H_store, ll_approx_u_store);
+        theta_store, ll_store, y_store, H_store, ll_approx_u_store, end_ram);
 
       arma::vec weights_store(n_samples);
 
@@ -284,7 +284,7 @@ List ng_bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
     //no thinning allowed!
     double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts, end_ram);
 
     arma::vec weights_store(counts.n_elem);
 
@@ -311,7 +311,7 @@ List ng_bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
     //no thinning allowed!
     double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts, end_ram);
 
     arma::vec weights_store(counts.n_elem);
 
@@ -340,7 +340,7 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
   double gamma, double target_acceptance, arma::mat S, bool slope,
   bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   arma::vec& init_signal, unsigned int method, unsigned int seed, bool log_space,
-  unsigned int n_threads, arma::uvec seeds) {
+  unsigned int n_threads, arma::uvec seeds, bool end_ram) {
 
 
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
@@ -349,11 +349,11 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
   switch(method) {
   case 1 :
     return model.mcmc_summary(theta_lwr, theta_upr, n_iter,
-      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal);
+      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, end_ram);
     break;
   case 2 :
     return model.mcmc_da_summary(theta_lwr, theta_upr, n_iter,
-      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal);
+      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, end_ram);
     break;
   case 3 : {
       unsigned int npar = theta_lwr.n_elem;
@@ -368,7 +368,7 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
       //no thinning allowed!
       double acceptance_rate = model.mcmc_approx(theta_lwr, theta_upr, n_iter,
         nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-        theta_store, ll_store, y_store, H_store, ll_approx_u_store);
+        theta_store, ll_store, y_store, H_store, ll_approx_u_store, end_ram);
 
       arma::vec weights_store(n_samples);
       arma::mat alphahat(model.m, model.n);
@@ -403,7 +403,7 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
     //no thinning allowed!
     double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts, end_ram);
 
     arma::vec weights_store(counts.n_elem);
     arma::mat alphahat(model.m, model.n);
@@ -437,7 +437,7 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
     //no thinning allowed!
     double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts, end_ram);
 
     arma::vec weights_store(counts.n_elem);
     arma::mat alphahat(model.m, model.n);

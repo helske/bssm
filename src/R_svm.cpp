@@ -60,20 +60,20 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int method, unsigned int seed,
-  unsigned int n_threads, arma::uvec seeds) {
+  unsigned int n_threads, arma::uvec seeds, bool end_ram) {
 
-  
+
 
   svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed);
 
   switch(method) {
   case 1 :
     return model.mcmc_full(theta_lwr, theta_upr, n_iter,
-      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal);
+      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, end_ram);
     break;
   case 2 :
     return model.mcmc_da(theta_lwr, theta_upr, n_iter,
-      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal);
+      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, end_ram);
     break;
   case 3 : {
       unsigned int npar = theta_lwr.n_elem;
@@ -88,7 +88,7 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
       //no thinning allowed!
       double acceptance_rate = model.mcmc_approx(theta_lwr, theta_upr, n_iter,
         nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-        theta_store, ll_store, y_store, H_store, ll_approx_u_store);
+        theta_store, ll_store, y_store, H_store, ll_approx_u_store, end_ram);
 
       arma::vec weights_store(n_samples);
       arma::cube alpha_store(model.m, model.n, n_samples);
@@ -117,11 +117,11 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
     //no thinning allowed!
     double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts, end_ram);
 
     arma::vec weights_store(counts.n_elem);
     arma::cube alpha_store(model.m, model.n, counts.n_elem);
-    
+
     is_correction(model, theta_store, y_store, H_store, ll_approx_u_store, counts,
       nsim_states, n_threads, seeds, weights_store, alpha_store);
 
@@ -145,12 +145,12 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
     //no thinning allowed!
     double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts);
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts, end_ram);
 
     arma::vec weights_store(counts.n_elem);
     arma::cube alpha_store(model.m, model.n, counts.n_elem);
 
-    is_correction(model, theta_store, y_store, H_store, ll_approx_u_store, 
+    is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,
       arma::uvec(counts.n_elem, arma::fill::ones),
       nsim_states, n_threads, seeds, weights_store, alpha_store);
 
@@ -172,15 +172,15 @@ List svm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::mat& xreg, arma::vec& beta,
   unsigned int nsim_states,
   arma::vec init_signal, unsigned int seed) {
-  
+
   svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed);
-  
+
   double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
-  
+
   arma::cube alpha = model.sim_smoother(nsim_states, false);
   arma::vec weights = exp(model.importance_weights(alpha) -
     model.scaling_factor(init_signal));
-  
+
   return List::create(
     Named("alpha") = alpha,
     Named("weights") = weights);
@@ -191,12 +191,12 @@ List svm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
   arma::mat& xreg, arma::vec& beta, arma::vec init_signal, unsigned int max_iter,
   double conv_tol) {
-  
+
   svm model(y, Z, T, R, a1, P1, phi, xreg, beta, 1);
-  
+
   double ll = model.approx(init_signal, max_iter, conv_tol);
 
-  
+
   return List::create(
     Named("y") = model.y,
     Named("H") = model.H,

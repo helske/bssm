@@ -60,13 +60,13 @@ List ngssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   unsigned int nsim_states, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   arma::uvec Z_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg,
-  arma::vec& beta, arma::vec init_signal, unsigned int seed) {
+  arma::vec& beta, arma::vec init_signal, unsigned int seed, bool end_ram) {
 
   ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, Z_ind,
     T_ind, R_ind, seed);
 
   return model.mcmc_da(theta_lwr, theta_upr, n_iter, nsim_states, n_burnin,
-    n_thin, gamma, target_acceptance, S, init_signal);
+    n_thin, gamma, target_acceptance, S, init_signal, end_ram);
 }
 
 

@@ -20,10 +20,6 @@ public:
   virtual double precomp_logp_signal(arma::vec&, const arma::mat&, const arma::vec&);
   virtual double logp_y(arma::vec&);
   virtual arma::vec approx_iter(arma::vec&);
-  virtual List mcmc_full(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, unsigned int, double, double, arma::mat, const arma::vec);
-  List mcmc_da(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec);
 
   virtual arma::mat predict2(arma::vec, arma::vec, unsigned int, unsigned int,
     unsigned int, unsigned int, double, double, arma::mat, unsigned int,
@@ -32,37 +28,43 @@ public:
   virtual arma::vec importance_weights(const arma::cube&);
   virtual double scaling_factor(const arma::vec&);
 
+
+  virtual List mcmc_full(arma::vec, arma::vec, unsigned int,
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat, const arma::vec, bool);
+  List mcmc_da(arma::vec, arma::vec, unsigned int,
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool);
+
   double mcmc_approx(arma::vec, arma::vec,
     unsigned int, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat&,
     const arma::vec, arma::mat&, arma::vec&,
-    arma::mat&, arma::mat&, arma::vec&);
+    arma::mat&, arma::mat&, arma::vec&, bool);
 
   double mcmc_approx2(arma::vec, arma::vec,
       unsigned int, unsigned int, unsigned int,
       unsigned int, double, double, arma::mat&,
       const arma::vec, arma::mat&, arma::vec&,
-      arma::mat&, arma::mat&, arma::vec&, arma::uvec&);
+      arma::mat&, arma::mat&, arma::vec&, arma::uvec&, bool);
 
   List mcmc_param(arma::vec, arma::vec,
     unsigned int, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat,
-    const arma::vec);
-  
+    const arma::vec, bool);
+
   List mcmc_da_param(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec);
-  
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool);
+
   List mcmc_summary(arma::vec, arma::vec,
     unsigned int, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat,
-    const arma::vec);
-  
+    const arma::vec, bool);
+
   List mcmc_da_summary(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec);
-  
-  
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool);
+
+
   arma::cube invlink(const arma::cube&);
-    
+
   arma::vec phi;
   unsigned int distribution;
   const arma::vec ng_y;

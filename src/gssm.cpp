@@ -541,7 +541,7 @@ void gssm::smoother(arma::mat& at, arma::cube& Pt, bool demean) {
 double gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
-  arma::cube& alpha_store, arma::mat& theta_store, arma::vec& ll_store) {
+  arma::cube& alpha_store, arma::mat& theta_store, arma::vec& ll_store, bool end_ram) {
 
   unsigned int npar = theta_lwr.n_elem;
 
@@ -610,7 +610,9 @@ double gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
       j++;
     }
 
-    adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    if (!end_ram || i < n_burnin) {
+      adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    }
 
   }
   // arma::inplace_trans(theta_store);
@@ -626,7 +628,7 @@ double gssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
 double gssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
-  arma::mat& theta_store, arma::vec& ll_store) {
+  arma::mat& theta_store, arma::vec& ll_store, bool end_ram) {
 
   unsigned int npar = theta_lwr.n_elem;
 
@@ -689,8 +691,9 @@ double gssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
       j++;
     }
 
-    adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
-
+    if (!end_ram || i < n_burnin) {
+      adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    }
   }
   return acceptance_rate / (n_iter - n_burnin);
 
@@ -699,7 +702,7 @@ double gssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
 double gssm::mcmc_param2(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
-  arma::mat& theta_store, arma::vec& ll_store, arma::uvec& counts) {
+  arma::mat& theta_store, arma::vec& ll_store, arma::uvec& counts, bool end_ram) {
 
   if (n_thin > 1) {
     Rcpp::stop("Thinning not allowed in block MCMC.");
@@ -777,7 +780,9 @@ double gssm::mcmc_param2(arma::vec theta_lwr, arma::vec theta_upr,
       }
     }
 
-    adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    if (!end_ram || i < n_burnin) {
+      adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    }
 
   }
 
@@ -792,13 +797,13 @@ double gssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int n_iter, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   arma::mat& alphahat, arma::cube& Vt, arma::mat& theta_store,
-  arma::vec& ll_store) {
+  arma::vec& ll_store, bool end_ram) {
 
   unsigned int npar = theta_lwr.n_elem;
   unsigned int n_samples = ll_store.n_elem;
 
   double acceptance_rate = mcmc_param(theta_lwr, theta_upr, n_iter,
-    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store);
+    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store, end_ram);
 
   arma::cube Valpha(m, m, n, arma::fill::zeros);
 
@@ -912,7 +917,7 @@ List gssm::predict(arma::vec theta_lwr,
       }
       j++;
     }
-    
+
     adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
 
   }

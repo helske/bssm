@@ -33,17 +33,17 @@
 #' coefficients.
 #' @return Object of class \code{bsm}.
 #' @export
-#' @examples 
-#' 
+#' @examples
+#'
 #' init_sd <- 0.1 * sd(log10(UKgas))
 #' model <- bsm(log10(UKgas), sd_y = init_sd, sd_level = init_sd,
 #'   sd_slope = init_sd, sd_seasonal = init_sd)
-#' 
+#'
 #' mcmc_out <- run_mcmc(model, n_iter = 5000)
 #' summary(mcmc_out$theta)$stat
 #' mcmc_out$theta[which.max(mcmc_out$logLik), ]
 #' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)
-#' 
+#'
 bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL, beta = NULL,
   period = frequency(y), slope = TRUE, seasonal = frequency(y) > 1, a1, P1,
   lower_prior, upper_prior) {
@@ -326,7 +326,7 @@ smoother.bsm <- function(object, ...) {
 #'   lty = c(1, 1, 2, 2))
 run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
   lower_prior, upper_prior, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, 
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   log_space = FALSE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
   thread_seeds = sample(.Machine$integer.max, size = n_threads), ...) {
@@ -417,18 +417,18 @@ run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
 #' @method predict bsm
 #' @rdname predict
 #' @export
-#' @examples 
+#' @examples
 #' require("graphics")
 #' y <- log10(JohnsonJohnson)
 #' init_sd <- 0.1
 #' model <- bsm(y, sd_y = init_sd, sd_level = init_sd,
 #'   sd_slope = init_sd, sd_seasonal = init_sd)
-#' 
+#'
 #' pred1 <- predict(model, n_iter = 5000, n_ahead = 8)
 #' pred2 <- predict(StructTS(y, type = "BSM"), n.ahead = 8)
-#' 
-#' ts.plot(pred1$mean, pred1$intervals[,-2], pred2$pred + 
-#' cbind(0, -qnorm(0.95) * pred2$se, qnorm(0.95) * pred2$se), 
+#'
+#' ts.plot(pred1$mean, pred1$intervals[,-2], pred2$pred +
+#' cbind(0, -qnorm(0.95) * pred2$se, qnorm(0.95) * pred2$se),
 #'   col = c(1, 1, 1, 2, 2, 2))
 #'
 predict.bsm <- function(object, n_iter, lower_prior, upper_prior, newdata = NULL,
