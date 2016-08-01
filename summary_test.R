@@ -7,12 +7,46 @@ ts.plot(y)
 model <- ng_bsm(y, a1=2, P1=matrix(0,1,1), sd_level=0.001, slope=FALSE, distribution="poisson")
 ###
 
-o_da <- run_mcmc(model,n_iter=10, nsim_states = 50, method ="delayed", type = "summary")
+o_da <- run_mcmc(model,n_iter=1e5, nsim_states = 50, method ="delayed", type = "summary")
+o_is <- run_mcmc(model,n_iter=1e5, nsim_states = 50, method ="IS c", type = "summary")
+o_bis <- run_mcmc(model,n_iter=1e5, nsim_states = 50, method ="block", type = "summary")
+o_bis2 <- run_mcmc(model,n_iter=1e5, nsim_states = 50, method ="IS2", type = "summary") ##
 
-o_is <- run_mcmc(model,n_iter=10, nsim_states = 50, method ="IS c", type = "summary")
-o_bis <- run_mcmc(model,n_iter=10, nsim_states = 50, method ="block", type = "summary")
-o_bis2 <- run_mcmc(model,n_iter=10, nsim_states = 50, method ="IS2", type = "summary")
+ts.plot(o_da$alphahat, o_is$alphahat, o_bis$alphahat, o_bis2$alpha, col=1:4)
+ts.plot(cbind(o_da$Vt, o_is$Vt, o_bis$Vt, o_bis2$Vt), col=1:4)
 
+co_da <- run_mcmc(model,n_iter=1e5, nsim_states = 150, method ="delayed", type = "summary")
+co_is <- run_mcmc(model,n_iter=1e5, nsim_states = 150, method ="IS c", type = "summary") #
+co_bis <- run_mcmc(model,n_iter=1e5, nsim_states = 150, method ="block", type = "summary") #
+co_bis2 <- run_mcmc(model,n_iter=1e5, nsim_states = 150, method ="IS2", type = "summary")
+ts.plot(co_da$alphahat, co_is$alphahat, co_bis$alphahat, co_bis2$alpha, col=1:4)
+ts.plot(cbind(co_da$Vt, co_is$Vt, co_bis$Vt, co_bis2$Vt), col=1:4)
+
+
+bo_da <- run_mcmc(model,n_iter=1e6, nsim_states = 10, method ="delayed", type = "summary")
+bo_is <- run_mcmc(model,n_iter=1e6, nsim_states = 10, method ="IS c", type = "summary")
+bo_bis <- run_mcmc(model,n_iter=1e6, nsim_states = 10, method ="block", type = "summary")
+bo_bis2 <- run_mcmc(model,n_iter=1e6, nsim_states = 10, method ="IS2", type = "summary")
+ts.plot(bo_da$alphahat, bo_is$alphahat, bo_bis$alphahat, bo_bis2$alpha, col=1:4)
+ts.plot(cbind(bo_da$Vt, bo_is$Vt, bo_bis$Vt, bo_bis2$Vt), col=1:4)
+
+do_da <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="delayed", type = "summary")
+do_is <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="IS c", type = "summary")
+do_bis <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="block", type = "summary")
+do_bis2 <- run_mcmc(model,n_iter=1e6, nsim_states = 50, method ="IS2", type = "summary")
+ts.plot(do_da$alphahat, do_is$alphahat, do_bis$alphahat, do_bis2$alpha, col=1:4)
+ts.plot(cbind(do_da$Vt, do_is$Vt, do_bis$Vt, do_bis2$Vt), col=1:4)
+
+
+
+
+oo_da <- run_mcmc(model,n_iter=1e4, nsim_states = 10, method ="delayed", type = "summary")
+oo_is <- run_mcmc(model,n_iter=1e4, nsim_states = 10, method ="IS c", type = "summary")
+oo_bis <- run_mcmc(model,n_iter=1e4, nsim_states = 10, method ="block", type = "summary")
+oo_bis2 <- run_mcmc(model,n_iter=1e4, nsim_states = 10, method ="IS2", type = "summary")
+
+ts.plot(oo_da$alphahat, oo_is$alphahat, oo_bis$alphahat, oo_bis2$alpha, col=1:4)
+ts.plot(cbind(oo_da$Vt, oo_is$Vt, oo_bis$Vt, oo_bis2$Vt), col=1:4)
 
 
 system.time(o_da <- run_mcmc(model,n_iter=1e7, nsim_states = 50, method ="delayed", type = "summary"))
