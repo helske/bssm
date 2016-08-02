@@ -249,7 +249,7 @@ smoother.gssm <- function(object, ...) {
 run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
   nsim_states = 1, type = "full", lower_prior, upper_prior,
   n_burnin = floor(n_iter / 2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
   type <- match.arg(type, c("full", "parameters", "summary"))

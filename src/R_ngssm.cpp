@@ -60,13 +60,13 @@ List ngssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   unsigned int nsim_states, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   arma::uvec Z_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg,
-  arma::vec& beta, arma::vec& init_signal, unsigned int seed) {
+  arma::vec& beta, arma::vec init_signal, unsigned int seed, bool end_ram) {
 
   ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, Z_ind,
     T_ind, R_ind, seed);
 
   return model.mcmc_da(theta_lwr, theta_upr, n_iter, nsim_states, n_burnin,
-    n_thin, gamma, target_acceptance, S, init_signal);
+    n_thin, gamma, target_acceptance, S, init_signal, end_ram);
 }
 
 
@@ -78,7 +78,7 @@ arma::mat ngssm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
   unsigned int interval, arma::uvec Z_ind, arma::uvec T_ind,
-  arma::uvec R_ind, arma::mat& xreg, arma::vec& beta, arma::vec& init_signal,
+  arma::uvec R_ind, arma::mat& xreg, arma::vec& beta, arma::vec init_signal,
   unsigned int seed) {
 
 
@@ -95,16 +95,16 @@ List ngssm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
   unsigned int distribution, arma::mat& xreg, arma::vec& beta, arma::vec init_signal,
   unsigned int nsim_states,  unsigned int seed) {
-  
+
   ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, 1);
-  
-  
+
+
   double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
-  
+
   arma::cube alpha = model.sim_smoother(nsim_states, true);
   arma::vec weights = exp(model.importance_weights(alpha) -
     model.scaling_factor(init_signal));
-  
+
   return List::create(
     Named("alpha") = alpha,
     Named("weights") = weights);
@@ -115,11 +115,11 @@ List ngssm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
   unsigned int distribution, arma::mat& xreg, arma::vec& beta, arma::vec init_signal,
   unsigned int max_iter, double conv_tol) {
-  
+
   ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, 1);
-  
+
   double ll = model.approx(init_signal, max_iter, conv_tol);
-  
+
   return List::create(
     Named("y") = model.y,
     Named("H") = model.H,

@@ -28,20 +28,7 @@ public:
   virtual arma::cube sim_smoother(unsigned int, bool);
   virtual void smoother(arma::mat&, arma::cube&, bool);
 
-  virtual double mcmc_full(arma::vec, arma::vec, unsigned int, unsigned int,
-    unsigned int, unsigned int, double, double, arma::mat&,
-    arma::cube&, arma::mat&, arma::vec&);
-  virtual double mcmc_param(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, double, double, arma::mat&,
-    arma::mat&, arma::vec&);
 
-  virtual double mcmc_param2(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, double, double, arma::mat&,
-    arma::mat&, arma::vec&, arma::uvec&);
-
-  virtual double mcmc_summary(arma::vec, arma::vec, unsigned int, unsigned int,
-    unsigned int, double, double, arma::mat&, arma::mat&, arma::cube&,
-    arma::mat&, arma::vec&);
   virtual arma::mat predict2(arma::vec, arma::vec, unsigned int, unsigned int,
     unsigned int, unsigned int, double, double, arma::mat, unsigned int,
     unsigned int);
@@ -49,7 +36,21 @@ public:
     unsigned int, double, double, arma::mat, unsigned int,
     unsigned int, arma::vec);
 
+  virtual double mcmc_full(arma::vec, arma::vec, unsigned int, unsigned int,
+    unsigned int, unsigned int, double, double, arma::mat&,
+    arma::cube&, arma::mat&, arma::vec&, bool);
 
+  virtual double mcmc_param(arma::vec, arma::vec, unsigned int,
+    unsigned int, unsigned int, double, double, arma::mat&,
+    arma::mat&, arma::vec&, bool);
+
+  virtual double mcmc_param2(arma::vec, arma::vec, unsigned int,
+    unsigned int, unsigned int, double, double, arma::mat&,
+    arma::mat&, arma::vec&, arma::uvec&, bool);
+
+  virtual double mcmc_summary(arma::vec, arma::vec, unsigned int, unsigned int,
+    unsigned int, double, double, arma::mat&, arma::mat&, arma::cube&,
+    arma::mat&, arma::vec&, bool);
 
   arma::vec y;
   arma::mat Z;

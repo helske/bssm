@@ -74,7 +74,7 @@ List gssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S, arma::uvec Z_ind,
   arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg,
-  arma::vec& beta, unsigned int seed) {
+  arma::vec& beta, unsigned int seed, bool end_ram) {
 
   gssm model(y, Z, H, T, R, a1, P1, xreg, beta, Z_ind, H_ind, T_ind, R_ind, seed);
 
@@ -86,7 +86,7 @@ List gssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
 
   double acceptance_rate = model.mcmc_full(theta_lwr, theta_upr, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, alpha_store,
-    theta_store, ll_store);
+    theta_store, ll_store, end_ram);
 
   arma::inplace_trans(theta_store);
 
@@ -104,7 +104,7 @@ List gssm_mcmc_param(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S, arma::uvec Z_ind,
   arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg,
-  arma::vec& beta, unsigned int seed) {
+  arma::vec& beta, unsigned int seed, bool end_ram) {
 
   gssm model(y, Z, H, T, R, a1, P1, xreg, beta, Z_ind, H_ind, T_ind, R_ind, seed);
 
@@ -114,7 +114,7 @@ List gssm_mcmc_param(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::vec ll_store(n_samples);
 
   double acceptance_rate = model.mcmc_param(theta_lwr, theta_upr, n_iter,
-    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store);
+    n_burnin, n_thin, gamma, target_acceptance, S, theta_store, ll_store, end_ram);
 
   arma::inplace_trans(theta_store);
 
@@ -130,7 +130,7 @@ List gssm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::vec& theta_upr, unsigned int n_iter, unsigned int n_thin,
   unsigned int n_burnin, double gamma, double target_acceptance, arma::mat S,
   arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind,
-  arma::mat& xreg, arma::vec& beta, unsigned int seed) {
+  arma::mat& xreg, arma::vec& beta, unsigned int seed, bool end_ram) {
 
   gssm model(y, Z, H, T, R, a1, P1, xreg, beta, Z_ind, H_ind, T_ind, R_ind, seed);
 
@@ -142,7 +142,7 @@ List gssm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
   arma::cube Vt(model.m, model.m, model.n, arma::fill::zeros);
 
   double acceptance_rate = model.mcmc_summary(theta_lwr, theta_upr, n_iter, n_burnin, n_thin,
-    gamma, target_acceptance, S, alphahat, Vt, theta_store, ll_store);
+    gamma, target_acceptance, S, alphahat, Vt, theta_store, ll_store, end_ram);
 
   arma::inplace_trans(alphahat);
   return List::create(Named("alphahat") = alphahat,

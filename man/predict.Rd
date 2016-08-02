@@ -107,8 +107,8 @@ model <- bsm(y, sd_y = init_sd, sd_level = init_sd,
 pred1 <- predict(model, n_iter = 5000, n_ahead = 8)
 pred2 <- predict(StructTS(y, type = "BSM"), n.ahead = 8)
 
-ts.plot(pred1$mean, pred1$intervals[,-2], pred2$pred + 
-cbind(0, -qnorm(0.95) * pred2$se, qnorm(0.95) * pred2$se), 
+ts.plot(pred1$mean, pred1$intervals[,-2], pred2$pred +
+cbind(0, -qnorm(0.95) * pred2$se, qnorm(0.95) * pred2$se),
   col = c(1, 1, 1, 2, 2, 2))
 
 }

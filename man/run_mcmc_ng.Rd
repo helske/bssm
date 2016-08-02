@@ -8,19 +8,19 @@
 \usage{
 \method{run_mcmc}{ng_bsm}(object, n_iter, nsim_states = 1, type = "full",
   lower_prior, upper_prior, n_burnin = floor(n_iter/2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S,
+  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   method = "delayed acceptance", log_space = FALSE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
   thread_seeds = sample(.Machine$integer.max, size = n_threads), ...)
 
 \method{run_mcmc}{ngssm}(object, n_iter, Z_est, T_est, R_est, lower_prior,
   upper_prior, nsim_states = 1, n_burnin = floor(n_iter/2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S,
+  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{run_mcmc}{svm}(object, n_iter, nsim_states = 1, type = "full",
   lower_prior, upper_prior, n_burnin = floor(n_iter/2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S,
+  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   method = "delayed acceptance", n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
   thread_seeds = sample(.Machine$integer.max, size = n_threads), ...)
