@@ -363,7 +363,7 @@ run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
       out <- bsm_mcmc_full(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
-        object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space)
+        object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space, end_adaptive_phase)
 
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
@@ -374,7 +374,7 @@ run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
         object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space,
-        nsim_states, n_threads, thread_seeds)
+        nsim_states, n_threads, thread_seeds, end_adaptive_phase)
       if (log_space && n_sd_par > 0) {
         out$theta[, 1:n_sd_par] <- exp(out$theta[, 1:n_sd_par])
       }
@@ -386,14 +386,16 @@ run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
       bsm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
-        object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space)
+        object$seasonal, object$fixed, object$xreg, object$beta,
+        seed, log_space, end_adaptive_phase)
 
     },
     summary = {
       out <- bsm_mcmc_summary(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
-        object$seasonal, object$fixed, object$xreg, object$beta, seed, log_space)
+        object$seasonal, object$fixed, object$xreg, object$beta, seed,
+        log_space, end_adaptive_phase)
 
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y),
