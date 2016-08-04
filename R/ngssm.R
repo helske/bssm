@@ -258,7 +258,8 @@ run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, lower_prior, upp
     object$a1, object$P1, object$phi, pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     lower_prior, upper_prior, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, T_ind,
-    R_ind, object$xreg, object$beta, initial_signal(object$y, object$phi, object$distribution), seed)
+    R_ind, object$xreg, object$beta,
+    initial_signal(object$y, object$phi, object$distribution), seed, end_adaptive_phase)
 
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   colnames(out$alpha) <- names(object$a1)

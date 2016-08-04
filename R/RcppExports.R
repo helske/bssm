@@ -169,6 +169,14 @@ svm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_
     .Call('bssm_svm_mcmc_full', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds, end_ram)
 }
 
+svm_mcmc_param <- function(y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds, end_ram) {
+    .Call('bssm_svm_mcmc_param', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds, end_ram)
+}
+
+svm_mcmc_summary <- function(y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds, end_ram) {
+    .Call('bssm_svm_mcmc_summary', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds, end_ram)
+}
+
 svm_importance_sample <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed) {
     .Call('bssm_svm_importance_sample', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed)
 }

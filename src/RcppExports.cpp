@@ -1196,6 +1196,74 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// svm_mcmc_param
+List svm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, arma::mat& xreg, arma::vec& beta, arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int method, unsigned int seed, unsigned int n_threads, arma::uvec seeds, bool end_ram);
+RcppExport SEXP bssm_svm_mcmc_param(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP theta_lwrSEXP, SEXP theta_uprSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP methodSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP seedsSEXP, SEXP end_ramSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type T(TSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type R(RSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type a1(a1SEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type P1(P1SEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type xreg(xregSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type theta_lwr(theta_lwrSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type theta_upr(theta_uprSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_iter(n_iterSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_burnin(n_burninSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_thin(n_thinSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< double >::type target_acceptance(target_acceptanceSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type S(SSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type init_signal(init_signalSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_threads(n_threadsSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type seeds(seedsSEXP);
+    Rcpp::traits::input_parameter< bool >::type end_ram(end_ramSEXP);
+    __result = Rcpp::wrap(svm_mcmc_param(y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds, end_ram));
+    return __result;
+END_RCPP
+}
+// svm_mcmc_summary
+List svm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, arma::mat& xreg, arma::vec& beta, arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int method, unsigned int seed, unsigned int n_threads, arma::uvec seeds, bool end_ram);
+RcppExport SEXP bssm_svm_mcmc_summary(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP theta_lwrSEXP, SEXP theta_uprSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP methodSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP seedsSEXP, SEXP end_ramSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type T(TSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type R(RSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type a1(a1SEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type P1(P1SEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type xreg(xregSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type theta_lwr(theta_lwrSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type theta_upr(theta_uprSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_iter(n_iterSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_burnin(n_burninSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_thin(n_thinSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< double >::type target_acceptance(target_acceptanceSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type S(SSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type init_signal(init_signalSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_threads(n_threadsSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type seeds(seedsSEXP);
+    Rcpp::traits::input_parameter< bool >::type end_ram(end_ramSEXP);
+    __result = Rcpp::wrap(svm_mcmc_summary(y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds, end_ram));
+    return __result;
+END_RCPP
+}
 // svm_importance_sample
 List svm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, arma::mat& xreg, arma::vec& beta, unsigned int nsim_states, arma::vec init_signal, unsigned int seed);
 RcppExport SEXP bssm_svm_importance_sample(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP nsim_statesSEXP, SEXP init_signalSEXP, SEXP seedSEXP) {

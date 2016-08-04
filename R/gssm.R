@@ -243,6 +243,7 @@ smoother.gssm <- function(object, ...) {
 #' @param S Initial value for the lower triangular matrix of RAM
 #' algorithm, so that the covariance matrix of the Gaussian proposal
 #' distribution is \eqn{SS'}.
+#' @param end_adaptive_phase If \code{TRUE} (default), $S$ is held fixed after the burnin period.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @export
@@ -300,7 +301,7 @@ run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
       out <- gssm_mcmc_full(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind,
-        H_ind, T_ind, R_ind, object$xreg, object$beta, seed)
+        H_ind, T_ind, R_ind, object$xreg, object$beta, seed, end_adaptive_phase)
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
       out
@@ -309,13 +310,13 @@ run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
       gssm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind,
-        R_ind, object$xreg, object$beta, seed)
+        R_ind, object$xreg, object$beta, seed, end_adaptive_phase)
     },
     summary = {
       out <- gssm_mcmc_summary(object$y, object$Z, object$H, object$T, object$R,
         object$a1, object$P1, lower_prior, upper_prior, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind,
-        R_ind, object$xreg, object$beta, seed)
+        R_ind, object$xreg, object$beta, seed, end_adaptive_phase)
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
         names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y),

@@ -72,7 +72,7 @@ svm <- function(y, ar, sd_ar, sigma, xreg = NULL, beta = NULL, lower_prior, uppe
   T <- array(ar, c(1,1,1))
   R <- array(sd_ar, c(1,1,1))
 
-  init_signal <- (log(pmax(1e-4,y^2)) - log(sigma^2))
+  init_signal <- log(pmax(1e-4,y^2)) - 2 * log(sigma)
 
   if (missing(lower_prior)) {
     lower_prior <- c(1e-8, 1e-8, 1e-8, rep(-1e4,length(beta)))
@@ -154,66 +154,46 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
     nsim_states <- 1
   }
 
-  # this is stupid, correct!
-  out <- switch(method,
-    standard = {
+  out <-  switch(type,
+    full = {
       out <- svm_mcmc_full(object$y, object$Z, object$T, object$R,
         object$a1, object$P1,
         rep(object$sigma, length(object$y)), object$xreg, object$beta,
         lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-        object$init_signal, 1, seed, n_threads, seeds)
+        object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
+          "IS correction", "block IS correction", "IS2")),
+        seed, n_threads, thread_seeds, end_adaptive_phase)
 
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
       out
     },
-    "delayed acceptance" = {
-      out <- svm_mcmc_full(object$y, object$Z, object$T, object$R,
+    parameters = {
+      svm_mcmc_param(object$y, object$Z, object$T, object$R,
         object$a1, object$P1,
         rep(object$sigma, length(object$y)), object$xreg, object$beta,
         lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-        object$init_signal, 2, seed, n_threads, seeds)
-
-      out$alpha <- aperm(out$alpha, c(2, 1, 3))
-      colnames(out$alpha) <- names(object$a1)
-      out
+        object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
+          "IS correction", "block IS correction", "IS2")),
+        seed, n_threads, thread_seeds, end_adaptive_phase)
     },
-    "IS correction" = {
-      out <- svm_mcmc_full(object$y, object$Z, object$T, object$R,
-        object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
+    summary = {
+      out <- svm_mcmc_summary(object$y, object$Z, object$T, object$R,
+        object$a1, object$P1,
+        rep(object$sigma, length(object$y)), object$xreg, object$beta,
         lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-        object$init_signal, 3, seed, n_threads, seeds)
+        object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
+          "IS correction", "block IS correction", "IS2")),
+        seed, n_threads, thread_seeds, end_adaptive_phase)
 
-      out$alpha <- aperm(out$alpha, c(2, 1, 3))
-      colnames(out$alpha) <- names(object$a1)
+      colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
+      out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
+      out$muhat <- ts(out$muhat, start = start(object$y), frequency = frequency(object$y))
       out
-    },
-    "block IS correction" = {
-      out <- svm_mcmc_full(object$y, object$Z, object$T, object$R,
-        object$a1, object$P1,rep(object$sigma, length(object$y)), object$xreg, object$beta,
-        lower_prior, upper_prior, n_iter,
-        nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-        object$init_signal, 4, seed, n_threads, seeds)
-
-      out$alpha <- aperm(out$alpha, c(2, 1, 3))
-      colnames(out$alpha) <- names(object$a1)
-      out
-    },
-    "IS2" = {
-      out <- svm_mcmc_full(object$y, object$Z, object$T, object$R,
-        object$a1, object$P1,rep(object$sigma, length(object$y)), object$xreg, object$beta,
-        lower_prior, upper_prior, n_iter,
-        nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-        object$init_signal, 5, seed, n_threads, seeds)
-
-      out$alpha <- aperm(out$alpha, c(2, 1, 3))
-      colnames(out$alpha) <- names(object$a1)
-      out
-    }
-  )
+    })
   out$S <- matrix(out$S, length(lower_prior), length(lower_prior))
 
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-

@@ -3,12 +3,12 @@ y <- scan("sv.dat")
 model <- svm(y, xreg = matrix(1,length(y)),ar=0.9731, sd_ar = 0.1726, sigma = 0.6338)
 
 
-system.time(out_st <- run_mcmc(model, 6e4, nsim_states = 1, method = "st")) #269.84
-system.time(out_DA10 <- run_mcmc(model, 6e4, nsim_states = 10, method = "DA")) #294
-system.time(out_DA50 <- run_mcmc(model, 6e4, nsim_states = 50, method = "DA")) #441
-system.time(out_DA10b <- run_mcmc(model, 6e4, nsim_states = 10,
+system.time(out_st <- run_mcmc(model, 4e4, nsim_states = 1, method = "st")) #269.84
+system.time(out_DA10 <- run_mcmc(model, 4e4, nsim_states = 10, method = "DA")) #294
+system.time(out_DA50 <- run_mcmc(model, 4e4, nsim_states = 50, method = "DA")) #441
+system.time(out_DA10b <- run_mcmc(model, 4e4, nsim_states = 10,
   target=out_DA10$acc/0.234, method = "DA")) #346.07
-system.time(out_DA50b <- run_mcmc(model, 6e4, nsim_states = 50,
+system.time(out_DA50b <- run_mcmc(model, 4e4, nsim_states = 50,
   target=out_DA50$acc/0.234, method = "DA")) #500.11
 system.time(out_st10 <- run_mcmc(model, 6e4, nsim_states = 10, method = "st")) #427.60
 system.time(out_st50 <- run_mcmc(model, 6e4, nsim_states = 50, method = "st")) #960.56
