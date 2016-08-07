@@ -5,3 +5,6 @@
 ^\.gitignore$
 ^\.travis\.yml$
 vignettes\bssm.pdf
+^runninsummarytest.R$
+^summary_test.R$
+^svtest.R$
