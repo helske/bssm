@@ -49,6 +49,25 @@ ts.plot(cbind(Vt_100, o_da_100$Vt, o_is1_100$Vt, o_is2_100$Vt, o_is3_100$Vt), co
 ts.plot(cbind(Vt_10, o_da_10$Vt, o_is1_10$Vt, o_is2_10$Vt, o_is3_10$Vt), col=1:5)
 ts.plot(cbind(Vt_4, o_da_4$Vt, o_is1_4$Vt, o_is2_4$Vt, o_is3_4$Vt), col=1:5)
 
+o_da_4b <- run_mcmc(model,1e6, 4, n_burnin = 1e5, method ="delayed", seed = 1, seeds=1, S = S, type = "summary")
 o_is1_4b <- run_mcmc(model,1e6, 4, n_burnin = 1e5, method ="IS c", seed = 1, seeds=1, S = S, type = "summary")
 o_is2_4b <- run_mcmc(model,1e6, 4, n_burnin = 1e5, method ="block IS", seed = 1, seeds=1, S = S, type = "summary")
 o_is3_4b <- run_mcmc(model,1e6, 4, n_burnin = 1e5, method ="IS2", seed = 1, seeds=1, S = S, type = "summary")
+
+
+o_da_4c <- run_mcmc(model,1e6, 4, n_burnin = 1e5, method ="delayed", seed = 1, seeds=1, S = S, type = "summary")
+o_is1_4c <- run_mcmc(model,1e6, 4, n_burnin = 1e5, method ="IS c", seed = 1, seeds=1, S = S, type = "summary")
+o_is2_4c <- run_mcmc(model,1e6, 4, n_burnin = 1e5, method ="block IS", seed = 1, seeds=1, S = S, type = "summary")
+o_is3_4c <- run_mcmc(model,1e6, 4, n_burnin = 1e5, method ="IS2", seed = 1, seeds=1, S = S, type = "summary")
+
+
+
+o_da_4c <- run_mcmc(model,3e6, 2, n_burnin = 1e4, method ="delayed", seed = 1, seeds=1, S = S, type = "summary")
+o_is1_4c <- run_mcmc(model,3e6, 2, n_burnin = 1e4, method ="IS c", seed = 1, seeds=1, S = S, type = "summary")
+o_is2_4c <- run_mcmc(model,3e6, 2, n_burnin = 1e4, method ="block IS", seed = 1, seeds=1, S = S, type = "summary")
+o_is3_4c <- run_mcmc(model,3e6, 2, n_burnin = 1e4, method ="IS2", seed = 1, seeds=1, S = S, type = "summary")
+
+
+ts.plot(cbind(Vt_4, o_da_4b$Vt, o_is1_4b$Vt, o_is2_4b$Vt, o_is3_4b$Vt), col=1:5)
+ts.plot(cbind(Vt_4, o_da_4c$Vt, o_is1_4c$Vt, o_is2_4c$Vt, o_is3_4c$Vt), col=1:5)
+ts.plot(cbind(alphahat_4, o_da_4c$alp, o_is1_4c$alp, o_is2_4c$alp, o_is3_4c$alp), col=1:5)

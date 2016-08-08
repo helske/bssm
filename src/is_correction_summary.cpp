@@ -81,8 +81,8 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
 
       }
     }
-      Vt = Vt + Valpha/cumsumw * sum(counts) / (sum(counts) - 1);
-      Vmu = Vmu + Vmu2/cumsumw * sum(counts) / (sum(counts) - 1);
+      Vt = Vt + Valpha/cumsumw;// * sum(counts) / (sum(counts) - 1);
+      Vmu = Vmu + Vmu2/cumsumw;// * sum(counts) / (sum(counts) - 1);
 
 
 }
