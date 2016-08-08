@@ -66,7 +66,7 @@ List ngssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
     T_ind, R_ind, seed);
 
   return model.mcmc_da(theta_lwr, theta_upr, n_iter, nsim_states, n_burnin,
-    n_thin, gamma, target_acceptance, S, init_signal, end_ram);
+    n_thin, gamma, target_acceptance, S, init_signal, end_ram, true);
 }
 
 

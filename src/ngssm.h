@@ -30,37 +30,37 @@ public:
 
 
   virtual List mcmc_full(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, unsigned int, double, double, arma::mat, const arma::vec, bool);
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat, const arma::vec, bool, bool);
   List mcmc_da(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool);
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool, bool);
 
   double mcmc_approx(arma::vec, arma::vec,
     unsigned int, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat&,
     const arma::vec, arma::mat&, arma::vec&,
-    arma::mat&, arma::mat&, arma::vec&, bool);
+    arma::mat&, arma::mat&, arma::vec&, bool, bool);
 
   double mcmc_approx2(arma::vec, arma::vec,
       unsigned int, unsigned int, unsigned int,
       unsigned int, double, double, arma::mat&,
       const arma::vec, arma::mat&, arma::vec&,
-      arma::mat&, arma::mat&, arma::vec&, arma::uvec&, bool);
+      arma::mat&, arma::mat&, arma::vec&, arma::uvec&, bool, bool);
 
   List mcmc_param(arma::vec, arma::vec,
     unsigned int, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat,
-    const arma::vec, bool);
+    const arma::vec, bool, bool);
 
   List mcmc_da_param(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool);
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool, bool);
 
   List mcmc_summary(arma::vec, arma::vec,
     unsigned int, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat,
-    const arma::vec, bool);
+    const arma::vec, bool, bool);
 
   List mcmc_da_summary(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool);
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool, bool);
 
 
   arma::cube invlink(const arma::cube&);

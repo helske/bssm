@@ -125,6 +125,7 @@ smoother.svm <- function(object, ...) {
 run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
   lower_prior, upper_prior, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  adaptive_approx  = TRUE,
   method = "delayed acceptance",  n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
   thread_seeds = sample(.Machine$integer.max, size = n_threads), ...) {
@@ -163,7 +164,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2")),
-        seed, n_threads, thread_seeds, end_adaptive_phase)
+        seed, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
 
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
@@ -177,7 +178,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2")),
-        seed, n_threads, thread_seeds, end_adaptive_phase)
+        seed, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
     },
     summary = {
       out <- svm_mcmc_summary(object$y, object$Z, object$T, object$R,
@@ -187,7 +188,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2")),
-        seed, n_threads, thread_seeds, end_adaptive_phase)
+        seed, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
 
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
