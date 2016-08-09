@@ -49,15 +49,15 @@ arma::vec svm::approx_iter(arma::vec& signal) {
   y = signal + 1.0 - 0.5 * HH;
   // new signal
 
-  arma::mat alpha = fast_smoother(false);
-  arma::vec signal_new(n);
+  // arma::mat alpha = arma::vectorise(fast_smoother(false));
+  // arma::vec signal_new = alpha.row(0).t();
 
-  for (unsigned int t = 0; t < n; t++) {
-    signal_new(t) = arma::as_scalar(Z.col(Ztv * t).t() * alpha.col(t));
-  }
+  // for (unsigned int t = 0; t < n; t++) {
+  //   signal_new(t) = arma::as_scalar(Z.col(Ztv * t).t() * alpha.col(t));
+  // }
   H = sqrt(HH);
 
-  return signal_new;
+  return arma::vectorise(fast_smoother(false));
 }
 
 

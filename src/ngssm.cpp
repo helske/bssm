@@ -54,6 +54,7 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
     }
     i++;
   }
+
   ll = 0.0;
   // log[g(pseudo_y | signal)]
   if (distribution != 0) {
@@ -472,11 +473,10 @@ arma::vec ngssm::importance_weights(const arma::cube& alphasim) {
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
       for (unsigned int t = 0; t < n; t++) {
         if (arma::is_finite(ng_y(t))) {
-          double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
-            alphasim.slice(i).col(t));
+          double simsignal = alphasim(0, t, i);
           weights(i) += -0.5 * (simsignal +
             pow((ng_y(t) - xbeta(t)) / phi(t), 2) * exp(-simsignal)) +
-            0.5 * pow(y(t) - simsignal, 2) / HH(t);
+            0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
         }
       }
     }
@@ -837,7 +837,6 @@ List ngssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
   unsigned int ind = 0;
   unsigned int ind_prop = 0;
   double ll_approx_u = scaling_factor(signal);
-
 
   if (nsim_states > 1) {
     arma::vec weights = exp(importance_weights(alpha) - ll_approx_u);
