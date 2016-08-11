@@ -379,7 +379,7 @@ smoother.ng_bsm <- function(object, ...) {
 
 #' @method run_mcmc ng_bsm
 #' @rdname run_mcmc_ng
-#' @param log_space Generate proposals for standard deviations in log-space. Default is \code{FALSE}.
+#' @param log_space Generate proposals for standard deviations in log-space. Default is \code{TRUE}.
 #' @param method Use \code{"standard"} MCMC or \code{"delayed acceptance"} approach.
 #' @inheritParams run_mcmc.ngssm
 #' @export
@@ -387,7 +387,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1, type = "full",
   lower_prior, upper_prior, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx = TRUE,
-  method = "delayed acceptance", log_space = FALSE, n_threads = 1,
+  method = "delayed acceptance", log_space = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
   thread_seeds = sample(.Machine$integer.max, size = n_threads), ...) {
 

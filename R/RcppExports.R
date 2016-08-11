@@ -165,12 +165,12 @@ svm_smoother <- function(y, Z, T, R, a1, P1, phi, xreg, beta, init_signal) {
     .Call('bssm_svm_smoother', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, init_signal)
 }
 
-svm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds, end_ram, adapt_approx) {
-    .Call('bssm_svm_mcmc_full', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, n_threads, seeds, end_ram, adapt_approx)
+svm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, log_space, n_threads, seeds, end_ram, adapt_approx) {
+    .Call('bssm_svm_mcmc_full', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, log_space, n_threads, seeds, end_ram, adapt_approx)
 }
 
-svm_importance_sample <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed) {
-    .Call('bssm_svm_importance_sample', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed)
+svm_importance_sample <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed, log_space) {
+    .Call('bssm_svm_importance_sample', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed, log_space)
 }
 
 svm_approx_model <- function(y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, max_iter, conv_tol) {
