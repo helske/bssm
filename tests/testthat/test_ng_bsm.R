@@ -37,28 +37,24 @@ test_that("MCMC results are correct",{
   model_bssm <- ng_bsm(rpois(10,3), P1 = diag(2,2),
     sd_level = 2, phi = 22:31, distribution = "poisson")
 
-  expect_error(out <- run_mcmc(model_bssm, n_iter = 5), NA)
+  expect_error(out <- run_mcmc(model_bssm, n_iter = 5, nsim_states = 5), NA)
 
-  testvalues <- structure(c(-30.5898254659741,
-    -30.559873871786, -30.5130394688329), .Dim = c(3L, 1L))
+  testvalues <- structure(
+    c(-30.4836913628259, -30.9657477131774, -28.3824943022477),
+    .Dim = c(3L, 1L))
   expect_equivalent(testvalues, out$logLik)
 
-  testvalues <- structure(c(1.92994662744397, 1.91792908167773, 1.89920013178759
-  ), .Dim = c(3L, 1L), .Dimnames = list(NULL, "sd_level"), mcpar = c(3,
-    5, 1), class = "mcmc")
+  testvalues <- structure(
+    c(1.94552809582614, 1.92075402401942, 1.75756455132009),
+    .Dim = c(3L, 1L), .Dimnames = list(NULL, "sd_level"),
+    mcpar = c(3, 5, 1), class = "mcmc")
   expect_equivalent(testvalues, out$theta)
 
-  testvalues <- c(-1.75817378464323, -2.09820472708178, 0.0321910079468918,
-    -1.78009326390443, -0.516269445583639, -0.0681578155549925)
+  testvalues <- c(-2.0399167455584, -1.97802612091027,
+    -0.272031160741615, -2.67416681004079,
+    -0.350080792778295, -0.365089079426138)
   expect_equivalent(testvalues, out$alpha[c(1,10,20,25, 31, 60)])
 
-  expect_error(out2 <- run_mcmc(model_bssm, n_iter = 5, nsim_states = 10), NA)
-
-  testvalues <- c(
-    -1.53451331164171, -1.65374734086221,
-    -0.61385163351857, -1.18098534825777,
-    -0.61385163351857, -0.61385163351857)
-  expect_equivalent(testvalues, out2$alpha[c(1,10,20,25, 31, 60)])
 
 })
 

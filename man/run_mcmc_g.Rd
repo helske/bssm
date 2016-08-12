@@ -54,6 +54,8 @@ between 0 and 1 (not checked).}
 algorithm, so that the covariance matrix of the Gaussian proposal
 distribution is \eqn{SS'}.}
 
+\item{end_adaptive_phase}{If \code{TRUE} (default), $S$ is held fixed after the burnin period.}
+
 \item{log_space}{Generate proposals for standard deviations in log-space. Default is \code{FALSE}.}
 
 \item{n_threads}{Number of threads for state simulation.}

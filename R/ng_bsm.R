@@ -603,7 +603,7 @@ importance_sample.ng_bsm <- function(object, nsim,
 #' @export
 gaussian_approx.ng_bsm <- function(object, max_iter =  100, conv_tol = 1e-8, ...) {
 
-  ng_bsm_gaussian_approx(object$y, object$Z, object$T, object$R, object$a1,
+  ng_bsm_approx_model(object$y, object$Z, object$T, object$R, object$a1,
     object$P1, object$phi, object$slope, object$seasonal, object$noise, object$fixed,
     object$xreg, object$beta,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
