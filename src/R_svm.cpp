@@ -16,13 +16,16 @@ double svm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
 
   double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
   double ll_w = 0;
-  arma::vec weights(nsim_states);
-  if (nsim_states > 1) {
-    arma::cube alpha = model.sim_smoother(nsim_states, false);
-    weights = exp(model.importance_weights(alpha) - model.scaling_factor(init_signal));
-    ll_w = log(sum(weights) / nsim_states);
+  if (!std::isfinite(ll)) {
+    return -arma::datum::inf;
+  } else {
+    if (nsim_states > 1) {
+      arma::vec weights(nsim_states);
+      arma::cube alpha = model.sim_smoother(nsim_states, false);
+      weights = exp(model.importance_weights(alpha) - model.scaling_factor(init_signal));
+      ll_w = log(sum(weights) / nsim_states);
+    }
   }
-
 
   //  return List::create(Named("ll") = ll,
   //    Named("llw") = ll_w, Named("llg") = model.log_likelihood(),

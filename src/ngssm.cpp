@@ -32,6 +32,7 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
   arma::vec Ft(n, arma::fill::zeros);
   // log[p(signal)] + log[p(y | signal)]
   double ll = logp_signal(signal, Kt, Ft) + logp_y(signal);
+
   // approximation does not need to be accurate
   // as we are correcting the approximation with importance sampling
   //unsigned int max_iter = 1000;
@@ -47,6 +48,9 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
     double diff = std::abs(ll_new - ll)/(0.1 + std::abs(ll_new));
     signal = signal_new;
 
+    if(!std::isfinite(ll_new) || signal.has_nan()){
+      return -arma::datum::inf;
+    }
     if (diff < conv_tol) {
       break;
     } else {
@@ -582,7 +586,9 @@ double ngssm::mcmc_approx(arma::vec theta_lwr, arma::vec theta_upr,
   arma::vec signal = init_signal;
   double ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
   double ll = ll_approx + log_likelihood(distribution != 0);
-
+  if (!std::isfinite(ll)) {
+    Rcpp::stop("Non-finite log-likelihood from initial values. ");
+  }
   unsigned int j = 0;
 
   double ll_approx_u = scaling_factor(signal);
@@ -630,8 +636,13 @@ double ngssm::mcmc_approx(arma::vec theta_lwr, arma::vec theta_upr,
       ll_prop = ll_approx + log_likelihood(distribution != 0);
       //compute the acceptance probability
       // use explicit min(...) as we need this value later
-      double q = proposal(theta, theta_prop);
-      accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      if(!std::isfinite(ll_prop)) {
+        accept_prob = 0;
+      } else {
+        double q = proposal(theta, theta_prop);
+        accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      }
+
     } else accept_prob = 0;
 
     if (inrange && (unif(engine) < accept_prob)) {
@@ -682,7 +693,9 @@ double ngssm::mcmc_approx2(arma::vec theta_lwr, arma::vec theta_upr,
   arma::vec signal = init_signal;
   double ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
   double ll = ll_approx + log_likelihood(distribution != 0);
-
+  if (!std::isfinite(ll)) {
+    Rcpp::stop("Non-finite log-likelihood from initial values. ");
+  }
 
   double accept_prob = 0;
   double ll_prop = 0;
@@ -713,8 +726,12 @@ double ngssm::mcmc_approx2(arma::vec theta_lwr, arma::vec theta_upr,
       ll_prop = ll_approx + log_likelihood(distribution != 0);
       //compute the acceptance probability
       // use explicit min(...) as we need this value later
-      double q = proposal(theta, theta_prop);
-      accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      if(!std::isfinite(ll_prop)) {
+        accept_prob = 0;
+      } else {
+        double q = proposal(theta, theta_prop);
+        accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      }
     } else accept_prob = 0;
 
 
@@ -833,17 +850,20 @@ List ngssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
   arma::vec signal = init_signal;
   double ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
   double ll = ll_approx + log_likelihood(distribution != 0);
+  if (!std::isfinite(ll)) {
+    Rcpp::stop("Non-finite log-likelihood from initial values. ");
+  }
   arma::cube alpha = sim_smoother(nsim_states, distribution != 0);
   unsigned int ind = 0;
   unsigned int ind_prop = 0;
   double ll_approx_u = scaling_factor(signal);
-
   if (nsim_states > 1) {
     arma::vec weights = exp(importance_weights(alpha) - ll_approx_u);
     std::discrete_distribution<> sample(weights.begin(), weights.end());
     ind = sample(engine);
     ll += log(sum(weights) / nsim_states);
   }
+
   unsigned int j = 0;
 
   if (n_burnin == 0) {
@@ -885,15 +905,19 @@ List ngssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
       // use explicit min(...) as we need this value later
 
       // if nsim_states = 1, target hat_p(theta, alpha | y)
-      if (nsim_states > 1) {
+      if (std::isfinite(ll_prop) && nsim_states > 1) {
         alpha_prop = sim_smoother(nsim_states, distribution != 0);
         arma::vec weights = exp(importance_weights(alpha_prop) - ll_approx_u);
         ll_prop += log(sum(weights) / nsim_states);
         std::discrete_distribution<> sample(weights.begin(), weights.end());
         ind_prop = sample(engine);
       }
-      double q = proposal(theta, theta_prop);
-      accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      if(!std::isfinite(ll_prop)) {
+        accept_prob = 0;
+      } else {
+        double q = proposal(theta, theta_prop);
+        accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      }
     } else {
       accept_prob = 0.0;
     }
@@ -954,6 +978,9 @@ List ngssm::mcmc_da(arma::vec theta_lwr, arma::vec theta_upr,
 
   double ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
   double ll = ll_approx + log_likelihood(distribution != 0);
+  if (!std::isfinite(ll)) {
+    Rcpp::stop("Non-finite log-likelihood from initial values. ");
+  }
   double ll_approx_u = scaling_factor(signal);
   arma::cube alpha = sim_smoother(nsim_states, distribution != 0);
   arma::vec weights = exp(importance_weights(alpha) - ll_approx_u);
@@ -1001,8 +1028,12 @@ List ngssm::mcmc_da(arma::vec theta_lwr, arma::vec theta_upr,
       ll_prop = ll_approx + log_likelihood(distribution != 0);
       //compute the acceptance probability
       // use explicit min(...) as we need this value later
-      double q = proposal(theta, theta_prop);
-      accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      if(!std::isfinite(ll_prop)) {
+        accept_prob = 0;
+      } else {
+        double q = proposal(theta, theta_prop);
+        accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      }
     } else accept_prob = 0;
 
 
@@ -1013,10 +1044,10 @@ List ngssm::mcmc_da(arma::vec theta_lwr, arma::vec theta_upr,
       arma::vec weights = exp(importance_weights(alpha_prop) - ll_approx_u);
       double ll_w_prop = log(sum(weights) / nsim_states);
       // delayed acceptance ratio
-      double pp = std::min(1.0, exp(ll_w_prop - ll_w));
-      // accept_prob *= pp; // only count the initial acceptance
-      // Rcout<<"ll_approx_u "<<ll_approx_u<<std::endl;
-      // Rcout<<"ll_w_prop - ll_w "<<ll_w_prop - ll_w<<std::endl;
+      double pp = 0;
+      if(std::isfinite(ll_w_prop)) {
+        pp = std::min(1.0, exp(ll_w_prop - ll_w));
+      }
       if (unif(engine) < pp) {
         if (i >= n_burnin) {
           acceptance_rate++;
@@ -1067,6 +1098,9 @@ List ngssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
   arma::vec signal = init_signal;
   double ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
   double ll = ll_approx + log_likelihood(distribution != 0);
+  if (!std::isfinite(ll)) {
+    Rcpp::stop("Non-finite log-likelihood from initial values. ");
+  }
   double ll_approx_u = scaling_factor(signal);
 
   if (nsim_states > 1) {
@@ -1115,13 +1149,17 @@ List ngssm::mcmc_param(arma::vec theta_lwr, arma::vec theta_upr,
       // use explicit min(...) as we need this value later
 
       // if nsim_states = 1, target hat_p(theta, alpha | y)
-      if (nsim_states > 1) {
+      if (std::isfinite(ll_prop) && nsim_states > 1) {
         arma::cube alpha = sim_smoother(nsim_states, distribution != 0);
         arma::vec weights = exp(importance_weights(alpha) - ll_approx_u);
         ll_prop += log(sum(weights) / nsim_states);
       }
-      double q = proposal(theta, theta_prop);
-      accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      if(!std::isfinite(ll_prop)) {
+        accept_prob = 0;
+      } else {
+        double q = proposal(theta, theta_prop);
+        accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      }
     } else {
       accept_prob = 0.0;
     }
@@ -1171,8 +1209,12 @@ List ngssm::mcmc_da_param(arma::vec theta_lwr, arma::vec theta_upr,
   arma::vec signal = init_signal;
 
   double ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
-  double ll_approx_u = scaling_factor(signal);
   double ll = ll_approx + log_likelihood(distribution != 0);
+  if (!std::isfinite(ll)) {
+    Rcpp::stop("Non-finite log-likelihood from initial values. ");
+  }
+
+  double ll_approx_u = scaling_factor(signal);
   arma::cube alpha = sim_smoother(nsim_states, distribution != 0);
   arma::vec weights = exp(importance_weights(alpha) - ll_approx_u);
   double ll_w = log(sum(weights) / nsim_states);
@@ -1216,8 +1258,12 @@ List ngssm::mcmc_da_param(arma::vec theta_lwr, arma::vec theta_upr,
       ll_prop = ll_approx + log_likelihood(distribution != 0);
       //compute the acceptance probability
       // use explicit min(...) as we need this value later
-      double q = proposal(theta, theta_prop);
-      accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      if(!std::isfinite(ll_prop)) {
+        accept_prob = 0;
+      } else {
+        double q = proposal(theta, theta_prop);
+        accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      }
     } else accept_prob = 0;
 
 
@@ -1228,7 +1274,10 @@ List ngssm::mcmc_da_param(arma::vec theta_lwr, arma::vec theta_upr,
       arma::vec weights = exp(importance_weights(alpha) - ll_approx_u);
       double ll_w_prop = log(sum(weights) / nsim_states);
       // delayed acceptance ratio
-      double pp = std::min(1.0, exp(ll_w_prop - ll_w));
+      double pp = 0;
+      if(std::isfinite(ll_w_prop)) {
+        pp = std::min(1.0, exp(ll_w_prop - ll_w));
+      }
       if (unif(engine) < pp) {
         if (i >= n_burnin) {
           acceptance_rate++;
@@ -1277,8 +1326,12 @@ List ngssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
   arma::vec signal = init_signal;
   double ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
   double ll = ll_approx + log_likelihood(distribution != 0);
-  arma::cube alpha = sim_smoother(nsim_states, distribution != 0);
+  if (!std::isfinite(ll)) {
+    Rcpp::stop("Non-finite log-likelihood from initial values. ");
+  }
   double ll_approx_u = scaling_factor(signal);
+  arma::cube alpha = sim_smoother(nsim_states, distribution != 0);
+
 
   arma::mat alphahat(m, n, arma::fill::zeros);
   arma::cube Vt(m, m, n, arma::fill::zeros);
@@ -1346,13 +1399,17 @@ List ngssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
       // use explicit min(...) as we need this value later
 
       // if nsim_states = 1, target hat_p(theta, alpha | y)
-      if (nsim_states > 1) {
+      if (std::isfinite(ll_prop) && nsim_states > 1) {
         alpha_prop = sim_smoother(nsim_states, distribution != 0);
         weights_prop = exp(importance_weights(alpha_prop) - ll_approx_u);
         ll_prop += log(sum(weights_prop) / nsim_states);
       }
-      double q = proposal(theta, theta_prop);
-      accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      if(!std::isfinite(ll_prop)) {
+        accept_prob = 0;
+      } else {
+        double q = proposal(theta, theta_prop);
+        accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      }
     } else {
       accept_prob = 0.0;
     }
@@ -1425,8 +1482,12 @@ List ngssm::mcmc_da_summary(arma::vec theta_lwr, arma::vec theta_upr,
   arma::vec signal = init_signal;
 
   double ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
-  double ll_approx_u = scaling_factor(signal);
   double ll = ll_approx + log_likelihood(distribution != 0);
+  if (!std::isfinite(ll)) {
+    Rcpp::stop("Non-finite log-likelihood from initial values. ");
+  }
+  double ll_approx_u = scaling_factor(signal);
+
   arma::cube alpha = sim_smoother(nsim_states, distribution != 0);
   arma::vec weights = exp(importance_weights(alpha) - ll_approx_u);
   double ll_w = log(sum(weights) / nsim_states);
@@ -1488,8 +1549,12 @@ List ngssm::mcmc_da_summary(arma::vec theta_lwr, arma::vec theta_upr,
       ll_prop = ll_approx + log_likelihood(distribution != 0);
       //compute the acceptance probability
       // use explicit min(...) as we need this value later
-      double q = proposal(theta, theta_prop);
-      accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      if(!std::isfinite(ll_prop)) {
+        accept_prob = 0;
+      } else {
+        double q = proposal(theta, theta_prop);
+        accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      }
     } else accept_prob = 0;
 
 
@@ -1500,7 +1565,10 @@ List ngssm::mcmc_da_summary(arma::vec theta_lwr, arma::vec theta_upr,
       arma::vec weights_prop = exp(importance_weights(alpha_prop) - ll_approx_u);
       double ll_w_prop = log(sum(weights_prop) / nsim_states);
       // delayed acceptance ratio
-      double pp = std::min(1.0, exp(ll_w_prop - ll_w));
+      double pp = 0;
+      if(std::isfinite(ll_w_prop)) {
+       pp = std::min(1.0, exp(ll_w_prop - ll_w));
+      }
       // accept_prob *= pp; // only count the initial acceptance
       // Rcout<<"ll_approx_u "<<ll_approx_u<<std::endl;
       // Rcout<<"ll_w_prop - ll_w "<<ll_w_prop - ll_w<<std::endl;

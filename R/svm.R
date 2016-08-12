@@ -75,11 +75,12 @@ svm <- function(y, ar, sd_ar, sigma, xreg = NULL, beta = NULL, lower_prior, uppe
   init_signal <- log(pmax(1e-4,y^2)) - 2 * log(sigma)
 
   if (missing(lower_prior)) {
-    lower_prior <- c(-1 + 1e-4, 1e-8, 1e-8, rep(-1e4, length(beta)))
+    lower_prior <- c(-1 + 1e-4, 0, 1e-4, rep(-1e3, length(beta)))
   }
 
   if (missing(upper_prior)) {
-    upper_prior <- c(1 - 1e-4, 1e4, 1e4, rep(1e4, length(beta)))
+    upper_prior <- c(1 - 1e-4, 4 * rep(min(sd(y, na.rm = TRUE), Inf, na.rm = TRUE), 2),
+      rep(1e3, length(beta)))
   }
 
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
