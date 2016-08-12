@@ -79,7 +79,7 @@ svm <- function(y, ar, sd_ar, sigma, xreg = NULL, beta = NULL, lower_prior, uppe
   }
 
   if (missing(upper_prior)) {
-    upper_prior <- c(1 - 1e-4, 4 * rep(min(sd(y, na.rm = TRUE), Inf, na.rm = TRUE), 2),
+    upper_prior <- c(1 - 1e-4, 10 * rep(min(sd(y, na.rm = TRUE), Inf, na.rm = TRUE), 2),
       rep(1e3, length(beta)))
   }
 
