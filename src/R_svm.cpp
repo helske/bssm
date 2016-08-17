@@ -174,9 +174,9 @@ List svm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
   arma::mat& xreg, arma::vec& beta,
   unsigned int nsim_states,
-  arma::vec init_signal, unsigned int seed, bool log_space) {
+  arma::vec init_signal, unsigned int seed) {
 
-  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed, log_space);
+  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed, false);
 
   double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
 
