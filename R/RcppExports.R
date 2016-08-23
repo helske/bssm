@@ -145,6 +145,10 @@ ng_bsm_approx_model <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise,
     .Call('bssm_ng_bsm_approx_model', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, max_iter, conv_tol)
 }
 
+ng_bsm_bootstrap_filter <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed) {
+    .Call('bssm_ng_bsm_bootstrap_filter', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed)
+}
+
 ngssm_loglik <- function(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init_signal, nsim_states, seed) {
     .Call('bssm_ngssm_loglik', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init_signal, nsim_states, seed)
 }

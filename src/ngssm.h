@@ -65,6 +65,11 @@ public:
 
   arma::cube invlink(const arma::cube&);
 
+  arma::vec pyt(const unsigned int, const arma::cube&);
+  double bootstrap_filter(unsigned int, arma::cube&, arma::vec&);
+  
+    
+    
   arma::vec phi;
   unsigned int distribution;
   const arma::vec ng_y;

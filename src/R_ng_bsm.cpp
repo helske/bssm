@@ -539,3 +539,22 @@ List ng_bsm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
     Named("signal") = init_signal);
 }
 
+
+// [[Rcpp::export]]
+List ng_bsm_bootstrap_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope,
+  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
+  unsigned int distribution, arma::vec init_signal, unsigned int nsim_states,
+  unsigned int seed) {
+  
+  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
+    distribution, seed);
+  
+  arma::cube alphasim(model.m, model.n, nsim_states);
+  arma::vec V(nsim_states);
+  double logW = model.bootstrap_filter(nsim_states, alphasim, V);
+  
+  return List::create(
+    Named("alpha") = alphasim, Named("V") = V,
+    Named("logW") = logW);
+}
