@@ -9,6 +9,14 @@ choldowndate <- function(L, u) {
     .Call('bssm_choldowndate', PACKAGE = 'bssm', L, u)
 }
 
+dmvnorm1 <- function(x, mean, sigma, lwr = FALSE, logd = FALSE) {
+    .Call('bssm_dmvnorm1', PACKAGE = 'bssm', x, mean, sigma, lwr, logd)
+}
+
+dmvnorm2 <- function(x, mean, sigma, lwr, logd, A) {
+    .Call('bssm_dmvnorm2', PACKAGE = 'bssm', x, mean, sigma, lwr, logd, A)
+}
+
 intervals <- function(means, sds, probs, n_ahead) {
     .Call('bssm_intervals', PACKAGE = 'bssm', means, sds, probs, n_ahead)
 }
@@ -147,6 +155,10 @@ ng_bsm_approx_model <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise,
 
 ng_bsm_bootstrap_filter <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed) {
     .Call('bssm_ng_bsm_bootstrap_filter', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed)
+}
+
+ng_bsm_gap_filter <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed) {
+    .Call('bssm_ng_bsm_gap_filter', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed)
 }
 
 ngssm_loglik <- function(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, init_signal, nsim_states, seed) {

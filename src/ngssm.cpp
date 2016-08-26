@@ -1430,7 +1430,7 @@ List ngssm::mcmc_summary(arma::vec theta_lwr, arma::vec theta_upr,
     }
     
     if ((i >= n_burnin) && (i % n_thin == 0) && j < n_samples) {
-      
+      update_model(theta);
       arma::mat alphahat_i(m, n);
       arma::cube Vt_i(m, m, n);
       running_weighted_summary(alpha, alphahat_i, Vt_i, weights);
@@ -1586,6 +1586,7 @@ List ngssm::mcmc_da_summary(arma::vec theta_lwr, arma::vec theta_upr,
     
     //store
     if ((i >= n_burnin) && (i % n_thin == 0) && j < n_samples) {
+      update_model(theta);
       arma::mat alphahat_i(m, n);
       arma::cube Vt_i(m, m, n);
       running_weighted_summary(alpha, alphahat_i, Vt_i, weights);
@@ -1698,6 +1699,13 @@ arma::vec ngssm::pyt(const unsigned int t, const arma::cube& alphasim) {
   
   if (arma::is_finite(ng_y(t))) {
     switch(distribution) {
+    case 0  :
+      for (unsigned int i = 0; i < alphasim.n_slices; i++) {
+        V(i) = -0.5 * (LOG2PI + 2.0 * log(phi(0)) + alphasim(0, t, i) + 
+          pow((ng_y(t) - xbeta(t))/phi(0), 2) * exp(-alphasim(0, t, i)));
+        
+      }
+      break;
     case 1  :
       for (unsigned int i = 0; i < alphasim.n_slices; i++) {
         double exptmp = exp(arma::as_scalar(Z.col(t * Ztv).t() *
@@ -1727,7 +1735,6 @@ arma::vec ngssm::pyt(const unsigned int t, const arma::cube& alphasim) {
 //bootstrap filter
 double ngssm::bootstrap_filter(unsigned int nsim, arma::cube& alphasim, arma::vec& V) {
   
-  V.ones();
   arma::uvec nonzero = arma::find(P1.diag() > 0);
   arma::mat L_P1(m, m, arma::fill::zeros);
   if (nonzero.n_elem > 0) {
@@ -1744,8 +1751,77 @@ double ngssm::bootstrap_filter(unsigned int nsim, arma::cube& alphasim, arma::ve
     }
     alphasim.slice(i).col(0) = a1 + L_P1 * um;
   }
-  
   V = pyt(0, alphasim);
+  double maxV = V.max();
+  V = exp(V - maxV);
+  double w = maxV + log(sum(V)) - log(nsim);
+  V /= sum(V);
+  
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    std::discrete_distribution<> sample(V.begin(), V.end());
+    arma::cube alphatmp(m, n, nsim);
+    for (unsigned int i = 0; i < nsim; i++) {
+      alphatmp(arma::span::all, arma::span(0, t), arma::span(i)) = 
+        alphasim(arma::span::all, arma::span(0, t), arma::span(sample(engine)));
+    }
+    alphasim(arma::span::all, arma::span(0, t), arma::span::all) = 
+      alphatmp(arma::span::all, arma::span(0, t), arma::span::all);
+    
+    for (unsigned int i = 0; i < nsim; i++) {
+      arma::vec uk(k);
+      for(unsigned int j = 0; j < k; j++) {
+        uk(j) = normal(engine);
+      }
+      alphasim.slice(i).col(t + 1) = T.slice(t * Ttv) * alphasim.slice(i).col(t) + 
+        R.slice(t * Rtv) * uk;
+    }
+    V = pyt(t + 1, alphasim);
+    maxV = V.max();
+    V = exp(V - maxV);
+    w += maxV + log(sum(V)) - log(nsim);
+    V /= sum(V);
+  }
+  
+  return w;
+}
+
+
+//bootstrap filter with initial value simulation from approximating model
+double ngssm::gap_filter(unsigned int nsim, arma::cube& alphasim, arma::vec& V, arma::vec& init_signal) {
+  
+  arma::mat alphahat(m, n);
+  arma::cube Vt(m, m, n);
+  
+  double ll_approx = approx(init_signal, 100, 1e-8);
+  smoother(alphahat, Vt, distribution != 0);
+  
+  arma::uvec nonzero = arma::find(Vt.slice(0).diag() > 0);
+  arma::mat L(m, m, arma::fill::zeros);
+  if (nonzero.n_elem > 0) {
+    L.submat(nonzero, nonzero) =
+      arma::chol(Vt.slice(0).submat(nonzero, nonzero), "lower");
+  }
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  
+  for (unsigned int i = 0; i < nsim; i++) {
+    arma::vec um(m);
+    for(unsigned int j = 0; j < m; j++) {
+      um(j) = normal(engine);
+    }
+    alphasim.slice(i).col(0) = alphahat.col(0) + L * um;
+  }
+  nonzero = arma::find(P1.diag() > 0);
+  arma::mat L_P1(m, m, arma::fill::zeros);
+  if (nonzero.n_elem > 0) {
+    L_P1.submat(nonzero, nonzero) =
+      arma::chol(P1.submat(nonzero, nonzero), "lower");
+  }
+  
+  V = pyt(0, alphasim) + dmvnorm1(alphasim.tube(arma::span::all, arma::span(0)), 
+    a1, L_P1, true, true)
+    - dmvnorm1(alphasim.tube(arma::span::all, arma::span(0)), 
+      alphahat.col(0), L, true, true);
   double maxV = V.max();
   V = exp(V - maxV);
   double w = maxV + log(sum(V)) - log(nsim);

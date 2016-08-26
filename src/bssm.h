@@ -15,6 +15,12 @@ arma::mat cholupdate(arma::mat L, arma::vec u);
 
 arma::mat choldowndate(arma::mat L, arma::vec u);
 
+arma::vec dmvnorm1(const arma::mat& x, const arma::vec& mean,  
+  arma::mat sigma, bool lwr = false, bool logd = false);
+
+arma::vec dmvnorm2(const arma::mat& x, const arma::mat& mean,  
+  arma::mat sigma, bool lwr, bool logd, const arma::mat& A);
+
 void adjust_S(arma::mat& S, arma::vec& u, double current, double target, unsigned int n, double gamma);
 
 void running_summary(const arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, const unsigned int n);

@@ -67,6 +67,7 @@ public:
 
   arma::vec pyt(const unsigned int, const arma::cube&);
   double bootstrap_filter(unsigned int, arma::cube&, arma::vec&);
+  double gap_filter(unsigned int, arma::cube&, arma::vec&, arma::vec&);
   
     
     

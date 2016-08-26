@@ -622,3 +622,16 @@ bootstrap_filter <- function(object, nsim,
 }
 
 
+
+#' @export
+gap_filter <- function(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  ng_bsm_gap_filter(object$y, object$Z, object$T, object$R, object$a1,
+    object$P1, object$phi, object$slope, object$seasonal, object$noise, object$fixed,
+    object$xreg, object$beta,
+    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
+    object$init_signal, nsim, seed)
+}
+
+

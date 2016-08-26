@@ -30,6 +30,37 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// dmvnorm1
+arma::vec dmvnorm1(const arma::mat& x, const arma::vec& mean, arma::mat sigma, bool lwr, bool logd);
+RcppExport SEXP bssm_dmvnorm1(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP lwrSEXP, SEXP logdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< bool >::type lwr(lwrSEXP);
+    Rcpp::traits::input_parameter< bool >::type logd(logdSEXP);
+    __result = Rcpp::wrap(dmvnorm1(x, mean, sigma, lwr, logd));
+    return __result;
+END_RCPP
+}
+// dmvnorm2
+arma::vec dmvnorm2(const arma::mat& x, const arma::mat& mean, arma::mat sigma, bool lwr, bool logd, const arma::mat& A);
+RcppExport SEXP bssm_dmvnorm2(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP lwrSEXP, SEXP logdSEXP, SEXP ASEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< bool >::type lwr(lwrSEXP);
+    Rcpp::traits::input_parameter< bool >::type logd(logdSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    __result = Rcpp::wrap(dmvnorm2(x, mean, sigma, lwr, logd, A));
+    return __result;
+END_RCPP
+}
 // intervals
 arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
 RcppExport SEXP bssm_intervals(SEXP meansSEXP, SEXP sdsSEXP, SEXP probsSEXP, SEXP n_aheadSEXP) {
@@ -1024,6 +1055,33 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
     __result = Rcpp::wrap(ng_bsm_bootstrap_filter(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed));
+    return __result;
+END_RCPP
+}
+// ng_bsm_gap_filter
+List ng_bsm_gap_filter(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope, bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta, unsigned int distribution, arma::vec init_signal, unsigned int nsim_states, unsigned int seed);
+RcppExport SEXP bssm_ng_bsm_gap_filter(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP slopeSEXP, SEXP seasonalSEXP, SEXP noiseSEXP, SEXP fixedSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP distributionSEXP, SEXP init_signalSEXP, SEXP nsim_statesSEXP, SEXP seedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type T(TSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type R(RSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type a1(a1SEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type P1(P1SEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< bool >::type slope(slopeSEXP);
+    Rcpp::traits::input_parameter< bool >::type seasonal(seasonalSEXP);
+    Rcpp::traits::input_parameter< bool >::type noise(noiseSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type fixed(fixedSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type xreg(xregSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type distribution(distributionSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
+    __result = Rcpp::wrap(ng_bsm_gap_filter(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed));
     return __result;
 END_RCPP
 }
