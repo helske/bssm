@@ -60,4 +60,9 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
   unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, 
   arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_nsim);
 
+
+template <typename T>
+void is_correction_bsf(T mod, const arma::mat& theta, const arma::vec& ll_store, const arma::uvec& counts, unsigned int nsim_states,
+  unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, arma::cube& alpha_store);
+
 #endif

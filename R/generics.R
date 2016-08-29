@@ -96,7 +96,7 @@ importance_sample <- function(object, nsim, seed, ...) {
 #' Gaussian Approximation of non-Gaussian State Space Model
 #' 
 #' Returns the approximating Gaussian model.
-#' @param object of class \code{svm}.
+#' @param object model object.
 #' @param max_iter Maximum number of iterations.
 #' @param conv_tol Tolerance parameter. Document properly later!
 #' @param ... Ignored.
@@ -104,4 +104,37 @@ importance_sample <- function(object, nsim, seed, ...) {
 #' @rdname gaussian_approx
 gaussian_approx <- function(object, max_iter, conv_tol, ...) {
   UseMethod("gaussian_approx", object)
+}
+
+#' Particle Smoothing for non-Gaussian State Space Model
+#' 
+#' Function \code{bootstrap_smoother} performs a bootstrap filtering with backward 
+#' sampling, returning a weighted sample from $p(alpha|y, theta)$ and estimate of log-likelihood. 
+#' Function \code{gap_smoother} first contructs a Gaussian approximation of the model, and uses the approximate
+#' $p(alpha_1 | y)$ for simulating initial state in particle filtering.
+#' 
+#' @param object of class \code{ng_bsm} or \code{svm}.
+#' @param nsim Number of samples.
+#' @param seed Seed for RNG
+#' @param ... Ignored.
+#' @export
+#' @rdname particle_smoother
+bootstrap_smoother <- function(object, nsim, seed, ...) {
+  UseMethod("bootstrap_smoother", object)
+}
+
+
+#' @inheritParams bootstrap_smoother
+#' @export
+#' @rdname particle_smoother
+gap_smoother <- function(object, nsim, seed, ...) {
+  UseMethod("gap_smoother", object)
+}
+
+
+#' @inheritParams bootstrap_smoother
+#' @export
+#' @rdname particle_smoother
+gap_smoother0 <- function(object, nsim, seed, ...) {
+  UseMethod("gap_smoother0", object)
 }

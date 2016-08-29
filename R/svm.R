@@ -134,7 +134,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
   type <- match.arg(type, c("full", "parameters", "summary"))
 
   method <- match.arg(method, c("standard", "delayed acceptance",
-    "IS correction", "block IS correction", "IS2"))
+    "IS correction", "block IS correction", "IS2", "DABSF", "BSF"))
 
   if (n_thin > 1 && method %in% c("block IS correction", "IS2")) {
     stop ("Cannot use thinning with block-IS algorithm.")
@@ -170,7 +170,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
         lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
-          "IS correction", "block IS correction", "IS2")),
+          "IS correction", "block IS correction", "IS2", "DABSF", "BSF")),
         seed, log_space, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
 
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
@@ -184,7 +184,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
         lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
-          "IS correction", "block IS correction", "IS2")),
+          "IS correction", "block IS correction", "IS2", "DABSF", "BSF")),
         seed, log_space, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
     },
     summary = {
@@ -194,7 +194,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
         lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
-          "IS correction", "block IS correction", "IS2")),
+          "IS correction", "block IS correction", "IS2", "DABSF", "BSF")),
         seed, log_space, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
 
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
@@ -235,4 +235,41 @@ gaussian_approx.svm <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
  svm_approx_model(object$y, object$Z, object$T, object$R,
     object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
     object$init_signal, max_iter, conv_tol)
+}
+
+
+#' @method bootstrap_smoother svm
+#' @rdname particle_smoother
+#' @export
+bootstrap_smoother.svm <- function(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  svm_bootstrap_filter(object$y, object$Z, object$T, object$R,
+    object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
+    nsim, object$init_signal, seed)
+}
+
+
+#' @method gap_smoother0 svm
+#' @rdname particle_smoother
+#' @export
+gap_smoother0.svm <- function(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  svm_gap_filter0(object$y, object$Z, object$T, object$R,
+    object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
+    nsim, object$init_signal, seed)
+}
+
+
+
+#' @method gap_smoother svm
+#' @rdname particle_smoother
+#' @export
+gap_smoother.svm <- function(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  svm_gap_filter(object$y, object$Z, object$T, object$R,
+    object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
+    nsim, object$init_signal, seed)
 }

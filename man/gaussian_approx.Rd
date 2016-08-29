@@ -18,7 +18,7 @@ gaussian_approx(object, max_iter, conv_tol, ...)
 \method{gaussian_approx}{svm}(object, max_iter = 100, conv_tol = 1e-08, ...)
 }
 \arguments{
-\item{object}{of class \code{svm}.}
+\item{object}{model object.}
 
 \item{max_iter}{Maximum number of iterations.}
 

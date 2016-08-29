@@ -157,6 +157,10 @@ ng_bsm_bootstrap_filter <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, no
     .Call('bssm_ng_bsm_bootstrap_filter', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed)
 }
 
+ng_bsm_gap_filter0 <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed) {
+    .Call('bssm_ng_bsm_gap_filter0', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed)
+}
+
 ng_bsm_gap_filter <- function(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed) {
     .Call('bssm_ng_bsm_gap_filter', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta, distribution, init_signal, nsim_states, seed)
 }
@@ -203,6 +207,18 @@ svm_importance_sample <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_stat
 
 svm_approx_model <- function(y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, max_iter, conv_tol) {
     .Call('bssm_svm_approx_model', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, max_iter, conv_tol)
+}
+
+svm_bootstrap_filter <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed) {
+    .Call('bssm_svm_bootstrap_filter', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed)
+}
+
+svm_gap_filter0 <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed) {
+    .Call('bssm_svm_gap_filter0', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed)
+}
+
+svm_gap_filter <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed) {
+    .Call('bssm_svm_gap_filter', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed)
 }
 
 running_summary <- function(x, mean_x, cov_x, n) {

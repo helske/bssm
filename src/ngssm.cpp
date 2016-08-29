@@ -1695,7 +1695,7 @@ arma::cube ngssm::invlink(const arma::cube& alpha) {
 //compute log-weights
 arma::vec ngssm::pyt(const unsigned int t, const arma::cube& alphasim) {
   
-  arma::vec V(alphasim.n_slices, arma::fill::ones);
+  arma::vec V(alphasim.n_slices);
   
   if (arma::is_finite(ng_y(t))) {
     switch(distribution) {
@@ -1728,6 +1728,8 @@ arma::vec ngssm::pyt(const unsigned int t, const arma::cube& alphasim) {
       }
       break;
     }
+  } else {
+    V.fill(-arma::datum::inf);
   }
   
   return V;
@@ -1751,12 +1753,16 @@ double ngssm::bootstrap_filter(unsigned int nsim, arma::cube& alphasim, arma::ve
     }
     alphasim.slice(i).col(0) = a1 + L_P1 * um;
   }
-  V = pyt(0, alphasim);
-  double maxV = V.max();
-  V = exp(V - maxV);
-  double w = maxV + log(sum(V)) - log(nsim);
-  V /= sum(V);
-  
+  double w = 0;
+  if (arma::is_finite(ng_y(0))) {
+    V = pyt(0, alphasim);
+    double maxV = V.max();
+    V = exp(V - maxV);
+    w = maxV + log(sum(V)) - log(nsim);
+    V /= sum(V);
+  } else {
+    V.ones();
+  }
   for (unsigned int t = 0; t < (n - 1); t++) {
     std::discrete_distribution<> sample(V.begin(), V.end());
     arma::cube alphatmp(m, n, nsim);
@@ -1775,11 +1781,15 @@ double ngssm::bootstrap_filter(unsigned int nsim, arma::cube& alphasim, arma::ve
       alphasim.slice(i).col(t + 1) = T.slice(t * Ttv) * alphasim.slice(i).col(t) + 
         R.slice(t * Rtv) * uk;
     }
-    V = pyt(t + 1, alphasim);
-    maxV = V.max();
-    V = exp(V - maxV);
-    w += maxV + log(sum(V)) - log(nsim);
-    V /= sum(V);
+    if (arma::is_finite(ng_y(t + 1))) {
+      V = pyt(t + 1, alphasim);
+      double maxV = V.max();
+      V = exp(V - maxV);
+      w += maxV + log(sum(V)) - log(nsim);
+      V /= sum(V);
+    } else {
+      V.ones();
+    }
   }
   
   return w;
@@ -1787,7 +1797,7 @@ double ngssm::bootstrap_filter(unsigned int nsim, arma::cube& alphasim, arma::ve
 
 
 //bootstrap filter with initial value simulation from approximating model
-double ngssm::gap_filter(unsigned int nsim, arma::cube& alphasim, arma::vec& V, arma::vec& init_signal) {
+double ngssm::gap_filter0(unsigned int nsim, arma::cube& alphasim, arma::vec& V, arma::vec& init_signal) {
   
   arma::mat alphahat(m, n);
   arma::cube Vt(m, m, n);
@@ -1818,15 +1828,92 @@ double ngssm::gap_filter(unsigned int nsim, arma::cube& alphasim, arma::vec& V, 
       arma::chol(P1.submat(nonzero, nonzero), "lower");
   }
   
-  V = pyt(0, alphasim) + dmvnorm1(alphasim.tube(arma::span::all, arma::span(0)), 
-    a1, L_P1, true, true)
+  double w = 0;
+  if (arma::is_finite(ng_y(0))) {
+    V = pyt(0, alphasim) + dmvnorm1(alphasim.tube(arma::span::all, arma::span(0)),
+      a1, L_P1, true, true)
+    - dmvnorm1(alphasim.tube(arma::span::all, arma::span(0)),
+      alphahat.col(0), L, true, true);
+    double maxV = V.max();
+    V = exp(V - maxV);
+    w = maxV + log(sum(V)) - log(nsim);
+    V /= sum(V);
+  } else {
+    V.ones();
+  }
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    std::discrete_distribution<> sample(V.begin(), V.end());
+    arma::cube alphatmp(m, n, nsim);
+    for (unsigned int i = 0; i < nsim; i++) {
+      alphatmp(arma::span::all, arma::span(0, t), arma::span(i)) =
+        alphasim(arma::span::all, arma::span(0, t), arma::span(sample(engine)));
+    }
+    alphasim(arma::span::all, arma::span(0, t), arma::span::all) =
+      alphatmp(arma::span::all, arma::span(0, t), arma::span::all);
+    
+    for (unsigned int i = 0; i < nsim; i++) {
+      arma::vec uk(k);
+      for(unsigned int j = 0; j < k; j++) {
+        uk(j) = normal(engine);
+      }
+      alphasim.slice(i).col(t + 1) = T.slice(t * Ttv) * alphasim.slice(i).col(t) +
+        R.slice(t * Rtv) * uk;
+    }
+    if (arma::is_finite(ng_y(t + 1))) {
+      V = pyt(t + 1, alphasim);
+      double maxV = V.max();
+      V = exp(V - maxV);
+      w += maxV + log(sum(V)) - log(nsim);
+      V /= sum(V);
+    } else {
+      V.ones();
+    }
+  }
+  
+  return w;
+}
+
+
+//bootstrap filter with initial value simulation from approximating model
+double ngssm::gap_filter(unsigned int nsim, arma::cube& alphasim, arma::vec& V, arma::vec& init_signal) {
+  
+  arma::mat alphahat(m, n);
+  arma::cube Vt(m, m, n);
+  
+  double ll_approx = approx(init_signal, 100, 1e-8);
+  smoother(alphahat, Vt, distribution != 0);
+  
+  arma::mat L(m, m);
+  L = arma::chol(Vt.slice(0), "lower");
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  
+  for (unsigned int i = 0; i < nsim; i++) {
+    arma::vec um(m);
+    for(unsigned int j = 0; j < m; j++) {
+      um(j) = normal(engine);
+    }
+    alphasim.slice(i).col(0) = alphahat.col(0) + L * um;
+  }
+  arma::uvec nonzero = arma::find(P1.diag() > 0);
+  arma::mat L_P1(m, m, arma::fill::zeros);
+  if (nonzero.n_elem > 0) {
+    L_P1.submat(nonzero, nonzero) =
+      arma::chol(P1.submat(nonzero, nonzero), "lower");
+  }
+  double w = 0;
+  if (arma::is_finite(ng_y(0))) {
+    V = pyt(0, alphasim) + dmvnorm1(alphasim.tube(arma::span::all, arma::span(0)), 
+      a1, L_P1, true, true)
     - dmvnorm1(alphasim.tube(arma::span::all, arma::span(0)), 
       alphahat.col(0), L, true, true);
-  double maxV = V.max();
-  V = exp(V - maxV);
-  double w = maxV + log(sum(V)) - log(nsim);
-  V /= sum(V);
-  
+    double maxV = V.max();
+    V = exp(V - maxV);
+    w = maxV + log(sum(V)) - log(nsim);
+    V /= sum(V);
+  } else {
+    V.ones();
+  }
   for (unsigned int t = 0; t < (n - 1); t++) {
     std::discrete_distribution<> sample(V.begin(), V.end());
     arma::cube alphatmp(m, n, nsim);
@@ -1837,20 +1924,154 @@ double ngssm::gap_filter(unsigned int nsim, arma::cube& alphasim, arma::vec& V, 
     alphasim(arma::span::all, arma::span(0, t), arma::span::all) = 
       alphatmp(arma::span::all, arma::span(0, t), arma::span::all);
     
+    L = arma::chol(Vt.slice(t + 1), "lower");
+    
     for (unsigned int i = 0; i < nsim; i++) {
-      arma::vec uk(k);
-      for(unsigned int j = 0; j < k; j++) {
-        uk(j) = normal(engine);
+      arma::vec um(m);
+      for(unsigned int j = 0; j < m; j++) {
+        um(j) = normal(engine);
       }
-      alphasim.slice(i).col(t + 1) = T.slice(t * Ttv) * alphasim.slice(i).col(t) + 
-        R.slice(t * Rtv) * uk;
+      alphasim.slice(i).col(t + 1) = alphahat.col(t + 1) + 
+        L * um;
     }
-    V = pyt(t + 1, alphasim);
-    maxV = V.max();
-    V = exp(V - maxV);
-    w += maxV + log(sum(V)) - log(nsim);
-    V /= sum(V);
+    if (arma::is_finite(ng_y(t + 1))) {
+      V = pyt(t + 1, alphasim) + dmvnorm2(alphasim.tube(arma::span::all, arma::span(t + 1)), 
+        alphasim.tube(arma::span::all, arma::span(t)), 
+        R.slice(Rtv * t), true, true, T.slice(Ttv * t))
+      - dmvnorm1(alphasim.tube(arma::span::all, arma::span(t + 1)), 
+        alphahat.col(t + 1), L, true, true);
+      double maxV = V.max();
+      V = exp(V - maxV);
+      w += maxV + log(sum(V)) - log(nsim);
+      V /= sum(V);
+    } else {
+      V.ones();
+    }
   }
   
   return w;
 }
+
+
+// delayed acceptance, always targets p(theta, alpha | y)
+List ngssm::mcmc_da_bsf(arma::vec theta_lwr, arma::vec theta_upr,
+  unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin,
+  unsigned int n_thin, double gamma, double target_acceptance, arma::mat S,
+  const arma::vec init_signal, bool end_ram, bool adapt_approx) {
+  
+  unsigned int npar = theta_lwr.n_elem;
+  
+  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+  arma::mat theta_store(npar, n_samples);
+  // in order to save space,
+  // we always store just one sample of alphas per iteration
+  arma::cube alpha_store(m, n, n_samples);
+  arma::vec ll_store(n_samples);
+  double acceptance_rate = 0.0;
+  arma::vec theta = get_theta();
+  arma::vec signal = init_signal;
+  
+  double ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
+  double ll = ll_approx + log_likelihood(distribution != 0);
+  if (!std::isfinite(ll)) {
+    Rcpp::stop("Non-finite log-likelihood from initial values. ");
+  }
+  arma::cube alpha(m, n, nsim_states);
+  arma::vec weights(nsim_states);
+  double ll_w = bootstrap_filter(nsim_states, alpha, weights);
+  
+  std::discrete_distribution<> sample(weights.begin(), weights.end());
+  
+  unsigned int j = 0;
+  unsigned int ind = sample(engine);
+  
+  if (n_burnin == 0) {
+    theta_store.col(0) = theta;
+    alpha_store.slice(0) = alpha.slice(ind);
+    ll_store(0) = ll_w;
+    acceptance_rate++;
+    j++;
+  }
+  
+  double accept_prob = 0;
+  double ll_prop = 0;
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+  for (unsigned int i = 1; i < n_iter; i++) {
+    
+    // sample from standard normal distribution
+    arma::vec u(npar);
+    for(unsigned int ii = 0; ii < npar; ii++) {
+      u(ii) = normal(engine);
+    }
+    // arma::vec u = normal(npar);
+    // propose new theta
+    arma::vec theta_prop = theta + S * u;
+    // check prior
+    bool inrange = sum(theta_prop >= theta_lwr && theta_prop <= theta_upr) == npar;
+    
+    if (inrange) {
+      // update parameters
+      update_model(theta_prop);
+      // compute approximate log-likelihood with proposed theta
+      if (adapt_approx) {
+        signal = init_signal;
+        ll_approx = approx(signal, max_iter, conv_tol);
+      }
+      ll_prop = ll_approx + log_likelihood(distribution != 0);
+      //compute the acceptance probability
+      // use explicit min(...) as we need this value later
+      if(!std::isfinite(ll_prop)) {
+        accept_prob = 0;
+      } else {
+        double q = proposal(theta, theta_prop);
+        accept_prob = std::min(1.0, exp(ll_prop - ll + q));
+      }
+    } else accept_prob = 0;
+    
+    
+    // initial acceptance based on hat_p(theta, alpha | y)
+    if (inrange && (unif(engine) < accept_prob)) {
+      // simulate states
+      arma::cube alpha_prop(m, n, nsim_states);
+      double ll_w_prop = bootstrap_filter(nsim_states, alpha_prop, weights);
+    Rcout<<ll_w_prop<<std::endl;
+      // delayed acceptance ratio
+      double pp = 0;
+      if(std::isfinite(ll_w_prop)) {
+        pp = std::min(1.0, exp(ll_w_prop - ll_w + ll - ll_prop));
+      }
+      if (unif(engine) < pp) {
+        if (i >= n_burnin) {
+          acceptance_rate++;
+        }
+        ll = ll_prop;
+        ll_w = ll_w_prop;
+        theta = theta_prop;
+        std::discrete_distribution<> sample(weights.begin(), weights.end());
+        ind = sample(engine);
+        alpha = alpha_prop;
+      }
+    }
+    
+    //store
+    if ((i >= n_burnin) && (i % n_thin == 0) && j < n_samples) {
+      ll_store(j) = ll_w;
+      theta_store.col(j) = theta;
+      alpha_store.slice(j) = alpha.slice(ind);
+      j++;
+    }
+    
+    if (!end_ram || i < n_burnin) {
+      adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    }
+    
+  }
+  arma::inplace_trans(theta_store);
+  return List::create(Named("alpha") = alpha_store,
+    Named("theta") = theta_store,
+    Named("acceptance_rate") = acceptance_rate / (n_iter - n_burnin),
+    Named("S") = S,  Named("logLik") = ll_store);
+  
+}
+

@@ -394,7 +394,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1, type = "full",
   type <- match.arg(type, c("full", "parameters", "summary"))
 
   method <- match.arg(method, c("standard", "delayed acceptance",
-    "IS correction", "block IS correction", "IS2"))
+    "IS correction", "block IS correction", "IS2", "DABSF", "BSF"))
 
   if (n_thin > 1 && method %in% c("block IS correction", "IS2")) {
     stop ("Cannot use thinning with block-IS algorithm.")
@@ -440,7 +440,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1, type = "full",
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
         object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
-          "IS correction", "block IS correction", "IS2")), seed, log_space,
+          "IS correction", "block IS correction", "IS2", "DABSF","BSF")), seed, log_space,
         n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
 
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
@@ -610,8 +610,10 @@ gaussian_approx.ng_bsm <- function(object, max_iter =  100, conv_tol = 1e-8, ...
     object$init_signal, max_iter, conv_tol)
 }
 
+#' @method bootstrap_smoother ng_bsm
+#' @rdname particle_smoother
 #' @export
-bootstrap_filter <- function(object, nsim,
+bootstrap_smoother.ng_bsm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   ng_bsm_bootstrap_filter(object$y, object$Z, object$T, object$R, object$a1,
@@ -622,9 +624,10 @@ bootstrap_filter <- function(object, nsim,
 }
 
 
-
+#' @method gap_smoother ng_bsm
+#' @rdname particle_smoother
 #' @export
-gap_filter <- function(object, nsim,
+gap_smoother.ng_bsm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   ng_bsm_gap_filter(object$y, object$Z, object$T, object$R, object$a1,
@@ -635,3 +638,15 @@ gap_filter <- function(object, nsim,
 }
 
 
+#' @method gap_smoother0 ng_bsm
+#' @rdname particle_smoother
+#' @export
+gap_smoother0.ng_bsm <- function(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  ng_bsm_gap_filter0(object$y, object$Z, object$T, object$R, object$a1,
+    object$P1, object$phi, object$slope, object$seasonal, object$noise, object$fixed,
+    object$xreg, object$beta,
+    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
+    object$init_signal, nsim, seed)
+}

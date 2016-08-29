@@ -47,7 +47,7 @@ for (j in 1:nsim) {
     mu_mean_naa[k, j] <- res[1]
   }
   print(j)
-  print(apply(mu_se_naa,1,mean,  na.rm = TRUE))
+  print(apply(mu_mean_naa,1,sd,  na.rm = TRUE))
 }
 
 
@@ -96,7 +96,7 @@ for (j in 1:nsim) {
     mu_mean[k, j] <- res[1]
   }
   print(j)
-  print(apply(mu_se,1,mean,  na.rm = TRUE))
+  print(apply(mu_mean,1, sd,  na.rm = TRUE))
 }
 
 

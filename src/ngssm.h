@@ -67,9 +67,12 @@ public:
 
   arma::vec pyt(const unsigned int, const arma::cube&);
   double bootstrap_filter(unsigned int, arma::cube&, arma::vec&);
+  double gap_filter0(unsigned int, arma::cube&, arma::vec&, arma::vec&);
   double gap_filter(unsigned int, arma::cube&, arma::vec&, arma::vec&);
   
-    
+  List mcmc_da_bsf(arma::vec, arma::vec, unsigned int,
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool, bool);
+  
     
   arma::vec phi;
   unsigned int distribution;
