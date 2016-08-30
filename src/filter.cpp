@@ -43,3 +43,20 @@ double uv_filter(const double y, const arma::vec& Z, const double HH,
   }
   return logLik;
 }
+
+double uv_filter2(const double y, const double HH,
+  const double T, const double RR, const double at, double& Pt, const double zero_tol) {
+  
+  double at1;
+  double F = Pt + HH;
+  if (arma::is_finite(y) && F > zero_tol) {
+    double v = y - at;
+    double K = Pt / F;
+    at1 = T * (at + K * v);
+    Pt = T * (Pt - K * K * F) * T + RR;
+  } else {
+    at1 = T * at;
+    Pt = T * Pt * T + RR;
+  }
+  return at1;
+}

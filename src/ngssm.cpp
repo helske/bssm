@@ -1873,21 +1873,21 @@ double ngssm::gap_filter0(unsigned int nsim, arma::cube& alphasim, arma::vec& V,
   return w;
 }
 
-
+// 
 //bootstrap filter with initial value simulation from approximating model
 double ngssm::gap_filter(unsigned int nsim, arma::cube& alphasim, arma::vec& V, arma::vec& init_signal) {
-  
+
   arma::mat alphahat(m, n);
   arma::cube Vt(m, m, n);
-  
+
   double ll_approx = approx(init_signal, 100, 1e-8);
   smoother(alphahat, Vt, distribution != 0);
-  
+
   arma::mat L(m, m);
   L = arma::chol(Vt.slice(0), "lower");
-  
+
   std::normal_distribution<> normal(0.0, 1.0);
-  
+
   for (unsigned int i = 0; i < nsim; i++) {
     arma::vec um(m);
     for(unsigned int j = 0; j < m; j++) {
@@ -1903,9 +1903,9 @@ double ngssm::gap_filter(unsigned int nsim, arma::cube& alphasim, arma::vec& V, 
   }
   double w = 0;
   if (arma::is_finite(ng_y(0))) {
-    V = pyt(0, alphasim) + dmvnorm1(alphasim.tube(arma::span::all, arma::span(0)), 
+    V = pyt(0, alphasim) + dmvnorm1(alphasim.tube(arma::span::all, arma::span(0)),
       a1, L_P1, true, true)
-    - dmvnorm1(alphasim.tube(arma::span::all, arma::span(0)), 
+    - dmvnorm1(alphasim.tube(arma::span::all, arma::span(0)),
       alphahat.col(0), L, true, true);
     double maxV = V.max();
     V = exp(V - maxV);
@@ -1918,27 +1918,27 @@ double ngssm::gap_filter(unsigned int nsim, arma::cube& alphasim, arma::vec& V, 
     std::discrete_distribution<> sample(V.begin(), V.end());
     arma::cube alphatmp(m, n, nsim);
     for (unsigned int i = 0; i < nsim; i++) {
-      alphatmp(arma::span::all, arma::span(0, t), arma::span(i)) = 
+      alphatmp(arma::span::all, arma::span(0, t), arma::span(i)) =
         alphasim(arma::span::all, arma::span(0, t), arma::span(sample(engine)));
     }
-    alphasim(arma::span::all, arma::span(0, t), arma::span::all) = 
+    alphasim(arma::span::all, arma::span(0, t), arma::span::all) =
       alphatmp(arma::span::all, arma::span(0, t), arma::span::all);
-    
+
     L = arma::chol(Vt.slice(t + 1), "lower");
-    
+
     for (unsigned int i = 0; i < nsim; i++) {
       arma::vec um(m);
       for(unsigned int j = 0; j < m; j++) {
         um(j) = normal(engine);
       }
-      alphasim.slice(i).col(t + 1) = alphahat.col(t + 1) + 
+      alphasim.slice(i).col(t + 1) = alphahat.col(t + 1) +
         L * um;
     }
     if (arma::is_finite(ng_y(t + 1))) {
-      V = pyt(t + 1, alphasim) + dmvnorm2(alphasim.tube(arma::span::all, arma::span(t + 1)), 
-        alphasim.tube(arma::span::all, arma::span(t)), 
+      V = pyt(t + 1, alphasim) + dmvnorm2(alphasim.tube(arma::span::all, arma::span(t + 1)),
+        alphasim.tube(arma::span::all, arma::span(t)),
         R.slice(Rtv * t), true, true, T.slice(Ttv * t))
-      - dmvnorm1(alphasim.tube(arma::span::all, arma::span(t + 1)), 
+      - dmvnorm1(alphasim.tube(arma::span::all, arma::span(t + 1)),
         alphahat.col(t + 1), L, true, true);
       double maxV = V.max();
       V = exp(V - maxV);
@@ -1948,7 +1948,7 @@ double ngssm::gap_filter(unsigned int nsim, arma::cube& alphasim, arma::vec& V, 
       V.ones();
     }
   }
-  
+
   return w;
 }
 

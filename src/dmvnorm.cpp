@@ -48,3 +48,4 @@ arma::vec dmvnorm2(const arma::mat& x, const arma::mat& mean,
   }
   return(out);
 }
+
