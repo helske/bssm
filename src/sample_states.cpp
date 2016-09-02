@@ -15,13 +15,15 @@ arma::cube sample_states(T mod, const arma::mat& theta, const arma::uvec& counts
 #pragma omp parallel num_threads(n_threads) default(none) shared(n_iter, \
   nsim_states, theta, counts, cum_counts, alpha_store, seeds) firstprivate(mod)
   {
+#ifdef _OPENMP
     if (seeds.n_elem == 1) {
       mod.engine = std::mt19937(seeds(0));
     } else {
       mod.engine = std::mt19937(seeds(omp_get_thread_num()));
     }
+#endif
 #pragma omp for schedule(static)
-    for (int i = 0; i < n_iter; i++) {
+    for (unsigned int i = 0; i < n_iter; i++) {
 
       arma::vec theta_i = theta.col(i);
       mod.update_model(theta_i);

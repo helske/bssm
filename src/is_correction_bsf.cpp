@@ -14,14 +14,15 @@ void is_correction_bsf(T mod, const arma::mat& theta, const arma::vec& ll_store,
   shared(n_iter, nsim_states, theta, ll_store, \
     weights_store, alpha_store, seeds, counts, cum_counts) firstprivate(mod)
   {
+#ifdef _OPENMP
     if (seeds.n_elem == 1) {
       mod.engine = std::mt19937(seeds(0));
     } else {
       mod.engine = std::mt19937(seeds(omp_get_thread_num()));
     }
-
+#endif
 #pragma omp for schedule(static)
-    for (int i = 0; i < n_iter; i++) {
+    for (unsigned int i = 0; i < n_iter; i++) {
 
       arma::vec theta_i = theta.col(i);
       mod.update_model(theta_i);

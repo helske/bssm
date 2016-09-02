@@ -105,6 +105,15 @@ logLik.svm <- function(object, nsim_states,
     object$a1, object$P1, rep(object$sigma, length(object$y)),
     object$xreg, object$beta, object$init_signal, nsim_states, seed)
 }
+#' @rdname logLik
+#' @inheritParams logLik.ngssm
+#' @export
+bsf_logLik <- function(object, nsim_states,
+  seed = 1, ess_treshold = 0.75, ...) {
+  svm_bsf_loglik(object$y, object$Z, object$T, object$R,
+    object$a1, object$P1, rep(object$sigma, length(object$y)),
+    object$xreg, object$beta, object$init_signal, nsim_states, seed, ess_treshold)
+}
 
 #' @method smoother svm
 #' @export
@@ -129,7 +138,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
   adaptive_approx  = TRUE,
   method = "delayed acceptance", log_space = FALSE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
-  thread_seeds = sample(.Machine$integer.max, size = n_threads), ...) {
+  thread_seeds = sample(.Machine$integer.max, size = n_threads), ess_treshold = 0.75, ...) {
 
   type <- match.arg(type, c("full", "parameters", "summary"))
 
@@ -185,7 +194,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2", "DABSF", "BSF")),
-        seed, log_space, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
+        seed, log_space, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx, ess_treshold)
     },
     summary = {
       out <- svm_mcmc_summary(object$y, object$Z, object$T, object$R,
@@ -270,6 +279,16 @@ gap_smoother.svm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   svm_gap_filter(object$y, object$Z, object$T, object$R,
+    object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
+    nsim, object$init_signal, seed)
+}
+
+#' @rdname particle_smoother
+#' @export
+bootstrap_filter_svm <- function(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  svm_bootstrap_filter2(object$y, object$Z, object$T, object$R,
     object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
     nsim, object$init_signal, seed)
 }

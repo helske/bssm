@@ -1,7 +1,9 @@
 #ifndef BSSM_H
 #define BSSM_H
 
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(cpp11)]]
@@ -39,8 +41,9 @@ void uv_filter_predict(const arma::mat& T, const arma::mat& RR,
 double uv_filter(const double y, const arma::vec& Z, const double HH,
   const arma::mat& T, const arma::mat& RR, arma::vec& at, arma::mat& Pt, const double zero_tol);
 
-double uv_filter2(const double y, const double HH,
-  const double T, const double RR, const double at, double& Pt, const double zero_tol);
+void uv_filter2(const double y, const double HH, const double T, const double RR,
+  double& at, double& Pt, const double zero_tol);
+
 template <typename T>
 arma::cube sample_states(T mod, const arma::mat& theta, const arma::uvec& counts,
   unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds);
@@ -67,4 +70,9 @@ template <typename T>
 void is_correction_bsf(T mod, const arma::mat& theta, const arma::vec& ll_store, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, arma::cube& alpha_store);
 
+template <typename T>
+void is_correction_bsf_param(T mod, const arma::mat& theta, const arma::vec& ll_store, 
+  const arma::uvec& counts, 
+  unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds,
+  arma::vec& weights_store, double ess_treshold);
 #endif

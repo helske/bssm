@@ -522,3 +522,18 @@ predict.bsm <- function(object, n_iter, lower_prior, upper_prior, newdata = NULL
   class(pred) <- "predict_bssm"
   pred
 }
+
+#' @method bootstrap_smoother bsm
+#' @rdname particle_smoother
+#' @export
+bootstrap_smoother.bsm <- function(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  out <- bsm_bootstrap_smoother(object$y, object$Z, object$H, object$T, object$R,
+    object$a1, object$P1, nsim, object$slope, object$seasonal, object$fixed,
+    object$xreg, object$beta, seed)
+  
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
+}

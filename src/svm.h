@@ -13,7 +13,11 @@ public:
   svm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::vec, arma::mat, arma::vec, unsigned int, bool);
 
+  double bootstrap_loglik(unsigned int, double);
+  double bootstrap_filter(unsigned int, arma::cube&, arma::vec&);
+  double bootstrap_filter2(unsigned int, arma::cube&, arma::mat&, arma::mat& ind);
   double gap_filter(unsigned int, arma::cube&, arma::vec&, arma::vec&);
+  arma::vec pyt2(const unsigned int, const arma::vec&);
   double proposal(const arma::vec&, const arma::vec&);
   void update_model(arma::vec);
   arma::vec get_theta(void);

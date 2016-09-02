@@ -69,6 +69,10 @@ bsm_sample_states <- function(y, Z, H, T, R, a1, P1, theta, nsim_states, slope, 
     .Call('bssm_bsm_sample_states', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta, nsim_states, slope, seasonal, fixed, xreg, beta, n_threads, seeds)
 }
 
+bsm_bootstrap_smoother <- function(y, Z, H, T, R, a1, P1, nsim_states, slope, seasonal, fixed, xreg, beta, seed) {
+    .Call('bssm_bsm_bootstrap_smoother', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, nsim_states, slope, seasonal, fixed, xreg, beta, seed)
+}
+
 gssm_loglik <- function(y, Z, H, T, R, a1, P1, xreg, beta) {
     .Call('bssm_gssm_loglik', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, xreg, beta)
 }
@@ -193,12 +197,20 @@ svm_loglik <- function(y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, nsim_st
     .Call('bssm_svm_loglik', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, nsim_states, seed)
 }
 
+svm_bsf_loglik <- function(y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, nsim_states, seed, ess_treshold) {
+    .Call('bssm_svm_bsf_loglik', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, init_signal, nsim_states, seed, ess_treshold)
+}
+
 svm_smoother <- function(y, Z, T, R, a1, P1, phi, xreg, beta, init_signal) {
     .Call('bssm_svm_smoother', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, init_signal)
 }
 
 svm_mcmc_full <- function(y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, log_space, n_threads, seeds, end_ram, adapt_approx) {
     .Call('bssm_svm_mcmc_full', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, log_space, n_threads, seeds, end_ram, adapt_approx)
+}
+
+svm_mcmc_param <- function(y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, log_space, n_threads, seeds, end_ram, adapt_approx, ess_treshold) {
+    .Call('bssm_svm_mcmc_param', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, theta_lwr, theta_upr, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, method, seed, log_space, n_threads, seeds, end_ram, adapt_approx, ess_treshold)
 }
 
 svm_importance_sample <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed) {
@@ -219,6 +231,10 @@ svm_gap_filter0 <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, in
 
 svm_gap_filter <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed) {
     .Call('bssm_svm_gap_filter', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed)
+}
+
+svm_bootstrap_filter2 <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed) {
+    .Call('bssm_svm_bootstrap_filter2', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed)
 }
 
 running_summary <- function(x, mean_x, cov_x, n) {

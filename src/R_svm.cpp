@@ -22,18 +22,26 @@ double svm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
     if (nsim_states > 1) {
       arma::vec weights(nsim_states);
       arma::cube alpha = model.sim_smoother(nsim_states, false);
-      weights = exp(model.importance_weights(alpha) - model.scaling_factor(init_signal));
-      ll_w = log(sum(weights) / nsim_states);
+      weights = model.importance_weights(alpha) - model.scaling_factor(init_signal);
+      double maxw = weights.max();
+      weights = exp(weights - maxw);
+      ll_w = log(arma::mean(weights)) + maxw;
     }
   }
-
-  //  return List::create(Named("ll") = ll,
-  //    Named("llw") = ll_w, Named("llg") = model.log_likelihood(),
-  //    Named("weights") = weights,
-  //    Named("y") = model.y,
-  //    Named("HH") = model.HH, Named("signal") = init_signal);
   return model.log_likelihood(false) + ll + ll_w;
 }
+
+// [[Rcpp::export]]
+double svm_bsf_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
+  arma::mat& xreg, arma::vec& beta, arma::vec init_signal, unsigned int nsim_states,
+  unsigned int seed, double ess_treshold) {
+  
+  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed);
+  
+  return model.bootstrap_loglik(nsim_states, ess_treshold);
+}
+
 
 // [[Rcpp::export]]
 List svm_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
@@ -201,6 +209,147 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   return List::create(Named("just_in_case") = "should be impossible to see this... Restructure the function later");
 }
 
+// [[Rcpp::export]]
+List svm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
+  arma::mat& xreg, arma::vec& beta,
+  arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter,
+  unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
+  double gamma, double target_acceptance, arma::mat S,
+  arma::vec& init_signal, unsigned int method, unsigned int seed, bool log_space,
+  unsigned int n_threads, arma::uvec seeds, bool end_ram, bool adapt_approx, 
+  double ess_treshold) {
+  
+  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed, log_space);
+  
+  switch(method) {
+  case 1 :
+    return model.mcmc_param(theta_lwr, theta_upr, n_iter,
+      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal,
+      end_ram, adapt_approx);
+    break;
+  case 2 :
+    return model.mcmc_da_param(theta_lwr, theta_upr, n_iter,
+      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal,
+      end_ram, adapt_approx);
+    break;
+  case 3 : {
+      unsigned int npar = theta_lwr.n_elem;
+      unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+      arma::mat theta_store(npar, n_samples);
+      arma::vec ll_store(n_samples);
+      arma::mat y_store(model.n, n_samples);
+      arma::mat H_store(model.n, n_samples);
+      arma::vec ll_approx_u_store(n_samples);
+      
+      arma::uvec counts(n_samples, arma::fill::ones);
+      //no thinning allowed!
+      double acceptance_rate = model.mcmc_approx(theta_lwr, theta_upr, n_iter,
+        nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
+        theta_store, ll_store, y_store, H_store, ll_approx_u_store, end_ram, adapt_approx);
+      
+      arma::vec weights_store(n_samples);
+      
+      is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store,
+        counts, nsim_states, n_threads, seeds, weights_store);
+      
+      arma::inplace_trans(theta_store);
+      return List::create(
+        Named("theta") = theta_store,
+        Named("acceptance_rate") = acceptance_rate,
+        Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
+    }
+    break;
+  case 4 : {
+    unsigned int npar = theta_lwr.n_elem;
+    unsigned int n_samples = floor(n_iter - n_burnin);
+    arma::mat theta_store(npar, n_samples);
+    arma::vec ll_store(n_samples);
+    arma::mat y_store(model.n, n_samples);
+    arma::mat H_store(model.n, n_samples);
+    arma::vec ll_approx_u_store(n_samples);
+    
+    arma::uvec counts(n_samples);
+    //no thinning allowed!
+    double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
+      nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts,
+      end_ram, adapt_approx);
+    
+    arma::vec weights_store(counts.n_elem);
+  
+    is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store, counts,
+      nsim_states, n_threads, seeds, weights_store);
+    
+    arma::inplace_trans(theta_store);
+    return List::create(
+      Named("theta") = theta_store, Named("counts") = counts,
+      Named("acceptance_rate") = acceptance_rate,
+      Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
+  }
+    break;
+  case 5 : {
+    unsigned int npar = theta_lwr.n_elem;
+    unsigned int n_samples = floor(n_iter - n_burnin);
+    arma::mat theta_store(npar, n_samples);
+    arma::vec ll_store(n_samples);
+    arma::mat y_store(model.n, n_samples);
+    arma::mat H_store(model.n, n_samples);
+    arma::vec ll_approx_u_store(n_samples);
+    
+    arma::uvec counts(n_samples);
+    //no thinning allowed!
+    double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
+      nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts,
+      end_ram, adapt_approx);
+    
+    arma::vec weights_store(counts.n_elem);
+    
+    is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store,
+      arma::uvec(counts.n_elem, arma::fill::ones),
+      nsim_states, n_threads, seeds, weights_store);
+    
+    arma::inplace_trans(theta_store);
+    return List::create(
+      Named("theta") = theta_store, Named("counts") = counts,
+      Named("acceptance_rate") = acceptance_rate,
+      Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
+  }
+    break;
+  case 7 : {
+    unsigned int npar = theta_lwr.n_elem;
+    unsigned int n_samples = floor(n_iter - n_burnin);
+    arma::mat theta_store(npar, n_samples);
+    arma::vec ll_store(n_samples);
+    arma::mat y_store(model.n, n_samples);
+    arma::mat H_store(model.n, n_samples);
+    arma::vec ll_approx_u_store(n_samples);
+    
+    arma::uvec counts(n_samples);
+    //no thinning allowed!
+    double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
+      nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts,
+      end_ram, adapt_approx);
+    
+    arma::vec weights_store(counts.n_elem);
+    
+    is_correction_bsf_param(model, theta_store, ll_store,
+      arma::uvec(counts.n_elem, arma::fill::ones),
+      nsim_states, n_threads, seeds, weights_store, ess_treshold);
+    
+    arma::inplace_trans(theta_store);
+    return List::create(
+      Named("theta") = theta_store, Named("counts") = counts,
+      Named("acceptance_rate") = acceptance_rate,
+      Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
+  }
+    break;
+  }
+  return List::create(Named("just_in_case") = "should be impossible to see this... Restructure the function later");
+}
+
 
 // [[Rcpp::export]]
 List svm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
@@ -295,5 +444,26 @@ List svm_gap_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
   
   return List::create(
     Named("alpha") = alphasim, Named("V") = V,
+    Named("logU") = logU);
+}
+
+
+// [[Rcpp::export]]
+List svm_bootstrap_filter2(arma::vec& y, arma::mat& Z, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
+  arma::mat& xreg, arma::vec& beta,
+  unsigned int nsim_states,
+  arma::vec init_signal, unsigned int seed) {
+  
+  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed, false);
+  
+  arma::cube alphasim(model.m, model.n, nsim_states);
+  arma::mat V(nsim_states, model.n);
+  
+  arma::mat ind(nsim_states, model.n);
+  double logU = model.bootstrap_filter2(nsim_states, alphasim, V, ind);
+  
+  return List::create(
+    Named("alpha") = alphasim, Named("V") = V, Named("A") = ind,
     Named("logU") = logU);
 }

@@ -237,3 +237,18 @@ arma::cube bsm_sample_states(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cub
 
   return sample_states(model, theta, counts, nsim_states, n_threads, seeds);
 }
+
+// [[Rcpp::export]]
+Rcpp::List bsm_bootstrap_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1, unsigned int nsim_states, bool slope,
+  bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta, unsigned int seed) {
+  
+  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed);
+  arma::cube alphasim(model.m, model.n, nsim_states);
+  arma::vec V(nsim_states);
+  double logU = model.bootstrap_filter(nsim_states, alphasim, V);
+  
+  return List::create(
+    Named("alpha") = alphasim, Named("V") = V,
+    Named("logU") = logU);
+}

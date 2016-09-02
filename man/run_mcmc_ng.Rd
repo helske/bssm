@@ -24,7 +24,7 @@
   adaptive_approx = TRUE, method = "delayed acceptance",
   log_space = FALSE, n_threads = 1, seed = sample(.Machine$integer.max,
   size = 1), thread_seeds = sample(.Machine$integer.max, size = n_threads),
-  ...)
+  ess_treshold = 0.75, ...)
 }
 \arguments{
 \item{object}{Model object.}

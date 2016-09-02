@@ -16,14 +16,15 @@ void is_correction(T mod, const arma::mat& theta, const arma::mat& y_store, cons
   shared(ll_approx_u, n_iter, nsim_states, y_store, H_store, theta, \
     weights_store, alpha_store, seeds, counts, cum_counts) firstprivate(mod)
   {
+#ifdef _OPENMP
     if (seeds.n_elem == 1) {
       mod.engine = std::mt19937(seeds(0));
     } else {
       mod.engine = std::mt19937(seeds(omp_get_thread_num()));
     }
-
+#endif
 #pragma omp for schedule(static)
-    for (int i = 0; i < n_iter; i++) {
+    for (unsigned int i = 0; i < n_iter; i++) {
 
       mod.y = y_store.col(i);
       mod.H = H_store.col(i);
