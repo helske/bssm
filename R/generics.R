@@ -106,35 +106,33 @@ gaussian_approx <- function(object, max_iter, conv_tol, ...) {
   UseMethod("gaussian_approx", object)
 }
 
-#' Particle Smoothing for non-Gaussian State Space Model
+#' Particle Filtering
 #' 
-#' Function \code{bootstrap_smoother} performs a bootstrap filtering with backward 
-#' sampling, returning a weighted sample from $p(alpha|y, theta)$ and estimate of log-likelihood. 
-#' Function \code{gap_smoother} first contructs a Gaussian approximation of the model, and uses the approximate
-#' $p(alpha_1 | y)$ for simulating initial state in particle filtering.
+#' Function \code{particle_filter} performs a bootstrap filtering with stratification resampling, 
+#' returning a weighted sample from $p(alpha|y, theta)$ and the estimate of log-likelihood.
 #' 
-#' @param object of class \code{ng_bsm} or \code{svm}.
+#' @param object of class \code{bsm}, \code{ng_bsm} or \code{svm}.
+#' @param nsim Number of samples.
+#' @param seed Seed for RNG
+#' @param ... Ignored.
+#' @export
+#' @rdname particle_filter
+particle_filter <- function(object, nsim, seed, ...) {
+  UseMethod("particle_filter", object)
+}
+
+
+#' Particle Smoothing
+#' 
+#' Function \code{particle_smoother} performs a bootstrap filtering with stratification resampling, 
+#' returning a weighted sample from $p(alpha|y, theta)$ and the estimate of log-likelihood.
+#' 
+#' @param object of class \code{bsm}, \code{ng_bsm} or \code{svm}.
 #' @param nsim Number of samples.
 #' @param seed Seed for RNG
 #' @param ... Ignored.
 #' @export
 #' @rdname particle_smoother
-bootstrap_smoother <- function(object, nsim, seed, ...) {
-  UseMethod("bootstrap_smoother", object)
-}
-
-
-#' @inheritParams bootstrap_smoother
-#' @export
-#' @rdname particle_smoother
-gap_smoother <- function(object, nsim, seed, ...) {
-  UseMethod("gap_smoother", object)
-}
-
-
-#' @inheritParams bootstrap_smoother
-#' @export
-#' @rdname particle_smoother
-gap_smoother0 <- function(object, nsim, seed, ...) {
-  UseMethod("gap_smoother0", object)
+particle_smoother <- function(object, nsim, seed, ...) {
+  UseMethod("particle_smoother", object)
 }

@@ -223,39 +223,39 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
       Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
   }
     break;
-  case 6 :
-    return model.mcmc_da_bsf(theta_lwr, theta_upr, n_iter,
-      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx);
-    break;
-  case 7 : {
-      unsigned int npar = theta_lwr.n_elem;
-      unsigned int n_samples = floor(n_iter - n_burnin);
-      arma::mat theta_store(npar, n_samples);
-      arma::vec ll_store(n_samples);
-      arma::mat y_store(model.n, n_samples);
-      arma::mat H_store(model.n, n_samples);
-      arma::vec ll_approx_u_store(n_samples);
-      
-      arma::uvec counts(n_samples);
-      //no thinning allowed!
-      double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
-        nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-        theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts, end_ram,
-        adapt_approx);
-      
-      arma::vec weights_store(counts.n_elem);
-      arma::cube alpha_store(model.m, model.n, counts.n_elem);
-      is_correction_bsf(model, theta_store, ll_store,
-        arma::uvec(counts.n_elem, arma::fill::ones),
-        nsim_states, n_threads, seeds, weights_store, alpha_store);
-      
-      arma::inplace_trans(theta_store);
-      return List::create(Named("alpha") = alpha_store,
-        Named("theta") = theta_store, Named("counts") = counts,
-        Named("acceptance_rate") = acceptance_rate,
-        Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
-    }
-    break;
+  // case 6 :
+  //   return model.mcmc_da_bsf(theta_lwr, theta_upr, n_iter,
+  //     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx);
+  //   break;
+  // case 7 : {
+  //     unsigned int npar = theta_lwr.n_elem;
+  //     unsigned int n_samples = floor(n_iter - n_burnin);
+  //     arma::mat theta_store(npar, n_samples);
+  //     arma::vec ll_store(n_samples);
+  //     arma::mat y_store(model.n, n_samples);
+  //     arma::mat H_store(model.n, n_samples);
+  //     arma::vec ll_approx_u_store(n_samples);
+  //     
+  //     arma::uvec counts(n_samples);
+  //     //no thinning allowed!
+  //     double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
+  //       nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
+  //       theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts, end_ram,
+  //       adapt_approx);
+  //     
+  //     arma::vec weights_store(counts.n_elem);
+  //     arma::cube alpha_store(model.m, model.n, counts.n_elem);
+  //     is_correction_bsf(model, theta_store, ll_store,
+  //       arma::uvec(counts.n_elem, arma::fill::ones),
+  //       nsim_states, n_threads, seeds, weights_store, alpha_store);
+  //     
+  //     arma::inplace_trans(theta_store);
+  //     return List::create(Named("alpha") = alpha_store,
+  //       Named("theta") = theta_store, Named("counts") = counts,
+  //       Named("acceptance_rate") = acceptance_rate,
+  //       Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
+  //   }
+  //   break;
   }
 return List::create(Named("just_in_case") = "should be impossible to see this... Restructure the function later");
 }
@@ -574,7 +574,7 @@ List ng_bsm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List ng_bsm_bootstrap_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
+List ng_bsm_particle_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope,
   bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   unsigned int distribution, arma::vec init_signal, unsigned int nsim_states,
@@ -584,49 +584,11 @@ List ng_bsm_bootstrap_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
     distribution, seed);
   
   arma::cube alphasim(model.m, model.n, nsim_states);
-  arma::vec V(nsim_states);
-  double logU = model.bootstrap_filter(nsim_states, alphasim, V);
+  arma::mat V(nsim_states, model.n);
+  arma::umat ind(nsim_states, model.n - 1);
+  double logU = model.particle_filter(nsim_states, alphasim, V, ind);
   
   return List::create(
-    Named("alpha") = alphasim, Named("V") = V,
-    Named("logU") = logU);
-}
-
-
-// [[Rcpp::export]]
-List ng_bsm_gap_filter0(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int distribution, arma::vec init_signal, unsigned int nsim_states,
-  unsigned int seed) {
-  
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed);
-  
-  arma::cube alphasim(model.m, model.n, nsim_states);
-  arma::vec V(nsim_states);
-  double logU = model.gap_filter0(nsim_states, alphasim, V, init_signal);
-  
-  return List::create(
-    Named("alpha") = alphasim, Named("V") = V,
-    Named("logU") = logU);
-}
-
-// [[Rcpp::export]]
-List ng_bsm_gap_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int distribution, arma::vec init_signal, unsigned int nsim_states,
-  unsigned int seed) {
-  
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed);
-  
-  arma::cube alphasim(model.m, model.n, nsim_states);
-  arma::vec V(nsim_states);
-  double logU = model.gap_filter(nsim_states, alphasim, V, init_signal);
-  
-  return List::create(
-    Named("alpha") = alphasim, Named("V") = V,
+    Named("alpha") = alphasim, Named("V") = V, Named("A") = ind,
     Named("logU") = logU);
 }

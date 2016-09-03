@@ -13,12 +13,14 @@ const double LOG2PI = std::log(2.0 * M_PI);
 
 using namespace Rcpp;
 
+void backtrack_pf(arma::cube& alpha, arma::umat& ind);
+
 arma::mat cholupdate(arma::mat L, arma::vec u);
 
 arma::mat choldowndate(arma::mat L, arma::vec u);
 
-arma::vec dmvnorm1(const arma::mat& x, const arma::vec& mean,  
-  arma::mat sigma, bool lwr = false, bool logd = false);
+double dmvnorm1(const arma::vec& x, const arma::vec& mean,  
+  const arma::mat& sigma, bool lwr = false, bool logd = false);
 
 arma::vec dmvnorm2(const arma::mat& x, const arma::mat& mean,  
   arma::mat sigma, bool lwr, bool logd, const arma::mat& A);
@@ -65,16 +67,16 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
   unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, 
   arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_nsim);
 
-
-template <typename T>
-void is_correction_bsf(T mod, const arma::mat& theta, const arma::vec& ll_store, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, arma::cube& alpha_store);
-
-template <typename T>
-void is_correction_bsf_param(T mod, const arma::mat& theta, const arma::vec& ll_store, 
-  const arma::uvec& counts, 
-  unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds,
-  arma::vec& weights_store, double ess_treshold);
+// 
+// template <typename T>
+// void is_correction_bsf(T mod, const arma::mat& theta, const arma::vec& ll_store, const arma::uvec& counts, unsigned int nsim_states,
+//   unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, arma::cube& alpha_store);
+// 
+// template <typename T>
+// void is_correction_bsf_param(T mod, const arma::mat& theta, const arma::vec& ll_store, 
+//   const arma::uvec& counts, 
+//   unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds,
+//   arma::vec& weights_store, double ess_treshold);
 
 arma::uvec stratified_sample(arma::vec p, arma::vec& r, unsigned int N);
 #endif

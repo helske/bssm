@@ -247,48 +247,24 @@ gaussian_approx.svm <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
 }
 
 
-#' @method bootstrap_smoother svm
-#' @rdname particle_smoother
+#' @method particle_filter svm
+#' @rdname particle_filter
 #' @export
-bootstrap_smoother.svm <- function(object, nsim,
+particle_filter.svm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  svm_bootstrap_filter(object$y, object$Z, object$T, object$R,
+  svm_particle_filter(object$y, object$Z, object$T, object$R,
     object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
     nsim, object$init_signal, seed)
 }
 
 
-#' @method gap_smoother0 svm
-#' @rdname particle_smoother
+#' @rdname particle_filter
 #' @export
-gap_smoother0.svm <- function(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
-  
-  svm_gap_filter0(object$y, object$Z, object$T, object$R,
-    object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
-    nsim, object$init_signal, seed)
-}
-
-
-
-#' @method gap_smoother svm
-#' @rdname particle_smoother
-#' @export
-gap_smoother.svm <- function(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
-  
-  svm_gap_filter(object$y, object$Z, object$T, object$R,
-    object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
-    nsim, object$init_signal, seed)
-}
-
-#' @rdname particle_smoother
-#' @export
-bootstrap_filter_svm <- function(object, nsim,
+particle_filter_svm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), q=0.5,...) {
   
-  svm_bootstrap_filter2(object$y, object$Z, object$T, object$R,
+  svm_particle_filter2(object$y, object$Z, object$T, object$R,
     object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
     nsim, object$init_signal, seed, q)
 }

@@ -610,41 +610,13 @@ gaussian_approx.ng_bsm <- function(object, max_iter =  100, conv_tol = 1e-8, ...
     object$init_signal, max_iter, conv_tol)
 }
 
-#' @method bootstrap_smoother ng_bsm
-#' @rdname particle_smoother
+#' @method particle_filter ng_bsm
+#' @rdname particle_filter
 #' @export
-bootstrap_smoother.ng_bsm <- function(object, nsim,
+particle_filter.ng_bsm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  ng_bsm_bootstrap_filter(object$y, object$Z, object$T, object$R, object$a1,
-    object$P1, object$phi, object$slope, object$seasonal, object$noise, object$fixed,
-    object$xreg, object$beta,
-    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
-    object$init_signal, nsim, seed)
-}
-
-
-#' @method gap_smoother ng_bsm
-#' @rdname particle_smoother
-#' @export
-gap_smoother.ng_bsm <- function(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
-  
-  ng_bsm_gap_filter(object$y, object$Z, object$T, object$R, object$a1,
-    object$P1, object$phi, object$slope, object$seasonal, object$noise, object$fixed,
-    object$xreg, object$beta,
-    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
-    object$init_signal, nsim, seed)
-}
-
-
-#' @method gap_smoother0 ng_bsm
-#' @rdname particle_smoother
-#' @export
-gap_smoother0.ng_bsm <- function(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
-  
-  ng_bsm_gap_filter0(object$y, object$Z, object$T, object$R, object$a1,
+  ng_bsm_particle_filter(object$y, object$Z, object$T, object$R, object$a1,
     object$P1, object$phi, object$slope, object$seasonal, object$noise, object$fixed,
     object$xreg, object$beta,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
