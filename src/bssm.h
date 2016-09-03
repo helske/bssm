@@ -75,4 +75,6 @@ void is_correction_bsf_param(T mod, const arma::mat& theta, const arma::vec& ll_
   const arma::uvec& counts, 
   unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds,
   arma::vec& weights_store, double ess_treshold);
+
+arma::uvec stratified_sample(arma::vec p, arma::vec& r, unsigned int N);
 #endif

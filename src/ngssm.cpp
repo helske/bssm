@@ -33,11 +33,6 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
   // log[p(signal)] + log[p(y | signal)]
   double ll = logp_signal(signal, Kt, Ft) + logp_y(signal);
   
-  // approximation does not need to be accurate
-  // as we are correcting the approximation with importance sampling
-  //unsigned int max_iter = 1000;
-  //double conv_tol = 1e-8;
-  //
   unsigned int i = 0;
   while(i < max_iter) {
     // compute new guess of signal
@@ -46,8 +41,9 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
     double ll_new = precomp_logp_signal(signal_new, Kt, Ft) +
       logp_y(signal_new);
     double diff = std::abs(ll_new - ll)/(0.1 + std::abs(ll_new));
+    // Rcout<<arma::mean(arma::square(signal-signal_new))<<std::endl;
+    // Rcout<<"diff "<<diff<<std::endl;
     signal = signal_new;
-    
     if(!std::isfinite(ll_new) || signal.has_nan()){
       return -arma::datum::inf;
     }
@@ -56,6 +52,7 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
     } else {
       ll = ll_new;
     }
+    
     i++;
   }
   ll = 0.0;
@@ -144,7 +141,6 @@ double ngssm::precomp_logp_signal(arma::vec& signal, const arma::mat& Kt, const 
   double logLik = 0.0;
   
   arma::vec at = a1;
-  arma::vec signal_tmp = signal;
   
   for (unsigned int t = 0; t < n; t++) {
     if (Ft(t) > arma::datum::eps) {
@@ -684,8 +680,6 @@ double ngssm::mcmc_approx2(arma::vec theta_lwr, arma::vec theta_upr,
   arma::uvec& counts, bool end_ram, bool adapt_approx) {
   
   unsigned int npar = theta_lwr.n_elem;
-  
-  unsigned int n_samples = ll_approx_u_store.n_elem;
   
   double acceptance_rate = 0.0;
   arma::vec theta = get_theta();

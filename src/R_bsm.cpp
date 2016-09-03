@@ -244,9 +244,13 @@ Rcpp::List bsm_bootstrap_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma
   bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta, unsigned int seed) {
   
   bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed);
+  
   arma::cube alphasim(model.m, model.n, nsim_states);
-  arma::vec V(nsim_states);
-  double logU = model.bootstrap_filter(nsim_states, alphasim, V);
+  arma::mat V(nsim_states, model.n);
+  
+  arma::umat ind(nsim_states, model.n);
+  double logU = model.bootstrap_filter(nsim_states, alphasim, V, ind);
+  
   
   return List::create(
     Named("alpha") = alphasim, Named("V") = V,

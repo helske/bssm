@@ -15,7 +15,7 @@ public:
 
   double bootstrap_loglik(unsigned int, double);
   double bootstrap_filter(unsigned int, arma::cube&, arma::vec&);
-  double bootstrap_filter2(unsigned int, arma::cube&, arma::mat&, arma::mat& ind);
+  double bootstrap_filter2(unsigned int, arma::cube&, arma::mat&, arma::umat& ind, arma::vec, double);
   double gap_filter(unsigned int, arma::cube&, arma::vec&, arma::vec&);
   arma::vec pyt2(const unsigned int, const arma::vec&);
   double proposal(const arma::vec&, const arma::vec&);

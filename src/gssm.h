@@ -52,8 +52,7 @@ public:
     unsigned int, double, double, arma::mat&, arma::mat&, arma::cube&,
     arma::mat&, arma::vec&, bool);
 
-  virtual arma::vec pyt(const unsigned int, const arma::cube&);
-  virtual double bootstrap_filter(unsigned int, arma::cube&, arma::vec&);
+  virtual double bootstrap_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
   
   arma::vec y;
   arma::mat Z;

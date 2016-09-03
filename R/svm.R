@@ -286,9 +286,9 @@ gap_smoother.svm <- function(object, nsim,
 #' @rdname particle_smoother
 #' @export
 bootstrap_filter_svm <- function(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
+  seed = sample(.Machine$integer.max, size = 1), q=0.5,...) {
   
   svm_bootstrap_filter2(object$y, object$Z, object$T, object$R,
     object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$beta,
-    nsim, object$init_signal, seed)
+    nsim, object$init_signal, seed, q)
 }

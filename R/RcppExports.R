@@ -233,8 +233,8 @@ svm_gap_filter <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, ini
     .Call('bssm_svm_gap_filter', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed)
 }
 
-svm_bootstrap_filter2 <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed) {
-    .Call('bssm_svm_bootstrap_filter2', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed)
+svm_bootstrap_filter2 <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed, q) {
+    .Call('bssm_svm_bootstrap_filter2', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed, q)
 }
 
 running_summary <- function(x, mean_x, cov_x, n) {
@@ -243,5 +243,9 @@ running_summary <- function(x, mean_x, cov_x, n) {
 
 running_weighted_summary <- function(x, mean_x, cov_x, weights) {
     invisible(.Call('bssm_running_weighted_summary', PACKAGE = 'bssm', x, mean_x, cov_x, weights))
+}
+
+stratified_sample <- function(p, r, N) {
+    .Call('bssm_stratified_sample', PACKAGE = 'bssm', p, r, N)
 }
 

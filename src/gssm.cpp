@@ -166,8 +166,8 @@ double gssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
 }
 
 /* Fast state smoothing, only returns smoothed estimates of states
- * which are needed in simulation smoother
- */
+* which are needed in simulation smoother
+*/
 arma::mat gssm::fast_smoother(bool demean) {
   
   arma::mat at(m, n);
@@ -229,8 +229,8 @@ arma::mat gssm::fast_smoother(bool demean) {
 
 
 /* Fast state smoothing which returns also Ft, Kt and Lt which can be used
- * in subsequent calls of smoother in simulation smoother.
- */
+* in subsequent calls of smoother in simulation smoother.
+*/
 
 arma::mat gssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt, bool demean) {
   
@@ -292,7 +292,7 @@ arma::mat gssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt, boo
 }
 
 /* Fast state smoothing which uses precomputed Ft, Kt and Lt.
- */
+*/
 
 arma::mat gssm::precomp_fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
   const arma::cube& Lt, bool demean) {
@@ -352,9 +352,9 @@ arma::mat gssm::precomp_fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
 
 arma::cube gssm::sim_smoother(unsigned int nsim, bool demean) {
   
-// keep importance sampling more comparative with particle filtering
+  // keep importance sampling more comparative with particle filtering
   bool antithetic = false;
-///////
+  ///////
   arma::vec y_tmp = y;
   
   arma::uvec nonzero = arma::find(P1.diag() > 0);
@@ -374,7 +374,7 @@ arma::cube gssm::sim_smoother(unsigned int nsim, bool demean) {
     arma::cube Lt(m, m, n);
     
     arma::mat alphahat = fast_smoother2(Ft, Kt, Lt, demean);
-   
+    
     
     unsigned int nsim2;
     if(antithetic) {
@@ -408,7 +408,7 @@ arma::cube gssm::sim_smoother(unsigned int nsim, bool demean) {
       
       asim.slice(i) = -precomp_fast_smoother(Ft, Kt, Lt, false) + aplus;
       if (antithetic){
-      asim.slice(i + nsim2) = alphahat - asim.slice(i);
+        asim.slice(i + nsim2) = alphahat - asim.slice(i);
       }
       asim.slice(i) += alphahat;
     }
@@ -1048,7 +1048,12 @@ arma::mat gssm::predict2(arma::vec theta_lwr,
 }
 
 //bootstrap filter
-double gssm::bootstrap_filter(unsigned int nsim, arma::cube& alphasim, arma::vec& V) {
+
+//bootstrap filter
+double gssm::bootstrap_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V, arma::umat& ind) {
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
   
   arma::uvec nonzero = arma::find(P1.diag() > 0);
   arma::mat L_P1(m, m, arma::fill::zeros);
@@ -1056,8 +1061,6 @@ double gssm::bootstrap_filter(unsigned int nsim, arma::cube& alphasim, arma::vec
     L_P1.submat(nonzero, nonzero) =
       arma::chol(P1.submat(nonzero, nonzero), "lower");
   }
-  
-  std::normal_distribution<> normal(0.0, 1.0);
   for (unsigned int i = 0; i < nsim; i++) {
     arma::vec um(m);
     for(unsigned int j = 0; j < m; j++) {
@@ -1066,79 +1069,58 @@ double gssm::bootstrap_filter(unsigned int nsim, arma::cube& alphasim, arma::vec
     alphasim.slice(i).col(0) = a1 + L_P1 * um;
   }
   
-  double w = 0;
-  if (arma::is_finite(y(0))) {
-    V = pyt(0, alphasim);
-    double maxV = V.max();
-    V = exp(V - maxV);
-    w = maxV + log(sum(V)) - log(nsim);
-    V /= sum(V);
+  arma::vec Vnorm(nsim);
+  double logU = 0.0;
+  if(arma::is_finite(y(0))) {
+    for (unsigned int i = 0; i < nsim; i++) {
+      V(i, 0) = R::dnorm(y(0), 
+        arma::as_scalar(Z.col(0).t() * alphasim.slice(i).col(0) + xbeta(0)), 
+        H(0), 0);
+    }
+    Vnorm = V.col(0) / arma::sum(V.col(0));
+    logU = log(arma::mean(Vnorm));
   } else {
-    V.ones();
+    V.col(0).ones();
+    Vnorm.fill(1.0/nsim);
   }
- 
-  arma::mat ind(n, nsim);
+  
   for (unsigned int t = 0; t < (n - 1); t++) {
-    std::discrete_distribution<> sample(V.begin(), V.end());
+    
+    arma::vec r(nsim);
+    for (unsigned int i = 0; i < nsim; i++) {
+      r(i) = unif(engine);
+    }
+    
+    ind.col(t) = stratified_sample(Vnorm, r, nsim);
     
     arma::mat alphatmp(m, nsim);
+    
     for (unsigned int i = 0; i < nsim; i++) {
-      ind(t, i) = sample(engine);
-      alphatmp.col(i) = alphasim.slice(ind(t, i)).col(t);
+      alphatmp.col(i) = alphasim.slice(ind(i, t)).col(t);
     }
     
     for (unsigned int i = 0; i < nsim; i++) {
-      arma::vec uk(k);
+      arma::vec uk(m);
       for(unsigned int j = 0; j < k; j++) {
         uk(j) = normal(engine);
       }
-      alphasim.slice(i).col(t + 1) = T.slice(t * Ttv) * alphatmp.col(i) + 
-        R.slice(t * Rtv) * uk;
+      alphasim.slice(i).col(t + 1) = T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
     }
-   
-    if (arma::is_finite(y(t + 1))) {
-      V = pyt(t + 1, alphasim);
-      double maxV = V.max();
-      V = exp(V - maxV);
-      w += maxV + log(sum(V)) - log(nsim);
-      V /= sum(V);
-    } else {
-      V.ones();
-    }
-  }
-  
-  for (int t = n - 2; t >= 0; t--) {
-    arma::mat alphatmp = alphasim.tube(arma::span::all, arma::span(t));
-    for (unsigned int i = 0; i < nsim; i++) {
-      alphasim.slice(i).col(t) = alphatmp.col(ind(t,i));
-    }
-  }
-  
-  return w;
-}
-
-//compute log-weights
-arma::vec gssm::pyt(const unsigned int t, const arma::cube& alphasim) {
-  
-  arma::vec V(alphasim.n_slices);
-  
-  if (arma::is_finite(y(t))) {
-    if (xreg.n_cols > 0) {
-      for (unsigned int i = 0; i < alphasim.n_slices; i++) { 
-        double tmp = arma::as_scalar(Z.col(t * Ztv).t() *
-          alphasim.slice(i).col(t) + xbeta(t));
-        V(i) = R::dnorm(y(t), tmp, H(t * Htv), 1);
+    
+    if(arma::is_finite(y(t + 1))) {
+      for (unsigned int i = 0; i < nsim; i++) {
+        V(i, t + 1) = R::dnorm(y(t + 1), 
+          arma::as_scalar(Z.col((t + 1) * Ztv).t() * alphasim.slice(i).col(t + 1) + xbeta(t + 1)), 
+          H((t + 1) * Htv), 0);
       }
+      Vnorm = V.col(t + 1) / arma::sum(V.col(t + 1));
+      logU += log(arma::mean(Vnorm));
     } else {
-      for (unsigned int i = 0; i < alphasim.n_slices; i++) { 
-        double tmp = arma::as_scalar(Z.col(t * Ztv).t() *
-          alphasim.slice(i).col(t));
-        V(i) = R::dnorm(y(t), tmp, H(t * Htv), 1);
-      }
+      V.col(t + 1).ones();
+      Vnorm.fill(1.0/nsim);
     }
-  } else {
-    V.fill(-arma::datum::inf);
+    
+    
   }
-  
-  return V;
+  return logU;
 }

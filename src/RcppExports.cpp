@@ -1546,8 +1546,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // svm_bootstrap_filter2
-List svm_bootstrap_filter2(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, arma::mat& xreg, arma::vec& beta, unsigned int nsim_states, arma::vec init_signal, unsigned int seed);
-RcppExport SEXP bssm_svm_bootstrap_filter2(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP nsim_statesSEXP, SEXP init_signalSEXP, SEXP seedSEXP) {
+List svm_bootstrap_filter2(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, arma::mat& xreg, arma::vec& beta, unsigned int nsim_states, arma::vec init_signal, unsigned int seed, double q);
+RcppExport SEXP bssm_svm_bootstrap_filter2(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP nsim_statesSEXP, SEXP init_signalSEXP, SEXP seedSEXP, SEXP qSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -1563,7 +1563,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
-    __result = Rcpp::wrap(svm_bootstrap_filter2(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed));
+    Rcpp::traits::input_parameter< double >::type q(qSEXP);
+    __result = Rcpp::wrap(svm_bootstrap_filter2(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed, q));
     return __result;
 END_RCPP
 }
@@ -1591,5 +1592,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
     running_weighted_summary(x, mean_x, cov_x, weights);
     return R_NilValue;
+END_RCPP
+}
+// stratified_sample
+arma::uvec stratified_sample(arma::vec p, arma::vec& r, unsigned int N);
+RcppExport SEXP bssm_stratified_sample(SEXP pSEXP, SEXP rSEXP, SEXP NSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type p(pSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type r(rSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type N(NSEXP);
+    __result = Rcpp::wrap(stratified_sample(p, r, N));
+    return __result;
 END_RCPP
 }
