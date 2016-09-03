@@ -14,28 +14,78 @@ opt <- optim(c(0.98, 0.4, 1), obj, method = "L-BFGS-B", lower = c(-0.999, 1e-4, 
 pars <- opt$par
 model <- svm(y, ar = pars[1], sd_ar = pars[2], sigma = pars[3])
 
+pf <- bootstrap_filter_svm(model, nsim = 100, q = 1,seed=1)
+
 f_pf <- function(n, q){
   pf <- bootstrap_filter_svm(model, nsim = n, q = q)
-  w <- exp(pf$V[,5443])
+  w <- pf$V[,5443]
   w <- w/sum(w)
   sum(w*pf$alpha[1,5443,])
 }
 
-gpf1 <- replicate(100, f_pf(n = 100, q=0.25))
-gpf2 <- replicate(100, f_pf(n = 100, q=0.5))
-gpf3 <- replicate(100, f_pf(n = 100, q=0.75))
-gpf4 <- replicate(100, f_pf(n = 100, q=1))
+f_is <- function(n){
+  imp <- importance_sample(model, nsim = n)
+  w <- imp$w
+  w <- w/sum(w)
+  sum(w*imp$alpha[1,5443,])
+}
+
+n <- 10
+imp <- replicate(500, f_is(n = n))
+gpf0 <- replicate(500, f_pf(n = n, q=0))
+gpf1 <- replicate(500, f_pf(n = n, q=0.25))
+gpf2x <- replicate(500, f_pf(n = n, q=0.5))
+gpf3 <- replicate(500, f_pf(n = n, q=0.75))
+gpf4 <- replicate(500, f_pf(n = n, q=1))
+
+n <- 100
+impb <- replicate(500, f_is(n = n))
+gpf0b <- replicate(500, f_pf(n = n, q=0))
+gpf1b <- replicate(500, f_pf(n = n, q=0.25))
+gpf2b <- replicate(500, f_pf(n = n, q=0.5))
+gpf3b <- replicate(500, f_pf(n = n, q=0.75))
+gpf4b <- replicate(500, f_pf(n = n, q=1))
 
 
-mean(gpf1)
-mean(gpf2)
-mean(gpf3)
-mean(gpf4)
+n <- 300
+impc <- replicate(100, f_is(n = n))
+gpf0c <- replicate(100, f_pf(n = n, q=0))
+gpf1c <- replicate(100, f_pf(n = n, q=0.25))
+gpf2c <- replicate(100, f_pf(n = n, q=0.5))
+gpf3c <- replicate(100, f_pf(n = n, q=0.75))
+gpf4c <- replicate(100, f_pf(n = n, q=1))
 
+ff(gpf0c)
+ff(gpf1c)
+ff(gpf2c)
+ff(gpf3c)
+ff(gpf4c)
+ff(impc)
+
+ff <- function(out) {
+  c(mean(out),sd(out))
+}
+mean(gpf0);sd(gpf0)
+mean(gpf1);sd(gpf0)
+mean(gpf2);sd(gpf0)
+mean(gpf3);sd(gpf0)
+mean(gpf4);sd(gpf0)
+mean(imp);sd(imp)
+
+sd(gpf0)
 sd(gpf1)
 sd(gpf2)
 sd(gpf3)
 sd(gpf4)
+sd(imp)
+
+imp <- replicate(500, f_is(n = 100))
+
+gpf0 <- replicate(500, f_pf(n = 100, q=0))
+gpf1 <- replicate(500, f_pf(n = 100, q=0.25))
+gpf2 <- replicate(500, f_pf(n = 100, q=0.5))
+gpf3 <- replicate(500, f_pf(n = 100, q=0.75))
+gpf4 <- replicate(500, f_pf(n = 100, q=1))
 
 gpf1 <- replicate(1000, bootstrap_filter_svm(model, nsim = 100, q=0.25)$logU)
 gpf2 <- replicate(1000, bootstrap_filter_svm(model, nsim = 100, q=0.5)$logU)

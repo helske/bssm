@@ -421,7 +421,8 @@ double svm::bootstrap_loglik(unsigned int nsim, double ess_treshold) {
 double svm::bootstrap_filter2(unsigned int nsim, arma::cube& alphasim, arma::mat& V, arma::umat& ind,
   arma::vec signal, double q) {
   
-  double ll_approx = approx(signal, 15, 1e-4);
+  Rcout<<"start"<<std::endl;
+  double ll_approx = approx(signal, 50, 1e-12);
   
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
@@ -478,6 +479,7 @@ double svm::bootstrap_filter2(unsigned int nsim, arma::cube& alphasim, arma::mat
     double F = Pt + HH(t+1);
     double K = Pt / F;
     Pt = (1.0 - K)*Pt;
+    Rcout<<Pt<<std::endl;
     if (arma::is_finite(ng_y(t+1))) {
       for (unsigned int i = 0; i < nsim; i++) {
         // prediction
