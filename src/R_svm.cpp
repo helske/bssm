@@ -165,36 +165,36 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   //   return model.mcmc_da_bsf(theta_lwr, theta_upr, n_iter,
   //     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx);
   //   break;
-  // case 7 : {
-  //   unsigned int npar = theta_lwr.n_elem;
-  //   unsigned int n_samples = floor(n_iter - n_burnin);
-  //   arma::mat theta_store(npar, n_samples);
-  //   arma::vec ll_store(n_samples);
-  //   arma::mat y_store(model.n, n_samples);
-  //   arma::mat H_store(model.n, n_samples);
-  //   arma::vec ll_approx_u_store(n_samples);
-  //   
-  //   arma::uvec counts(n_samples);
-  //   //no thinning allowed!
-  //   double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
-  //     nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-  //     theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts, end_ram, adapt_approx);
-  //   
-  //   arma::vec weights_store(counts.n_elem);
-  //   arma::cube alpha_store(model.m, model.n, counts.n_elem);
-  //   
-  //   is_correction_bsf(model, theta_store, ll_store,
-  //     arma::uvec(counts.n_elem, arma::fill::ones),
-  //     nsim_states, n_threads, seeds, weights_store, alpha_store);
-  //   
-  //   arma::inplace_trans(theta_store);
-  //   return List::create(Named("alpha") = alpha_store,
-  //     Named("theta") = theta_store, Named("counts") = counts,
-  //     Named("acceptance_rate") = acceptance_rate,
-  //     Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
-  // }
-  //   break;
+  case 7 : {
+    unsigned int npar = theta_lwr.n_elem;
+    unsigned int n_samples = floor(n_iter - n_burnin);
+    arma::mat theta_store(npar, n_samples);
+    arma::vec ll_store(n_samples);
+    arma::mat y_store(model.n, n_samples);
+    arma::mat H_store(model.n, n_samples);
+    arma::vec ll_approx_u_store(n_samples);
+
+    arma::uvec counts(n_samples);
+    //no thinning allowed!
+    double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
+      nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
+      theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts, end_ram, adapt_approx);
+
+    arma::vec weights_store(counts.n_elem);
+    arma::cube alpha_store(model.m, model.n, counts.n_elem);
+
+    is_correction_bsf(model, theta_store, ll_store,
+      arma::uvec(counts.n_elem, arma::fill::ones),
+      nsim_states, n_threads, seeds, weights_store, alpha_store);
+
+    arma::inplace_trans(theta_store);
+    return List::create(Named("alpha") = alpha_store,
+      Named("theta") = theta_store, Named("counts") = counts,
+      Named("acceptance_rate") = acceptance_rate,
+      Named("S") = S,  Named("logLik") = ll_store, Named("weights") = weights_store);
   }
+    break;
+   }
   return List::create(Named("just_in_case") = "should be impossible to see this... Restructure the function later");
 }
 
@@ -314,20 +314,20 @@ List svm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
   //   arma::mat y_store(model.n, n_samples);
   //   arma::mat H_store(model.n, n_samples);
   //   arma::vec ll_approx_u_store(n_samples);
-  //   
+  // 
   //   arma::uvec counts(n_samples);
   //   //no thinning allowed!
   //   double acceptance_rate = model.mcmc_approx2(theta_lwr, theta_upr, n_iter,
   //     nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
   //     theta_store, ll_store, y_store, H_store, ll_approx_u_store, counts,
   //     end_ram, adapt_approx);
-  //   
+  // 
   //   arma::vec weights_store(counts.n_elem);
-  //   
+  // 
   //   is_correction_bsf_param(model, theta_store, ll_store,
   //     arma::uvec(counts.n_elem, arma::fill::ones),
   //     nsim_states, n_threads, seeds, weights_store, ess_treshold);
-  //   
+  // 
   //   arma::inplace_trans(theta_store);
   //   return List::create(
   //     Named("theta") = theta_store, Named("counts") = counts,

@@ -126,7 +126,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta = NULL, state_names) {
 #' @rdname logLik
 #' @export
 logLik.gssm <- function(object, ...) {
-  if (!is.null(object$y) && ncol(object$y) > 1) {
+  if (!is.null(dim(object$y)[2]) && dim(object$y)[2] > 1) {
     stop("not yet implemented for multivariate models.")
   }
   gssm_loglik(object$y, object$Z, object$H, object$T, object$R, object$a1,

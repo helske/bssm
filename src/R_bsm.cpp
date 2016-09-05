@@ -249,7 +249,7 @@ Rcpp::List bsm_particle_filter(arma::vec& y, arma::mat& Z, arma::vec& H, arma::c
   arma::mat V(nsim_states, model.n);
   arma::umat ind(nsim_states, model.n - 1);
   double logU = model.particle_filter(nsim_states, alphasim, V, ind);
-  
+  backtrack_pf(alphasim, ind);
   return List::create(
     Named("alpha") = alphasim, Named("V") = V, Named("A") = ind,
     Named("logU") = logU);
@@ -270,6 +270,7 @@ Rcpp::List bsm_particle_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma:
   
   if(method == 1) {
     backtrack_pf(alphasim, ind);
+    
     arma::mat alphahat(model.n, model.m);
     
     arma::vec Vnorm = V.col(model.n - 1)/arma::sum(V.col(model.n - 1));
@@ -294,5 +295,27 @@ Rcpp::List bsm_particle_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma:
     return List::create(Named("alphahat") = alphahat, Named("V") = V,
       Named("logU") = logU, Named("alpha") = alphasim);
   }
- 
+  
 }
+
+// [[Rcpp::export]]
+Rcpp::List bsm_backward_simulate(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
+  arma::cube& R, arma::vec& a1, arma::mat& P1, unsigned int nsim_states, bool slope,
+  bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta, unsigned int seed, 
+  unsigned int nsim_store) {
+  
+  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed);
+  
+  arma::cube alphasim(model.m, model.n, nsim_states);
+  arma::mat V(nsim_states, model.n);
+  arma::umat ind(nsim_states, model.n - 1);
+  double logU = model.particle_filter(nsim_states, alphasim, V, ind);
+  arma::cube alpha(model.m, model.n, nsim_store);
+  for (unsigned int i = 0; i < nsim_store; i++) {
+    alpha.slice(i) = model.backward_simulate(alphasim, V, ind);
+    
+  }
+  return List::create(Named("alpha") = alpha,
+    Named("logU") = logU);
+}
+

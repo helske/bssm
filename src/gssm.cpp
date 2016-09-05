@@ -1103,6 +1103,15 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
       alphatmp.col(i) = alphasim.slice(ind(i, t)).col(t);
     }
     
+    // arma::cube alphatmp2(m, n, nsim);
+    // for (unsigned int i = 0; i < nsim; i++) {
+    //   alphatmp2(arma::span::all, arma::span(0, t), arma::span(i)) = 
+    //     alphasim(arma::span::all, arma::span(0, t), arma::span(ind(i,t)));
+    // }
+    // alphasim(arma::span::all, arma::span(0, t), arma::span::all) = 
+    //   alphatmp2(arma::span::all, arma::span(0, t), arma::span::all);
+    // 
+    
     for (unsigned int i = 0; i < nsim; i++) {
       arma::vec uk(m);
       for(unsigned int j = 0; j < k; j++) {
@@ -1131,22 +1140,48 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
   return logU;
 }
 
-void gssm::backtrack_pf2(arma::cube& alpha, arma::mat& V, arma::umat& ind) {
+
+void gssm::backtrack_pf2(const arma::cube& alpha, arma::mat& V, const arma::umat& ind) {
   
   unsigned int nsim = alpha.n_slices;
-  arma::mat B(nsim, nsim);
   V.col(n-1) = V.col(n-1) / arma::sum(V.col(n-1));
   
   for (int t = n - 1; t > 0; t--) {
+    arma::mat B(nsim, nsim);
     arma::vec Vnorm = V.col(t-1) / arma::sum(V.col(t-1));
     for (unsigned int i = 0; i < nsim; i++) {
       for (unsigned int j = 0; j < nsim; j++) {
         B(j, i) = Vnorm(j) * dmvnorm1(alpha.slice(i).col(t), 
-          T.slice(t * Ttv) * alpha.slice(j).col(t - 1), 
-          R.slice(t * Rtv), true, false);  
+          T.slice((t-1) * Ttv) * alpha.slice(j).col(t - 1), 
+          R.slice((t-1) * Rtv), true, false);  
       }
     }
     B.each_row() /= arma::sum(B, 0);
     V.col(t-1) = B * V.col(t);
   }
+}
+
+arma::mat gssm::backward_simulate(arma::cube& alpha, arma::mat& V, arma::umat& ind) {
+  
+  unsigned int nsim = alpha.n_slices;
+  arma::vec I(n);
+  arma::vec Vnorm = V.col(n-1) / arma::sum(V.col(n-1));
+  std::discrete_distribution<> sample(Vnorm.begin(), Vnorm.end());
+  arma::mat alphasim(m, n);
+  I(n-1) = sample(engine);
+  alphasim.col(n - 1) = alpha.slice(I(n - 1)).col(n - 1);
+  for (int t = n - 1; t > 0; t--) {
+    arma::vec b(nsim);
+    arma::vec Vnorm = V.col(t-1) / arma::sum(V.col(t-1));
+      for (unsigned int j = 0; j < nsim; j++) {
+        b(j) = Vnorm(j) * dmvnorm1(alpha.slice(I(t)).col(t), 
+          T.slice((t-1) * Ttv) * alpha.slice(j).col(t - 1), 
+          R.slice((t-1) * Rtv), true, false);  
+      }
+    b /= arma::sum(b);
+      std::discrete_distribution<> sample(b.begin(), b.end());
+    I(t-1) = sample(engine);
+    alphasim.col(t - 1) = alpha.slice(I(t - 1)).col(t - 1);
+  }
+  return alphasim;
 }

@@ -81,6 +81,10 @@ bsm_particle_smoother <- function(y, Z, H, T, R, a1, P1, nsim_states, slope, sea
     .Call('bssm_bsm_particle_smoother', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, nsim_states, slope, seasonal, fixed, xreg, beta, seed, method)
 }
 
+bsm_backward_simulate <- function(y, Z, H, T, R, a1, P1, nsim_states, slope, seasonal, fixed, xreg, beta, seed, nsim_store) {
+    .Call('bssm_bsm_backward_simulate', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, nsim_states, slope, seasonal, fixed, xreg, beta, seed, nsim_store)
+}
+
 gssm_loglik <- function(y, Z, H, T, R, a1, P1, xreg, beta) {
     .Call('bssm_gssm_loglik', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, xreg, beta)
 }

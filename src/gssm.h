@@ -53,8 +53,9 @@ public:
     arma::mat&, arma::vec&, bool);
 
   virtual double particle_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
-  
-  virtual void backtrack_pf2(arma::cube&, arma::mat&, arma::umat&); 
+   
+  void backtrack_pf2(const arma::cube&, arma::mat&, const arma::umat&); 
+  arma::mat backward_simulate(arma::cube&, arma::mat&, arma::umat&); 
   arma::vec y;
   arma::mat Z;
   arma::vec H;
