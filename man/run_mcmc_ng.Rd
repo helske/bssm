@@ -21,10 +21,9 @@
 \method{run_mcmc}{svm}(object, n_iter, nsim_states = 1, type = "full",
   lower_prior, upper_prior, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  adaptive_approx = TRUE, method = "delayed acceptance",
-  log_space = FALSE, n_threads = 1, seed = sample(.Machine$integer.max,
-  size = 1), thread_seeds = sample(.Machine$integer.max, size = n_threads),
-  ess_treshold = 0.75, ...)
+  adaptive_approx = TRUE, method = "delayed acceptance", n_threads = 1,
+  seed = sample(.Machine$integer.max, size = 1),
+  thread_seeds = sample(.Machine$integer.max, size = n_threads), ...)
 }
 \arguments{
 \item{object}{Model object.}

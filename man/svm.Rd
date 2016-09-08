@@ -4,7 +4,8 @@
 \alias{svm}
 \title{Stochastic Volatility Model}
 \usage{
-svm(y, ar, sd_ar, sigma, xreg = NULL, beta = NULL, lower_prior, upper_prior)
+svm(y, ar, sd_ar, sigma, xreg = NULL, beta = NULL, prior_sd = sd(y, na.rm
+  = TRUE), lower_prior, upper_prior)
 }
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
@@ -14,7 +15,10 @@ value in MCMC.}
 
 \item{sigma}{Sigma. Used as an initial value in MCMC.}
 
-\item{lower_prior, upper_prior}{Prior bounds for uniform priors on mean, phi, and sds.}
+\item{prior_sd}{Standard deviation for the half-Normal prior for sigma. 
+Default is \code{2*sd(y)}.}
+
+\item{lower_prior, upper_prior}{Prior bounds for uniform priors on mean, phi, and sd_ar.}
 
 \item{mean}{Mean. Used as an initial value in MCMC.}
 

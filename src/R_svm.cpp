@@ -59,12 +59,12 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
-  arma::vec& init_signal, unsigned int method, unsigned int seed, bool log_space,
+  arma::vec& init_signal, unsigned int method, unsigned int seed,double sd_prior,
   unsigned int n_threads, arma::uvec seeds, bool end_ram, bool adapt_approx) {
 
 
 
-  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed, log_space);
+  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed, sd_prior);
 
   switch(method) {
   case 1 :
@@ -205,11 +205,11 @@ List svm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
-  arma::vec& init_signal, unsigned int method, unsigned int seed, bool log_space,
+  arma::vec& init_signal, unsigned int method, unsigned int seed,double sd_prior,
   unsigned int n_threads, arma::uvec seeds, bool end_ram, bool adapt_approx, 
   double ess_treshold) {
   
-  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed, log_space);
+  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed, sd_prior);
   
   switch(method) {
   case 1 :

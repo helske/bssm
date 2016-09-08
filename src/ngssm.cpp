@@ -866,7 +866,6 @@ List ngssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
     acceptance_rate++;
     j++;
   }
-  
   double accept_prob = 0;
   double ll_prop = 0;
   arma::cube alpha_prop = alpha;
@@ -883,7 +882,7 @@ List ngssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
     arma::vec theta_prop = theta + S * u;
     // check prior
     bool inrange = sum(theta_prop >= theta_lwr && theta_prop <= theta_upr) == npar;
-    
+
     if (inrange) {
       // update parameters
       update_model(theta_prop);
@@ -908,6 +907,7 @@ List ngssm::mcmc_full(arma::vec theta_lwr, arma::vec theta_upr,
       if(!std::isfinite(ll_prop)) {
         accept_prob = 0;
       } else {
+        
         double q = proposal(theta, theta_prop);
         accept_prob = std::min(1.0, exp(ll_prop - ll + q));
       }

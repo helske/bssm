@@ -10,10 +10,13 @@
 #' @param sigma Sigma. Used as an initial value in MCMC.
 #' @param sd_ar Standard error of AR-process. Used as an initial
 #' value in MCMC.
-#' @param lower_prior,upper_prior Prior bounds for uniform priors on mean, phi, and sds.
+#' @param lower_prior,upper_prior Prior bounds for uniform priors on mean, phi, and sd_ar.
+#' @param prior_sd Standard deviation for the half-Normal prior for sigma. 
+#' Default is \code{2*sd(y)}.
 #' @return Object of class \code{svm}.
 #' @export
-svm <- function(y, ar, sd_ar, sigma, xreg = NULL, beta = NULL, lower_prior, upper_prior) {
+svm <- function(y, ar, sd_ar, sigma, xreg = NULL, beta = NULL, 
+  prior_sd = sd(y, na.rm = TRUE), lower_prior, upper_prior) {
 
   check_y(y)
   n <- length(y)
@@ -75,11 +78,11 @@ svm <- function(y, ar, sd_ar, sigma, xreg = NULL, beta = NULL, lower_prior, uppe
   init_signal <- log(pmax(1e-4,y^2)) - 2 * log(sigma)
 
   if (missing(lower_prior)) {
-    lower_prior <- c(-1 + 1e-4, 0, 1e-4, rep(-1e3, length(beta)))
+    lower_prior <- c(-1 + 1e-3, 0, 0, rep(-1e3, length(beta)))
   }
 
   if (missing(upper_prior)) {
-    upper_prior <- c(1 - 1e-4, 10 * rep(min(sd(y, na.rm = TRUE), Inf, na.rm = TRUE), 2),
+    upper_prior <- c(1 - 1e-3, 2 * sd(y, na.rm = TRUE), Inf,
       rep(1e3, length(beta)))
   }
 
@@ -91,7 +94,7 @@ svm <- function(y, ar, sd_ar, sigma, xreg = NULL, beta = NULL, lower_prior, uppe
 
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, sigma = sigma, xreg = xreg, beta = beta,
-    lower_prior = lower_prior, upper_prior = upper_prior,
+    lower_prior = lower_prior, upper_prior = upper_prior, prior_sd = prior_sd,
     init_signal = init_signal), class = "svm")
 }
 
@@ -136,9 +139,9 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
   lower_prior, upper_prior, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx  = TRUE,
-  method = "delayed acceptance", log_space = FALSE, n_threads = 1,
+  method = "delayed acceptance", n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
-  thread_seeds = sample(.Machine$integer.max, size = n_threads), ess_treshold = 0.75, ...) {
+  thread_seeds = sample(.Machine$integer.max, size = n_threads),  ...) {
 
   type <- match.arg(type, c("full", "parameters", "summary"))
 
@@ -155,12 +158,6 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
   if (missing(upper_prior)) {
     upper_prior <- object$upper_prior
   }
-
-  if (log_space) {
-    lower_prior[2:3] <-log(lower_prior[2:3])
-    upper_prior[2:3] <-log(upper_prior[2:3])
-  }
-
   if (missing(S)) {
     S <- diag(c(0.1,0.1,0.1, rep(1,length(object$beta))))
   }
@@ -170,7 +167,6 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
     method <- "standard"
     nsim_states <- 1
   }
-
   out <-  switch(type,
     full = {
       out <- svm_mcmc_full(object$y, object$Z, object$T, object$R,
@@ -180,7 +176,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2", "DABSF", "BSF")),
-        seed, log_space, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
+        seed, object$prior_sd, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
 
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
@@ -194,7 +190,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2", "DABSF", "BSF")),
-        seed, log_space, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx, ess_treshold)
+        seed, object$prior_sd, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx, ess_treshold)
     },
     summary = {
       out <- svm_mcmc_summary(object$y, object$Z, object$T, object$R,
@@ -204,7 +200,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2", "DABSF", "BSF")),
-        seed, log_space, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
+        seed, object$prior_sd, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
 
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
@@ -215,11 +211,11 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
 
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-
     c("ar", "sd_ar", "sigma", names(object$beta))
-  if (log_space) {
-    out$theta[,2:3] <- exp(out$theta[,2:3])
-  }
+ 
   out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
   out$call <- match.call()
+  out$seed <- seed
+  out$thread_seeds = thread_seeds
   class(out) <- "mcmc_output"
   out
 }

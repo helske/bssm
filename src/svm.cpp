@@ -3,9 +3,9 @@
 //general constructor
 svm::svm(arma::vec y, arma::mat Z, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi,
-  arma::mat xreg, arma::vec beta, unsigned int seed, bool log_space) :
+  arma::mat xreg, arma::vec beta, unsigned int seed, double prior_sd) :
   ngssm(y, Z, T, R, a1, P1, phi, xreg, beta, 0, seed),
-  nz_y(y), log_space(log_space) {
+  nz_y(y), prior_sd(prior_sd) {
   
   nz_y(arma::find(abs(y) < 1e-4)).fill(1e-4);
 }
@@ -14,34 +14,27 @@ svm::svm(arma::vec y, arma::mat Z, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi,
   arma::mat xreg, arma::vec beta, unsigned int seed) :
   ngssm(y, Z, T, R, a1, P1, phi, xreg, beta, 0, seed),
-  nz_y(y), log_space(false) {
+  nz_y(y), prior_sd(100) {
   
   nz_y(arma::find(abs(y) < 1e-4)).fill(1e-4);
 }
 
+
 double svm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
-  double q = 0.0;
-  if (log_space) {
-    q = theta_prop(1) - theta(1) + theta_prop(2) - theta(2);
-  }
-  return q;
+  
+  return R::dnorm(theta_prop(2),0, prior_sd, 1) - 
+    R::dnorm(theta(2),0, prior_sd,1);
+  
 }
 
 void svm::update_model(arma::vec theta) {
   
-  if (log_space) {
-    T(0, 0, 0) = theta(0);
-    R(0, 0, 0) = exp(theta(1));
-    compute_RR();
-    P1(0, 0) = R(0, 0, 0) * R(0, 0, 0) / (1 - theta(0) * theta(0));
-    phi.fill(exp(theta(2)));
-  } else {
-    T(0, 0, 0) = theta(0);
-    R(0, 0, 0) = theta(1);
-    compute_RR();
-    P1(0, 0) = theta(1) * theta(1) / (1 - theta(0) * theta(0));
-    phi.fill(theta(2));
-  }
+  T(0, 0, 0) = theta(0);
+  R(0, 0, 0) = theta(1);
+  compute_RR();
+  P1(0, 0) = theta(1) * theta(1) / (1 - theta(0) * theta(0));
+  phi.fill(theta(2));
+  
   if(xreg.n_cols > 0) {
     beta = theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1);
     compute_xbeta();
@@ -52,15 +45,10 @@ void svm::update_model(arma::vec theta) {
 arma::vec svm::get_theta(void) {
   arma::vec theta(3 + xreg.n_cols);
   
-  if (log_space) {
-    theta(0) = T(0, 0, 0);
-    theta(1) = log(R(0, 0, 0));
-    theta(2) = log(phi(0));
-  } else {
-    theta(0) = T(0, 0, 0);
-    theta(1) = R(0, 0, 0);
-    theta(2) = phi(0);
-  }
+  theta(0) = T(0, 0, 0);
+  theta(1) = R(0, 0, 0);
+  theta(2) = phi(0);
+  
   if(xreg.n_cols > 0) {
     theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1) = beta;
   }
@@ -178,7 +166,7 @@ double svm::particle_filter2(unsigned int nsim, arma::cube& alphasim, arma::mat&
         V(i, t + 1) = R::dnorm(ng_y(t + 1), xbeta(t + 1), phi(0) * exp(alphasim(0, t + 1, i) / 2.0), 0) * pp /
         (q*pp + (1.0-q)*R::dnorm(alphasim(0, t + 1, i), at, sqrt(Pt), 0));
       }
-     
+      
       logU += log(arma::mean(V.col(t + 1)));
     } else {
       // y(t+1) missing, proposals are same
