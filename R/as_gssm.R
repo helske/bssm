@@ -1,7 +1,7 @@
 #' Convert SSModel Object to gssm or ngssm Object
 #'
-#' Converts \code{SSModel} object of \code{KFAS} package to \code{gssm} or \code{ngssm}
-#' object.
+#' Converts univariate \code{SSModel} object of \code{KFAS} package to 
+#' \code{gssm} or \code{ngssm} object.
 #'
 #' @param model Object of class \code{SSModel}.
 #' @param kappa For \code{SSModel} object, a prior variance for initial state

@@ -25,12 +25,18 @@
 #' @param a1 Prior means for the initial states (level, slope, seasonals).
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
-#' Default is diagonal matrix with 1e5 on the diagonal.
+#' Default is diagonal matrix with 1000 on the diagonal.
+#' @param prior_type Vector defining the prior types for standard deviations and beta.
+#'  Possible values are \code{"uniform"} (default) and \code{"normal"}, where latter
+#'  is a half-Normal distribution for standard deviation parameters and 
+#'  zero-mean Normal distribution for beta parameters.
 #' @param lower_prior,upper_prior Lower and upper bounds for the uniform prior
 #' on standard deviations (sd_y, sd_level, sd_slope, sd_seasonal) and regression
-#' coefficients. Defaults to zero for lower bound and and \code{sd(y)} for
-#' upper bound of standard deviations and (-Inf, Inf) for regression
+#' coefficients. Defaults to zero for lower bound and \code{2*sd(y)} for
+#' upper bound of standard deviations, and (-1000, 1000) for regression
 #' coefficients.
+#' @param prior_sds Standard deviation parameters for (half-)Normal priors. 
+#' Defaults to \code{2*sd(y)}
 #' @return Object of class \code{bsm}.
 #' @export
 #' @examples
@@ -44,9 +50,10 @@
 #' mcmc_out$theta[which.max(mcmc_out$logLik), ]
 #' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)
 #'
-bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL, beta = NULL,
-  period = frequency(y), slope = TRUE, seasonal = frequency(y) > 1, a1, P1,
-  lower_prior, upper_prior) {
+bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, 
+  xreg = NULL, beta = NULL, period = frequency(y), slope = TRUE, 
+  seasonal = frequency(y) > 1, a1, P1, prior_type,
+  lower_prior, upper_prior, prior_sds) {
 
   check_y(y)
   n <- length(y)
