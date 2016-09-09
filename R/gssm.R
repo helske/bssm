@@ -27,6 +27,7 @@
 #' @export
 gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta = NULL, state_names) {
 
+  stop("general classes don't work at the moment, restructuring stuff...")
   check_y(y)
 
   n <- length(y)

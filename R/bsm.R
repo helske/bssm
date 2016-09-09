@@ -26,8 +26,6 @@
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
 #' Default is diagonal matrix with 1000 on the diagonal.
-#' @param priors A list of priors for standard deviations and beta. 
-#' By default, uniform priors are used. See examples for details.
 #' @return Object of class \code{bsm}.
 #' @export
 #' @examples
@@ -41,7 +39,7 @@
 #' mcmc_out$theta[which.max(mcmc_out$logLik), ]
 #' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)
 #'
-bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, 
+bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal, 
   beta, xreg = NULL, period = frequency(y), slope = TRUE, 
   seasonal = frequency(y) > 1, a1, P1) {
 
@@ -72,7 +70,7 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal,
     
     xreg <- matrix(0, 0, 0)
     coefs <- numeric(0)
-    
+    beta <- NULL
   } else {
     
     if (missing(beta)) {
@@ -96,6 +94,7 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal,
   
   if (missing(sd_level)) {
     notfixed[1] <- 0
+    sd_level <- NULL
   } else {
     check_sd(sd_level, "level")
   }
@@ -103,6 +102,7 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal,
   if (slope) {
     if (missing(sd_slope)) {
       notfixed[2] <- 0
+      sd_slope <- NULL
     } else {
       check_sd(sd_slope$init, "slope")
     }
@@ -111,6 +111,7 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal,
   if (seasonal) {
     if (missing(sd_seasonal)) {
       notfixed[3] <- 0
+      sd_seasonal <- NULL
     } else {
       check_sd(sd_seasonal$init, "seasonal")
     }
@@ -183,6 +184,13 @@ bsm <- function(y, sd_y = 1, sd_level, sd_slope, sd_seasonal,
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
 
+  names_ind <- c(TRUE, notfixed & c(TRUE, slope, seasonal))
+  
+  priors <- c(sd_y, sd_level, sd_slope, sd_seasonal, beta)
+  
+  names(priors) <-
+    c(c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind], names(beta))
+  
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
     a1 = a1, P1 = P1, xreg = xreg, coefs = coefs,
     slope = slope, seasonal = seasonal, period = period, 

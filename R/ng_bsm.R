@@ -66,13 +66,14 @@
 #' autoplot(pred)
 #' }
 ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
-  distribution, phi = 1, xreg = NULL, beta = NULL,
-  period = frequency(y), slope = TRUE, seasonal = frequency(y) > 1, a1, P1,
-  lower_prior, upper_prior) {
+  distribution, phi = 1, beta, xreg = NULL,
+  period = frequency(y), slope = TRUE, seasonal = frequency(y) > 1, a1, P1) {
 
+  ## negative binomial not working currently, need to work out prior for phi
+  
   check_y(y)
   n <- length(y)
-
+  
   if (period == 1) {
     seasonal <- FALSE
   } else {
@@ -80,46 +81,85 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
       seasonal <- TRUE
     }
   }
-
-  fixed <- c("level" = NA, "slope" = NA, "seasonal" = NA)
-
+  
+  #easier this way...
+  notfixed <- c("level" = 1, "slope" = 1, "seasonal" = 1)
+  
+  npar_R <- !missing(sd_level) + !missing(sd_slope) + 
+    !missing(sd_seasonal) & c(TRUE, slope, seasonal) + !missing(sd_noise)
+  
+  npar <- 1L + npar_R
+  
+  if(!missing(beta)) {
+    npar <- npar + length(beta$init)
+  }
+  
+  
   if (missing(sd_noise)) {
     noise <- FALSE
+    sd_noise <- NULL
   } else {
-    check_sd(sd_noise, "noise")
+    check_sd(sd_noise$init, "noise")
     noise <- TRUE
   }
 
 
-  if (missing(sd_level)) {
-    fixed[1] <- 0
-    sd_level <- 0
+  if (is.null(xreg)) {
+    
+    xreg <- matrix(0, 0, 0)
+    coefs <- numeric(0)
+    beta <- NULL
+    
   } else {
+    
+    if (missing(beta)) {
+      stop("No prior defined for beta. ")
+    } 
+    if (is.null(dim(xreg)) && length(xreg) == n) {
+      xreg <- matrix(xreg, n, 1)
+    }
+    
+    check_xreg(xreg, n)
+    check_beta(beta$init, ncol(xreg))
+    coefs <- beta$init    
+    if (is.null(colnames(xreg))) {
+      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    }
+    names(coefs) <- colnames(xreg)
+    
+  }
+  
+  check_sd(sd$init, "y")
+  
+  if (missing(sd_level)) {
+    notfixed[1] <- 0
+  sd_level <- NULL
+    } else {
     check_sd(sd_level, "level")
   }
-
+  
   if (slope) {
     if (missing(sd_slope)) {
-      fixed[2] <- 0
-      sd_slope <- 0
+      notfixed[2] <- 0
+      sd_slope <- NULL
     } else {
-      check_sd(sd_slope, "slope")
+      check_sd(sd_slope$init, "slope")
     }
-  } else sd_slope <- 0
-
+  } sd_slope <- NULL
+  
   if (seasonal) {
     if (missing(sd_seasonal)) {
-      fixed[3] <- 0
-      sd_seasonal <- 0
+      notfixed[3] <- 0
+      sd_seasonal <- NULL
     } else {
-      check_sd(sd_seasonal, "seasonal")
+      check_sd(sd_seasonal$init, "seasonal")
     }
     seasonal_names <- paste0("seasonal_", 1:(period - 1))
   } else {
     seasonal_names <- NULL
-    sd_seasonal <- 0
+    sd_seasonal <- NULL
   }
-
+  
 
   m <- as.integer(1L + slope + seasonal * (period - 1) + noise)
 
@@ -148,7 +188,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   }
 
 
-  Z <- matrix(0, m,1)
+  Z <- matrix(0, m, 1)
   Z[1, 1] <- 1
 
   if (seasonal) {
@@ -167,32 +207,6 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     diag(T[(2 + slope + 1):(m - noise), (2 + slope):(m - 1 - noise)]) <- 1
   }
 
-  if (is.null(xreg)) {
-
-    xreg <- matrix(0, 0, 0)
-    beta <- numeric(0)
-
-  } else {
-    if (is.null(dim(xreg)) && length(xreg) == n) {
-      xreg <- matrix(xreg, n, 1)
-    }
-    check_xreg(xreg, n)
-
-    if (is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
-    }
-
-    if (missing(beta)) {
-      beta <- numeric(ncol(xreg))
-    } else {
-      check_beta(beta, ncol(xreg))
-    }
-
-    names(beta) <- colnames(xreg)
-  }
-
-  npar_R <- sum(is.na(fixed) & c(TRUE, slope, seasonal)) + noise
-
   if (!(length(phi) %in% c(1, n))) {
     stop("Argument phi must have length 1 or n. ")
   }
@@ -206,102 +220,45 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   nb <- distribution == "negative binomial"
   init_signal <- initial_signal(y, phi, distribution)
 
-  if (missing(lower_prior)) {
-    lower_prior <- c(rep(0, npar_R), rep(-1e3, length(beta) + nb))
-  }
-
-  if (missing(upper_prior)) {
-    autoprior <- TRUE
-    sds <- sd(init_signal)
-    if (distribution == "poisson") {
-      sds <- 2 * sd(log(phi) + init_signal)
-    } else {
-      sds <- 2 * sd(init_signal)
-    }
-    upper_prior <- c(rep(sds, npar_R), rep(1e3, length(beta) + nb))
-  } else autoprior <- FALSE
-
-  if (min(lower_prior[1:(npar_R)], upper_prior[1:(npar_R)]) < 0) {
-    stop("Negative value in prior boundaries for standard deviations. ")
-  }
-
   R <- matrix(0, m, max(1, npar_R))
-
-  #level
-  if (is.na(fixed[1])) {
-    R[1, 1] <- sd_level
-    if (autoprior) {
-      upper_prior[1] <- max(upper_prior[1], 2 * sd_level)
-    } else {
-      if (sd_level > upper_prior[1]) {
-        stop("Initial value for the sd_level is larger than the upper bound of
-          the prior distribution. ")
-      }
-    }
+  
+  if (notfixed[1]) {
+    R[1, 1] <- sd_level$init
   }
-
-  #slope
-  if (slope && is.na(fixed[2])) {
-    R[2, 1 + is.na(fixed[1])] <- sd_slope
-    if (autoprior) {
-      upper_prior[1 + is.na(fixed[1])] <-
-        max(upper_prior[1 + is.na(fixed[1])], 2 * sd_slope)
-    } else {
-      if (sd_slope > upper_prior[1 + is.na(fixed[1])]) {
-        stop("Initial value for the sd_slope is larger than the upper bound of
-          the prior distribution. ")
-      }
-    }
+  if (slope && notfixed[2]) {
+    R[2, 1 + notfixed[1]] <- sd_slopel$init
   }
-
-  #seasonal
-  if (seasonal && is.na(fixed[3])) {
-    R[2 + slope, 1 + is.na(fixed[1]) + (slope && is.na(fixed[2]))] <- sd_seasonal
-    if (autoprior) {
-      upper_prior[1 + is.na(fixed[1]) + (slope && is.na(fixed[2]))] <-
-        max(upper_prior[1 + is.na(fixed[1]) + (slope && is.na(fixed[2]))] ,
-          2 * sd_seasonal)
-    } else {
-      if (sd_seasonal >  upper_prior[1 + is.na(fixed[1]) + (slope && is.na(fixed[2]))]) {
-        stop("Initial value for the sd_seasonal is larger than the upper bound of
-          the prior distribution. ")
-      }
-    }
+  if (seasonal && notfixed[3]) {
+    R[2 + slope, 1 + notfixed[1] + (slope && notfixed[2])] <- sd_seasonal$init
   }
+  
   #additional noise term
   if (noise) {
-    P1[m, m] <- sd_noise^2
+    P1[m, m] <- sd_noise$init^2
     Z[m] <- 1
     state_names <- c(state_names, "noise")
-
-    R[m, 1 + is.na(fixed[1]) + (slope && is.na(fixed[2])) + (seasonal && is.na(fixed[3]))] <- sd_noise
-    if (autoprior) {
-      upper_prior[1 + is.na(fixed[1]) + (slope && is.na(fixed[2])) +
-          (seasonal && is.na(fixed[3]))] <- max(upper_prior[1 + is.na(fixed[1]) +
-              (slope && is.na(fixed[2])) + (seasonal && is.na(fixed[3]))], 2 * sd_noise)
-    } else {
-      if (sd_noise >  upper_prior[1 + is.na(fixed[1]) + (slope && is.na(fixed[2])) +
-          (seasonal && is.na(fixed[3]))]) {
-        stop("Initial value for the sd_noise is larger than the upper bound of
-          the prior distribution. ")
-      }
-    }
+    R[m, max(1, ncol(R) - 1)] <- sd_noise$init
   }
   dim(T) <- c(m, m, 1)
   dim(R) <- c(m, ncol(R), 1)
 
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
-
-  names_ind <- c(is.na(fixed) & c(TRUE, slope, seasonal), noise)
-
-  names(lower_prior) <- names(upper_prior) <-
+  
+  priors <- c(sd_y, sd_level, sd_slope, sd_seasonal, sd_noise, beta)
+  
+  names_ind <- c(notfixed & c(TRUE, slope, seasonal), noise)
+  
+  names(priors) <-
     c(c("sd_level", "sd_slope", "sd_seasonal", "sd_noise")[names_ind], names(beta), if(nb) "nb_dispersion")
-
+  
+  if(distribution == "negative binomial") {
+    stop("negbin not working at the moment... let me know if you really need it and I'll move it higher on todo list...")
+  }
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
-    a1 = a1, P1 = P1, phi = phi, xreg = xreg, beta = beta,
-    slope = slope, seasonal = seasonal, noise = noise, period = period, fixed = !is.na(fixed),
-    lower_prior = lower_prior, upper_prior = upper_prior,
+    a1 = a1, P1 = P1, phi = phi, xreg = xreg, coefs = coefs,
+    slope = slope, seasonal = seasonal, noise = noise, 
+    period = period, fixed = as.integer(!notfixed), priors = priors,
     distribution = distribution, init_signal = init_signal), class = "ng_bsm")
 }
 
@@ -314,7 +271,7 @@ logLik.ng_bsm <- function(object, nsim_states,
 
   ng_bsm_loglik(object$y, object$Z, object$T, object$R, object$a1,
     object$P1, object$phi, object$slope, object$seasonal, object$noise, object$fixed,
-    object$xreg, object$beta,
+    object$xreg, object$coef,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     object$init_signal, nsim_states, seed)
 }
@@ -326,7 +283,7 @@ kfilter.ng_bsm <- function(object, ...) {
 
   out <- ng_bsm_filter(object$y, object$Z, object$T, object$R,
     object$a1, object$P1, object$phi, object$slope, object$seasonal, object$noise,
-    object$fixed,  object$xreg, object$beta,
+    object$fixed,  object$xreg, object$coef,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     object$init_signal)
 
@@ -344,7 +301,7 @@ fast_smoother.ng_bsm <- function(object, ...) {
 
   out <- ng_bsm_fast_smoother(object$y, object$Z, object$T,
     object$R, object$a1, object$P1, object$phi, object$slope, object$seasonal,
-    object$noise, object$fixed, object$xreg, object$beta,
+    object$noise, object$fixed, object$xreg, object$coef,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     object$init_signal)
 
@@ -357,7 +314,7 @@ sim_smoother.ng_bsm <- function(object, nsim = 1, seed = sample(.Machine$integer
 
   out <- ng_bsm_sim_smoother(object$y, object$Z, object$T, object$R,
     object$a1, object$P1, object$phi, nsim, object$slope, object$seasonal,
-    object$noise, object$fixed, object$xreg, object$beta,
+    object$noise, object$fixed, object$xreg, object$coef,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     object$init_signal, seed)
 
@@ -371,7 +328,7 @@ smoother.ng_bsm <- function(object, ...) {
 
   out <- ng_bsm_smoother(object$y, object$Z, object$T, object$R,
     object$a1, object$P1, object$phi, object$slope, object$seasonal,
-    object$noise, object$fixed, object$xreg, object$beta,
+    object$noise, object$fixed, object$xreg, object$coef,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     object$init_signal)
 
@@ -425,7 +382,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1, type = "full",
       sd_init <- abs(log(sd_init))
     }
     S <- diag(pmin(c(rep(0.1 * sd_init, length.out = n_sd_par),
-      pmax(1, abs(object$beta)), if (nb) 1),
+      pmax(1, abs(object$coef)), if (nb) 1),
       abs(upper_prior - lower_prior)), length(lower_prior))
   }
   if (nsim_states < 2) {
@@ -441,7 +398,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1, type = "full",
         pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
         lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
-        object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
+        object$seasonal, object$noise, object$fixed, object$xreg, object$coef,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2", "DABSF","BSF")), seed, log_space,
         n_threads, end_adaptive_phase, adaptive_approx)
@@ -456,7 +413,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1, type = "full",
         pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
         lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
-        object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
+        object$seasonal, object$noise, object$fixed, object$xreg, object$coef,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2")), seed, log_space,
         n_threads, end_adaptive_phase, adaptive_approx)
@@ -467,7 +424,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1, type = "full",
         pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
         lower_prior, upper_prior, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
-        object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
+        object$seasonal, object$noise, object$fixed, object$xreg, object$coef,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2")), seed, log_space,
         n_threads, end_adaptive_phase, adaptive_approx)
@@ -533,7 +490,7 @@ predict.ng_bsm <- function(object, n_iter, nsim_states, lower_prior, upper_prior
       sd_init <- abs(log(sd_init))
     }
     S <- diag(pmin(c(rep(0.1 * sd_init, length.out = n_sd_par),
-      pmax(1, abs(object$beta)), if(nb) 1),
+      pmax(1, abs(object$coef)), if(nb) 1),
       abs(upper_prior - lower_prior)), length(lower_prior))
   }
 
@@ -541,13 +498,13 @@ predict.ng_bsm <- function(object, n_iter, nsim_states, lower_prior, upper_prior
   endtime <- end(object$y) + c(0, n_ahead)
   y <- c(object$y, rep(NA, n_ahead))
 
-  if (length(object$beta) > 0) {
+  if (length(object$coef) > 0) {
     if (!is.null(newdata) && (nrow(newdata) != n_ahead ||
-        ncol(newdata) != length(object$beta))) {
+        ncol(newdata) != length(object$coef))) {
       stop("Model contains regression part but dimensions of newdata does not match with n_ahead and length of beta. ")
     }
     if (is.null(newdata)) {
-      newdata <- matrix(0, n_ahead, length(object$beta))
+      newdata <- matrix(0, n_ahead, length(object$coef))
     }
     object$xreg <- rbind(object$xreg, newdata)
   }
@@ -570,7 +527,7 @@ predict.ng_bsm <- function(object, n_iter, nsim_states, lower_prior, upper_prior
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     lower_prior, upper_prior, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-    object$slope, object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
+    object$slope, object$seasonal, object$noise, object$fixed, object$xreg, object$coef,
     c(object$init_signal, rep(log(0.1), n_ahead)), seed, log_space)
 
   if (interval == 1 && (object$distribution != "negative binomial")) {
@@ -595,7 +552,7 @@ importance_sample.ng_bsm <- function(object, nsim,
 
   ng_bsm_importance_sample(object$y, object$Z, object$T, object$R, object$a1,
     object$P1, object$phi, object$slope, object$seasonal, object$noise, object$fixed,
-    object$xreg, object$beta,
+    object$xreg, object$coef,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     object$init_signal, nsim, seed)
 }
@@ -608,7 +565,7 @@ gaussian_approx.ng_bsm <- function(object, max_iter =  100, conv_tol = 1e-8, ...
 
   ng_bsm_approx_model(object$y, object$Z, object$T, object$R, object$a1,
     object$P1, object$phi, object$slope, object$seasonal, object$noise, object$fixed,
-    object$xreg, object$beta,
+    object$xreg, object$coef,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     object$init_signal, max_iter, conv_tol)
 }
@@ -621,7 +578,7 @@ particle_filter.ng_bsm <- function(object, nsim,
   
   ng_bsm_particle_filter(object$y, object$Z, object$T, object$R, object$a1,
     object$P1, object$phi, object$slope, object$seasonal, object$noise, object$fixed,
-    object$xreg, object$beta,
+    object$xreg, object$coef,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     object$init_signal, nsim, seed)
 }

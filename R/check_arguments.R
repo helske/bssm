@@ -12,19 +12,24 @@ check_y <- function(x) {
 
 }
 
-check_sd <- function(x, type) {
+check_sd <- function(x, type, add_prefix = TRUE) {
 
+  if (add_prefix) {
+    param <- paste0("sd_y", type)
+  } else {
+    param <- type
+  }
   if (length(x) != 1) {
-    stop(paste0("Argument sd_",type," must be of length one."))
+    stop(paste0("Argument ", param, " must be of length one."))
   }
   if (!is.numeric(x)) {
-    stop(paste0("Argument sd_",type," must be numeric."))
+    stop(paste0("Argument ", param, " must be numeric."))
   }
   if (length(x) < 0) {
-    stop(paste0("Argument sd_",type," must be non-negative."))
+    stop(paste0("Argument ", param, " must be non-negative."))
   }
   if (is.infinite(x)) {
-    stop(paste0("Argument sd_",type," must be finite."))
+    stop(paste0("Argument ", param, " must be finite."))
   }
 
 }
@@ -50,3 +55,14 @@ check_beta <- function(x, k) {
   }
 
 }
+check_ar <- function(x) {
+  
+  if (length(x) != 1) {
+    stop(paste0("Argument ar must be of length one."))
+  }
+  if (abs(x) >= 1) {
+    stop("Argument ar must be strictly between -1 and 1.")
+  }
+  
+}
+

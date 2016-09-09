@@ -15,87 +15,60 @@
 #' Default is \code{2*sd(y)}.
 #' @return Object of class \code{svm}.
 #' @export
-svm <- function(y, ar, sd_ar, sigma, xreg = NULL, beta = NULL, 
-  prior_sd = sd(y, na.rm = TRUE), lower_prior, upper_prior) {
+svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
 
   check_y(y)
   n <- length(y)
 
-
-  if (missing(ar)) {
-    ar <- 0.5
-  } else {
-    if (abs(ar) >= 1) {
-      stop("Argument ar must be between -1 and 1.")
-    }
-  }
-  if (missing(sigma)) {
-    sigma <- 1
-  } else {
-    if (sigma <= 0) {
-      stop("Argument sigma must be positive.")
-    }
-  }
-  if (missing(sd_ar)) {
-    sd_ar <- 1
-  } else {
-    if (sd_ar <= 0) {
-      stop("Argument sd_ar must be positive.")
-    }
-  }
-
+  check_ar(ar$init)
+  check_sd(sd_ar$init, "ar")
+  check_sd(sigma$init, "sigma", FALSE)
+  
   if (is.null(xreg)) {
-
+    
     xreg <- matrix(0, 0, 0)
-    beta <- numeric(0)
-
+    coefs <- numeric(0)
+    beta <- NULL
+    
   } else {
+    
+    if (missing(beta)) {
+      stop("No prior defined for beta. ")
+    } 
     if (is.null(dim(xreg)) && length(xreg) == n) {
       xreg <- matrix(xreg, n, 1)
     }
+    
     check_xreg(xreg, n)
-
+    check_beta(beta$init, ncol(xreg))
+    coefs <- beta$init    
     if (is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
-
-    if (missing(beta)) {
-      beta <- numeric(ncol(xreg))
-    } else {
-      check_beta(beta, ncol(xreg))
-    }
-
-    names(beta) <- colnames(xreg)
+    names(coefs) <- colnames(xreg)
+    
   }
 
   a1 <- 0
-  P1 <- matrix(sd_ar^2 / (1 - ar^2))
+  P1 <- matrix(sd_ar$init^2 / (1 - ar$init^2))
 
   Z <- matrix(1)
-  T <- array(ar, c(1,1,1))
-  R <- array(sd_ar, c(1,1,1))
+  T <- array(ar$init, c(1, 1, 1))
+  R <- array(sd_ar$init, c(1, 1, 1))
 
-  init_signal <- log(pmax(1e-4,y^2)) - 2 * log(sigma)
-
-  if (missing(lower_prior)) {
-    lower_prior <- c(-1 + 1e-3, 0, 0, rep(-1e3, length(beta)))
-  }
-
-  if (missing(upper_prior)) {
-    upper_prior <- c(1 - 1e-3, 2 * sd(y, na.rm = TRUE), Inf,
-      rep(1e3, length(beta)))
-  }
+  init_signal <- log(pmax(1e-4, y^2)) - 2 * log(sigma$init)
 
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- "signal"
 
-  names(lower_prior) <- names(upper_prior) <-
+  priors <- c(ar, sd_ar, sigma, beta)
+  
+  names(priors) <- 
     c("ar", "sd_ar", "sigma", names(beta))
 
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
-    a1 = a1, P1 = P1, sigma = sigma, xreg = xreg, beta = beta,
-    lower_prior = lower_prior, upper_prior = upper_prior, prior_sd = prior_sd,
-    init_signal = init_signal), class = "svm")
+    a1 = a1, P1 = P1, sigma = sigma$init, xreg = xreg, beta = beta,
+    init_signal = init_signal, priors = priors), class = "svm")
 }
 
 #' @method logLik svm

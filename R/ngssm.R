@@ -31,7 +31,9 @@
 #' @export
 ngssm <- function(y, Z, T, R, a1, P1,
   distribution, phi = 1, xreg = NULL, beta = NULL, state_names) {
-
+  
+  stop("general classes don't work at the moment, restructuring stuff...")
+  
   check_y(y)
   n <- length(y)
 
