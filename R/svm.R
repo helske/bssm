@@ -140,8 +140,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx  = TRUE,
   method = "delayed acceptance", n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1),
-  thread_seeds = sample(.Machine$integer.max, size = n_threads),  ...) {
+  seed = sample(.Machine$integer.max, size = 1), ...) {
 
   type <- match.arg(type, c("full", "parameters", "summary"))
 
@@ -176,7 +175,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2", "DABSF", "BSF")),
-        seed, object$prior_sd, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
+        seed, object$prior_sd, n_threads, end_adaptive_phase, adaptive_approx)
 
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
@@ -190,7 +189,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2", "DABSF", "BSF")),
-        seed, object$prior_sd, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx, ess_treshold)
+        seed, object$prior_sd, n_threads, end_adaptive_phase, adaptive_approx, ess_treshold)
     },
     summary = {
       out <- svm_mcmc_summary(object$y, object$Z, object$T, object$R,
@@ -200,7 +199,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2", "DABSF", "BSF")),
-        seed, object$prior_sd, n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
+        seed, object$prior_sd, n_threads, end_adaptive_phase, adaptive_approx)
 
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
@@ -215,7 +214,6 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
   out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
   out$call <- match.call()
   out$seed <- seed
-  out$thread_seeds = thread_seeds
   class(out) <- "mcmc_output"
   out
 }

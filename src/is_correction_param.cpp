@@ -7,21 +7,19 @@
 template <typename T>
 void is_correction_param(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store) {
+  unsigned int n_threads, arma::vec& weights_store) {
 
   unsigned n_iter = theta.n_cols;
 
   arma::uvec cum_counts = arma::cumsum(counts);
 #pragma omp parallel num_threads(n_threads) default(none) \
   shared(ll_approx_u, n_iter, nsim_states, y_store, H_store, theta, \
-    weights_store, seeds, counts, cum_counts) firstprivate(mod)
+    weights_store, counts, cum_counts) firstprivate(mod)
   {
 #ifdef _OPENMP
-    if (seeds.n_elem == 1) {
-      mod.engine = std::mt19937(seeds(0));
-    } else {
-      mod.engine = std::mt19937(seeds(omp_get_thread_num()));
-    }
+      if (n_threads > 1) {
+        mod.engine = std::mt19937(omp_get_thread_num() + 1);
+      }
 #endif
 #pragma omp for schedule(static)
     for (unsigned int i = 0; i < n_iter; i++) {
@@ -43,10 +41,10 @@ void is_correction_param(T mod, const arma::mat& theta, const arma::mat& y_store
 
 template void is_correction_param<ngssm>(ngssm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store);
+  unsigned int n_threads, arma::vec& weights_store);
 template void is_correction_param<ng_bsm>(ng_bsm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store);
+  unsigned int n_threads, arma::vec& weights_store);
 template void is_correction_param<svm>(svm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store);
+  unsigned int n_threads, arma::vec& weights_store);

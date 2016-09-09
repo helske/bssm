@@ -8,21 +8,19 @@
 // template <typename T>
 // void is_correction_bsf_param(T mod, const arma::mat& theta, const arma::vec& ll_store,
 //   const arma::uvec& counts, unsigned int nsim_states,
-//   unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, double ess_treshold) {
+//   unsigned int n_threads, arma::vec& weights_store) {
 // 
 //   unsigned n_iter = theta.n_cols;
 // 
 //   arma::uvec cum_counts = arma::cumsum(counts);
 // #pragma omp parallel num_threads(n_threads) default(none)           \
 //   shared(ll_store, n_iter, nsim_states, theta, ess_treshold,                    \
-//     weights_store, seeds, counts, cum_counts) firstprivate(mod)
+//     weights_store, counts, cum_counts) firstprivate(mod)
 //     {
 // #ifdef _OPENMP
-//       if (seeds.n_elem == 1) {
-//         mod.engine = std::mt19937(seeds(0));
-//       } else {
-//         mod.engine = std::mt19937(seeds(omp_get_thread_num()));
-//       }
+// if (n_threads > 1) {
+//   mod.engine = std::mt19937(omp_get_thread_num() + 1);
+// }
 // #endif
 // #pragma omp for schedule(static)
 //       for (unsigned int i = 0; i < n_iter; i++) {
@@ -37,5 +35,5 @@
 // }
 // template void is_correction_bsf_param<svm>(svm mod, const arma::mat& theta, const arma::vec& ll_store,
 //   const arma::uvec& counts,
-//   unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds,
+//   unsigned int nsim_states, unsigned int n_threads,
 //   arma::vec& weights_store, double ess_treshold);

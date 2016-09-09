@@ -32,11 +32,15 @@
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
 #' Default is diagonal matrix with 1e5 on the diagonal.
+#' @param prior_type Vector defining the prior types for standard deviations and beta.
+#'  Possible values are \code{"uniform"} (default) and \code{"normal"}, where latter
+#'  is a half-Normal distribution for standard deviation parameters and 
+#'  zero-mean Normal distribution for beta parameters.
 #' @param lower_prior,upper_prior Lower and upper bounds for the uniform prior
 #' on standard deviations (sd_level, sd_slope, sd_seasonal) and regression
 #' coefficients. Defaults to zero for lower bound and and
-#' \code{sd(init_signal)} for upper bound of standard deviations and
-#' (-1e4, 1e4) for regression coefficients.
+#' \code{sd(init_signal)} for upper bound of standard deviations, and
+#' (-1000, 1000) for regression coefficients.
 #' @return Object of class \code{ng_bsm}.
 #' @export
 #' @examples
@@ -388,8 +392,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1, type = "full",
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx = TRUE,
   method = "delayed acceptance", log_space = TRUE, n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1),
-  thread_seeds = sample(.Machine$integer.max, size = n_threads), ...) {
+  seed = sample(.Machine$integer.max, size = 1), ...) {
 
   type <- match.arg(type, c("full", "parameters", "summary"))
 
@@ -441,7 +444,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1, type = "full",
         object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2", "DABSF","BSF")), seed, log_space,
-        n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
+        n_threads, end_adaptive_phase, adaptive_approx)
 
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
@@ -456,7 +459,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1, type = "full",
         object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2")), seed, log_space,
-        n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
+        n_threads, end_adaptive_phase, adaptive_approx)
     },
     summary = {
       out <- ng_bsm_mcmc_summary(object$y, object$Z, object$T, object$R,
@@ -467,7 +470,7 @@ run_mcmc.ng_bsm <- function(object, n_iter, nsim_states = 1, type = "full",
         object$seasonal, object$noise, object$fixed, object$xreg, object$beta,
         object$init_signal, pmatch(method,  c("standard", "delayed acceptance",
           "IS correction", "block IS correction", "IS2")), seed, log_space,
-        n_threads, thread_seeds, end_adaptive_phase, adaptive_approx)
+        n_threads, end_adaptive_phase, adaptive_approx)
 
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y),

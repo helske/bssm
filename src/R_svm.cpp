@@ -60,7 +60,7 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int method, unsigned int seed,double sd_prior,
-  unsigned int n_threads, arma::uvec seeds, bool end_ram, bool adapt_approx) {
+  unsigned int n_threads, bool end_ram, bool adapt_approx) {
 
 
 
@@ -206,7 +206,7 @@ List svm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int method, unsigned int seed,double sd_prior,
-  unsigned int n_threads, arma::uvec seeds, bool end_ram, bool adapt_approx, 
+  unsigned int n_threads, bool end_ram, bool adapt_approx, 
   double ess_treshold) {
   
   svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed, sd_prior);

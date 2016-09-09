@@ -6,19 +6,17 @@
 // [[Rcpp::plugins(openmp)]]
 template <typename T>
 void is_correction_bsf(T mod, const arma::mat& theta, const arma::vec& ll_store, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store, arma::cube& alpha_store) {
+  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store) {
   
   unsigned n_iter = theta.n_cols;
   arma::uvec cum_counts = arma::cumsum(counts);
 #pragma omp parallel num_threads(n_threads) default(none) \
   shared(n_iter, nsim_states, theta, ll_store,            \
-    weights_store, alpha_store, seeds, counts, cum_counts) firstprivate(mod)
+    weights_store, alpha_store, counts, cum_counts) firstprivate(mod)
     {
 #ifdef _OPENMP
-      if (seeds.n_elem == 1) {
-        mod.engine = std::mt19937(seeds(0));
-      } else {
-        mod.engine = std::mt19937(seeds(omp_get_thread_num()));
+      if (n_threads > 1) {
+        mod.engine = std::mt19937(omp_get_thread_num() + 1);
       }
 #endif
 #pragma omp for schedule(static)
@@ -40,11 +38,11 @@ void is_correction_bsf(T mod, const arma::mat& theta, const arma::vec& ll_store,
 }
 
 template void is_correction_bsf<ngssm>(ngssm mod, const arma::mat& theta, const arma::vec& ll_store, const arma::uvec& counts,
-  unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store,
+  unsigned int nsim_states, unsigned int n_threads, arma::vec& weights_store,
   arma::cube& alpha_store);
 template void is_correction_bsf<ng_bsm>(ng_bsm mod, const arma::mat& theta, const arma::vec& ll_store, const arma::uvec& counts,
-  unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store,
+  unsigned int nsim_states, unsigned int n_threads, arma::vec& weights_store,
   arma::cube& alpha_store);
 template void is_correction_bsf<svm>(svm mod, const arma::mat& theta, const arma::vec& ll_store, const arma::uvec& counts,
-  unsigned int nsim_states, unsigned int n_threads, arma::uvec seeds, arma::vec& weights_store,
+  unsigned int nsim_states, unsigned int n_threads, arma::vec& weights_store,
   arma::cube& alpha_store);

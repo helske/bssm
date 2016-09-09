@@ -120,7 +120,7 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   double gamma, double target_acceptance, arma::mat S, bool slope,
   bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   arma::vec& init_signal, unsigned int method, unsigned int seed, bool log_space,
-  unsigned int n_threads, arma::uvec seeds, bool end_ram, bool adapt_approx) {
+  unsigned int n_threads, bool end_ram, bool adapt_approx) {
 
 
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
@@ -270,7 +270,7 @@ List ng_bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
   double gamma, double target_acceptance, arma::mat S, bool slope,
   bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   arma::vec& init_signal, unsigned int method, unsigned int seed, bool log_space,
-  unsigned int n_threads, arma::uvec seeds, bool end_ram, bool adapt_approx) {
+  unsigned int n_threads, bool end_ram, bool adapt_approx) {
 
 
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
@@ -385,7 +385,7 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
   double gamma, double target_acceptance, arma::mat S, bool slope,
   bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   arma::vec& init_signal, unsigned int method, unsigned int seed, bool log_space,
-  unsigned int n_threads, arma::uvec seeds, bool end_ram, bool adapt_approx) {
+  unsigned int n_threads, bool end_ram, bool adapt_approx) {
 
 
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
