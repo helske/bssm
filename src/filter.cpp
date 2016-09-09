@@ -43,20 +43,3 @@ double uv_filter(const double y, const arma::vec& Z, const double HH,
   }
   return logLik;
 }
-
-//for univariate particle filter
-void uv_filter2(const double y, const double HH, const double T, const double RR,
-  double& at, double& Pt, const double zero_tol) {
- 
-  // prediction
-    at = T * at;
-    Pt = RR;
-  // update
-  if (arma::is_finite(y)) {
-    double F = Pt + HH;
-    double v = y - at;
-    double K = Pt / F;
-    at += K * v;
-    Pt = (1.0 - K)*Pt;
-  }
-}

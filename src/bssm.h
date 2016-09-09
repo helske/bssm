@@ -7,7 +7,7 @@
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(cpp11)]]
-#define ARMA_NO_DEBUG
+//#define ARMA_NO_DEBUG
 
 const double LOG2PI = std::log(2.0 * M_PI);
 
@@ -22,14 +22,11 @@ arma::mat choldowndate(arma::mat L, arma::vec u);
 double dmvnorm1(const arma::vec& x, const arma::vec& mean,  
   const arma::mat& sigma, bool lwr = false, bool logd = false);
 
-arma::vec dmvnorm2(const arma::mat& x, const arma::mat& mean,  
-  arma::mat sigma, bool lwr, bool logd, const arma::mat& A);
-
 void adjust_S(arma::mat& S, arma::vec& u, double current, double target, unsigned int n, double gamma);
 
 void running_summary(const arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, const unsigned int n);
 void running_weighted_summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, const arma::vec& weights);
-  
+
 arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
 
 double uv_filter_update(const double y, arma::subview_col<double> Z, const double HH,
@@ -42,9 +39,6 @@ void uv_filter_predict(const arma::mat& T, const arma::mat& RR,
 
 double uv_filter(const double y, const arma::vec& Z, const double HH,
   const arma::mat& T, const arma::mat& RR, arma::vec& at, arma::mat& Pt, const double zero_tol);
-
-void uv_filter2(const double y, const double HH, const double T, const double RR,
-  double& at, double& Pt, const double zero_tol);
 
 template <typename T>
 arma::cube sample_states(T mod, const arma::mat& theta, const arma::uvec& counts,
