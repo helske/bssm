@@ -155,7 +155,7 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
     is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,
-      counts, nsim_states, n_threads, seeds, weights_store, alpha_store);
+      counts, nsim_states, n_threads, weights_store, alpha_store);
 
     arma::inplace_trans(theta_store);
     return List::create(Named("alpha") = alpha_store,
@@ -184,7 +184,7 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
     arma::cube alpha_store(model.m, model.n, counts.n_elem);
 
     is_correction(model, theta_store, y_store, H_store, ll_approx_u_store, counts,
-      nsim_states, n_threads, seeds, weights_store, alpha_store);
+      nsim_states, n_threads, weights_store, alpha_store);
 
     arma::inplace_trans(theta_store);
     return List::create(Named("alpha") = alpha_store,
@@ -214,7 +214,7 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
 
     is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,
       arma::uvec(counts.n_elem, arma::fill::ones),
-      nsim_states, n_threads, seeds, weights_store, alpha_store);
+      nsim_states, n_threads, weights_store, alpha_store);
 
     arma::inplace_trans(theta_store);
     return List::create(Named("alpha") = alpha_store,
@@ -247,7 +247,7 @@ List ng_bsm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   //     arma::cube alpha_store(model.m, model.n, counts.n_elem);
   //     is_correction_bsf(model, theta_store, ll_store,
   //       arma::uvec(counts.n_elem, arma::fill::ones),
-  //       nsim_states, n_threads, seeds, weights_store, alpha_store);
+  //       nsim_states, n_threads, weights_store, alpha_store);
   //     
   //     arma::inplace_trans(theta_store);
   //     return List::create(Named("alpha") = alpha_store,
@@ -305,7 +305,7 @@ List ng_bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
       arma::vec weights_store(n_samples);
 
       is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store,
-        counts, nsim_states, n_threads, seeds, weights_store);
+        counts, nsim_states, n_threads, weights_store);
 
       arma::inplace_trans(theta_store);
       return List::create(
@@ -333,7 +333,7 @@ List ng_bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
     arma::vec weights_store(counts.n_elem);
 
     is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store, counts,
-      nsim_states, n_threads, seeds, weights_store);
+      nsim_states, n_threads, weights_store);
 
     arma::inplace_trans(theta_store);
     return List::create(
@@ -362,7 +362,7 @@ List ng_bsm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
 
     is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store,
       arma::uvec(counts.n_elem, arma::fill::ones),
-      nsim_states, n_threads, seeds, weights_store);
+      nsim_states, n_threads, weights_store);
 
     arma::inplace_trans(theta_store);
     return List::create(
@@ -424,7 +424,7 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
       arma::cube Vmu(1, 1, model.n);
 
       is_correction_summary(model, theta_store, y_store, H_store, ll_approx_u_store,
-        arma::uvec(n_samples, arma::fill::ones), nsim_states, n_threads, seeds,
+        arma::uvec(n_samples, arma::fill::ones), nsim_states, n_threads,
         weights_store, alphahat, Vt, muhat, Vmu, true);
 
     arma::inplace_trans(muhat);
@@ -460,7 +460,7 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
     arma::cube Vmu(1, 1, model.n);
 
     is_correction_summary(model, theta_store, y_store, H_store, ll_approx_u_store,
-      counts, nsim_states, n_threads, seeds, weights_store, alphahat, Vt, muhat, Vmu, false);
+      counts, nsim_states, n_threads, weights_store, alphahat, Vt, muhat, Vmu, false);
 
     arma::inplace_trans(muhat);
     arma::inplace_trans(alphahat);
@@ -495,8 +495,7 @@ List ng_bsm_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
     arma::cube Vmu(1, 1, model.n);
 
     is_correction_summary(model, theta_store, y_store, H_store, ll_approx_u_store,
-      counts, nsim_states, n_threads,
-        seeds, weights_store, alphahat, Vt, muhat, Vmu, true);
+      counts, nsim_states, n_threads, weights_store, alphahat, Vt, muhat, Vmu, true);
 
     arma::inplace_trans(muhat);
     arma::inplace_trans(alphahat);

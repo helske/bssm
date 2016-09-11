@@ -1,6 +1,8 @@
 #ifndef BSM_H
 #define BSM_H
 
+#include <memory>
+#include "prior.h"
 #include "gssm.h"
 
 class bsm: public gssm {
@@ -8,12 +10,12 @@ class bsm: public gssm {
 public:
   // constructor
   bsm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
-    arma::mat, bool, bool, arma::uvec, arma::mat, arma::vec, unsigned int);
+    arma::mat, bool, bool, arma::uvec, arma::mat, arma::vec, unsigned int, List);
 
   // constructor with log_space argument
   bsm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
-    arma::mat, bool, bool, arma::uvec, arma::mat, arma::vec, unsigned int, bool);
-
+    arma::mat, bool, bool, arma::uvec, arma::mat, arma::vec, unsigned int, List, bool);
+  
   // log[q(y,x)/q(x,y)]
   double proposal(const arma::vec&, const arma::vec&);
 
@@ -36,6 +38,13 @@ private:
   const bool seasonal_est;
   const bool log_space;
 
+  std::unique_ptr<prior> p_sd_y;
+  std::unique_ptr<prior> p_sd_level;
+  std::unique_ptr<prior> p_sd_slope;
+  std::unique_ptr<prior> p_sd_seasonal;
+  std::unique_ptr<prior> p_beta;
+  
+  
 };
 
 #endif

@@ -14,7 +14,7 @@
 // 
 //   arma::uvec cum_counts = arma::cumsum(counts);
 // #pragma omp parallel num_threads(n_threads) default(none)           \
-//   shared(ll_store, n_iter, nsim_states, theta, ess_treshold,                    \
+//   shared(n_threads, ll_store, n_iter, nsim_states, theta, ess_treshold,                    \
 //     weights_store, counts, cum_counts) firstprivate(mod)
 //     {
 // #ifdef _OPENMP

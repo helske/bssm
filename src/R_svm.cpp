@@ -95,7 +95,7 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
       is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,
-        counts, nsim_states, n_threads, seeds, weights_store, alpha_store);
+        counts, nsim_states, n_threads, weights_store, alpha_store);
 
       arma::inplace_trans(theta_store);
       return List::create(Named("alpha") = alpha_store,
@@ -123,7 +123,7 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
     arma::cube alpha_store(model.m, model.n, counts.n_elem);
 
     is_correction(model, theta_store, y_store, H_store, ll_approx_u_store, counts,
-      nsim_states, n_threads, seeds, weights_store, alpha_store);
+      nsim_states, n_threads, weights_store, alpha_store);
 
     arma::inplace_trans(theta_store);
     return List::create(Named("alpha") = alpha_store,
@@ -152,7 +152,7 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
 
     is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,
       arma::uvec(counts.n_elem, arma::fill::ones),
-      nsim_states, n_threads, seeds, weights_store, alpha_store);
+      nsim_states, n_threads, weights_store, alpha_store);
 
     arma::inplace_trans(theta_store);
     return List::create(Named("alpha") = alpha_store,
@@ -185,7 +185,7 @@ List svm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
 
     is_correction_bsf(model, theta_store, ll_store,
       arma::uvec(counts.n_elem, arma::fill::ones),
-      nsim_states, n_threads, seeds, weights_store, alpha_store);
+      nsim_states, n_threads, weights_store, alpha_store);
 
     arma::inplace_trans(theta_store);
     return List::create(Named("alpha") = alpha_store,
@@ -240,7 +240,7 @@ List svm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
       arma::vec weights_store(n_samples);
       
       is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store,
-        counts, nsim_states, n_threads, seeds, weights_store);
+        counts, nsim_states, n_threads, weights_store);
       
       arma::inplace_trans(theta_store);
       return List::create(
@@ -268,7 +268,7 @@ List svm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
     arma::vec weights_store(counts.n_elem);
   
     is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store, counts,
-      nsim_states, n_threads, seeds, weights_store);
+      nsim_states, n_threads, weights_store);
     
     arma::inplace_trans(theta_store);
     return List::create(
@@ -297,7 +297,7 @@ List svm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
     
     is_correction_param(model, theta_store, y_store, H_store, ll_approx_u_store,
       arma::uvec(counts.n_elem, arma::fill::ones),
-      nsim_states, n_threads, seeds, weights_store);
+      nsim_states, n_threads, weights_store);
     
     arma::inplace_trans(theta_store);
     return List::create(
@@ -326,7 +326,7 @@ List svm_mcmc_param(arma::vec& y, arma::mat& Z, arma::cube& T,
   // 
   //   is_correction_bsf_param(model, theta_store, ll_store,
   //     arma::uvec(counts.n_elem, arma::fill::ones),
-  //     nsim_states, n_threads, seeds, weights_store, ess_treshold);
+  //     nsim_states, n_threads, weights_store, ess_treshold);
   // 
   //   arma::inplace_trans(theta_store);
   //   return List::create(
@@ -396,24 +396,4 @@ List svm_particle_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
     return List::create(
       Named("alpha") = alphasim, Named("V") = V, Named("A") = ind,
       Named("logU") = logU);
-}
-
-
-// [[Rcpp::export]]
-List svm_particle_filter2(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  arma::mat& xreg, arma::vec& beta,
-  unsigned int nsim_states,
-  arma::vec init_signal, unsigned int seed, double q) {
-  
-  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed, false);
-  
-  arma::cube alphasim(model.m, model.n, nsim_states);
-  arma::mat V(nsim_states, model.n);
-  arma::umat ind(nsim_states, model.n - 1);
-  double logU = model.particle_filter2(nsim_states, alphasim, V, ind, init_signal, q);
-  
-  return List::create(
-    Named("alpha") = alphasim, Named("V") = V, Named("A") = ind,
-    Named("logU") = logU);
 }

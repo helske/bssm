@@ -13,7 +13,7 @@ void is_correction(T mod, const arma::mat& theta, const arma::mat& y_store, cons
 
   arma::uvec cum_counts = arma::cumsum(counts);
 #pragma omp parallel num_threads(n_threads) default(none) \
-  shared(ll_approx_u, n_iter, nsim_states, y_store, H_store, theta, \
+  shared(n_threads, ll_approx_u, n_iter, nsim_states, y_store, H_store, theta, \
     weights_store, alpha_store, counts, cum_counts) firstprivate(mod)
   {
 #ifdef _OPENMP

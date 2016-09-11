@@ -106,7 +106,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     } else {
       check_sd(sd_slope$init, "slope")
     }
-  }
+  } else sd_slope <- NULL
 
   if (seasonal) {
     if (missing(sd_seasonal)) {

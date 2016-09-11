@@ -13,7 +13,6 @@ public:
   svm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::vec, arma::mat, arma::vec, unsigned int, double);
 
-  double particle_filter2(unsigned int, arma::cube&, arma::mat&, arma::umat& ind, arma::vec, double);
   double proposal(const arma::vec&, const arma::vec&);
   void update_model(arma::vec);
   arma::vec get_theta(void);

@@ -12,7 +12,7 @@ arma::cube sample_states(T mod, const arma::mat& theta, const arma::uvec& counts
 
   arma::uvec cum_counts = arma::cumsum(counts);
 
-#pragma omp parallel num_threads(n_threads) default(none) shared(n_iter, \
+#pragma omp parallel num_threads(n_threads) default(none) shared(n_threads, n_iter, \
   nsim_states, theta, counts, cum_counts, alpha_store) firstprivate(mod)
   {
   

@@ -11,7 +11,7 @@ void is_correction_bsf(T mod, const arma::mat& theta, const arma::vec& ll_store,
   unsigned n_iter = theta.n_cols;
   arma::uvec cum_counts = arma::cumsum(counts);
 #pragma omp parallel num_threads(n_threads) default(none) \
-  shared(n_iter, nsim_states, theta, ll_store,            \
+  shared(n_threads, n_iter, nsim_states, theta, ll_store,            \
     weights_store, alpha_store, counts, cum_counts) firstprivate(mod)
     {
 #ifdef _OPENMP
