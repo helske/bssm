@@ -4,15 +4,15 @@
 #include "bssm.h"
 
 class gssm {
-
+  
 public:
-
+  
   gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::mat, arma::vec, unsigned int);
   gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::mat, arma::vec, arma::uvec, arma::uvec, arma::uvec,
     arma::uvec, unsigned int);
-
+  
   virtual double proposal(const arma::vec&, const arma::vec&);
   virtual void update_model(arma::vec);
   virtual arma::vec get_theta(void);
@@ -27,35 +27,28 @@ public:
     const arma::cube&, bool);
   virtual arma::cube sim_smoother(unsigned int, bool);
   virtual void smoother(arma::mat&, arma::cube&, bool);
-double prior_pdf(const arma::vec&, const arma::uvec&, const arma::mat&);
-
-  virtual arma::mat predict2(arma::vec, arma::vec, unsigned int, unsigned int,
+  double prior_pdf(const arma::vec&, const arma::uvec&, const arma::mat&);
+  
+  virtual arma::mat predict2(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
     unsigned int, unsigned int, double, double, arma::mat, unsigned int,
     unsigned int);
-  virtual List predict(arma::vec, arma::vec, unsigned int, unsigned int,
+  virtual List predict(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat, unsigned int,
     unsigned int, arma::vec);
-
-  virtual double mcmc_full(arma::vec, arma::vec, unsigned int, unsigned int,
-    unsigned int, unsigned int, double, double, arma::mat&,
-    arma::cube&, arma::mat&, arma::vec&, bool);
-
-  virtual double mcmc_param(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, double, double, arma::mat&,
-    arma::mat&, arma::vec&, bool);
-
-  virtual double mcmc_param2(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, double, double, arma::mat&,
-    arma::mat&, arma::vec&, arma::uvec&, bool);
-
-  virtual double mcmc_summary(arma::vec, arma::vec, unsigned int, unsigned int,
-    unsigned int, double, double, arma::mat&, arma::mat&, arma::cube&,
-    arma::mat&, arma::vec&, bool);
-
-  virtual double particle_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
-   
+  
+  virtual double run_mcmc(const arma::uvec&, const arma::mat&, unsigned int, bool,
+    unsigned int, unsigned int, double, double, arma::mat&, bool,
+    arma::mat&, arma::vec&, arma::cube&);
+  
+  virtual double mcmc_summary(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
+    unsigned int, double, double, arma::mat&, bool, arma::mat&, arma::vec&, arma::mat&, arma::cube&);
+    
+  double particle_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
+  
   void backtrack_pf2(const arma::cube&, arma::mat&, const arma::umat&); 
+  
   arma::mat backward_simulate(arma::cube&, arma::mat&, arma::umat&); 
+  
   arma::vec y;
   arma::mat Z;
   arma::vec H;
@@ -64,23 +57,23 @@ double prior_pdf(const arma::vec&, const arma::uvec&, const arma::mat&);
   arma::cube Q;
   arma::vec a1;
   arma::mat P1;
-
+  
   const unsigned int Ztv;
   const unsigned int Htv;
   const unsigned int Ttv;
   const unsigned int Rtv;
-
+  
   const unsigned int n;
   const unsigned int m;
   const unsigned int k;
-
+  
   arma::vec HH;
   arma::cube RR;
-
+  
   const arma::mat xreg;
   arma::vec beta;
   arma::vec xbeta;
-
+  
   arma::uvec Z_ind;
   arma::uvec H_ind;
   arma::uvec T_ind;

@@ -53,10 +53,10 @@ List ngssm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List ngssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
+List ngssm_run_mcmc(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
   unsigned int distribution,
-  arma::vec& theta_lwr, arma::vec& theta_upr, unsigned int n_iter,
+  arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   arma::uvec Z_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg,
@@ -65,16 +65,29 @@ List ngssm_mcmc_full(arma::vec& y, arma::mat& Z, arma::cube& T,
   ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, Z_ind,
     T_ind, R_ind, seed);
 
-  return model.mcmc_da(theta_lwr, theta_upr, n_iter, nsim_states, n_burnin,
-    n_thin, gamma, target_acceptance, S, init_signal, end_ram, true);
+  
+  unsigned int npar = prior_types.n_elem;
+  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+  arma::mat theta_store(npar, n_samples);
+  arma::cube alpha_store(model.m, model.n, n_samples);
+  arma::vec posterior_store(n_samples);
+  
+  double acceptance_rate = model.run_mcmc(prior_types, prior_pars, n_iter, nsim_states, n_burnin, 
+    n_thin, gamma, target_acceptance, S, init_signal, end_ram, true, true,
+    theta_store, posterior_store, alpha_store);
+  
+  return List::create(Named("alpha") = alpha_store,
+    Named("theta") = theta_store,
+    Named("acceptance_rate") = acceptance_rate,
+    Named("S") = S,  Named("posterior") = posterior_store);
 }
 
 
 // [[Rcpp::export]]
 arma::mat ngssm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
-  unsigned int distribution, arma::vec& theta_lwr,
-  arma::vec& theta_upr, unsigned int n_iter, unsigned int nsim_states,
+  unsigned int distribution, arma::uvec& prior_types,
+  arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
   unsigned int interval, arma::uvec Z_ind, arma::uvec T_ind,
@@ -85,7 +98,7 @@ arma::mat ngssm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
   ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, Z_ind,
     T_ind, R_ind, seed);
 
-  return model.predict2(theta_lwr, theta_upr, n_iter, nsim_states, n_burnin,
+  return model.predict2(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval, init_signal);
 }
 

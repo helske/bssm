@@ -3,40 +3,12 @@
 //general constructor
 svm::svm(arma::vec y, arma::mat Z, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi,
-  arma::mat xreg, arma::vec beta, unsigned int seed, double prior_sd) :
-  ngssm(y, Z, T, R, a1, P1, phi, xreg, beta, 0, seed),
-  nz_y(y), prior_sd(prior_sd) {
-  
-  nz_y(arma::find(abs(y) < 1e-4)).fill(1e-4);
-}
-
-svm::svm(arma::vec y, arma::mat Z, arma::cube T,
-  arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi,
   arma::mat xreg, arma::vec beta, unsigned int seed) :
   ngssm(y, Z, T, R, a1, P1, phi, xreg, beta, 0, seed),
-  nz_y(y), prior_sd(100) {
+  nz_y(y) {
   
   nz_y(arma::find(abs(y) < 1e-4)).fill(1e-4);
 }
-
-
-double svm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
-  
-  return R::dnorm(theta_prop(2),0, prior_sd, 1) - 
-    R::dnorm(theta(2),0, prior_sd,1);
-  
-}
-// 
-// double svm::prior_term(const arma::vec& theta, const arma::vec& theta_prop) {
-//   
-//   double q = 0.0;
-//   if(!uniform_prior(0)){
-//     q = 
-//   }
-//   return R::dnorm(theta_prop(2),0, prior_sd, 1) - 
-//     R::dnorm(theta(2),0, prior_sd,1);
-//   
-// }
 
 void svm::update_model(arma::vec theta) {
   

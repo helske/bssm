@@ -9,7 +9,7 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads,
   arma::vec& weights_store, arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu,
-  bool const_nsim) {
+  bool const_m) {
   
   unsigned n_iter = theta.n_cols;
   
@@ -23,7 +23,7 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
   double cumsumw = 0;
 #pragma omp parallel num_threads(n_threads) default(none)           \
   shared(n_threads, ll_approx_u, n_iter, nsim_states, y_store, H_store, theta, \
-    weights_store, counts, cum_counts, alphahat, Vt, Valpha, mu, Vmu, Vmu2, cumsumw, const_nsim) firstprivate(mod)
+    weights_store, counts, cum_counts, alphahat, Vt, Valpha, mu, Vmu, Vmu2, cumsumw, const_m) firstprivate(mod)
     {
 #ifdef _OPENMP
       if (n_threads > 1) {
@@ -40,7 +40,7 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
         mod.update_model(theta_i);
         
         unsigned int m = nsim_states;
-        if (!const_nsim) {
+        if (!const_m) {
           m *= counts(i);
         }
         arma::cube alpha = mod.sim_smoother(m, mod.distribution != 0);
@@ -88,14 +88,14 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
 template void is_correction_summary<ngssm>(ngssm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::vec& weights_store,
-  arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_nsim);
+  arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_m);
 
 template void is_correction_summary<ng_bsm>(ng_bsm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::vec& weights_store,
-  arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_nsim);
+  arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_m);
 
 template void is_correction_summary<svm>(svm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::vec& weights_store,
-  arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_nsim);
+  arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_m);

@@ -47,30 +47,22 @@ arma::cube sample_states(T mod, const arma::mat& theta, const arma::uvec& counts
 template <typename T>
 void is_correction(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store);
-
-template <typename T>
-void is_correction_param(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
-  const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::vec& weights_store);
+  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, bool const_m);
 
 
 template <typename T>
 void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::vec& weights_store, 
-  arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_nsim);
+  arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_m);
 
 
 template <typename T>
-void is_correction_bsf(T mod, const arma::mat& theta, const arma::vec& ll_store, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store);
+void is_correction_bsf(T mod, const arma::mat& theta, const arma::vec& ll_store, 
+  const arma::uvec& counts, unsigned int nsim_states,
+  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, bool const_m,
+  arma::uvec& prior_types, arma::mat& prior_pars);
 
-// template <typename T>
-// void is_correction_bsf_param(T mod, const arma::mat& theta, const arma::vec& ll_store, 
-//   const arma::uvec& counts, 
-//   unsigned int nsim_states, unsigned int n_threads,
-//   arma::vec& weights_store, double ess_treshold);
 
 arma::uvec stratified_sample(arma::vec p, arma::vec& r, unsigned int N);
 #endif

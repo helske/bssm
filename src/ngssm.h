@@ -21,7 +21,7 @@ public:
   virtual double logp_y(arma::vec&);
   virtual arma::vec approx_iter(arma::vec&);
 
-  virtual arma::mat predict2(arma::vec, arma::vec, unsigned int, unsigned int,
+  virtual arma::mat predict2(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
     unsigned int, unsigned int, double, double, arma::mat, unsigned int,
     unsigned int, arma::vec);
 
@@ -29,46 +29,24 @@ public:
   virtual double scaling_factor(const arma::vec&);
 
 
-  virtual List mcmc_full(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, unsigned int, double, double, arma::mat, const arma::vec, bool, bool);
-  List mcmc_da(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool, bool);
+  double run_mcmc(const arma::uvec&, const arma::mat&, unsigned int,
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat&, const arma::vec,
+    bool, bool, bool, arma::mat&, arma::vec&, arma::cube&);
 
-  double mcmc_approx(arma::vec, arma::vec,
-    unsigned int, unsigned int, unsigned int,
-    unsigned int, double, double, arma::mat&,
-    const arma::vec, arma::mat&, arma::vec&,
-    arma::mat&, arma::mat&, arma::vec&, bool, bool);
-
-  double mcmc_approx2(arma::vec, arma::vec,
+  double run_mcmc_summary(const arma::uvec&, const arma::mat&, unsigned int,
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat&, const arma::vec,
+    bool, bool, bool, arma::mat&, arma::vec&, arma::mat&, arma::cube&, arma::mat&, arma::cube&);
+ 
+  double mcmc_approx(const arma::uvec&, const arma::mat&,
       unsigned int, unsigned int, unsigned int,
       unsigned int, double, double, arma::mat&,
       const arma::vec, arma::mat&, arma::vec&,
       arma::mat&, arma::mat&, arma::vec&, arma::uvec&, bool, bool);
 
-  List mcmc_param(arma::vec, arma::vec,
-    unsigned int, unsigned int, unsigned int,
-    unsigned int, double, double, arma::mat,
-    const arma::vec, bool, bool);
-
-  List mcmc_da_param(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool, bool);
-
-  List mcmc_summary(arma::vec, arma::vec,
-    unsigned int, unsigned int, unsigned int,
-    unsigned int, double, double, arma::mat,
-    const arma::vec, bool, bool);
-
-  List mcmc_da_summary(arma::vec, arma::vec, unsigned int,
-    unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool, bool);
-
 
   arma::cube invlink(const arma::cube&);
 
   arma::vec pyt(const unsigned int, const arma::cube&);
-  
-  // List mcmc_da_bsf(arma::vec, arma::vec, unsigned int,
-  //   unsigned int, unsigned int, unsigned int, double, double, arma::mat, arma::vec, bool, bool);
   
   double particle_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
     
