@@ -4,7 +4,7 @@
 bssm: R Package for Fully Bayesian Inference of Exponential Family and Stochastic Volatility State Space Models
 ==========================================================================
 
-There will be a major update soon with several fancy features. Current ETA: 12/9/2016
+There will be a major update soon with several fancy features. Current ETA: 15/9/2016
 ======================================================================================
 
 Efficient methods for Bayesian inference of state space models where the observation density is Gaussian, Poisson, binomial or negative binomial, and where the state dynamics are Gaussian.
