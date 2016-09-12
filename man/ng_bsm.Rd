@@ -5,8 +5,8 @@
 \title{Non-Gaussian Basic Structural (Time Series) Model}
 \usage{
 ng_bsm(y, sd_level, sd_slope, sd_seasonal, sd_noise, distribution, phi = 1,
-  xreg = NULL, beta = NULL, period = frequency(y), slope = TRUE,
-  seasonal = frequency(y) > 1, a1, P1, lower_prior, upper_prior)
+  beta, xreg = NULL, period = frequency(y), slope = TRUE,
+  seasonal = frequency(y) > 1, a1, P1)
 }
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
@@ -31,10 +31,10 @@ value in MCMC. If missing, additional noise term is omitted from the model.}
 For Poisson distribution, this corresponds to offset term. For binomial, this
 is the number of trials.}
 
-\item{xreg}{Matrix containing covariates.}
-
 \item{beta}{Regression coefficients. Used as an initial
 value in MCMC. Defaults to vector of zeros.}
+
+\item{xreg}{Matrix containing covariates.}
 
 \item{period}{Length of the seasonal component i.e. the number of
 observations per season. Default is \code{frequency(y)}.}
@@ -51,11 +51,16 @@ Defaults to vector of zeros.}
 \item{P1}{Prior covariance for the initial states (level, slope, seasonals).
 Default is diagonal matrix with 1e5 on the diagonal.}
 
+\item{prior_type}{Vector defining the prior types for standard deviations and beta.
+Possible values are \code{"uniform"} (default) and \code{"normal"}, where latter
+is a half-Normal distribution for standard deviation parameters and 
+zero-mean Normal distribution for beta parameters.}
+
 \item{lower_prior, upper_prior}{Lower and upper bounds for the uniform prior
 on standard deviations (sd_level, sd_slope, sd_seasonal) and regression
 coefficients. Defaults to zero for lower bound and and
-\code{sd(init_signal)} for upper bound of standard deviations and
-(-1e4, 1e4) for regression coefficients.}
+\code{sd(init_signal)} for upper bound of standard deviations, and
+(-1000, 1000) for regression coefficients.}
 }
 \value{
 Object of class \code{ng_bsm}.

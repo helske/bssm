@@ -61,8 +61,8 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- "signal"
 
-  priors <- c(ar, sd_ar, sigma, beta)
-  
+  priors <- list(ar, sd_ar, sigma, beta)
+  priors <- priors[!sapply(priors, is.null)]
   names(priors) <- 
     c("ar", "sd_ar", "sigma", names(beta))
 

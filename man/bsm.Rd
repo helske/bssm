@@ -4,9 +4,9 @@
 \alias{bsm}
 \title{Basic Structural (Time Series) Model}
 \usage{
-bsm(y, sd_y = 1, sd_level, sd_slope, sd_seasonal, xreg = NULL,
-  beta = NULL, period = frequency(y), slope = TRUE,
-  seasonal = frequency(y) > 1, a1, P1, lower_prior, upper_prior)
+bsm(y, sd_y, sd_level, sd_slope, sd_seasonal, beta, xreg = NULL,
+  period = frequency(y), slope = TRUE, seasonal = frequency(y) > 1, a1,
+  P1)
 }
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
@@ -24,10 +24,10 @@ Ignored if \code{slope = FALSE}.}
 \item{sd_seasonal}{Standard error of seasonal equation. Used as an initial
 value in MCMC. If missing, \code{sd_seasonal} is fixed to zero.}
 
-\item{xreg}{Matrix containing covariates.}
-
 \item{beta}{Regression coefficients. Used as an initial
 value in MCMC. Defaults to vector of zeros.}
+
+\item{xreg}{Matrix containing covariates.}
 
 \item{period}{Length of the seasonal component i.e. the number of
 observations per season. Default is \code{frequency(y)}.}
@@ -42,13 +42,7 @@ If \code{FALSE}, local level component is used instead of local trend component.
 Defaults to vector of zeros.}
 
 \item{P1}{Prior covariance for the initial states (level, slope, seasonals).
-Default is diagonal matrix with 1e5 on the diagonal.}
-
-\item{lower_prior, upper_prior}{Lower and upper bounds for the uniform prior
-on standard deviations (sd_y, sd_level, sd_slope, sd_seasonal) and regression
-coefficients. Defaults to zero for lower bound and and \code{sd(y)} for
-upper bound of standard deviations and (-Inf, Inf) for regression
-coefficients.}
+Default is diagonal matrix with 1000 on the diagonal.}
 }
 \value{
 Object of class \code{bsm}.

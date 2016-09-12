@@ -39,6 +39,28 @@ gssm::gssm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
 }
 
 
+double gssm::prior_pdf(const arma::vec& theta, const arma::uvec& prior_types, 
+  const arma::mat& params) {
+  
+  double q = 0.0;
+  
+  for(unsigned int i = 0; i < theta.n_elem; i++) {
+    switch(prior_types(i)) {
+    case 0  :
+      q += R::dunif(theta(i), params(0, i), params(1, i), 1);
+      break;
+    case 1  :
+      q += log(2.0) + R::dnorm(theta(i), 0, params(0, i), 1);
+      break;
+    case 2  :
+      q += R::dnorm(theta(i), params(0, i), params(1, i), 1);
+      break;
+    }
+  }
+  return q;
+}
+
+
 double gssm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
   return 0.0;
 }
@@ -1173,13 +1195,13 @@ arma::mat gssm::backward_simulate(arma::cube& alpha, arma::mat& V, arma::umat& i
   for (int t = n - 1; t > 0; t--) {
     arma::vec b(nsim);
     arma::vec Vnorm = V.col(t-1) / arma::sum(V.col(t-1));
-      for (unsigned int j = 0; j < nsim; j++) {
-        b(j) = Vnorm(j) * dmvnorm1(alpha.slice(I(t)).col(t), 
-          T.slice((t-1) * Ttv) * alpha.slice(j).col(t - 1), 
-          R.slice((t-1) * Rtv), true, false);  
-      }
+    for (unsigned int j = 0; j < nsim; j++) {
+      b(j) = Vnorm(j) * dmvnorm1(alpha.slice(I(t)).col(t), 
+        T.slice((t-1) * Ttv) * alpha.slice(j).col(t - 1), 
+        R.slice((t-1) * Rtv), true, false);  
+    }
     b /= arma::sum(b);
-      std::discrete_distribution<> sample(b.begin(), b.end());
+    std::discrete_distribution<> sample(b.begin(), b.end());
     I(t-1) = sample(engine);
     alphasim.col(t - 1) = alpha.slice(I(t - 1)).col(t - 1);
   }

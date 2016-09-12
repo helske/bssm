@@ -15,7 +15,7 @@ check_y <- function(x) {
 check_sd <- function(x, type, add_prefix = TRUE) {
 
   if (add_prefix) {
-    param <- paste0("sd_y", type)
+    param <- paste0("sd_", type)
   } else {
     param <- type
   }

@@ -245,8 +245,8 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
   
-  priors <- c(sd_y, sd_level, sd_slope, sd_seasonal, sd_noise, beta)
-  
+  priors <- list(sd_y, sd_level, sd_slope, sd_seasonal, sd_noise, beta)
+  priors <- priors[!sapply(priors, is.null)]
   names_ind <- c(notfixed & c(TRUE, slope, seasonal), noise)
   
   names(priors) <-

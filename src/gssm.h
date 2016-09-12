@@ -27,7 +27,7 @@ public:
     const arma::cube&, bool);
   virtual arma::cube sim_smoother(unsigned int, bool);
   virtual void smoother(arma::mat&, arma::cube&, bool);
-
+double prior_pdf(const arma::vec&, const arma::uvec&, const arma::mat&);
 
   virtual arma::mat predict2(arma::vec, arma::vec, unsigned int, unsigned int,
     unsigned int, unsigned int, double, double, arma::mat, unsigned int,

@@ -90,13 +90,13 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
    
   }
   
-  check_sd(sd$init, "y")
+  check_sd(sd_y$init, "y")
   
   if (missing(sd_level)) {
     notfixed[1] <- 0
     sd_level <- NULL
   } else {
-    check_sd(sd_level, "level")
+    check_sd(sd_level$init, "level")
   }
 
   if (slope) {
@@ -118,6 +118,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     seasonal_names <- paste0("seasonal_", 1:(period - 1))
   } else {
     seasonal_names <- NULL
+    sd_seasonal <- NULL
   }
 
 
@@ -186,15 +187,15 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 
   names_ind <- c(TRUE, notfixed & c(TRUE, slope, seasonal))
   
-  priors <- c(sd_y, sd_level, sd_slope, sd_seasonal, beta)
-  
+  priors <- list(sd_y, sd_level, sd_slope, sd_seasonal, beta)
+  priors <- priors[!sapply(priors, is.null)]
   names(priors) <-
     c(c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind], names(beta))
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
     a1 = a1, P1 = P1, xreg = xreg, coefs = coefs,
     slope = slope, seasonal = seasonal, period = period, 
-    fixed = as.integer(!notfixed), priors), class = "bsm")
+    fixed = as.integer(!notfixed), priors = priors), class = "bsm")
 }
 
 #' @method logLik bsm

@@ -3,52 +3,23 @@
 //with log_space
 bsm::bsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, bool slope, bool seasonal,
-  arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int seed, List priors, bool log_space) :
+  arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int seed, bool log_space) :
   gssm(y, Z, H, T, R, a1, P1, xreg, beta, seed), slope(slope), seasonal(seasonal),
   fixed(fixed), level_est(fixed(0) == 0), slope_est(slope && fixed(1) == 0),
   seasonal_est(seasonal && fixed(2) == 0), log_space(log_space) {
-  
-  // List tmp = priors[1];
-  // if(strcmp(tmp["prior_type"], "uniform") == 0) {
-  //   p_sd_y.reset(new uniform(tmp));
-  // } else {
-  //   if(strcmp(tmp["prior_type"], "halfnormal") == 0){
-  //     p_sd_y.reset(new halfnormal(tmp));
-  //   } else {
-  //     p_sd_y.reset(new normal(tmp));
-  //   }
-  // }
-  // 
-  // tmp = priors[2];
-  // if(strcmp(tmp["prior_type"], "uniform") == 0) {
-  //   p_sd_level.reset(new uniform(tmp));
-  // } else {
-  //   if(strcmp(tmp["prior_type"], "halfnormal") == 0){
-  //     p_sd_level.reset(new halfnormal(tmp));
-  //   } else {
-  //     p_sd_level.reset(new normal(tmp));
-  //   }
-  // }
-  
   
 }
 
 // without log_space
 bsm::bsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, bool slope, bool seasonal,
-  arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int seed, List priors) :
+  arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int seed) :
   gssm(y, Z, H, T, R, a1, P1, xreg, beta, seed), slope(slope), seasonal(seasonal),
   fixed(fixed), level_est(fixed(0) == 0), slope_est(slope && fixed(1) == 0),
   seasonal_est(seasonal && fixed(2) == 0), log_space(false) {
   
 }
 
-void bsm::prior_types(List priors) {
-  List tmp = priors["sd_y"];
-  if (std::strncmp(tmp["prior_type"], "uniform", 7) == 0) {
-    sd_y_prior = uniform(tmp);
-  }
-}
 double bsm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
   
   double q = 0.0;

@@ -10,8 +10,7 @@
   lower_prior, upper_prior, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx = TRUE, method = "delayed acceptance", log_space = TRUE,
-  n_threads = 1, seed = sample(.Machine$integer.max, size = 1),
-  thread_seeds = sample(.Machine$integer.max, size = n_threads), ...)
+  n_threads = 1, seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{run_mcmc}{ngssm}(object, n_iter, Z_est, T_est, R_est, lower_prior,
   upper_prior, nsim_states = 1, n_burnin = floor(n_iter/2), n_thin = 1,
@@ -22,8 +21,7 @@
   lower_prior, upper_prior, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx = TRUE, method = "delayed acceptance", n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1),
-  thread_seeds = sample(.Machine$integer.max, size = n_threads), ...)
+  seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
 \item{object}{Model object.}

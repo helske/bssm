@@ -6,11 +6,10 @@
 \title{Bayesian Inference of State Space Models using MCMC with RAM}
 \usage{
 \method{run_mcmc}{bsm}(object, n_iter, nsim_states = 1, type = "full",
-  lower_prior, upper_prior, n_burnin = floor(n_iter/2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   log_space = FALSE, n_threads = 1, seed = sample(.Machine$integer.max,
-  size = 1), thread_seeds = sample(.Machine$integer.max, size = n_threads),
-  ...)
+  size = 1), ...)
 
 \method{run_mcmc}{gssm}(object, n_iter, Z_est, H_est, T_est, R_est,
   nsim_states = 1, type = "full", lower_prior, upper_prior,
@@ -36,9 +35,6 @@ states directly computes the  posterior means and variances of states using
 fast Kalman smoothing. This is slightly faster, memory  efficient and
 more accurate than calculations based on simulation smoother.}
 
-\item{lower_prior, upper_prior}{Bounds of the uniform prior for parameters
-\eqn{\theta}. Optional for \code{bsm} objects.}
-
 \item{n_burnin}{Length of the burn-in period which is disregarded from the
 results. Defaults to \code{n_iter / 2}.}
 
@@ -62,13 +58,14 @@ distribution is \eqn{SS'}.}
 
 \item{seed}{Seed for the random number generator.}
 
-\item{thread_seeds}{Seeds for threads.}
-
 \item{...}{Ignored.}
 
 \item{Z_est, H_est, T_est, R_est}{Arrays or matrices containing \code{NA}
 values marking the unknown parameters which are to be estimated. Must be of
 same dimension as the corresponding elements of the model object.}
+
+\item{lower_prior, upper_prior}{Bounds of the uniform prior for parameters
+\eqn{\theta}. Optional for \code{bsm} objects.}
 }
 \description{
 For general univariate Gaussian models, all \code{NA} values in

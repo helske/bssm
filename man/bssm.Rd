@@ -4,10 +4,10 @@
 \name{bssm}
 \alias{bssm}
 \alias{bssm-package}
-\title{Bayesian Inference of Exponential Family State Space Models}
+\title{Bayesian Inference of State Space Models}
 \description{
-This package contains functions for Bayesian inference of exponential
-family state space models, where the state equation is linear and Gaussian,
+This package contains functions for Bayesian inference of basic stochastic volatility model
+and exponential family state space models, where the state equation is linear and Gaussian,
 and the conditional observation density is either Gaussian, Poisson,
 binomial, negative binomial or Gamma density. For formal definition of the
 currently supported models and methods, see the package vignette.
