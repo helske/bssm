@@ -201,12 +201,8 @@ svm_run_mcmc <- function(y, Z, T, R, a1, P1, phi, xreg, beta, prior_types, prior
     .Call('bssm_svm_run_mcmc', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, da, seed, n_threads, end_ram, adapt_approx)
 }
 
-svm_run_mcmc_is <- function(y, Z, T, R, a1, P1, phi, xreg, beta, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, const_m, seed, n_threads, end_ram, adapt_approx) {
-    .Call('bssm_svm_run_mcmc_is', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, const_m, seed, n_threads, end_ram, adapt_approx)
-}
-
-svm_run_mcmc_pf <- function(y, Z, T, R, a1, P1, phi, xreg, beta, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, const_m, seed, n_threads, end_ram, adapt_approx) {
-    .Call('bssm_svm_run_mcmc_pf', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, const_m, seed, n_threads, end_ram, adapt_approx)
+svm_run_mcmc_is <- function(y, Z, T, R, a1, P1, phi, xreg, beta, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, const_m, seed, n_threads, end_ram, adapt_approx, pf) {
+    .Call('bssm_svm_run_mcmc_is', PACKAGE = 'bssm', y, Z, T, R, a1, P1, phi, xreg, beta, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, const_m, seed, n_threads, end_ram, adapt_approx, pf)
 }
 
 svm_importance_sample <- function(y, Z, T, R, a1, P1, phi, xreg, beta, nsim_states, init_signal, seed) {

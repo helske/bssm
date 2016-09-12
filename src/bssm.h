@@ -60,9 +60,9 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
 template <typename T>
 void is_correction_bsf(T mod, const arma::mat& theta, const arma::vec& ll_store, 
   const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, bool const_m,
-  arma::uvec& prior_types, arma::mat& prior_pars);
+  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, bool const_m);
 
 
 arma::uvec stratified_sample(arma::vec p, arma::vec& r, unsigned int N);
+
 #endif

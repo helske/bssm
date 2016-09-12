@@ -1314,8 +1314,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // svm_run_mcmc_is
-List svm_run_mcmc_is(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, arma::mat& xreg, arma::vec& beta, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, bool const_m, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx);
-RcppExport SEXP bssm_svm_run_mcmc_is(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP const_mSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP) {
+List svm_run_mcmc_is(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, arma::mat& xreg, arma::vec& beta, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, bool const_m, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx, bool pf);
+RcppExport SEXP bssm_svm_run_mcmc_is(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP const_mSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP, SEXP pfSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -1343,41 +1343,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< unsigned int >::type n_threads(n_threadsSEXP);
     Rcpp::traits::input_parameter< bool >::type end_ram(end_ramSEXP);
     Rcpp::traits::input_parameter< bool >::type adapt_approx(adapt_approxSEXP);
-    __result = Rcpp::wrap(svm_run_mcmc_is(y, Z, T, R, a1, P1, phi, xreg, beta, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, const_m, seed, n_threads, end_ram, adapt_approx));
-    return __result;
-END_RCPP
-}
-// svm_run_mcmc_pf
-List svm_run_mcmc_pf(arma::vec& y, arma::mat& Z, arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, arma::mat& xreg, arma::vec& beta, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, bool const_m, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx);
-RcppExport SEXP bssm_svm_run_mcmc_pf(SEXP ySEXP, SEXP ZSEXP, SEXP TSEXP, SEXP RSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP phiSEXP, SEXP xregSEXP, SEXP betaSEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP const_mSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::vec& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type Z(ZSEXP);
-    Rcpp::traits::input_parameter< arma::cube& >::type T(TSEXP);
-    Rcpp::traits::input_parameter< arma::cube& >::type R(RSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type a1(a1SEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type P1(P1SEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type phi(phiSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type xreg(xregSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< arma::uvec& >::type prior_types(prior_typesSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type prior_pars(prior_parsSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type n_iter(n_iterSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type n_burnin(n_burninSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type n_thin(n_thinSEXP);
-    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< double >::type target_acceptance(target_acceptanceSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type S(SSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type init_signal(init_signalSEXP);
-    Rcpp::traits::input_parameter< bool >::type const_m(const_mSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type n_threads(n_threadsSEXP);
-    Rcpp::traits::input_parameter< bool >::type end_ram(end_ramSEXP);
-    Rcpp::traits::input_parameter< bool >::type adapt_approx(adapt_approxSEXP);
-    __result = Rcpp::wrap(svm_run_mcmc_pf(y, Z, T, R, a1, P1, phi, xreg, beta, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, const_m, seed, n_threads, end_ram, adapt_approx));
+    Rcpp::traits::input_parameter< bool >::type pf(pfSEXP);
+    __result = Rcpp::wrap(svm_run_mcmc_is(y, Z, T, R, a1, P1, phi, xreg, beta, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, const_m, seed, n_threads, end_ram, adapt_approx, pf));
     return __result;
 END_RCPP
 }

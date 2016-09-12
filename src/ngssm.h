@@ -40,7 +40,7 @@ public:
   double mcmc_approx(const arma::uvec&, const arma::mat&,
       unsigned int, unsigned int, unsigned int,
       unsigned int, double, double, arma::mat&,
-      const arma::vec, arma::mat&, arma::vec&,
+      const arma::vec, arma::mat&, arma::vec&, arma::vec&,
       arma::mat&, arma::mat&, arma::vec&, arma::uvec&, bool, bool);
 
 

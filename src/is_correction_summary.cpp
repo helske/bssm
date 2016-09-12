@@ -94,8 +94,8 @@ template void is_correction_summary<ng_bsm>(ng_bsm mod, const arma::mat& theta, 
   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::vec& weights_store,
   arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_m);
-
-template void is_correction_summary<svm>(svm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
-  const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::vec& weights_store,
-  arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_m);
+// 
+// template void is_correction_summary<svm>(svm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
+//   const arma::vec& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
+//   unsigned int n_threads, arma::vec& weights_store,
+//   arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_m);

@@ -162,13 +162,14 @@ List ng_bsm_run_mcmc_is(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::mat H_store(model.n, n_samples);
   arma::vec ll_approx_u_store(n_samples);
   arma::mat theta_store(npar, n_samples);
-  arma::vec posterior_store(n_samples);
+  arma::vec ll_store(n_samples);
+  arma::vec prior_store(n_samples);
   
   arma::uvec counts(n_samples);
   //no thinning allowed!
   double acceptance_rate = model.mcmc_approx(prior_types, prior_pars, n_iter,
     nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-    theta_store, posterior_store, y_store, H_store, ll_approx_u_store, counts, 
+    theta_store, ll_store, prior_store, y_store, H_store, ll_approx_u_store, counts, 
     end_ram, adapt_approx);
   
   arma::vec weights_store(counts.n_elem);
@@ -182,7 +183,8 @@ List ng_bsm_run_mcmc_is(arma::vec& y, arma::mat& Z, arma::cube& T,
   return List::create(Named("alpha") = alpha_store,
     Named("theta") = theta_store, Named("counts") = counts,
     Named("acceptance_rate") = acceptance_rate,
-    Named("S") = S,  Named("approx_posterior") = posterior_store, Named("weights") = weights_store);
+    Named("S") = S,  Named("approx_posterior") = ll_store + prior_store,
+    Named("weights") = weights_store);
 }
 
 
@@ -198,10 +200,8 @@ List ng_bsm_run_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::vec& init_signal, bool da, unsigned int seed, bool log_space,
   unsigned int n_threads, bool end_ram, bool adapt_approx) {
   
-  
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
     distribution, seed, log_space);
-  
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -249,13 +249,14 @@ List ng_bsm_run_mcmc_summary_is(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::mat H_store(model.n, n_samples);
   arma::vec ll_approx_u_store(n_samples);
   arma::mat theta_store(npar, n_samples);
-  arma::vec posterior_store(n_samples);
+  arma::vec ll_store(n_samples);
+  arma::vec prior_store(n_samples);
   
   arma::uvec counts(n_samples);
   //no thinning allowed!
   double acceptance_rate = model.mcmc_approx(prior_types, prior_pars, n_iter,
     nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-    theta_store, posterior_store, y_store, H_store, ll_approx_u_store, counts, 
+    theta_store, ll_store, prior_store, y_store, H_store, ll_approx_u_store, counts, 
     end_ram, adapt_approx);
   
   arma::vec weights_store(counts.n_elem);
@@ -274,7 +275,7 @@ List ng_bsm_run_mcmc_summary_is(arma::vec& y, arma::mat& Z, arma::cube& T,
     Named("muhat") = muhat,  Named("Vmu") = Vmu,
     Named("theta") = theta_store, Named("counts") = counts,
     Named("acceptance_rate") = acceptance_rate,
-    Named("S") = S,  Named("posterior_approx") = posterior_store, 
+    Named("S") = S,  Named("posterior_approx") = ll_store + prior_store, 
     Named("weights") = weights_store);
 }
 

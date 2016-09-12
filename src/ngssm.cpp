@@ -570,7 +570,8 @@ double ngssm::scaling_factor(const arma::vec& signal) {
 double ngssm::mcmc_approx(const arma::uvec& prior_types, const arma::mat& prior_pars,
   unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
-  const arma::vec init_signal, arma::mat& theta_store, arma::vec& posterior_store,
+  const arma::vec init_signal, arma::mat& theta_store, arma::vec& ll_store,
+  arma::vec& prior_store,
   arma::mat& y_store, arma::mat& H_store, arma::vec& ll_approx_u_store,
   arma::uvec& counts, bool end_ram, bool adapt_approx) {
   
@@ -636,7 +637,8 @@ double ngssm::mcmc_approx(const arma::uvec& prior_types, const arma::mat& prior_
   prior = prior_pdf(theta, prior_types, prior_pars);
   
   theta_store.col(0) = theta;
-  posterior_store(0) = ll + prior;
+  ll_store(0) = ll;
+  prior_store(0) = prior;
   if (adapt_approx) {
     // compute approximate log-likelihood with proposed theta
     signal = init_signal;
@@ -689,7 +691,8 @@ double ngssm::mcmc_approx(const arma::uvec& prior_types, const arma::mat& prior_
         n_unique++;
         acceptance_rate++;
         counts(n_unique) = 1;
-        posterior_store(n_unique) = ll + prior;
+        ll_store(n_unique) = ll;
+        prior_store(n_unique) = prior;
         theta_store.col(n_unique) = theta;
         y_store.col(n_unique) = y;
         H_store.col(n_unique) = H;
@@ -711,7 +714,8 @@ double ngssm::mcmc_approx(const arma::uvec& prior_types, const arma::mat& prior_
     
   }
   theta_store.resize(npar, n_unique + 1);
-  posterior_store.resize(n_unique + 1);
+  ll_store.resize(n_unique + 1);
+  prior_store.resize(n_unique + 1);
   counts.resize(n_unique + 1);
   y_store.resize(n, n_unique + 1);
   H_store.resize(n, n_unique + 1);
