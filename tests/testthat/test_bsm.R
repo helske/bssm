@@ -22,7 +22,8 @@ test_that("results are comparable to KFAS",{
   model_KFAS$P1inf[] <- 0
   diag(model_KFAS$P1) <- 1e2
   model_bssm <- bsm(log10(AirPassengers), P1 = diag(1e2,13),
-    sd_y = 0.005, sd_level = 0.01, sd_seasonal = 0.005)
+    sd_y = uniform(0.005, 0, 10), sd_level = uniform(0.01, 0, 10), 
+    sd_seasonal = uniform(0.005, 0, 1))
   expect_equal(logLik(model_KFAS), logLik(model_bssm))
   out_KFAS <- KFS(model_KFAS)
   expect_error(out_bssm <- kfilter(model_bssm), NA)
@@ -36,7 +37,8 @@ test_that("results are comparable to KFAS",{
 
 test_that("different smoothers give identical results",{
   model_bssm <- bsm(log10(AirPassengers), P1 = diag(1e2,13),
-    sd_y = 0.005, sd_level = 0.01, sd_seasonal = 0.005)
+    sd_y = uniform(0.005, 0, 10), sd_level = uniform(0.01, 0, 10), 
+    sd_seasonal = uniform(0.005, 0, 1))
 
   expect_error(out_bssm1 <- smoother(model_bssm), NA)
   expect_error(out_bssm2 <- fast_smoother(model_bssm), NA)
@@ -46,25 +48,23 @@ test_that("different smoothers give identical results",{
 
 test_that("MCMC results are correct",{
   set.seed(123)
-  model_bssm <- bsm(rnorm(10,3), P1 = diag(2,2), sd_level = 2)
+  model_bssm <- bsm(rnorm(10,3), P1 = diag(2,2), sd_y = uniform(1, 0, 10), 
+    sd_level = uniform(1, 0, 10))
 
   expect_error(out <- run_mcmc(model_bssm, n_iter = 5, nsim = 5), NA)
 
-  testvalues <- structure(
-    c(-20.2800483954719, -20.1810804388625, -19.829889435043),
-    .Dim = c(3L, 1L))
-  expect_equivalent(testvalues, out$logLik)
+  testvalues <- structure(c(-26.9069685005256, -26.9928831742792, -26.9928831742792
+  ), .Dim = c(3L, 1L))
+  expect_equivalent(testvalues, out$posterior)
 
-  testvalues <- structure(
-    c(0.864476941896407, 0.935117368029207, 0.858785275201918,
-      1.92720358374364, 1.81733272781942, 1.71169723593368),
-    .Dim = c(3L, 2L), .Dimnames = list(NULL, c("sd_y", "sd_level")),
-    mcpar = c(3, 5, 1), class = "mcmc")
+  testvalues <- structure(c(0.639020373514582, 0.62440546076616, 0.62440546076616, 
+    1.0792829667022, 1.20397711984103, 1.20397711984103), .Dim = c(3L, 
+      2L), .Dimnames = list(NULL, c("sd_y", "sd_level")), mcpar = c(3, 
+        5, 1), class = "mcmc")
   expect_equivalent(testvalues, out$theta)
 
-  testvalues <- c(1.49145606363075, 3.76212084768105,
-    -0.276380051596125, 3.18447029150434,
-    -1.0814568032232, 0.39015114903957)
+  testvalues <- c(3.82447681043585, 3.82698455077293, 0.0763601426676603, 2.28734052061909, 
+    -1.49265604239297, -1.49265604239297)
   expect_equivalent(testvalues, out$alpha[c(1,10,20,25, 31, 60)])
 
 })

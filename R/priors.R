@@ -1,13 +1,22 @@
 ## will add more choices later...
 ## add recycling of parameters later
 
-#' Title
+#' Prior objects for bssm models
 #'
-#' @param init 
-#' @param min 
-#' @param max 
-#'
-#' @return
+#' These simple objects of class \code{bssm_prior} are used to construct a prior distributions for the 
+#' MCMC runs of \code{bssm} package. Currently supported priors are uniform, half-Normal and Normal distribution.
+#' 
+#' @note Use Normal prior with care: currently there is no checks of non-negativity of standard deviation or stationarity of 
+#' autoregressive coefficient in case Normal prior is used.
+#' 
+#' @rdname priors
+#' @param init Initial value for the parameter, used in initializing the model components and as a starting value
+#' in MCMC.
+#' @param min Lower bound of the uniform prior .
+#' @param max Upper bound of the uniform prior.
+#' @param sd Standard deviation of the half-Normal and Normal priors.
+#' @param mean Mean of the Normal prior.
+#' @return object of class \code{bssm_prior}.
 #' @export
 uniform <- function(init, min, max){
   if(any(!is.numeric(init), !is.numeric(min), !is.numeric(max))) {
@@ -22,12 +31,7 @@ uniform <- function(init, min, max){
   structure(list(prior_type = "uniform", init = init, min = min, max = max), class = "bssm_prior")
 }
 
-#' Title
-#'
-#' @param init 
-#' @param sd 
-#'
-#' @return
+#' @rdname priors
 #' @export
 halfnormal <- function(init, sd){
   
@@ -44,13 +48,7 @@ halfnormal <- function(init, sd){
 }
 
 
-#' Title
-#'
-#' @param init 
-#' @param mean 
-#' @param sd 
-#'
-#' @return
+#' @rdname priors
 #' @export
 normal <- function(init, mean, sd){
   
@@ -70,5 +68,6 @@ combine_priors <- function(x) {
   for(i in 1:length(prior_types)) {
     params[1:(length(x[[i]])-2), i] <- as.numeric(x[[i]][-(1:2)])
   }
-  list(prior_types = prior_types, params = params)
+  list(prior_types = pmatch(prior_types, c("uniform", "halfnormal", "normal"), duplicates.ok = TRUE)-1, 
+    params = params)
 }

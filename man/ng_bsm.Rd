@@ -72,11 +72,13 @@ local trend component, a seasonal component, and regression component
 }
 \examples{
 model <- ng_bsm(Seatbelts[, "VanKilled"], distribution = "poisson",
-  sd_level = 0.01, sd_seasonal = 0.01, slope = FALSE,
+  sd_level = halfnormal(0.01, 1), 
+  sd_seasonal = halfnormal(0.01, 1), slope = FALSE,
+  beta = normal(0, 0, 10),
   xreg = Seatbelts[, "law"])
 \dontrun{
 set.seed(123)
-mcmc_out <- run_mcmc(model, n_iter = 5000, nsim = 20)
+mcmc_out <- run_mcmc(model, n_iter = 5000, nsim = 10)
 mcmc_out$acceptance_rate
 plot(mcmc_out$theta)
 summary(mcmc_out$theta)
@@ -87,7 +89,7 @@ ggplot(as.data.frame(mcmc_out$theta[,1:2]), aes(x = sd_level, y = sd_seasonal)) 
   geom = "polygon") + scale_fill_continuous(low = "green",high = "blue") +
   guides(alpha = "none")
 
-pred <- predict(model, n_iter = 5000, nsim_states = 25, n_ahead = 36,
+pred <- predict(model, n_iter = 5000, nsim_states = 10, n_ahead = 36,
   probs = seq(0.05, 0.95, by = 0.05), newdata = matrix(1, 36, 1),
   newphi = rep(1, 36))
 autoplot(pred)

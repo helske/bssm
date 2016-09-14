@@ -111,19 +111,21 @@ List ng_bsm_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
     Named("Vt") = Vt);
 }
 
+  
 // [[Rcpp::export]]
 List ng_bsm_run_mcmc(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  unsigned int distribution,
+  unsigned int distribution, bool slope,
+  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
-  double gamma, double target_acceptance, arma::mat S, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  arma::vec& init_signal, bool da, unsigned int seed, bool log_space,
-  unsigned int n_threads, bool end_ram, bool adapt_approx) {
+  double gamma, double target_acceptance, arma::mat S,
+  arma::vec& init_signal, unsigned int seed,
+  unsigned int n_threads, bool end_ram, bool adapt_approx, bool da, bool pf) {
   
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed, log_space);
+    distribution, seed, false);
+  
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -131,10 +133,18 @@ List ng_bsm_run_mcmc(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube alpha_store(model.m, model.n, n_samples);
   arma::vec posterior_store(n_samples);
   
-  double acceptance_rate = model.run_mcmc(prior_types, prior_pars, n_iter, nsim_states, n_burnin, 
-    n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx, da,
-    theta_store, posterior_store, alpha_store);
+  double acceptance_rate;
+  if(pf){
+    acceptance_rate = model.run_mcmc_pf(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
+      n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx, da,
+      theta_store, posterior_store, alpha_store);
+  } else {
+    acceptance_rate = model.run_mcmc(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
+      n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx, da,
+      theta_store, posterior_store, alpha_store);
+  }
   
+  arma::inplace_trans(theta_store);
   return List::create(Named("alpha") = alpha_store,
     Named("theta") = theta_store,
     Named("acceptance_rate") = acceptance_rate,
@@ -144,16 +154,16 @@ List ng_bsm_run_mcmc(arma::vec& y, arma::mat& Z, arma::cube& T,
 // [[Rcpp::export]]
 List ng_bsm_run_mcmc_is(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  unsigned int distribution,
+  unsigned int distribution, bool slope,
+  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
-  double gamma, double target_acceptance, arma::mat S, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  arma::vec& init_signal, bool const_m, unsigned int seed, bool log_space,
-  unsigned int n_threads, bool end_ram, bool adapt_approx) {
+  double gamma, double target_acceptance, arma::mat S,
+  arma::vec& init_signal, unsigned int seed,
+  unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int method) {
   
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed, log_space);
+    distribution, seed, false);
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -169,39 +179,46 @@ List ng_bsm_run_mcmc_is(arma::vec& y, arma::mat& Z, arma::cube& T,
   //no thinning allowed!
   double acceptance_rate = model.mcmc_approx(prior_types, prior_pars, n_iter,
     nsim_states, n_burnin, 1, gamma, target_acceptance, S, init_signal,
-    theta_store, ll_store, prior_store, y_store, H_store, ll_approx_u_store, counts, 
+    theta_store, ll_store, prior_store, y_store, H_store, ll_approx_u_store, counts,
     end_ram, adapt_approx);
   
   arma::vec weights_store(counts.n_elem);
   arma::cube alpha_store(model.m, model.n, counts.n_elem);
   
-  is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,
-    arma::uvec(counts.n_elem, arma::fill::ones),
-    nsim_states, n_threads, weights_store, alpha_store, const_m);
-  
+  if(method == 3) {
+    is_correction_bsf(model, theta_store, ll_store,
+      counts, nsim_states, n_threads, weights_store, alpha_store, true);
+    prior_store = weights_store;
+  } else {
+    is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,
+      arma::uvec(counts.n_elem, arma::fill::ones),
+      nsim_states, n_threads, weights_store, alpha_store, method == 2);
+    prior_store += ll_store + weights_store;
+  }
   arma::inplace_trans(theta_store);
   return List::create(Named("alpha") = alpha_store,
     Named("theta") = theta_store, Named("counts") = counts,
     Named("acceptance_rate") = acceptance_rate,
-    Named("S") = S,  Named("approx_posterior") = ll_store + prior_store,
+    Named("S") = S,  Named("posterior") = prior_store,
     Named("weights") = weights_store);
 }
+
 
 
 
 // [[Rcpp::export]]
 List ng_bsm_run_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  unsigned int distribution,
+  unsigned int distribution, bool slope,
+  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
-  double gamma, double target_acceptance, arma::mat S, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  arma::vec& init_signal, bool da, unsigned int seed, bool log_space,
-  unsigned int n_threads, bool end_ram, bool adapt_approx) {
+  double gamma, double target_acceptance, arma::mat S,
+  arma::vec& init_signal, unsigned int seed,
+  unsigned int n_threads, bool end_ram, bool adapt_approx, bool da, bool pf) {
   
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed, log_space);
+    distribution, seed, false);
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -231,16 +248,16 @@ List ng_bsm_run_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
 // [[Rcpp::export]]
 List ng_bsm_run_mcmc_summary_is(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  unsigned int distribution,
+  unsigned int distribution, bool slope,
+  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
-  double gamma, double target_acceptance, arma::mat S, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  arma::vec& init_signal, bool const_m, unsigned int seed, bool log_space,
-  unsigned int n_threads, bool end_ram, bool adapt_approx) {
+  double gamma, double target_acceptance, arma::mat S,
+  arma::vec& init_signal, unsigned int seed,
+  unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int method) {
   
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed, log_space);
+    distribution, seed, false);
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -266,7 +283,7 @@ List ng_bsm_run_mcmc_summary_is(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube Vmu(1, 1, model.n);
   
   is_correction_summary(model, theta_store, y_store, H_store, ll_approx_u_store,
-    counts, nsim_states, n_threads, weights_store, alphahat, Vt, muhat, Vmu, const_m);
+    counts, nsim_states, n_threads, weights_store, alphahat, Vt, muhat, Vmu, method == 2);
   
   arma::inplace_trans(muhat);
   arma::inplace_trans(alphahat);
@@ -282,12 +299,13 @@ List ng_bsm_run_mcmc_summary_is(arma::vec& y, arma::mat& Z, arma::cube& T,
 // [[Rcpp::export]]
 arma::mat ng_bsm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
   arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  unsigned int distribution, arma::uvec& prior_types,
+  unsigned int distribution, 
+  bool slope, bool seasonal, bool noise, arma::uvec fixed,
+  arma::mat& xreg, arma::vec& beta, arma::uvec& prior_types,
   arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
-  unsigned int interval, bool slope, bool seasonal, bool noise, arma::uvec fixed,
-  arma::mat& xreg, arma::vec& beta, arma::vec& init_signal, unsigned int seed,
+  unsigned int interval, arma::vec& init_signal, unsigned int seed,
   bool log_space) {
   
   ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,

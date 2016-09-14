@@ -5,12 +5,11 @@
 \alias{predict.gssm}
 \title{Predictions for Gaussian State Space Models}
 \usage{
-\method{predict}{bsm}(object, n_iter, lower_prior, upper_prior,
-  newdata = NULL, n_ahead = 1, interval = "response", probs = c(0.05,
-  0.95), method = "quantile", return_MCSE = TRUE, nsim_states = 1,
-  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size =
-  1), log_space = FALSE, ...)
+\method{predict}{bsm}(object, n_iter, newdata = NULL, n_ahead = 1,
+  interval = "response", probs = c(0.05, 0.95), method = "quantile",
+  return_MCSE = TRUE, nsim_states = 1, n_burnin = floor(n_iter/2),
+  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
+  seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{predict}{gssm}(object, n_iter, lower_prior, upper_prior,
   newdata = NULL, n_ahead = 1, interval = "response", probs = c(0.05,
@@ -23,12 +22,6 @@
 \item{object}{Model object.}
 
 \item{n_iter}{Number of MCMC iterations.}
-
-\item{lower_prior}{Bounds of the uniform prior for parameters
-\eqn{\theta}. Optional for \code{bsm} objects.}
-
-\item{upper_prior}{Bounds of the uniform prior for parameters
-\eqn{\theta}. Optional for \code{bsm} objects.}
 
 \item{newdata}{Matrix containing the covariate values for the future time
 points. Defaults to zero matrix of appropriate size.}
@@ -66,9 +59,13 @@ distribution is \eqn{SS'}.}
 
 \item{seed}{Seed for the random number generator.}
 
-\item{log_space}{Generate proposals for standard deviations in log-space. Default is \code{FALSE}.}
-
 \item{...}{Ignored.}
+
+\item{lower_prior}{Bounds of the uniform prior for parameters
+\eqn{\theta}. Optional for \code{bsm} objects.}
+
+\item{upper_prior}{Bounds of the uniform prior for parameters
+\eqn{\theta}. Optional for \code{bsm} objects.}
 
 \item{Z_est}{Arrays or matrices containing \code{NA}
 values marking the unknown parameters which are to be estimated. Must be of
@@ -100,9 +97,9 @@ Helske (2016).
 \examples{
 require("graphics")
 y <- log10(JohnsonJohnson)
-init_sd <- 0.1
-model <- bsm(y, sd_y = init_sd, sd_level = init_sd,
-  sd_slope = init_sd, sd_seasonal = init_sd)
+prior <- uniform(0.01, 0, 1)
+model <- bsm(y, sd_y = prior, sd_level = prior,
+  sd_slope = prior, sd_seasonal = prior)
 
 pred1 <- predict(model, n_iter = 5000, n_ahead = 8)
 pred2 <- predict(StructTS(y, type = "BSM"), n.ahead = 8)

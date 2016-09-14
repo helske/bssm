@@ -4,18 +4,17 @@
 #' and seasonal component.
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
-#' @param sd_y Standard error of observation equation. Used as an initial
-#' value in MCMC.
-#' @param sd_level Standard error of level equation. Used as an initial
-#' value in MCMC. If missing, \code{sd_level} is fixed to zero.
-#' @param sd_slope Standard error of slope equation. Used as an initial
-#' value in MCMC. If missing, \code{sd_slope} is fixed to zero.
+#' @param sd_y Prior for the standard error of observation equation. 
+#' See \link{\code{priors}} for details.
+#' @param sd_level  Prior for the standard error of the noise in level equation. 
+#' See \link{\code{priors}} for details. If missing, \code{sd_level} is fixed to zero.
+#' @param sd_slope Prior for the standard error  of the noise in slope equation. 
+#' See \link{\code{priors}} for details. If missing, \code{sd_slope} is fixed to zero.
 #' Ignored if \code{slope = FALSE}.
-#' @param sd_seasonal Standard error of seasonal equation. Used as an initial
-#' value in MCMC. If missing, \code{sd_seasonal} is fixed to zero.
+#' @param sd_seasonal Prior for the standard error of the noise in seasonal equation.
+#' See \link{\code{priors}} for details. If missing, \code{sd_seasonal} is fixed to zero.
 #' @param xreg Matrix containing covariates.
-#' @param beta Regression coefficients. Used as an initial
-#' value in MCMC. Defaults to vector of zeros.
+#' @param beta Prior for the regression coefficients.
 #' @param period Length of the seasonal component i.e. the number of
 #' observations per season. Default is \code{frequency(y)}.
 #' @param slope Should the model contain the slope term. Default is \code{TRUE}.
@@ -30,22 +29,22 @@
 #' @export
 #' @examples
 #'
-#' init_sd <- 0.1 * sd(log10(UKgas))
-#' model <- bsm(log10(UKgas), sd_y = init_sd, sd_level = init_sd,
-#'   sd_slope = init_sd, sd_seasonal = init_sd)
+#' prior <- uniform(0.1 * sd(log10(UKgas)), 0, 1)
+#' model <- bsm(log10(UKgas), sd_y = prior, 
+#' sd_level =  prior, sd_slope =  prior, sd_seasonal =  prior)
 #'
 #' mcmc_out <- run_mcmc(model, n_iter = 5000)
 #' summary(mcmc_out$theta)$stat
-#' mcmc_out$theta[which.max(mcmc_out$logLik), ]
-#' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)
+#' mcmc_out$theta[which.max(mcmc_out$posterior), ]
+#' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
 #'
 bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal, 
   beta, xreg = NULL, period = frequency(y), slope = TRUE, 
   seasonal = frequency(y) > 1, a1, P1) {
-
+  
   check_y(y)
   n <- length(y)
-
+  
   if (period == 1) {
     seasonal <- FALSE
   } else {
@@ -53,12 +52,12 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
       seasonal <- TRUE
     }
   }
-
+  
   #easier this way...
   notfixed <- c("level" = 1, "slope" = 1, "seasonal" = 1)
   
-  npar_R <- !missing(sd_level) + !missing(sd_slope) + 
-    !missing(sd_seasonal) & c(TRUE, slope, seasonal)
+  npar_R <- sum(!c(missing(sd_level), missing(sd_slope),
+      missing(sd_seasonal)) & c(TRUE, slope, seasonal))
   
   npar <- 1L + npar_R
   
@@ -87,7 +86,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
     names(coefs) <- colnames(xreg)
-   
+    
   }
   
   check_sd(sd_y$init, "y")
@@ -98,7 +97,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   } else {
     check_sd(sd_level$init, "level")
   }
-
+  
   if (slope) {
     if (missing(sd_slope)) {
       notfixed[2] <- 0
@@ -107,7 +106,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
       check_sd(sd_slope$init, "slope")
     }
   } else sd_slope <- NULL
-
+  
   if (seasonal) {
     if (missing(sd_seasonal)) {
       notfixed[3] <- 0
@@ -120,10 +119,10 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     seasonal_names <- NULL
     sd_seasonal <- NULL
   }
-
-
+  
+  
   m <- as.integer(1L + slope + seasonal * (period - 1))
-
+  
   if (missing(a1)) {
     a1 <- numeric(m)
   } else {
@@ -141,21 +140,21 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
       stop("Argument P1 must be m x m matrix, where m = ", m)
     }
   }
-
+  
   if (slope) {
     state_names <- c("level", "slope", seasonal_names)
   } else {
     state_names <- c("level", seasonal_names)
   }
-
+  
   Z <- matrix(0, m, 1)
   Z[1, 1] <- 1
   if (seasonal) {
     Z[2 + slope, 1] <- 1
   }
-
+  
   H <- matrix(sd_y$init)
-
+  
   T <- matrix(0, m, m)
   T[1, 1] <- 1
   if (slope) {
@@ -172,25 +171,25 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     R[1, 1] <- sd_level$init
   }
   if (slope && notfixed[2]) {
-    R[2, 1 + notfixed[1]] <- sd_slopel$init
+    R[2, 1 + notfixed[1]] <- sd_slope$init
   }
   if (seasonal && notfixed[3]) {
     R[2 + slope, 1 + notfixed[1] + (slope && notfixed[2])] <- sd_seasonal$init
   }
-
+  
   dim(H) <- 1
   dim(T) <- c(m, m, 1)
   dim(R) <- c(m, ncol(R), 1)
-
+  
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
-
+  
   names_ind <- c(TRUE, notfixed & c(TRUE, slope, seasonal))
   
   priors <- list(sd_y, sd_level, sd_slope, sd_seasonal, beta)
   priors <- priors[!sapply(priors, is.null)]
   names(priors) <-
-    c(c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind], names(beta))
+    c(c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind], names(coefs))
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
     a1 = a1, P1 = P1, xreg = xreg, coefs = coefs,
@@ -211,11 +210,11 @@ logLik.bsm <- function(object, ...) {
 #' @rdname kfilter
 #' @export
 kfilter.bsm <- function(object, ...) {
-
+  
   out <- bsm_filter(object$y, object$Z, object$H, object$T, object$R,
     object$a1, object$P1, object$slope, object$seasonal, object$fixed,
     object$xreg, object$coefs)
-
+  
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <-
     rownames(out$Ptt) <- names(object$a1)
@@ -226,22 +225,22 @@ kfilter.bsm <- function(object, ...) {
 #' @method fast_smoother bsm
 #' @export
 fast_smoother.bsm <- function(object, ...) {
-
+  
   out <- bsm_fast_smoother(object$y, object$Z, object$H, object$T,
     object$R, object$a1, object$P1, object$slope, object$seasonal, object$fixed,
     object$xreg, object$coefs)
-
+  
   colnames(out) <- names(object$a1)
   ts(out, start = start(object$y), frequency = object$period)
 }
 #' @method sim_smoother bsm
 #' @export
 sim_smoother.bsm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
-
+  
   out <- bsm_sim_smoother(object$y, object$Z, object$H, object$T, object$R,
     object$a1, object$P1, nsim, object$slope, object$seasonal, object$fixed,
     object$xreg, object$coefs, seed)
-
+  
   rownames(out) <- names(object$a1)
   aperm(out, c(2, 1, 3))
 }
@@ -249,11 +248,11 @@ sim_smoother.bsm <- function(object, nsim = 1, seed = sample(.Machine$integer.ma
 #' @method smoother bsm
 #' @export
 smoother.bsm <- function(object, ...) {
-
+  
   out <- bsm_smoother(object$y, object$Z, object$H, object$T, object$R,
     object$a1, object$P1, object$slope, object$seasonal, object$fixed,
     object$xreg, object$coefs)
-
+  
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
   out$alphahat <- ts(out$alphahat, start = start(object$y),
     frequency = object$period)
@@ -266,101 +265,52 @@ smoother.bsm <- function(object, ...) {
 #' @param n_threads Number of threads for state simulation.
 #' @inheritParams run_mcmc.gssm
 #' @export
-#' @examples
-#' init_sd <- 0.1 * sd(log10(UKgas))
-#' model <- bsm(log10(UKgas), sd_y = init_sd, sd_level = init_sd,
-#'   sd_slope = init_sd, sd_seasonal = init_sd)
-#' set.seed(123)
-#' mcmc_out <- run_mcmc(model, n_iter = 5000)
-#' names(mcmc_out)
-#' mcmc_out$acceptance_rate
-#' plot(mcmc_out$theta)
-#' summary(mcmc_out$theta)
-#' ts.plot(log10(UKgas), rowMeans(mcmc_out$alpha[, "level", ]), col = 1:2)
-#' pred <- predict(model, n_iter = 5000, n_ahead = 8, S = mcmc_out$S)
-#' ts.plot(pred$y, pred$mean, pred$interval, col = c(1, 2, 2, 2),
-#'   lty = c(1, 1, 2, 2))
-run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
+run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   log_space = FALSE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
-
-  type <- match.arg(type, c("full", "parameters", "summary", "parallel_full"))
-
-  if (missing(lower_prior)) {
-    lower_prior <- object$lower_prior
+  
+  type <- match.arg(type, c("full", "summary"))
+  
+  if(log_space) {
+    stop("log_space = TRUE is under construction.")
   }
-  if (missing(upper_prior)) {
-    upper_prior <- object$upper_prior
-  }
-  n_sd_par <- length(lower_prior) - ncol(object$xreg)
-
-  if (log_space && n_sd_par > 0) {
-    lower_prior[1:(length(lower_prior) - ncol(object$xreg))] <-
-      log(lower_prior[1:(length(lower_prior) - ncol(object$xreg))])
-    upper_prior[1:(length(lower_prior) - ncol(object$xreg))] <-
-      log(upper_prior[1:(length(lower_prior) - ncol(object$xreg))])
-  }
-
-
+  
   if (missing(S)) {
-    sd_init <- sd(object$y, na.rm = TRUE)
-    if (log_space) {
-      sd_init <- abs(log(sd_init))
-    }
-    S <- diag(pmin(c(rep(0.1 * sd_init, length.out = n_sd_par), pmax(1, object$coefs)),
-      abs(upper_prior - lower_prior)), length(lower_prior))
+    S <- diag(0.1 * abs(sapply(object$priors, "[[", "init")))
   }
-
+  
+  priors <- combine_priors(object$priors)
+  
   out <- switch(type,
     full = {
-      out <- bsm_mcmc_full(object$y, object$Z, object$H, object$T, object$R,
-        object$a1, object$P1, lower_prior, upper_prior, n_iter,
-        nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
-        object$seasonal, object$fixed, object$xreg, object$coefs, seed, log_space, end_adaptive_phase)
-
+      out <- bsm_run_mcmc(object$y, object$Z, object$H, object$T, object$R,
+        object$a1, object$P1, object$slope,
+        object$seasonal, object$fixed, object$xreg, object$coefs,
+        priors$prior_type, priors$params, n_iter,
+        sim_states, n_burnin, n_thin, gamma, target_acceptance, S, seed, log_space, end_adaptive_phase)
+      
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
       out
     },
-    parallel_full = {
-      out <- bsm_mcmc_parallel_full(object$y, object$Z, object$H, object$T, object$R,
-        object$a1, object$P1, lower_prior, upper_prior, n_iter,
-        n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
-        object$seasonal, object$fixed, object$xreg, object$coefs, seed, log_space,
-        nsim_states, n_threads, end_adaptive_phase)
-      if (log_space && n_sd_par > 0) {
-        out$theta[, 1:n_sd_par] <- exp(out$theta[, 1:n_sd_par])
-      }
-      out$alpha <-  aperm(out$alpha, c(2, 1, 3))
-      colnames(out$alpha) <- names(object$a1)
-      out
-    },
-    parameters = {
-      bsm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
-        object$a1, object$P1, lower_prior, upper_prior, n_iter,
-        n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
-        object$seasonal, object$fixed, object$xreg, object$coefs,
-        seed, log_space, end_adaptive_phase)
-
-    },
     summary = {
-      out <- bsm_mcmc_summary(object$y, object$Z, object$H, object$T, object$R,
-        object$a1, object$P1, lower_prior, upper_prior, n_iter,
-        n_burnin, n_thin, gamma, target_acceptance, S, object$slope,
-        object$seasonal, object$fixed, object$xreg, object$coefs, seed,
+      out <- bsm_run_mcmc_summary(object$y, object$Z, object$H, object$T, object$R,
+        object$a1, object$P1, object$slope,
+        object$seasonal, object$fixed, object$xreg, object$coefs, 
+        priors$prior_type, priors$params, n_iter,
+        n_burnin, n_thin, gamma, target_acceptance, S, seed,
         log_space, end_adaptive_phase)
-
+      
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y),
         frequency = object$period)
       out
     })
-  if (log_space && type != "parallel" && n_sd_par > 0) {
+  if (log_space && (ncol(out$theta) - length(object$coefs)) > 0) {
     out$theta[, 1:n_sd_par] <- exp(out$theta[, 1:n_sd_par])
   }
-  out$S <- matrix(out$S, length(lower_prior), length(lower_prior))
   names_ind <- c(TRUE, !object$fixed & c(TRUE, object$slope, object$seasonal))
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-
     c(c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind],
@@ -377,9 +327,9 @@ run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
 #' @examples
 #' require("graphics")
 #' y <- log10(JohnsonJohnson)
-#' init_sd <- 0.1
-#' model <- bsm(y, sd_y = init_sd, sd_level = init_sd,
-#'   sd_slope = init_sd, sd_seasonal = init_sd)
+#' prior <- uniform(0.01, 0, 1)
+#' model <- bsm(y, sd_y = prior, sd_level = prior,
+#'   sd_slope = prior, sd_seasonal = prior)
 #'
 #' pred1 <- predict(model, n_iter = 5000, n_ahead = 8)
 #' pred2 <- predict(StructTS(y, type = "BSM"), n.ahead = 8)
@@ -388,43 +338,25 @@ run_mcmc.bsm <- function(object, n_iter, nsim_states = 1, type = "full",
 #' cbind(0, -qnorm(0.95) * pred2$se, qnorm(0.95) * pred2$se),
 #'   col = c(1, 1, 1, 2, 2, 2))
 #'
-predict.bsm <- function(object, n_iter, lower_prior, upper_prior, newdata = NULL,
+predict.bsm <- function(object, n_iter, newdata = NULL,
   n_ahead = 1, interval = "response", probs = c(0.05, 0.95),
   method = "quantile", return_MCSE = TRUE, nsim_states = 1, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
-  seed = sample(.Machine$integer.max, size = 1), log_space = FALSE, ...) {
-
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
   interval <- pmatch(interval, c("mean", "response"))
   method <- match.arg(method, c("parametric", "quantile"))
-
-  if (missing(lower_prior)) {
-    lower_prior <- object$lower_prior
-  }
-  if (missing(upper_prior)) {
-    upper_prior <- object$upper_prior
-  }
-  n_sd_par <- length(lower_prior) - ncol(object$xreg)
-
-  if (log_space && n_sd_par > 0) {
-    lower_prior[1:(length(lower_prior) - ncol(object$xreg))] <-
-      log(lower_prior[1:(length(lower_prior) - ncol(object$xreg))])
-    upper_prior[1:(length(lower_prior) - ncol(object$xreg))] <-
-      log(upper_prior[1:(length(lower_prior) - ncol(object$xreg))])
-  }
-
+  
   if (missing(S)) {
-    sd_init <- sd(object$y, na.rm = TRUE)
-    if (log_space) {
-      sd_init <- abs(log(sd_init))
-    }
-    S <- diag(pmin(c(rep(0.1 * sd_init, length.out = n_sd_par), pmax(1, object$coefs)),
-      abs(upper_prior - lower_prior)), length(lower_prior))
+    S <- diag(0.1 * abs(sapply(object$priors, "[[", "init")), length(object$priors))
   }
-
-
+  
+  priors <- combine_priors(object$priors)
+  
+  
   endtime <- end(object$y) + c(0, n_ahead)
   y <- c(object$y, rep(NA, n_ahead))
-
+  
   if (length(object$coefs) > 0) {
     if (is.null(newdata) || nrow(newdata) != n_ahead ||
         ncol(newdata) != length(object$coefs)) {
@@ -435,16 +367,17 @@ predict.bsm <- function(object, n_iter, lower_prior, upper_prior, newdata = NULL
   probs <- sort(unique(c(probs, 0.5)))
   if (method == "parametric") {
     out <- bsm_predict(y, object$Z, object$H, object$T, object$R,
-      object$a1, object$P1, lower_prior, upper_prior, n_iter,
-      n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
+      object$a1, object$P1, 
       object$slope, object$seasonal, object$fixed, object$xreg, object$coefs,
-      probs, seed, log_space)
-
+      priors$prior_types, priors$params, n_iter,
+      n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
+      probs, seed, FALSE)
+    
     if (return_MCSE) {
       ses <- matrix(0, n_ahead, length(probs))
-
+      
       nsim <- nrow(out$y_mean)
-
+      
       for (i in 1:n_ahead) {
         for (j in 1:length(probs)) {
           pnorms <- pnorm(q = out$intervals[i, j], out$y_mean[, i], out$y_sd[, i])
@@ -453,7 +386,7 @@ predict.bsm <- function(object, n_iter, lower_prior, upper_prior, newdata = NULL
             sum(dnorm(x = out$intervals[i, j], out$y_mean[, i], out$y_sd[, i]) / nsim)
         }
       }
-
+      
       pred <- list(y = object$y, mean = ts(colMeans(out$y_mean), end = endtime, frequency = object$period),
         intervals = ts(out$intervals, end = endtime, frequency = object$period,
           names = paste0(100 * probs, "%")),
@@ -466,10 +399,11 @@ predict.bsm <- function(object, n_iter, lower_prior, upper_prior, newdata = NULL
     }
   } else {
     out <- bsm_predict2(y, object$Z, object$H, object$T, object$R,
-      object$a1, object$P1, lower_prior, upper_prior, n_iter, nsim_states,
+      object$a1, object$P1,object$slope, object$seasonal, object$fixed, 
+      object$xreg, object$coefs, priors$prior_types, priors$params, n_iter, nsim_states,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-      object$slope, object$seasonal, object$fixed, object$xreg, object$coefs, seed, log_space)
-
+      seed, FALSE)
+    
     pred <- list(y = object$y, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
       intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = object$period,
         names = paste0(100 * probs, "%")))

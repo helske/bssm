@@ -95,12 +95,12 @@ List gssm_run_mcmc(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
     return List::create(Named("alpha") = alpha_store,
       Named("theta") = theta_store,
       Named("acceptance_rate") = acceptance_rate,
-      Named("S") = S,  Named("logLik") = posterior_store);
+      Named("S") = S,  Named("posterior") = posterior_store);
   } else {
     return List::create(
       Named("theta") = theta_store,
       Named("acceptance_rate") = acceptance_rate,
-      Named("S") = S,  Named("logLik") = posterior_store);
+      Named("S") = S,  Named("posterior") = posterior_store);
     
   }
 }

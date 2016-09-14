@@ -5,7 +5,7 @@
 \alias{run_mcmc.gssm}
 \title{Bayesian Inference of State Space Models using MCMC with RAM}
 \usage{
-\method{run_mcmc}{bsm}(object, n_iter, nsim_states = 1, type = "full",
+\method{run_mcmc}{bsm}(object, n_iter, sim_states = TRUE, type = "full",
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   log_space = FALSE, n_threads = 1, seed = sample(.Machine$integer.max,
@@ -21,9 +21,6 @@
 \item{object}{Model object.}
 
 \item{n_iter}{Number of MCMC iterations.}
-
-\item{nsim_states}{Number of simulations of states per MCMC iteration. Only
-used when \code{type = "full"}.}
 
 \item{type}{Type of output. Default is \code{"full"}, which returns
 samples from the posterior \eqn{p(\alpha, \theta}. Option
@@ -64,6 +61,9 @@ distribution is \eqn{SS'}.}
 values marking the unknown parameters which are to be estimated. Must be of
 same dimension as the corresponding elements of the model object.}
 
+\item{nsim_states}{Number of simulations of states per MCMC iteration. Only
+used when \code{type = "full"}.}
+
 \item{lower_prior, upper_prior}{Bounds of the uniform prior for parameters
 \eqn{\theta}. Optional for \code{bsm} objects.}
 }
@@ -81,20 +81,5 @@ Note that the proposal for all parameters is multivariate Gaussian,
 with uniform priors for each parameters. For \code{\link{bsm}} models,
 generating proposals for standard deviations in log-scale is also possible
 with argument \code{log_space = TRUE}.
-}
-\examples{
-init_sd <- 0.1 * sd(log10(UKgas))
-model <- bsm(log10(UKgas), sd_y = init_sd, sd_level = init_sd,
-  sd_slope = init_sd, sd_seasonal = init_sd)
-set.seed(123)
-mcmc_out <- run_mcmc(model, n_iter = 5000)
-names(mcmc_out)
-mcmc_out$acceptance_rate
-plot(mcmc_out$theta)
-summary(mcmc_out$theta)
-ts.plot(log10(UKgas), rowMeans(mcmc_out$alpha[, "level", ]), col = 1:2)
-pred <- predict(model, n_iter = 5000, n_ahead = 8, S = mcmc_out$S)
-ts.plot(pred$y, pred$mean, pred$interval, col = c(1, 2, 2, 2),
-  lty = c(1, 1, 2, 2))
 }
 

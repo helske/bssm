@@ -33,6 +33,11 @@ public:
     unsigned int, unsigned int, unsigned int, double, double, arma::mat&, const arma::vec,
     bool, bool, bool, arma::mat&, arma::vec&, arma::cube&);
 
+  
+  double run_mcmc_pf(const arma::uvec&, const arma::mat&, unsigned int,
+    unsigned int, unsigned int, unsigned int, double, double, arma::mat&, const arma::vec,
+    bool, bool, bool, arma::mat&, arma::vec&, arma::cube&);
+  
   double run_mcmc_summary(const arma::uvec&, const arma::mat&, unsigned int,
     unsigned int, unsigned int, unsigned int, double, double, arma::mat&, const arma::vec,
     bool, bool, bool, arma::mat&, arma::vec&, arma::mat&, arma::cube&, arma::mat&, arma::cube&);

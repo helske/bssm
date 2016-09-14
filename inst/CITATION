@@ -1,3 +1,4 @@
+c(
   bibentry(
     bibtype = "Manual",
     title = "{bssm}: Bayesian Inference of Exponential Family State Space Models",
@@ -6,4 +7,18 @@
     note = sprintf("R package version %s", meta$Version),
     url = "http://github.com/helske/bssm",
     key = "bssm"
+  ),
+  bibentry(
+    bibtype = "Article",
+    author = {{Vihola}, M. and {Helske}, J. and {Franks}, J.},
+    title = "{Importance sampling type correction of {M}arkov chain {M}onte {C}arlo and exact approximations}",
+    journal = {ArXiv e-prints},
+    archivePrefix = "arXiv",
+    eprint = {1609.02541},
+    primaryClass = "stat.CO",
+    keywords = {Statistics - Computation, Mathematics - Probability},
+    year = 2016,
+    month = sep,
+    key = "ISMCMC"
   )
+)

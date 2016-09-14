@@ -5,11 +5,11 @@
 \alias{predict.ngssm}
 \title{Predictions for Non-Gaussian State Space Models}
 \usage{
-\method{predict}{ng_bsm}(object, n_iter, nsim_states, lower_prior, upper_prior,
-  newdata = NULL, n_ahead = 1, interval = "mean", probs = c(0.05, 0.95),
+\method{predict}{ng_bsm}(object, n_iter, nsim_states, newdata = NULL,
+  n_ahead = 1, interval = "mean", probs = c(0.05, 0.95),
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size =
-  1), newphi = NULL, log_space = FALSE, ...)
+  1), newphi = NULL, ...)
 
 \method{predict}{ngssm}(object, n_iter, nsim_states, lower_prior, upper_prior,
   newdata = NULL, n_ahead = 1, interval = "mean", probs = c(0.05, 0.95),
@@ -24,12 +24,6 @@
 
 \item{nsim_states}{Number of simulations of states per MCMC iteration. Only
 used when \code{type = "full"}.}
-
-\item{lower_prior}{Bounds of the uniform prior for parameters
-\eqn{\theta}. Optional for \code{bsm} objects.}
-
-\item{upper_prior}{Bounds of the uniform prior for parameters
-\eqn{\theta}. Optional for \code{bsm} objects.}
 
 \item{newdata}{Matrix containing the covariate values for the future time
 points. Defaults to zero matrix of appropriate size.}
@@ -62,9 +56,13 @@ distribution is \eqn{SS'}.}
 Defaults to 1, expect for negative binomial distribution, where the initial
 value is taken from \code{object$phi}.}
 
-\item{log_space}{Generate proposals for standard deviations in log-space. Default is \code{FALSE}.}
-
 \item{...}{Ignored.}
+
+\item{lower_prior}{Bounds of the uniform prior for parameters
+\eqn{\theta}. Optional for \code{bsm} objects.}
+
+\item{upper_prior}{Bounds of the uniform prior for parameters
+\eqn{\theta}. Optional for \code{bsm} objects.}
 
 \item{Z_est, T_est, R_est}{Matrices or arrays with same dimensions as the
 corresponding system matrices in \code{object}, where \code{NA} values
@@ -83,5 +81,14 @@ Helske (2016).
 Note that for non-Gaussian models, the parametric method produces only approximate
 intervals for the mean even when importance sampling is used, by assuming
 that \eqn{p(\alpha | y)} is Gaussian.
+}
+\examples{
+data(poisson_series)
+model <- ng_bsm(poisson_series, sd_level = halfnormal(0.1, 1), 
+  sd_slope=halfnormal(0.01, 0.1), distribution = "poisson")
+pred <- predict(model, n_iter = 1e4, nsim = 10, n_ahead = 10, 
+  probs = seq(0.05,0.95, by = 0.05)) 
+autoplot(pred, median_color = "blue", mean_color = "red")
+
 }
 

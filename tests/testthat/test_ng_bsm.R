@@ -21,7 +21,7 @@ test_that("results are comparable to KFAS",{
   model_KFAS$P1inf[] <- 0
   diag(model_KFAS$P1) <- 1e2
   model_bssm <- ng_bsm(1:10, P1 = diag(1e2,2),
-    sd_level = 0.01, phi = 2:11, distribution = "poisson")
+    sd_level = uniform(0.01, 0, 1), phi = 2:11, distribution = "poisson")
   expect_equal(logLik(model_KFAS,convtol = 1e-12), logLik(model_bssm,0))
   out_KFAS <- KFS(model_KFAS, filtering = "state", convtol = 1e-12)
   expect_error(out_bssm <- kfilter(model_bssm), NA)
@@ -35,9 +35,9 @@ test_that("results are comparable to KFAS",{
 test_that("MCMC results are correct",{
   set.seed(123)
   model_bssm <- ng_bsm(rpois(10,3), P1 = diag(2,2),
-    sd_level = 2, phi = 22:31, distribution = "poisson")
+    sd_level = uniform(2, 0, 10), phi = 22:31, distribution = "poisson")
 
-  expect_error(out <- run_mcmc(model_bssm, n_iter = 5, nsim_states = 5), NA)
+  expect_error(out <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), NA)
 
   testvalues <- structure(
     c(-30.4836913628259, -30.9657477131774, -28.3824943022477),

@@ -140,7 +140,7 @@ logLik.ngssm <- function(object, nsim_states,
   }
 
   ngssm_loglik(object$y, object$Z, object$T, object$R, object$a1,
-    object$P1, object$phi, object$xreg, object$beta,
+    object$P1, object$phi, object$xreg, object$coefs,
     pmatch(object$distribution, c("poisson", "binomial")),
     initial_signal(object$y, object$phi, object$distribution), nsim_states, seed)
 
@@ -148,7 +148,7 @@ logLik.ngssm <- function(object, nsim_states,
 kfilter.ngssm <- function(object, ...) {
 
   out <- ngssm_filter(object$y, object$Z, object$T, object$R,
-    object$a1, object$P1, object$phi, object$xreg, object$beta,
+    object$a1, object$P1, object$phi, object$xreg, object$coefs,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     initial_signal(object$y, object$phi, object$distribution))
 
@@ -183,7 +183,7 @@ initial_signal <- function(y, phi, distribution) {
   }
   y
 }
-#' Bayesian Inference of State Space Models using MCMC with RAM
+#' Bayesian Inference of State Space Models using MCMC
 #'
 #' Adaptive Markov chain Monte Carlo simulation of state space models using
 #' Robust Adaptive Metropolis algorithm by Vihola (2012).
@@ -192,6 +192,20 @@ initial_signal <- function(y, phi, distribution) {
 #' @rdname run_mcmc_ng
 #' @param object Model object.
 #' @param n_iter Number of MCMC iterations.
+#' @param nsim_states Number of states samples per MCMC iteration.
+#' @param type Either \code{"full"} (default), or \code{"summary"}. The 
+#' former produces samples of states whereas the latter gives the mean and 
+#' variance estimates of the states.
+#' @param method Whether pseudo-marginal MCMC (\code{"PM"}) (default) or 
+#' importance sampling type correction (\code{"IS"}) is used.
+#' @param simulation_method If \code{"IS"} non-sequential importance sampling based 
+#' on Gaussian approximation is used. If \code{"PF"} particle filtering (bootstrap filter)
+#' is used.
+#' @param correction_method For IS correction method, which correction method 
+#' should be used? Possible choices are \code{"IS1"}, \code{"IS2"} and \code{"PF"}. 
+#' See references for details.
+#' @param delayed_acceptance For pseudo-marginal MCMC, should delayed acceptance based
+#' on the Gaussian approximation be used?
 #' @param Z_est,T_est,R_est Matrices or arrays with same dimensions as the
 #' corresponding system matrices in \code{object}, where \code{NA} values
 #' identify the unknown parameters for estimation.
@@ -260,7 +274,7 @@ run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, lower_prior, upp
     object$a1, object$P1, object$phi, pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
     lower_prior, upper_prior, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, T_ind,
-    R_ind, object$xreg, object$beta,
+    R_ind, object$xreg, object$coefs,
     initial_signal(object$y, object$phi, object$distribution), seed, end_adaptive_phase)
 
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
@@ -353,9 +367,9 @@ predict.ngssm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
   endtime <- end(object$y) + c(0, n_ahead)
   y <- c(object$y, rep(NA, n_ahead))
 
-  if (length(object$beta) > 0) {
+  if (length(object$coefs) > 0) {
     if (is.null(newdata) || nrow(newdata) != n_ahead ||
-        ncol(newdata) != length(object$beta)) {
+        ncol(newdata) != length(object$coefs)) {
       stop("Model contains regression part but newdata is missing or its dimensions do not match with n_ahead and length of beta. ")
     }
     object$xreg <- rbind(object$xreg, newdata)
@@ -376,7 +390,7 @@ predict.ngssm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
     object$a1, object$P1, object$phi, pmatch(object$distribution, c("poisson", "binomial")),
     lower_prior, upper_prior, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-    Z_ind, T_ind, R_ind, object$xreg, object$beta,
+    Z_ind, T_ind, R_ind, object$xreg, object$coefs,
     initial_signal(y, object$phi, object$distribution), seed)
 
   pred <- list(y = object$y, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
@@ -398,7 +412,7 @@ importance_sample.ngssm <- function(object, nsim,
   ngssm_importance_sample(object$y, object$Z, object$T, object$R, object$a1,
     object$P1, object$phi,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
-    object$xreg, object$beta,
+    object$xreg, object$coefs,
     object$init_signal, nsim, seed)
 }
 
@@ -410,7 +424,7 @@ gaussian_approx.ngssm<- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
   ngssm_approx_model(object$y, object$Z, object$T, object$R, object$a1,
     object$P1, object$phi,
     pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
-    object$xreg, object$beta,
+    object$xreg, object$coefs,
     object$init_signal, max_iter, conv_tol)
 }
 

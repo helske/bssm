@@ -50,7 +50,11 @@ double gssm::prior_pdf(const arma::vec& theta, const arma::uvec& prior_types,
       q += R::dunif(theta(i), params(0, i), params(1, i), 1);
       break;
     case 1  :
-      q += log(2.0) + R::dnorm(theta(i), 0, params(0, i), 1);
+      if (theta(i) < 0) {
+        return -arma::datum::inf;
+      } else {
+        q += log(2.0) + R::dnorm(theta(i), 0, params(0, i), 1);
+      }
       break;
     case 2  :
       q += R::dnorm(theta(i), params(0, i), params(1, i), 1);
@@ -660,7 +664,7 @@ double gssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_pars
   }
   
   return acceptance_rate / (n_iter - n_burnin);
-
+  
 }
 
 double gssm::mcmc_summary(const arma::uvec& prior_types, const arma::mat& prior_pars,
@@ -674,7 +678,7 @@ double gssm::mcmc_summary(const arma::uvec& prior_types, const arma::mat& prior_
   
   double acceptance_rate = run_mcmc(prior_types, prior_pars, n_iter, false,
     n_burnin, n_thin, gamma, target_acceptance, S, end_ram, 
-  theta_store, posterior_store, alpha_store);
+    theta_store, posterior_store, alpha_store);
   
   arma::cube Valpha(m, m, n, arma::fill::zeros);
   
@@ -702,8 +706,8 @@ double gssm::mcmc_summary(const arma::uvec& prior_types, const arma::mat& prior_
   return acceptance_rate;
 }
 
-List gssm::predict(const arma::uvec& prior_types, const arma::mat& prior_pars, unsigned int n_iter,
-  unsigned int n_burnin, unsigned int n_thin, double gamma,
+List gssm::predict(const arma::uvec& prior_types, const arma::mat& prior_pars, 
+  unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat S, unsigned int n_ahead,
   unsigned int interval, arma::vec probs) {
   
@@ -802,8 +806,8 @@ List gssm::predict(const arma::uvec& prior_types, const arma::mat& prior_pars, u
 }
 
 
-arma::mat gssm::predict2(const arma::uvec& prior_types, const arma::mat& prior_pars, 
-  unsigned int n_iter, unsigned int nsim_states,
+arma::mat gssm::predict2(const arma::uvec& prior_types, 
+  const arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat S, unsigned int n_ahead,
   unsigned int interval) {

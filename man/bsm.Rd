@@ -11,21 +11,20 @@ bsm(y, sd_y, sd_level, sd_slope, sd_seasonal, beta, xreg = NULL,
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
 
-\item{sd_y}{Standard error of observation equation. Used as an initial
-value in MCMC.}
+\item{sd_y}{Prior for the standard error of observation equation. 
+See \link{\code{priors}} for details.}
 
-\item{sd_level}{Standard error of level equation. Used as an initial
-value in MCMC. If missing, \code{sd_level} is fixed to zero.}
+\item{sd_level}{Prior for the standard error of the noise in level equation. 
+See \link{\code{priors}} for details. If missing, \code{sd_level} is fixed to zero.}
 
-\item{sd_slope}{Standard error of slope equation. Used as an initial
-value in MCMC. If missing, \code{sd_slope} is fixed to zero.
+\item{sd_slope}{Prior for the standard error  of the noise in slope equation. 
+See \link{\code{priors}} for details. If missing, \code{sd_slope} is fixed to zero.
 Ignored if \code{slope = FALSE}.}
 
-\item{sd_seasonal}{Standard error of seasonal equation. Used as an initial
-value in MCMC. If missing, \code{sd_seasonal} is fixed to zero.}
+\item{sd_seasonal}{Prior for the standard error of the noise in seasonal equation.
+See \link{\code{priors}} for details. If missing, \code{sd_seasonal} is fixed to zero.}
 
-\item{beta}{Regression coefficients. Used as an initial
-value in MCMC. Defaults to vector of zeros.}
+\item{beta}{Prior for the regression coefficients.}
 
 \item{xreg}{Matrix containing covariates.}
 
@@ -53,14 +52,14 @@ and seasonal component.
 }
 \examples{
 
-init_sd <- 0.1 * sd(log10(UKgas))
-model <- bsm(log10(UKgas), sd_y = init_sd, sd_level = init_sd,
-  sd_slope = init_sd, sd_seasonal = init_sd)
+prior <- uniform(0.1 * sd(log10(UKgas)), 0, 1)
+model <- bsm(log10(UKgas), sd_y = prior, 
+sd_level =  prior, sd_slope =  prior, sd_seasonal =  prior)
 
 mcmc_out <- run_mcmc(model, n_iter = 5000)
 summary(mcmc_out$theta)$stat
-mcmc_out$theta[which.max(mcmc_out$logLik), ]
-sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)
+mcmc_out$theta[which.max(mcmc_out$posterior), ]
+sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
 
 }
 

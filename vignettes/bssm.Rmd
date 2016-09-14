@@ -3,7 +3,7 @@ title: "bssm: Bayesian Inference of Exponential Family State Space Models in R"
 author: |
   | Jouni Helske and Matti Vihola
   | University of Jyväskylä, Department of Mathematics and Statistics, Finland
-date: "June 26, 2016"
+date: "September 14, 2016"
 output: 
   pdf_document:
     fig_caption: yes
@@ -12,7 +12,7 @@ output:
     fig_width: 8
 bibliography: bssm.bib
 vignette: |
-  %\VignetteIndexEntry{Bayesian Inference of Exponential Family State Space Models in R}
+  %\VignetteIndexEntry{Bayesian Inference of State Space Models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
   %\VignetteDepends{ggplot2}
@@ -24,7 +24,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-The R package `bssm` is designed for Bayesian inference of exponential family state space models of form
+The R package `bssm` is designed for Bayesian inference of stochastic volatility and exponential family state space models. The exponential family state space model is assumed to have a form
 
 $$
 \begin{aligned}
@@ -43,9 +43,22 @@ where $\eta_t \sim N(0, I_k)$ and $\alpha_1 \sim N(a_1, P_1)$ independently of e
 
 * Negative binomial distribution: $p(y_t | Z_t \alpha_t, x'_t \beta) = \textrm{negative binomial}(\textrm{exp}(x'_t \beta + Z_t \alpha_t), \phi)$, where $\textrm{exp}(x'_t \beta + Z_t \alpha_t)$ is the expected value and $\phi_t$ is the dispersion parameter.
 
+Currently only basic stochastic volatility model is supported, defined as 
+$$
+\begin{aligned}
+             y_t  &= \sigma 
+              \exp(\alpha_t/2)\epsilon_t,  &\epsilon_t &\sim N(0, 1)\\
+              \alpha_{t+1} &= \phi \alpha_t + \sigma_{\eta}\eta_t,
+              &\eta_t &\sim N(0, 1),
+\end{aligned}
+$$
+with $\alpha_1 \sim  N(0, \sigma^2_{\eta} / (1-\phi^2))$.
+
 The `bssm` package aims to provide easy-to-use functions for fully Bayesian inference of common time series models such basic structural time series model (BSM) [@Harvey1989] with exogenous covariates, making it straighforward and efficient to make predictions and other inference in a Bayesian setting.
 
-The Bayesian framework of `bssm` is based on Markov chain Monte Carlo (MCMC) approach with adaptive random walk Metropolis updating, using RAM algorithm by [@Vihola2012]. This approach seems to work very well in practice, and it allows an efficient "black-box" type of modelling were the user does not need to be too concerned of "tuning" of the MCMC algoritm. The priors for the unknown model parameters $\theta$ (regression coefficients $\beta$ and unknown elements in system matrices of the observation or state equations) are currently  assumed to be uniform on some user-defined closed interval $[a, b]$, although this assumption will be relaxed in the future.
+The Bayesian framework of `bssm` is based on [@vihola-helske-franks]. The core methodology reliest on Markov chain Monte Carlo (MCMC) approach with adaptive random walk Metropolis updating, using RAM algorithm by [@Vihola2012]. 
+The RAM algorithm approach seems to work very well in practice, and it allows an efficient "black-box" type of modelling were the user does not need to be too concerned of "tuning" of the MCMC algorithm. Several efficient MCMC variants can be used, such as pseudo-marginal MCMC based on particle filtering, optionally with delayed acceptance, as well as the two-step procedure based on importance sampling type correction introduced in [@vihola-helske-franks]. 
+
 
 # MCMC algorithm for Gaussian state space models
 
@@ -102,15 +115,16 @@ library("bssm")
 set.seed(123)
 
 init_sd <- 0.1 * sd(log10(UKgas))
-model <- bsm(log10(UKgas), sd_y = init_sd,
-  sd_slope = init_sd, sd_seasonal = init_sd)
+prior <- halfnormal(init_sd, 1)
+model <- bsm(log10(UKgas), sd_y = prior, sd_level = prior,
+  sd_slope = prior, sd_seasonal = prior)
 mcmc_out <- run_mcmc(model, n_iter = 6e4, n_burnin = 1e4)
 mcmc_out
 
 plot(mcmc_out$theta)
 
 # posterior mode estimates (diffuse priors):
-mcmc_out$theta[which.max(mcmc_out$logLik), ]
+mcmc_out$theta[which.max(mcmc_out$posterior), ]
 
 # posterior covariance matrix:
 cov(mcmc_out$theta)
@@ -129,9 +143,9 @@ ts.plot(model$y, rowMeans(mcmc_out$alpha[, "level", ]), col = 1:2)
 Prediction intervals:
 
 ```{r predict, dev.args=list(pointsize = 10), fig.cap="Mean predictions and prediction intervals."}
-pred <- predict(model, n_iter = 1e4, n_ahead = 40, 
+pred <- predict(model, n_iter = 1e4, n_ahead = 40,
   probs = c(0.025, 0.1, 0.9, 0.975), S = mcmc_out$S)
-ts.plot(log10(UKgas), pred$mean, pred$intervals[,-3], 
+ts.plot(log10(UKgas), pred$mean, pred$intervals[,-3],
   col = c(1, 2, c(3, 4, 4, 3)), lty = c(1, 1, rep(2, 4)))
 ```
 
