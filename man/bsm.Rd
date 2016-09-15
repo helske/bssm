@@ -12,17 +12,17 @@ bsm(y, sd_y, sd_level, sd_slope, sd_seasonal, beta, xreg = NULL,
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
 
 \item{sd_y}{Prior for the standard error of observation equation. 
-See \link{\code{priors}} for details.}
+See \code{\link{priors}} for details.}
 
 \item{sd_level}{Prior for the standard error of the noise in level equation. 
-See \link{\code{priors}} for details. If missing, \code{sd_level} is fixed to zero.}
+See \code{\link{priors}} for details. If missing, \code{sd_level} is fixed to zero.}
 
 \item{sd_slope}{Prior for the standard error  of the noise in slope equation. 
-See \link{\code{priors}} for details. If missing, \code{sd_slope} is fixed to zero.
+See \code{\link{priors}} for details. If missing, \code{sd_slope} is fixed to zero.
 Ignored if \code{slope = FALSE}.}
 
 \item{sd_seasonal}{Prior for the standard error of the noise in seasonal equation.
-See \link{\code{priors}} for details. If missing, \code{sd_seasonal} is fixed to zero.}
+See \code{\link{priors}} for details. If missing, \code{sd_seasonal} is fixed to zero.}
 
 \item{beta}{Prior for the regression coefficients.}
 

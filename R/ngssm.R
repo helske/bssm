@@ -138,19 +138,20 @@ logLik.ngssm <- function(object, nsim_states,
   if (!is.null(ncol(object$y)) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
   }
-
-  ngssm_loglik(object$y, object$Z, object$T, object$R, object$a1,
-    object$P1, object$phi, object$xreg, object$coefs,
-    pmatch(object$distribution, c("poisson", "binomial")),
-    initial_signal(object$y, object$phi, object$distribution), nsim_states, seed)
+  initial_signal <- initial_signal(object$y, object$phi, object$distribution)
+  object$distribution <- pmatch(object$distribution, 
+    c("poisson", "binomial", "negative binomial"))
+ 
+  ngssm_loglik(object, init_signal, nsim_states, seed)
 
 }
 kfilter.ngssm <- function(object, ...) {
 
-  out <- ngssm_filter(object$y, object$Z, object$T, object$R,
-    object$a1, object$P1, object$phi, object$xreg, object$coefs,
-    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
-    initial_signal(object$y, object$phi, object$distribution))
+  initial_signal <- initial_signal(object$y, object$phi, object$distribution)
+  object$distribution <- pmatch(object$distribution, 
+    c("poisson", "binomial", "negative binomial"))
+  
+  out <- ngssm_filter(object, init_signal)
 
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <-
@@ -226,7 +227,7 @@ initial_signal <- function(y, phi, distribution) {
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @export
-run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, lower_prior, upper_prior,
+run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, priors,
   nsim_states = 1, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE, seed = sample(.Machine$integer.max, size = 1),
   ...) {
@@ -269,13 +270,14 @@ run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, lower_prior, upp
   if (length(lower_prior) == length(upper_prior) && nrow(S) == length(lower_prior)) {
     stop("Number of unknown parameters is not equal to the length of the prior vector.")
   }
-
-  out <- ngssm_mcmc_full(object$y, object$Z, object$T, object$R,
-    object$a1, object$P1, object$phi, pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
-    lower_prior, upper_prior, n_iter,
+  initial_signal <- initial_signal(object$y, object$phi, object$distribution)
+  object$distribution <- pmatch(object$distribution, 
+    c("poisson", "binomial", "negative binomial"))
+  priors <- combine_priors(priors)
+  
+  out <- ngssm_mcmc_full(object, priors$prior_types, priors$params, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, T_ind,
-    R_ind, object$xreg, object$coefs,
-    initial_signal(object$y, object$phi, object$distribution), seed, end_adaptive_phase)
+    R_ind, initial_signal, seed, end_adaptive_phase)
 
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   colnames(out$alpha) <- names(object$a1)
@@ -314,7 +316,7 @@ run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, lower_prior, upp
 #' corresponding system matrices in \code{object}, where \code{NA} values
 #' identify the unknown parameters for estimation.
 #' @export
-predict.ngssm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
+predict.ngssm <- function(object, n_iter, nsim_states, priors,
   newdata = NULL,
   n_ahead = 1, interval = "mean",
   probs = c(0.05, 0.95),
@@ -365,7 +367,8 @@ predict.ngssm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
   }
 
   endtime <- end(object$y) + c(0, n_ahead)
-  y <- c(object$y, rep(NA, n_ahead))
+  y_orig <- object$y
+  object$y <- c(object$y, rep(NA, n_ahead))
 
   if (length(object$coefs) > 0) {
     if (is.null(newdata) || nrow(newdata) != n_ahead ||
@@ -385,13 +388,13 @@ predict.ngssm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
   }
   object$phi <- c(object$phi, newphi)
   probs <- sort(unique(c(probs, 0.5)))
-
-  out <- ngssm_predict2(y, object$Z, object$T, object$R,
-    object$a1, object$P1, object$phi, pmatch(object$distribution, c("poisson", "binomial")),
-    lower_prior, upper_prior, n_iter,
+  initial_signal <- initial_signal(object$y, object$phi, object$distribution)
+  object$distribution <- pmatch(object$distribution, 
+    c("poisson", "binomial", "negative binomial"))
+  priors <- combine_priors(priors)
+  out <- ngssm_predict2(object, priors$prior_types, priors$params, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-    Z_ind, T_ind, R_ind, object$xreg, object$coefs,
-    initial_signal(y, object$phi, object$distribution), seed)
+    Z_ind, T_ind, R_ind, initial_signal, seed)
 
   pred <- list(y = object$y, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
     intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = object$period,
@@ -409,11 +412,11 @@ predict.ngssm <- function(object, n_iter, nsim_states, lower_prior, upper_prior,
 importance_sample.ngssm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
-  ngssm_importance_sample(object$y, object$Z, object$T, object$R, object$a1,
-    object$P1, object$phi,
-    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
-    object$xreg, object$coefs,
-    object$init_signal, nsim, seed)
+  initial_signal <- initial_signal(object$y, object$phi, object$distribution)
+  object$distribution <- pmatch(object$distribution, 
+    c("poisson", "binomial", "negative binomial"))
+  
+  ngssm_importance_sample(object, initial_signal, nsim, seed)
 }
 
 #' @method gaussian_approx ngssm
@@ -421,10 +424,10 @@ importance_sample.ngssm <- function(object, nsim,
 #' @export
 gaussian_approx.ngssm<- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
 
-  ngssm_approx_model(object$y, object$Z, object$T, object$R, object$a1,
-    object$P1, object$phi,
-    pmatch(object$distribution, c("poisson", "binomial", "negative binomial")),
-    object$xreg, object$coefs,
-    object$init_signal, max_iter, conv_tol)
+  initial_signal <- initial_signal(object$y, object$phi, object$distribution)
+  object$distribution <- pmatch(object$distribution, 
+    c("poisson", "binomial", "negative binomial"))
+  
+  ngssm_approx_model(object, initial_signal, max_iter, conv_tol)
 }
 

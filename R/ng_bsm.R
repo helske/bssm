@@ -439,6 +439,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
 #'   sd_slope=halfnormal(0.01, 0.1), distribution = "poisson")
 #' pred <- predict(model, n_iter = 1e4, nsim = 10, n_ahead = 10, 
 #'   probs = seq(0.05,0.95, by = 0.05)) 
+#' library("ggplot")
 #' autoplot(pred, median_color = "blue", mean_color = "red")
 #' 
 predict.ng_bsm <- function(object, n_iter, nsim_states,

@@ -294,9 +294,9 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
         frequency = object$period)
       out
     })
-  if (log_space && (ncol(out$theta) - length(object$coefs)) > 0) {
-    out$theta[, 1:n_sd_par] <- exp(out$theta[, 1:n_sd_par])
-  }
+  # if (log_space && (ncol(out$theta) - length(object$coefs)) > 0) {
+  #   out$theta[, 1:n_sd_par] <- exp(out$theta[, 1:n_sd_par])
+  # }
   names_ind <- c(TRUE, !object$fixed & c(TRUE, object$slope, object$seasonal))
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-
     c(c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind],
@@ -341,7 +341,7 @@ predict.bsm <- function(object, n_iter, newdata = NULL,
   
   
   endtime <- end(object$y) + c(0, n_ahead)
-  y_orig <- y
+  y_orig <- object$y
   object$y <- c(object$y, rep(NA, n_ahead))
   
   if (length(object$coefs) > 0) {

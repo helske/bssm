@@ -2,8 +2,9 @@
 
 // from List
 ngssm::ngssm(List model, unsigned int seed) : 
- gssm(model, seed), phi(as<arma::vec>(model["phi"])),
- distribution(model["distribution"]), ng_y(as<arma::vec>(model["y"])),
+ gssm(model, seed, true), phi(as<arma::vec>(model["phi"])), 
+ distribution(model["distribution"]),
+ ng_y(as<arma::vec>(model["y"])),
  max_iter(100), conv_tol(1.0e-8) {
 }
 

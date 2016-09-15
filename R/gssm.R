@@ -27,7 +27,6 @@
 #' @export
 gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta = NULL, state_names) {
 
-  stop("general classes don't work at the moment, restructuring stuff...")
   check_y(y)
 
   n <- length(y)
@@ -130,8 +129,7 @@ logLik.gssm <- function(object, ...) {
   if (!is.null(dim(object$y)[2]) && dim(object$y)[2] > 1) {
     stop("not yet implemented for multivariate models.")
   }
-  gssm_loglik(object$y, object$Z, object$H, object$T, object$R, object$a1,
-    object$P1, object$xreg, object$coefs)
+  gssm_loglik(object)
 
 }
 
@@ -144,8 +142,7 @@ kfilter.gssm <- function(object, ...) {
     stop("not yet implemented for multivariate models.")
   }
 
-  out <- gssm_filter(object$y, object$Z, object$H, object$T, object$R,
-    object$a1, object$P1, object$xreg, object$coefs)
+  out <- gssm_filter(object)
 
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <-
@@ -160,8 +157,7 @@ fast_smoother.gssm <- function(object, ...) {
   if (!is.null(object$y) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
   }
-  out <- gssm_fast_smoother(object$y, object$Z, object$H, object$T,
-    object$R, object$a1, object$P1, object$xreg, object$coefs)
+  out <- gssm_fast_smoother(object$y)
 
   colnames(out) <- names(object$a1)
   ts(out, start = start(object$y), frequency = frequency(object$y))
@@ -175,8 +171,7 @@ sim_smoother.gssm <- function(object, nsim = 1,
     stop("not yet implemented for multivariate models.")
   }
 
-  out <- gssm_sim_smoother(object$y, object$Z, object$H, object$T, object$R,
-    object$a1, object$P1, nsim, object$xreg, object$coefs, seed)
+  out <- gssm_sim_smoother(object, nsim, seed)
 
   rownames(out) <- names(object$a1)
   aperm(out, c(2, 1, 3))
@@ -190,8 +185,7 @@ smoother.gssm <- function(object, ...) {
     stop("not yet implemented for multivariate models.")
   }
 
-  out <- gssm_smoother(object$y, object$Z, object$H, object$T, object$R,
-    object$a1, object$P1, object$xreg, object$coefs)
+  out <- gssm_smoother(object)
 
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
   out$alphahat <- ts(out$alphahat, start = start(object$y),
@@ -249,12 +243,12 @@ smoother.gssm <- function(object, ...) {
 #' @param ... Ignored.
 #' @export
 run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
-  nsim_states = 1, type = "full", lower_prior, upper_prior,
+  nsim_states = 1, type = "full", priors,
   n_burnin = floor(n_iter / 2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
-  type <- match.arg(type, c("full", "parameters", "summary"))
+  type <- match.arg(type, c("full", "summary"))
 
   if (!is.null(object$y) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
@@ -296,28 +290,21 @@ run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
   if (missing(S)) {
     S <- diag(Z_n + H_n + T_n + R_n)
   }
+priors <- combine_priors(priors)
 
   out <- switch(type,
     full = {
-      out <- gssm_mcmc_full(object$y, object$Z, object$H, object$T, object$R,
-        object$a1, object$P1, lower_prior, upper_prior, n_iter,
+      out <- gssm_run_mcmc(object, priors$prior_types, priors$params, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind,
-        H_ind, T_ind, R_ind, object$xreg, object$coefs, seed, end_adaptive_phase)
+        H_ind, T_ind, R_ind, seed, end_adaptive_phase)
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
       out
     },
-    parameters = {
-      gssm_mcmc_param(object$y, object$Z, object$H, object$T, object$R,
-        object$a1, object$P1, lower_prior, upper_prior, n_iter,
-        n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind,
-        R_ind, object$xreg, object$coefs, seed, end_adaptive_phase)
-    },
     summary = {
-      out <- gssm_mcmc_summary(object$y, object$Z, object$H, object$T, object$R,
-        object$a1, object$P1, lower_prior, upper_prior, n_iter,
+      out <- gssm_run_mcmc_summary(object, priors$prior_types, priors$params, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind,
-        R_ind, object$xreg, object$coefs, seed, end_adaptive_phase)
+        R_ind, seed, end_adaptive_phase)
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
         names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y),
@@ -325,7 +312,6 @@ run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
       out
     }
   )
-  out$S <- matrix(out$S, length(lower_prior), length(lower_prior))
   out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
   out$call <- match.call()
   class(out) <- "mcmc_output"
@@ -405,7 +391,8 @@ predict.gssm <- function(object, n_iter, lower_prior, upper_prior, newdata = NUL
     S <- diag(Z_n + H_n + T_n + R_n)
   }
   endtime <- end(object$y) + c(0, n_ahead)
-  y <- c(object$y, rep(NA, n_ahead))
+  y_orig <- object$y
+  object$y <- c(object$y, rep(NA, n_ahead))
 
   if (length(object$coefs) > 0) {
     if (is.null(newdata) || nrow(newdata) != n_ahead ||
@@ -419,12 +406,12 @@ predict.gssm <- function(object, n_iter, lower_prior, upper_prior, newdata = NUL
     stop("Time-varying system matrices in prediction are not yet supported.")
   }
   probs <- sort(unique(c(probs, 0.5)))
+  priors <- combine_priors(priors)
   if (method == "parametric") {
 
-    out <- gssm_predict(y, object$Z,  object$H, object$T, object$R,
-      object$a1, object$P1, lower_prior, upper_prior, n_iter,
+    out <- gssm_predict(object, priors$prior_types, priors$param, n_iter,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-      Z_ind, H_ind, T_ind, R_ind, object$xreg, object$coefs, probs, seed)
+      Z_ind, H_ind, T_ind, R_ind, probs, seed)
 
     if (return_MCSE) {
       ses <- matrix(0, n_ahead, length(probs))
@@ -452,12 +439,11 @@ predict.gssm <- function(object, n_iter, lower_prior, upper_prior, newdata = NUL
     }
   } else {
 
-    out <- gssm_predict2(y, object$Z, object$H, object$T, object$R,
-      object$a1, object$P1, lower_prior, upper_prior, n_iter, nsim_states,
+    out <- gssm_predict2(object, priors$prior_types, priors$param, n_iter, nsim_states,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-      Z_ind, H_ind, T_ind, R_ind, object$xreg, object$coefs, seed)
+      Z_ind, H_ind, T_ind, R_ind, seed)
 
-    pred <- list(y = object$y, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
+    pred <- list(y = y_orig, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
       intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = object$period,
         names = paste0(100 * probs, "%")))
 

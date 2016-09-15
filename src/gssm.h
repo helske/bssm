@@ -8,7 +8,7 @@ class gssm {
 public:
   
   gssm(const List, unsigned int);
-  
+  gssm(const List, unsigned int, bool);
   gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::mat, arma::vec, unsigned int);
   gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,

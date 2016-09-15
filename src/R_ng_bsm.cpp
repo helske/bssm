@@ -12,6 +12,7 @@ double ng_bsm_loglik(const List& model_, arma::vec init_signal, unsigned int nsi
   }
   
   double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
+ 
   double ll_w = 0;
   if (!std::isfinite(ll)) {
     return -arma::datum::inf;

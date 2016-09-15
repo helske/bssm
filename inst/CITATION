@@ -16,7 +16,7 @@ c(
     eprint = "1609.02541",
     primaryClass = "stat.CO",
     year = 2016,
-    month = sep,
+    month = "sep",
     key = "ISMCMC"
   )
 )
