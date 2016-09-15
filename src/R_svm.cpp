@@ -2,12 +2,10 @@
 
 
 // [[Rcpp::export]]
-double svm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  arma::mat& xreg, arma::vec& beta, arma::vec init_signal, unsigned int nsim_states,
+double svm_loglik(List model_, arma::vec init_signal, unsigned int nsim_states,
   unsigned int seed) {
 
-  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed);
+  svm model(model_, seed);
 
   if (nsim_states < 2) {
     model.conv_tol = 1.0e-12;
@@ -33,16 +31,14 @@ double svm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List svm_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec &phi,
-  arma::mat& xreg, arma::vec& beta, arma::vec init_signal) {
+List svm_smoother(List model_, arma::vec init_signal) {
 
-  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, 1);
+  svm model(model_, 1);
 
   double logLik = model.approx(init_signal, 1000, 1e-12);
 
-  arma::mat alphahat(a1.n_elem, y.n_elem);
-  arma::cube Vt(a1.n_elem, a1.n_elem, y.n_elem);
+  arma::mat alphahat(model.m, model.n);
+  arma::cube Vt(model.m, model.m, model.n);
 
   model.smoother(alphahat, Vt, false);
   arma::inplace_trans(alphahat);
@@ -53,9 +49,7 @@ List svm_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List svm_run_mcmc(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  arma::mat& xreg, arma::vec& beta, arma::uvec& prior_types,
+List svm_run_mcmc(List model_, arma::vec& beta, arma::uvec& prior_types,
   arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
@@ -63,7 +57,7 @@ List svm_run_mcmc(arma::vec& y, arma::mat& Z, arma::cube& T,
   unsigned int n_threads, bool end_ram, bool adapt_approx, 
   bool da, bool pf) {
 
-  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed);
+  svm model(clone(model_), seed);
 
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -91,16 +85,14 @@ List svm_run_mcmc(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List svm_run_mcmc_is(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  arma::mat& xreg, arma::vec& beta, arma::uvec& prior_types,
+List svm_run_mcmc_is(List model_, arma::uvec& prior_types,
   arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int seed,
   unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int method) {
 
-  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed);
+  svm model(clone(model_), seed);
 
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -142,13 +134,10 @@ List svm_run_mcmc_is(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List svm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  arma::mat& xreg, arma::vec& beta,
-  unsigned int nsim_states,
+List svm_importance_sample(List model_, unsigned int nsim_states,
   arma::vec init_signal, unsigned int seed) {
 
-  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed);
+  svm model(model_, seed);
 
   double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
 
@@ -162,12 +151,10 @@ List svm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List svm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  arma::mat& xreg, arma::vec& beta, arma::vec init_signal, unsigned int max_iter,
+List svm_approx_model(List model_, arma::vec init_signal, unsigned int max_iter,
   double conv_tol) {
 
-  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, 1);
+  svm model(model_, 1);
 
   double ll = model.approx(init_signal, max_iter, conv_tol);
 
@@ -181,13 +168,10 @@ List svm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List svm_particle_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  arma::mat& xreg, arma::vec& beta,
-  unsigned int nsim_states,
+List svm_particle_filter(List model_,  unsigned int nsim_states,
   arma::vec init_signal, unsigned int seed) {
 
-  svm model(y, Z, T, R, a1, P1, phi, xreg, beta, seed);
+  svm model(model_, seed);
 
   arma::cube alphasim(model.m, model.n, nsim_states);
   arma::mat V(nsim_states, model.n);

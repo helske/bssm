@@ -7,6 +7,9 @@ class svm: public ngssm {
   
 public:
   
+  
+  svm(List, unsigned int);
+  
   svm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::vec, arma::mat, arma::vec, unsigned int);
   

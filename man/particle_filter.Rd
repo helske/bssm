@@ -23,12 +23,16 @@ particle_filter(object, nsim, seed, ...)
 
 \item{nsim}{Number of samples.}
 
-\item{seed}{Seed for RNG}
+\item{seed}{Seed for RNG.}
 
 \item{...}{Ignored.}
 }
+\value{
+A list containing samples, weights from the last time point, and an 
+estimate of log-likelihood.
+}
 \description{
-Function \code{particle_filter} performs a bootstrap filtering with stratification resampling, 
-returning a weighted sample from $p(alpha|y, theta)$ and the estimate of log-likelihood.
+Function \code{particle_filter} performs a bootstrap filtering with stratification 
+resampling.
 }
 

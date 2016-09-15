@@ -10,6 +10,7 @@ This package contains functions for Bayesian inference of basic stochastic volat
 and exponential family state space models, where the state equation is linear and Gaussian,
 and the conditional observation density is either Gaussian, Poisson,
 binomial, negative binomial or Gamma density. For formal definition of the
-currently supported models and methods, see the package vignette.
+currently supported models and methods, as well as theory, see the package vignette 
+and arXiv paper: \url{http://arxiv.org/abs/1609.02541}.
 }
 

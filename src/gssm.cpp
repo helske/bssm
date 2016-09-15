@@ -1,5 +1,23 @@
 #include "gssm.h"
 
+// from List
+gssm::gssm(const List model, unsigned int seed) : 
+  y(as<arma::vec>(model["y"])), Z(as<arma::mat>(model["Z"])),
+  H(as<arma::vec>(model["H"])), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
+  a1(as<arma::vec>(model["a1"])), P1(as<arma::mat>(model["P1"])),
+  xreg(as<arma::mat>(model["xreg"])), beta(as<arma::vec>(model["coefs"])),
+  Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
+  n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
+  RR(arma::cube(m, m, Rtv * (n - 1) + 1)), xbeta(arma::vec(n, arma::fill::zeros)),
+  engine(seed), zero_tol(1e-8) {
+
+  if(xreg.n_cols > 0) {
+    compute_xbeta();
+  }
+  compute_HH();
+  compute_RR();
+}
+
 //general constructor
 gssm::gssm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::mat xreg,

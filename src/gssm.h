@@ -7,6 +7,8 @@ class gssm {
   
 public:
   
+  gssm(const List, unsigned int);
+  
   gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::mat, arma::vec, unsigned int);
   gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
@@ -57,6 +59,8 @@ public:
   arma::cube Q;
   arma::vec a1;
   arma::mat P1;
+  arma::mat xreg;
+  arma::vec beta;
   
   const unsigned int Ztv;
   const unsigned int Htv;
@@ -70,8 +74,6 @@ public:
   arma::vec HH;
   arma::cube RR;
   
-  const arma::mat xreg;
-  arma::vec beta;
   arma::vec xbeta;
   
   arma::uvec Z_ind;
@@ -81,5 +83,6 @@ public:
   std::mt19937 engine;
   const double zero_tol;
 };
+
 
 #endif

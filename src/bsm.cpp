@@ -1,5 +1,13 @@
 #include "bsm.h"
 
+// from List
+bsm::bsm(List model, unsigned int seed, bool log_space) :
+  gssm(model, seed), slope(model["slope"]), seasonal(model["seasonal"]),
+  fixed(as<arma::uvec>(model["fixed"])), level_est(fixed(0) == 0), 
+  slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0), 
+  log_space(log_space) {
+}
+
 //with log_space
 bsm::bsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, bool slope, bool seasonal,

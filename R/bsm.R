@@ -5,14 +5,14 @@
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
 #' @param sd_y Prior for the standard error of observation equation. 
-#' See \link{\code{priors}} for details.
+#' See \code{\link{priors}} for details.
 #' @param sd_level  Prior for the standard error of the noise in level equation. 
-#' See \link{\code{priors}} for details. If missing, \code{sd_level} is fixed to zero.
+#' See \code{\link{priors}} for details. If missing, \code{sd_level} is fixed to zero.
 #' @param sd_slope Prior for the standard error  of the noise in slope equation. 
-#' See \link{\code{priors}} for details. If missing, \code{sd_slope} is fixed to zero.
+#' See \code{\link{priors}} for details. If missing, \code{sd_slope} is fixed to zero.
 #' Ignored if \code{slope = FALSE}.
 #' @param sd_seasonal Prior for the standard error of the noise in seasonal equation.
-#' See \link{\code{priors}} for details. If missing, \code{sd_seasonal} is fixed to zero.
+#' See \code{\link{priors}} for details. If missing, \code{sd_seasonal} is fixed to zero.
 #' @param xreg Matrix containing covariates.
 #' @param beta Prior for the regression coefficients.
 #' @param period Length of the seasonal component i.e. the number of
@@ -201,9 +201,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' @rdname logLik
 #' @export
 logLik.bsm <- function(object, ...) {
-  bsm_loglik(object$y, object$Z, object$H, object$T, object$R, object$a1,
-    object$P1, object$slope, object$seasonal, object$fixed, object$xreg, 
-    object$coefs)
+  bsm_loglik(object)
 }
 
 #' @method kfilter bsm
@@ -211,9 +209,7 @@ logLik.bsm <- function(object, ...) {
 #' @export
 kfilter.bsm <- function(object, ...) {
   
-  out <- bsm_filter(object$y, object$Z, object$H, object$T, object$R,
-    object$a1, object$P1, object$slope, object$seasonal, object$fixed,
-    object$xreg, object$coefs)
+  out <- bsm_filter(object)
   
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <-
@@ -226,9 +222,7 @@ kfilter.bsm <- function(object, ...) {
 #' @export
 fast_smoother.bsm <- function(object, ...) {
   
-  out <- bsm_fast_smoother(object$y, object$Z, object$H, object$T,
-    object$R, object$a1, object$P1, object$slope, object$seasonal, object$fixed,
-    object$xreg, object$coefs)
+  out <- bsm_fast_smoother(object)
   
   colnames(out) <- names(object$a1)
   ts(out, start = start(object$y), frequency = object$period)
@@ -237,9 +231,7 @@ fast_smoother.bsm <- function(object, ...) {
 #' @export
 sim_smoother.bsm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  out <- bsm_sim_smoother(object$y, object$Z, object$H, object$T, object$R,
-    object$a1, object$P1, nsim, object$slope, object$seasonal, object$fixed,
-    object$xreg, object$coefs, seed)
+  out <- bsm_sim_smoother(object, seed)
   
   rownames(out) <- names(object$a1)
   aperm(out, c(2, 1, 3))
@@ -249,9 +241,7 @@ sim_smoother.bsm <- function(object, nsim = 1, seed = sample(.Machine$integer.ma
 #' @export
 smoother.bsm <- function(object, ...) {
   
-  out <- bsm_smoother(object$y, object$Z, object$H, object$T, object$R,
-    object$a1, object$P1, object$slope, object$seasonal, object$fixed,
-    object$xreg, object$coefs)
+  out <- bsm_smoother(object)
   
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
   out$alphahat <- ts(out$alphahat, start = start(object$y),
@@ -285,9 +275,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   
   out <- switch(type,
     full = {
-      out <- bsm_run_mcmc(object$y, object$Z, object$H, object$T, object$R,
-        object$a1, object$P1, object$slope,
-        object$seasonal, object$fixed, object$xreg, object$coefs,
+      out <- bsm_run_mcmc(object,
         priors$prior_type, priors$params, n_iter,
         sim_states, n_burnin, n_thin, gamma, target_acceptance, S, seed, log_space, end_adaptive_phase)
       
@@ -296,9 +284,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
       out
     },
     summary = {
-      out <- bsm_run_mcmc_summary(object$y, object$Z, object$H, object$T, object$R,
-        object$a1, object$P1, object$slope,
-        object$seasonal, object$fixed, object$xreg, object$coefs, 
+      out <- bsm_run_mcmc_summary(object,
         priors$prior_type, priors$params, n_iter,
         n_burnin, n_thin, gamma, target_acceptance, S, seed,
         log_space, end_adaptive_phase)
@@ -355,7 +341,8 @@ predict.bsm <- function(object, n_iter, newdata = NULL,
   
   
   endtime <- end(object$y) + c(0, n_ahead)
-  y <- c(object$y, rep(NA, n_ahead))
+  y_orig <- y
+  object$y <- c(object$y, rep(NA, n_ahead))
   
   if (length(object$coefs) > 0) {
     if (is.null(newdata) || nrow(newdata) != n_ahead ||
@@ -366,9 +353,7 @@ predict.bsm <- function(object, n_iter, newdata = NULL,
   }
   probs <- sort(unique(c(probs, 0.5)))
   if (method == "parametric") {
-    out <- bsm_predict(y, object$Z, object$H, object$T, object$R,
-      object$a1, object$P1, 
-      object$slope, object$seasonal, object$fixed, object$xreg, object$coefs,
+    out <- bsm_predict(object,
       priors$prior_types, priors$params, n_iter,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
       probs, seed, FALSE)
@@ -387,24 +372,22 @@ predict.bsm <- function(object, n_iter, newdata = NULL,
         }
       }
       
-      pred <- list(y = object$y, mean = ts(colMeans(out$y_mean), end = endtime, frequency = object$period),
+      pred <- list(y = y_orig, mean = ts(colMeans(out$y_mean), end = endtime, frequency = object$period),
         intervals = ts(out$intervals, end = endtime, frequency = object$period,
           names = paste0(100 * probs, "%")),
         MCSE = ts(ses, end = endtime, frequency = object$period,
           names = paste0(100 * probs, "%")))
     } else {
-      pred <- list(y = object$y, mean = ts(colMeans(out$y_mean), end = endtime, frequency = object$period),
+      pred <- list(y = y_orig, mean = ts(colMeans(out$y_mean), end = endtime, frequency = object$period),
         intervals = ts(out$intervals, end = endtime, frequency = object$period,
           names = paste0(100 * probs, "%")))
     }
   } else {
-    out <- bsm_predict2(y, object$Z, object$H, object$T, object$R,
-      object$a1, object$P1,object$slope, object$seasonal, object$fixed, 
-      object$xreg, object$coefs, priors$prior_types, priors$params, n_iter, nsim_states,
+    out <- bsm_predict2(object, priors$prior_types, priors$params, n_iter, nsim_states,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
       seed, FALSE)
     
-    pred <- list(y = object$y, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
+    pred <- list(y = y_orig, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
       intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = object$period,
         names = paste0(100 * probs, "%")))
   }
@@ -418,9 +401,7 @@ predict.bsm <- function(object, n_iter, newdata = NULL,
 particle_filter.bsm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  out <- bsm_particle_filter(object$y, object$Z, object$H, object$T, object$R,
-    object$a1, object$P1, nsim, object$slope, object$seasonal, object$fixed,
-    object$xreg, object$coefs, seed)
+  out <- bsm_particle_filter(object, nsim, seed)
   
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
@@ -430,12 +411,11 @@ particle_filter.bsm <- function(object, nsim,
 #' @method particle_smoother bsm
 #' @rdname particle_smoother
 #' @export
-particle_smoother.bsm <- function(object, nsim, method = 1,
+particle_smoother.bsm <- function(object, nsim, method = "fs",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  out <- bsm_particle_smoother(object$y, object$Z, object$H, object$T, object$R,
-    object$a1, object$P1, nsim, object$slope, object$seasonal, object$fixed,
-    object$xreg, object$coefs, seed, method)
+  method <- match.arg(method, c("fs", "fbs"))
+  out <- bsm_particle_smoother(object, nsim, seed, method == "fs")
   
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
@@ -448,9 +428,7 @@ particle_smoother.bsm <- function(object, nsim, method = 1,
 particle_simulate.bsm <- function(object, nsim, nsim_store = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  out <- bsm_backward_simulate(object$y, object$Z, object$H, object$T, object$R,
-    object$a1, object$P1, nsim, object$slope, object$seasonal, object$fixed,
-    object$xreg, object$coefs, seed, nsim_store)
+  out <- bsm_backward_simulate(object, nsim, seed, nsim_store)
   
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))

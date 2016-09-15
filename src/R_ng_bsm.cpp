@@ -1,14 +1,10 @@
 #include "ng_bsm.h"
 
 // [[Rcpp::export]]
-double ng_bsm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int distribution, arma::vec init_signal, unsigned int nsim_states,
+double ng_bsm_loglik(const List& model_, arma::vec init_signal, unsigned int nsim_states,
   unsigned int seed) {
   
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed);
+  ng_bsm model(model_, seed, false);
   
   if (nsim_states < 2) {
     model.conv_tol = 1.0e-12;
@@ -32,20 +28,16 @@ double ng_bsm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List ng_bsm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec &phi, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int distribution, arma::vec init_signal) {
+List ng_bsm_filter(const List& model_, arma::vec init_signal) {
   
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution,1);
+  ng_bsm model(model_, 1, false);
   
   double logLik = model.approx(init_signal, 1000, 1e-12);
   
-  arma::mat at(a1.n_elem, y.n_elem + 1);
-  arma::mat att(a1.n_elem, y.n_elem);
-  arma::cube Pt(a1.n_elem, a1.n_elem, y.n_elem + 1);
-  arma::cube Ptt(a1.n_elem, a1.n_elem, y.n_elem);
+  arma::mat at(model.m, model.n + 1);
+  arma::mat att(model.m, model.n);
+  arma::cube Pt(model.m, model.m, model.n + 1);
+  arma::cube Ptt(model.m, model.m, model.n);
   
   logLik += model.filter(at, att, Pt, Ptt, true);
   
@@ -62,13 +54,9 @@ List ng_bsm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-arma::mat ng_bsm_fast_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec &phi, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int distribution, arma::vec init_signal) {
+arma::mat ng_bsm_fast_smoother(const List& model_, arma::vec init_signal) {
   
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, 1);
+  ng_bsm model(model_, 1, false);
   
   double logLik = model.approx(init_signal, 1000, 1e-12);
   
@@ -76,13 +64,10 @@ arma::mat ng_bsm_fast_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-arma::cube ng_bsm_sim_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec &phi, unsigned nsim, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int distribution, arma::vec init_signal, unsigned int seed) {
+arma::cube ng_bsm_sim_smoother(const List& model_, unsigned nsim, 
+  arma::vec init_signal, unsigned int seed) {
   
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed);
+  ng_bsm model(model_, seed, false);
   double logLik = model.approx(init_signal, 1000, 1e-12);
   
   return model.sim_smoother(nsim, true);
@@ -90,18 +75,14 @@ arma::cube ng_bsm_sim_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List ng_bsm_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec &phi, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int distribution, arma::vec init_signal) {
+List ng_bsm_smoother(const List& model_, arma::vec init_signal) {
   
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, 1);
+  ng_bsm model(model_, 1, false);
   
   double logLik = model.approx(init_signal, 1000, 1e-12);
   
-  arma::mat alphahat(a1.n_elem, y.n_elem);
-  arma::cube Vt(a1.n_elem, a1.n_elem, y.n_elem);
+  arma::mat alphahat(model.m, model.n);
+  arma::cube Vt(model.m, model.m, model.n);
   
   model.smoother(alphahat, Vt, true);
   arma::inplace_trans(alphahat);
@@ -113,18 +94,14 @@ List ng_bsm_smoother(arma::vec& y, arma::mat& Z, arma::cube& T,
 
   
 // [[Rcpp::export]]
-List ng_bsm_run_mcmc(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  unsigned int distribution, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
+List ng_bsm_run_mcmc(const List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int seed,
   unsigned int n_threads, bool end_ram, bool adapt_approx, bool da, bool pf) {
   
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed, false);
+  ng_bsm model(clone(model_), seed, false);
   
   
   unsigned int npar = prior_types.n_elem;
@@ -152,18 +129,14 @@ List ng_bsm_run_mcmc(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List ng_bsm_run_mcmc_is(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  unsigned int distribution, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
+List ng_bsm_run_mcmc_is(const List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int seed,
   unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int method) {
   
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed, false);
+  ng_bsm model(clone(model_), seed, false);
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -207,18 +180,14 @@ List ng_bsm_run_mcmc_is(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List ng_bsm_run_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  unsigned int distribution, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
+List ng_bsm_run_mcmc_summary(const List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int seed,
   unsigned int n_threads, bool end_ram, bool adapt_approx, bool da, bool pf) {
   
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed, false);
+  ng_bsm model(clone(model_), seed, false);
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -246,18 +215,14 @@ List ng_bsm_run_mcmc_summary(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List ng_bsm_run_mcmc_summary_is(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  unsigned int distribution, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
+List ng_bsm_run_mcmc_summary_is(const List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int seed,
   unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int method) {
   
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed, false);
+  ng_bsm model(clone(model_), seed, false);
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -297,19 +262,14 @@ List ng_bsm_run_mcmc_summary_is(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-arma::mat ng_bsm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi,
-  unsigned int distribution, 
-  bool slope, bool seasonal, bool noise, arma::uvec fixed,
-  arma::mat& xreg, arma::vec& beta, arma::uvec& prior_types,
+arma::mat ng_bsm_predict2(const List& model_, arma::uvec& prior_types,
   arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
   unsigned int interval, arma::vec& init_signal, unsigned int seed,
   bool log_space) {
   
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed, log_space);
+  ng_bsm model(clone(model_), seed, log_space);
   
   return model.predict2(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval, init_signal);
@@ -317,14 +277,10 @@ arma::mat ng_bsm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List ng_bsm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int distribution, arma::vec init_signal, unsigned int nsim_states,
-  unsigned int seed) {
+List ng_bsm_importance_sample(const List& model_, arma::vec init_signal, 
+  unsigned int nsim_states, unsigned int seed) {
   
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed);
+  ng_bsm model(model_, seed, false);
   
   double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
   
@@ -338,14 +294,10 @@ List ng_bsm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List ng_bsm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int distribution, arma::vec init_signal, unsigned int max_iter,
+List ng_bsm_approx_model(const List& model_, arma::vec init_signal, unsigned int max_iter,
   double conv_tol) {
   
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, 1);
+  ng_bsm model(model_, 1, false);
   
   double ll = model.approx(init_signal, max_iter, conv_tol);
   
@@ -359,14 +311,10 @@ List ng_bsm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List ng_bsm_particle_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec& phi, bool slope,
-  bool seasonal, bool noise, arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int distribution, arma::vec init_signal, unsigned int nsim_states,
-  unsigned int seed) {
+List ng_bsm_particle_filter(const List& model_, arma::vec init_signal, 
+  unsigned int nsim_states, unsigned int seed) {
   
-  ng_bsm model(y, Z, T, R, a1, P1, phi, slope, seasonal, noise, fixed, xreg, beta,
-    distribution, seed);
+  ng_bsm model(model_, seed, false);
   
   arma::cube alphasim(model.m, model.n, nsim_states);
   arma::mat V(nsim_states, model.n);

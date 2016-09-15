@@ -6,25 +6,27 @@
 \alias{particle_smoother.bsm}
 \title{Particle Smoothing}
 \usage{
-\method{particle_smoother}{bsm}(object, nsim, method = 1,
+\method{particle_smoother}{bsm}(object, nsim, method = "fs",
   seed = sample(.Machine$integer.max, size = 1), ...)
 
 particle_simulate.bsm(object, nsim, nsim_store = 1,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
-particle_smoother(object, nsim, seed, ...)
+particle_smoother(object, nsim, method, seed, ...)
 }
 \arguments{
 \item{object}{of class \code{bsm}, \code{ng_bsm} or \code{svm}.}
 
 \item{nsim}{Number of samples.}
 
-\item{seed}{Seed for RNG}
+\item{method}{Either \code{"fs"} (filter-smoother), or \code{"fbs"} (forward-backward smoother).}
+
+\item{seed}{Seed for RNG.}
 
 \item{...}{Ignored.}
 }
 \description{
-Function \code{particle_smoother} performs a bootstrap filtering with stratification resampling, 
-returning a weighted sample from $p(alpha|y, theta)$ and the estimate of log-likelihood.
+Function \code{particle_smoother} performs filter-smoother or forward-backward smoother, 
+using a bootstrap filtering with stratification resampling.
 }
 

@@ -6,6 +6,9 @@
 class ngssm: public gssm {
 public:
 
+  
+  ngssm(List, unsigned int);
+  
   ngssm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::vec, arma::mat, arma::vec, unsigned int, unsigned int);
   ngssm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,

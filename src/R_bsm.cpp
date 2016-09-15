@@ -1,27 +1,20 @@
 #include "bsm.h"
 
 // [[Rcpp::export]]
-double bsm_loglik(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, bool slope, bool seasonal,
-  arma::uvec fixed, arma::mat& xreg, arma::vec& beta) {
-
-  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, 1);
-
+double bsm_loglik(const List& model_) {
+  bsm model(model_, 1, false);
   return model.log_likelihood(true);
 }
 
 // [[Rcpp::export]]
-List bsm_filter(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, bool slope, bool seasonal,
-  arma::uvec fixed, arma::mat& xreg, arma::vec& beta) {
+List bsm_filter(const List& model_) {
 
+  bsm model(model_, 1, false);
 
-  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, 1);
-
-  arma::mat at(a1.n_elem, y.n_elem + 1);
-  arma::mat att(a1.n_elem, y.n_elem);
-  arma::cube Pt(a1.n_elem, a1.n_elem, y.n_elem + 1);
-  arma::cube Ptt(a1.n_elem, a1.n_elem, y.n_elem);
+  arma::mat at(model.m, model.n + 1);
+  arma::mat att(model.m, model.n);
+  arma::cube Pt(model.m, model.m, model.n + 1);
+  arma::cube Ptt(model.m, model.m, model.n);
 
   double logLik = model.filter(at, att, Pt, Ptt, true);
 
@@ -38,33 +31,28 @@ List bsm_filter(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
 
 
 // [[Rcpp::export]]
-arma::mat bsm_fast_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, bool slope, bool seasonal,
-  arma::uvec fixed, arma::mat& xreg, arma::vec& beta) {
+arma::mat bsm_fast_smoother(const List& model_) {
 
-  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, 1);
+  bsm model(model_, 1, false);
+  
   return model.fast_smoother(true).t();
 }
 
 // [[Rcpp::export]]
-arma::cube bsm_sim_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, unsigned int nsim, bool slope,
-  bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta, unsigned int seed) {
+arma::cube bsm_sim_smoother(const List& model_, unsigned int nsim, unsigned int seed) {
 
-  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed);
+  bsm model(model_, seed, false);
   return model.sim_smoother(nsim, true);
 }
 
 
 // [[Rcpp::export]]
-List bsm_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, bool slope, bool seasonal,
-  arma::uvec fixed, arma::mat& xreg, arma::vec& beta) {
+List bsm_smoother(const List& model_) {
 
-  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, 1);
-
-  arma::mat alphahat(a1.n_elem, y.n_elem);
-  arma::cube Vt(a1.n_elem, a1.n_elem, y.n_elem);
+  bsm model(model_, 1, false);
+  
+  arma::mat alphahat(model.m, model.n);
+  arma::cube Vt(model.m, model.m, model.n);
 
   model.smoother(alphahat, Vt, true);
   arma::inplace_trans(alphahat);
@@ -76,16 +64,13 @@ List bsm_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
 
 
 // [[Rcpp::export]]
-arma::mat bsm_predict2(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1,
-  bool slope, bool seasonal,arma::uvec fixed,
-  arma::mat& xreg, arma::vec& beta, 
-  arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states,
+arma::mat bsm_predict2(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, 
+  unsigned int n_iter, unsigned int nsim_states,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
   unsigned int interval, unsigned int seed, bool log_space) {
 
-  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
+  bsm model(clone(model_), seed, log_space);
 
   return model.predict2(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval);
@@ -93,42 +78,23 @@ arma::mat bsm_predict2(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List bsm_predict(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, 
-  bool slope, bool seasonal,arma::uvec fixed,
-  arma::mat& xreg, arma::vec& beta,
+List bsm_predict(const List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
   unsigned int interval, arma::vec probs, unsigned int seed, bool log_space) {
 
   
-  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
+  bsm model(clone(model_), seed, log_space);
 
   return model.predict(prior_types, prior_pars, n_iter, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval, probs);
 }
 
 // [[Rcpp::export]]
-arma::cube bsm_sample_states(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1,
-  arma::mat& theta, unsigned int nsim_states, bool slope,
-  bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
-  unsigned int n_threads) {
+Rcpp::List bsm_particle_filter(const List& model_, unsigned int nsim_states, unsigned int seed) {
 
-  arma::uvec counts(theta.n_cols, arma::fill::ones);
-
-  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, 1);
-
-  return sample_states(model, theta, counts, nsim_states, n_threads);
-}
-
-// [[Rcpp::export]]
-Rcpp::List bsm_particle_filter(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, unsigned int nsim_states, bool slope,
-  bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta, unsigned int seed) {
-
-  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed);
+  bsm model(model_, seed, false);
 
   arma::cube alphasim(model.m, model.n, nsim_states);
   arma::mat V(nsim_states, model.n);
@@ -141,12 +107,10 @@ Rcpp::List bsm_particle_filter(arma::vec& y, arma::mat& Z, arma::vec& H, arma::c
 }
 
 // [[Rcpp::export]]
-Rcpp::List bsm_particle_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, unsigned int nsim_states, bool slope,
-  bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta, unsigned int seed,
+Rcpp::List bsm_particle_smoother(const List& model_, unsigned int nsim_states, unsigned int seed,
   unsigned int method) {
 
-  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed);
+  bsm model(model_, seed, false);
 
   arma::cube alphasim(model.m, model.n, nsim_states);
   arma::mat V(nsim_states, model.n);
@@ -184,12 +148,10 @@ Rcpp::List bsm_particle_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma:
 }
 
 // [[Rcpp::export]]
-Rcpp::List bsm_backward_simulate(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, unsigned int nsim_states, bool slope,
-  bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta, unsigned int seed,
+Rcpp::List bsm_backward_simulate(const List& model_, unsigned int nsim_states, unsigned int seed,
   unsigned int nsim_store) {
 
-  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed);
+  bsm model(model_, seed, false);
 
   arma::cube alphasim(model.m, model.n, nsim_states);
   arma::mat V(nsim_states, model.n);
@@ -205,15 +167,13 @@ Rcpp::List bsm_backward_simulate(arma::vec& y, arma::mat& Z, arma::vec& H, arma:
 }
 
 // [[Rcpp::export]]
-List bsm_run_mcmc(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, bool slope,
-  bool seasonal,arma::uvec fixed, arma::mat& xreg, arma::vec& beta,
+List bsm_run_mcmc(const List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   bool sim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat& S,
   unsigned int seed, bool log_space, bool end_ram) {
 
-  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
+  bsm model(clone(model_), seed, log_space);
 
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -243,14 +203,12 @@ List bsm_run_mcmc(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List bsm_run_mcmc_summary(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, bool slope, bool seasonal, 
-  arma::uvec fixed, arma::mat& xreg, arma::vec& beta, arma::uvec& prior_types, 
+List bsm_run_mcmc_summary(const List& model_, arma::uvec& prior_types, 
   arma::mat& prior_pars, unsigned int n_iter, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   unsigned int seed, bool log_space, bool end_ram) {
 
-  bsm model(y, Z, H, T, R, a1, P1, slope, seasonal, fixed, xreg, beta, seed, log_space);
+  bsm model(clone(model_), seed, log_space);
 
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);

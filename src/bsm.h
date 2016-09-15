@@ -6,6 +6,8 @@
 class bsm: public gssm {
 
 public:
+  
+  bsm(List, unsigned int, bool);
   // constructor
   bsm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
     arma::mat, bool, bool, arma::uvec, arma::mat, arma::vec, unsigned int);

@@ -84,7 +84,7 @@ run_mcmc <- function(object, ...) {
 #' Returns \code{nsim} samples from the approximating Gaussian model with corresponding (scaled) importance weights.
 #' @param object of class \code{ng_bsm}.
 #' @param nsim Number of samples.
-#' @param seed Seed for the random nunber generator.
+#' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @export
 #' @rdname importance_sample
@@ -108,13 +108,15 @@ gaussian_approx <- function(object, max_iter, conv_tol, ...) {
 
 #' Particle Filtering
 #' 
-#' Function \code{particle_filter} performs a bootstrap filtering with stratification resampling, 
-#' returning a weighted sample from $p(alpha|y, theta)$ and the estimate of log-likelihood.
+#' Function \code{particle_filter} performs a bootstrap filtering with stratification 
+#' resampling.
 #' 
 #' @param object of class \code{bsm}, \code{ng_bsm} or \code{svm}.
 #' @param nsim Number of samples.
-#' @param seed Seed for RNG
+#' @param seed Seed for RNG.
 #' @param ... Ignored.
+#' @return A list containing samples, weights from the last time point, and an 
+#' estimate of log-likelihood.
 #' @export
 #' @rdname particle_filter
 particle_filter <- function(object, nsim, seed, ...) {
@@ -124,15 +126,16 @@ particle_filter <- function(object, nsim, seed, ...) {
 
 #' Particle Smoothing
 #' 
-#' Function \code{particle_smoother} performs a bootstrap filtering with stratification resampling, 
-#' returning a weighted sample from $p(alpha|y, theta)$ and the estimate of log-likelihood.
+#' Function \code{particle_smoother} performs filter-smoother or forward-backward smoother, 
+#' using a bootstrap filtering with stratification resampling.
 #' 
 #' @param object of class \code{bsm}, \code{ng_bsm} or \code{svm}.
 #' @param nsim Number of samples.
-#' @param seed Seed for RNG
+#' @param method Either \code{"fs"} (filter-smoother), or \code{"fbs"} (forward-backward smoother).
+#' @param seed Seed for RNG.
 #' @param ... Ignored.
 #' @export
 #' @rdname particle_smoother
-particle_smoother <- function(object, nsim, seed, ...) {
+particle_smoother <- function(object, nsim, method, seed, ...) {
   UseMethod("particle_smoother", object)
 }

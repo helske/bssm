@@ -1,5 +1,11 @@
 #include "svm.h"
 
+
+// from List
+svm::svm(List model, unsigned int seed) :
+  ngssm(model, seed), nz_y(as<arma::vec>(model["y"])) {
+}
+
 //general constructor
 svm::svm(arma::vec y, arma::mat Z, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi,

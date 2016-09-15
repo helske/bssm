@@ -77,27 +77,17 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
 #' @export
 logLik.svm <- function(object, nsim_states,
   seed = 1, ...) {
-  svm_loglik(object$y, object$Z, object$T, object$R,
-    object$a1, object$P1, rep(object$sigma, length(object$y)),
-    object$xreg, object$coefs, object$init_signal, nsim_states, seed)
-}
-#' @rdname logLik
-#' @inheritParams logLik.ngssm
-#' @export
-bsf_logLik <- function(object, nsim_states,
-  seed = 1, ess_treshold = 0.75, ...) {
-  svm_bsf_loglik(object$y, object$Z, object$T, object$R,
-    object$a1, object$P1, rep(object$sigma, length(object$y)),
-    object$xreg, object$coefs, object$init_signal, nsim_states, seed, ess_treshold)
+  model$distribution <- 0
+  model$phi <- rep(object$sigma, length(object$y))
+  svm_loglik(object, object$init_signal, nsim_states, seed)
 }
 
 #' @method smoother svm
 #' @export
 smoother.svm <- function(object, ...) {
-  
-  out <- svm_smoother(object$y, object$Z, object$T, object$R,
-    object$a1, object$P1, rep(object$sigma, length(object$y)),
-    object$xreg, object$coefs, object$init_signal)
+  model$distribution <- 0
+  model$phi <- rep(object$sigma, length(object$y))
+  out <- svm_smoother(object, object$init_signal)
   
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
   out$alphahat <- ts(out$alphahat, start = start(object$y))
@@ -137,21 +127,19 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
   }
   priors <- combine_priors(object$priors)
   
+  model$distribution <- 0
+  model$phi <- rep(object$sigma, length(object$y))
   out <-  switch(type,
     full = {
       if (method == "PM"){
-        out <- svm_run_mcmc(object$y, object$Z, object$T, object$R,
-          object$a1, object$P1,
-          rep(object$sigma, length(object$y)), object$xreg, object$coefs,
+        out <- svm_run_mcmc(object,
           priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
           object$init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
           delayed_acceptance, simulation_method == "PF")
         
       } else {
-        out <- svm_run_mcmc_is(object$y, object$Z, object$T, object$R,
-          object$a1, object$P1,
-          rep(object$sigma, length(object$y)), object$xreg, object$coefs,
+        out <- svm_run_mcmc_is(object,
           priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
           object$init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
@@ -163,9 +151,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
     },
     summary = {
       stop("summary for sv models not yet implemented.")
-      out <- svm_run_mcmc_summary(object$y, object$Z, object$T, object$R,
-        object$a1, object$P1,
-        rep(object$sigma, length(object$y)), object$xreg, object$coefs,
+      out <- svm_run_mcmc_summary(object,
         priors$prior_types, priors$params, n_iter,
         nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
         object$init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
@@ -196,8 +182,9 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
 importance_sample.svm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  svm_importance_sample(object$y, object$Z, object$T, object$R,
-    object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$coefs,
+  model$distribution <- 0
+  model$phi <- rep(object$sigma, length(object$y))
+  svm_importance_sample(object,
     nsim, object$init_signal, seed)
 }
 
@@ -206,8 +193,9 @@ importance_sample.svm <- function(object, nsim,
 #' @export
 gaussian_approx.svm <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
   
-  svm_approx_model(object$y, object$Z, object$T, object$R,
-    object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$coefs,
+  model$distribution <- 0
+  model$phi <- rep(object$sigma, length(object$y))
+  svm_approx_model(object,
     object$init_signal, max_iter, conv_tol)
 }
 
@@ -218,7 +206,7 @@ gaussian_approx.svm <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
 particle_filter.svm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  svm_particle_filter(object$y, object$Z, object$T, object$R,
-    object$a1, object$P1, rep(object$sigma, length(object$y)), object$xreg, object$coefs,
-    nsim, object$init_signal, seed)
+  model$distribution <- 0
+  model$phi <- rep(object$sigma, length(object$y))
+  svm_particle_filter(object, nsim, object$init_signal, seed)
 }

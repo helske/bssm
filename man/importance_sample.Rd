@@ -23,7 +23,7 @@ importance_sample(object, nsim, seed, ...)
 
 \item{nsim}{Number of samples.}
 
-\item{seed}{Seed for the random nunber generator.}
+\item{seed}{Seed for the random number generator.}
 
 \item{...}{Ignored.}
 }

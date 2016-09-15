@@ -10,13 +10,11 @@ c(
   ),
   bibentry(
     bibtype = "Article",
-    author = {{Vihola}, M. and {Helske}, J. and {Franks}, J.},
-    title = "{Importance sampling type correction of {M}arkov chain {M}onte {C}arlo and exact approximations}",
-    journal = {ArXiv e-prints},
-    archivePrefix = "arXiv",
-    eprint = {1609.02541},
+    author = "Matti Vihola, Jouni Helske, and Jordan Franks",
+    title = "Importance sampling type correction of {M}arkov chain {M}onte {C}arlo and exact approximations",
+    journal = "Ar{X}iv e-prints",
+    eprint = "1609.02541",
     primaryClass = "stat.CO",
-    keywords = {Statistics - Computation, Mathematics - Probability},
     year = 2016,
     month = sep,
     key = "ISMCMC"
