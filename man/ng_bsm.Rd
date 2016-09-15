@@ -83,7 +83,7 @@ mcmc_out$acceptance_rate
 plot(mcmc_out$theta)
 summary(mcmc_out$theta)
 
-require("ggplot2")
+library("ggplot2")
 ggplot(as.data.frame(mcmc_out$theta[,1:2]), aes(x = sd_level, y = sd_seasonal)) +
   geom_point() + stat_density2d(aes(fill = ..level.., alpha = ..level..),
   geom = "polygon") + scale_fill_continuous(low = "green",high = "blue") +

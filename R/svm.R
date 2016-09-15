@@ -116,7 +116,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
   }
   
   if (missing(S)) {
-    S <- diag(0.1 * abs(sapply(object$priors, "[[", "init")), length(object$priors))
+    S <- diag(0.1 * pmax(0.1, abs(sapply(object$priors, "[[", "init"))), length(object$priors))
   }
   
   
@@ -151,16 +151,16 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
     },
     summary = {
       stop("summary for sv models not yet implemented.")
-      out <- svm_run_mcmc_summary(object,
-        priors$prior_types, priors$params, n_iter,
-        nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-        object$init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
-        delayed_acceptance, simulation_method == "PF")
-      
-      colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
-      out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
-      out$muhat <- ts(out$muhat, start = start(object$y), frequency = frequency(object$y))
-      out
+      # out <- svm_run_mcmc_summary(object,
+      #   priors$prior_types, priors$params, n_iter,
+      #   nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
+      #   object$init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
+      #   delayed_acceptance, simulation_method == "PF")
+      # 
+      # colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
+      # out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
+      # out$muhat <- ts(out$muhat, start = start(object$y), frequency = frequency(object$y))
+      # out
     })
   out$S <- matrix(out$S, nrow(S), ncol(S))
   

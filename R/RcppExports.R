@@ -73,40 +73,40 @@ bsm_run_mcmc_summary <- function(model_, prior_types, prior_pars, n_iter, n_burn
     .Call('bssm_bsm_run_mcmc_summary', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, log_space, end_ram)
 }
 
-gssm_loglik <- function(y, Z, H, T, R, a1, P1, xreg, beta) {
-    .Call('bssm_gssm_loglik', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, xreg, beta)
+gssm_loglik <- function(model_) {
+    .Call('bssm_gssm_loglik', PACKAGE = 'bssm', model_)
 }
 
-gssm_filter <- function(y, Z, H, T, R, a1, P1, xreg, beta) {
-    .Call('bssm_gssm_filter', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, xreg, beta)
+gssm_filter <- function(model_) {
+    .Call('bssm_gssm_filter', PACKAGE = 'bssm', model_)
 }
 
-gssm_fast_smoother <- function(y, Z, H, T, R, a1, P1, xreg, beta) {
-    .Call('bssm_gssm_fast_smoother', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, xreg, beta)
+gssm_fast_smoother <- function(model_) {
+    .Call('bssm_gssm_fast_smoother', PACKAGE = 'bssm', model_)
 }
 
-gssm_sim_smoother <- function(y, Z, H, T, R, a1, P1, nsim, xreg, beta, seed) {
-    .Call('bssm_gssm_sim_smoother', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, nsim, xreg, beta, seed)
+gssm_sim_smoother <- function(model_, nsim, seed) {
+    .Call('bssm_gssm_sim_smoother', PACKAGE = 'bssm', model_, nsim, seed)
 }
 
-gssm_smoother <- function(y, Z, H, T, R, a1, P1, xreg, beta) {
-    .Call('bssm_gssm_smoother', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, xreg, beta)
+gssm_smoother <- function(model_) {
+    .Call('bssm_gssm_smoother', PACKAGE = 'bssm', model_)
 }
 
-gssm_run_mcmc <- function(y, Z, H, T, R, a1, P1, prior_types, prior_pars, n_iter, sim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed, end_ram) {
-    .Call('bssm_gssm_run_mcmc', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, prior_types, prior_pars, n_iter, sim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed, end_ram)
+gssm_run_mcmc <- function(model_, prior_types, prior_pars, n_iter, sim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, seed, end_ram) {
+    .Call('bssm_gssm_run_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, sim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, seed, end_ram)
 }
 
-gssm_run_mcmc_summary <- function(y, Z, H, T, R, a1, P1, prior_types, prior_pars, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed, end_ram) {
-    .Call('bssm_gssm_run_mcmc_summary', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, prior_types, prior_pars, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed, end_ram)
+gssm_run_mcmc_summary <- function(model_, prior_types, prior_pars, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, seed, end_ram) {
+    .Call('bssm_gssm_run_mcmc_summary', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, seed, end_ram)
 }
 
-gssm_predict <- function(y, Z, H, T, R, a1, P1, prior_types, prior_pars, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, H_ind, T_ind, R_ind, xreg, beta, probs, seed) {
-    .Call('bssm_gssm_predict', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, prior_types, prior_pars, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, H_ind, T_ind, R_ind, xreg, beta, probs, seed)
+gssm_predict <- function(model_, prior_types, prior_pars, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, H_ind, T_ind, R_ind, probs, seed) {
+    .Call('bssm_gssm_predict', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, H_ind, T_ind, R_ind, probs, seed)
 }
 
-gssm_predict2 <- function(y, Z, H, T, R, a1, P1, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed) {
-    .Call('bssm_gssm_predict2', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, H_ind, T_ind, R_ind, xreg, beta, seed)
+gssm_predict2 <- function(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, H_ind, T_ind, R_ind, seed) {
+    .Call('bssm_gssm_predict2', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, H_ind, T_ind, R_ind, seed)
 }
 
 ng_bsm_loglik <- function(model_, init_signal, nsim_states, seed) {

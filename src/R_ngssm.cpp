@@ -112,7 +112,7 @@ List ngssm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
   ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, 1);
 
 
-  double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
+   model.approx(init_signal, model.max_iter, model.conv_tol);
 
   arma::cube alpha = model.sim_smoother(nsim_states, true);
   arma::vec weights = exp(model.importance_weights(alpha) -

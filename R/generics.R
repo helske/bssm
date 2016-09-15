@@ -1,18 +1,19 @@
 #' Kalman Filtering
 #'
 #' Function \code{kfilter} runs the Kalman filter for the given model
-#' (and it's parameters), and returns the filtered estimates  and
+#' (and it's parameters, including regression coefficients), and returns the filtered estimates and
 #' one-step-ahead predictions of the states \eqn{\alpha_t} given the
 #' model parameters and data up to time \eqn{t}.
 #'
-#' For non-Gaussian models, the filtering is based on the approximate Gaussian model.
+#' For non-Gaussian models, the Kalman filtering is based on the approximate Gaussian model.
 #'
 #' @param object Model object
 #' @param ... Ignored.
-#' @return List containing the log-likelihood (approximate in non-Gaussian ce),
+#' @return List containing the log-likelihood (approximate in non-Gaussian case),
 #' one-step-ahead predictions \code{at} and filtered
 #' estimates \code{att} of states, and the corresponding variances \code{Pt} and
 #'  \code{Ptt}.
+#' @seealso \code{\link{particle_filter}}
 #' @export
 #' @rdname kfilter
 kfilter <- function(object, ...) {
@@ -30,13 +31,11 @@ kfilter <- function(object, ...) {
 #' For non-Gaussian models, the smoothing is based on the approximate Gaussian model.
 #'
 #' @param object Model object.
-#' @param nsim Number of samples. Simulation smoother uses one antithetic
-#' variable, ideally making the first and second halves of the resulting array to be
-#' negatively correlated (see the example).
+#' @param nsim Number of independent samples.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @return Matrix containing the smoothed estimates of states, list
-#' with the smoothed states and the variances, or an array  containing the
+#' with the smoothed states and the variances, or an array containing the
 #' generated samples.
 #' @export
 #' @rdname smoother
@@ -53,11 +52,9 @@ smoother <- function(object, ...) {
 #' @export
 #' @rdname smoother
 #' @examples
-#' # need to give upper_prior as we have only NA's in y...
-#' model <- bsm(rep(NA, 30), upper_prior = c(10, 10), sd_level = 1, sd_y = 1, slope = FALSE)
-#' sim <- sim_smoother(model, 4)
+#' model <- bsm(rep(NA, 50), sd_level = uniform(1,0,5), sd_y = uniform(1,0,5), slope = FALSE)
+#' sim <- sim_smoother(model, 12)
 #' ts.plot(sim[, 1, ])
-#' cor(sim[, 1, ])
 sim_smoother <- function(object, nsim, seed, ...) {
   UseMethod("sim_smoother", object)
 }
@@ -67,7 +64,8 @@ sim_smoother <- function(object, nsim, seed, ...) {
 #' Adaptive Markov chain Monte Carlo simulation of state space models using
 #' Robust Adaptive Metropolis algorithm by Vihola (2012).
 #'
-#' @param object Object of class \code{gssm}, \code{bsm}, \code{ngssm}, or \code{ng_bsm}.
+#' @param object Object of class \code{gssm}, \code{bsm}, \code{ngssm}, \code{svm},
+#' or \code{ng_bsm}.
 #' @param ... Arguments to be passed to methods.
 #' See \code{\link{run_mcmc.gssm}} and \code{\link{run_mcmc.ngssm}} for details.
 #' @export
@@ -81,8 +79,9 @@ run_mcmc <- function(object, ...) {
 
 #' Importance Sampling from non-Gaussian State Space Model
 #' 
-#' Returns \code{nsim} samples from the approximating Gaussian model with corresponding (scaled) importance weights.
-#' @param object of class \code{ng_bsm}.
+#' Returns \code{nsim} samples from the approximating Gaussian model with corresponding 
+#' (scaled) importance weights.
+#' @param object of class \code{ng_bsm}, \code{svm} or \code{ngssm}.
 #' @param nsim Number of samples.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
@@ -93,7 +92,7 @@ importance_sample <- function(object, nsim, seed, ...) {
 }
 
 
-#' Gaussian Approximation of non-Gaussian State Space Model
+#' Gaussian approximation of non-Gaussian state space model
 #' 
 #' Returns the approximating Gaussian model.
 #' @param object model object.

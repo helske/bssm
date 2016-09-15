@@ -58,8 +58,7 @@ List ng_bsm_filter(const List& model_, arma::vec init_signal) {
 arma::mat ng_bsm_fast_smoother(const List& model_, arma::vec init_signal) {
   
   ng_bsm model(model_, 1, false);
-  
-  double logLik = model.approx(init_signal, 1000, 1e-12);
+  model.approx(init_signal, 1000, 1e-12);
   
   return model.fast_smoother(true).t();
 }
@@ -69,7 +68,7 @@ arma::cube ng_bsm_sim_smoother(const List& model_, unsigned nsim,
   arma::vec init_signal, unsigned int seed) {
   
   ng_bsm model(model_, seed, false);
-  double logLik = model.approx(init_signal, 1000, 1e-12);
+  model.approx(init_signal, 1000, 1e-12);
   
   return model.sim_smoother(nsim, true);
 }
@@ -80,7 +79,7 @@ List ng_bsm_smoother(const List& model_, arma::vec init_signal) {
   
   ng_bsm model(model_, 1, false);
   
-  double logLik = model.approx(init_signal, 1000, 1e-12);
+  model.approx(init_signal, 1000, 1e-12);
   
   arma::mat alphahat(model.m, model.n);
   arma::cube Vt(model.m, model.m, model.n);
@@ -103,7 +102,6 @@ List ng_bsm_run_mcmc(const List& model_,
   unsigned int n_threads, bool end_ram, bool adapt_approx, bool da, bool pf) {
   
   ng_bsm model(clone(model_), seed, false);
-  
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -283,7 +281,7 @@ List ng_bsm_importance_sample(const List& model_, arma::vec init_signal,
   
   ng_bsm model(model_, seed, false);
   
-  double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
+  model.approx(init_signal, model.max_iter, model.conv_tol);
   
   arma::cube alpha = model.sim_smoother(nsim_states, true);
   arma::vec weights = exp(model.importance_weights(alpha) -

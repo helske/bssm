@@ -744,8 +744,8 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
   double acceptance_rate = 0.0;
   
   arma::vec theta = get_theta();
- 
   double prior = prior_pdf(theta, prior_types, prior_pars);
+  
   arma::vec signal = init_signal;
   double ll_approx_u = scaling_factor(signal);
   double ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
@@ -787,6 +787,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
     }
     // propose new theta
     arma::vec theta_prop = theta + S * u;
+    
     // compute prior
     double prior_prop = prior_pdf(theta_prop, prior_types, prior_pars);
     
@@ -903,13 +904,12 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
   if (!std::isfinite(ll)) {
     Rcpp::stop("Non-finite log-likelihood from initial values. ");
   }
-  double ll_approx_u;
+ 
   double ll_approx;
   double ll_init;
   
   if(da) {
     arma::vec signal = init_signal;
-    ll_approx_u = scaling_factor(signal);
     ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
     ll_init = ll_approx + log_likelihood(distribution != 0);
   }
@@ -929,7 +929,6 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
   }
   
   double accept_prob = 0.0;
-  unsigned int ind_prop = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   for (unsigned int i = 1; i < n_iter; i++) {
@@ -952,7 +951,6 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
         if (adapt_approx) {
           arma::vec signal = init_signal;
           ll_approx = approx(signal, max_iter, conv_tol);
-          ll_approx_u = scaling_factor(signal);
         }
         double ll_init_prop = ll_approx + log_likelihood(distribution != 0);
         //compute the acceptance probability

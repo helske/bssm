@@ -13,9 +13,9 @@
   adaptive_approx = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), log_space = FALSE, ...)
 
-\method{run_mcmc}{ngssm}(object, n_iter, Z_est, T_est, R_est, lower_prior,
-  upper_prior, nsim_states = 1, n_burnin = floor(n_iter/2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+\method{run_mcmc}{ngssm}(object, n_iter, Z_est, T_est, R_est, priors,
+  nsim_states = 1, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{run_mcmc}{svm}(object, n_iter, nsim_states = 1, type = "full",
@@ -73,9 +73,6 @@ distribution is \eqn{SS'}.}
 \item{Z_est, T_est, R_est}{Matrices or arrays with same dimensions as the
 corresponding system matrices in \code{object}, where \code{NA} values
 identify the unknown parameters for estimation.}
-
-\item{lower_prior, upper_prior}{Bounds of the uniform prior for parameters
-\eqn{\theta}. Optional for \code{bsm} objects.}
 
 \item{method}{Whether pseudo-marginal MCMC (\code{"PM"}) (default) or 
 importance sampling type correction (\code{"IS"}) is used.}

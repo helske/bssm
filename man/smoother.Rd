@@ -17,15 +17,13 @@ sim_smoother(object, nsim, seed, ...)
 
 \item{...}{Ignored.}
 
-\item{nsim}{Number of samples. Simulation smoother uses one antithetic
-variable, ideally making the first and second halves of the resulting array to be
-negatively correlated (see the example).}
+\item{nsim}{Number of independent samples.}
 
 \item{seed}{Seed for the random number generator.}
 }
 \value{
 Matrix containing the smoothed estimates of states, list
-with the smoothed states and the variances, or an array  containing the
+with the smoothed states and the variances, or an array containing the
 generated samples.
 }
 \description{
@@ -39,10 +37,8 @@ from the conditional distribution \eqn{p(\alpha | y, \theta)}.
 For non-Gaussian models, the smoothing is based on the approximate Gaussian model.
 }
 \examples{
-# need to give upper_prior as we have only NA's in y...
-model <- bsm(rep(NA, 30), upper_prior = c(10, 10), sd_level = 1, sd_y = 1, slope = FALSE)
-sim <- sim_smoother(model, 4)
+model <- bsm(rep(NA, 50), sd_level = uniform(1,0,5), sd_y = uniform(1,0,5), slope = FALSE)
+sim <- sim_smoother(model, 12)
 ts.plot(sim[, 1, ])
-cor(sim[, 1, ])
 }
 

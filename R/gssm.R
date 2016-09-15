@@ -283,12 +283,12 @@ run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
     R_n <- length(R_ind)
   }
 
-  if (Z_n + H_n + T_n + R_n == 0) {
+  if (Z_n + H_n + T_n + R_n + length(object$coef) == 0) {
     stop("nothing to estimate. ")
   }
 
   if (missing(S)) {
-    S <- diag(Z_n + H_n + T_n + R_n)
+    S <- diag(Z_n + H_n + T_n + R_n + length(object$coefs))
   }
 priors <- combine_priors(priors)
 
@@ -388,7 +388,7 @@ predict.gssm <- function(object, n_iter, lower_prior, upper_prior, newdata = NUL
   }
 
   if (missing(S)) {
-    S <- diag(Z_n + H_n + T_n + R_n)
+    S <- diag(Z_n + H_n + T_n + R_n + length(object$coefs))
   }
   endtime <- end(object$y) + c(0, n_ahead)
   y_orig <- object$y

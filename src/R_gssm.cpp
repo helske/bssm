@@ -1,24 +1,22 @@
 #include "gssm.h"
 
 // [[Rcpp::export]]
-double gssm_loglik(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::mat& xreg, arma::vec& beta) {
+double gssm_loglik(const List& model_) {
   
-  gssm model(y, Z, H, T, R, a1, P1, xreg, beta, 1);
+  gssm model(model_, 1);
   
   return model.log_likelihood(true);
 }
 
 // [[Rcpp::export]]
-List gssm_filter(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::mat& xreg, arma::vec& beta) {
+List gssm_filter(const List& model_) {
   
   
-  gssm model(y, Z, H, T, R, a1, P1, xreg, beta, 1);
-  arma::mat at(a1.n_elem, y.n_elem + 1);
-  arma::mat att(a1.n_elem, y.n_elem);
-  arma::cube Pt(a1.n_elem, a1.n_elem, y.n_elem + 1);
-  arma::cube Ptt(a1.n_elem, a1.n_elem, y.n_elem);
+  gssm model(model_, 1);
+  arma::mat at(model.m, model.n + 1);
+  arma::mat att(model.m, model.n);
+  arma::cube Pt(model.m, model.m, model.n + 1);
+  arma::cube Ptt(model.m, model.m, model.n);
   
   double logLik = model.filter(at, att, Pt, Ptt, true);
   arma::inplace_trans(at);
@@ -34,30 +32,26 @@ List gssm_filter(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
 
 
 // [[Rcpp::export]]
-arma::mat gssm_fast_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::mat& xreg, arma::vec& beta) {
+arma::mat gssm_fast_smoother(const List& model_) {
   
-  gssm model(y, Z, H, T, R, a1, P1, xreg, beta, 1);
+  gssm model(model_, 1);
   return model.fast_smoother(true).t();
 }
 
 // [[Rcpp::export]]
-arma::cube gssm_sim_smoother(arma::vec& y, arma::mat& Z, arma::vec& H,
-  arma::cube& T, arma::cube& R, arma::vec& a1, arma::mat& P1, unsigned int nsim,
-  arma::mat& xreg, arma::vec& beta, unsigned int seed) {
+arma::cube gssm_sim_smoother(const List& model_, unsigned int nsim, unsigned int seed) {
   
-  gssm model(y, Z, H, T, R, a1, P1, xreg, beta, seed);
+  gssm model(model_, seed);
   return model.sim_smoother(nsim, true);
 }
 
 
 // [[Rcpp::export]]
-List gssm_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::mat& xreg, arma::vec& beta) {
+List gssm_smoother(const List& model_) {
   
-  gssm model(y, Z, H, T, R, a1, P1, xreg, beta,1);
-  arma::mat alphahat(a1.n_elem, y.n_elem);
-  arma::cube Vt(a1.n_elem, a1.n_elem, y.n_elem);
+  gssm model(model_, 1);
+  arma::mat alphahat(model.m, model.n);
+  arma::cube Vt(model.m, model.m, model.n);
   
   model.smoother(alphahat, Vt,true);
   arma::inplace_trans(alphahat);
@@ -68,15 +62,13 @@ List gssm_smoother(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List gssm_run_mcmc(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1,
+List gssm_run_mcmc(const List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars,  unsigned int n_iter,
   bool sim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S, arma::uvec Z_ind,
-  arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg,
-  arma::vec& beta, unsigned int seed, bool end_ram) {
+  arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind, unsigned int seed, bool end_ram) {
   
-  gssm model(y, Z, H, T, R, a1, P1, xreg, beta, Z_ind, H_ind, T_ind, R_ind, seed);
+  gssm model(model_, Z_ind, H_ind, T_ind, R_ind, seed);
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -106,14 +98,13 @@ List gssm_run_mcmc(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List gssm_run_mcmc_summary(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::uvec& prior_types,
+List gssm_run_mcmc_summary(const List& model_, arma::uvec& prior_types,
   arma::vec& prior_pars, unsigned int n_iter, unsigned int n_thin,
   unsigned int n_burnin, double gamma, double target_acceptance, arma::mat S,
   arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind,
-  arma::mat& xreg, arma::vec& beta, unsigned int seed, bool end_ram) {
+  unsigned int seed, bool end_ram) {
   
-  gssm model(y, Z, H, T, R, a1, P1, xreg, beta, Z_ind, H_ind, T_ind, R_ind, seed);
+  gssm model(model_, Z_ind, H_ind, T_ind, R_ind, seed);
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -135,30 +126,28 @@ List gssm_run_mcmc_summary(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube&
 
 
 // [[Rcpp::export]]
-List gssm_predict(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::uvec& prior_types,
+List gssm_predict(const List& model_, arma::uvec& prior_types,
   arma::vec& prior_pars, unsigned int n_iter,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
   unsigned int interval, arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind,
-  arma::uvec R_ind, arma::mat& xreg, arma::vec& beta, arma::vec& probs, unsigned int seed) {
+  arma::uvec R_ind, arma::vec& probs, unsigned int seed) {
   
-  gssm model(y, Z, H, T, R, a1, P1, xreg, beta, Z_ind, H_ind, T_ind, R_ind, seed);
+  gssm model(model_, Z_ind, H_ind, T_ind, R_ind, seed);
   
   return model.predict(prior_types, prior_pars, n_iter, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval, probs);
 }
 
 // [[Rcpp::export]]
-arma::mat gssm_predict2(arma::vec& y, arma::mat& Z, arma::vec& H, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::uvec& prior_types,
+arma::mat gssm_predict2(const List& model_, arma::uvec& prior_types,
   arma::vec& prior_pars, unsigned int n_iter, unsigned int nsim_states,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
   unsigned int interval, arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind,
-  arma::uvec R_ind, arma::mat& xreg, arma::vec& beta, unsigned int seed) {
+  arma::uvec R_ind, unsigned int seed) {
   
-  gssm model(y, Z, H, T, R, a1, P1, xreg, beta, Z_ind, H_ind, T_ind, R_ind, seed);
+  gssm model(model_, Z_ind, H_ind, T_ind, R_ind, seed);
   
   return model.predict2(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval);

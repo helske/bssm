@@ -21,18 +21,21 @@ kfilter(object, ...)
 \item{...}{Ignored.}
 }
 \value{
-List containing the log-likelihood (approximate in non-Gaussian ce),
+List containing the log-likelihood (approximate in non-Gaussian case),
 one-step-ahead predictions \code{at} and filtered
 estimates \code{att} of states, and the corresponding variances \code{Pt} and
  \code{Ptt}.
 }
 \description{
 Function \code{kfilter} runs the Kalman filter for the given model
-(and it's parameters), and returns the filtered estimates  and
+(and it's parameters, including regression coefficients), and returns the filtered estimates and
 one-step-ahead predictions of the states \eqn{\alpha_t} given the
 model parameters and data up to time \eqn{t}.
 }
 \details{
-For non-Gaussian models, the filtering is based on the approximate Gaussian model.
+For non-Gaussian models, the Kalman filtering is based on the approximate Gaussian model.
+}
+\seealso{
+\code{\link{particle_filter}}
 }
 

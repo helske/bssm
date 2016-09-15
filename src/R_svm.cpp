@@ -34,8 +34,7 @@ double svm_loglik(List model_, arma::vec init_signal, unsigned int nsim_states,
 List svm_smoother(List model_, arma::vec init_signal) {
 
   svm model(model_, 1);
-
-  double logLik = model.approx(init_signal, 1000, 1e-12);
+  model.approx(init_signal, 1000, 1e-12);
 
   arma::mat alphahat(model.m, model.n);
   arma::cube Vt(model.m, model.m, model.n);
@@ -139,7 +138,7 @@ List svm_importance_sample(List model_, unsigned int nsim_states,
 
   svm model(model_, seed);
 
-  double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
+  model.approx(init_signal, model.max_iter, model.conv_tol);
 
   arma::cube alpha = model.sim_smoother(nsim_states, false);
   arma::vec weights = exp(model.importance_weights(alpha) -

@@ -5,14 +5,14 @@
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
 #' @param sd_y Prior for the standard error of observation equation. 
-#' See \code{\link{priors}} for details.
+#' See \link[=uniform]{priors} for details.
 #' @param sd_level  Prior for the standard error of the noise in level equation. 
-#' See \code{\link{priors}} for details. If missing, \code{sd_level} is fixed to zero.
+#' See\link[=uniform]{priors} for details. If missing, \code{sd_level} is fixed to zero.
 #' @param sd_slope Prior for the standard error  of the noise in slope equation. 
-#' See \code{\link{priors}} for details. If missing, \code{sd_slope} is fixed to zero.
+#' See\link[=uniform]{priors} for details. If missing, \code{sd_slope} is fixed to zero.
 #' Ignored if \code{slope = FALSE}.
 #' @param sd_seasonal Prior for the standard error of the noise in seasonal equation.
-#' See \code{\link{priors}} for details. If missing, \code{sd_seasonal} is fixed to zero.
+#' See\link[=uniform]{priors} for details. If missing, \code{sd_seasonal} is fixed to zero.
 #' @param xreg Matrix containing covariates.
 #' @param beta Prior for the regression coefficients.
 #' @param period Length of the seasonal component i.e. the number of
@@ -231,7 +231,7 @@ fast_smoother.bsm <- function(object, ...) {
 #' @export
 sim_smoother.bsm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  out <- bsm_sim_smoother(object, seed)
+  out <- bsm_sim_smoother(object, nsim, seed)
   
   rownames(out) <- names(object$a1)
   aperm(out, c(2, 1, 3))
@@ -268,7 +268,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   }
   
   if (missing(S)) {
-    S <- diag(0.1 * abs(sapply(object$priors, "[[", "init")))
+    S <- diag(0.1 * pmax(0.1, abs(sapply(object$priors, "[[", "init"))), length(object$priors))
   }
   
   priors <- combine_priors(object$priors)
@@ -334,7 +334,7 @@ predict.bsm <- function(object, n_iter, newdata = NULL,
   method <- match.arg(method, c("parametric", "quantile"))
   
   if (missing(S)) {
-    S <- diag(0.1 * abs(sapply(object$priors, "[[", "init")), length(object$priors))
+    S <- diag(0.1 * pmax(0.1, abs(sapply(object$priors, "[[", "init"))), length(object$priors))
   }
   
   priors <- combine_priors(object$priors)

@@ -11,8 +11,8 @@
   target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size =
   1), newphi = NULL, ...)
 
-\method{predict}{ngssm}(object, n_iter, nsim_states, lower_prior, upper_prior,
-  newdata = NULL, n_ahead = 1, interval = "mean", probs = c(0.05, 0.95),
+\method{predict}{ngssm}(object, n_iter, nsim_states, priors, newdata = NULL,
+  n_ahead = 1, interval = "mean", probs = c(0.05, 0.95),
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size =
   1), newphi = NULL, Z_est, T_est, R_est, ...)
@@ -58,12 +58,6 @@ value is taken from \code{object$phi}.}
 
 \item{...}{Ignored.}
 
-\item{lower_prior}{Bounds of the uniform prior for parameters
-\eqn{\theta}. Optional for \code{bsm} objects.}
-
-\item{upper_prior}{Bounds of the uniform prior for parameters
-\eqn{\theta}. Optional for \code{bsm} objects.}
-
 \item{Z_est, T_est, R_est}{Matrices or arrays with same dimensions as the
 corresponding system matrices in \code{object}, where \code{NA} values
 identify the unknown parameters for estimation.}
@@ -83,11 +77,12 @@ intervals for the mean even when importance sampling is used, by assuming
 that \eqn{p(\alpha | y)} is Gaussian.
 }
 \examples{
-data(poisson_series)
+data("poisson_series")
 model <- ng_bsm(poisson_series, sd_level = halfnormal(0.1, 1), 
   sd_slope=halfnormal(0.01, 0.1), distribution = "poisson")
 pred <- predict(model, n_iter = 1e4, nsim = 10, n_ahead = 10, 
   probs = seq(0.05,0.95, by = 0.05)) 
+library("ggplot2")
 autoplot(pred, median_color = "blue", mean_color = "red")
 
 }

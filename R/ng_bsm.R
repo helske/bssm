@@ -56,7 +56,7 @@
 #' plot(mcmc_out$theta)
 #' summary(mcmc_out$theta)
 #'
-#' require("ggplot2")
+#' library("ggplot2")
 #' ggplot(as.data.frame(mcmc_out$theta[,1:2]), aes(x = sd_level, y = sd_seasonal)) +
 #'   geom_point() + stat_density2d(aes(fill = ..level.., alpha = ..level..),
 #'   geom = "polygon") + scale_fill_continuous(low = "green",high = "blue") +
@@ -357,7 +357,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   }
   
   if (missing(S)) {
-    S <- diag(0.1 * abs(sapply(object$priors, "[[", "init")), length(object$priors))
+    S <- diag(0.1 * pmax(0.1, abs(sapply(object$priors, "[[", "init"))), length(object$priors))
   }
   
   
@@ -434,12 +434,12 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
 #' @rdname predict.ngssm
 #' @export
 #' @examples
-#' data(poisson_series)
+#' data("poisson_series")
 #' model <- ng_bsm(poisson_series, sd_level = halfnormal(0.1, 1), 
 #'   sd_slope=halfnormal(0.01, 0.1), distribution = "poisson")
 #' pred <- predict(model, n_iter = 1e4, nsim = 10, n_ahead = 10, 
 #'   probs = seq(0.05,0.95, by = 0.05)) 
-#' library("ggplot")
+#' library("ggplot2")
 #' autoplot(pred, median_color = "blue", mean_color = "red")
 #' 
 predict.ng_bsm <- function(object, n_iter, nsim_states,
@@ -453,7 +453,7 @@ predict.ng_bsm <- function(object, n_iter, nsim_states,
   nb <- object$distribution == "negative binomial"
   
   if (missing(S)) {
-    S <- diag(0.1 * abs(sapply(object$priors, "[[", "init")))
+    S <- diag(0.1 * pmax(0.1, abs(sapply(object$priors, "[[", "init"))), length(object$priors))
   }
   
   priors <- combine_priors(object$priors)
