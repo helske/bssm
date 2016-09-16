@@ -779,6 +779,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   for (unsigned int i = 1; i < n_iter; i++) {
+    Rcout<<i<<std::endl;
     // sample from standard normal distribution
     //arma::vec u = rnorm(npar);
     arma::vec u(npar);
@@ -794,12 +795,14 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
     if (prior_prop > -arma::datum::inf) {
       // update parameters
       update_model(theta_prop);
+      Rcout<<"2"<<std::endl;
       // compute approximate log-likelihood with proposed theta
       if (adapt_approx) {
         signal = init_signal;
         ll_approx = approx(signal, max_iter, conv_tol);
         ll_approx_u = scaling_factor(signal);
       }
+      Rcout<<"3"<<std::endl;
       double ll_prop = ll_approx + log_likelihood(distribution != 0);
       //compute the acceptance probability
       // use explicit min(...) as we need this value later
@@ -815,8 +818,11 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
         if (da) {
           if (unif(engine) < accept_prob) {
             // simulate states
+            Rcout<<"a"<<std::endl;
             arma::cube alpha_prop = sim_smoother(nsim_states, distribution != 0);
+            Rcout<<"aa"<<std::endl;
             arma::vec weights = exp(importance_weights(alpha_prop) - ll_approx_u);
+            Rcout<<"aaa"<<std::endl;
             ll_w_prop = log(sum(weights) / nsim_states);
             // delayed acceptance ratio
             double pp = 0.0;
@@ -862,7 +868,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
         }
       }
     } else accept_prob = 0.0;
-
+    Rcout<<"bb"<<std::endl;
     //store
     if ((i >= n_burnin) && (i % n_thin == 0) && j < n_samples) {
       posterior_store(j) = ll + ll_w + prior;
