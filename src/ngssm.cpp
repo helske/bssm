@@ -738,7 +738,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
   const arma::vec init_signal, bool end_ram, bool adapt_approx, bool da,
   arma::mat& theta_store, arma::vec& posterior_store,
   arma::cube& alpha_store) {
-
+  Rcout<<"run_mcmc"<<std::endl;
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
   double acceptance_rate = 0.0;

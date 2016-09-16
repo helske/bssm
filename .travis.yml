@@ -11,11 +11,11 @@ r_github_packages:
   - hadley/devtools
 r_packages:
   - covr
-addons: 
-    apt: 
-      packages: 
+addons:
+    apt:
+      packages:
         valgrind
-      
+
 # from devtools:
 # Set CXX1X for R-devel, as R-devel does not detect CXX1X support for gcc 4.6.3
 before_install:
@@ -23,8 +23,8 @@ before_install:
 
 after_success:
   - Rscript -e 'covr::codecov()'
-  
+
 after_failure:
 - ./travis-tool.sh dump_logs
 
-r_check_args: "--no-manual --no-examples --no-build-vignettes" #"--as-cran --run-dontrun"
+r_check_args: "--as-cran --run-dontrun"
