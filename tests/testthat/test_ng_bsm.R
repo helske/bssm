@@ -39,17 +39,17 @@ test_that("MCMC results are correct",{
 
   expect_error(out <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), NA)
 
-  testvalues <- structure(c(-32.2400442222097, -32.2400442222097, -32.9215058515621, 
-    -31.2431812605053, -31.2431812605053), .Dim = c(5L, 1L))
+  testvalues <- structure(c(-31.9847662717918, -31.9847662717918, -31.9847662717918,
+    -32.7146366602036, -31.6810801332842), .Dim = c(5L, 1L))
   expect_equivalent(testvalues, out$posterior)
 
-  testvalues <- structure(c(1.82872658207967, 1.82872658207967, 1.69313932296711, 
-    1.38293337346796, 1.38293337346796), .Dim = c(5L, 1L), .Dimnames = list(
+  testvalues <- structure(c(1.89972367166746, 1.89972367166746, 1.89972367166746,
+    1.82357173132233, 1.55941474919434), .Dim = c(5L, 1L), .Dimnames = list(
       NULL, "sd_level"), mcpar = c(6, 10, 1), class = "mcmc")
   expect_equivalent(testvalues, out$theta)
 
-  testvalues <- c(-2.82206549942462, -2.60472798142332, 0.607012439228529, -1.77361792497743, 
-    0.607012439228529, -0.023543455203515)
+  testvalues <- c(-2.45678419725387, -3.58855684667486, 0.484418408546788, -1.37871770980265,
+    0.484418408546788, 0.484418408546788)
   expect_equivalent(testvalues, out$alpha[c(1,10,20,25, 31, 60)])
 
 
