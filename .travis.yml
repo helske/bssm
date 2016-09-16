@@ -20,4 +20,4 @@ before_install:
 after_success:
   - Rscript -e 'covr::codecov()'
 
-#r_check_args: "--as-cran --run-dontrun"
+r_check_args: "--no-manual --use-valgrind --no-examples --no-build-vignettes" #"--as-cran --run-dontrun"
