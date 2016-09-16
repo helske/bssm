@@ -5,19 +5,19 @@
 \title{Basic Structural (Time Series) Model}
 \usage{
 bsm(y, sd_y, sd_level, sd_slope, sd_seasonal, beta, xreg = NULL,
-  period = frequency(y), slope = TRUE, seasonal = frequency(y) > 1, a1,
+  slope = TRUE, seasonal = frequency(y) > 1, period = frequency(y), a1,
   P1)
 }
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
 
-\item{sd_y}{Prior for the standard error of observation equation. 
+\item{sd_y}{Prior for the standard error of observation equation.
 See \link[=uniform]{priors} for details.}
 
-\item{sd_level}{Prior for the standard error of the noise in level equation. 
+\item{sd_level}{Prior for the standard error of the noise in level equation.
 See\link[=uniform]{priors} for details. If missing, \code{sd_level} is fixed to zero.}
 
-\item{sd_slope}{Prior for the standard error  of the noise in slope equation. 
+\item{sd_slope}{Prior for the standard error  of the noise in slope equation.
 See\link[=uniform]{priors} for details. If missing, \code{sd_slope} is fixed to zero.
 Ignored if \code{slope = FALSE}.}
 
@@ -28,14 +28,14 @@ See\link[=uniform]{priors} for details. If missing, \code{sd_seasonal} is fixed 
 
 \item{xreg}{Matrix containing covariates.}
 
-\item{period}{Length of the seasonal component i.e. the number of
-observations per season. Default is \code{frequency(y)}.}
-
 \item{slope}{Should the model contain the slope term. Default is \code{TRUE}.
 If \code{FALSE}, local level component is used instead of local trend component.}
 
 \item{seasonal}{Should the model contain seasonal term. Default is
 \code{frequency(y) > 1}.}
+
+\item{period}{Length of the seasonal component i.e. the number of
+observations per season. Default is \code{frequency(y)}.}
 
 \item{a1}{Prior means for the initial states (level, slope, seasonals).
 Defaults to vector of zeros.}
@@ -53,7 +53,7 @@ and seasonal component.
 \examples{
 
 prior <- uniform(0.1 * sd(log10(UKgas)), 0, 1)
-model <- bsm(log10(UKgas), sd_y = prior, 
+model <- bsm(log10(UKgas), sd_y = prior,
 sd_level =  prior, sd_slope =  prior, sd_seasonal =  prior)
 
 mcmc_out <- run_mcmc(model, n_iter = 5000)

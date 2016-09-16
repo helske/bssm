@@ -11,18 +11,18 @@ ng_bsm(y, sd_level, sd_slope, sd_seasonal, sd_noise, distribution, phi = 1,
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
 
-\item{sd_level}{Standard error of level equation. Used as an initial
-value in MCMC. If missing, \code{sd_level} is fixed to zero.}
+\item{sd_level}{Prior for the standard error of the noise in level equation.
+See\link[=uniform]{priors} for details. If missing, \code{sd_level} is fixed to zero.}
 
-\item{sd_slope}{Standard error of slope equation. Used as an initial
-value in MCMC. If missing, \code{sd_slope} is fixed to zero.
+\item{sd_slope}{Prior for the standard error  of the noise in slope equation.
+See\link[=uniform]{priors} for details. If missing, \code{sd_slope} is fixed to zero.
 Ignored if \code{slope = FALSE}.}
 
-\item{sd_seasonal}{Standard error of seasonal equation. Used as an initial
-value in MCMC. If missing, \code{sd_seasonal} is fixed to zero.}
+\item{sd_seasonal}{Prior for the standard error of the noise in seasonal equation.
+See\link[=uniform]{priors} for details. If missing, \code{sd_seasonal} is fixed to zero.}
 
-\item{sd_noise}{Standard error of additional noise term. Used as an initial
-value in MCMC. If missing, additional noise term is omitted from the model.}
+\item{sd_noise}{Prior for the standard error of the additional noise term.
+See\link[=uniform]{priors} for details. If missing, no additional noise term is used.}
 
 \item{distribution}{distribution of the observation. Possible choices are
 \code{"poisson"} and \code{"binomial"}.}
@@ -31,8 +31,7 @@ value in MCMC. If missing, additional noise term is omitted from the model.}
 For Poisson distribution, this corresponds to offset term. For binomial, this
 is the number of trials.}
 
-\item{beta}{Regression coefficients. Used as an initial
-value in MCMC. Defaults to vector of zeros.}
+\item{beta}{Prior for the regression coefficients.}
 
 \item{xreg}{Matrix containing covariates.}
 
@@ -50,17 +49,6 @@ Defaults to vector of zeros.}
 
 \item{P1}{Prior covariance for the initial states (level, slope, seasonals).
 Default is diagonal matrix with 1e5 on the diagonal.}
-
-\item{prior_type}{Vector defining the prior types for standard deviations and beta.
-Possible values are \code{"uniform"} (default) and \code{"normal"}, where latter
-is a half-Normal distribution for standard deviation parameters and 
-zero-mean Normal distribution for beta parameters.}
-
-\item{lower_prior, upper_prior}{Lower and upper bounds for the uniform prior
-on standard deviations (sd_level, sd_slope, sd_seasonal) and regression
-coefficients. Defaults to zero for lower bound and and
-\code{sd(init_signal)} for upper bound of standard deviations, and
-(-1000, 1000) for regression coefficients.}
 }
 \value{
 Object of class \code{ng_bsm}.
@@ -72,7 +60,7 @@ local trend component, a seasonal component, and regression component
 }
 \examples{
 model <- ng_bsm(Seatbelts[, "VanKilled"], distribution = "poisson",
-  sd_level = halfnormal(0.01, 1), 
+  sd_level = halfnormal(0.01, 1),
   sd_seasonal = halfnormal(0.01, 1), slope = FALSE,
   beta = normal(0, 0, 10),
   xreg = Seatbelts[, "law"])

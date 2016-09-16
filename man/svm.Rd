@@ -9,26 +9,17 @@ svm(y, ar, sd_ar, sigma, beta, xreg = NULL)
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
 
-\item{sd_ar}{Standard error of AR-process. Used as an initial
-value in MCMC.}
+\item{ar}{prior for autoregressive coefficient.}
 
-\item{sigma}{Sigma. Used as an initial value in MCMC.}
+\item{sd_ar}{Prior for the standard deviation of noise of the AR-process.}
 
-\item{mean}{Mean. Used as an initial value in MCMC.}
-
-\item{phi}{AR coefficient. Used as an initial
-value in MCMC.}
-
-\item{lower_prior, upper_prior}{Prior bounds for uniform priors on mean, phi, and sd_ar.}
-
-\item{prior_sd}{Standard deviation for the half-Normal prior for sigma.
-Default is \code{2*sd(y)}.}
+\item{sigma}{Prior for sigma parameter of observation equation.}
 }
 \value{
 Object of class \code{svm}.
 }
 \description{
-Constructs a simple stochastic volatility model with Gaussian errors and first order
-autoregressive signal.
+Constructs a simple stochastic volatility model with Gaussian errors and
+first order autoregressive signal.
 }
 

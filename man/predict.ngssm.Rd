@@ -78,10 +78,10 @@ that \eqn{p(\alpha | y)} is Gaussian.
 }
 \examples{
 data("poisson_series")
-model <- ng_bsm(poisson_series, sd_level = halfnormal(0.1, 1), 
+model <- ng_bsm(poisson_series, sd_level = halfnormal(0.1, 1),
   sd_slope=halfnormal(0.01, 0.1), distribution = "poisson")
-pred <- predict(model, n_iter = 1e4, nsim = 10, n_ahead = 10, 
-  probs = seq(0.05,0.95, by = 0.05)) 
+pred <- predict(model, n_iter = 1e4, nsim = 10, n_ahead = 10,
+  probs = seq(0.05,0.95, by = 0.05))
 library("ggplot2")
 autoplot(pred, median_color = "blue", mean_color = "red")
 
