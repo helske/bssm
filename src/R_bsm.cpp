@@ -34,7 +34,7 @@ List bsm_filter(const List& model_) {
 arma::mat bsm_fast_smoother(const List& model_) {
 
   bsm model(model_, 1, false);
-  
+
   return model.fast_smoother(true).t();
 }
 
@@ -50,7 +50,7 @@ arma::cube bsm_sim_smoother(const List& model_, unsigned int nsim, unsigned int 
 List bsm_smoother(const List& model_) {
 
   bsm model(model_, 1, false);
-  
+
   arma::mat alphahat(model.m, model.n);
   arma::cube Vt(model.m, model.m, model.n);
 
@@ -64,13 +64,13 @@ List bsm_smoother(const List& model_) {
 
 
 // [[Rcpp::export]]
-arma::mat bsm_predict2(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, 
+arma::mat bsm_predict2(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars,
   unsigned int n_iter, unsigned int nsim_states,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
   unsigned int interval, unsigned int seed, bool log_space) {
 
-  bsm model(clone(model_), seed, log_space);
+  bsm model(model_, seed, log_space);
 
   return model.predict2(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval);
@@ -84,8 +84,8 @@ List bsm_predict(const List& model_,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
   unsigned int interval, arma::vec probs, unsigned int seed, bool log_space) {
 
-  
-  bsm model(clone(model_), seed, log_space);
+
+  bsm model(model_, seed, log_space);
 
   return model.predict(prior_types, prior_pars, n_iter, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval, probs);
@@ -173,7 +173,7 @@ List bsm_run_mcmc(const List& model_,
   double gamma, double target_acceptance, arma::mat& S,
   unsigned int seed, bool log_space, bool end_ram) {
 
-  bsm model(clone(model_), seed, log_space);
+  bsm model(model_, seed, log_space);
 
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -186,7 +186,7 @@ List bsm_run_mcmc(const List& model_,
     theta_store, posterior_store, alpha_store);
 
   arma::inplace_trans(theta_store);
-  
+
   if(sim_states) {
     return List::create(Named("alpha") = alpha_store,
       Named("theta") = theta_store,
@@ -203,12 +203,12 @@ List bsm_run_mcmc(const List& model_,
 
 
 // [[Rcpp::export]]
-List bsm_run_mcmc_summary(const List& model_, arma::uvec& prior_types, 
+List bsm_run_mcmc_summary(const List& model_, arma::uvec& prior_types,
   arma::mat& prior_pars, unsigned int n_iter, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   unsigned int seed, bool log_space, bool end_ram) {
 
-  bsm model(clone(model_), seed, log_space);
+  bsm model(model_, seed, log_space);
 
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -216,10 +216,10 @@ List bsm_run_mcmc_summary(const List& model_, arma::uvec& prior_types,
   arma::vec posterior_store(n_samples);
   arma::mat alphahat(model.m, model.n, arma::fill::zeros);
   arma::cube Vt(model.m, model.m, model.n, arma::fill::zeros);
-  
+
   double acceptance_rate = model.mcmc_summary(prior_types, prior_pars, n_iter, n_burnin, n_thin,
     gamma, target_acceptance, S,  end_ram, theta_store, posterior_store, alphahat, Vt);
-  
+
   arma::inplace_trans(alphahat);
   return List::create(Named("alphahat") = alphahat,
     Named("Vt") = Vt, Named("theta") = theta_store,

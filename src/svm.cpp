@@ -2,7 +2,7 @@
 
 
 // from List
-svm::svm(List model, unsigned int seed) :
+svm::svm(const List model, unsigned int seed) :
   ngssm(model, seed), nz_y(as<arma::vec>(model["y"])) {
 }
 

@@ -19,7 +19,7 @@ importance_sample(object, nsim, seed, ...)
   seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
-\item{object}{of class \code{ng_bsm}.}
+\item{object}{of class \code{ng_bsm}, \code{svm} or \code{ngssm}.}
 
 \item{nsim}{Number of samples.}
 
@@ -28,6 +28,7 @@ importance_sample(object, nsim, seed, ...)
 \item{...}{Ignored.}
 }
 \description{
-Returns \code{nsim} samples from the approximating Gaussian model with corresponding (scaled) importance weights.
+Returns \code{nsim} samples from the approximating Gaussian model with corresponding 
+(scaled) importance weights.
 }
 

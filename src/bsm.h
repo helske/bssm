@@ -6,8 +6,8 @@
 class bsm: public gssm {
 
 public:
-  
-  bsm(List, unsigned int, bool);
+
+  bsm(const List, unsigned int, bool);
   // constructor
   bsm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
     arma::mat, bool, bool, arma::uvec, arma::mat, arma::vec, unsigned int);
@@ -15,7 +15,7 @@ public:
   // constructor with log_space argument
   bsm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
     arma::mat, bool, bool, arma::uvec, arma::mat, arma::vec, unsigned int, bool);
-  
+
   // log[q(y,x)/q(x,y)]
   double proposal(const arma::vec&, const arma::vec&);
 
@@ -37,7 +37,7 @@ private:
   const bool slope_est;
   const bool seasonal_est;
   const bool log_space;
-  
+
 };
 
 #endif

@@ -6,9 +6,9 @@
 class ngssm: public gssm {
 public:
 
-  
-  ngssm(List, unsigned int);
-  
+
+  ngssm(const List, unsigned int);
+
   ngssm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::vec, arma::mat, arma::vec, unsigned int, unsigned int);
   ngssm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
@@ -36,15 +36,15 @@ public:
     unsigned int, unsigned int, unsigned int, double, double, arma::mat&, const arma::vec,
     bool, bool, bool, arma::mat&, arma::vec&, arma::cube&);
 
-  
+
   double run_mcmc_pf(const arma::uvec&, const arma::mat&, unsigned int,
     unsigned int, unsigned int, unsigned int, double, double, arma::mat&, const arma::vec,
     bool, bool, bool, arma::mat&, arma::vec&, arma::cube&);
-  
+
   double run_mcmc_summary(const arma::uvec&, const arma::mat&, unsigned int,
     unsigned int, unsigned int, unsigned int, double, double, arma::mat&, const arma::vec,
     bool, bool, bool, arma::mat&, arma::vec&, arma::mat&, arma::cube&, arma::mat&, arma::cube&);
- 
+
   double mcmc_approx(const arma::uvec&, const arma::mat&,
       unsigned int, unsigned int, unsigned int,
       unsigned int, double, double, arma::mat&,
@@ -55,9 +55,9 @@ public:
   arma::cube invlink(const arma::cube&);
 
   arma::vec pyt(const unsigned int, const arma::cube&);
-  
+
   double particle_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
-    
+
   arma::vec phi;
   unsigned int distribution;
   const arma::vec ng_y;

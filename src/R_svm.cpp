@@ -2,7 +2,7 @@
 
 
 // [[Rcpp::export]]
-double svm_loglik(List model_, arma::vec init_signal, unsigned int nsim_states,
+double svm_loglik(const List& model_, arma::vec init_signal, unsigned int nsim_states,
   unsigned int seed) {
 
   svm model(model_, seed);
@@ -31,7 +31,7 @@ double svm_loglik(List model_, arma::vec init_signal, unsigned int nsim_states,
 
 
 // [[Rcpp::export]]
-List svm_smoother(List model_, arma::vec init_signal) {
+List svm_smoother(const List& model_, arma::vec init_signal) {
 
   svm model(model_, 1);
   model.approx(init_signal, 1000, 1e-12);
@@ -48,15 +48,15 @@ List svm_smoother(List model_, arma::vec init_signal) {
 }
 
 // [[Rcpp::export]]
-List svm_run_mcmc(List model_, arma::vec& beta, arma::uvec& prior_types,
+List svm_run_mcmc(const List& model_, arma::vec& beta, arma::uvec& prior_types,
   arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int seed,
-  unsigned int n_threads, bool end_ram, bool adapt_approx, 
+  unsigned int n_threads, bool end_ram, bool adapt_approx,
   bool da, bool pf) {
 
-  svm model(clone(model_), seed);
+  svm model(model_, seed);
 
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -74,7 +74,7 @@ List svm_run_mcmc(List model_, arma::vec& beta, arma::uvec& prior_types,
     n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx, da,
     theta_store, posterior_store, alpha_store);
   }
-  
+
   arma::inplace_trans(theta_store);
   return List::create(Named("alpha") = alpha_store,
     Named("theta") = theta_store,
@@ -84,14 +84,14 @@ List svm_run_mcmc(List model_, arma::vec& beta, arma::uvec& prior_types,
 
 
 // [[Rcpp::export]]
-List svm_run_mcmc_is(List model_, arma::uvec& prior_types,
+List svm_run_mcmc_is(const List& model_, arma::uvec& prior_types,
   arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int seed,
   unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int method) {
 
-  svm model(clone(model_), seed);
+  svm model(model_, seed);
 
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -133,7 +133,7 @@ List svm_run_mcmc_is(List model_, arma::uvec& prior_types,
 
 
 // [[Rcpp::export]]
-List svm_importance_sample(List model_, unsigned int nsim_states,
+List svm_importance_sample(const List& model_, unsigned int nsim_states,
   arma::vec init_signal, unsigned int seed) {
 
   svm model(model_, seed);
@@ -150,7 +150,7 @@ List svm_importance_sample(List model_, unsigned int nsim_states,
 }
 
 // [[Rcpp::export]]
-List svm_approx_model(List model_, arma::vec init_signal, unsigned int max_iter,
+List svm_approx_model(const List& model_, arma::vec init_signal, unsigned int max_iter,
   double conv_tol) {
 
   svm model(model_, 1);
@@ -167,7 +167,7 @@ List svm_approx_model(List model_, arma::vec init_signal, unsigned int max_iter,
 
 
 // [[Rcpp::export]]
-List svm_particle_filter(List model_,  unsigned int nsim_states,
+List svm_particle_filter(const List& model_,  unsigned int nsim_states,
   arma::vec init_signal, unsigned int seed) {
 
   svm model(model_, seed);

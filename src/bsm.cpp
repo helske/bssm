@@ -1,10 +1,10 @@
 #include "bsm.h"
 
 // from List
-bsm::bsm(List model, unsigned int seed, bool log_space) :
+bsm::bsm(const List model, unsigned int seed, bool log_space) :
   gssm(model, seed), slope(model["slope"]), seasonal(model["seasonal"]),
-  fixed(as<arma::uvec>(model["fixed"])), level_est(fixed(0) == 0), 
-  slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0), 
+  fixed(as<arma::uvec>(model["fixed"])), level_est(fixed(0) == 0),
+  slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0),
   log_space(log_space) {
 }
 
@@ -15,7 +15,7 @@ bsm::bsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   gssm(y, Z, H, T, R, a1, P1, xreg, beta, seed), slope(slope), seasonal(seasonal),
   fixed(fixed), level_est(fixed(0) == 0), slope_est(slope && fixed(1) == 0),
   seasonal_est(seasonal && fixed(2) == 0), log_space(log_space) {
-  
+
 }
 
 // without log_space
@@ -25,13 +25,13 @@ bsm::bsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   gssm(y, Z, H, T, R, a1, P1, xreg, beta, seed), slope(slope), seasonal(seasonal),
   fixed(fixed), level_est(fixed(0) == 0), slope_est(slope && fixed(1) == 0),
   seasonal_est(seasonal && fixed(2) == 0), log_space(false) {
-  
+
 }
 
 double bsm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
-  
+
   double q = 0.0;
-  
+
   if(log_space) {
     q += theta_prop(0) - theta(0);
     if (sum(fixed) < 3) {
@@ -50,14 +50,14 @@ double bsm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
 }
 
 void bsm::update_model(arma::vec theta) {
-  
+
   if (log_space) {
     theta.subvec(0, theta.n_elem - xreg.n_cols - 1) =
       exp(theta.subvec(0, theta.n_elem - xreg.n_cols - 1));
   }
   H(0) = theta(0);
   HH(0) = pow(theta(0), 2);
-  
+
   if (sum(fixed) < 3) {
     // sd_level
     if (level_est) {
@@ -78,17 +78,17 @@ void bsm::update_model(arma::vec theta) {
     beta = theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1);
     compute_xbeta();
   }
-  
+
 }
 
 arma::vec bsm::get_theta(void) {
-  
+
   unsigned int npar = 1 + level_est + slope_est + seasonal_est + xreg.n_cols;
-  
+
   arma::vec theta(npar);
-  
+
   theta(0) = H(0);
-  
+
   if (sum(fixed) < 3) {
     // sd_level
     if (level_est) {
@@ -115,7 +115,7 @@ arma::vec bsm::get_theta(void) {
 }
 
 double bsm::log_likelihood(bool demean) {
-  
+
   double logLik = 0;
   arma::vec at = a1;
   arma::mat Pt = P1;
@@ -135,9 +135,9 @@ double bsm::log_likelihood(bool demean) {
 
 double bsm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
   arma::cube& Ptt, bool demean) {
-  
+
   double logLik = 0;
-  
+
   at.col(0) = a1;
   Pt.slice(0) = P1;
   if(demean && xreg.n_cols > 0) {

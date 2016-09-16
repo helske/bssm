@@ -1,7 +1,7 @@
 #include "ngssm.h"
 
 // from List
-ngssm::ngssm(List model, unsigned int seed) :
+ngssm::ngssm(const List model, unsigned int seed) :
  gssm(model, seed, true), phi(as<arma::vec>(model["phi"])),
  distribution(model["distribution"]),
  ng_y(as<arma::vec>(model["y"])),

@@ -5,7 +5,7 @@
 \alias{gaussian_approx.ng_bsm}
 \alias{gaussian_approx.ngssm}
 \alias{gaussian_approx.svm}
-\title{Gaussian Approximation of non-Gaussian State Space Model}
+\title{Gaussian approximation of non-Gaussian state space model}
 \usage{
 gaussian_approx(object, max_iter, conv_tol, ...)
 

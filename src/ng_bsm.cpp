@@ -1,11 +1,11 @@
 #include "ng_bsm.h"
 
 // from List
-ng_bsm::ng_bsm(List model, unsigned int seed, bool log_space) :
+ng_bsm::ng_bsm(const List model, unsigned int seed, bool log_space) :
   ngssm(model, seed), slope(model["slope"]), seasonal(model["seasonal"]),
   noise(model["noise"]),
-  fixed(as<arma::uvec>(model["fixed"])), level_est(fixed(0) == 0), 
-  slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0), 
+  fixed(as<arma::uvec>(model["fixed"])), level_est(fixed(0) == 0),
+  slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0),
   log_space(log_space) {
 }
 
