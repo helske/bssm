@@ -23,5 +23,8 @@ before_install:
 
 after_success:
   - Rscript -e 'covr::codecov()'
+  
+after_failure:
+- ./travis-tool.sh dump_logs
 
 r_check_args: "--no-manual --use-valgrind --no-examples --no-build-vignettes" #"--as-cran --run-dontrun"
