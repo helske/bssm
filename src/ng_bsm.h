@@ -25,7 +25,7 @@ public:
   // log-likelihood of the approximating Gaussian model
   double log_likelihood(bool);
 
-private:
+//private:
   const bool slope;
   const bool seasonal;
   const bool noise;

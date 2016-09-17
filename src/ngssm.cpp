@@ -739,6 +739,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
   arma::mat& theta_store, arma::vec& posterior_store,
   arma::cube& alpha_store) {
   Rcout<<"run_mcmc"<<std::endl;
+
   unsigned int npar = prior_types.n_elem;
   Rcout<<"1"<<std::endl;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);

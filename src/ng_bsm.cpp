@@ -7,6 +7,7 @@ ng_bsm::ng_bsm(const List model, unsigned int seed, bool log_space) :
   fixed(as<arma::uvec>(model["fixed"])), level_est(fixed(0) == 0),
   slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0),
   log_space(log_space) {
+  Rcout<<"slope "<<slope<<std::endl;
 }
 
 

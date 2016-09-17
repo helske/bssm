@@ -101,8 +101,12 @@ List ng_bsm_run_mcmc(const List& model_,
   arma::vec& init_signal, unsigned int seed,
   unsigned int n_threads, bool end_ram, bool adapt_approx, bool da, bool pf) {
   Rcout<<"run_mcmc_ng_bsm"<<std::endl;
+  bool tmp = model_["slope"];
+
+  Rcout<<"slope "<<tmp<<std::endl;
   ng_bsm model(model_, seed, false);
-  Rcout<<"model ready"<<std::endl;
+  Rcout<<"slope "<<model.slope<<std::endl;
+
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
   arma::mat theta_store(npar, n_samples);
