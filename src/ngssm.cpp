@@ -740,30 +740,40 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
   arma::cube& alpha_store) {
   Rcout<<"run_mcmc"<<std::endl;
   unsigned int npar = prior_types.n_elem;
+  Rcout<<"1"<<std::endl;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+  Rcout<<"2"<<std::endl;
   double acceptance_rate = 0.0;
-
+  Rcout<<"3"<<std::endl;
   arma::vec theta = get_theta();
+  Rcout<<"4"<<std::endl;
   double prior = prior_pdf(theta, prior_types, prior_pars);
-
+  Rcout<<"5"<<std::endl;
   arma::vec signal = init_signal;
+  Rcout<<"6"<<std::endl;
   double ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
+  Rcout<<"7"<<std::endl;
   double ll_approx_u = scaling_factor(signal);
+  Rcout<<"8"<<std::endl;
   double ll = ll_approx + log_likelihood(distribution != 0);
+  Rcout<<"9"<<std::endl;
   if (!std::isfinite(ll)) {
     Rcpp::stop("Non-finite log-likelihood from initial values. ");
   }
-
+  Rcout<<"10"<<std::endl;
   arma::cube alpha = sim_smoother(nsim_states, distribution != 0);
+  Rcout<<"11"<<std::endl;
   unsigned int ind = 0;
   double ll_w = 0.0;
+  Rcout<<"12"<<std::endl;
   if (nsim_states > 1) {
     arma::vec weights = exp(importance_weights(alpha) - ll_approx_u);
+    Rcout<<"13"<<std::endl;
     std::discrete_distribution<> sample(weights.begin(), weights.end());
     ind = sample(engine);
     ll_w = log(sum(weights) / nsim_states);
   }
-
+  Rcout<<"14"<<std::endl;
   unsigned int j = 0;
 
   if (n_burnin == 0) {
@@ -773,6 +783,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
     acceptance_rate++;
     j++;
   }
+  Rcout<<"15"<<std::endl;
   double accept_prob = 0.0;
   unsigned int ind_prop = 0;
   double ll_w_prop = 0.0;
