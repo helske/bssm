@@ -6,86 +6,6 @@
 
 using namespace Rcpp;
 
-// backtrack_pf
-void backtrack_pf(arma::cube& alpha, arma::umat& ind);
-RcppExport SEXP bssm_backtrack_pf(SEXP alphaSEXP, SEXP indSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::cube& >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< arma::umat& >::type ind(indSEXP);
-    backtrack_pf(alpha, ind);
-    return R_NilValue;
-END_RCPP
-}
-// cholupdate
-arma::mat cholupdate(arma::mat L, arma::vec u);
-RcppExport SEXP bssm_cholupdate(SEXP LSEXP, SEXP uSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type L(LSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type u(uSEXP);
-    rcpp_result_gen = Rcpp::wrap(cholupdate(L, u));
-    return rcpp_result_gen;
-END_RCPP
-}
-// choldowndate
-arma::mat choldowndate(arma::mat L, arma::vec u);
-RcppExport SEXP bssm_choldowndate(SEXP LSEXP, SEXP uSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type L(LSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type u(uSEXP);
-    rcpp_result_gen = Rcpp::wrap(choldowndate(L, u));
-    return rcpp_result_gen;
-END_RCPP
-}
-// dmvnorm1
-double dmvnorm1(const arma::vec& x, const arma::vec& mean, const arma::mat& sigma, bool lwr, bool logd);
-RcppExport SEXP bssm_dmvnorm1(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP lwrSEXP, SEXP logdSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type mean(meanSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< bool >::type lwr(lwrSEXP);
-    Rcpp::traits::input_parameter< bool >::type logd(logdSEXP);
-    rcpp_result_gen = Rcpp::wrap(dmvnorm1(x, mean, sigma, lwr, logd));
-    return rcpp_result_gen;
-END_RCPP
-}
-// dmvnorm2
-arma::vec dmvnorm2(const arma::mat& x, const arma::mat& mean, arma::mat sigma, bool lwr, bool logd, const arma::mat& A);
-RcppExport SEXP bssm_dmvnorm2(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP lwrSEXP, SEXP logdSEXP, SEXP ASEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type mean(meanSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< bool >::type lwr(lwrSEXP);
-    Rcpp::traits::input_parameter< bool >::type logd(logdSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
-    rcpp_result_gen = Rcpp::wrap(dmvnorm2(x, mean, sigma, lwr, logd, A));
-    return rcpp_result_gen;
-END_RCPP
-}
-// intervals
-arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
-RcppExport SEXP bssm_intervals(SEXP meansSEXP, SEXP sdsSEXP, SEXP probsSEXP, SEXP n_aheadSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type means(meansSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type sds(sdsSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type n_ahead(n_aheadSEXP);
-    rcpp_result_gen = Rcpp::wrap(intervals(means, sds, probs, n_ahead));
-    return rcpp_result_gen;
-END_RCPP
-}
 // bsm_loglik
 double bsm_loglik(const List& model_);
 RcppExport SEXP bssm_bsm_loglik(SEXP model_SEXP) {
@@ -956,6 +876,86 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
     rcpp_result_gen = Rcpp::wrap(svm_particle_filter(model_, nsim_states, init_signal, seed));
+    return rcpp_result_gen;
+END_RCPP
+}
+// backtrack_pf
+void backtrack_pf(arma::cube& alpha, arma::umat& ind);
+RcppExport SEXP bssm_backtrack_pf(SEXP alphaSEXP, SEXP indSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::cube& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< arma::umat& >::type ind(indSEXP);
+    backtrack_pf(alpha, ind);
+    return R_NilValue;
+END_RCPP
+}
+// cholupdate
+arma::mat cholupdate(arma::mat L, arma::vec u);
+RcppExport SEXP bssm_cholupdate(SEXP LSEXP, SEXP uSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type L(LSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type u(uSEXP);
+    rcpp_result_gen = Rcpp::wrap(cholupdate(L, u));
+    return rcpp_result_gen;
+END_RCPP
+}
+// choldowndate
+arma::mat choldowndate(arma::mat L, arma::vec u);
+RcppExport SEXP bssm_choldowndate(SEXP LSEXP, SEXP uSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type L(LSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type u(uSEXP);
+    rcpp_result_gen = Rcpp::wrap(choldowndate(L, u));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dmvnorm1
+double dmvnorm1(const arma::vec& x, const arma::vec& mean, const arma::mat& sigma, bool lwr, bool logd);
+RcppExport SEXP bssm_dmvnorm1(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP lwrSEXP, SEXP logdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< bool >::type lwr(lwrSEXP);
+    Rcpp::traits::input_parameter< bool >::type logd(logdSEXP);
+    rcpp_result_gen = Rcpp::wrap(dmvnorm1(x, mean, sigma, lwr, logd));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dmvnorm2
+arma::vec dmvnorm2(const arma::mat& x, const arma::mat& mean, arma::mat sigma, bool lwr, bool logd, const arma::mat& A);
+RcppExport SEXP bssm_dmvnorm2(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP lwrSEXP, SEXP logdSEXP, SEXP ASEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< bool >::type lwr(lwrSEXP);
+    Rcpp::traits::input_parameter< bool >::type logd(logdSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    rcpp_result_gen = Rcpp::wrap(dmvnorm2(x, mean, sigma, lwr, logd, A));
+    return rcpp_result_gen;
+END_RCPP
+}
+// intervals
+arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
+RcppExport SEXP bssm_intervals(SEXP meansSEXP, SEXP sdsSEXP, SEXP probsSEXP, SEXP n_aheadSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type means(meansSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type sds(sdsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_ahead(n_aheadSEXP);
+    rcpp_result_gen = Rcpp::wrap(intervals(means, sds, probs, n_ahead));
     return rcpp_result_gen;
 END_RCPP
 }

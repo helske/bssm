@@ -100,12 +100,8 @@ List ng_bsm_run_mcmc(const List& model_,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int seed,
   unsigned int n_threads, bool end_ram, bool adapt_approx, bool da, bool pf) {
-  Rcout<<"run_mcmc_ng_bsm"<<std::endl;
-  bool tmp = as<bool>(model_["slope"]);
-  Rcout<<"slope "<<tmp<<std::endl;
 
   ng_bsm model(model_, seed, false);
-  Rcout<<"slope "<<model.slope<<std::endl;
 
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -119,14 +115,13 @@ List ng_bsm_run_mcmc(const List& model_,
       n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx, da,
       theta_store, posterior_store, alpha_store);
   } else {
-    Rcout<<"start run_mcmc"<<std::endl;
     acceptance_rate = model.run_mcmc(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
       n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx, da,
       theta_store, posterior_store, alpha_store);
   }
 
   arma::inplace_trans(theta_store);
-  Rcout<<"end c++"<<std::endl;
+
   return List::create(Named("alpha") = alpha_store,
     Named("theta") = theta_store,
     Named("acceptance_rate") = acceptance_rate,
