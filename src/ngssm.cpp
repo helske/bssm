@@ -1368,7 +1368,7 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
     }
 
     for (unsigned int i = 0; i < nsim; i++) {
-      arma::vec uk(m);
+      arma::vec uk(k);
       for(unsigned int j = 0; j < k; j++) {
         uk(j) = normal(engine);
       }
