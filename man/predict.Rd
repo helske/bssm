@@ -61,12 +61,6 @@ distribution is \eqn{SS'}.}
 
 \item{...}{Ignored.}
 
-\item{lower_prior}{Bounds of the uniform prior for parameters
-\eqn{\theta}. Optional for \code{bsm} objects.}
-
-\item{upper_prior}{Bounds of the uniform prior for parameters
-\eqn{\theta}. Optional for \code{bsm} objects.}
-
 \item{Z_est}{Arrays or matrices containing \code{NA}
 values marking the unknown parameters which are to be estimated. Must be of
 same dimension as the corresponding elements of the model object.}

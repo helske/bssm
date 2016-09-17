@@ -226,7 +226,6 @@ smoother.gssm <- function(object, ...) {
 #' states directly computes the  posterior means and variances of states using
 #' fast Kalman smoothing. This is slightly faster, memory  efficient and
 #' more accurate than calculations based on simulation smoother.
-#' @param lower_prior,upper_prior Bounds of the uniform prior for parameters
 #' \eqn{\theta}. Optional for \code{bsm} objects.
 #' @param n_burnin Length of the burn-in period which is disregarded from the
 #' results. Defaults to \code{n_iter / 2}.

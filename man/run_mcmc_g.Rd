@@ -30,7 +30,8 @@ regression coefficients \eqn{\beta}). This can be used for faster inference of
 initial values for \code{S}. Option \code{"summary"} does not simulate
 states directly computes the  posterior means and variances of states using
 fast Kalman smoothing. This is slightly faster, memory  efficient and
-more accurate than calculations based on simulation smoother.}
+more accurate than calculations based on simulation smoother.
+\eqn{\theta}. Optional for \code{bsm} objects.}
 
 \item{n_burnin}{Length of the burn-in period which is disregarded from the
 results. Defaults to \code{n_iter / 2}.}
@@ -63,9 +64,6 @@ same dimension as the corresponding elements of the model object.}
 
 \item{nsim_states}{Number of simulations of states per MCMC iteration. Only
 used when \code{type = "full"}.}
-
-\item{lower_prior, upper_prior}{Bounds of the uniform prior for parameters
-\eqn{\theta}. Optional for \code{bsm} objects.}
 }
 \description{
 For general univariate Gaussian models, all \code{NA} values in
