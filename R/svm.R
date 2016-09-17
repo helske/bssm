@@ -71,16 +71,16 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
 #' @export
 logLik.svm <- function(object, nsim_states,
   seed = 1, ...) {
-  model$distribution <- 0
-  model$phi <- rep(object$sigma, length(object$y))
+  object$distribution <- 0
+  object$phi <- rep(object$sigma, length(object$y))
   svm_loglik(object, object$init_signal, nsim_states, seed)
 }
 
 #' @method smoother svm
 #' @export
 smoother.svm <- function(object, ...) {
-  model$distribution <- 0
-  model$phi <- rep(object$sigma, length(object$y))
+ object$distribution <- 0
+ object$phi <- rep(object$sigma, length(object$y))
   out <- svm_smoother(object, object$init_signal)
 
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
@@ -121,8 +121,8 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
   }
   priors <- combine_priors(object$priors)
 
-  model$distribution <- 0
-  model$phi <- rep(object$sigma, length(object$y))
+ object$distribution <- 0
+ object$phi <- rep(object$sigma, length(object$y))
   out <-  switch(type,
     full = {
       if (method == "PM"){
@@ -176,8 +176,8 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
 importance_sample.svm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
-  model$distribution <- 0
-  model$phi <- rep(object$sigma, length(object$y))
+ object$distribution <- 0
+ object$phi <- rep(object$sigma, length(object$y))
   svm_importance_sample(object,
     nsim, object$init_signal, seed)
 }
@@ -187,8 +187,8 @@ importance_sample.svm <- function(object, nsim,
 #' @export
 gaussian_approx.svm <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
 
-  model$distribution <- 0
-  model$phi <- rep(object$sigma, length(object$y))
+ object$distribution <- 0
+ object$phi <- rep(object$sigma, length(object$y))
   svm_approx_model(object,
     object$init_signal, max_iter, conv_tol)
 }
@@ -200,7 +200,7 @@ gaussian_approx.svm <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
 particle_filter.svm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
-  model$distribution <- 0
-  model$phi <- rep(object$sigma, length(object$y))
+ object$distribution <- 0
+ object$phi <- rep(object$sigma, length(object$y))
   svm_particle_filter(object, nsim, object$init_signal, seed)
 }

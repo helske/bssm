@@ -70,9 +70,9 @@ List svm_run_mcmc(const List& model_, arma::vec& beta, arma::uvec& prior_types,
       n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx, da,
       theta_store, posterior_store, alpha_store);
   } else {
-   acceptance_rate = model.run_mcmc(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
-    n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx, da,
-    theta_store, posterior_store, alpha_store);
+    acceptance_rate = model.run_mcmc(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
+      n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx, da,
+      theta_store, posterior_store, alpha_store);
   }
 
   arma::inplace_trans(theta_store);
@@ -118,9 +118,9 @@ List svm_run_mcmc_is(const List& model_, arma::uvec& prior_types,
       counts, nsim_states, n_threads, weights_store, alpha_store, true);
     prior_store = weights_store;
   } else {
-  is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,
-    arma::uvec(counts.n_elem, arma::fill::ones),
-    nsim_states, n_threads, weights_store, alpha_store, method == 2);
+    is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,
+      arma::uvec(counts.n_elem, arma::fill::ones),
+      nsim_states, n_threads, weights_store, alpha_store, method == 2);
     prior_store += ll_store + weights_store;
   }
   arma::inplace_trans(theta_store);
@@ -176,10 +176,9 @@ List svm_particle_filter(const List& model_,  unsigned int nsim_states,
   arma::cube alphasim(model.m, model.n, nsim_states, arma::fill::zeros);
   arma::mat V(nsim_states, model.n, arma::fill::zeros);
   arma::umat ind(nsim_states, model.n - 1, arma::fill::zeros);
-
   double logU = model.particle_filter(nsim_states, alphasim, V, ind);
 
-    return List::create(
-      Named("alpha") = alphasim, Named("V") = V, Named("A") = ind,
-      Named("logU") = logU);
+  return List::create(
+    Named("alpha") = alphasim, Named("V") = V, Named("A") = ind,
+    Named("logU") = logU);
 }
