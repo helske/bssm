@@ -359,7 +359,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   priors <- combine_priors(object$priors)
 
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-print(model$slope)
+
   out <-  switch(type,
     full = {
       if (method == "PM"){
