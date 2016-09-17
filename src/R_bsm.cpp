@@ -95,10 +95,10 @@ List bsm_predict(const List& model_,
 Rcpp::List bsm_particle_filter(const List& model_, unsigned int nsim_states, unsigned int seed) {
 
   bsm model(model_, seed, false);
-
-  arma::cube alphasim(model.m, model.n, nsim_states);
-  arma::mat V(nsim_states, model.n);
-  arma::umat ind(nsim_states, model.n - 1);
+  //fill with zeros in case of zero weights
+  arma::cube alphasim(model.m, model.n, nsim_states, arma::fill::zeros);
+  arma::mat V(nsim_states, model.n, arma::fill::zeros);
+  arma::umat ind(nsim_states, model.n - 1, arma::fill::zeros);
   double logU = model.particle_filter(nsim_states, alphasim, V, ind);
   backtrack_pf(alphasim, ind);
   return List::create(
@@ -116,7 +116,9 @@ Rcpp::List bsm_particle_smoother(const List& model_, unsigned int nsim_states, u
   arma::mat V(nsim_states, model.n);
   arma::umat ind(nsim_states, model.n - 1);
   double logU = model.particle_filter(nsim_states, alphasim, V, ind);
-
+  if(!arma::is_finite(logU)) {
+    stop("Particle filtering returned likelihood value of zero. ");
+  }
   if(method == 1) {
     backtrack_pf(alphasim, ind);
 
@@ -157,6 +159,9 @@ Rcpp::List bsm_backward_simulate(const List& model_, unsigned int nsim_states, u
   arma::mat V(nsim_states, model.n);
   arma::umat ind(nsim_states, model.n - 1);
   double logU = model.particle_filter(nsim_states, alphasim, V, ind);
+  if(!arma::is_finite(logU)) {
+    stop("Particle filtering returned likelihood value of zero. ");
+  }
   arma::cube alpha(model.m, model.n, nsim_store);
   for (unsigned int i = 0; i < nsim_store; i++) {
     alpha.slice(i) = model.backward_simulate(alphasim, V, ind);

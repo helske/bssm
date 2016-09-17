@@ -1000,7 +1000,12 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
         arma::as_scalar(Z.col(0).t() * alphasim.slice(i).col(0) + xbeta(0)),
         H(0), 0);
     }
-    Vnorm = V.col(0) / arma::sum(V.col(0));
+    double sumw = arma::sum(V.col(0));
+    if(sumw > 0.0){
+      Vnorm = V.col(0) / sumw;
+    } else {
+      return -arma::datum::inf;
+    }
     logU = log(arma::mean(V.col(0)));
   } else {
     V.col(0).ones();
@@ -1036,7 +1041,12 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
           arma::as_scalar(Z.col((t + 1) * Ztv).t() * alphasim.slice(i).col(t + 1) + xbeta(t + 1)),
           H((t + 1) * Htv), 0);
       }
-      Vnorm = V.col(t + 1) / arma::sum(V.col(t + 1));
+      double sumw = arma::sum(V.col(t + 1));
+      if(sumw > 0.0){
+        Vnorm = V.col(t + 1) / sumw;
+      } else {
+        return -arma::datum::inf;
+      }
       logU += log(arma::mean(V.col(t + 1)));
     } else {
       V.col(t + 1).ones();

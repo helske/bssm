@@ -172,9 +172,11 @@ List svm_particle_filter(const List& model_,  unsigned int nsim_states,
 
   svm model(model_, seed);
 
-  arma::cube alphasim(model.m, model.n, nsim_states);
-  arma::mat V(nsim_states, model.n);
-  arma::umat ind(nsim_states, model.n - 1);
+  //fill with zeros in case of zero weights
+  arma::cube alphasim(model.m, model.n, nsim_states, arma::fill::zeros);
+  arma::mat V(nsim_states, model.n, arma::fill::zeros);
+  arma::umat ind(nsim_states, model.n - 1, arma::fill::zeros);
+
   double logU = model.particle_filter(nsim_states, alphasim, V, ind);
 
     return List::create(

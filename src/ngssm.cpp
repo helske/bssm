@@ -1346,7 +1346,12 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
   double logU = 0.0;
   if(arma::is_finite(y(0))) {
     V.col(0) = pyt(0, alphasim);
-    Vnorm = V.col(0) / arma::sum(V.col(0));
+    double sumw = arma::sum(V.col(0));
+    if(sumw > 0.0){
+      Vnorm = V.col(0) / sumw;
+    } else {
+      return -arma::datum::inf;
+    }
     logU = log(arma::mean(V.col(0)));
   } else {
     V.col(0).ones();
@@ -1377,7 +1382,12 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
 
     if(arma::is_finite(y(t + 1))) {
       V.col(t + 1) = pyt(t + 1, alphasim);
-      Vnorm = V.col(t + 1) / arma::sum(V.col(t + 1));
+      double sumw = arma::sum(V.col(t + 1));
+      if(sumw > 0.0){
+      Vnorm = V.col(t + 1) / sumw;
+      } else {
+        return -arma::datum::inf;
+      }
       logU += log(arma::mean(V.col(t + 1)));
     } else {
       V.col(t + 1).ones();
