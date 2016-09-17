@@ -48,7 +48,7 @@ List svm_smoother(const List& model_, arma::vec init_signal) {
 }
 
 // [[Rcpp::export]]
-List svm_run_mcmc(const List& model_, arma::vec& beta, arma::uvec& prior_types,
+List svm_run_mcmc(const List& model_, arma::uvec& prior_types,
   arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
@@ -150,8 +150,8 @@ List svm_importance_sample(const List& model_, unsigned int nsim_states,
 }
 
 // [[Rcpp::export]]
-List svm_approx_model(const List& model_, arma::vec init_signal, unsigned int max_iter,
-  double conv_tol) {
+List svm_approx_model(const List& model_, arma::vec init_signal,
+  unsigned int max_iter, double conv_tol) {
 
   svm model(model_, 1);
 
@@ -167,7 +167,7 @@ List svm_approx_model(const List& model_, arma::vec init_signal, unsigned int ma
 
 
 // [[Rcpp::export]]
-List svm_particle_filter(const List& model_,  unsigned int nsim_states,
+List svm_particle_filter(const List& model_, unsigned int nsim_states,
   arma::vec init_signal, unsigned int seed) {
 
   svm model(model_, seed);

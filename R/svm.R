@@ -125,7 +125,7 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
  object$phi <- rep(object$sigma, length(object$y))
   out <-  switch(type,
     full = {
-      if (method == "PM"){
+      if (method == "PM") {
         out <- svm_run_mcmc(object,
           priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,

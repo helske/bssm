@@ -193,8 +193,8 @@ svm_smoother <- function(model_, init_signal) {
     .Call('bssm_svm_smoother', PACKAGE = 'bssm', model_, init_signal)
 }
 
-svm_run_mcmc <- function(model_, beta, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, da, pf) {
-    .Call('bssm_svm_run_mcmc', PACKAGE = 'bssm', model_, beta, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, da, pf)
+svm_run_mcmc <- function(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, da, pf) {
+    .Call('bssm_svm_run_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, da, pf)
 }
 
 svm_run_mcmc_is <- function(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, method) {
