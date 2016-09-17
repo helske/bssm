@@ -93,33 +93,42 @@ arma::vec ng_bsm::get_theta(void) {
 
   unsigned int npar = level_est + slope_est + seasonal_est + noise +
     xreg.n_cols + (distribution == 3);
-
+  Rcout<<npar<<std::endl;
   arma::vec theta(npar);
-
+  Rcout<<R<<std::endl;
+  Rcout<<fixed<<std::endl;
+  Rcout<<level_est<<std::endl;
+  Rcout<<slope_est<<std::endl;
+  Rcout<<seasonal_est<<std::endl;
   if (sum(fixed) < 3 || noise) {
     // sd_level
     if (level_est) {
+      Rcout<<theta<<std::endl;
       theta(0) = R(0, 0, 0);
     }
     // sd_slope
     if (slope_est) {
+      Rcout<<theta<<std::endl;
       theta(level_est) = R(1, level_est, 0);
     }
     // sd_seasonal
     if (seasonal_est) {
+      Rcout<<theta<<std::endl;
       theta(level_est + slope_est) =
         R(1 + slope, level_est + slope_est, 0);
     }
     if (noise) {
+      Rcout<<theta<<std::endl;
       theta(level_est + slope_est + seasonal_est) =
         R(m - 1, level_est + slope_est + seasonal_est, 0);
     }
     if (log_space) {
+      Rcout<<theta<<std::endl;
       theta.subvec(0, theta.n_elem - xreg.n_cols - (distribution == 3) - 1) =
         log(theta.subvec(0, theta.n_elem - xreg.n_cols - (distribution == 3) - 1));
     }
   }
-
+  Rcout<<xreg<<std::endl;
   if(xreg.n_cols > 0) {
     theta.subvec(theta.n_elem - xreg.n_cols - (distribution == 3),
       theta.n_elem - 1 - (distribution == 3)) = beta;
