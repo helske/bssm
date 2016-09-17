@@ -18,12 +18,9 @@
   1), newphi = NULL, Z_est, T_est, R_est, ...)
 }
 \arguments{
-\item{object}{Model object.}
+\item{object}{Model object.#'}
 
 \item{n_iter}{Number of MCMC iterations.}
-
-\item{nsim_states}{Number of simulations of states per MCMC iteration. Only
-used when \code{type = "full"}.}
 
 \item{newdata}{Matrix containing the covariate values for the future time
 points. Defaults to zero matrix of appropriate size.}
@@ -57,6 +54,8 @@ Defaults to 1, expect for negative binomial distribution, where the initial
 value is taken from \code{object$phi}.}
 
 \item{...}{Ignored.}
+
+\item{priors}{Priors for the unknown parameters.}
 
 \item{Z_est, T_est, R_est}{Matrices or arrays with same dimensions as the
 corresponding system matrices in \code{object}, where \code{NA} values

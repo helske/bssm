@@ -78,8 +78,8 @@ run_mcmc <- function(object, ...) {
 }
 
 #' Importance Sampling from non-Gaussian State Space Model
-#' 
-#' Returns \code{nsim} samples from the approximating Gaussian model with corresponding 
+#'
+#' Returns \code{nsim} samples from the approximating Gaussian model with corresponding
 #' (scaled) importance weights.
 #' @param object of class \code{ng_bsm}, \code{svm} or \code{ngssm}.
 #' @param nsim Number of samples.
@@ -93,7 +93,7 @@ importance_sample <- function(object, nsim, seed, ...) {
 
 
 #' Gaussian approximation of non-Gaussian state space model
-#' 
+#'
 #' Returns the approximating Gaussian model.
 #' @param object model object.
 #' @param max_iter Maximum number of iterations.
@@ -106,15 +106,15 @@ gaussian_approx <- function(object, max_iter, conv_tol, ...) {
 }
 
 #' Particle Filtering
-#' 
-#' Function \code{particle_filter} performs a bootstrap filtering with stratification 
+#'
+#' Function \code{particle_filter} performs a bootstrap filtering with stratification
 #' resampling.
-#' 
+#'
 #' @param object of class \code{bsm}, \code{ng_bsm} or \code{svm}.
 #' @param nsim Number of samples.
 #' @param seed Seed for RNG.
 #' @param ... Ignored.
-#' @return A list containing samples, weights from the last time point, and an 
+#' @return A list containing samples, weights from the last time point, and an
 #' estimate of log-likelihood.
 #' @export
 #' @rdname particle_filter
@@ -124,10 +124,10 @@ particle_filter <- function(object, nsim, seed, ...) {
 
 
 #' Particle Smoothing
-#' 
-#' Function \code{particle_smoother} performs filter-smoother or forward-backward smoother, 
+#'
+#' Function \code{particle_smoother} performs filter-smoother or forward-backward smoother,
 #' using a bootstrap filtering with stratification resampling.
-#' 
+#'
 #' @param object of class \code{bsm}, \code{ng_bsm} or \code{svm}.
 #' @param nsim Number of samples.
 #' @param method Either \code{"fs"} (filter-smoother), or \code{"fbs"} (forward-backward smoother).
@@ -137,4 +137,19 @@ particle_filter <- function(object, nsim, seed, ...) {
 #' @rdname particle_smoother
 particle_smoother <- function(object, nsim, method, seed, ...) {
   UseMethod("particle_smoother", object)
+}
+#' Backwards sampling
+#'
+#' Function \code{particle_simulate} performs backwards sampling from
+#' the conditional distribution of the states $p(alpha|y, theta)$.
+#'
+#' @param object of class \code{bsm}, \code{ng_bsm} or \code{svm}.
+#' @param nsim Number of samples used in particle filtering.
+#' @param nsim_store Number of samples to store.
+#' @param seed Seed for RNG.
+#' @param ... Ignored.
+#' @rdname particle_simulate
+#' @export
+particle_simulate <- function(object, nsim, nsim_store, seed, ...) {
+  UseMethod("particle_simulate", object)
 }

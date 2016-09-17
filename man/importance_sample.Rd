@@ -28,7 +28,7 @@ importance_sample(object, nsim, seed, ...)
 \item{...}{Ignored.}
 }
 \description{
-Returns \code{nsim} samples from the approximating Gaussian model with corresponding 
+Returns \code{nsim} samples from the approximating Gaussian model with corresponding
 (scaled) importance weights.
 }
 

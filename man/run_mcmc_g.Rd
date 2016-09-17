@@ -12,7 +12,7 @@
   size = 1), ...)
 
 \method{run_mcmc}{gssm}(object, n_iter, Z_est, H_est, T_est, R_est,
-  nsim_states = 1, type = "full", priors, n_burnin = floor(n_iter/2),
+  sim_states = TRUE, type = "full", priors, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
   end_adaptive_phase = TRUE, seed = sample(.Machine$integer.max, size = 1),
   ...)
@@ -21,6 +21,8 @@
 \item{object}{Model object.}
 
 \item{n_iter}{Number of MCMC iterations.}
+
+\item{sim_states}{Simulate states of Gaussian state space models. Default is \code{TRUE}.}
 
 \item{type}{Type of output. Default is \code{"full"}, which returns
 samples from the posterior \eqn{p(\alpha, \theta}. Option
@@ -62,8 +64,7 @@ distribution is \eqn{SS'}.}
 values marking the unknown parameters which are to be estimated. Must be of
 same dimension as the corresponding elements of the model object.}
 
-\item{nsim_states}{Number of simulations of states per MCMC iteration. Only
-used when \code{type = "full"}.}
+\item{priors}{Priors for the unknown parameters.}
 }
 \description{
 For general univariate Gaussian models, all \code{NA} values in

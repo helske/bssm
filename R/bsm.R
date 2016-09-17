@@ -326,7 +326,8 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
 #'
 predict.bsm <- function(object, n_iter, newdata = NULL,
   n_ahead = 1, interval = "response", probs = c(0.05, 0.95),
-  method = "quantile", return_MCSE = TRUE, nsim_states = 1, n_burnin = floor(n_iter/2),
+  method = "quantile", return_MCSE = TRUE, nsim_states = 1,
+  n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
@@ -422,8 +423,8 @@ particle_smoother.bsm <- function(object, nsim, method = "fs",
   out
 }
 
-
-#' @rdname particle_smoother
+#' @method particle_simulate bsm
+#' @rdname particle_simulate
 #' @export
 particle_simulate.bsm <- function(object, nsim, nsim_store = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {

@@ -212,11 +212,11 @@ smoother.gssm <- function(object, ...) {
 #' @rdname run_mcmc_g
 #' @param object Model object.
 #' @param n_iter Number of MCMC iterations.
+#' @param priors Priors for the unknown parameters.
 #' @param Z_est,H_est,T_est,R_est Arrays or matrices containing \code{NA}
 #' values marking the unknown parameters which are to be estimated. Must be of
 #' same dimension as the corresponding elements of the model object.
-#' @param nsim_states Number of simulations of states per MCMC iteration. Only
-#' used when \code{type = "full"}.
+#' @param sim_states Simulate states of Gaussian state space models. Default is \code{TRUE}.
 #' @param type Type of output. Default is \code{"full"}, which returns
 #' samples from the posterior \eqn{p(\alpha, \theta}. Option
 #' \code{"parameters"} samples only parameters \eqn{\theta} (which includes the
@@ -242,7 +242,7 @@ smoother.gssm <- function(object, ...) {
 #' @param ... Ignored.
 #' @export
 run_mcmc.gssm <- function(object, n_iter, Z_est, H_est, T_est, R_est,
-  nsim_states = 1, type = "full", priors,
+  sim_states = TRUE, type = "full", priors,
   n_burnin = floor(n_iter / 2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -325,7 +325,8 @@ priors <- combine_priors(priors)
 #' as empirical quantiles the posterior sample, or parametric method by
 #' Helske (2016).
 #'
-#' @param object Model object.
+#' @param object Model object.#'
+#' @param priors Priors for the unknown parameters.
 #' @param n_ahead Number of steps ahead at which to predict.
 #' @param interval Compute predictions on \code{"mean"} ("confidence interval") or
 #' \code{"response"} ("prediction interval"). Defaults to \code{"response"}.
@@ -343,7 +344,7 @@ priors <- combine_priors(priors)
 #' @method predict gssm
 #' @rdname predict
 #' @export
-predict.gssm <- function(object, n_iter, lower_prior, upper_prior, newdata = NULL,
+predict.gssm <- function(object, n_iter, priors, newdata = NULL,
   n_ahead = 1, interval = "response",
   probs = c(0.05, 0.95), method = "quantile", return_MCSE = TRUE, nsim_states = 1,
   n_burnin = floor(n_iter / 2), n_thin = 1,

@@ -31,9 +31,9 @@
 #' @export
 ngssm <- function(y, Z, T, R, a1, P1,
   distribution, phi = 1, xreg = NULL, beta = NULL, state_names) {
-  
+
   stop("general classes don't work at the moment, restructuring stuff...")
-  
+
   check_y(y)
   n <- length(y)
 
@@ -139,18 +139,18 @@ logLik.ngssm <- function(object, nsim_states,
     stop("not yet implemented for multivariate models.")
   }
   init_signal <- initial_signal(object$y, object$phi, object$distribution)
-  object$distribution <- pmatch(object$distribution, 
+  object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
- 
+
   ngssm_loglik(object, init_signal, nsim_states, seed)
 
 }
 kfilter.ngssm <- function(object, ...) {
 
   init_signal <- initial_signal(object$y, object$phi, object$distribution)
-  object$distribution <- pmatch(object$distribution, 
+  object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
-  
+
   out <- ngssm_filter(object, init_signal)
 
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
@@ -192,18 +192,19 @@ initial_signal <- function(y, phi, distribution) {
 #' @method run_mcmc ngssm
 #' @rdname run_mcmc_ng
 #' @param object Model object.
-#' @param n_iter Number of MCMC iterations.
+#' @param n_iter Number of MCMC iterations.#'
+#' @param priors Priors for the unknown parameters.
 #' @param nsim_states Number of states samples per MCMC iteration.
-#' @param type Either \code{"full"} (default), or \code{"summary"}. The 
-#' former produces samples of states whereas the latter gives the mean and 
+#' @param type Either \code{"full"} (default), or \code{"summary"}. The
+#' former produces samples of states whereas the latter gives the mean and
 #' variance estimates of the states.
-#' @param method Whether pseudo-marginal MCMC (\code{"PM"}) (default) or 
+#' @param method Whether pseudo-marginal MCMC (\code{"PM"}) (default) or
 #' importance sampling type correction (\code{"IS"}) is used.
-#' @param simulation_method If \code{"IS"} non-sequential importance sampling based 
+#' @param simulation_method If \code{"IS"} non-sequential importance sampling based
 #' on Gaussian approximation is used. If \code{"PF"} particle filtering (bootstrap filter)
 #' is used.
-#' @param correction_method For IS correction method, which correction method 
-#' should be used? Possible choices are \code{"IS1"}, \code{"IS2"} and \code{"PF"}. 
+#' @param correction_method For IS correction method, which correction method
+#' should be used? Possible choices are \code{"IS1"}, \code{"IS2"} and \code{"PF"}.
 #' See references for details.
 #' @param delayed_acceptance For pseudo-marginal MCMC, should delayed acceptance based
 #' on the Gaussian approximation be used?
@@ -269,10 +270,10 @@ run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, priors,
     stop("Number of unknown parameters is not equal to the number of priors.")
   }
   init_signal <- initial_signal(object$y, object$phi, object$distribution)
-  object$distribution <- pmatch(object$distribution, 
+  object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
   priors <- combine_priors(priors)
-  
+
   out <- ngssm_run_mcmc(object, priors$prior_types, priors$params, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, T_ind,
     R_ind, init_signal, seed, end_adaptive_phase)
@@ -283,7 +284,7 @@ run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, priors,
   class(out) <- "mcmc_output"
   out
 
- 
+
   if (nb) {
     out$theta[, ncol(out$theta)] <- exp(out$theta[, ncol(out$theta)])
   }
@@ -387,7 +388,7 @@ predict.ngssm <- function(object, n_iter, nsim_states, priors,
   object$phi <- c(object$phi, newphi)
   probs <- sort(unique(c(probs, 0.5)))
   init_signal <- initial_signal(object$y, object$phi, object$distribution)
-  object$distribution <- pmatch(object$distribution, 
+  object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
   priors <- combine_priors(priors)
   out <- ngssm_predict2(object, priors$prior_types, priors$params, n_iter,
@@ -411,9 +412,9 @@ importance_sample.ngssm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
   init_signal <- initial_signal(object$y, object$phi, object$distribution)
-  object$distribution <- pmatch(object$distribution, 
+  object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
-  
+
   ngssm_importance_sample(object, init_signal, nsim, seed)
 }
 
@@ -423,9 +424,9 @@ importance_sample.ngssm <- function(object, nsim,
 gaussian_approx.ngssm<- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
 
   init_signal <- initial_signal(object$y, object$phi, object$distribution)
-  object$distribution <- pmatch(object$distribution, 
+  object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
-  
+
   ngssm_approx_model(object, init_signal, max_iter, conv_tol)
 }
 

@@ -28,22 +28,22 @@
 \arguments{
 \item{object}{Model object.}
 
-\item{n_iter}{Number of MCMC iterations.}
+\item{n_iter}{Number of MCMC iterations.#'}
 
 \item{nsim_states}{Number of states samples per MCMC iteration.}
 
-\item{type}{Either \code{"full"} (default), or \code{"summary"}. The 
-former produces samples of states whereas the latter gives the mean and 
+\item{type}{Either \code{"full"} (default), or \code{"summary"}. The
+former produces samples of states whereas the latter gives the mean and
 variance estimates of the states.}
 
 \item{method}{Use \code{"standard"} MCMC or \code{"delayed acceptance"} approach.}
 
-\item{simulation_method}{If \code{"IS"} non-sequential importance sampling based 
+\item{simulation_method}{If \code{"IS"} non-sequential importance sampling based
 on Gaussian approximation is used. If \code{"PF"} particle filtering (bootstrap filter)
 is used.}
 
-\item{correction_method}{For IS correction method, which correction method 
-should be used? Possible choices are \code{"IS1"}, \code{"IS2"} and \code{"PF"}. 
+\item{correction_method}{For IS correction method, which correction method
+should be used? Possible choices are \code{"IS1"}, \code{"IS2"} and \code{"PF"}.
 See references for details.}
 
 \item{delayed_acceptance}{For pseudo-marginal MCMC, should delayed acceptance based
@@ -74,7 +74,9 @@ distribution is \eqn{SS'}.}
 corresponding system matrices in \code{object}, where \code{NA} values
 identify the unknown parameters for estimation.}
 
-\item{method}{Whether pseudo-marginal MCMC (\code{"PM"}) (default) or 
+\item{priors}{Priors for the unknown parameters.}
+
+\item{method}{Whether pseudo-marginal MCMC (\code{"PM"}) (default) or
 importance sampling type correction (\code{"IS"}) is used.}
 
 \item{nsim_states}{Number of simulations of states per MCMC iteration. Only

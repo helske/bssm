@@ -11,15 +11,14 @@
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
-\method{predict}{gssm}(object, n_iter, lower_prior, upper_prior,
-  newdata = NULL, n_ahead = 1, interval = "response", probs = c(0.05,
-  0.95), method = "quantile", return_MCSE = TRUE, nsim_states = 1,
-  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, Z_est, H_est, T_est, R_est,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+\method{predict}{gssm}(object, n_iter, priors, newdata = NULL, n_ahead = 1,
+  interval = "response", probs = c(0.05, 0.95), method = "quantile",
+  return_MCSE = TRUE, nsim_states = 1, n_burnin = floor(n_iter/2),
+  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, Z_est, H_est,
+  T_est, R_est, seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
-\item{object}{Model object.}
+\item{object}{Model object.#'}
 
 \item{n_iter}{Number of MCMC iterations.}
 
@@ -39,9 +38,6 @@ Only used in Gaussian case.}
 \item{return_MCSE}{For method \code{"parametric"}, if \code{TRUE}, the Monte Carlo
 standard errors are also returned.}
 
-\item{nsim_states}{Number of simulations of states per MCMC iteration. Only
-used when \code{type = "full"}.}
-
 \item{n_burnin}{Length of the burn-in period which is disregarded from the
 results. Defaults to \code{n_iter / 2}.}
 
@@ -60,6 +56,8 @@ distribution is \eqn{SS'}.}
 \item{seed}{Seed for the random number generator.}
 
 \item{...}{Ignored.}
+
+\item{priors}{Priors for the unknown parameters.}
 
 \item{Z_est}{Arrays or matrices containing \code{NA}
 values marking the unknown parameters which are to be estimated. Must be of

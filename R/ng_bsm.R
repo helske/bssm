@@ -433,7 +433,8 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
 #' autoplot(pred, median_color = "blue", mean_color = "red")
 #'
 predict.ng_bsm <- function(object, n_iter, nsim_states,
-  newdata = NULL, n_ahead = 1, interval = "mean", probs = c(0.05, 0.95),
+  newdata = NULL, n_ahead = 1, interval = "mean",
+  probs = c(0.05, 0.95),
   n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S,
   seed = sample(.Machine$integer.max, size = 1), newphi = NULL,  ...) {

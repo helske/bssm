@@ -28,11 +28,11 @@ particle_filter(object, nsim, seed, ...)
 \item{...}{Ignored.}
 }
 \value{
-A list containing samples, weights from the last time point, and an 
+A list containing samples, weights from the last time point, and an
 estimate of log-likelihood.
 }
 \description{
-Function \code{particle_filter} performs a bootstrap filtering with stratification 
+Function \code{particle_filter} performs a bootstrap filtering with stratification
 resampling.
 }
 
