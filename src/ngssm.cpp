@@ -771,7 +771,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
     acceptance_rate++;
     j++;
   }
-  Rcout<<"15"<<std::endl;
+
   double accept_prob = 0.0;
   unsigned int ind_prop = 0;
   double ll_w_prop = 0.0;
@@ -865,7 +865,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
         }
       }
     } else accept_prob = 0.0;
-    Rcout<<"bb"<<std::endl;
+
     //store
     if ((i >= n_burnin) && (i % n_thin == 0) && j < n_samples) {
       posterior_store(j) = ll + ll_w + prior;
