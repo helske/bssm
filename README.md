@@ -1,15 +1,11 @@
 [![Build Status](https://travis-ci.org/helske/bssm.png?branch=master)](https://travis-ci.org/helske/bssm)
 [![codecov.io](http://codecov.io/github/helske/bssm/coverage.svg?branch=master)](http://codecov.io/github/helske/bssm?branch=master)
 
-bssm: R Package for Fully Bayesian Inference of Exponential Family and Stochastic Volatility State Space Models
-==========================================================================
-
-There will be a major update soon with several fancy features. Current ETA: 15/9/2016
-======================================================================================
+bssm: an R package for Bayesian inference of exponential family and stochastic volatility state space models
 
 Efficient methods for Bayesian inference of state space models where the observation density is Gaussian, Poisson, binomial or negative binomial, and where the state dynamics are Gaussian.
 
-See [vignette](http://helske.github.io/pdfs/bssm.pdf) for details and examples.
+For theoretical framework, see [Importance sampling type correction of Markov chain Monte Carlo and exact approximations](http://arxiv.org/abs/1609.02541).
 
 Current Status
 ==========================================================================
