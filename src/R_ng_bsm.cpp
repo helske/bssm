@@ -104,8 +104,6 @@ List ng_bsm_run_mcmc(const List& model_,
   bool tmp = as<bool>(model_["slope"]);
   Rcout<<"slope "<<tmp<<std::endl;
 
-  bool tmp2 = LogicalVector(model_["slope"]);
-  Rcout<<"slope "<<tmp2<<std::endl;
   ng_bsm model(model_, seed, false);
   Rcout<<"slope "<<model.slope<<std::endl;
 
