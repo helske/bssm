@@ -426,14 +426,14 @@ predict.gssm <- function(object, n_iter, priors, newdata = NULL,
         }
       }
 
-      pred <- list(y = object$y, mean = ts(colMeans(out$y_mean), end = endtime, frequency = object$period),
-        intervals = ts(out$intervals, end = endtime, frequency = object$period,
+      pred <- list(y = object$y, mean = ts(colMeans(out$y_mean), end = endtime),
+        intervals = ts(out$intervals, end = endtime,
           names = paste0(100*probs, "%")),
-        MCSE = ts(ses, end = endtime, frequency = object$period,
+        MCSE = ts(ses, end = endtime,
           names = paste0(100*probs, "%")))
     } else {
-      pred <- list(y = object$y, mean = ts(colMeans(out$y_mean), end = endtime, frequency = object$period),
-        intervals = ts(out$intervals, end = endtime, frequency = object$period,
+      pred <- list(y = object$y, mean = ts(colMeans(out$y_mean), end = endtime),
+        intervals = ts(out$intervals, end = endtime,
           names = paste0(100 * probs, "%")))
     }
   } else {
@@ -442,8 +442,8 @@ predict.gssm <- function(object, n_iter, priors, newdata = NULL,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
       Z_ind, H_ind, T_ind, R_ind, seed)
 
-    pred <- list(y = y_orig, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
-      intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = object$period,
+    pred <- list(y = y_orig, mean = ts(rowMeans(out), end = endtime),
+      intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime,
         names = paste0(100 * probs, "%")))
 
   }

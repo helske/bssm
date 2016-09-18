@@ -160,8 +160,8 @@ kfilter.ngssm <- function(object, ...) {
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <-
     rownames(out$Ptt) <- names(object$a1)
-  out$at <- ts(out$at, start = start(object$y), frequency = object$period)
-  out$att <- ts(out$att, start = start(object$y), frequency = object$period)
+  out$at <- ts(out$at, start = start(object$y)ngssm)
+  out$att <- ts(out$att, start = start(object$y)ngssm)
   out
 }
 #' @method fast_smoother ngssm
@@ -443,8 +443,8 @@ predict.ngssm <- function(object, n_iter, nsim_states, priors,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
     Z_ind, T_ind, R_ind, init_signal, seed)
 
-  pred <- list(y = object$y, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
-    intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = object$period,
+  pred <- list(y = object$y, mean = ts(rowMeans(out), end = endtimengssm),
+    intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtimengssm,
       names = paste0(100 * probs, "%")))
 
 

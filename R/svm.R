@@ -86,8 +86,8 @@ kfilter.svm <- function(object, ...) {
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <-
     rownames(out$Ptt) <- names(object$a1)
-  out$at <- ts(out$at, start = start(object$y), frequency = object$period)
-  out$att <- ts(out$att, start = start(object$y), frequency = object$period)
+  out$at <- ts(out$at, start = start(object$y)svm)
+  out$att <- ts(out$att, start = start(object$y)svm)
   out
 }
 #' @method fast_smoother svm
