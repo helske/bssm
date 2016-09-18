@@ -210,7 +210,6 @@ logLik.bsm <- function(object, ...) {
 kfilter.bsm <- function(object, ...) {
 
   out <- bsm_filter(object)
-
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <-
     rownames(out$Ptt) <- names(object$a1)
@@ -223,9 +222,9 @@ kfilter.bsm <- function(object, ...) {
 fast_smoother.bsm <- function(object, ...) {
 
   out <- bsm_fast_smoother(object)
-
   colnames(out) <- names(object$a1)
   ts(out, start = start(object$y), frequency = object$period)
+
 }
 #' @method sim_smoother bsm
 #' @export

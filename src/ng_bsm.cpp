@@ -85,7 +85,7 @@ void ng_bsm::update_model(arma::vec theta) {
     compute_xbeta();
   }
   if(distribution == 3) {
-    phi.fill(exp(theta(theta.n_elem - 1)));
+    phi.fill(theta(theta.n_elem - 1));
   }
 
 }
@@ -127,7 +127,7 @@ arma::vec ng_bsm::get_theta(void) {
   }
 
   if(distribution == 3) {
-    theta(theta.n_elem - 1) = log(phi(0));
+    theta(theta.n_elem - 1) = phi(0);
   }
   return theta;
 }

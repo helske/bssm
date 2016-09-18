@@ -1,13 +1,10 @@
 #include "ngssm.h"
 
 // [[Rcpp::export]]
-double ngssm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
-  arma::mat& xreg, arma::vec& beta, unsigned int distribution,
-  arma::vec init_signal, unsigned int nsim_states,
-  unsigned int seed) {
+double ngssm_loglik(const List& model_, arma::vec init_signal,
+  unsigned int nsim_states, unsigned int seed) {
 
-  ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, seed);
+  ngssm model(model_, seed);
 
   if (nsim_states < 2) {
     model.conv_tol = 1.0e-12;
@@ -25,19 +22,16 @@ double ngssm_loglik(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List ngssm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
-  arma::mat& xreg, arma::vec& beta, unsigned int distribution,
-  arma::vec init_signal) {
+List ngssm_filter(const List& model_, arma::vec init_signal) {
 
-  ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution,1);
+  ngssm model(model_, 1);
 
   double logLik = model.approx(init_signal, 1000, 1e-12);
 
-  arma::mat at(a1.n_elem, y.n_elem + 1);
-  arma::mat att(a1.n_elem, y.n_elem);
-  arma::cube Pt(a1.n_elem, a1.n_elem, y.n_elem + 1);
-  arma::cube Ptt(a1.n_elem, a1.n_elem, y.n_elem);
+  arma::mat at(model.m, model.n + 1);
+  arma::mat att(model.m, model.n);
+  arma::cube Pt(model.m, model.m, model.n + 1);
+  arma::cube Ptt(model.m, model.m, model.n);
 
   logLik += model.filter(at, att, Pt, Ptt, true);
 
@@ -53,29 +47,61 @@ List ngssm_filter(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List ngssm_run_mcmc(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
-  unsigned int distribution,
+arma::mat ngssm_fast_smoother(const List& model_, arma::vec init_signal) {
+
+  ngssm model(model_, 1);
+  model.approx(init_signal, 1000, 1e-12);
+
+  return model.fast_smoother(true).t();
+}
+
+// [[Rcpp::export]]
+arma::cube ngssm_sim_smoother(const List& model_, unsigned nsim,
+  arma::vec init_signal, unsigned int seed) {
+
+  ngssm model(model_, seed);
+  model.approx(init_signal, 1000, 1e-12);
+
+  return model.sim_smoother(nsim, true);
+}
+
+// [[Rcpp::export]]
+List ngssm_smoother(const List& model_, arma::vec init_signal) {
+
+  ngssm model(model_, 1);
+
+  model.approx(init_signal, 1000, 1e-12);
+
+  arma::mat alphahat(model.m, model.n);
+  arma::cube Vt(model.m, model.m, model.n);
+
+  model.smoother(alphahat, Vt, true);
+  arma::inplace_trans(alphahat);
+
+  return List::create(
+    Named("alphahat") = alphahat,
+    Named("Vt") = Vt);
+}
+// [[Rcpp::export]]
+List ngssm_run_mcmc(const List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
-  arma::uvec Z_ind, arma::uvec T_ind, arma::uvec R_ind, arma::mat& xreg,
-  arma::vec& beta, arma::vec init_signal, unsigned int seed, bool end_ram) {
+  arma::uvec Z_ind, arma::uvec T_ind, arma::uvec R_ind, arma::vec init_signal, unsigned int seed, bool end_ram) {
 
-  ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, Z_ind,
-    T_ind, R_ind, seed);
+  ngssm model(model_, Z_ind, T_ind, R_ind, seed);
 
-  
+
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
   arma::mat theta_store(npar, n_samples);
   arma::cube alpha_store(model.m, model.n, n_samples);
   arma::vec posterior_store(n_samples);
-  
-  double acceptance_rate = model.run_mcmc(prior_types, prior_pars, n_iter, nsim_states, n_burnin, 
+
+  double acceptance_rate = model.run_mcmc(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
     n_thin, gamma, target_acceptance, S, init_signal, end_ram, true, true,
     theta_store, posterior_store, alpha_store);
-  
+
   return List::create(Named("alpha") = alpha_store,
     Named("theta") = theta_store,
     Named("acceptance_rate") = acceptance_rate,
@@ -84,18 +110,16 @@ List ngssm_run_mcmc(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-arma::mat ngssm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
-  unsigned int distribution, arma::uvec& prior_types,
+arma::mat ngssm_predict2(const List& model_, arma::uvec& prior_types,
   arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
   unsigned int interval, arma::uvec Z_ind, arma::uvec T_ind,
-  arma::uvec R_ind, arma::mat& xreg, arma::vec& beta, arma::vec init_signal,
+  arma::uvec R_ind, arma::vec init_signal,
   unsigned int seed) {
 
 
-  ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, Z_ind,
+  ngssm model(model_, Z_ind,
     T_ind, R_ind, seed);
 
   return model.predict2(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
@@ -104,12 +128,10 @@ arma::mat ngssm_predict2(arma::vec& y, arma::mat& Z, arma::cube& T,
 
 
 // [[Rcpp::export]]
-List ngssm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
-  unsigned int distribution, arma::mat& xreg, arma::vec& beta, arma::vec init_signal,
+List ngssm_importance_sample(const List& model_, arma::vec init_signal,
   unsigned int nsim_states,  unsigned int seed) {
 
-  ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, 1);
+  ngssm model(model_, 1);
 
 
    model.approx(init_signal, model.max_iter, model.conv_tol);
@@ -124,12 +146,10 @@ List ngssm_importance_sample(arma::vec& y, arma::mat& Z, arma::cube& T,
 }
 
 // [[Rcpp::export]]
-List ngssm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
-  arma::cube& R, arma::vec& a1, arma::mat& P1, arma::vec phi,
-  unsigned int distribution, arma::mat& xreg, arma::vec& beta, arma::vec init_signal,
+List ngssm_approx_model(const List& model_, arma::vec init_signal,
   unsigned int max_iter, double conv_tol) {
 
-  ngssm model(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, 1);
+  ngssm model(model_, 1);
 
   double ll = model.approx(init_signal, max_iter, conv_tol);
 
@@ -140,3 +160,82 @@ List ngssm_approx_model(arma::vec& y, arma::mat& Z, arma::cube& T,
     Named("signal") = init_signal);
 }
 
+// [[Rcpp::export]]
+Rcpp::List ngssm_particle_filter(const List& model_, unsigned int nsim_states, unsigned int seed) {
+
+  ngssm model(model_, seed);
+  //fill with zeros in case of zero weights
+  arma::cube alphasim(model.m, model.n, nsim_states, arma::fill::zeros);
+  arma::mat V(nsim_states, model.n, arma::fill::zeros);
+  arma::umat ind(nsim_states, model.n - 1, arma::fill::zeros);
+  double logU = model.particle_filter(nsim_states, alphasim, V, ind);
+
+  return List::create(
+    Named("alpha") = alphasim, Named("V") = V, Named("A") = ind,
+    Named("logU") = logU);
+}
+
+// [[Rcpp::export]]
+Rcpp::List ngssm_particle_smoother(const List& model_, unsigned int nsim_states, unsigned int seed,
+  unsigned int method) {
+
+  ngssm model(model_, seed);
+
+  arma::cube alphasim(model.m, model.n, nsim_states);
+  arma::mat V(nsim_states, model.n);
+  arma::umat ind(nsim_states, model.n - 1);
+  double logU = model.particle_filter(nsim_states, alphasim, V, ind);
+  if(!arma::is_finite(logU)) {
+    stop("Particle filtering returned likelihood value of zero. ");
+  }
+  if(method == 1) {
+    backtrack_pf(alphasim, ind);
+
+    arma::mat alphahat(model.n, model.m);
+
+    arma::vec Vnorm = V.col(model.n - 1)/arma::sum(V.col(model.n - 1));
+    for(unsigned int t = 0; t < model.n; t ++){
+      for(unsigned k = 0; k < model.m; k++) {
+        alphahat(t, k) = arma::dot(arma::vectorise(alphasim.tube(k, t)), Vnorm);
+      }
+    }
+    return List::create(
+      Named("alphahat") = alphahat, Named("V") = Vnorm,
+      Named("logU") = logU, Named("alpha") = alphasim);
+  } else {
+    model.backtrack_pf2(alphasim, V, ind);
+
+    arma::mat alphahat(model.n, model.m);
+    for(unsigned int t = 0; t < model.n; t ++){
+      arma::vec Vnorm = V.col(t)/arma::sum(V.col(t));
+      for(unsigned k = 0; k < model.m; k++) {
+        alphahat(t, k) = arma::dot(arma::vectorise(alphasim.tube(k, t)), Vnorm);
+      }
+    }
+    return List::create(Named("alphahat") = alphahat, Named("V") = V,
+      Named("logU") = logU, Named("alpha") = alphasim);
+  }
+
+}
+
+// [[Rcpp::export]]
+Rcpp::List ngssm_backward_simulate(const List& model_, unsigned int nsim_states, unsigned int seed,
+  unsigned int nsim_store) {
+
+  ngssm model(model_, seed);
+
+  arma::cube alphasim(model.m, model.n, nsim_states);
+  arma::mat V(nsim_states, model.n);
+  arma::umat ind(nsim_states, model.n - 1);
+  double logU = model.particle_filter(nsim_states, alphasim, V, ind);
+  if(!arma::is_finite(logU)) {
+    stop("Particle filtering returned likelihood value of zero. ");
+  }
+  arma::cube alpha(model.m, model.n, nsim_store);
+  for (unsigned int i = 0; i < nsim_store; i++) {
+    alpha.slice(i) = model.backward_simulate(alphasim, V, ind);
+
+  }
+  return List::create(Named("alpha") = alpha,
+    Named("logU") = logU);
+}

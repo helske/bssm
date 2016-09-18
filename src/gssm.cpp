@@ -19,6 +19,7 @@ gssm::gssm(const List model, unsigned int seed) :
 }
 
 // from List
+// with parameter indices
 gssm::gssm(const List model, arma::uvec Z_ind, arma::uvec H_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
   y(as<arma::vec>(model["y"])), Z(as<arma::mat>(model["Z"])),
@@ -46,6 +47,25 @@ gssm::gssm(const List model, unsigned int seed, bool ng) :
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
   RR(arma::cube(m, m, Rtv * (n - 1) + 1)), xbeta(arma::vec(n, arma::fill::zeros)),
   engine(seed), zero_tol(1e-8) {
+
+  if(xreg.n_cols > 0) {
+    compute_xbeta();
+  }
+  compute_HH();
+  compute_RR();
+}
+// from List for non-gaussian models, ng value is not actually used, cheap trick...
+// with parameter indices
+gssm::gssm(const List model, arma::uvec Z_ind,
+  arma::uvec T_ind, arma::uvec R_ind, unsigned int seed, bool ng) :
+  y(as<arma::vec>(model["y"])), Z(as<arma::mat>(model["Z"])),
+  H(arma::vec(y.n_elem)), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
+  a1(as<arma::vec>(model["a1"])), P1(as<arma::mat>(model["P1"])),
+  xreg(as<arma::mat>(model["xreg"])), beta(as<arma::vec>(model["coefs"])),
+  Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
+  n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
+  RR(arma::cube(m, m, Rtv * (n - 1) + 1)), xbeta(arma::vec(n, arma::fill::zeros)),
+  Z_ind(Z_ind), H_ind(arma::uvec(1)), T_ind(T_ind), R_ind(R_ind), engine(seed), zero_tol(1e-8) {
 
   if(xreg.n_cols > 0) {
     compute_xbeta();

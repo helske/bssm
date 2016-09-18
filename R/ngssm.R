@@ -129,8 +129,9 @@ ngssm <- function(y, Z, T, R, a1, P1,
 #' @method logLik ngssm
 #' @rdname logLik
 #' @param nsim_states Number of samples for importance sampling. If 0, approximate log-likelihood is returned.
+#' See vignette for details.
 #' @param seed Seed for the random number generator. Compared to other functions of the package, here the
-#' default seed is fixed (as 1) in order to work properly in optimization algorithms.
+#' default seed is fixed (as 1) in order to work properly in numerical optimization algorithms.
 #' @export
 logLik.ngssm <- function(object, nsim_states,
   seed = 1, ...) {
@@ -145,6 +146,9 @@ logLik.ngssm <- function(object, nsim_states,
   ngssm_loglik(object, init_signal, nsim_states, seed)
 
 }
+#' @method kfilter ngssm
+#' @rdname kfilter
+#' @export
 kfilter.ngssm <- function(object, ...) {
 
   init_signal <- initial_signal(object$y, object$phi, object$distribution)
@@ -158,6 +162,50 @@ kfilter.ngssm <- function(object, ...) {
     rownames(out$Ptt) <- names(object$a1)
   out$at <- ts(out$at, start = start(object$y), frequency = object$period)
   out$att <- ts(out$att, start = start(object$y), frequency = object$period)
+  out
+}
+#' @method fast_smoother ngssm
+#' @export
+fast_smoother.ngssm <- function(object, ...) {
+
+  init_signal <- initial_signal(object$y, object$phi, object$distribution)
+  object$distribution <- pmatch(object$distribution,
+    c("poisson", "binomial", "negative binomial"))
+
+  out <- ngssm_fast_smoother(object, init_signal)
+  colnames(out) <- names(object$a1)
+  ts(out, start = start(object$y), frequency = frequency(object$y))
+
+}
+#' @method sim_smoother ngssm
+#' @export
+sim_smoother.ngssm <- function(object, nsim = 1,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+
+
+  init_signal <- initial_signal(object$y, object$phi, object$distribution)
+  object$distribution <- pmatch(object$distribution,
+    c("poisson", "binomial", "negative binomial"))
+
+  out <- ngssm_sim_smoother(object, init_signal, nsim, seed)
+
+  rownames(out) <- names(object$a1)
+  aperm(out, c(2, 1, 3))
+}
+
+#' @method smoother ngssm
+#' @export
+smoother.ngssm <- function(object, ...) {
+
+  init_signal <- initial_signal(object$y, object$phi, object$distribution)
+  object$distribution <- pmatch(object$distribution,
+    c("poisson", "binomial", "negative binomial"))
+
+  out <- ngssm_smoother(object, init_signal)
+
+  colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
+  out$alphahat <- ts(out$alphahat, start = start(object$y),
+    frequency = object$period)
   out
 }
 
@@ -429,4 +477,49 @@ gaussian_approx.ngssm<- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
 
   ngssm_approx_model(object, init_signal, max_iter, conv_tol)
 }
+#' @method particle_filter ngssm
+#' @rdname particle_filter
+#' @export
+particle_filter.ngssm <- function(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
 
+  object$distribution <- pmatch(object$distribution,
+    c("poisson", "binomial", "negative binomial"))
+
+  out <- ngssm_particle_filter(object, nsim, seed)
+
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
+}
+
+#' @method particle_smoother ngssm
+#' @rdname particle_smoother
+#' @export
+particle_smoother.ngssm <- function(object, nsim, method = "fs",
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+
+  method <- match.arg(method, c("fs", "fbs"))
+  object$distribution <- pmatch(object$distribution,
+    c("poisson", "binomial", "negative binomial"))
+  out <- ngssm_particle_smoother(object, nsim, seed, method == "fs")
+
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
+}
+
+#' @method particle_simulate ngssm
+#' @rdname particle_simulate
+#' @export
+particle_simulate.ngssm <- function(object, nsim, nsim_store = 1,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+
+  object$distribution <- pmatch(object$distribution,
+    c("poisson", "binomial", "negative binomial"))
+  out <- ngssm_backward_simulate(object, nsim, seed, nsim_store)
+
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
+}

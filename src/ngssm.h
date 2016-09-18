@@ -8,6 +8,7 @@ public:
 
 
   ngssm(const List, unsigned int);
+  ngssm(const List, arma::uvec, arma::uvec, arma::uvec, unsigned int);
 
   ngssm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::vec, arma::mat, arma::vec, unsigned int, unsigned int);

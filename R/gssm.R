@@ -130,7 +130,6 @@ logLik.gssm <- function(object, ...) {
     stop("not yet implemented for multivariate models.")
   }
   gssm_loglik(object)
-
 }
 
 #' @method kfilter gssm
@@ -450,4 +449,44 @@ predict.gssm <- function(object, n_iter, priors, newdata = NULL,
   }
   class(pred) <- "predict_bssm"
   pred
+}
+
+#' @method particle_filter gssm
+#' @rdname particle_filter
+#' @export
+particle_filter.gssm <- function(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+
+  out <- gssm_particle_filter(object, nsim, seed)
+
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
+}
+
+#' @method particle_smoother gssm
+#' @rdname particle_smoother
+#' @export
+particle_smoother.gssm <- function(object, nsim, method = "fs",
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+
+  method <- match.arg(method, c("fs", "fbs"))
+  out <- gssm_particle_smoother(object, nsim, seed, method == "fs")
+
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
+}
+
+#' @method particle_simulate gssm
+#' @rdname particle_simulate
+#' @export
+particle_simulate.gssm <- function(object, nsim, nsim_store = 1,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+
+  out <- gssm_backward_simulate(object, nsim, seed, nsim_store)
+
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
 }

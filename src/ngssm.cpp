@@ -8,6 +8,16 @@ ngssm::ngssm(const List model, unsigned int seed) :
  max_iter(100), conv_tol(1.0e-8) {
 }
 
+// from List
+// with parameter indices
+ngssm::ngssm(const List model, arma::uvec Z_ind,
+  arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
+  gssm(model, Z_ind, T_ind, R_ind, seed, true),
+  phi(as<arma::vec>(model["phi"])), distribution(model["distribution"]),
+  ng_y(as<arma::vec>(model["y"])),
+  max_iter(100), conv_tol(1.0e-8) {
+}
+
 //general constructor
 ngssm::ngssm(arma::vec y, arma::mat Z, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi, arma::mat xreg,
@@ -22,7 +32,7 @@ ngssm::ngssm(arma::vec y, arma::mat Z, arma::cube T,
   arma::vec beta, unsigned int distribution, arma::uvec Z_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
   gssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, Z_ind,
-    arma::umat(0,0), T_ind, R_ind, seed), phi(phi),
+    arma::uvec(1), T_ind, R_ind, seed), phi(phi),
     distribution(distribution), ng_y(y), max_iter(100), conv_tol(1.0e-8) {
 }
 
@@ -222,7 +232,7 @@ void ngssm::update_model(arma::vec theta) {
     compute_xbeta();
   }
   if(distribution == 3) {
-    phi.fill(exp(theta(theta.n_elem - 1)));
+    phi.fill(theta(theta.n_elem - 1));
   }
 }
 
@@ -251,7 +261,7 @@ arma::vec ngssm::get_theta(void) {
   }
 
   if(distribution == 3) {
-    theta(theta.n_elem - 1) = log(phi(0));
+    theta(theta.n_elem - 1) = phi(0);
   }
   return theta;
 }

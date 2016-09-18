@@ -100,7 +100,6 @@ Rcpp::List bsm_particle_filter(const List& model_, unsigned int nsim_states, uns
   arma::mat V(nsim_states, model.n, arma::fill::zeros);
   arma::umat ind(nsim_states, model.n - 1, arma::fill::zeros);
   double logU = model.particle_filter(nsim_states, alphasim, V, ind);
-  backtrack_pf(alphasim, ind);
   return List::create(
     Named("alpha") = alphasim, Named("V") = V, Named("A") = ind,
     Named("logU") = logU);

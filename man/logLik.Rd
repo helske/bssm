@@ -23,10 +23,11 @@
 
 \item{...}{Ignored.}
 
-\item{nsim_states}{Number of samples for importance sampling. If 0, approximate log-likelihood is returned.}
+\item{nsim_states}{Number of samples for importance sampling. If 0, approximate log-likelihood is returned.
+See vignette for details.}
 
 \item{seed}{Seed for the random number generator. Compared to other functions of the package, here the
-default seed is fixed (as 1) in order to work properly in optimization algorithms.}
+default seed is fixed (as 1) in order to work properly in numerical optimization algorithms.}
 }
 \description{
 Computes the log-likelihood of exponential family state space model.

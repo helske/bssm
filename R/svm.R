@@ -69,18 +69,56 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
 #' @rdname logLik
 #' @inheritParams logLik.ngssm
 #' @export
-logLik.svm <- function(object, nsim_states,
-  seed = 1, ...) {
+logLik.svm <- function(object, nsim_states, seed = 1, ...) {
   object$distribution <- 0
   object$phi <- rep(object$sigma, length(object$y))
   svm_loglik(object, object$init_signal, nsim_states, seed)
+}
+#' @method kfilter svm
+#' @rdname kfilter
+#' @export
+kfilter.svm <- function(object, ...) {
+
+  object$distribution <- 0
+  object$phi <- rep(object$sigma, length(object$y))
+  out <- ngssm_filter(object, object$init_signal)
+
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <-
+    rownames(out$Ptt) <- names(object$a1)
+  out$at <- ts(out$at, start = start(object$y), frequency = object$period)
+  out$att <- ts(out$att, start = start(object$y), frequency = object$period)
+  out
+}
+#' @method fast_smoother svm
+#' @export
+fast_smoother.svm <- function(object, ...) {
+
+  object$distribution <- 0
+  object$phi <- rep(object$sigma, length(object$y))
+  out <- svm_fast_smoother(object, object$init_signal)
+  colnames(out) <- names(object$a1)
+  ts(out, start = start(object$y), frequency = frequency(object$y))
+
+}
+#' @method sim_smoother svm
+#' @export
+sim_smoother.svm <- function(object, nsim = 1,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+
+  object$distribution <- 0
+  object$phi <- rep(object$sigma, length(object$y))
+  out <- svm_sim_smoother(object, object$init_signal, nsim, seed)
+
+  rownames(out) <- names(object$a1)
+  aperm(out, c(2, 1, 3))
 }
 
 #' @method smoother svm
 #' @export
 smoother.svm <- function(object, ...) {
- object$distribution <- 0
- object$phi <- rep(object$sigma, length(object$y))
+  object$distribution <- 0
+  object$phi <- rep(object$sigma, length(object$y))
   out <- svm_smoother(object, object$init_signal)
 
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
@@ -121,8 +159,8 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
   }
   priors <- combine_priors(object$priors)
 
- object$distribution <- 0
- object$phi <- rep(object$sigma, length(object$y))
+  object$distribution <- 0
+  object$phi <- rep(object$sigma, length(object$y))
   out <-  switch(type,
     full = {
       if (method == "PM") {
@@ -176,8 +214,8 @@ run_mcmc.svm <- function(object, n_iter, nsim_states = 1, type = "full",
 importance_sample.svm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
- object$distribution <- 0
- object$phi <- rep(object$sigma, length(object$y))
+  object$distribution <- 0
+  object$phi <- rep(object$sigma, length(object$y))
   svm_importance_sample(object,
     nsim, object$init_signal, seed)
 }
@@ -187,8 +225,8 @@ importance_sample.svm <- function(object, nsim,
 #' @export
 gaussian_approx.svm <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
 
- object$distribution <- 0
- object$phi <- rep(object$sigma, length(object$y))
+  object$distribution <- 0
+  object$phi <- rep(object$sigma, length(object$y))
   svm_approx_model(object,
     object$init_signal, max_iter, conv_tol)
 }
@@ -200,7 +238,39 @@ gaussian_approx.svm <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
 particle_filter.svm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
- object$distribution <- 0
- object$phi <- rep(object$sigma, length(object$y))
-  svm_particle_filter(object, nsim, object$init_signal, seed)
+  object$distribution <- 0
+  object$phi <- rep(object$sigma, length(object$y))
+  svm_particle_filter(object, nsim, seed)
+}
+
+
+#' @method particle_smoother svm
+#' @rdname particle_smoother
+#' @export
+particle_smoother.svm <- function(object, nsim, method = "fs",
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+
+  method <- match.arg(method, c("fs", "fbs"))
+  object$distribution <- 0
+  object$phi <- rep(object$sigma, length(object$y))
+  out <- svm_particle_smoother(object, nsim, seed, method == "fs")
+
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
+}
+
+#' @method particle_simulate svm
+#' @rdname particle_simulate
+#' @export
+particle_simulate.svm <- function(object, nsim, nsim_store = 1,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+
+  object$distribution <- 0
+  object$phi <- rep(object$sigma, length(object$y))
+  out <- svm_backward_simulate(object, nsim, seed, nsim_store)
+
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
 }
