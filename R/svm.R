@@ -86,8 +86,8 @@ kfilter.svm <- function(object, ...) {
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <-
     rownames(out$Ptt) <- names(object$a1)
-  out$at <- ts(out$at, start = start(object$y)svm)
-  out$att <- ts(out$att, start = start(object$y)svm)
+  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
+  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   out
 }
 #' @method fast_smoother svm
@@ -122,7 +122,8 @@ smoother.svm <- function(object, ...) {
   out <- svm_smoother(object, object$init_signal)
 
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
-  out$alphahat <- ts(out$alphahat, start = start(object$y))
+  out$alphahat <- ts(out$alphahat, start = start(object$y),
+    frequency = object$period)
   out
 }
 
