@@ -251,13 +251,12 @@ smoother.bsm <- function(object, ...) {
 #' @method run_mcmc bsm
 #' @rdname run_mcmc_g
 #' @param log_space Generate proposals for standard deviations in log-space. Default is \code{FALSE}.
-#' @param n_threads Number of threads for state simulation.
 #' @inheritParams run_mcmc.gssm
 #' @export
 run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  log_space = FALSE, n_threads = 1,
+  log_space = FALSE,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
   type <- match.arg(type, c("full", "summary"))
@@ -325,7 +324,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
 #'
 predict.bsm <- function(object, n_iter, newdata = NULL,
   n_ahead = 1, interval = "response", probs = c(0.05, 0.95),
-  method = "quantile", return_MCSE = TRUE, nsim_states = 1,
+  method = "quantile", return_MCSE = TRUE,
   n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
   seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -383,7 +382,7 @@ predict.bsm <- function(object, n_iter, newdata = NULL,
           names = paste0(100 * probs, "%")))
     }
   } else {
-    out <- bsm_predict2(object, priors$prior_types, priors$params, n_iter, nsim_states,
+    out <- bsm_predict2(object, priors$prior_types, priors$params, n_iter,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
       seed, FALSE)
 

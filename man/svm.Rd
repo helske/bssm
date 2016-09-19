@@ -14,6 +14,10 @@ svm(y, ar, sd_ar, sigma, beta, xreg = NULL)
 \item{sd_ar}{Prior for the standard deviation of noise of the AR-process.}
 
 \item{sigma}{Prior for sigma parameter of observation equation.}
+
+\item{beta}{Prior for the regression coefficients.}
+
+\item{xreg}{Matrix containing covariates.}
 }
 \value{
 Object of class \code{svm}.

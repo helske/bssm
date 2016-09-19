@@ -293,7 +293,7 @@ priors <- combine_priors(priors)
   out <- switch(type,
     full = {
       out <- gssm_run_mcmc(object, priors$prior_types, priors$params, n_iter,
-        nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind,
+        sim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind,
         H_ind, T_ind, R_ind, seed, end_adaptive_phase)
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
@@ -345,7 +345,7 @@ priors <- combine_priors(priors)
 #' @export
 predict.gssm <- function(object, n_iter, priors, newdata = NULL,
   n_ahead = 1, interval = "response",
-  probs = c(0.05, 0.95), method = "quantile", return_MCSE = TRUE, nsim_states = 1,
+  probs = c(0.05, 0.95), method = "quantile", return_MCSE = TRUE,
   n_burnin = floor(n_iter / 2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, Z_est, H_est, T_est, R_est,
   seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -438,7 +438,7 @@ predict.gssm <- function(object, n_iter, priors, newdata = NULL,
     }
   } else {
 
-    out <- gssm_predict2(object, priors$prior_types, priors$param, n_iter, nsim_states,
+    out <- gssm_predict2(object, priors$prior_types, priors$param, n_iter,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
       Z_ind, H_ind, T_ind, R_ind, seed)
 

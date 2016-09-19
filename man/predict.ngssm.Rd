@@ -22,6 +22,8 @@
 
 \item{n_iter}{Number of MCMC iterations.}
 
+\item{nsim_states}{Number of samples used in importance sampling.}
+
 \item{newdata}{Matrix containing the covariate values for the future time
 points. Defaults to zero matrix of appropriate size.}
 

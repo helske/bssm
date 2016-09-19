@@ -8,8 +8,7 @@
 \method{run_mcmc}{bsm}(object, n_iter, sim_states = TRUE, type = "full",
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  log_space = FALSE, n_threads = 1, seed = sample(.Machine$integer.max,
-  size = 1), ...)
+  log_space = FALSE, seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{run_mcmc}{gssm}(object, n_iter, Z_est, H_est, T_est, R_est,
   sim_states = TRUE, type = "full", priors, n_burnin = floor(n_iter/2),
@@ -53,8 +52,6 @@ distribution is \eqn{SS'}.}
 \item{end_adaptive_phase}{If \code{TRUE} (default), $S$ is held fixed after the burnin period.}
 
 \item{log_space}{Generate proposals for standard deviations in log-space. Default is \code{FALSE}.}
-
-\item{n_threads}{Number of threads for state simulation.}
 
 \item{seed}{Seed for the random number generator.}
 

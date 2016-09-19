@@ -240,9 +240,9 @@ initial_signal <- function(y, phi, distribution) {
 #' @method run_mcmc ngssm
 #' @rdname run_mcmc_ng
 #' @param object Model object.
-#' @param n_iter Number of MCMC iterations.#'
+#' @param n_iter Number of MCMC iterations.
 #' @param priors Priors for the unknown parameters.
-#' @param nsim_states Number of states samples per MCMC iteration.
+#' @param nsim_states Number of state samples per MCMC iteration.
 #' @param type Either \code{"full"} (default), or \code{"summary"}. The
 #' former produces samples of states whereas the latter gives the mean and
 #' variance estimates of the states.
@@ -259,8 +259,6 @@ initial_signal <- function(y, phi, distribution) {
 #' @param Z_est,T_est,R_est Matrices or arrays with same dimensions as the
 #' corresponding system matrices in \code{object}, where \code{NA} values
 #' identify the unknown parameters for estimation.
-#' @param nsim_states Number of simulations of states per MCMC iteration. Only
-#' used when \code{type = "full"}.
 #' @param n_burnin Length of the burn-in period which is disregarded from the
 #' results. Defaults to \code{n_iter / 2}.
 #' @param n_thin Thinning rate. Defaults to 1. Increase for large models in
@@ -271,13 +269,14 @@ initial_signal <- function(y, phi, distribution) {
 #' @param S Initial value for the lower triangular matrix of RAM
 #' algorithm, so that the covariance matrix of the Gaussian proposal
 #' distribution is \eqn{SS'}.
+#' @param end_adaptive_phase If \code{TRUE} (default), $S$ is held fixed after the burnin period.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @export
 run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, priors,
   nsim_states = 1, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, end_adaptive_phase = TRUE, seed = sample(.Machine$integer.max, size = 1),
-  ...) {
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE, 
+  seed = sample(.Machine$integer.max, size = 1), ...) {
 
   if (!is.null(ncol(object$y)) && ncol(object$y) > 1) {
     stop("not yet implemented for multivariate models.")
@@ -356,6 +355,7 @@ run_mcmc.ngssm <- function(object, n_iter, Z_est, T_est, R_est, priors,
 #' @method predict ngssm
 #' @rdname predict.ngssm
 #' @inheritParams predict.gssm
+#' @param nsim_states Number of samples used in importance sampling.
 #' @param newphi Vector of length \code{n_ahead} defining the future values of \eqn{\phi}.
 #' Defaults to 1, expect for negative binomial distribution, where the initial
 #' value is taken from \code{object$phi}.

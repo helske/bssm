@@ -321,7 +321,10 @@ smoother.ng_bsm <- function(object, ...) {
 #' @method run_mcmc ng_bsm
 #' @rdname run_mcmc_ng
 #' @param log_space Generate proposals for standard deviations in log-space. Default is \code{TRUE}.
-#' @param method Use \code{"standard"} MCMC or \code{"delayed acceptance"} approach.
+#' @param adaptive_approx If \code{TRUE} (default), Gaussian approximation needed for 
+#' importance sampling is performed at each iteration. If false, approximation is updated only 
+#' once at the start of the MCMC.
+#' @param n_threads Number of threads for state simulation.
 #' @inheritParams run_mcmc.ngssm
 #' @export
 run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",

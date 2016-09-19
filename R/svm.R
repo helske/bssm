@@ -7,6 +7,8 @@
 #' @param ar prior for autoregressive coefficient.
 #' @param sigma Prior for sigma parameter of observation equation.
 #' @param sd_ar Prior for the standard deviation of noise of the AR-process.
+#' @param beta Prior for the regression coefficients.
+#' @param xreg Matrix containing covariates.
 #' @return Object of class \code{svm}.
 #' @export
 svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {

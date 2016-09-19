@@ -65,14 +65,14 @@ List bsm_smoother(const List& model_) {
 
 // [[Rcpp::export]]
 arma::mat bsm_predict2(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars,
-  unsigned int n_iter, unsigned int nsim_states,
+  unsigned int n_iter,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
   unsigned int interval, unsigned int seed, bool log_space) {
 
   bsm model(model_, seed, log_space);
 
-  return model.predict2(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
+  return model.predict2(prior_types, prior_pars, n_iter, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval);
 }
 

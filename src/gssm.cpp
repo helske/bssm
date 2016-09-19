@@ -881,41 +881,34 @@ List gssm::predict(const arma::uvec& prior_types, const arma::mat& prior_pars,
 
 
 arma::mat gssm::predict2(const arma::uvec& prior_types,
-  const arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states,
+  const arma::mat& prior_pars, unsigned int n_iter,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat S, unsigned int n_ahead,
   unsigned int interval) {
 
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
 
-  arma::mat pred_store(n_ahead, nsim_states * n_samples);
+  arma::mat pred_store(n_ahead, n_samples);
 
   unsigned int n_par = prior_types.n_elem;
   arma::vec theta = get_theta();
   double prior = prior_pdf(theta, prior_types, prior_pars);
-  arma::cube alpha = sim_smoother(nsim_states, true).tube(0, n - n_ahead, m - 1,  n - 1);
+  arma::cube alpha = sim_smoother(1, true).tube(0, n - n_ahead, m - 1,  n - 1);
 
   unsigned int j = 0;
   std::normal_distribution<> normal(0.0, 1.0);
 
   if (n_burnin == 0){
-    for (unsigned int ii = 0; ii < nsim_states; ii++) {
       for (unsigned int t = 0; t < n_ahead; t++) {
-        pred_store(t, ii) = arma::as_scalar(Z.col(Ztv * (n - n_ahead + t)).t() * alpha.slice(ii).col(t));
+        pred_store(t, 0) = arma::as_scalar(Z.col(Ztv * (n - n_ahead + t)).t() * alpha.slice(0).col(t));
       }
-    }
+    
     if(xreg.n_cols > 0) {
-      for (unsigned int ii = 0; ii < nsim_states; ii++) {
-        pred_store.col(ii) +=  xbeta.subvec(n - n_ahead, n - 1);
-      }
+        pred_store.col(0) +=  xbeta.subvec(n - n_ahead, n - 1);
     }
     if (interval == 2) {
       for (unsigned int t = 0; t < n_ahead; t++) {
-        arma::rowvec u2(nsim_states);
-        for(unsigned int ii = 0; ii < nsim_states; ii++) {
-          u2(ii) = normal(engine);
-        }
-        pred_store.row(t).cols(0, nsim_states - 1) += H(Htv * (n - n_ahead + t)) * u2;
+        pred_store.row(t).col(0) += H(Htv * (n - n_ahead + t)) * normal(engine);
       }
     }
     j++;
@@ -952,33 +945,24 @@ arma::mat gssm::predict2(const arma::uvec& prior_types,
         ll = ll_prop;
         prior = prior_prop;
         theta = theta_prop;
-        alpha = sim_smoother(nsim_states, true).tube(0, n - n_ahead, m - 1,  n - 1);
+        alpha = sim_smoother(1, true).tube(0, n - n_ahead, m - 1,  n - 1);
       }
     } else accept_prob = 0.0;
 
     if ((i >= n_burnin) && (i % n_thin == 0)) {
       update_model(theta);
 
-      for (unsigned int ii = j * nsim_states; ii < (j + 1) * nsim_states; ii++) {
         for (unsigned int t = 0; t < n_ahead; t++) {
-          pred_store(t, ii) = arma::as_scalar(Z.col(Ztv * (n - n_ahead + t)).t() *
-            alpha.slice(ii - j * nsim_states).col(t));
+          pred_store(t, j) = arma::as_scalar(Z.col(Ztv * (n - n_ahead + t)).t() *
+            alpha.slice(0).col(t));
         }
-      }
 
       if(xreg.n_cols > 0) {
-        for (unsigned int ii = j * nsim_states; ii < (j + 1) * nsim_states; ii++) {
-          pred_store.col(ii) +=  xbeta.subvec(n - n_ahead, n - 1);
+          pred_store.col(j) +=  xbeta.subvec(n - n_ahead, n - 1);
         }
-      }
       if (interval == 2) {
         for (unsigned int t = 0; t < n_ahead; t++) {
-          arma::rowvec u2(nsim_states);
-          for(unsigned int ii = 0; ii < nsim_states; ii++) {
-            u2(ii) = normal(engine);
-          }
-          pred_store.row(t).cols(j * nsim_states, (j + 1) * nsim_states - 1) +=
-            H(Htv * (n - n_ahead + t)) * u2;
+          pred_store.row(t).col(j) += H(Htv * (n - n_ahead + t)) * normal(engine);
         }
       }
       j++;

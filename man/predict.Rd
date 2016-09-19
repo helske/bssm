@@ -7,15 +7,15 @@
 \usage{
 \method{predict}{bsm}(object, n_iter, newdata = NULL, n_ahead = 1,
   interval = "response", probs = c(0.05, 0.95), method = "quantile",
-  return_MCSE = TRUE, nsim_states = 1, n_burnin = floor(n_iter/2),
-  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
+  return_MCSE = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
+  gamma = 2/3, target_acceptance = 0.234, S,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{predict}{gssm}(object, n_iter, priors, newdata = NULL, n_ahead = 1,
   interval = "response", probs = c(0.05, 0.95), method = "quantile",
-  return_MCSE = TRUE, nsim_states = 1, n_burnin = floor(n_iter/2),
-  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, Z_est, H_est,
-  T_est, R_est, seed = sample(.Machine$integer.max, size = 1), ...)
+  return_MCSE = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
+  gamma = 2/3, target_acceptance = 0.234, S, Z_est, H_est, T_est, R_est,
+  seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
 \item{object}{Model object.#'}

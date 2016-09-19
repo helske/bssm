@@ -2,6 +2,7 @@
 [![codecov.io](http://codecov.io/github/helske/bssm/coverage.svg?branch=master)](http://codecov.io/github/helske/bssm?branch=master)
 
 bssm: an R package for Bayesian inference of exponential family and stochastic volatility state space models
+==========================================================================
 
 Efficient methods for Bayesian inference of state space models where the observation density is Gaussian, Poisson, binomial or negative binomial, and where the state dynamics are Gaussian.
 

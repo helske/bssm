@@ -28,15 +28,16 @@
 \arguments{
 \item{object}{Model object.}
 
-\item{n_iter}{Number of MCMC iterations.#'}
+\item{n_iter}{Number of MCMC iterations.}
 
-\item{nsim_states}{Number of states samples per MCMC iteration.}
+\item{nsim_states}{Number of state samples per MCMC iteration.}
 
 \item{type}{Either \code{"full"} (default), or \code{"summary"}. The
 former produces samples of states whereas the latter gives the mean and
 variance estimates of the states.}
 
-\item{method}{Use \code{"standard"} MCMC or \code{"delayed acceptance"} approach.}
+\item{method}{Whether pseudo-marginal MCMC (\code{"PM"}) (default) or
+importance sampling type correction (\code{"IS"}) is used.}
 
 \item{simulation_method}{If \code{"IS"} non-sequential importance sampling based
 on Gaussian approximation is used. If \code{"PF"} particle filtering (bootstrap filter)
@@ -64,6 +65,14 @@ between 0 and 1 (not checked).}
 algorithm, so that the covariance matrix of the Gaussian proposal
 distribution is \eqn{SS'}.}
 
+\item{end_adaptive_phase}{If \code{TRUE} (default), $S$ is held fixed after the burnin period.}
+
+\item{adaptive_approx}{If \code{TRUE} (default), Gaussian approximation needed for 
+importance sampling is performed at each iteration. If false, approximation is updated only 
+once at the start of the MCMC.}
+
+\item{n_threads}{Number of threads for state simulation.}
+
 \item{seed}{Seed for the random number generator.}
 
 \item{log_space}{Generate proposals for standard deviations in log-space. Default is \code{TRUE}.}
@@ -75,12 +84,6 @@ corresponding system matrices in \code{object}, where \code{NA} values
 identify the unknown parameters for estimation.}
 
 \item{priors}{Priors for the unknown parameters.}
-
-\item{method}{Whether pseudo-marginal MCMC (\code{"PM"}) (default) or
-importance sampling type correction (\code{"IS"}) is used.}
-
-\item{nsim_states}{Number of simulations of states per MCMC iteration. Only
-used when \code{type = "full"}.}
 }
 \description{
 Adaptive Markov chain Monte Carlo simulation of state space models using

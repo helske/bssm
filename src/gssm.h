@@ -35,7 +35,7 @@ public:
   double prior_pdf(const arma::vec&, const arma::uvec&, const arma::mat&);
 
   virtual arma::mat predict2(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
-    unsigned int, unsigned int, double, double, arma::mat, unsigned int,
+    unsigned int, double, double, arma::mat, unsigned int,
     unsigned int);
   virtual List predict(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat, unsigned int,
