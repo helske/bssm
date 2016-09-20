@@ -45,6 +45,10 @@ bsm_smoother <- function(model_) {
     .Call('bssm_bsm_smoother', PACKAGE = 'bssm', model_)
 }
 
+bsm_ccov_smoother <- function(model_) {
+    .Call('bssm_bsm_ccov_smoother', PACKAGE = 'bssm', model_)
+}
+
 bsm_predict2 <- function(model_, prior_types, prior_pars, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, seed, log_space) {
     .Call('bssm_bsm_predict2', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, seed, log_space)
 }

@@ -143,6 +143,17 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// bsm_ccov_smoother
+List bsm_ccov_smoother(const List& model_);
+RcppExport SEXP bssm_bsm_ccov_smoother(SEXP model_SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const List& >::type model_(model_SEXP);
+    __result = Rcpp::wrap(bsm_ccov_smoother(model_));
+    return __result;
+END_RCPP
+}
 // bsm_predict2
 arma::mat bsm_predict2(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S, unsigned int n_ahead, unsigned int interval, unsigned int seed, bool log_space);
 RcppExport SEXP bssm_bsm_predict2(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP n_aheadSEXP, SEXP intervalSEXP, SEXP seedSEXP, SEXP log_spaceSEXP) {

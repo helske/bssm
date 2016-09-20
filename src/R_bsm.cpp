@@ -64,6 +64,22 @@ List bsm_smoother(const List& model_) {
 
 
 // [[Rcpp::export]]
+List bsm_ccov_smoother(const List& model_) {
+  
+  bsm model(model_, 1, false);
+  
+  arma::mat alphahat(model.m, model.n);
+  arma::cube Vt(model.m, model.m, model.n);
+  arma::cube Ct(model.m, model.m, model.n);
+  model.smoother_ccov(alphahat, Vt, Ct, true);
+  arma::inplace_trans(alphahat);
+  
+  return List::create(
+    Named("alphahat") = alphahat,
+    Named("Vt") = Vt, Named("Ct") = Ct);
+}
+
+// [[Rcpp::export]]
 arma::mat bsm_predict2(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars,
   unsigned int n_iter,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
