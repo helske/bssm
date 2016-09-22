@@ -16,25 +16,23 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
   check_y(y)
   n <- length(y)
 
-  check_ar(ar$init)
-  check_sd(sd_ar$init, "ar")
-  check_sd(sigma$init, "sigma", FALSE)
-
   if (is.null(xreg)) {
-
     xreg <- matrix(0, 0, 0)
     coefs <- numeric(0)
     beta <- NULL
-
   } else {
-
+    
     if (missing(beta)) {
       stop("No prior defined for beta. ")
     }
+    if(!is_prior(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior'.")
+    }
+    
     if (is.null(dim(xreg)) && length(xreg) == n) {
       xreg <- matrix(xreg, n, 1)
     }
-
+    
     check_xreg(xreg, n)
     check_beta(beta$init, ncol(xreg))
     coefs <- beta$init
@@ -42,8 +40,12 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
     names(coefs) <- colnames(xreg)
-
+    
   }
+  
+  check_ar(ar$init)
+  check_sd(sd_ar$init, "ar")
+  check_sd(sigma$init, "sigma", FALSE)
 
   a1 <- 0
   P1 <- matrix(sd_ar$init^2 / (1 - ar$init^2))

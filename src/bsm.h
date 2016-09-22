@@ -33,6 +33,7 @@ private:
   const bool slope;
   const bool seasonal;
   const arma::uvec fixed;
+  const bool y_est;
   const bool level_est;
   const bool slope_est;
   const bool seasonal_est;

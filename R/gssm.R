@@ -28,9 +28,33 @@
 gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta = NULL, state_names) {
 
   check_y(y)
-
   n <- length(y)
 
+  if (is.null(xreg)) {
+    xreg <- matrix(0, 0, 0)
+    coefs <- numeric(0)
+    beta <- NULL
+  } else {
+    if (missing(beta)) {
+      stop("No prior defined for beta. ")
+    }
+    if(!is_prior(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior'.")
+    }
+    
+    if (is.null(dim(xreg)) && length(xreg) == n) {
+      xreg <- matrix(xreg, n, 1)
+    }
+    
+    check_xreg(xreg, n)
+    check_beta(beta$init, ncol(xreg))
+    coefs <- beta$init
+    if (is.null(colnames(xreg))) {
+      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    }
+    names(coefs) <- colnames(xreg)
+    
+  }
   if (length(Z) == 1) {
     dim(Z) <- c(1, 1)
     m <- 1
@@ -85,31 +109,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta = NULL, state_names) {
   rownames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
     rownames(P1) <- colnames(P1) <- state_names
 
-  if (is.null(xreg)) {
-
-    xreg <- matrix(0, 0, 0)
-    beta <- numeric(0)
-
-  } else {
-
-    if (is.null(dim(xreg)) && length(xreg) == n) {
-      xreg <- matrix(xreg, n, 1)
-    }
-
-    check_xreg(xreg, n)
-
-    if (is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
-    }
-
-    if (missing(beta)) {
-      beta <- numeric(ncol(xreg))
-    } else {
-      check_beta(beta, ncol(xreg))
-    }
-
-    names(beta) <- colnames(xreg)
-  }
+ 
 
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
     xreg = xreg, beta = beta), class = "gssm")

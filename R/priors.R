@@ -71,3 +71,7 @@ combine_priors <- function(x) {
   list(prior_types = pmatch(prior_types, c("uniform", "halfnormal", "normal"), duplicates.ok = TRUE)-1, 
     params = params)
 }
+
+is_prior <- function(x){
+  inherits(x, "bssm_prior")
+}

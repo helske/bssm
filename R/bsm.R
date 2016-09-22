@@ -39,46 +39,28 @@
 #' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
 #'
 bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
-  beta, xreg = NULL, slope = TRUE, seasonal = frequency(y) > 1,
-  period = frequency(y), a1, P1) {
-
+  beta, xreg = NULL, period = frequency(y), a1, P1) {
+ 
   check_y(y)
   n <- length(y)
-
-  if (period == 1) {
-    seasonal <- FALSE
-  } else {
-    if (missing(seasonal)) {
-      seasonal <- TRUE
-    }
-  }
-
-  #easier this way...
-  notfixed <- c("level" = 1, "slope" = 1, "seasonal" = 1)
-
-  npar_R <- sum(!c(missing(sd_level), missing(sd_slope),
-      missing(sd_seasonal)) & c(TRUE, slope, seasonal))
-
-  npar <- 1L + npar_R
-
-  if(!missing(beta)) {
-    npar <- npar + length(beta$init)
-  }
-
+  
   if (is.null(xreg)) {
-
     xreg <- matrix(0, 0, 0)
     coefs <- numeric(0)
     beta <- NULL
   } else {
-
+    
     if (missing(beta)) {
       stop("No prior defined for beta. ")
     }
+    if(!is_prior(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior'.")
+    }
+    
     if (is.null(dim(xreg)) && length(xreg) == n) {
       xreg <- matrix(xreg, n, 1)
     }
-
+    
     check_xreg(xreg, n)
     check_beta(beta$init, ncol(xreg))
     coefs <- beta$init
@@ -86,42 +68,71 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
     names(coefs) <- colnames(xreg)
-
   }
-
-  check_sd(sd_y$init, "y")
-
+  
+  notfixed <- c("y" = 1, "level" = 1, "slope" = 1, "seasonal" = 1)
+  
+  
+  if (missing(sd_y)) {
+    stop("Provide either prior or fixed value for sd_y.")
+  } else {
+    if (is_prior(sd_y)) {
+      check_sd(sd_y$init, "y")
+      H <- matrix(sd_y$init)
+    } else {
+      notfixed[1] <- 0
+      check_sd(sd_y, "y")
+      H <- matrix(sd_y)
+    }
+  }
+ 
   if (missing(sd_level)) {
-    notfixed[1] <- 0
-    sd_level <- NULL
+    stop("Provide either prior or fixed value for sd_level.")
   } else {
-    check_sd(sd_level$init, "level")
+    if (is_prior(sd_level)) {
+      check_sd(sd_level$init, "level")
+    } else {
+      notfixed["level"] <- 0
+      check_sd(sd_level, "level")
+    }
+  }
+  
+  if (missing(sd_slope)) {
+    notfixed["slope"] <- 0
+   slope <- FALSE
+   sd_slope <- NULL
+  } else {
+    if (is_prior(sd_slope)) {
+      check_sd(sd_slope$init, "sd_slope")
+    } else {
+      notfixed["slope"] <- 0
+      check_sd(sd_slope, "sd_slope")
+    }
+    slope <- TRUE
   }
 
-  if (slope) {
-    if (missing(sd_slope)) {
-      notfixed[2] <- 0
-      sd_slope <- NULL
-    } else {
-      check_sd(sd_slope$init, "slope")
-    }
-  } else sd_slope <- NULL
-
-  if (seasonal) {
-    if (missing(sd_seasonal)) {
-      notfixed[3] <- 0
+  if (missing(sd_seasonal)) {
+      notfixed["seasonal"] <- 0
+      seasonal_names <- NULL
+      seasonal <- FALSE
       sd_seasonal <- NULL
-    } else {
-      check_sd(sd_seasonal$init, "seasonal")
-    }
-    seasonal_names <- paste0("seasonal_", 1:(period - 1))
   } else {
-    seasonal_names <- NULL
-    sd_seasonal <- NULL
+    if (period < 2) {
+      stop("Period of seasonal component must be larger than 1. ")
+    }
+    if (is_prior(sd_seasonal)) {
+      check_sd(sd_seasonal$init, "sd_seasonal")
+    } else {
+      notfixed["seasonal"] <- 0
+      check_sd(sd_seasonal, "sd_seasonal")
+    }
+    seasonal <- TRUE
+    seasonal_names <- paste0("seasonal_", 1:(period - 1))
   }
 
+  npar_R <- 1L + as.integer(slope) + as.integer(seasonal)
 
-  m <- as.integer(1L + slope + seasonal * (period - 1))
+  m <- as.integer(1L + as.integer(slope) + as.integer(seasonal) * (period - 1))
 
   if (missing(a1)) {
     a1 <- numeric(m)
@@ -140,7 +151,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
       stop("Argument P1 must be m x m matrix, where m = ", m)
     }
   }
-
+ 
   if (slope) {
     state_names <- c("level", "slope", seasonal_names)
   } else {
@@ -153,8 +164,6 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     Z[2 + slope, 1] <- 1
   }
 
-  H <- matrix(sd_y$init)
-
   T <- matrix(0, m, m)
   T[1, 1] <- 1
   if (slope) {
@@ -162,20 +171,30 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   }
   if (seasonal) {
     T[(2 + slope), (2 + slope):m] <- -1
-    diag(T[(2 + slope + 1):m, (2 + slope):(m - 1)]) <- 1
+    T[cbind(1 + slope + 2:(period - 1), 1 + slope + 1:(period - 2))] <- 1
   }
 
   R <- matrix(0, m, max(1, npar_R))
 
-  if (notfixed[1]) {
+  if (notfixed["level"]) {
     R[1, 1] <- sd_level$init
+  } else {
+    R[1, 1] <- sd_level
   }
-  if (slope && notfixed[2]) {
-    R[2, 1 + notfixed[1]] <- sd_slope$init
+  if (slope) {
+    if (notfixed["slope"]) {
+      R[2, 2] <- sd_slope$init
+    } else {
+      R[2, 2] <- sd_slope
+    }
   }
-  if (seasonal && notfixed[3]) {
-    R[2 + slope, 1 + notfixed[1] + (slope && notfixed[2])] <- sd_seasonal$init
-  }
+  if (seasonal) {
+    if (notfixed["seasonal"]) {
+      R[2 + slope, 2 + slope] <- sd_seasonal$init
+    } else {
+      R[2 + slope, 2 + slope] <- sd_seasonal
+    }
+  } 
 
   dim(H) <- 1
   dim(T) <- c(m, m, 1)
@@ -184,12 +203,10 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
 
-  names_ind <- c(TRUE, notfixed & c(TRUE, slope, seasonal))
-
+ 
   priors <- list(sd_y, sd_level, sd_slope, sd_seasonal, beta)
-  priors <- priors[!sapply(priors, is.null)]
-  names(priors) <-
-    c(c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind], names(coefs))
+  names(priors) <- c("sd_y", "sd_level", "sd_slope", "sd_seasonal",names(coefs))
+  priors <- priors[sapply(priors, is_prior)]
 
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
     a1 = a1, P1 = P1, xreg = xreg, coefs = coefs,
@@ -295,7 +312,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   # if (log_space && (ncol(out$theta) - length(object$coefs)) > 0) {
   #   out$theta[, 1:n_sd_par] <- exp(out$theta[, 1:n_sd_par])
   # }
-  names_ind <- c(TRUE, !object$fixed & c(TRUE, object$slope, object$seasonal))
+  names_ind <- !object$fixed & c(TRUE, TRUE, object$slope, object$seasonal)
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-
     c(c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind],
       colnames(object$xreg))

@@ -65,15 +65,15 @@ void ng_bsm::update_model(arma::vec theta) {
     }
     // sd_slope
     if (slope_est) {
-      R(1, level_est, 0) = theta(level_est);
+      R(1, 1, 0) = theta(level_est);
     }
     // sd_seasonal
     if (seasonal_est) {
-      R(1 + slope, level_est + slope_est, 0) =
+      R(1 + slope, 1 + slope, 0) =
         theta(level_est + slope_est);
     }
     if(noise) {
-      R(m - 1, level_est + slope_est + seasonal_est, 0) =
+      R(m - 1, 1 + slope + seasonal, 0) =
         theta(level_est + slope_est + seasonal_est);
       P1(m - 1, m - 1) = std::pow(theta(level_est + slope_est + seasonal_est), 2);
     }
@@ -104,16 +104,16 @@ arma::vec ng_bsm::get_theta(void) {
     }
     // sd_slope
     if (slope_est) {
-      theta(level_est) = R(1, level_est, 0);
+      theta(level_est) = R(1, 1, 0);
     }
     // sd_seasonal
     if (seasonal_est) {
       theta(level_est + slope_est) =
-        R(1 + slope, level_est + slope_est, 0);
+        R(1 + slope, 1 + slope, 0);
     }
     if (noise) {
       theta(level_est + slope_est + seasonal_est) =
-        R(m - 1, level_est + slope_est + seasonal_est, 0);
+        R(m - 1, 1 + slope + seasonal, 0);
     }
     if (log_space) {
       theta.subvec(0, theta.n_elem - xreg.n_cols - (distribution == 3) - 1) =

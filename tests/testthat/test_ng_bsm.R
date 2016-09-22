@@ -1,18 +1,4 @@
-context("Test ng_bsm")
-
-test_that("bad argument values throws an error",{
-  expect_error(ng_bsm("character vector"))
-  expect_error(ng_bsm(matrix(0, 2, 2)))
-  expect_error(ng_bsm(1))
-  expect_error(ng_bsm(c(1, Inf)))
-  expect_error(ng_bsm(1:10, sd_y = "character"))
-  expect_error(ng_bsm(1:10, sd_level = Inf))
-  expect_error(ng_bsm(1:10, no_argument = 5))
-  expect_error(ng_bsm(1:10, xreg = "abc"))
-  expect_error(ng_bsm(1:10, xreg = NA))
-  expect_error(ng_bsm(1:10, xreg = 1:20))
-  expect_error(ng_bsm(1:10, xreg = 1:10, beta = NA))
-})
+context("Test logLik")
 
 test_that("results are comparable to KFAS",{
   library("KFAS")

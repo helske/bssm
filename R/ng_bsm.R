@@ -59,7 +59,7 @@
 #' }
 ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   distribution, phi = 1, beta, xreg = NULL,
-  period = frequency(y), slope = TRUE, seasonal = frequency(y) > 1, a1, P1) {
+  period = frequency(y), a1, P1) {
 
 
   distribution <- match.arg(distribution, c("poisson", "binomial",
@@ -68,54 +68,27 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   if(distribution == "negative binomial") {
     stop("negbin not working at the moment... let me know if you really need it and I'll move it higher on todo list...")
   }
-   check_y(y)
+  
+  check_y(y)
   n <- length(y)
 
-  if (period == 1) {
-    seasonal <- FALSE
-  } else {
-    if (missing(seasonal)) {
-      seasonal <- TRUE
-    }
-  }
-
-  #easier this way...
-  notfixed <- c("level" = 1, "slope" = 1, "seasonal" = 1)
-
-  npar_R <- sum(!c(missing(sd_level), missing(sd_slope),
-    missing(sd_seasonal)) & c(TRUE, slope, seasonal)) + !missing(sd_noise)
-
-  npar <- 1L + npar_R
-
-  if(!missing(beta)) {
-    npar <- npar + length(beta$init)
-  }
-
-
-  if (missing(sd_noise)) {
-    noise <- FALSE
-    sd_noise <- NULL
-  } else {
-    check_sd(sd_noise$init, "noise")
-    noise <- TRUE
-  }
-
-
   if (is.null(xreg)) {
-
     xreg <- matrix(0, 0, 0)
     coefs <- numeric(0)
     beta <- NULL
-
   } else {
-
+    
     if (missing(beta)) {
       stop("No prior defined for beta. ")
     }
+    if(!is_prior(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior'.")
+    }
+    
     if (is.null(dim(xreg)) && length(xreg) == n) {
       xreg <- matrix(xreg, n, 1)
     }
-
+    
     check_xreg(xreg, n)
     check_beta(beta$init, ncol(xreg))
     coefs <- beta$init
@@ -123,40 +96,67 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
     names(coefs) <- colnames(xreg)
-
+    
   }
+  
 
+  notfixed <- c("level" = 1, "slope" = 1, "seasonal" = 1)
+  
   if (missing(sd_level)) {
-    notfixed[1] <- 0
-    sd_level <- NULL
+    stop("Provide either prior or fixed value for sd_level.")
   } else {
-    check_sd(sd_level$init, "level")
+    if (is_prior(sd_level)) {
+      check_sd(sd_level$init, "level")
+    } else {
+      notfixed["level"] <- 0
+      check_sd(sd_level, "level")
+    }
   }
-
-  if (slope) {
-    if (missing(sd_slope)) {
-      notfixed[2] <- 0
-      sd_slope <- NULL
-    } else {
-      check_sd(sd_slope$init, "slope")
-    }
-  } else sd_slope <- NULL
-
-  if (seasonal) {
-    if (missing(sd_seasonal)) {
-      notfixed[3] <- 0
-      sd_seasonal <- NULL
-    } else {
-      check_sd(sd_seasonal$init, "seasonal")
-    }
-    seasonal_names <- paste0("seasonal_", 1:(period - 1))
+  if (missing(sd_slope)) {
+    notfixed["slope"] <- 0
+    slope <- FALSE
+    sd_slope <- NULL
   } else {
+    if (is_prior(sd_slope)) {
+      check_sd(sd_slope$init, "sd_slope")
+    } else {
+      notfixed["slope"] <- 0
+      check_sd(sd_slope, "sd_slope")
+    }
+    slope <- TRUE
+  }
+  
+  if (missing(sd_seasonal)) {
+    notfixed["seasonal"] <- 0
     seasonal_names <- NULL
+    seasonal <- FALSE
     sd_seasonal <- NULL
+  } else {
+    if (period < 2) {
+      stop("Period of seasonal component must be larger than 1. ")
+    }
+    if (is_prior(sd_seasonal)) {
+      check_sd(sd_seasonal$init, "sd_seasonal")
+    } else {
+      notfixed["seasonal"] <- 0
+      check_sd(sd_seasonal, "sd_seasonal")
+    }
+    seasonal <- TRUE
+    seasonal_names <- paste0("seasonal_", 1:(period - 1))
   }
-
-
-  m <- as.integer(1L + slope + seasonal * (period - 1) + noise)
+  
+  if (missing(sd_noise)) {
+    noise <- FALSE
+    sd_noise <- NULL
+  } else {
+    check_sd(sd_noise$init, "noise")
+    noise <- TRUE
+  }
+  
+  npar_R <- 1L + as.integer(slope) + as.integer(seasonal) + as.integer(noise)
+  
+  m <- as.integer(1L + as.integer(slope) + as.integer(seasonal) * (period - 1) + as.integer(noise))
+  
 
   if (missing(a1)) {
     a1 <- numeric(m)
@@ -182,26 +182,51 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     state_names <- c("level", seasonal_names)
   }
 
-
   Z <- matrix(0, m, 1)
   Z[1, 1] <- 1
-
   if (seasonal) {
-    Z[2 + slope,1] <- 1
+    Z[2 + slope, 1] <- 1
   }
-
+  
   T <- matrix(0, m, m)
   T[1, 1] <- 1
-
   if (slope) {
     T[1:2, 2] <- 1
   }
-
   if (seasonal) {
-    T[(2 + slope), (2 + slope):(m - noise)] <- -1
-    diag(T[(2 + slope + 1):(m - noise), (2 + slope):(m - 1 - noise)]) <- 1
+    T[(2 + slope), (2 + slope):m] <- -1
+    T[cbind(1 + slope + 2:(period - 1), 1 + slope + 1:(period - 2))] <- 1
   }
-
+  
+  R <- matrix(0, m, max(1, npar_R))
+  
+  if (notfixed["level"]) {
+    R[1, 1] <- sd_level$init
+  } else {
+    R[1, 1] <- sd_level
+  }
+  if (slope) {
+    if (notfixed["slope"]) {
+      R[2, 2] <- sd_slope$init
+    } else {
+      R[2, 2] <- sd_slope
+    }
+  }
+  if (seasonal) {
+    if (notfixed["seasonal"]) {
+      R[2 + slope, 2 + slope] <- sd_seasonal$init
+    } else {
+      R[2 + slope, 2 + slope] <- sd_seasonal
+    }
+  } 
+ 
+  #additional noise term
+  if (noise) {
+    P1[m, m] <- sd_noise$init^2
+    Z[m] <- 1
+    state_names <- c(state_names, "noise")
+    R[m, max(1, ncol(R) - 1)] <- sd_noise$init
+  }
   if (!(length(phi) %in% c(1, n))) {
     stop("Argument phi must have length 1 or n. ")
   }
@@ -215,39 +240,18 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   nb <- distribution == "negative binomial"
   init_signal <- initial_signal(y, phi, distribution)
 
-  R <- matrix(0, m, max(1, npar_R))
-
-  if (notfixed[1]) {
-    R[1, 1] <- sd_level$init
-  }
-  if (slope && notfixed[2]) {
-    R[2, 1 + notfixed[1]] <- sd_slope$init
-  }
-  if (seasonal && notfixed[3]) {
-    R[2 + slope, 1 + notfixed[1] + (slope && notfixed[2])] <- sd_seasonal$init
-  }
-
-  #additional noise term
-  if (noise) {
-    P1[m, m] <- sd_noise$init^2
-    Z[m] <- 1
-    state_names <- c(state_names, "noise")
-    R[m, max(1, ncol(R) - 1)] <- sd_noise$init
-  }
+ 
   dim(T) <- c(m, m, 1)
   dim(R) <- c(m, ncol(R), 1)
 
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
 
+  
   priors <- list(sd_level, sd_slope, sd_seasonal, sd_noise, beta)
-  priors <- priors[!sapply(priors, is.null)]
-  names_ind <- c(notfixed & c(TRUE, slope, seasonal), noise)
-
-  names(priors) <-
-    c(c("sd_level", "sd_slope", "sd_seasonal", "sd_noise")[names_ind], names(coefs), if(nb) "nb_dispersion")
-
-
+  names(priors) <- c("sd_level", "sd_slope", "sd_seasonal", "sd_noise", names(coefs), if(nb) "nb_dispersion")
+  priors <- priors[sapply(priors, is_prior)]
+  
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, phi = phi, xreg = xreg, coefs = coefs,
     slope = slope, seasonal = seasonal, noise = noise,

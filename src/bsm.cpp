@@ -4,9 +4,11 @@
 bsm::bsm(const List model, unsigned int seed, bool log_space) :
   gssm(model, seed), slope(as<bool>(model["slope"])),
   seasonal(as<bool>(model["seasonal"])),
-  fixed(as<arma::uvec>(model["fixed"])), level_est(fixed(0) == 0),
-  slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0),
+  fixed(as<arma::uvec>(model["fixed"])), y_est(fixed(0) == 0), level_est(fixed(1) == 0),
+  slope_est(slope && fixed(2) == 0), seasonal_est(seasonal && fixed(3) == 0),
   log_space(log_space) {
+  Rcout<<R<<std::endl;
+  Rcout<<RR<<std::endl;
 }
 
 //with log_space
@@ -14,8 +16,8 @@ bsm::bsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, bool slope, bool seasonal,
   arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int seed, bool log_space) :
   gssm(y, Z, H, T, R, a1, P1, xreg, beta, seed), slope(slope), seasonal(seasonal),
-  fixed(fixed), level_est(fixed(0) == 0), slope_est(slope && fixed(1) == 0),
-  seasonal_est(seasonal && fixed(2) == 0), log_space(log_space) {
+  fixed(fixed), y_est(fixed(0) == 0), level_est(fixed(1) == 0), slope_est(slope && fixed(2) == 0),
+  seasonal_est(seasonal && fixed(3) == 0), log_space(log_space) {
 
 }
 
@@ -24,8 +26,8 @@ bsm::bsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, bool slope, bool seasonal,
   arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int seed) :
   gssm(y, Z, H, T, R, a1, P1, xreg, beta, seed), slope(slope), seasonal(seasonal),
-  fixed(fixed), level_est(fixed(0) == 0), slope_est(slope && fixed(1) == 0),
-  seasonal_est(seasonal && fixed(2) == 0), log_space(false) {
+  fixed(fixed), y_est(fixed(0) == 0), level_est(fixed(1) == 0), slope_est(slope && fixed(2) == 0),
+  seasonal_est(seasonal && fixed(3) == 0), log_space(false) {
 
 }
 
@@ -34,16 +36,18 @@ double bsm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
   double q = 0.0;
 
   if(log_space) {
-    q += theta_prop(0) - theta(0);
-    if (sum(fixed) < 3) {
+    if (sum(fixed) < 4) {
+      if (y_est) {
+      q += theta_prop(0) - theta(0);
+      }
       if (level_est) {
-        q += theta_prop(1) - theta(1);
+        q += theta_prop(y_est) - theta(y_est);
       }
       if (slope_est) {
-        q += theta_prop(1 + level_est) - theta(1 + level_est);
+        q += theta_prop(y_est + level_est) - theta(y_est + level_est);
       }
       if (seasonal_est) {
-        q += theta_prop(1 + level_est + slope_est) - theta(1 + level_est + slope_est);
+        q += theta_prop(y_est + level_est + slope_est) - theta(y_est + level_est + slope_est);
       }
     }
   }
@@ -56,22 +60,24 @@ void bsm::update_model(arma::vec theta) {
     theta.subvec(0, theta.n_elem - xreg.n_cols - 1) =
       exp(theta.subvec(0, theta.n_elem - xreg.n_cols - 1));
   }
-  H(0) = theta(0);
-  HH(0) = pow(theta(0), 2);
-
-  if (sum(fixed) < 3) {
+ 
+  if (sum(fixed) < 4) {
+    if (y_est) {
+    H(0) = theta(0);
+    HH(0) = pow(theta(0), 2);
+    }
     // sd_level
     if (level_est) {
-      R(0, 0, 0) = theta(1);
+      R(0, 0, 0) = theta(y_est);
     }
     // sd_slope
     if (slope_est) {
-      R(1, level_est, 0) = theta(1 + level_est);
+      R(1, 1, 0) = theta(y_est + level_est);
     }
     // sd_seasonal
     if (seasonal_est) {
-      R(1 + slope, level_est + slope_est, 0) =
-        theta(1 + level_est + slope_est);
+      R(1 + slope, 1 + slope, 0) =
+        theta(y_est + level_est + slope_est);
     }
     compute_RR();
   }
@@ -88,21 +94,24 @@ arma::vec bsm::get_theta(void) {
 
   arma::vec theta(npar);
 
-  theta(0) = H(0);
+ 
 
-  if (sum(fixed) < 3) {
+  if (sum(fixed) < 4) {
+    if(y_est) {
+      theta(0) = H(0);
+    }
     // sd_level
     if (level_est) {
-      theta(1) = R(0, 0, 0);
+      theta(y_est) = R(0, 0, 0);
     }
     // sd_slope
     if (slope_est) {
-      theta(1 + level_est) = R(1, level_est, 0);
+      theta(y_est + level_est) = R(1, 1, 0);
     }
     // sd_seasonal
     if (seasonal_est) {
-      theta(1 + level_est + slope_est) =
-        R(1 + slope, level_est + slope_est, 0);
+      theta(y_est + level_est + slope_est) =
+        R(1 + slope, 1 + slope, 0);
     }
     if (log_space) {
       theta.subvec(0, theta.n_elem - xreg.n_cols - 1) =
