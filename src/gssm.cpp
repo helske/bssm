@@ -639,8 +639,8 @@ void gssm::smoother(arma::mat& at, arma::cube& Pt, bool demean) {
 
 
 
+//smoother which returns also cov(alpha_t, alpha_t-1)
 void gssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov, bool demean) {
-
 
   at.col(0) = a1;
   Pt.slice(0) = P1;
@@ -1123,7 +1123,93 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
   
   return logU;
 }
-
+// 
+// //psi-auxiliary particle filter
+// double gssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V, arma::umat& ind) {
+// 
+//   arma::mat alphahat(m, n);
+//   arma::cube Vt(m, m, n);
+//   arma::cube Ct(m, m, n);
+//   smoother_ccov(alphahat, Vt, Ct, true);
+//   conditional_dist_helper(Vt, Ct);
+//   
+//   std::normal_distribution<> normal(0.0, 1.0);
+//   std::uniform_real_distribution<> unif(0.0, 1.0);
+//   for (unsigned int i = 0; i < nsim; i++) {
+//     arma::vec um(m);
+//     for(unsigned int j = 0; j < m; j++) {
+//       um(j) = normal(engine);
+//     }
+//     alphasim.slice(i).col(0) = alphahat.col(0) + Vt.slice(0) * um;
+//   }
+// 
+//   arma::vec Vnorm(nsim);
+//   double logU = 0.0;
+//   if(arma::is_finite(y(0))) {
+//     V.col(0).fill(log_likelihood(true));
+// //    for (unsigned int i = 0; i < nsim; i++) {
+//       // V(i, 0) = R::dnorm(y(0),
+//       //   arma::as_scalar(Z.col(0).t() * alphasim.slice(i).col(0) + xbeta(0)),
+//       //   H(0), 0);
+//     }
+//     double sumw = arma::sum(V.col(0));
+//     if(sumw > 0.0){
+//       Vnorm = V.col(0) / sumw;
+//     } else {
+//       return -arma::datum::inf;
+//     }
+//     logU = log(arma::mean(V.col(0)));
+//   } else {
+//     V.col(0).ones();
+//     Vnorm.fill(1.0/nsim);
+//   }
+// 
+//   for (unsigned int t = 0; t < (n - 1); t++) {
+// 
+//     arma::vec r(nsim);
+//     for (unsigned int i = 0; i < nsim; i++) {
+//       r(i) = unif(engine);
+//     }
+// 
+//     ind.col(t) = stratified_sample(Vnorm, r, nsim);
+// 
+//     arma::mat alphatmp(m, nsim);
+// 
+//     for (unsigned int i = 0; i < nsim; i++) {
+//       alphatmp.col(i) = alphasim.slice(ind(i, t)).col(t);
+//     }
+//     for (unsigned int i = 0; i < nsim; i++) {
+//       arma::vec uk(k);
+//       for(unsigned int j = 0; j < k; j++) {
+//         uk(j) = normal(engine);
+//       }
+//       alphasim.slice(i).col(t + 1) = T.slice(t * Ttv) * alphatmp.col(i) +
+//         R.slice(t * Rtv) * uk;
+//     }
+// 
+//     if(arma::is_finite(y(t + 1))) {
+//       for (unsigned int i = 0; i < nsim; i++) {
+//         V(i, t + 1) = R::dnorm(y(t + 1),
+//           arma::as_scalar(Z.col((t + 1) * Ztv).t() * alphasim.slice(i).col(t + 1) + xbeta(t + 1)),
+//           H((t + 1) * Htv), 0);
+//       }
+//       double sumw = arma::sum(V.col(t + 1));
+//       if(sumw > 0.0){
+//         Vnorm = V.col(t + 1) / sumw;
+//       } else {
+//         return -arma::datum::inf;
+//       }
+//       logU += log(arma::mean(V.col(t + 1)));
+//     } else {
+//       V.col(t + 1).ones();
+//       Vnorm.fill(1.0/nsim);
+//     }
+// 
+// 
+//   }
+// 
+//   return logU;
+// }
 
 void gssm::backtrack_pf2(const arma::cube& alpha, arma::mat& V, const arma::umat& ind) {
   

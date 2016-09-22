@@ -130,12 +130,12 @@ particle_filter <- function(object, nsim, seed, ...) {
 #'
 #' @param object of class \code{bsm}, \code{ng_bsm} or \code{svm}.
 #' @param nsim Number of samples.
-#' @param method Either \code{"fs"} (filter-smoother), or \code{"fbs"} (forward-backward smoother).
+#' @param smoothing_method Either \code{"fs"} (filter-smoother), or \code{"fbs"} (forward-backward smoother).
 #' @param seed Seed for RNG.
 #' @param ... Ignored.
 #' @export
 #' @rdname particle_smoother
-particle_smoother <- function(object, nsim, method, seed, ...) {
+particle_smoother <- function(object, nsim, ...) {
   UseMethod("particle_smoother", object)
 }
 #' Backwards sampling

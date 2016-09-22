@@ -13,6 +13,10 @@ choldowndate <- function(L, u) {
     .Call('bssm_choldowndate', PACKAGE = 'bssm', L, u)
 }
 
+conditional_dist_helper <- function(V, C) {
+    invisible(.Call('bssm_conditional_dist_helper', PACKAGE = 'bssm', V, C))
+}
+
 dmvnorm1 <- function(x, mean, sigma, lwr, logd) {
     .Call('bssm_dmvnorm1', PACKAGE = 'bssm', x, mean, sigma, lwr, logd)
 }
@@ -149,8 +153,8 @@ ng_bsm_run_mcmc <- function(model_, prior_types, prior_pars, n_iter, nsim_states
     .Call('bssm_ng_bsm_run_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, da, pf)
 }
 
-ng_bsm_run_mcmc_is <- function(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, method) {
-    .Call('bssm_ng_bsm_run_mcmc_is', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, method)
+ng_bsm_run_mcmc_is <- function(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, method, type = 1L) {
+    .Call('bssm_ng_bsm_run_mcmc_is', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, method, type)
 }
 
 ng_bsm_run_mcmc_summary <- function(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, da, pf) {
@@ -173,8 +177,12 @@ ng_bsm_approx_model <- function(model_, init_signal, max_iter, conv_tol) {
     .Call('bssm_ng_bsm_approx_model', PACKAGE = 'bssm', model_, init_signal, max_iter, conv_tol)
 }
 
-ng_bsm_particle_filter <- function(model_, init_signal, nsim_states, seed) {
-    .Call('bssm_ng_bsm_particle_filter', PACKAGE = 'bssm', model_, init_signal, nsim_states, seed)
+ng_bsm_particle_filter <- function(model_, nsim_states, seed, type, init_signal) {
+    .Call('bssm_ng_bsm_particle_filter', PACKAGE = 'bssm', model_, nsim_states, seed, type, init_signal)
+}
+
+ng_bsm_particle_smoother <- function(model_, nsim_states, seed, method, type, init_signal) {
+    .Call('bssm_ng_bsm_particle_smoother', PACKAGE = 'bssm', model_, nsim_states, seed, method, type, init_signal)
 }
 
 ngssm_loglik <- function(model_, init_signal, nsim_states, seed) {
@@ -249,8 +257,8 @@ svm_run_mcmc <- function(model_, prior_types, prior_pars, n_iter, nsim_states, n
     .Call('bssm_svm_run_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, da, pf)
 }
 
-svm_run_mcmc_is <- function(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, method) {
-    .Call('bssm_svm_run_mcmc_is', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, method)
+svm_run_mcmc_is <- function(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, method, type = 1L) {
+    .Call('bssm_svm_run_mcmc_is', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, method, type)
 }
 
 svm_importance_sample <- function(model_, nsim_states, init_signal, seed) {
@@ -261,12 +269,12 @@ svm_approx_model <- function(model_, init_signal, max_iter, conv_tol) {
     .Call('bssm_svm_approx_model', PACKAGE = 'bssm', model_, init_signal, max_iter, conv_tol)
 }
 
-svm_particle_filter <- function(model_, nsim_states, seed) {
-    .Call('bssm_svm_particle_filter', PACKAGE = 'bssm', model_, nsim_states, seed)
+svm_particle_filter <- function(model_, nsim_states, seed, type, init_signal) {
+    .Call('bssm_svm_particle_filter', PACKAGE = 'bssm', model_, nsim_states, seed, type, init_signal)
 }
 
-svm_particle_smoother <- function(model_, nsim_states, seed, method) {
-    .Call('bssm_svm_particle_smoother', PACKAGE = 'bssm', model_, nsim_states, seed, method)
+svm_particle_smoother <- function(model_, nsim_states, seed, method, type, init_signal) {
+    .Call('bssm_svm_particle_smoother', PACKAGE = 'bssm', model_, nsim_states, seed, method, type, init_signal)
 }
 
 svm_backward_simulate <- function(model_, nsim_states, seed, nsim_store) {

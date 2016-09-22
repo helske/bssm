@@ -58,7 +58,9 @@ public:
   arma::vec pyt(const unsigned int, const arma::cube&);
 
   double particle_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
-
+  double psi_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&, arma::vec);
+  
+  double psi_filter_precomp(unsigned int, arma::cube&, arma::mat&, arma::umat&);
   arma::vec phi;
   unsigned int distribution;
   const arma::vec ng_y;

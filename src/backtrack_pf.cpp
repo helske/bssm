@@ -4,15 +4,6 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 void backtrack_pf(arma::cube& alpha, arma::umat& ind) {
-  // arma::cube alphatmp2(alpha.n_rows, alpha.n_cols, alpha.n_slices);
-  // for (unsigned int t = 0; t < alpha.n_cols - 1; t++) {
-  //   for (unsigned int i = 0; i < alpha.n_slices; i++) {
-  //     alphatmp2(arma::span::all, arma::span(0, t), arma::span(i)) = 
-  //       alpha(arma::span::all, arma::span(0, t), arma::span(ind(i,t)));
-  //   }
-  //   alpha(arma::span::all, arma::span(0, t), arma::span::all) = 
-  //     alphatmp2(arma::span::all, arma::span(0, t), arma::span::all);
-  // } 
   
   arma::uvec b(alpha.n_slices);
   for(unsigned int i = 0; i < b.n_elem; i++) {

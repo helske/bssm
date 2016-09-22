@@ -63,6 +63,13 @@ void is_correction_bsf(T mod, const arma::mat& theta, const arma::vec& ll_store,
   unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, bool const_m);
 
 
+template <typename T>
+void is_correction_psif(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
+  const arma::vec& ll_store, const arma::uvec& counts, unsigned int nsim_states,
+  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, bool const_m);
+
+void conditional_dist_helper(arma::cube& V, arma::cube& C);
+
 arma::uvec stratified_sample(arma::vec p, arma::vec& r, unsigned int N);
 
 #endif

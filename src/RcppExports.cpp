@@ -41,6 +41,17 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// conditional_dist_helper
+void conditional_dist_helper(arma::cube& V, arma::cube& C);
+RcppExport SEXP bssm_conditional_dist_helper(SEXP VSEXP, SEXP CSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::cube& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type C(CSEXP);
+    conditional_dist_helper(V, C);
+    return R_NilValue;
+END_RCPP
+}
 // dmvnorm1
 double dmvnorm1(const arma::vec& x, const arma::vec& mean, const arma::mat& sigma, bool lwr, bool logd);
 RcppExport SEXP bssm_dmvnorm1(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP lwrSEXP, SEXP logdSEXP) {
@@ -581,8 +592,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // ng_bsm_run_mcmc_is
-List ng_bsm_run_mcmc_is(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int method);
-RcppExport SEXP bssm_ng_bsm_run_mcmc_is(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP, SEXP methodSEXP) {
+List ng_bsm_run_mcmc_is(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int method, unsigned int type);
+RcppExport SEXP bssm_ng_bsm_run_mcmc_is(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP, SEXP methodSEXP, SEXP typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -602,7 +613,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type end_ram(end_ramSEXP);
     Rcpp::traits::input_parameter< bool >::type adapt_approx(adapt_approxSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type method(methodSEXP);
-    __result = Rcpp::wrap(ng_bsm_run_mcmc_is(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, method));
+    Rcpp::traits::input_parameter< unsigned int >::type type(typeSEXP);
+    __result = Rcpp::wrap(ng_bsm_run_mcmc_is(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, method, type));
     return __result;
 END_RCPP
 }
@@ -713,16 +725,33 @@ BEGIN_RCPP
 END_RCPP
 }
 // ng_bsm_particle_filter
-List ng_bsm_particle_filter(const List& model_, arma::vec init_signal, unsigned int nsim_states, unsigned int seed);
-RcppExport SEXP bssm_ng_bsm_particle_filter(SEXP model_SEXP, SEXP init_signalSEXP, SEXP nsim_statesSEXP, SEXP seedSEXP) {
+List ng_bsm_particle_filter(const List& model_, unsigned int nsim_states, unsigned int seed, unsigned int type, arma::vec init_signal);
+RcppExport SEXP bssm_ng_bsm_particle_filter(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP seedSEXP, SEXP typeSEXP, SEXP init_signalSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< const List& >::type model_(model_SEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
-    __result = Rcpp::wrap(ng_bsm_particle_filter(model_, init_signal, nsim_states, seed));
+    Rcpp::traits::input_parameter< unsigned int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
+    __result = Rcpp::wrap(ng_bsm_particle_filter(model_, nsim_states, seed, type, init_signal));
+    return __result;
+END_RCPP
+}
+// ng_bsm_particle_smoother
+Rcpp::List ng_bsm_particle_smoother(const List& model_, unsigned int nsim_states, unsigned int seed, unsigned int method, unsigned int type, arma::vec init_signal);
+RcppExport SEXP bssm_ng_bsm_particle_smoother(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP seedSEXP, SEXP methodSEXP, SEXP typeSEXP, SEXP init_signalSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const List& >::type model_(model_SEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
+    __result = Rcpp::wrap(ng_bsm_particle_smoother(model_, nsim_states, seed, method, type, init_signal));
     return __result;
 END_RCPP
 }
@@ -1004,8 +1033,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // svm_run_mcmc_is
-List svm_run_mcmc_is(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int method);
-RcppExport SEXP bssm_svm_run_mcmc_is(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP, SEXP methodSEXP) {
+List svm_run_mcmc_is(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int method, unsigned int type);
+RcppExport SEXP bssm_svm_run_mcmc_is(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP, SEXP methodSEXP, SEXP typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -1025,7 +1054,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type end_ram(end_ramSEXP);
     Rcpp::traits::input_parameter< bool >::type adapt_approx(adapt_approxSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type method(methodSEXP);
-    __result = Rcpp::wrap(svm_run_mcmc_is(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, method));
+    Rcpp::traits::input_parameter< unsigned int >::type type(typeSEXP);
+    __result = Rcpp::wrap(svm_run_mcmc_is(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, method, type));
     return __result;
 END_RCPP
 }
@@ -1058,21 +1088,23 @@ BEGIN_RCPP
 END_RCPP
 }
 // svm_particle_filter
-List svm_particle_filter(const List& model_, unsigned int nsim_states, unsigned int seed);
-RcppExport SEXP bssm_svm_particle_filter(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP seedSEXP) {
+List svm_particle_filter(const List& model_, unsigned int nsim_states, unsigned int seed, unsigned int type, arma::vec init_signal);
+RcppExport SEXP bssm_svm_particle_filter(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP seedSEXP, SEXP typeSEXP, SEXP init_signalSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< const List& >::type model_(model_SEXP);
     Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
-    __result = Rcpp::wrap(svm_particle_filter(model_, nsim_states, seed));
+    Rcpp::traits::input_parameter< unsigned int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
+    __result = Rcpp::wrap(svm_particle_filter(model_, nsim_states, seed, type, init_signal));
     return __result;
 END_RCPP
 }
 // svm_particle_smoother
-Rcpp::List svm_particle_smoother(const List& model_, unsigned int nsim_states, unsigned int seed, unsigned int method);
-RcppExport SEXP bssm_svm_particle_smoother(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP seedSEXP, SEXP methodSEXP) {
+Rcpp::List svm_particle_smoother(const List& model_, unsigned int nsim_states, unsigned int seed, unsigned int method, unsigned int type, arma::vec init_signal);
+RcppExport SEXP bssm_svm_particle_smoother(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP seedSEXP, SEXP methodSEXP, SEXP typeSEXP, SEXP init_signalSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -1080,7 +1112,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type method(methodSEXP);
-    __result = Rcpp::wrap(svm_particle_smoother(model_, nsim_states, seed, method));
+    Rcpp::traits::input_parameter< unsigned int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
+    __result = Rcpp::wrap(svm_particle_smoother(model_, nsim_states, seed, method, type, init_signal));
     return __result;
 END_RCPP
 }

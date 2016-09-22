@@ -238,25 +238,29 @@ gaussian_approx.svm <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
 #' @method particle_filter svm
 #' @rdname particle_filter
 #' @export
-particle_filter.svm <- function(object, nsim,
+particle_filter.svm <- function(object, nsim, filter_type = "bs",
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
   object$distribution <- 0
   object$phi <- rep(object$sigma, length(object$y))
-  svm_particle_filter(object, nsim, seed)
+  svm_particle_filter(object, nsim, seed, filter_type == "bs", object$init_signal)
 }
 
 
 #' @method particle_smoother svm
 #' @rdname particle_smoother
 #' @export
-particle_smoother.svm <- function(object, nsim, method = "fs",
+particle_smoother.svm <- function(object, nsim, smoothing_method = "fs", 
+  filter_type = "bs",
   seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  smoothing_method <- match.arg(smoothing_method, c("fs", "fbs"))
+  filter_type <- match.arg(filter_type, c("bs", "psi"))
 
-  method <- match.arg(method, c("fs", "fbs"))
   object$distribution <- 0
   object$phi <- rep(object$sigma, length(object$y))
-  out <- svm_particle_smoother(object, nsim, seed, method == "fs")
+  out <- svm_particle_smoother(object, nsim, seed, smoothing_method == "fs", 
+    filter_type == "bs", object$init_signal)
 
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))

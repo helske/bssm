@@ -17,13 +17,13 @@ particle_filter(object, nsim, seed, ...)
 \method{particle_filter}{gssm}(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
-\method{particle_filter}{ng_bsm}(object, nsim,
+\method{particle_filter}{ng_bsm}(object, nsim, filter_type = "bs",
   seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{particle_filter}{ngssm}(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
-\method{particle_filter}{svm}(object, nsim,
+\method{particle_filter}{svm}(object, nsim, filter_type = "bs",
   seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{

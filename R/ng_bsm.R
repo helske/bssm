@@ -524,9 +524,28 @@ gaussian_approx.ng_bsm <- function(object, max_iter =  100, conv_tol = 1e-8, ...
 #' @method particle_filter ng_bsm
 #' @rdname particle_filter
 #' @export
-particle_filter.ng_bsm <- function(object, nsim,
+particle_filter.ng_bsm <- function(object, nsim, filter_type = "bs",
   seed = sample(.Machine$integer.max, size = 1), ...) {
-
+  filter_type <- match.arg(filter_type, c("bs", "psi"))
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  ng_bsm_particle_filter(object, object$init_signal, nsim, seed)
+  ng_bsm_particle_filter(object, nsim, seed, filter_type == "bs", object$init_signal)
+}
+
+
+#' @method particle_smoother ng_bsm
+#' @rdname particle_smoother
+#' @export
+particle_smoother.ng_bsm <- function(object, nsim, smoothing_method = "fs", 
+  filter_type = "bs",
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  smoothing_method <- match.arg(smoothing_method, c("fs", "fbs"))
+  filter_type <- match.arg(filter_type, c("bs", "psi"))
+  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
+  out <- ng_bsm_particle_smoother(object, nsim, seed, smoothing_method == "fs", 
+    filter_type == "bs", object$init_signal)
+  
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
 }

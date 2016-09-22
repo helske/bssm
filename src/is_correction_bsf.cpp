@@ -37,8 +37,8 @@ void is_correction_bsf(T mod, const arma::mat& theta, const arma::vec& ll_store,
         double logU = mod.particle_filter(m, alpha, V, ind);
         backtrack_pf(alpha, ind);
         weights_store(i) = exp(logU - ll_store(i)); //priors cancel out
-        
-        std::discrete_distribution<> sample(V.begin(), V.end());
+        arma::vec tmp = V.col(mod.n - 1);
+        std::discrete_distribution<> sample(tmp.begin(), tmp.end());
         
         alpha_store.slice(i) = alpha.slice(sample(mod.engine));
         
