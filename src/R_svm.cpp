@@ -90,15 +90,14 @@ List svm_smoother(const List& model_, arma::vec init_signal) {
 }
 
 // [[Rcpp::export]]
-List svm_run_mcmc(const List& model_, arma::uvec& prior_types,
-  arma::mat& prior_pars, unsigned int n_iter,
+List svm_run_mcmc(const List& model_,
+  arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
-  arma::vec& init_signal, unsigned int seed,
-  unsigned int n_threads, bool end_ram, bool adapt_approx,
-  bool da, bool pf) {
+  arma::vec& init_signal, unsigned int seed, bool end_ram,
+  bool adapt_approx, bool da, unsigned int sim_type) {
   
-  svm model(model_, seed);
+  svm model(clone(model_), seed);
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -106,11 +105,11 @@ List svm_run_mcmc(const List& model_, arma::uvec& prior_types,
   arma::cube alpha_store(model.m, model.n, n_samples);
   arma::vec posterior_store(n_samples);
   
-  double acceptance_rate;
-  if(pf){
+ double acceptance_rate;
+  if(sim_type > 1){
     acceptance_rate = model.run_mcmc_pf(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
       n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx, da,
-      theta_store, posterior_store, alpha_store);
+      theta_store, posterior_store, alpha_store, sim_type == 2);
   } else {
     acceptance_rate = model.run_mcmc(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
       n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx, da,
@@ -118,22 +117,23 @@ List svm_run_mcmc(const List& model_, arma::uvec& prior_types,
   }
   
   arma::inplace_trans(theta_store);
+  
   return List::create(Named("alpha") = alpha_store,
     Named("theta") = theta_store,
     Named("acceptance_rate") = acceptance_rate,
     Named("S") = S,  Named("posterior") = posterior_store);
 }
 
-
 // [[Rcpp::export]]
-List svm_run_mcmc_is(const List& model_, arma::uvec& prior_types,
-  arma::mat& prior_pars, unsigned int n_iter,
+List svm_run_mcmc_is(const List& model_,
+  arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int seed,
-  unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int method, unsigned int type = 1) {
+  unsigned int n_threads, bool end_ram, bool adapt_approx, 
+  unsigned int sim_type, bool const_m) {
   
-  svm model(model_, seed);
+  svm model(clone(model_), seed);
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -155,21 +155,19 @@ List svm_run_mcmc_is(const List& model_, arma::uvec& prior_types,
   arma::vec weights_store(counts.n_elem);
   arma::cube alpha_store(model.m, model.n, counts.n_elem);
   
-  if(method == 3) {
-    if(type == 1) {
-      is_correction_bsf(model, theta_store, ll_store,
-        counts, nsim_states, n_threads, weights_store, alpha_store, true);
-    } else {
-      is_correction_psif(model, theta_store, y_store, H_store, ll_store,
-        arma::uvec(counts.n_elem, arma::fill::ones),
-        nsim_states, n_threads, weights_store, alpha_store, method == 2);
-    }
-    prior_store = weights_store;
-  } else {
+   if(sim_type == 1) {
     is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,
-      arma::uvec(counts.n_elem, arma::fill::ones),
-      nsim_states, n_threads, weights_store, alpha_store, method == 2);
-    prior_store += ll_store + weights_store;
+      counts, nsim_states, n_threads, weights_store, alpha_store, const_m);
+     prior_store += ll_store + weights_store;
+    } else {
+      if (sim_type == 2) {
+      is_correction_bsf(model, theta_store, ll_store,
+        counts, nsim_states, n_threads, weights_store, alpha_store, const_m);
+      } else {
+      is_correction_psif(model, theta_store, y_store, H_store, ll_store,
+        counts, nsim_states, n_threads, weights_store, alpha_store, const_m);
+    }
+    prior_store += weights_store;
   }
   arma::inplace_trans(theta_store);
   return List::create(Named("alpha") = alpha_store,
@@ -181,8 +179,8 @@ List svm_run_mcmc_is(const List& model_, arma::uvec& prior_types,
 
 
 // [[Rcpp::export]]
-List svm_importance_sample(const List& model_, unsigned int nsim_states,
-  arma::vec init_signal, unsigned int seed) {
+List svm_importance_sample(const List& model_, arma::vec init_signal, 
+   unsigned int nsim_states, unsigned int seed) {
   
   svm model(model_, seed);
   
@@ -216,7 +214,7 @@ List svm_approx_model(const List& model_, arma::vec init_signal,
 
 // [[Rcpp::export]]
 List svm_particle_filter(const List& model_, unsigned int nsim_states,
-  unsigned int seed, unsigned int type, arma::vec init_signal) {
+  unsigned int seed, bool bootstrap, arma::vec init_signal) {
   
   svm model(model_, seed);
   
@@ -225,7 +223,7 @@ List svm_particle_filter(const List& model_, unsigned int nsim_states,
   arma::mat V(nsim_states, model.n, arma::fill::zeros);
   arma::umat ind(nsim_states, model.n - 1, arma::fill::zeros);
   double logU;
-  if(type == 1) {
+  if(bootstrap) {
     logU = model.particle_filter(nsim_states, alphasim, V, ind);
   } else {
     logU = model.psi_filter(nsim_states, alphasim, V, ind, init_signal);  
@@ -286,8 +284,8 @@ Rcpp::List svm_particle_smoother(const List& model_, unsigned int nsim_states,
 }
 
 // [[Rcpp::export]]
-Rcpp::List svm_backward_simulate(const List& model_, unsigned int nsim_states, unsigned int seed,
-  unsigned int nsim_store) {
+Rcpp::List svm_backward_simulate(const List& model_, unsigned int nsim_states,
+  unsigned int seed, unsigned int nsim_store) {
   
   svm model(model_, seed);
   

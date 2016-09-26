@@ -7,8 +7,8 @@ class ngssm: public gssm {
 public:
 
 
-  ngssm(const List, unsigned int);
-  ngssm(const List, arma::uvec, arma::uvec, arma::uvec, unsigned int);
+  ngssm(const List&, unsigned int);
+  ngssm(const List&, arma::uvec, arma::uvec, arma::uvec, unsigned int);
 
   ngssm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::vec, arma::mat, arma::vec, unsigned int, unsigned int);
@@ -40,7 +40,7 @@ public:
 
   double run_mcmc_pf(const arma::uvec&, const arma::mat&, unsigned int,
     unsigned int, unsigned int, unsigned int, double, double, arma::mat&, const arma::vec,
-    bool, bool, bool, arma::mat&, arma::vec&, arma::cube&);
+    bool, bool, bool, arma::mat&, arma::vec&, arma::cube&, bool);
 
   double run_mcmc_summary(const arma::uvec&, const arma::mat&, unsigned int,
     unsigned int, unsigned int, unsigned int, double, double, arma::mat&, const arma::vec,

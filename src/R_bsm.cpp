@@ -81,12 +81,11 @@ List bsm_ccov_smoother(const List& model_) {
 
 // [[Rcpp::export]]
 arma::mat bsm_predict2(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars,
-  unsigned int n_iter,
-  unsigned int n_burnin, unsigned int n_thin, double gamma,
+  unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
   unsigned int interval, unsigned int seed, bool log_space) {
 
-  bsm model(model_, seed, log_space);
+  bsm model(clone(model_), seed, log_space);
 
   return model.predict2(prior_types, prior_pars, n_iter, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval);
@@ -101,7 +100,7 @@ List bsm_predict(const List& model_,
   unsigned int interval, arma::vec probs, unsigned int seed, bool log_space) {
 
 
-  bsm model(model_, seed, log_space);
+  bsm model(clone(model_), seed, log_space);
 
   return model.predict(prior_types, prior_pars, n_iter, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval, probs);
@@ -122,8 +121,8 @@ Rcpp::List bsm_particle_filter(const List& model_, unsigned int nsim_states, uns
 }
 
 // [[Rcpp::export]]
-Rcpp::List bsm_particle_smoother(const List& model_, unsigned int nsim_states, unsigned int seed,
-  unsigned int method) {
+Rcpp::List bsm_particle_smoother(const List& model_, unsigned int nsim_states, 
+  unsigned int seed, bool fs) {
 
   bsm model(model_, seed, false);
 
@@ -134,7 +133,7 @@ Rcpp::List bsm_particle_smoother(const List& model_, unsigned int nsim_states, u
   if(!arma::is_finite(logU)) {
     stop("Particle filtering returned likelihood value of zero. ");
   }
-  if(method == 1) {
+  if(fs) {
     backtrack_pf(alphasim, ind);
 
     arma::mat alphahat(model.n, model.m);
@@ -193,7 +192,7 @@ List bsm_run_mcmc(const List& model_,
   double gamma, double target_acceptance, arma::mat& S,
   unsigned int seed, bool log_space, bool end_ram) {
 
-  bsm model(model_, seed, log_space);
+  bsm model(clone(model_), seed, log_space);
 
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -228,7 +227,7 @@ List bsm_run_mcmc_summary(const List& model_, arma::uvec& prior_types,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   unsigned int seed, bool log_space, bool end_ram) {
 
-  bsm model(model_, seed, log_space);
+  bsm model(clone(model_), seed, log_space);
 
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);

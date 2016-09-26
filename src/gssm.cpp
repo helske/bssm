@@ -1,7 +1,7 @@
 #include "gssm.h"
 
 // from List
-gssm::gssm(const List model, unsigned int seed) :
+gssm::gssm(const List& model, unsigned int seed) :
   y(as<arma::vec>(model["y"])), Z(as<arma::mat>(model["Z"])),
   H(as<arma::vec>(model["H"])), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
   a1(as<arma::vec>(model["a1"])), P1(as<arma::mat>(model["P1"])),
@@ -20,7 +20,7 @@ gssm::gssm(const List model, unsigned int seed) :
 
 // from List
 // with parameter indices
-gssm::gssm(const List model, arma::uvec Z_ind, arma::uvec H_ind,
+gssm::gssm(const List& model, arma::uvec Z_ind, arma::uvec H_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
   y(as<arma::vec>(model["y"])), Z(as<arma::mat>(model["Z"])),
   H(as<arma::vec>(model["H"])), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
@@ -38,7 +38,7 @@ gssm::gssm(const List model, arma::uvec Z_ind, arma::uvec H_ind,
   compute_RR();
 }
 // from List for non-gaussian models, ng value is not actually used, cheap trick...
-gssm::gssm(const List model, unsigned int seed, bool ng) :
+gssm::gssm(const List& model, unsigned int seed, bool ng) :
   y(as<arma::vec>(model["y"])), Z(as<arma::mat>(model["Z"])),
   H(arma::vec(y.n_elem)), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
   a1(as<arma::vec>(model["a1"])), P1(as<arma::mat>(model["P1"])),
@@ -56,7 +56,7 @@ gssm::gssm(const List model, unsigned int seed, bool ng) :
 }
 // from List for non-gaussian models, ng value is not actually used, cheap trick...
 // with parameter indices
-gssm::gssm(const List model, arma::uvec Z_ind,
+gssm::gssm(const List& model, arma::uvec Z_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed, bool ng) :
   y(as<arma::vec>(model["y"])), Z(as<arma::mat>(model["Z"])),
   H(arma::vec(y.n_elem)), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),

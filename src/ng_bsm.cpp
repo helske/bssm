@@ -1,7 +1,7 @@
 #include "ng_bsm.h"
 
 // from List
-ng_bsm::ng_bsm(const List model, unsigned int seed, bool log_space) :
+ng_bsm::ng_bsm(const List& model, unsigned int seed, bool log_space) :
   ngssm(model, seed), slope(as<bool>(model["slope"])),
   seasonal(as<bool>(model["seasonal"])),
   noise(as<bool>(model["noise"])),

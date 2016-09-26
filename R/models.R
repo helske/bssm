@@ -1,0 +1,789 @@
+#' Basic Structural (Time Series) Model
+#'
+#' Constructs a basic structural model with local level or local trend component
+#' and seasonal component.
+#'
+#' @param y Vector or a \code{\link{ts}} object of observations.
+#' @param sd_y A fixed value or prior for the standard error of 
+#' observation equation. See \link[=uniform]{priors} for details. 
+#' @param sd_level A fixed value or a prior for the standard error 
+#' of the noise in level equation. See\link[=uniform]{priors} for details.
+#' @param sd_slope A fixed value or a prior for the standard error 
+#' of the noise in slope equation. See\link[=uniform]{priors} for details. 
+#' If missing, the slope term is omitted from the model.
+#' @param sd_seasonal A fixed value or a prior for the standard error 
+#' of the noise in seasonal equation. See\link[=uniform]{priors} for details. 
+#' If missing, the seasonal component is omitted from the model.
+#' @param xreg Matrix containing covariates.
+#' @param beta Prior for the regression coefficients.
+#' @param period Length of the seasonal component i.e. the number of
+#' @param a1 Prior means for the initial states (level, slope, seasonals).
+#' Defaults to vector of zeros.
+#' @param P1 Prior covariance for the initial states (level, slope, seasonals).
+#' Default is diagonal matrix with 1000 on the diagonal.
+#' @return Object of class \code{bsm}.
+#' @export
+#' @examples
+#'
+#' prior <- uniform(0.1 * sd(log10(UKgas)), 0, 1)
+#' model <- bsm(log10(UKgas), sd_y = prior, sd_level =  prior, 
+#'   sd_slope =  prior, sd_seasonal =  prior)
+#'
+#' mcmc_out <- run_mcmc(model, n_iter = 5000)
+#' summary(mcmc_out$theta)$stat
+#' mcmc_out$theta[which.max(mcmc_out$posterior), ]
+#' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
+#'
+bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
+  beta, xreg = NULL, period = frequency(y), a1, P1) {
+ 
+  check_y(y)
+  n <- length(y)
+  
+  if (is.null(xreg)) {
+    xreg <- matrix(0, 0, 0)
+    coefs <- numeric(0)
+    beta <- NULL
+  } else {
+    
+    if (missing(beta)) {
+      stop("No prior defined for beta. ")
+    }
+    if(!is_prior(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior'.")
+    }
+    
+    if (is.null(dim(xreg)) && length(xreg) == n) {
+      xreg <- matrix(xreg, n, 1)
+    }
+    
+    check_xreg(xreg, n)
+    check_beta(beta$init, ncol(xreg))
+    coefs <- beta$init
+    if (is.null(colnames(xreg))) {
+      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    }
+    names(coefs) <- colnames(xreg)
+  }
+  
+  notfixed <- c("y" = 1, "level" = 1, "slope" = 1, "seasonal" = 1)
+  
+  
+  if (missing(sd_y)) {
+    stop("Provide either prior or fixed value for sd_y.")
+  } else {
+    if (is_prior(sd_y)) {
+      check_sd(sd_y$init, "y")
+      H <- matrix(sd_y$init)
+    } else {
+      notfixed[1] <- 0
+      check_sd(sd_y, "y")
+      H <- matrix(sd_y)
+    }
+  }
+ 
+  if (missing(sd_level)) {
+    stop("Provide either prior or fixed value for sd_level.")
+  } else {
+    if (is_prior(sd_level)) {
+      check_sd(sd_level$init, "level")
+    } else {
+      notfixed["level"] <- 0
+      check_sd(sd_level, "level")
+    }
+  }
+  
+  if (missing(sd_slope)) {
+    notfixed["slope"] <- 0
+   slope <- FALSE
+   sd_slope <- NULL
+  } else {
+    if (is_prior(sd_slope)) {
+      check_sd(sd_slope$init, "sd_slope")
+    } else {
+      notfixed["slope"] <- 0
+      check_sd(sd_slope, "sd_slope")
+    }
+    slope <- TRUE
+  }
+
+  if (missing(sd_seasonal)) {
+      notfixed["seasonal"] <- 0
+      seasonal_names <- NULL
+      seasonal <- FALSE
+      sd_seasonal <- NULL
+  } else {
+    if (period < 2) {
+      stop("Period of seasonal component must be larger than 1. ")
+    }
+    if (is_prior(sd_seasonal)) {
+      check_sd(sd_seasonal$init, "sd_seasonal")
+    } else {
+      notfixed["seasonal"] <- 0
+      check_sd(sd_seasonal, "sd_seasonal")
+    }
+    seasonal <- TRUE
+    seasonal_names <- paste0("seasonal_", 1:(period - 1))
+  }
+
+  npar_R <- 1L + as.integer(slope) + as.integer(seasonal)
+
+  m <- as.integer(1L + as.integer(slope) + as.integer(seasonal) * (period - 1))
+
+  if (missing(a1)) {
+    a1 <- numeric(m)
+  } else {
+    if (length(a1) != m) {
+      stop("Argument a1 must be a vector of length ", m)
+    }
+  }
+  if (missing(P1)) {
+    P1 <- diag(1e3, m)
+  } else {
+    if (is.null(dim(P1)) && length(P1) == 1L) {
+      P1 <- matrix(P1)
+    }
+    if (!identical(dim(P1), c(m, m))) {
+      stop("Argument P1 must be m x m matrix, where m = ", m)
+    }
+  }
+ 
+  if (slope) {
+    state_names <- c("level", "slope", seasonal_names)
+  } else {
+    state_names <- c("level", seasonal_names)
+  }
+
+  Z <- matrix(0, m, 1)
+  Z[1, 1] <- 1
+  if (seasonal) {
+    Z[2 + slope, 1] <- 1
+  }
+
+  T <- matrix(0, m, m)
+  T[1, 1] <- 1
+  if (slope) {
+    T[1:2, 2] <- 1
+  }
+  if (seasonal) {
+    T[(2 + slope), (2 + slope):m] <- -1
+    T[cbind(1 + slope + 2:(period - 1), 1 + slope + 1:(period - 2))] <- 1
+  }
+
+  R <- matrix(0, m, max(1, npar_R))
+
+  if (notfixed["level"]) {
+    R[1, 1] <- sd_level$init
+  } else {
+    R[1, 1] <- sd_level
+  }
+  if (slope) {
+    if (notfixed["slope"]) {
+      R[2, 2] <- sd_slope$init
+    } else {
+      R[2, 2] <- sd_slope
+    }
+  }
+  if (seasonal) {
+    if (notfixed["seasonal"]) {
+      R[2 + slope, 2 + slope] <- sd_seasonal$init
+    } else {
+      R[2 + slope, 2 + slope] <- sd_seasonal
+    }
+  } 
+
+  dim(H) <- 1
+  dim(T) <- c(m, m, 1)
+  dim(R) <- c(m, ncol(R), 1)
+
+  names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
+    rownames(T) <- colnames(T) <- rownames(R) <- state_names
+
+ 
+  priors <- list(sd_y, sd_level, sd_slope, sd_seasonal, beta)
+  names(priors) <- c("sd_y", "sd_level", "sd_slope", "sd_seasonal",names(coefs))
+  priors <- priors[sapply(priors, is_prior)]
+
+  structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
+    a1 = a1, P1 = P1, xreg = xreg, coefs = coefs,
+    slope = slope, seasonal = seasonal, period = period,
+    fixed = as.integer(!notfixed), priors = priors), class = c("bsm", "gssm"))
+}
+
+#' Non-Gaussian Basic Structural (Time Series) Model
+#'
+#' Constructs a non-Gaussian basic structural model with local level or
+#' local trend component, a seasonal component, and regression component
+#' (or subset of these components).
+#'
+#' @param y Vector or a \code{\link{ts}} object of observations.
+#' @param sd_level A fixed value or a prior for the standard error 
+#' of the noise in level equation. See\link[=uniform]{priors} for details.
+#' @param sd_slope A fixed value or a prior for the standard error 
+#' of the noise in slope equation. See\link[=uniform]{priors} for details. 
+#' If missing, the slope term is omitted from the model.
+#' @param sd_seasonal A fixed value or a prior for the standard error 
+#' of the noise in seasonal equation. See\link[=uniform]{priors} for details. 
+#' If missing, the seasonal component is omitted from the model.
+#' @param sd_noise Prior for the standard error of the additional noise term.
+#' See\link[=uniform]{priors} for details. If missing, no additional noise term is used.
+#' @param distribution distribution of the observation. Possible choices are
+#' \code{"poisson"} and \code{"binomial"}.
+#' @param phi Additional parameter vector relating to the non-Gaussian distribution.
+#' For Poisson distribution, this corresponds to offset term. For binomial, this
+#' is the number of trials.
+#' @param beta Prior for the regression coefficients.
+#' @param xreg Matrix containing covariates.
+#' @param period Length of the seasonal component i.e. the number of
+#' observations per season. Default is \code{frequency(y)}.
+#' @param a1 Prior means for the initial states (level, slope, seasonals).
+#' Defaults to vector of zeros.
+#' @param P1 Prior covariance for the initial states (level, slope, seasonals).
+#' Default is diagonal matrix with 1e5 on the diagonal.
+#' @return Object of class \code{ng_bsm}.
+#' @export
+#' @examples
+#' model <- ng_bsm(Seatbelts[, "VanKilled"], distribution = "poisson",
+#'   sd_level = halfnormal(0.01, 1),
+#'   sd_seasonal = halfnormal(0.01, 1),
+#'   beta = normal(0, 0, 10),
+#'   xreg = Seatbelts[, "law"])
+#' \dontrun{
+#' set.seed(123)
+#' mcmc_out <- run_mcmc(model, n_iter = 5000, nsim = 10)
+#' mcmc_out$acceptance_rate
+#' plot(mcmc_out$theta)
+#' summary(mcmc_out$theta)
+#'
+#' library("ggplot2")
+#' ggplot(as.data.frame(mcmc_out$theta[,1:2]), aes(x = sd_level, y = sd_seasonal)) +
+#'   geom_point() + stat_density2d(aes(fill = ..level.., alpha = ..level..),
+#'   geom = "polygon") + scale_fill_continuous(low = "green",high = "blue") +
+#'   guides(alpha = "none")
+#'
+#' pred <- predict(model, n_iter = 5000, nsim_states = 10, n_ahead = 36,
+#'   probs = seq(0.05, 0.95, by = 0.05), newdata = matrix(1, 36, 1),
+#'   newphi = rep(1, 36))
+#' autoplot(pred)
+#' }
+ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
+  distribution, phi = 1, beta, xreg = NULL, period = frequency(y), a1, P1) {
+
+
+  distribution <- match.arg(distribution, c("poisson", "binomial",
+    "negative binomial")) ## remove this later, see below
+  ## negative binomial not working currently, need to work out prior for phi
+  if(distribution == "negative binomial") {
+    stop("negbin not working at the moment... let me know if you really need it and I'll move it higher on todo list...")
+  }
+  
+  check_y(y)
+  n <- length(y)
+
+  if (is.null(xreg)) {
+    xreg <- matrix(0, 0, 0)
+    coefs <- numeric(0)
+    beta <- NULL
+  } else {
+    
+    if (missing(beta)) {
+      stop("No prior defined for beta. ")
+    }
+    if(!is_prior(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior'.")
+    }
+    
+    if (is.null(dim(xreg)) && length(xreg) == n) {
+      xreg <- matrix(xreg, n, 1)
+    }
+    
+    check_xreg(xreg, n)
+    check_beta(beta$init, ncol(xreg))
+    coefs <- beta$init
+    if (is.null(colnames(xreg))) {
+      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    }
+    names(coefs) <- colnames(xreg)
+    
+  }
+  
+
+  notfixed <- c("level" = 1, "slope" = 1, "seasonal" = 1)
+  
+  if (missing(sd_level)) {
+    stop("Provide either prior or fixed value for sd_level.")
+  } else {
+    if (is_prior(sd_level)) {
+      check_sd(sd_level$init, "level")
+    } else {
+      notfixed["level"] <- 0
+      check_sd(sd_level, "level")
+    }
+  }
+  if (missing(sd_slope)) {
+    notfixed["slope"] <- 0
+    slope <- FALSE
+    sd_slope <- NULL
+  } else {
+    if (is_prior(sd_slope)) {
+      check_sd(sd_slope$init, "sd_slope")
+    } else {
+      notfixed["slope"] <- 0
+      check_sd(sd_slope, "sd_slope")
+    }
+    slope <- TRUE
+  }
+  
+  if (missing(sd_seasonal)) {
+    notfixed["seasonal"] <- 0
+    seasonal_names <- NULL
+    seasonal <- FALSE
+    sd_seasonal <- NULL
+  } else {
+    if (period < 2) {
+      stop("Period of seasonal component must be larger than 1. ")
+    }
+    if (is_prior(sd_seasonal)) {
+      check_sd(sd_seasonal$init, "sd_seasonal")
+    } else {
+      notfixed["seasonal"] <- 0
+      check_sd(sd_seasonal, "sd_seasonal")
+    }
+    seasonal <- TRUE
+    seasonal_names <- paste0("seasonal_", 1:(period - 1))
+  }
+  
+  if (missing(sd_noise)) {
+    noise <- FALSE
+    sd_noise <- NULL
+  } else {
+    check_sd(sd_noise$init, "noise")
+    noise <- TRUE
+  }
+  
+  npar_R <- 1L + as.integer(slope) + as.integer(seasonal) + as.integer(noise)
+  
+  m <- as.integer(1L + as.integer(slope) + as.integer(seasonal) * (period - 1) + as.integer(noise))
+  
+
+  if (missing(a1)) {
+    a1 <- numeric(m)
+  } else {
+    if (length(a1) != m) {
+      stop("Argument a1 must be a vector of length ", m)
+    }
+  }
+  if (missing(P1)) {
+    P1 <- diag(1e3, m)
+  } else {
+    if (is.null(dim(P1)) && length(P1) == 1L) {
+      P1 <- matrix(P1)
+    }
+    if (!identical(dim(P1), c(m, m))) {
+      stop("Argument P1 must be m x m matrix, where m = ", m)
+    }
+  }
+
+  if (slope) {
+    state_names <- c("level", "slope", seasonal_names)
+  } else {
+    state_names <- c("level", seasonal_names)
+  }
+
+  Z <- matrix(0, m, 1)
+  Z[1, 1] <- 1
+  if (seasonal) {
+    Z[2 + slope, 1] <- 1
+  }
+  
+  T <- matrix(0, m, m)
+  T[1, 1] <- 1
+  if (slope) {
+    T[1:2, 2] <- 1
+  }
+  if (seasonal) {
+    T[(2 + slope), (2 + slope):m] <- -1
+    T[cbind(1 + slope + 2:(period - 1), 1 + slope + 1:(period - 2))] <- 1
+  }
+  
+  R <- matrix(0, m, max(1, npar_R))
+  
+  if (notfixed["level"]) {
+    R[1, 1] <- sd_level$init
+  } else {
+    R[1, 1] <- sd_level
+  }
+  if (slope) {
+    if (notfixed["slope"]) {
+      R[2, 2] <- sd_slope$init
+    } else {
+      R[2, 2] <- sd_slope
+    }
+  }
+  if (seasonal) {
+    if (notfixed["seasonal"]) {
+      R[2 + slope, 2 + slope] <- sd_seasonal$init
+    } else {
+      R[2 + slope, 2 + slope] <- sd_seasonal
+    }
+  } 
+ 
+  #additional noise term
+  if (noise) {
+    P1[m, m] <- sd_noise$init^2
+    Z[m] <- 1
+    state_names <- c(state_names, "noise")
+    R[m, max(1, ncol(R) - 1)] <- sd_noise$init
+  }
+  if (!(length(phi) %in% c(1, n))) {
+    stop("Argument phi must have length 1 or n. ")
+  }
+
+  if (length(phi) != n) {
+    phi <- rep(phi, length.out = n)
+  }
+
+  distribution <- match.arg(distribution, c("poisson", "binomial",
+    "negative binomial"))
+  nb <- distribution == "negative binomial"
+  init_signal <- initial_signal(y, phi, distribution)
+
+ 
+  dim(T) <- c(m, m, 1)
+  dim(R) <- c(m, ncol(R), 1)
+
+  names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
+    rownames(T) <- colnames(T) <- rownames(R) <- state_names
+
+  
+  priors <- list(sd_level, sd_slope, sd_seasonal, sd_noise, beta)
+  names(priors) <- c("sd_level", "sd_slope", "sd_seasonal", "sd_noise", names(coefs), if(nb) "nb_dispersion")
+  priors <- priors[sapply(priors, is_prior)]
+  
+  structure(list(y = as.ts(y), Z = Z, T = T, R = R,
+    a1 = a1, P1 = P1, phi = phi, xreg = xreg, coefs = coefs,
+    slope = slope, seasonal = seasonal, noise = noise,
+    period = period, fixed = as.integer(!notfixed), priors = priors,
+    distribution = distribution, init_signal = init_signal), class = c("ng_bsm", "ngssm"))
+}
+
+#' Stochastic Volatility Model
+#'
+#' Constructs a simple stochastic volatility model with Gaussian errors and
+#' first order autoregressive signal.
+#'
+#' @param y Vector or a \code{\link{ts}} object of observations.
+#' @param ar prior for autoregressive coefficient.
+#' @param sigma Prior for sigma parameter of observation equation.
+#' @param sd_ar Prior for the standard deviation of noise of the AR-process.
+#' @param beta Prior for the regression coefficients.
+#' @param xreg Matrix containing covariates.
+#' @return Object of class \code{svm}.
+#' @export
+svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
+
+  check_y(y)
+  n <- length(y)
+
+  if (is.null(xreg)) {
+    xreg <- matrix(0, 0, 0)
+    coefs <- numeric(0)
+    beta <- NULL
+  } else {
+    
+    if (missing(beta)) {
+      stop("No prior defined for beta. ")
+    }
+    if(!is_prior(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior'.")
+    }
+    
+    if (is.null(dim(xreg)) && length(xreg) == n) {
+      xreg <- matrix(xreg, n, 1)
+    }
+    
+    check_xreg(xreg, n)
+    check_beta(beta$init, ncol(xreg))
+    coefs <- beta$init
+    if (is.null(colnames(xreg))) {
+      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    }
+    names(coefs) <- colnames(xreg)
+    
+  }
+  
+  check_ar(ar$init)
+  check_sd(sd_ar$init, "ar")
+  check_sd(sigma$init, "sigma", FALSE)
+
+  a1 <- 0
+  P1 <- matrix(sd_ar$init^2 / (1 - ar$init^2))
+
+  Z <- matrix(1)
+  T <- array(ar$init, c(1, 1, 1))
+  R <- array(sd_ar$init, c(1, 1, 1))
+
+  init_signal <- log(pmax(1e-4, y^2)) - 2 * log(sigma$init)
+
+  names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
+    rownames(T) <- colnames(T) <- rownames(R) <- "signal"
+
+  priors <- list(ar, sd_ar, sigma, beta)
+  priors <- priors[!sapply(priors, is.null)]
+  names(priors) <-
+    c("ar", "sd_ar", "sigma", names(coefs))
+
+  structure(list(y = as.ts(y), Z = Z, T = T, R = R,
+    a1 = a1, P1 = P1, sigma = sigma$init, xreg = xreg, coefs = coefs,
+    init_signal = init_signal, priors = priors), class = c("svm", "ngssm"))
+}
+#'
+#' General linear-Gaussian state space models
+#' 
+#' Construct an object of class \code{gssm} by defining the corresponding terms
+#' of the observation and state equation:
+#'
+#' \deqn{y_t = Z_t \alpha_t + H_t \epsilon_t, (\textrm{observation equation})}
+#' \deqn{\alpha_{t+1} = T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
+#'
+#' where \eqn{\epsilon_t \sim N(0, 1)}, \eqn{\eta_t \sim N(0, I_k)} and
+#' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
+#'
+#' @param y Observations as time series (or vector) of length \eqn{n}.
+#' @param Z System matrix Z of the observation equation. Either a vector of
+#' length m or a m x n array, or an object which can be coerced to such.
+#' @param H Vector of standard deviations. Either a scalar or a vector of length
+#' n, or an object which can be coerced to such.
+#' @param T System matrix T of the state equation. Either a m x m matrix or a
+#' m x m x n array, or object which can be coerced to such.
+#' @param R Lower triangular matrix R the state equation. Either a m x k matrix or a
+#' m x k x n array, or object which can be coerced to such.
+#' @param a1 Prior mean for the initial state as a vector of length m.
+#' @param P1 Prior covariance matrix for the initial state as m x m matrix.
+#' @param xreg Matrix containing covariates.
+#' @param beta Regression coefficients. Used as an initial
+#' value in MCMC. Defaults to vector of zeros.
+#' @param state_names Names for the states.
+#' @return Object of class \code{gssm}.
+#' @export
+gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names) {
+
+  check_y(y)
+  n <- length(y)
+
+  if (is.null(xreg)) {
+    xreg <- matrix(0, 0, 0)
+    coefs <- numeric(0)
+    beta <- NULL
+  } else {
+    if (missing(beta)) {
+      stop("No prior defined for beta. ")
+    }
+    if(!is_prior(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior'.")
+    }
+    
+    if (is.null(dim(xreg)) && length(xreg) == n) {
+      xreg <- matrix(xreg, n, 1)
+    }
+    
+    check_xreg(xreg, n)
+    check_beta(beta$init, ncol(xreg))
+    coefs <- beta$init
+    if (is.null(colnames(xreg))) {
+      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    }
+    names(coefs) <- colnames(xreg)
+    
+  }
+  if (length(Z) == 1) {
+    dim(Z) <- c(1, 1)
+    m <- 1
+  } else {
+    if (!(dim(Z)[2] %in% c(1, NA, n)))
+      stop("Argument Z must be a vector of length m, or  (m x 1) or (m x n) matrix,
+        where m is the number of states and n is the length of the series. ")
+    m <- dim(Z)[1]
+    dim(Z) <- c(m, (n - 1) * (max(dim(Z)[2], 0, na.rm = TRUE) > 1) + 1)
+  }
+  if (length(T) == 1 && m == 1) {
+    dim(T) <- c(1, 1, 1)
+  } else {
+    if ((length(T) == 1) || any(dim(T)[1:2] != m) || !dim(T)[3] %in% c(1, NA, n))
+      stop("Argument T must be a (m x m) matrix, (m x m x 1) or (m x m x n) array, where m is the number of states. ")
+    dim(T) <- c(m, m, (n - 1) * (max(dim(T)[3], 0, na.rm = TRUE) > 1) + 1)
+  }
+
+  if (length(R) == m) {
+    dim(R) <- c(m, 1, 1)
+    k <- 1
+  } else {
+    if (!(dim(R)[1] == m) || dim(R)[2] > m || !dim(R)[3] %in% c(1, NA, n))
+      stop("Argument R must be a (m x k) matrix, (m x k x 1) or (m x k x n) array, where k<=m is the number of disturbances eta, and m is the number of states. ")
+    k <- dim(R)[2]
+    dim(R) <- c(m, k, (n - 1) * (max(dim(R)[3], 0, na.rm = TRUE) > 1) + 1)
+  }
+
+  if (missing(a1)) {
+    a1 <- rep(0, m)
+  } else {
+    if (length(a1) <= m) {
+      a1 <- rep(a1, length.out = m)
+    } else stop("Misspecified a1, argument a1 must be a vector of length m, where m is the number of state_names and 1<=t<=m.")
+  }
+  if (missing(P1)) {
+    P1 <- matrix(0, m, m)
+  } else {
+    if (length(P1) == 1 && m == 1) {
+      dim(P1) <- c(1, 1)
+    } else {
+      if (any(dim(P1)[1:2] != m))
+        stop("Argument P1 must be (m x m) matrix, where m is the number of states. ")
+    }
+  }
+  if (length(H)[3] %in% c(1, n))
+    stop("Argument H must be a scalar or a vector of length n, where n is the length of the time series y.")
+
+  if (missing(state_names)) {
+    state_names <- paste("State", 1:m)
+  }
+  rownames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
+    rownames(P1) <- colnames(P1) <- state_names
+
+ 
+
+  structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
+    xreg = xreg, coefs = coefs), class = "gssm")
+}
+#' General non-Gaussian/non-linear state space models
+#'
+#' Construct an object of class \code{ngssm} by defining the corresponding terms
+#' of the observation and state equation:
+#'
+#' \deqn{p(y_t | Z_t \alpha_t)}, (\textrm{observation equation})}
+#' \deqn{\alpha_{t+1} = T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
+#'
+#' where \eqn{\eta_t \sim N(0, I_k)} and
+#' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and \eqn{p(y_t | .)}
+#' is either Poisson, binomial or negative binomial distribution.
+#'
+#' @param y Observations as time series (or vector) of length \eqn{n}.
+#' @param Z System matrix Z of the observation equation. Either a p x m matrix
+#' or a p x m x n array, or object which can be coerced to such.
+#' @param T System matrix T of the state equation. Either a m x m matrix or a
+#' m x m x n array, or object which can be coerced to such.
+#' @param R Lower triangular matrix R the state equation. Either a m x k matrix or a
+#' m x k x n array, or object which can be coerced to such.
+#' @param a1 Prior mean for the initial state as a vector of length m.
+#' @param P1 Prior covariance matrix for the initial state as m x m matrix.
+#' @param distribution distribution of the observation. Possible choices are
+#' \code{"poisson"}, \code{"binomial"}, and \code{"negative binomial"}.
+#' @param phi Additional parameter vector relating to the non-Gaussian distribution.
+#' For Poisson distribution, this corresponds to offset term. For binomial, this
+#' is the number of trials.
+#' @param xreg Matrix containing covariates.
+#' @param beta Regression coefficients. Used as an initial
+#' value in MCMC. Defaults to vector of zeros.
+#' @param state_names Names for the states.
+#' @return Object of class \code{bgssm}.
+#' @export
+ngssm <- function(y, Z, T, R, a1, P1,
+  distribution, phi = 1, xreg = NULL, beta = NULL, state_names) {
+  
+  warning("general classes might not work properly at the moment, restructuring stuff...")
+  
+  check_y(y)
+  n <- length(y)
+  
+  if (is.null(xreg)) {
+    xreg <- matrix(0, 0, 0)
+    coefs <- numeric(0)
+    beta <- NULL
+  } else {
+    
+    if (missing(beta)) {
+      stop("No prior defined for beta. ")
+    }
+    if(!is_prior(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior'.")
+    }
+    
+    if (is.null(dim(xreg)) && length(xreg) == n) {
+      xreg <- matrix(xreg, n, 1)
+    }
+    
+    check_xreg(xreg, n)
+    check_beta(beta$init, ncol(xreg))
+    coefs <- beta$init
+    if (is.null(colnames(xreg))) {
+      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    }
+    names(coefs) <- colnames(xreg)
+    
+  }
+  
+  if (length(Z) == 1) {
+    dim(Z) <- c(1, 1)
+    m <- 1
+  } else {
+    if (!(dim(Z)[2] %in% c(1, NA, n)))
+      stop("Argument Z must be a vector of length m, or  (m x 1) or (m x n) matrix,
+        where m is the number of states and n is the length of the series. ")
+    m <- dim(Z)[1]
+    dim(Z) <- c(m, (n - 1) * (max(dim(Z)[2], 0, na.rm = TRUE) > 1) + 1)
+  }
+  if (length(T) == 1 && m == 1) {
+    dim(T) <- c(1, 1, 1)
+  } else {
+    if ((length(T) == 1) || any(dim(T)[1:2] != m) || !dim(T)[3] %in% c(1, NA, n))
+      stop("Argument T must be a (m x m) matrix, (m x m x 1) or (m x m x n) array, where m is the number of states. ")
+    dim(T) <- c(m, m, (n - 1) * (max(dim(T)[3], 0, na.rm = TRUE) > 1) + 1)
+  }
+  
+  if (length(R) == m) {
+    dim(R) <- c(m, 1, 1)
+    k <- 1
+  } else {
+    if (!(dim(R)[1] == m) || dim(R)[2] > m || !dim(R)[3] %in% c(1, NA, n))
+      stop("Argument R must be a (m x k) matrix, (m x k x 1) or (m x k x n) array, where k<=m is the number of disturbances eta, and m is the number of states. ")
+    k <- dim(R)[2]
+    dim(R) <- c(m, k, (n - 1) * (max(dim(R)[3], 0, na.rm = TRUE) > 1) + 1)
+  }
+  
+  if (missing(a1)) {
+    a1 <- rep(0, m)
+  } else {
+    if (length(a1) <= m) {
+      a1 <- rep(a1, length.out = m)
+    } else stop("Misspecified a1, argument a1 must be a vector of length m, where m is the number of state_names and 1<=t<=m.")
+  }
+  if (missing(P1)) {
+    P1 <- matrix(0, m, m)
+  } else {
+    if (length(P1) == 1 && m == 1) {
+      dim(P1) <- c(1, 1)
+    } else {
+      if (any(dim(P1)[1:2] != m))
+        stop("Argument P1 must be (m x m) matrix, where m is the number of states. ")
+    }
+  }
+  
+  if (!(length(phi) %in% c(1, n))) {
+    stop("Argument phi must have length 1 or n. ")
+  }
+  
+  if (length(phi) != n) {
+    phi <- rep(phi, length.out = n)
+  }
+  
+  if (missing(state_names)) {
+    state_names <- paste("State", 1:m)
+  }
+  rownames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
+    rownames(P1) <- colnames(P1) <- state_names
+  
+  distribution <- match.arg(distribution, c("poisson", "binomial", "negative binomial"))
+  structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi,
+    xreg = xreg, beta = beta, distribution = distribution, 
+    init_signal = initial_signal(y, phi, distribution)), class = "ngssm")
+}

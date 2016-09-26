@@ -7,11 +7,11 @@ class gssm {
 
 public:
 
-  gssm(const List, unsigned int);
-  gssm(const List, arma::uvec, arma::uvec, arma::uvec, arma::uvec,
+  gssm(const List&, unsigned int);
+  gssm(const List&, arma::uvec, arma::uvec, arma::uvec, arma::uvec,
     unsigned int);
-  gssm(const List, unsigned int, bool);
-  gssm(const List, arma::uvec, arma::uvec, arma::uvec, unsigned int, bool);
+  gssm(const List&, unsigned int, bool);
+  gssm(const List&, arma::uvec, arma::uvec, arma::uvec, unsigned int, bool);
   gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::mat, arma::vec, unsigned int);
   gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
@@ -21,9 +21,9 @@ public:
   virtual double proposal(const arma::vec&, const arma::vec&);
   virtual void update_model(arma::vec);
   virtual arma::vec get_theta(void);
-  virtual void compute_RR(void);
-  virtual void compute_HH(void);
-  virtual void compute_xbeta(void);
+  void compute_RR(void);
+  void compute_HH(void);
+  void compute_xbeta(void);
   virtual double log_likelihood(bool);
   virtual double filter(arma::mat&, arma::mat&, arma::cube&, arma::cube&, bool);
   virtual arma::mat fast_smoother(bool);

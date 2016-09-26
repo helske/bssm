@@ -1,7 +1,7 @@
 #include "ngssm.h"
 
 // from List
-ngssm::ngssm(const List model, unsigned int seed) :
+ngssm::ngssm(const List& model, unsigned int seed) :
   gssm(model, seed, true), phi(as<arma::vec>(model["phi"])),
   distribution(model["distribution"]),
   ng_y(as<arma::vec>(model["y"])),
@@ -10,7 +10,7 @@ ngssm::ngssm(const List model, unsigned int seed) :
 
 // from List
 // with parameter indices
-ngssm::ngssm(const List model, arma::uvec Z_ind,
+ngssm::ngssm(const List& model, arma::uvec Z_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
   gssm(model, Z_ind, T_ind, R_ind, seed, true),
   phi(as<arma::vec>(model["phi"])), distribution(model["distribution"]),
@@ -893,14 +893,12 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
   return acceptance_rate / (n_iter - n_burnin);
 }
 
-
-
 double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_pars,
   unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   const arma::vec init_signal, bool end_ram, bool adapt_approx, bool da,
   arma::mat& theta_store, arma::vec& posterior_store,
-  arma::cube& alpha_store) {
+  arma::cube& alpha_store, bool bf) {
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -909,22 +907,30 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
   arma::vec theta = get_theta();
   double prior = prior_pdf(theta, prior_types, prior_pars);
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat V(nsim_states, n);
-  arma::umat omega(nsim_states, n - 1);
-  double ll = particle_filter(nsim_states, alpha, V, omega);
-  backtrack_pf(alpha, omega);
-  if (!std::isfinite(ll)) {
-    Rcpp::stop("Non-finite log-likelihood from initial values. ");
-  }
   
   double ll_approx;
   double ll_init;
   
-  if(da) {
+  if(da || bf) {
     arma::vec signal = init_signal;
     ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
+  }
+  if(da) {
     ll_init = ll_approx + log_likelihood(distribution != 0);
+  }
+  
+  arma::cube alpha(m, n, nsim_states);
+  arma::mat V(nsim_states, n);
+  arma::umat omega(nsim_states, n - 1);
+  double ll;
+  if (bf){
+    ll = particle_filter(nsim_states, alpha, V, omega);
+  } else {
+    ll = psi_filter_precomp(nsim_states, alpha, V, omega);
+  }
+  backtrack_pf(alpha, omega);
+  if (!std::isfinite(ll)) {
+    Rcpp::stop("Non-finite log-likelihood from initial values. ");
   }
   
   unsigned int ind = 0;
@@ -979,8 +985,12 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
           if (unif(engine) < accept_prob) {
             // simulate states
             arma::cube alpha_prop(m, n, nsim_states);
-            double ll_prop = particle_filter(nsim_states, alpha_prop, V, omega);
-            
+            double ll_prop;
+            if(bf) {
+              ll_prop = particle_filter(nsim_states, alpha_prop, V, omega);
+            } else {
+              ll_prop = psi_filter_precomp(nsim_states, alpha_prop, V, omega);
+            }
             // delayed acceptance ratio
             double pp = 0.0;
             if(std::isfinite(ll_prop)) {
@@ -1005,7 +1015,12 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
       } else {
         // simulate states
         arma::cube alpha_prop(m, n, nsim_states);
-        double ll_prop = particle_filter(nsim_states, alpha_prop, V, omega);
+        double ll_prop;
+        if(bf) {
+          ll_prop = particle_filter(nsim_states, alpha_prop, V, omega);
+        } else {
+          ll_prop = psi_filter(nsim_states, alpha_prop, V, omega, init_signal);
+        }
         
         if(std::isfinite(ll_prop)) {
           double q = proposal(theta, theta_prop);
@@ -1460,7 +1475,7 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
     V.col(0).ones();
     Vnorm.fill(1.0/nsim);
     logU = ll;
-   //what if the first observation is missing??
+    //what if the first observation is missing??
   }
   
   for (unsigned int t = 0; t < (n - 1); t++) {

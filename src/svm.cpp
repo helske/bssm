@@ -2,7 +2,7 @@
 
 
 // from List
-svm::svm(const List model, unsigned int seed) :
+svm::svm(const List& model, unsigned int seed) :
   ngssm(model, seed), nz_y(as<arma::vec>(model["y"])) {
   nz_y(arma::find(abs(y) < 1e-4)).fill(1e-4);
 }

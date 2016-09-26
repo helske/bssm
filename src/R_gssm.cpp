@@ -68,7 +68,7 @@ List gssm_run_mcmc(const List& model_,
   double gamma, double target_acceptance, arma::mat S, arma::uvec Z_ind,
   arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind, unsigned int seed, bool end_ram) {
 
-  gssm model(model_, Z_ind, H_ind, T_ind, R_ind, seed);
+  gssm model(clone(model_), Z_ind, H_ind, T_ind, R_ind, seed);
 
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -104,7 +104,7 @@ List gssm_run_mcmc_summary(const List& model_, arma::uvec& prior_types,
   arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind,
   unsigned int seed, bool end_ram) {
 
-  gssm model(model_, Z_ind, H_ind, T_ind, R_ind, seed);
+  gssm model(clone(model_), Z_ind, H_ind, T_ind, R_ind, seed);
 
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -133,7 +133,7 @@ List gssm_predict(const List& model_, arma::uvec& prior_types,
   unsigned int interval, arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind,
   arma::uvec R_ind, arma::vec& probs, unsigned int seed) {
 
-  gssm model(model_, Z_ind, H_ind, T_ind, R_ind, seed);
+  gssm model(clone(model_), Z_ind, H_ind, T_ind, R_ind, seed);
 
   return model.predict(prior_types, prior_pars, n_iter, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval, probs);
@@ -147,7 +147,7 @@ arma::mat gssm_predict2(const List& model_, arma::uvec& prior_types,
   unsigned int interval, arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind,
   arma::uvec R_ind, unsigned int seed) {
 
-  gssm model(model_, Z_ind, H_ind, T_ind, R_ind, seed);
+  gssm model(clone(model_), Z_ind, H_ind, T_ind, R_ind, seed);
 
   return model.predict2(prior_types, prior_pars, n_iter, n_burnin,
     n_thin, gamma, target_acceptance, S, n_ahead, interval);
