@@ -28,8 +28,8 @@ the unknown parameters and their priors are defined when building the model.
 Matti Vihola (2012). "Robust adaptive Metropolis algorithm with
 coerced acceptance rate". Statistics and Computing, Volume 22, Issue 5,
 pages 997--1008.
-Matti Vihola, Jouni Helske, Jordan Franks (2016). “Importance sampling type 
-correction of Markov chain Monte Carlo and exact approximations.” 
+Matti Vihola, Jouni Helske, Jordan Franks (2016). "Importance sampling type 
+correction of Markov chain Monte Carlo and exact approximations."
 _ArXiv e-prints_. 1609.02541.
 }
 

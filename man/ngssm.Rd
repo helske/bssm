@@ -44,4 +44,12 @@ Object of class \code{bgssm}.
 Construct an object of class \code{ngssm} by defining the corresponding terms
 of the observation and state equation:
 }
+\details{
+\deqn{p(y_t | Z_t \alpha_t), (\textrm{observation equation})}
+\deqn{\alpha_{t+1} = T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
+
+where \eqn{\eta_t \sim N(0, I_k)} and
+\eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and \eqn{p(y_t | .)}
+is either Poisson, binomial or negative binomial distribution.
+}
 
