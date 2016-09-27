@@ -37,9 +37,9 @@ void is_correction_psif(T mod, const arma::mat& theta, const arma::mat& y_store,
       arma::cube alpha(mod.m, mod.n, m);
       arma::mat V(m, mod.n);
       arma::umat ind(m, mod.n - 1);
-      double logU = mod.psi_filter_precomp(m, alpha, V, ind);
+      double ll = mod.psi_filter_precomp(m, alpha, V, ind);
       backtrack_pf(alpha, ind);
-      weights_store(i) = exp(logU - ll_store(i)); //priors cancel out
+      weights_store(i) = exp(ll - ll_store(i)); //priors cancel out
       
       arma::vec tmp = V.col(mod.n - 1);
       std::discrete_distribution<> sample(tmp.begin(), tmp.end());

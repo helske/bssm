@@ -1058,7 +1058,7 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
   }
   
   arma::vec Vnorm(nsim);
-  double logU = 0.0;
+  double ll = 0.0;
   if(arma::is_finite(y(0))) {
     for (unsigned int i = 0; i < nsim; i++) {
       V(i, 0) = R::dnorm(y(0),
@@ -1071,7 +1071,7 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
     } else {
       return -arma::datum::inf;
     }
-    logU = log(arma::mean(V.col(0)));
+    ll = log(arma::mean(V.col(0)));
   } else {
     V.col(0).ones();
     Vnorm.fill(1.0/nsim);
@@ -1112,7 +1112,7 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
       } else {
         return -arma::datum::inf;
       }
-      logU += log(arma::mean(V.col(t + 1)));
+      ll += log(arma::mean(V.col(t + 1)));
     } else {
       V.col(t + 1).ones();
       Vnorm.fill(1.0/nsim);
@@ -1121,7 +1121,7 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
     
   }
   
-  return logU;
+  return ll;
 }
 // 
 // //psi-auxiliary particle filter
@@ -1144,7 +1144,7 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
 //   }
 // 
 //   arma::vec Vnorm(nsim);
-//   double logU = 0.0;
+//   double ll = 0.0;
 //   if(arma::is_finite(y(0))) {
 //     V.col(0).fill(log_likelihood(true));
 // //    for (unsigned int i = 0; i < nsim; i++) {
@@ -1158,7 +1158,7 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
 //     } else {
 //       return -arma::datum::inf;
 //     }
-//     logU = log(arma::mean(V.col(0)));
+//     ll = log(arma::mean(V.col(0)));
 //   } else {
 //     V.col(0).ones();
 //     Vnorm.fill(1.0/nsim);
@@ -1199,7 +1199,7 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
 //       } else {
 //         return -arma::datum::inf;
 //       }
-//       logU += log(arma::mean(V.col(t + 1)));
+//       ll += log(arma::mean(V.col(t + 1)));
 //     } else {
 //       V.col(t + 1).ones();
 //       Vnorm.fill(1.0/nsim);
@@ -1208,7 +1208,7 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
 // 
 //   }
 // 
-//   return logU;
+//   return ll;
 // }
 
 void gssm::backtrack_pf2(const arma::cube& alpha, arma::mat& V, const arma::umat& ind) {

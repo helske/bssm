@@ -162,10 +162,10 @@ Rcpp::List gssm_particle_filter(const List& model_, unsigned int nsim_states, un
   arma::cube alphasim(model.m, model.n, nsim_states, arma::fill::zeros);
   arma::mat V(nsim_states, model.n, arma::fill::zeros);
   arma::umat ind(nsim_states, model.n - 1, arma::fill::zeros);
-  double logU = model.particle_filter(nsim_states, alphasim, V, ind);
+  double ll = model.particle_filter(nsim_states, alphasim, V, ind);
   return List::create(
     Named("alpha") = alphasim, Named("V") = V, Named("A") = ind,
-    Named("logU") = logU);
+    Named("logLik") = ll);
 }
 
 // [[Rcpp::export]]
@@ -177,8 +177,8 @@ Rcpp::List gssm_particle_smoother(const List& model_, unsigned int nsim_states, 
   arma::cube alphasim(model.m, model.n, nsim_states);
   arma::mat V(nsim_states, model.n);
   arma::umat ind(nsim_states, model.n - 1);
-  double logU = model.particle_filter(nsim_states, alphasim, V, ind);
-  if(!arma::is_finite(logU)) {
+  double ll = model.particle_filter(nsim_states, alphasim, V, ind);
+  if(!arma::is_finite(ll)) {
     stop("Particle filtering returned likelihood value of zero. ");
   }
   if(method == 1) {
@@ -194,7 +194,7 @@ Rcpp::List gssm_particle_smoother(const List& model_, unsigned int nsim_states, 
     }
     return List::create(
       Named("alphahat") = alphahat, Named("V") = Vnorm,
-      Named("logU") = logU, Named("alpha") = alphasim);
+      Named("logLik") = ll, Named("alpha") = alphasim);
   } else {
     model.backtrack_pf2(alphasim, V, ind);
 
@@ -206,7 +206,7 @@ Rcpp::List gssm_particle_smoother(const List& model_, unsigned int nsim_states, 
       }
     }
     return List::create(Named("alphahat") = alphahat, Named("V") = V,
-      Named("logU") = logU, Named("alpha") = alphasim);
+      Named("logLik") = ll, Named("alpha") = alphasim);
   }
 
 }
@@ -220,8 +220,8 @@ Rcpp::List gssm_backward_simulate(const List& model_, unsigned int nsim_states, 
   arma::cube alphasim(model.m, model.n, nsim_states);
   arma::mat V(nsim_states, model.n);
   arma::umat ind(nsim_states, model.n - 1);
-  double logU = model.particle_filter(nsim_states, alphasim, V, ind);
-  if(!arma::is_finite(logU)) {
+  double ll = model.particle_filter(nsim_states, alphasim, V, ind);
+  if(!arma::is_finite(ll)) {
     stop("Particle filtering returned likelihood value of zero. ");
   }
   arma::cube alpha(model.m, model.n, nsim_store);
@@ -230,6 +230,6 @@ Rcpp::List gssm_backward_simulate(const List& model_, unsigned int nsim_states, 
 
   }
   return List::create(Named("alpha") = alpha,
-    Named("logU") = logU);
+    Named("logLik") = ll);
 }
 

@@ -64,6 +64,7 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  a <- proc.time()
   type <- match.arg(type, c("full", "summary"))
   
   Z_ind <- which(is.na(object$Z)) - 1L
@@ -122,6 +123,8 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   )
   out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
   out$call <- match.call()
+  out$seed <- seed
+  out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   out
 }  
@@ -135,6 +138,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  a <- proc.time()
   type <- match.arg(type, c("full", "summary"))
   
   if (missing(S)) {
@@ -170,6 +174,8 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
       colnames(object$xreg))
   out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
   out$call <- match.call()
+  out$seed <- seed
+  out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   out
 }
@@ -223,6 +229,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, priors, type = "full",
   adaptive_approx  = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  a <- proc.time()
   
   nb <- object$distribution == "negative binomial"
   
@@ -321,6 +328,8 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, priors, type = "full",
     out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
   }
   out$call <- match.call()
+  out$seed <- seed
+  out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   out
 }
@@ -336,6 +345,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   adaptive_approx  = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  a <- proc.time()
   nb <- FALSE
   
   type <- match.arg(type, c("full", "summary"))
@@ -409,6 +419,8 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
     out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
   }
   out$call <- match.call()
+  out$seed <- seed
+  out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   out
 }
@@ -427,7 +439,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   adaptive_approx  = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  nb <- FALSE
+  a <- proc.time()
   
   type <- match.arg(type, c("full", "summary"))
   method <- match.arg(method, c("PM", "IS"))
@@ -499,6 +511,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   }
   out$call <- match.call()
   out$seed <- seed
+  out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   out
 }

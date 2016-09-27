@@ -1369,7 +1369,7 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
     alphasim.slice(i).col(0) = a1 + L_P1 * um;
   }
   arma::vec Vnorm(nsim);
-  double logU = 0.0;
+  double ll = 0.0;
   if(arma::is_finite(y(0))) {
     V.col(0) = pyt(0, alphasim);
     double maxv = V.col(0).max();
@@ -1380,7 +1380,7 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
     } else {
       return -arma::datum::inf;
     }
-    logU = maxv + log(arma::mean(V.col(0)));
+    ll = maxv + log(arma::mean(V.col(0)));
   } else {
     V.col(0).ones();
     Vnorm.fill(1.0/nsim);
@@ -1419,7 +1419,7 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
       } else {
         return -arma::datum::inf;
       }
-      logU += maxv + log(arma::mean(V.col(t + 1)));
+      ll += maxv + log(arma::mean(V.col(t + 1)));
     } else {
       V.col(t + 1).ones();
       Vnorm.fill(1.0/nsim);
@@ -1427,7 +1427,7 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
     
     
   }
-  return logU;
+  return ll;
 }
 
 
@@ -1440,7 +1440,7 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
   arma::cube Vt(m, m, n);
   arma::cube Ct(m, m, n);
   approx(signal, max_iter, conv_tol);
-  double ll = log_likelihood(distribution != 0);
+  double ll_g = log_likelihood(distribution != 0);
   smoother_ccov(alphahat, Vt, Ct, distribution != 0);
   conditional_dist_helper(Vt, Ct);
   std::normal_distribution<> normal(0.0, 1.0);
@@ -1454,7 +1454,7 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
   }
   
   arma::vec Vnorm(nsim);
-  double logU = 0.0;
+  double ll = 0.0;
   if(arma::is_finite(y(0))) {
     V.col(0) = pyt(0, alphasim); //don't add gaussian likelihood, use later
     for (unsigned int i = 0; i < nsim; i++) {
@@ -1470,11 +1470,11 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
     } else {
       return -arma::datum::inf;
     }
-    logU = maxv + log(arma::mean(V.col(0))) + ll;
+    ll = maxv + log(arma::mean(V.col(0))) + ll_g;
   } else {
     V.col(0).ones();
     Vnorm.fill(1.0/nsim);
-    logU = ll;
+    ll = ll_g;
     //what if the first observation is missing??
   }
   
@@ -1516,7 +1516,7 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
       } else {
         return -arma::datum::inf;
       }
-      logU += maxv + log(arma::mean(V.col(t + 1)));
+      ll += maxv + log(arma::mean(V.col(t + 1)));
     } else {
       V.col(t + 1).ones();
       Vnorm.fill(1.0/nsim);
@@ -1525,7 +1525,7 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
     
   }
   
-  return logU;
+  return ll;
 }
 
 
@@ -1538,7 +1538,7 @@ double ngssm::psi_filter_precomp(unsigned int nsim, arma::cube& alphasim, arma::
   arma::mat alphahat(m, n);
   arma::cube Vt(m, m, n);
   arma::cube Ct(m, m, n);
-  double ll = log_likelihood(distribution != 0);
+  double ll_g = log_likelihood(distribution != 0);
   smoother_ccov(alphahat, Vt, Ct, distribution != 0);
   conditional_dist_helper(Vt, Ct);
   std::normal_distribution<> normal(0.0, 1.0);
@@ -1552,7 +1552,7 @@ double ngssm::psi_filter_precomp(unsigned int nsim, arma::cube& alphasim, arma::
   }
   
   arma::vec Vnorm(nsim);
-  double logU = 0.0;
+  double ll = 0.0;
   if(arma::is_finite(y(0))) {
     V.col(0) = pyt(0, alphasim); //don't add gaussian likelihood, use later
     for (unsigned int i = 0; i < nsim; i++) {
@@ -1568,11 +1568,11 @@ double ngssm::psi_filter_precomp(unsigned int nsim, arma::cube& alphasim, arma::
     } else {
       return -arma::datum::inf;
     }
-    logU = maxv + log(arma::mean(V.col(0))) + ll;
+    ll = maxv + log(arma::mean(V.col(0))) + ll_g;
   } else {
     V.col(0).ones();
     Vnorm.fill(1.0/nsim);
-    logU = ll;
+    ll = ll_g;
     //what if the first observation is missing??
   }
   
@@ -1614,7 +1614,7 @@ double ngssm::psi_filter_precomp(unsigned int nsim, arma::cube& alphasim, arma::
       } else {
         return -arma::datum::inf;
       }
-      logU += maxv + log(arma::mean(V.col(t + 1)));
+      ll += maxv + log(arma::mean(V.col(t + 1)));
     } else {
       V.col(t + 1).ones();
       Vnorm.fill(1.0/nsim);
@@ -1623,5 +1623,5 @@ double ngssm::psi_filter_precomp(unsigned int nsim, arma::cube& alphasim, arma::
     
   }
   
-  return logU;
+  return ll;
 }
