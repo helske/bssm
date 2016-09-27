@@ -50,8 +50,8 @@ public:
   virtual double mcmc_summary(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat&, bool, arma::mat&, arma::vec&, arma::mat&, arma::cube&);
 
-  double particle_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
-  //double psi_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
+  virtual double particle_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
+  virtual double psi_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
   
   void backtrack_pf2(const arma::cube&, arma::mat&, const arma::umat&);
 

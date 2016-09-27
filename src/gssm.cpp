@@ -1255,3 +1255,41 @@ arma::mat gssm::backward_simulate(arma::cube& alpha, arma::mat& V, arma::umat& i
   }
   return alphasim;
 }
+
+
+//psi-auxiliary particle filter
+double gssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V, 
+  arma::umat& ind) {
+  
+  arma::mat alphahat(m, n);
+  arma::cube Vt(m, m, n, arma::fill::ones);
+  arma::cube Ct(m, m, n);
+  double ll = log_likelihood(true);
+  smoother_ccov(alphahat, Vt, Ct, true);
+  conditional_dist_helper(Vt, Ct);
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+  for (unsigned int i = 0; i < nsim; i++) {
+    arma::vec um(m);
+    for(unsigned int j = 0; j < m; j++) {
+      um(j) = normal(engine);
+    }
+    alphasim.slice(i).col(0) = alphahat.col(0) + Vt.slice(0) * um;
+  }
+  
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    
+    for (unsigned int i = 0; i < nsim; i++) {
+      arma::vec um(m);
+      for(unsigned int j = 0; j < m; j++) {
+        um(j) = normal(engine);
+      }
+      alphasim.slice(i).col(t + 1) = alphahat.col(t + 1) + 
+        Ct.slice(t + 1) * (alphasim.slice(i).col(t) - alphahat.col(t)) + Vt.slice(t + 1) * um;
+    }
+  }
+  
+  return ll;
+}
+
+

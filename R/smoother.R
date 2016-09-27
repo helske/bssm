@@ -35,11 +35,10 @@ fast_smoother.bsm <- function(object, ...) {
 #' @export
 fast_smoother.ngssm <- function(object, ...) {
   
-  init_signal <- initial_signal(object$y, object$phi, object$distribution)
   object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
   
-  out <- ngssm_fast_smoother(object, init_signal)
+  out <- ngssm_fast_smoother(object, object$init_signal)
   colnames(out) <- names(object$a1)
   ts(out, start = start(object$y), frequency = frequency(object$y))
 }

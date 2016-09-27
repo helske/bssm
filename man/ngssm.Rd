@@ -4,7 +4,7 @@
 \alias{ngssm}
 \title{General non-Gaussian/non-linear state space models}
 \usage{
-ngssm(y, Z, T, R, a1, P1, distribution, phi = 1, xreg = NULL, beta = NULL,
+ngssm(y, Z, T, R, a1, P1, distribution, phi = 1, xreg = NULL, beta,
   state_names)
 }
 \arguments{

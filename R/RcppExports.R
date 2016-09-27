@@ -65,6 +65,10 @@ bsm_particle_filter <- function(model_, nsim_states, seed) {
     .Call('bssm_bsm_particle_filter', PACKAGE = 'bssm', model_, nsim_states, seed)
 }
 
+bsm_particle_filter2 <- function(model_, nsim_states, seed, bootstrap) {
+    .Call('bssm_bsm_particle_filter2', PACKAGE = 'bssm', model_, nsim_states, seed, bootstrap)
+}
+
 bsm_particle_smoother <- function(model_, nsim_states, seed, fs) {
     .Call('bssm_bsm_particle_smoother', PACKAGE = 'bssm', model_, nsim_states, seed, fs)
 }

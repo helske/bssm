@@ -54,10 +54,9 @@ particle_smoother.ngssm <- function(object, nsim, smoothing_method = "fs",
     stop("FBS with psi-filter is not yet implemented.")
   }
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  init_signal <- initial_signal(object$y, object$phi, object$distribution)
-  
+ 
   out <- ngssm_particle_smoother(object, nsim, seed, smoothing_method == "fs", 
-    filter_type == "bootstrap", init_signal)
+    filter_type == "bootstrap", object$init_signal)
   
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))

@@ -45,11 +45,9 @@ particle_filter.bsm <- function(object, nsim,
 particle_filter.ngssm <- function(object, nsim, filter_type = "bootstrap",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-
-  init_signal <- initial_signal(object$y, object$phi, object$distribution)
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
   
-  out <- ngssm_particle_filter(object, nsim, seed, filter_type == "bootstrap", init_signal)
+  out <- ngssm_particle_filter(object, nsim, seed, filter_type == "bootstrap", object$init_signal)
   
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
@@ -63,7 +61,7 @@ particle_filter.ng_bsm <- function(object, nsim, filter_type = "bootstrap",
   filter_type <- match.arg(filter_type, c("bootstrap", "psi"))
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
   
-  ng_bsm_particle_filter(object, nsim, seed, filter_type == "bootstrap", object$init_signal)
+  out <- ng_bsm_particle_filter(object, nsim, seed, filter_type == "bootstrap", object$init_signal)
   
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
@@ -77,7 +75,7 @@ particle_filter.svm <- function(object, nsim, filter_type = "bootstrap",
 
   object$distribution <- 0L
   object$phi <- rep(object$sigma, length(object$y))
-  svm_particle_filter(object, nsim, seed, filter_type == "bootstrap", object$init_signal)
+  out <- svm_particle_filter(object, nsim, seed, filter_type == "bootstrap", object$init_signal)
   
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))

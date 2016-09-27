@@ -225,6 +225,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// bsm_particle_filter2
+List bsm_particle_filter2(const List& model_, unsigned int nsim_states, unsigned int seed, bool bootstrap);
+RcppExport SEXP bssm_bsm_particle_filter2(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP seedSEXP, SEXP bootstrapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const List& >::type model_(model_SEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< bool >::type bootstrap(bootstrapSEXP);
+    rcpp_result_gen = Rcpp::wrap(bsm_particle_filter2(model_, nsim_states, seed, bootstrap));
+    return rcpp_result_gen;
+END_RCPP
+}
 // bsm_particle_smoother
 Rcpp::List bsm_particle_smoother(const List& model_, unsigned int nsim_states, unsigned int seed, bool fs);
 RcppExport SEXP bssm_bsm_particle_smoother(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP seedSEXP, SEXP fsSEXP) {

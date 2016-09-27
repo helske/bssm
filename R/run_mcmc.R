@@ -269,8 +269,6 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, priors, type = "full",
   }
   priors <- combine_priors(priors)
   
-  
-  init_signal <- initial_signal(object$y, object$phi, object$distribution)
   object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
   priors <- combine_priors(priors)
@@ -280,14 +278,14 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, priors, type = "full",
       if (method == "PM"){
         out <- ngssm_run_mcmc(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-          init_signal, seed, end_adaptive_phase, adaptive_approx,
+          object$init_signal, seed, end_adaptive_phase, adaptive_approx,
           delayed_acceptance, pmatch(simulation_method, c("IS", "bootstrap", "psi")),
           Z_ind, T_ind, R_ind)
         
       } else {
         out <- ngssm_run_mcmc_is(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-          init_signal, seed, n_threads, end_adaptive_phase, adaptive_approx,
+          object$init_signal, seed, n_threads, end_adaptive_phase, adaptive_approx,
           pmatch(simulation_method, c("IS", "bootstrap", "psi")), const_m,
           Z_ind, T_ind, R_ind)
       }

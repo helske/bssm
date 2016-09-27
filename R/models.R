@@ -687,10 +687,8 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names) {
 #' @param state_names Names for the states.
 #' @return Object of class \code{bgssm}.
 #' @export
-ngssm <- function(y, Z, T, R, a1, P1,
-  distribution, phi = 1, xreg = NULL, beta = NULL, state_names) {
-  
-  warning("general classes might not work properly at the moment, restructuring stuff...")
+ngssm <- function(y, Z, T, R, a1, P1, distribution, phi = 1, xreg = NULL, 
+  beta, state_names) {
   
   check_y(y)
   n <- length(y)
@@ -784,6 +782,6 @@ ngssm <- function(y, Z, T, R, a1, P1,
   
   distribution <- match.arg(distribution, c("poisson", "binomial", "negative binomial"))
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi,
-    xreg = xreg, beta = beta, distribution = distribution, 
+    xreg = xreg, coefs = coefs, distribution = distribution, 
     init_signal = initial_signal(y, phi, distribution)), class = "ngssm")
 }

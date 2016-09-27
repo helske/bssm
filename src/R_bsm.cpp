@@ -121,6 +121,26 @@ Rcpp::List bsm_particle_filter(const List& model_, unsigned int nsim_states, uns
 }
 
 // [[Rcpp::export]]
+List bsm_particle_filter2(const List& model_,
+  unsigned int nsim_states, unsigned int seed, bool bootstrap) {
+  
+  bsm model(model_, seed, false);
+  
+  //fill with zeros in case of zero weights
+  arma::cube alphasim(model.m, model.n, nsim_states, arma::fill::zeros);
+  arma::mat V(nsim_states, model.n, arma::fill::zeros);
+  arma::umat ind(nsim_states, model.n - 1, arma::fill::zeros);
+  double logU;
+  if(bootstrap) {
+    logU = model.particle_filter(nsim_states, alphasim, V, ind);
+  } else {
+    logU = model.psi_filter(nsim_states, alphasim, V, ind);  
+  }
+  return List::create(
+    Named("alpha") = alphasim, Named("V") = V, Named("A") = ind,
+    Named("logU") = logU);
+}
+// [[Rcpp::export]]
 Rcpp::List bsm_particle_smoother(const List& model_, unsigned int nsim_states, 
   unsigned int seed, bool fs) {
 

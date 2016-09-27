@@ -299,13 +299,12 @@ predict.ngssm <- function(object, n_iter, nsim_states, priors,
   }
   object$phi <- c(object$phi, newphi)
   probs <- sort(unique(c(probs, 0.5)))
-  init_signal <- initial_signal(object$y, object$phi, object$distribution)
   object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
   priors <- combine_priors(priors)
   out <- ngssm_predict2(object, priors$prior_types, priors$params, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-    Z_ind, T_ind, R_ind, init_signal, seed)
+    Z_ind, T_ind, R_ind, object$init_signal, seed)
   
   pred <- list(y = object$y, mean = ts(rowMeans(out), end = endtime, frequency = frequency(object$y)),
     intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = frequency(object$y),
