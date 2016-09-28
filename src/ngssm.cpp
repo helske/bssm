@@ -911,7 +911,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
   double ll_approx;
   double ll_init;
   
-  if(da || bf) {
+  if(da || !bf) {
     arma::vec signal = init_signal;
     ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
   }
