@@ -1019,7 +1019,11 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
         if(bf) {
           ll_prop = particle_filter(nsim_states, alpha_prop, V, omega);
         } else {
-          ll_prop = psi_filter(nsim_states, alpha_prop, V, omega, init_signal);
+          if (adapt_approx) {
+            arma::vec signal = init_signal;
+            ll_approx = approx(signal, max_iter, conv_tol);
+          }
+          ll_prop = psi_filter_precomp(nsim_states, alpha_prop, V, omega);
         }
         
         if(std::isfinite(ll_prop)) {
