@@ -58,7 +58,7 @@ halfnormal <- function(init, sd){
     structure(lapply(1:n, function(i) structure(list(prior_type = "halfnormal", init = safe_pick(init, i),
       sd = safe_pick(sd, i)), class = "bssm_prior")), class = "bssm_prior_list")
   } else {
-    structure(list(prior_type = "halfnormal", init = nit, sd = sd), class = "bssm_prior")
+    structure(list(prior_type = "halfnormal", init = init, sd = sd), class = "bssm_prior")
   }
 }
 
