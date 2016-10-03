@@ -36,7 +36,7 @@
 #'
 bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   beta, xreg = NULL, period = frequency(y), a1, P1) {
- 
+  
   check_y(y)
   n <- length(y)
   
@@ -49,8 +49,8 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     if (missing(beta)) {
       stop("No prior defined for beta. ")
     }
-    if(!is_prior(beta)) {
-      stop("Prior for beta must be of class 'bssm_prior'.")
+    if(!is_prior(beta) && !is_prior_list(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
     }
     
     if (is.null(dim(xreg)) && length(xreg) == n) {
@@ -58,8 +58,12 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     }
     
     check_xreg(xreg, n)
-    check_beta(beta$init, ncol(xreg))
-    coefs <- beta$init
+    if((nx <- ncol(xreg)) > 1) {
+      coefs <- sapply(beta, "[[", "init")
+    } else {
+      coefs <- beta$init
+    }
+    check_beta(coefs, nx)
     if (is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
@@ -81,7 +85,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
       H <- matrix(sd_y)
     }
   }
- 
+  
   if (missing(sd_level)) {
     stop("Provide either prior or fixed value for sd_level.")
   } else {
@@ -95,8 +99,8 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   
   if (missing(sd_slope)) {
     notfixed["slope"] <- 0
-   slope <- FALSE
-   sd_slope <- NULL
+    slope <- FALSE
+    sd_slope <- NULL
   } else {
     if (is_prior(sd_slope)) {
       check_sd(sd_slope$init, "sd_slope")
@@ -106,12 +110,12 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     }
     slope <- TRUE
   }
-
+  
   if (missing(sd_seasonal)) {
-      notfixed["seasonal"] <- 0
-      seasonal_names <- NULL
-      seasonal <- FALSE
-      sd_seasonal <- NULL
+    notfixed["seasonal"] <- 0
+    seasonal_names <- NULL
+    seasonal <- FALSE
+    sd_seasonal <- NULL
   } else {
     if (period < 2) {
       stop("Period of seasonal component must be larger than 1. ")
@@ -125,11 +129,11 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     seasonal <- TRUE
     seasonal_names <- paste0("seasonal_", 1:(period - 1))
   }
-
+  
   npar_R <- 1L + as.integer(slope) + as.integer(seasonal)
-
+  
   m <- as.integer(1L + as.integer(slope) + as.integer(seasonal) * (period - 1))
-
+  
   if (missing(a1)) {
     a1 <- numeric(m)
   } else {
@@ -147,19 +151,19 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
       stop("Argument P1 must be m x m matrix, where m = ", m)
     }
   }
- 
+  
   if (slope) {
     state_names <- c("level", "slope", seasonal_names)
   } else {
     state_names <- c("level", seasonal_names)
   }
-
+  
   Z <- matrix(0, m, 1)
   Z[1, 1] <- 1
   if (seasonal) {
     Z[2 + slope, 1] <- 1
   }
-
+  
   T <- matrix(0, m, m)
   T[1, 1] <- 1
   if (slope) {
@@ -169,9 +173,9 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     T[(2 + slope), (2 + slope):m] <- -1
     T[cbind(1 + slope + 2:(period - 1), 1 + slope + 1:(period - 2))] <- 1
   }
-
+  
   R <- matrix(0, m, max(1, npar_R))
-
+  
   if (notfixed["level"]) {
     R[1, 1] <- sd_level$init
   } else {
@@ -191,19 +195,19 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
       R[2 + slope, 2 + slope] <- sd_seasonal
     }
   } 
-
+  
   dim(H) <- 1
   dim(T) <- c(m, m, 1)
   dim(R) <- c(m, ncol(R), 1)
-
+  
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
-
- 
-  priors <- list(sd_y, sd_level, sd_slope, sd_seasonal, beta)
-  names(priors) <- c("sd_y", "sd_level", "sd_slope", "sd_seasonal",names(coefs))
+  
+  
+  priors <- c(list(sd_y, sd_level, sd_slope, sd_seasonal), beta)
+  names(priors) <- c("sd_y", "sd_level", "sd_slope", "sd_seasonal", names(coefs))
   priors <- priors[sapply(priors, is_prior)]
-
+  
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
     a1 = a1, P1 = P1, xreg = xreg, coefs = coefs,
     slope = slope, seasonal = seasonal, period = period,
@@ -268,8 +272,8 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' }
 ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   distribution, phi = 1, beta, xreg = NULL, period = frequency(y), a1, P1) {
-
-
+  
+  
   distribution <- match.arg(distribution, c("poisson", "binomial",
     "negative binomial")) ## remove this later, see below
   ## negative binomial not working currently, need to work out prior for phi
@@ -279,7 +283,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   
   check_y(y)
   n <- length(y)
-
+  
   if (is.null(xreg)) {
     xreg <- matrix(0, 0, 0)
     coefs <- numeric(0)
@@ -289,8 +293,8 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     if (missing(beta)) {
       stop("No prior defined for beta. ")
     }
-    if(!is_prior(beta)) {
-      stop("Prior for beta must be of class 'bssm_prior'.")
+    if(!is_prior(beta) && !is_prior_list(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
     }
     
     if (is.null(dim(xreg)) && length(xreg) == n) {
@@ -298,8 +302,13 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     }
     
     check_xreg(xreg, n)
-    check_beta(beta$init, ncol(xreg))
-    coefs <- beta$init
+    if((nx <- ncol(xreg)) > 1) {
+      coefs <- sapply(beta, "[[", "init")
+    } else {
+      coefs <- beta$init
+    }
+    check_beta(coefs, nx)
+    
     if (is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
@@ -307,7 +316,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     
   }
   
-
+  
   notfixed <- c("level" = 1, "slope" = 1, "seasonal" = 1)
   
   if (missing(sd_level)) {
@@ -365,7 +374,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   
   m <- as.integer(1L + as.integer(slope) + as.integer(seasonal) * (period - 1) + as.integer(noise))
   
-
+  
   if (missing(a1)) {
     a1 <- numeric(m)
   } else {
@@ -383,13 +392,13 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
       stop("Argument P1 must be m x m matrix, where m = ", m)
     }
   }
-
+  
   if (slope) {
     state_names <- c("level", "slope", seasonal_names)
   } else {
     state_names <- c("level", seasonal_names)
   }
-
+  
   Z <- matrix(0, m, 1)
   Z[1, 1] <- 1
   if (seasonal) {
@@ -427,7 +436,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
       R[2 + slope, 2 + slope] <- sd_seasonal
     }
   } 
- 
+  
   #additional noise term
   if (noise) {
     P1[m, m] <- sd_noise$init^2
@@ -438,25 +447,25 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   if (!(length(phi) %in% c(1, n))) {
     stop("Argument phi must have length 1 or n. ")
   }
-
+  
   if (length(phi) != n) {
     phi <- rep(phi, length.out = n)
   }
-
+  
   distribution <- match.arg(distribution, c("poisson", "binomial",
     "negative binomial"))
   nb <- distribution == "negative binomial"
   init_signal <- initial_signal(y, phi, distribution)
-
- 
+  
+  
   dim(T) <- c(m, m, 1)
   dim(R) <- c(m, ncol(R), 1)
-
+  
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
-
   
-  priors <- list(sd_level, sd_slope, sd_seasonal, sd_noise, beta)
+  
+  priors <- c(list(sd_level, sd_slope, sd_seasonal, sd_noise), beta)
   names(priors) <- c("sd_level", "sd_slope", "sd_seasonal", "sd_noise", names(coefs), if(nb) "nb_dispersion")
   priors <- priors[sapply(priors, is_prior)]
   
@@ -481,10 +490,10 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' @return Object of class \code{svm}.
 #' @export
 svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
-
+  
   check_y(y)
   n <- length(y)
-
+  
   if (is.null(xreg)) {
     xreg <- matrix(0, 0, 0)
     coefs <- numeric(0)
@@ -494,8 +503,8 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
     if (missing(beta)) {
       stop("No prior defined for beta. ")
     }
-    if(!is_prior(beta)) {
-      stop("Prior for beta must be of class 'bssm_prior'.")
+    if(!is_prior(beta) && !is_prior_list(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
     }
     
     if (is.null(dim(xreg)) && length(xreg) == n) {
@@ -503,8 +512,12 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
     }
     
     check_xreg(xreg, n)
-    check_beta(beta$init, ncol(xreg))
-    coefs <- beta$init
+    if((nx <- ncol(xreg)) > 1) {
+      coefs <- sapply(beta, "[[", "init")
+    } else {
+      coefs <- beta$init
+    }
+    check_beta(coefs, nx)
     if (is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
@@ -515,24 +528,24 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
   check_ar(ar$init)
   check_sd(sd_ar$init, "ar")
   check_sd(sigma$init, "sigma", FALSE)
-
+  
   a1 <- 0
   P1 <- matrix(sd_ar$init^2 / (1 - ar$init^2))
-
+  
   Z <- matrix(1)
   T <- array(ar$init, c(1, 1, 1))
   R <- array(sd_ar$init, c(1, 1, 1))
-
+  
   init_signal <- log(pmax(1e-4, y^2)) - 2 * log(sigma$init)
-
+  
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- "signal"
-
-  priors <- list(ar, sd_ar, sigma, beta)
+  
+  priors <- c(list(ar, sd_ar, sigma), beta)
   priors <- priors[!sapply(priors, is.null)]
   names(priors) <-
     c("ar", "sd_ar", "sigma", names(coefs))
-
+  
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, sigma = sigma$init, xreg = xreg, coefs = coefs,
     init_signal = init_signal, priors = priors), class = c("svm", "ngssm"))
@@ -567,10 +580,10 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
 #' @return Object of class \code{gssm}.
 #' @export
 gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names) {
-
+  
   check_y(y)
   n <- length(y)
-
+  
   if (is.null(xreg)) {
     xreg <- matrix(0, 0, 0)
     coefs <- numeric(0)
@@ -579,8 +592,8 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names) {
     if (missing(beta)) {
       stop("No prior defined for beta. ")
     }
-    if(!is_prior(beta)) {
-      stop("Prior for beta must be of class 'bssm_prior'.")
+    if(!is_prior(beta) && !is_prior_list(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
     }
     
     if (is.null(dim(xreg)) && length(xreg) == n) {
@@ -588,8 +601,12 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names) {
     }
     
     check_xreg(xreg, n)
-    check_beta(beta$init, ncol(xreg))
-    coefs <- beta$init
+    if((nx <- ncol(xreg)) > 1) {
+      coefs <- sapply(beta, "[[", "init")
+    } else {
+      coefs <- beta$init
+    }
+    check_beta(coefs, nx)
     if (is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
@@ -613,7 +630,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names) {
       stop("Argument T must be a (m x m) matrix, (m x m x 1) or (m x m x n) array, where m is the number of states. ")
     dim(T) <- c(m, m, (n - 1) * (max(dim(T)[3], 0, na.rm = TRUE) > 1) + 1)
   }
-
+  
   if (length(R) == m) {
     dim(R) <- c(m, 1, 1)
     k <- 1
@@ -623,7 +640,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names) {
     k <- dim(R)[2]
     dim(R) <- c(m, k, (n - 1) * (max(dim(R)[3], 0, na.rm = TRUE) > 1) + 1)
   }
-
+  
   if (missing(a1)) {
     a1 <- rep(0, m)
   } else {
@@ -643,15 +660,15 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names) {
   }
   if (length(H)[3] %in% c(1, n))
     stop("Argument H must be a scalar or a vector of length n, where n is the length of the time series y.")
-
+  
   if (missing(state_names)) {
     state_names <- paste("State", 1:m)
   }
   rownames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
     rownames(P1) <- colnames(P1) <- state_names
-
- 
-
+  
+  
+  
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
     xreg = xreg, coefs = coefs), class = "gssm")
 }
@@ -702,8 +719,8 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi = 1, xreg = NULL,
     if (missing(beta)) {
       stop("No prior defined for beta. ")
     }
-    if(!is_prior(beta)) {
-      stop("Prior for beta must be of class 'bssm_prior'.")
+    if(!is_prior(beta) && !is_prior_list(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
     }
     
     if (is.null(dim(xreg)) && length(xreg) == n) {
@@ -711,8 +728,12 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi = 1, xreg = NULL,
     }
     
     check_xreg(xreg, n)
-    check_beta(beta$init, ncol(xreg))
-    coefs <- beta$init
+    if((nx <- ncol(xreg)) > 1) {
+      coefs <- sapply(beta, "[[", "init")
+    } else {
+      coefs <- beta$init
+    }
+    check_beta(coefs, nx)
     if (is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
