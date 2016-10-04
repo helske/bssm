@@ -11,8 +11,9 @@ test_that("results for poisson GLM are equal to glm function",{
   expect_equal(sm$V[,,1], vcov(glm_poisson))
   
   expect_equivalent(c(gaussian_approx(model_poisson)$signal), glm_poisson$linear.predictors)
+  
   xreg <- model.matrix(~ outcome + treatment, data = d)[, -1]
-  expect_error(model_poisson <- ng_bsm(d$counts, sd_level = 0, xreg = xreg, 
+  expect_error(model_poisson <- ng_bsm(d$counts, sd_level = 0, xreg = xreg, P1=matrix(1e7),
     beta = normal(coef(glm_poisson)[-1], 0, 10), distribution = 'poisson'), NA)
   expect_equivalent(smoother(model_poisson)$alphahat[1,], coef(glm_poisson)[1])
 })
