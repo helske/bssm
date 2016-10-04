@@ -910,13 +910,12 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
   
   double ll_approx;
   double ll_init;
-  
+  double ll_g;
   if(da || !bf) {
     arma::vec signal = init_signal;
     ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
-  }
-  if(da) {
-    ll_init = ll_approx + log_likelihood(distribution != 0);
+    ll_g =  log_likelihood(distribution != 0);
+    ll_init = ll_approx + ll_g;
   }
   
   arma::cube alpha(m, n, nsim_states);
@@ -926,7 +925,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
   if (bf){
     ll = particle_filter(nsim_states, alpha, V, omega);
   } else {
-    ll = psi_filter_precomp(nsim_states, alpha, V, omega);
+    ll = psi_filter_precomp(nsim_states, alpha, V, omega, ll_g);
   }
   backtrack_pf(alpha, omega);
   if (!std::isfinite(ll)) {
@@ -941,7 +940,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
   unsigned int j = 0;
   if (n_burnin == 0) {
     theta_store.col(0) = theta;
-    posterior_store(0) = ll  + prior;
+    posterior_store(0) = ll + prior;
     alpha_store.slice(0) = alpha.slice(ind);
     acceptance_rate++;
     j++;
@@ -971,7 +970,8 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
           arma::vec signal = init_signal;
           ll_approx = approx(signal, max_iter, conv_tol);
         }
-        double ll_init_prop = ll_approx + log_likelihood(distribution != 0);
+        double ll_g_prop = log_likelihood(distribution != 0);
+        double ll_init_prop = ll_approx + ll_g_prop;
         //compute the acceptance probability
         // use explicit min(...) as we need this value later
         
@@ -989,7 +989,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
             if(bf) {
               ll_prop = particle_filter(nsim_states, alpha_prop, V, omega);
             } else {
-              ll_prop = psi_filter_precomp(nsim_states, alpha_prop, V, omega);
+              ll_prop = psi_filter_precomp(nsim_states, alpha_prop, V, omega, ll_g_prop);
             }
             // delayed acceptance ratio
             double pp = 0.0;
@@ -1016,22 +1016,38 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
         // simulate states
         arma::cube alpha_prop(m, n, nsim_states);
         double ll_prop;
+        double pp = 0.0;
+        
         if(bf) {
+          
           ll_prop = particle_filter(nsim_states, alpha_prop, V, omega);
+          if(std::isfinite(ll_prop)) {
+            double q = proposal(theta, theta_prop);
+            accept_prob = std::min(1.0, exp(ll_prop - ll + prior_prop - prior + q));
+          } else accept_prob = 0.0;
+          pp = accept_prob;
         } else {
+          
           if (adapt_approx) {
             arma::vec signal = init_signal;
             ll_approx = approx(signal, max_iter, conv_tol);
           }
-          ll_prop = psi_filter_precomp(nsim_states, alpha_prop, V, omega);
+          double ll_g_prop = log_likelihood(distribution != 0);
+          double ll_init_prop = ll_approx + ll_g_prop;
+          if(std::isfinite(ll_init_prop)) {
+            double q = proposal(theta, theta_prop);
+            //accept_prob used in RAM
+            accept_prob = std::min(1.0, exp(ll_init_prop - ll_init + prior_prop - prior + q));
+            ll_prop = psi_filter_precomp(nsim_states, alpha_prop, V, omega, ll_g_prop);
+            pp = std::min(1.0, exp(ll_prop - ll_prop + prior_prop - prior + q));
+          } else {
+            accept_prob = 0.0;
+            pp = 0.0;
+          }
+          
         }
         
-        if(std::isfinite(ll_prop)) {
-          double q = proposal(theta, theta_prop);
-          accept_prob = std::min(1.0, exp(ll_prop - ll + prior_prop - prior + q));
-        } else accept_prob = 0.0;
-        
-        if (unif(engine) < accept_prob) {
+        if (unif(engine) < pp) {
           if (i >= n_burnin) {
             acceptance_rate++;
           }
@@ -1537,12 +1553,12 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
 
 //psi-auxiliary particle filter with precomputed approximation
 double ngssm::psi_filter_precomp(unsigned int nsim, arma::cube& alphasim, arma::mat& V, 
-  arma::umat& ind) {
+  arma::umat& ind, double ll_g) {
   
   arma::mat alphahat(m, n);
   arma::cube Vt(m, m, n);
   arma::cube Ct(m, m, n);
-  double ll_g = log_likelihood(distribution != 0);
+ 
   smoother_ccov(alphahat, Vt, Ct, distribution != 0);
   conditional_dist_helper(Vt, Ct);
   std::normal_distribution<> normal(0.0, 1.0);

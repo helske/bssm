@@ -37,7 +37,8 @@ void is_correction_psif(T mod, const arma::mat& theta, const arma::mat& y_store,
       arma::cube alpha(mod.m, mod.n, m);
       arma::mat V(m, mod.n);
       arma::umat ind(m, mod.n - 1);
-      double ll = mod.psi_filter_precomp(m, alpha, V, ind);
+      // not optimal, computes the log-likelihood again even though we could save it in MCMC
+      double ll = mod.psi_filter_precomp(m, alpha, V, ind, mod.log_likelihood(mod.distribution != 0));
       backtrack_pf(alpha, ind);
       weights_store(i) = exp(ll - ll_store(i)); //priors cancel out
       
