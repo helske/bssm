@@ -4,16 +4,17 @@ test_that("results for poisson GLM are equal to glm function",{
   d <- data.frame(treatment = gl(3,3), outcome = gl(3,1,9), counts = c(18,17,15,20,10,20,25,13,12))
   glm_poisson <- glm(counts ~ outcome + treatment, data = d, family = poisson())
   xreg <- model.matrix(~ outcome + treatment, data = d)
-  expect_error(model_poisson <- ngssm(d$counts, Z = t(xreg), T = diag(5), R = diag(0, 5), P1 = diag(1e7, 5), 
-    distribution = 'poisson', state_names = colnames(xreg)), NA)
+  expect_error(model_poisson <- ngssm(d$counts, Z = t(xreg), T = diag(5), R = diag(0, 5), 
+    P1 = diag(1e7, 5), distribution = 'poisson', state_names = colnames(xreg)), NA)
   expect_error(sm <- smoother(model_poisson), NA)
   expect_equal(sm$alphahat[1,], coef(glm_poisson))
   expect_equal(sm$V[,,1], vcov(glm_poisson))
   
-  # does not work yet, need to fix the prior for beta when length(beta) > 1
-  # xreg <- model.matrix(~ outcome + treatment, data = d)[, - 1]
-  # model_poisson <- ng_bsm(d$counts, sd_level = 0, xreg = xreg, beta = normal(rep(0, 4), 0, 10), distribution = 'poisson')
-  
+  expect_equivalent(c(gaussian_approx(model_poisson)$signal), glm_poisson$linear.predictors)
+  xreg <- model.matrix(~ outcome + treatment, data = d)[, -1]
+  expect_error(model_poisson <- ng_bsm(d$counts, sd_level = 0, xreg = xreg, 
+    beta = normal(coef(glm_poisson)[-1], 0, 10), distribution = 'poisson'), NA)
+  expect_equivalent(smoother(model_poisson)$alphahat[1,], coef(glm_poisson)[1])
 })
 
 test_that("results for binomial GLM are equal to glm function",{

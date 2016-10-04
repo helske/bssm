@@ -204,7 +204,11 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
   
   
-  priors <- c(list(sd_y, sd_level, sd_slope, sd_seasonal), beta)
+  if(ncol(xreg) > 1) {
+    priors <- c(list(sd_level, sd_slope, sd_seasonal, sd_noise), beta)
+  } else {
+    priors <- list(sd_level, sd_slope, sd_seasonal, sd_noise, beta)
+  }
   names(priors) <- c("sd_y", "sd_level", "sd_slope", "sd_seasonal", names(coefs))
   priors <- priors[sapply(priors, is_prior)]
   
@@ -464,8 +468,11 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
   
-  
-  priors <- c(list(sd_level, sd_slope, sd_seasonal, sd_noise), beta)
+  if(ncol(xreg) > 1) {
+    priors <- c(list(sd_level, sd_slope, sd_seasonal, sd_noise), beta)
+  } else {
+    priors <- list(sd_level, sd_slope, sd_seasonal, sd_noise, beta)
+  }
   names(priors) <- c("sd_level", "sd_slope", "sd_seasonal", "sd_noise", names(coefs), if(nb) "nb_dispersion")
   priors <- priors[sapply(priors, is_prior)]
   
@@ -541,7 +548,11 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- "signal"
   
-  priors <- c(list(ar, sd_ar, sigma), beta)
+  if(ncol(xreg) > 1) {
+    priors <- c(list(ar, sd_ar, sigma), beta)
+  } else {
+    priors <- list(ar, sd_ar, sigma, beta)
+  }
   priors <- priors[!sapply(priors, is.null)]
   names(priors) <-
     c("ar", "sd_ar", "sigma", names(coefs))
