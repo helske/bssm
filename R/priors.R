@@ -76,13 +76,13 @@ normal <- function(init, mean, sd){
   
   n <- max(length(init), length(mean), length(sd))
   if (n > 1) {
-    structure(lapply(1:n, function(i) structure(list(prior_type = "normal", init = safe_pick(init, i),
-      sd = safe_pick(sd, i), mean = safe_pick(mean, i)), class = "bssm_prior")), 
-      class = "bssm_prior_list")
+    structure(lapply(1:n, function(i) structure(list(prior_type = "normal", 
+      init = safe_pick(init, i), mean = safe_pick(mean, i), sd = safe_pick(sd, i)), 
+      class = "bssm_prior")), class = "bssm_prior_list")
 
   } else {
-    structure(list(prior_type = "normal", init = init,
-      sd = sd, mean = mean), class = "bssm_prior")
+    structure(list(prior_type = "normal", init = init, mean = mean, sd = sd), 
+      class = "bssm_prior")
   }
 }
 
