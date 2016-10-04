@@ -205,9 +205,9 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   
   
   if(ncol(xreg) > 1) {
-    priors <- c(list(sd_level, sd_slope, sd_seasonal, sd_noise), beta)
+    priors <- c(list(sd_y, sd_level, sd_slope, sd_seasonal), beta)
   } else {
-    priors <- list(sd_level, sd_slope, sd_seasonal, sd_noise, beta)
+    priors <- list(sd_y, sd_level, sd_slope, sd_seasonal, beta)
   }
   names(priors) <- c("sd_y", "sd_level", "sd_slope", "sd_seasonal", names(coefs))
   priors <- priors[sapply(priors, is_prior)]
