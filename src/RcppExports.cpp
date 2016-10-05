@@ -370,8 +370,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // gssm_run_mcmc
-List gssm_run_mcmc(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, bool sim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind, unsigned int seed, bool end_ram);
-RcppExport SEXP bssm_gssm_run_mcmc(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP sim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP Z_indSEXP, SEXP H_indSEXP, SEXP T_indSEXP, SEXP R_indSEXP, SEXP seedSEXP, SEXP end_ramSEXP) {
+List gssm_run_mcmc(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, bool sim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, unsigned int seed, bool end_ram, arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind);
+RcppExport SEXP bssm_gssm_run_mcmc(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP sim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP seedSEXP, SEXP end_ramSEXP, SEXP Z_indSEXP, SEXP H_indSEXP, SEXP T_indSEXP, SEXP R_indSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -385,19 +385,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< double >::type target_acceptance(target_acceptanceSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type S(SSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< bool >::type end_ram(end_ramSEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type Z_ind(Z_indSEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type H_ind(H_indSEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type T_ind(T_indSEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type R_ind(R_indSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
-    Rcpp::traits::input_parameter< bool >::type end_ram(end_ramSEXP);
-    rcpp_result_gen = Rcpp::wrap(gssm_run_mcmc(model_, prior_types, prior_pars, n_iter, sim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, seed, end_ram));
+    rcpp_result_gen = Rcpp::wrap(gssm_run_mcmc(model_, prior_types, prior_pars, n_iter, sim_states, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, Z_ind, H_ind, T_ind, R_ind));
     return rcpp_result_gen;
 END_RCPP
 }
 // gssm_run_mcmc_summary
-List gssm_run_mcmc_summary(const List& model_, arma::uvec& prior_types, arma::vec& prior_pars, unsigned int n_iter, unsigned int n_thin, unsigned int n_burnin, double gamma, double target_acceptance, arma::mat S, arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind, unsigned int seed, bool end_ram);
-RcppExport SEXP bssm_gssm_run_mcmc_summary(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP n_thinSEXP, SEXP n_burninSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP Z_indSEXP, SEXP H_indSEXP, SEXP T_indSEXP, SEXP R_indSEXP, SEXP seedSEXP, SEXP end_ramSEXP) {
+List gssm_run_mcmc_summary(const List& model_, arma::uvec& prior_types, arma::vec& prior_pars, unsigned int n_iter, unsigned int n_thin, unsigned int n_burnin, double gamma, double target_acceptance, arma::mat S, unsigned int seed, bool end_ram, arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind);
+RcppExport SEXP bssm_gssm_run_mcmc_summary(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP n_thinSEXP, SEXP n_burninSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP seedSEXP, SEXP end_ramSEXP, SEXP Z_indSEXP, SEXP H_indSEXP, SEXP T_indSEXP, SEXP R_indSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -410,13 +410,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< double >::type target_acceptance(target_acceptanceSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type S(SSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< bool >::type end_ram(end_ramSEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type Z_ind(Z_indSEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type H_ind(H_indSEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type T_ind(T_indSEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type R_ind(R_indSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
-    Rcpp::traits::input_parameter< bool >::type end_ram(end_ramSEXP);
-    rcpp_result_gen = Rcpp::wrap(gssm_run_mcmc_summary(model_, prior_types, prior_pars, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, seed, end_ram));
+    rcpp_result_gen = Rcpp::wrap(gssm_run_mcmc_summary(model_, prior_types, prior_pars, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, seed, end_ram, Z_ind, H_ind, T_ind, R_ind));
     return rcpp_result_gen;
 END_RCPP
 }

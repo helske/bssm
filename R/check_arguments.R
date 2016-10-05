@@ -65,4 +65,18 @@ check_ar <- function(x) {
   }
   
 }
-
+check_phi <- function(x, distribution) {
+  if (x < 0) {
+    stop("Parameter 'phi' must be non-negative.")
+  }
+}
+check_u <- function(x) {
+  if (any(x < 0)) {
+    stop("All values of 'u' must be non-negative.")
+  }
+}
+check_prior <- function(x, name) {
+  if (!is_prior(x) && !is_prior_list(x)) {
+      stop(paste(name, "must be of class 'bssm_prior' or 'bssm_prior_list'."))
+  }
+}

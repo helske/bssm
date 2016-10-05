@@ -33,7 +33,6 @@ run_mcmc <- function(object, n_iter, ...) {
 #' @rdname run_mcmc_g
 #' @param object Model object.
 #' @param n_iter Number of MCMC iterations.
-#' @param priors Priors for the unknown parameters.
 #' @param sim_states Simulate states of Gaussian state space models. Default is \code{TRUE}.
 #' @param type Type of output. Default is \code{"full"}, which returns
 #' samples from the posterior \eqn{p(\alpha, \theta}. Option
@@ -60,60 +59,34 @@ run_mcmc <- function(object, n_iter, ...) {
 #' @param ... Ignored.
 #' @export
 run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full", 
-  priors, n_burnin = floor(n_iter / 2), n_thin = 1, gamma = 2/3,
+  n_burnin = floor(n_iter / 2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   a <- proc.time()
   type <- match.arg(type, c("full", "summary"))
-  
-  Z_ind <- which(is.na(object$Z)) - 1L
-  Z_n <- length(Z_ind)
-  H_ind <- which(is.na(object$H)) - 1L
-  H_n <- length(H_ind)
-  T_ind <- which(is.na(object$T)) - 1L
-  T_n <- length(T_ind)
-  R_ind <- which(is.na(object$R)) - 1L
-  R_n <- length(R_ind)
-  
-  if ((Z_n + H_n + T_n + R_n + length(object$coef)) == 0) {
-    stop("nothing to estimate. ")
-  }
-  inits <- sapply(priors, "[[", "init")
-  if(length(inits) != (Z_n + H_n + T_n + R_n + length(object$coef))) {
-    stop("Number of unknown parameters is not equal to the number of priors.")
-  }
-  if(Z_n > 0) {
-    object$Z[is.na(object$Z)] <- inits[1:Z_n]
-  }
-  if(H_n > 0) {
-    object$H[is.na(object$H)] <- inits[Z_n + 1:H_n]
-  }
-  if(T_n > 0) {
-    object$T[is.na(object$T)] <- inits[Z_n + H_n + 1:T_n]
-  }
-  if(R_n > 0) {
-    object$R[is.na(object$R)] <- inits[Z_n + H_n + T_n + 1:R_n]
-  }
-  
+
+  inits <- sapply(object$priors, "[[", "init")
+ 
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(inits)), length(inits))
   }
-  priors <- combine_priors(priors)
+  priors <- combine_priors(object$priors)
   
   out <- switch(type,
     full = {
       out <- gssm_run_mcmc(object, priors$prior_types, priors$params, n_iter,
-        sim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind,
-        H_ind, T_ind, R_ind, seed, end_adaptive_phase)
+        sim_states, n_burnin, n_thin, gamma, target_acceptance, S, 
+        seed, end_adaptive_phase, object$Z_ind,
+        object$H_ind, object$T_ind, object$R_ind)
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
       out
     },
     summary = {
       out <- gssm_run_mcmc_summary(object, priors$prior_types, priors$params, n_iter,
-        n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind,
-        R_ind, seed, end_adaptive_phase)
+        n_burnin, n_thin, gamma, target_acceptance, S, seed, end_adaptive_phase, 
+        object$Z_ind, object$H_ind, object$T_ind, object$R_ind)
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
         names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y),
@@ -191,7 +164,6 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
 #' @param object Model object.
 #' @param n_iter Number of MCMC iterations.
 #' @param nsim_states Number of state samples per MCMC iteration.
-#' @param priors Priors for the unknown parameters.
 #' @param type Either \code{"full"} (default), or \code{"summary"}. The
 #' former produces samples of states whereas the latter gives the mean and
 #' variance estimates of the states.
@@ -222,7 +194,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @export
-run_mcmc.ngssm <- function(object, n_iter, nsim_states, priors, type = "full",
+run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   method = "PM", simulation_method = "IS", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
@@ -247,39 +219,17 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, priors, type = "full",
     simulation_method <- "IS"
   }
   
-  Z_ind <- which(is.na(object$Z)) - 1L
-  Z_n <- length(Z_ind)
-  T_ind <- which(is.na(object$T)) - 1L
-  T_n <- length(T_ind)
-  R_ind <- which(is.na(object$R)) - 1L
-  R_n <- length(R_ind)
-  
-  if ((Z_n + T_n + R_n + length(object$coef) + nb) == 0) {
-    stop("nothing to estimate. ")
-  }
-  inits <- sapply(priors, "[[", "init")
-  if(length(inits) != (Z_n + T_n + R_n + length(object$coef))) {
-    stop("Number of unknown parameters is not equal to the number of priors.")
-  }
-  if(Z_n > 0) {
-    object$Z[is.na(object$Z)] <- inits[1:Z_n]
-  }
-  if(T_n > 0) {
-    object$T[is.na(object$T)] <- inits[Z_n + 1:T_n]
-  }
-  if(R_n > 0) {
-    object$R[is.na(object$R)] <- inits[Z_n + T_n + 1:R_n]
-  }
-  
+ 
+  inits <- sapply(object$priors, "[[", "init")
+ 
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(inits)), length(inits))
   }
-  priors <- combine_priors(priors)
+  priors <- combine_priors(object$priors)
   
   object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
-  priors <- combine_priors(priors)
-  
+ 
   out <-  switch(type,
     full = {
       if (method == "PM"){
@@ -287,14 +237,14 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, priors, type = "full",
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
           object$init_signal, seed, end_adaptive_phase, adaptive_approx,
           delayed_acceptance, pmatch(simulation_method, c("IS", "bootstrap", "psi")),
-          Z_ind, T_ind, R_ind)
+          object$Z_ind, object$T_ind, object$R_ind)
         
       } else {
         out <- ngssm_run_mcmc_is(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
           object$init_signal, seed, n_threads, end_adaptive_phase, adaptive_approx,
           pmatch(simulation_method, c("IS", "bootstrap", "psi")), const_m,
-          Z_ind, T_ind, R_ind)
+          object$Z_ind, object$T_ind, object$R_ind)
       }
       out$alpha <- aperm(out$alpha, c(2, 1, 3))
       colnames(out$alpha) <- names(object$a1)
@@ -462,7 +412,8 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   priors <- combine_priors(object$priors)
   
   object$distribution <- 0L
-  object$phi <- rep(object$sigma, length(object$y))
+  object$phi <- object$sigma
+  object$u <- 1
   out <-  switch(type,
     full = {
       if (method == "PM"){

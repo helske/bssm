@@ -11,10 +11,10 @@ public:
   ngssm(const List&, arma::uvec, arma::uvec, arma::uvec, unsigned int);
 
   ngssm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
-    arma::mat, arma::vec, arma::mat, arma::vec, unsigned int, unsigned int);
+    arma::mat, double, arma::vec, arma::mat, arma::vec, unsigned int, unsigned int, bool);
   ngssm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
-    arma::mat, arma::vec, arma::mat, arma::vec, unsigned int, arma::uvec,
-    arma::uvec, arma::uvec, unsigned int);
+    arma::mat, double, arma::vec, arma::mat, arma::vec, unsigned int, arma::uvec,
+    arma::uvec, arma::uvec, unsigned int, bool);
 
   virtual double proposal(const arma::vec&, const arma::vec&);
   virtual void update_model(arma::vec);
@@ -61,8 +61,10 @@ public:
   double psi_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&, arma::vec);
   
   double psi_filter_precomp(unsigned int, arma::cube&, arma::mat&, arma::umat&, double);
-  arma::vec phi;
+  double phi;
+  arma::vec ut;
   unsigned int distribution;
+  bool phi_est;
   const arma::vec ng_y;
   unsigned int max_iter;
   double conv_tol;

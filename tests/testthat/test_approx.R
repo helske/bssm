@@ -27,10 +27,26 @@ test_that("results for binomial GLM are equal to glm function",{
   glm_binomial <- glm(SF ~ sex * ldose, family = binomial)
   xreg <- model.matrix(~  sex * ldose)
   expect_error(model_binomial <- ngssm(numdead, Z = t(xreg), T = diag(4), R = diag(0, 4), P1 = diag(1e5, 4), 
-    distribution = 'binomial', phi = 20, state_names = colnames(xreg)), NA)
+    distribution = 'binomial', u = 20, state_names = colnames(xreg)), NA)
   expect_error(sm <- smoother(model_binomial), NA)
   # non-exact diffuse initialization is numerically difficult...
   expect_equal(sm$alphahat[1, ], coef(glm_binomial), tolerance = 1e-5)
   expect_equal(sm$V[, , 1], vcov(glm_binomial), tolerance = 1e-4)
   
+})
+
+
+test_that("results for negative binomial GLM are equal to glm function",{
+  library(MASS)
+  set.seed(123)
+  offs <- quine$Days + sample(10:20, size = nrow(quine), replace = TRUE)
+glm_nb <- glm.nb(Days ~ 1 + offset(log(offs)), data = quine)
+ expect_error(model_nb <- ng_bsm(quine$Days, u = offs, sd_level = 0,
+   P1 = matrix(1e7), phi = glm_nb$theta,
+    distribution = 'negative binomial'), NA)
+
+  
+  expect_error(sm <- smoother(model_nb), NA)
+  expect_equivalent(sm$alphahat[1], coef(glm_nb)[1])
+  expect_equal(sm$V[, , 1], vcov(glm_nb)[1])
 })

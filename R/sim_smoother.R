@@ -61,7 +61,8 @@ sim_smoother.ng_bsm <- function(object, nsim = 1, seed = sample(.Machine$integer
 sim_smoother.svm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
 
   object$distribution <- 0L
-  object$phi <- rep(object$sigma, length(object$y))
+  object$phi <- object$sigma
+  object$u <- 1
   out <- svm_sim_smoother(object, object$init_signal, nsim, seed)
 
   rownames(out) <- names(object$a1)

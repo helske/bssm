@@ -31,7 +31,7 @@ test_that("MCMC results for gaussian model are correct",{
 test_that("MCMC results for Poisson model are correct",{
   set.seed(123)
   model_bssm <- ng_bsm(rpois(10, exp(0.2) * (2:11)), P1 = diag(2, 2), sd_slope = 0,
-    sd_level = uniform(2, 0, 10), phi = 2:11, distribution = "poisson")
+    sd_level = uniform(2, 0, 10), u = 2:11, distribution = "poisson")
   
   expect_error(out <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), NA)
   expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), 
@@ -55,7 +55,7 @@ test_that("MCMC results for Poisson model are correct",{
 test_that("MCMC results for binomial model are correct",{
   set.seed(123)
   model_bssm <- ng_bsm(rbinom(10, 22:31, 0.5), P1 = diag(2, 2), sd_slope = 0,
-    sd_level = uniform(2, 0, 10), phi = 22:31, distribution = "binomial")
+    sd_level = uniform(2, 0, 10), u = 22:31, distribution = "binomial")
   
   expect_error(out <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), NA)
   expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), 

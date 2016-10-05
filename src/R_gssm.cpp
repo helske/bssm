@@ -65,8 +65,9 @@ List gssm_smoother(const List& model_) {
 List gssm_run_mcmc(const List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars,  unsigned int n_iter,
   bool sim_states, unsigned int n_burnin, unsigned int n_thin,
-  double gamma, double target_acceptance, arma::mat S, arma::uvec Z_ind,
-  arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind, unsigned int seed, bool end_ram) {
+  double gamma, double target_acceptance, arma::mat S, 
+  unsigned int seed, bool end_ram, arma::uvec Z_ind,
+  arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind) {
 
   gssm model(clone(model_), Z_ind, H_ind, T_ind, R_ind, seed);
 
@@ -101,8 +102,8 @@ List gssm_run_mcmc(const List& model_,
 List gssm_run_mcmc_summary(const List& model_, arma::uvec& prior_types,
   arma::vec& prior_pars, unsigned int n_iter, unsigned int n_thin,
   unsigned int n_burnin, double gamma, double target_acceptance, arma::mat S,
-  arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind,
-  unsigned int seed, bool end_ram) {
+  unsigned int seed, bool end_ram,
+  arma::uvec Z_ind, arma::uvec H_ind, arma::uvec T_ind, arma::uvec R_ind) {
 
   gssm model(clone(model_), Z_ind, H_ind, T_ind, R_ind, seed);
 

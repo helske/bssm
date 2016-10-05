@@ -33,7 +33,8 @@ importance_sample.ng_bsm <- function(object, nsim, seed = sample(.Machine$intege
 importance_sample.svm <- function(object, nsim, seed = sample(.Machine$integer.max, size = 1), ...) {
 
   object$distribution <- 0L
-  object$phi <- rep(object$sigma, length(object$y))
+  object$phi <- object$sigma
+  object$u <- 1
   
   svm_importance_sample(object, object$init_signal, nsim, seed)
 }

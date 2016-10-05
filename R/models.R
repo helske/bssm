@@ -237,9 +237,11 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' See\link[=uniform]{priors} for details. If missing, no additional noise term is used.
 #' @param distribution distribution of the observation. Possible choices are
 #' \code{"poisson"} and \code{"binomial"}.
-#' @param phi Additional parameter vector relating to the non-Gaussian distribution.
-#' For Poisson distribution, this corresponds to offset term. For binomial, this
-#' is the number of trials.
+#' @param phi Additional parameter relating to the non-Gaussian distribution. 
+#' For Negative binomial distribution this is the dispersion term, and for other 
+#' distributions this is ignored.
+#' @param u Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
+#' term. For binomial, this is the number of trials.
 #' @param beta Prior for the regression coefficients.
 #' @param xreg Matrix containing covariates.
 #' @param period Length of the seasonal component i.e. the number of
@@ -275,15 +277,8 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' autoplot(pred)
 #' }
 ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
-  distribution, phi = 1, beta, xreg = NULL, period = frequency(y), a1, P1) {
+  distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), a1, P1) {
   
-  
-  distribution <- match.arg(distribution, c("poisson", "binomial",
-    "negative binomial")) ## remove this later, see below
-  ## negative binomial not working currently, need to work out prior for phi
-  if(distribution == "negative binomial") {
-    stop("negbin not working at the moment... let me know if you really need it and I'll move it higher on todo list...")
-  }
   
   check_y(y)
   n <- length(y)
@@ -319,7 +314,6 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     names(coefs) <- colnames(xreg)
     
   }
-  
   
   notfixed <- c("level" = 1, "slope" = 1, "seasonal" = 1)
   
@@ -448,18 +442,32 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     state_names <- c(state_names, "noise")
     R[m, max(1, ncol(R) - 1)] <- sd_noise$init
   }
-  if (!(length(phi) %in% c(1, n))) {
-    stop("Argument phi must have length 1 or n. ")
-  }
-  
-  if (length(phi) != n) {
-    phi <- rep(phi, length.out = n)
-  }
   
   distribution <- match.arg(distribution, c("poisson", "binomial",
     "negative binomial"))
-  nb <- distribution == "negative binomial"
-  init_signal <- initial_signal(y, phi, distribution)
+  
+  use_phi <- distribution %in% c("negative binomial", "gamma")
+  phi_est <- FALSE
+  if (use_phi) {
+   if (is_prior(phi)) {
+      check_phi(phi$init, distribution)
+      phi_est <- TRUE
+    } else {
+      check_phi(phi, distribution)
+    }
+  } else {
+    phi <- 1
+  }
+  
+  use_u <- distribution %in% c("poisson", "binomial", "negative binomial")
+  if (use_u) {
+    check_u(u)
+    if (length(u) != n) {
+      u <- rep(u, length.out = n)
+    }
+  }
+ 
+  init_signal <- initial_signal(y, u, distribution)
   
   
   dim(T) <- c(m, m, 1)
@@ -469,18 +477,24 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
   
   if(ncol(xreg) > 1) {
-    priors <- c(list(sd_level, sd_slope, sd_seasonal, sd_noise), beta)
+    priors <- c(list(sd_level, sd_slope, sd_seasonal, sd_noise, phi), beta)
   } else {
-    priors <- list(sd_level, sd_slope, sd_seasonal, sd_noise, beta)
+    priors <- list(sd_level, sd_slope, sd_seasonal, sd_noise, phi, beta)
   }
-  names(priors) <- c("sd_level", "sd_slope", "sd_seasonal", "sd_noise", names(coefs), if(nb) "nb_dispersion")
+  names(priors) <- c("sd_level", "sd_slope", "sd_seasonal", "sd_noise", "phi", 
+    names(coefs))
   priors <- priors[sapply(priors, is_prior)]
   
+  if (phi_est) {
+    phi <- phi$init
+  }
+  
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
-    a1 = a1, P1 = P1, phi = phi, xreg = xreg, coefs = coefs,
+    a1 = a1, P1 = P1, phi = phi, u = u, xreg = xreg, coefs = coefs,
     slope = slope, seasonal = seasonal, noise = noise,
-    period = period, fixed = as.integer(!notfixed), priors = priors,
-    distribution = distribution, init_signal = init_signal), class = c("ng_bsm", "ngssm"))
+    period = period, fixed = as.integer(!notfixed), 
+    distribution = distribution, init_signal = init_signal, 
+    priors = priors, phi_est = phi_est), class = c("ng_bsm", "ngssm"))
 }
 
 #' Stochastic Volatility Model
@@ -588,9 +602,11 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
 #' @param beta Regression coefficients. Used as an initial
 #' value in MCMC. Defaults to vector of zeros.
 #' @param state_names Names for the states.
+#' @param H_prior,Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
 #' @return Object of class \code{gssm}.
 #' @export
-gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names) {
+gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
+  H_prior, Z_prior, T_prior, R_prior) {
   
   check_y(y)
   n <- length(y)
@@ -678,10 +694,66 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names) {
   rownames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
     rownames(P1) <- colnames(P1) <- state_names
   
+  H_ind <- which(is.na(H)) - 1L
+  H_n <- length(H_ind)
+  Z_ind <- which(is.na(Z)) - 1L
+  Z_n <- length(Z_ind)
+  T_ind <- which(is.na(T)) - 1L
+  T_n <- length(T_ind)
+  R_ind <- which(is.na(R)) - 1L
+  R_n <- length(R_ind)
+ 
+  if (H_n > 0) {
+    check_prior(H_prior, "H_prior")
+    if (H_n == 1) {
+      H[is.na(H)] <- H_prior$init
+    } else {
+      H[is.na(H)] <-  sapply(H_prior, "[[", "init")
+    }
+  } else H_prior <- NULL
   
+  if (Z_n > 0) {
+    check_prior(Z_prior, "Z_prior")
+    if (Z_n == 1) {
+      Z[is.na(Z)] <- Z_prior$init
+    } else {
+      Z[is.na(Z)] <-  sapply(Z_prior, "[[", "init")
+    }
+  } else Z_prior <- NULL
+  
+ if (T_n > 0) {
+    check_prior(T_prior, "T_prior")
+    if (T_n == 1) {
+      T[is.na(T)] <- T_prior$init
+    } else {
+      T[is.na(T)] <-  sapply(T_prior, "[[", "init")
+    }
+  } else T_prior <- NULL
+  
+ if (R_n > 0) {
+    check_prior(R_prior, "R_prior")
+    if (R_n == 1) {
+      R[is.na(R)] <- R_prior$init
+    } else {
+      R[is.na(R)] <-  sapply(R_prior, "[[", "init")
+    }
+  } else R_prior <- NULL
+  
+  priors <- c(if(H_n > 1) Z_prior else list(H_prior), 
+      if(Z_n > 1) Z_prior else list(Z_prior), 
+    if(T_n > 1) T_prior else list(T_prior), 
+    if(R_n > 1) R_prior else list(R_prior), 
+    if(ncol(xreg) > 1) beta else list(beta))
+  
+  names(priors) <- c(if(H_n > 0) paste0("H_",1:H_n),  
+    if(Z_n > 0) paste0("Z_",1:Z_n),  
+    if(T_n > 0) paste0("T_",1:T_n), 
+    if(R_n > 0) paste0("R_",1:R_n), names(coefs))
+  priors <- priors[sapply(priors, is_prior)]
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
-    xreg = xreg, coefs = coefs), class = "gssm")
+    xreg = xreg, coefs = coefs, priors = priors, Z_ind = Z_ind, 
+    H_ind = H_ind, T_ind = T_ind, R_ind = R_ind), class = "gssm")
 }
 #' General non-Gaussian/non-linear state space models
 #'
@@ -706,17 +778,20 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names) {
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param distribution distribution of the observation. Possible choices are
 #' \code{"poisson"}, \code{"binomial"}, and \code{"negative binomial"}.
-#' @param phi Additional parameter vector relating to the non-Gaussian distribution.
-#' For Poisson distribution, this corresponds to offset term. For binomial, this
-#' is the number of trials.
+#' @param phi Additional parameter relating to the non-Gaussian distribution. 
+#' For Negative binomial distribution this is the dispersion term, and for other 
+#' distributions this is ignored.
+#' @param u Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
+#' term. For binomial, this is the number of trials.
 #' @param xreg Matrix containing covariates.
 #' @param beta Regression coefficients. Used as an initial
 #' value in MCMC. Defaults to vector of zeros.
 #' @param state_names Names for the states.
+#' @param Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
 #' @return Object of class \code{bgssm}.
 #' @export
-ngssm <- function(y, Z, T, R, a1, P1, distribution, phi = 1, xreg = NULL, 
-  beta, state_names) {
+ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL, 
+  beta, state_names, Z_prior, T_prior, R_prior) {
   
   check_y(y)
   n <- length(y)
@@ -798,13 +873,66 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi = 1, xreg = NULL,
     }
   }
   
-  if (!(length(phi) %in% c(1, n))) {
-    stop("Argument phi must have length 1 or n. ")
+   
+  Z_ind <- which(is.na(Z)) - 1L
+  Z_n <- length(Z_ind)
+  T_ind <- which(is.na(T)) - 1L
+  T_n <- length(T_ind)
+  R_ind <- which(is.na(R)) - 1L
+  R_n <- length(R_ind)
+ 
+  if (Z_n > 0) {
+    check_prior(Z_prior, "Z_prior")
+    if (Z_n == 1) {
+      Z[is.na(Z)] <- Z_prior$init
+    } else {
+      Z[is.na(Z)] <-  sapply(Z_prior, "[[", "init")
+    }
+  } else Z_prior <- NULL
+  
+ if (T_n > 0) {
+    check_prior(T_prior, "T_prior")
+    if (T_n == 1) {
+      T[is.na(T)] <- T_prior$init
+    } else {
+      T[is.na(T)] <-  sapply(T_prior, "[[", "init")
+    }
+  } else T_prior <- NULL
+  
+ if (R_n > 0) {
+    check_prior(R_prior, "R_prior")
+    if (R_n == 1) {
+      R[is.na(R)] <- R_prior$init
+    } else {
+      R[is.na(R)] <-  sapply(R_prior, "[[", "init")
+    }
+  } else R_prior <- NULL
+  
+  distribution <- match.arg(distribution, c("poisson", "binomial",
+    "negative binomial"))
+  
+  use_phi <- distribution %in% c("negative binomial", "gamma")
+   phi_est <- FALSE
+  if (use_phi) {
+   if (is_prior(phi)) {
+      check_phi(phi$init, distribution)
+     phi_est <- TRUE
+    } else {
+      check_phi(phi, distribution)
+    }
+  } else {
+    phi <- 1
   }
   
-  if (length(phi) != n) {
-    phi <- rep(phi, length.out = n)
+  use_u <- distribution %in% c("poisson", "binomial", "negative binomial")
+  if (use_u) {
+    check_u(u)
+    if (length(u) != n) {
+      u <- rep(u, length.out = n)
+    }
   }
+ 
+  init_signal <- initial_signal(y, u, distribution)
   
   if (missing(state_names)) {
     state_names <- paste("State", 1:m)
@@ -812,8 +940,23 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi = 1, xreg = NULL,
   rownames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
     rownames(P1) <- colnames(P1) <- state_names
   
-  distribution <- match.arg(distribution, c("poisson", "binomial", "negative binomial"))
-  structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi,
+  
+    
+  priors <- c(if(Z_n > 1) Z_prior else list(Z_prior), 
+    if(T_n > 1) T_prior else list(T_prior), 
+    if(R_n > 1) R_prior else list(R_prior), list(phi), 
+    if(ncol(xreg) > 1) beta else list(beta))
+  
+  names(priors) <- c(if(Z_n > 0) paste0("Z_",1:Z_n),  
+    if(T_n > 0) paste0("T_",1:T_n), 
+    if(R_n > 0) paste0("R_",1:R_n), "phi", names(coefs))
+  priors <- priors[sapply(priors, is_prior)]
+  
+  if (phi_est) {
+    phi <- phi$init
+  }
+  structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
     xreg = xreg, coefs = coefs, distribution = distribution, 
-    init_signal = initial_signal(y, phi, distribution)), class = "ngssm")
+    init_signal = init_signal, priors = priors, Z_ind = Z_ind, 
+    T_ind = T_ind, R_ind = R_ind, phi_est = phi_est), class = "ngssm")
 }

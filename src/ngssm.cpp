@@ -2,8 +2,8 @@
 
 // from List
 ngssm::ngssm(const List& model, unsigned int seed) :
-  gssm(model, seed, true), phi(as<arma::vec>(model["phi"])),
-  distribution(model["distribution"]),
+  gssm(model, seed, true), phi(model["phi"]), ut(as<arma::vec>(model["u"])),
+  distribution(model["distribution"]), phi_est(model["phi_est"]),
   ng_y(as<arma::vec>(model["y"])),
   max_iter(100), conv_tol(1.0e-8) {
 }
@@ -13,29 +13,31 @@ ngssm::ngssm(const List& model, unsigned int seed) :
 ngssm::ngssm(const List& model, arma::uvec Z_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
   gssm(model, Z_ind, T_ind, R_ind, seed, true),
-  phi(as<arma::vec>(model["phi"])), distribution(model["distribution"]),
+  phi(model["phi"]), ut(as<arma::vec>(model["u"])), 
+  distribution(model["distribution"]), phi_est(model["phi_est"]),
   ng_y(as<arma::vec>(model["y"])),
   max_iter(100), conv_tol(1.0e-8) {
 }
 
 //general constructor
 ngssm::ngssm(arma::vec y, arma::mat Z, arma::cube T,
-  arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi, arma::mat xreg,
-  arma::vec beta, unsigned int distribution, unsigned int seed) :
+  arma::cube R, arma::vec a1, arma::mat P1, double phi, arma::vec u, arma::mat xreg,
+  arma::vec beta, unsigned int distribution, unsigned int seed, bool phi_est) :
   gssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, seed),
-  phi(phi), distribution(distribution), ng_y(y), max_iter(100), conv_tol(1.0e-8) {
+  phi(phi), ut(u), distribution(distribution), phi_est(phi_est), 
+  ng_y(y), max_iter(100), conv_tol(1.0e-8) {
 }
 
 //general constructor with parameter indices
 ngssm::ngssm(arma::vec y, arma::mat Z, arma::cube T,
-  arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi, arma::mat xreg,
+  arma::cube R, arma::vec a1, arma::mat P1, double phi, arma::vec u, arma::mat xreg,
   arma::vec beta, unsigned int distribution, arma::uvec Z_ind,
-  arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
+  arma::uvec T_ind, arma::uvec R_ind, unsigned int seed, bool phi_est) :
   gssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, Z_ind,
-    arma::uvec(1), T_ind, R_ind, seed), phi(phi),
-    distribution(distribution), ng_y(y), max_iter(100), conv_tol(1.0e-8) {
+    arma::uvec(1), T_ind, R_ind, seed), phi(phi), ut(u),
+    distribution(distribution), phi_est(phi_est), ng_y(y), 
+    max_iter(100), conv_tol(1.0e-8) {
 }
-
 
 double ngssm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
   return 0.0;
@@ -98,19 +100,22 @@ arma::vec ngssm::approx_iter(arma::vec& signal) {
   // new pseudo y and H
   switch(distribution) {
   case 1  :
-    HH = (1.0 / (exp(signal + xbeta) % phi));
+    HH = 1.0 / (exp(signal + xbeta) % ut);
     y = ng_y % HH + signal + xbeta - 1.0;
     break;
-  case 2  :
-    HH = pow(1.0 + exp(signal + xbeta), 2) / (phi % exp(signal + xbeta));
-    y = ng_y % HH + signal + xbeta - 1.0 - exp(signal + xbeta);
+  case 2  : {
+    arma::vec exptmp = exp(signal + xbeta);
+    HH = pow(1.0 + exptmp, 2) / (ut % exptmp);
+    y = ng_y % HH + signal + xbeta - 1.0 - exptmp;
+    }
     break;
-  case 3  :
-    HH = 1.0 / phi + 1.0 / exp(signal + xbeta);
-    y = signal + xbeta + ng_y / exp(signal + xbeta) - 1.0;
+  case 3  : {
+    arma::vec exptmp = 1.0 / (exp(signal + xbeta) % ut);
+    HH = 1.0 / phi + exptmp;
+    y = signal + xbeta + ng_y % exptmp - 1.0;
+    }
     break;
   }
-  
   // new signal
   
   arma::mat alpha = fast_smoother(true);
@@ -181,7 +186,7 @@ double ngssm::logp_y(arma::vec& signal) {
   case 1  :
     for (unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(ng_y(t))) {
-        logp += R::dpois(ng_y(t), phi(t) * exp(signal(t) + xbeta(t)), 1);
+        logp += R::dpois(ng_y(t), ut(t) * exp(signal(t) + xbeta(t)), 1);
       }
     }
     break;
@@ -189,14 +194,14 @@ double ngssm::logp_y(arma::vec& signal) {
     for (unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(ng_y(t))) {
         double exptmp = exp(signal(t) + xbeta(t));
-        logp += R::dbinom(ng_y(t), phi(t),  exptmp / (1.0 + exptmp), 1);
+        logp += R::dbinom(ng_y(t), ut(t),  exptmp / (1.0 + exptmp), 1);
       }
     }
     break;
   case 3  :
     for (unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(ng_y(t))) {
-        logp += R::dnbinom_mu(ng_y(t), phi(t), exp(signal(t) + xbeta(t)), 1);
+        logp += R::dnbinom_mu(ng_y(t), phi, ut(t) * exp(signal(t) + xbeta(t)), 1);
       }
     }
     break;
@@ -214,11 +219,10 @@ void ngssm::update_model(arma::vec theta) {
     Z.elem(Z_ind) = theta.subvec(0, Z_ind.n_elem - 1);
   }
   if (T_ind.n_elem > 0) {
-    T.elem(T_ind) = theta.subvec(Z_ind.n_elem + H_ind.n_elem,
-      Z_ind.n_elem + T_ind.n_elem - 1);
+    T.elem(T_ind) = theta.subvec(Z_ind.n_elem, Z_ind.n_elem + T_ind.n_elem - 1);
   }
   if (R_ind.n_elem > 0) {
-    R.elem(R_ind) = theta.subvec(Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem,
+    R.elem(R_ind) = theta.subvec(Z_ind.n_elem + T_ind.n_elem,
       Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem - 1);
   }
   
@@ -226,14 +230,14 @@ void ngssm::update_model(arma::vec theta) {
     compute_RR();
   }
   
+   if(phi_est) {
+    phi = theta(Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem);
+  }
   if(xreg.n_cols > 0) {
-    beta = theta.subvec(theta.n_elem - xreg.n_cols - (distribution == 3),
-      theta.n_elem - 1 - (distribution == 3));
+    beta = theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1);
     compute_xbeta();
   }
-  if(distribution == 3) {
-    phi.fill(theta(theta.n_elem - 1));
-  }
+ 
 }
 
 // pick up theta from system matrices
@@ -246,23 +250,22 @@ arma::vec ngssm::get_theta(void) {
     theta.subvec(0, Z_ind.n_elem - 1) = Z.elem(Z_ind);
   }
   if (T_ind.n_elem > 0) {
-    theta.subvec(Z_ind.n_elem + H_ind.n_elem,
-      Z_ind.n_elem + T_ind.n_elem - 1) = T.elem(T_ind);
+    theta.subvec(Z_ind.n_elem,  Z_ind.n_elem + T_ind.n_elem - 1) = T.elem(T_ind);
   }
   if (R_ind.n_elem > 0) {
-    theta.subvec(Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem,
-      Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem - 1) =
-        R.elem(R_ind);
+    theta.subvec(Z_ind.n_elem + T_ind.n_elem,
+      Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem - 1) = R.elem(R_ind);
   }
   
+   if(phi_est) {
+    theta(Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem) = phi;
+  }
   if(xreg.n_cols > 0) {
-    theta.subvec(theta.n_elem - xreg.n_cols - (distribution == 3),
-      theta.n_elem - 1 - (distribution == 3)) = beta;
+    theta.subvec(theta.n_elem - xreg.n_cols,
+      theta.n_elem - 1) = beta;
   }
   
-  if(distribution == 3) {
-    theta(theta.n_elem - 1) = phi(0);
-  }
+ 
   return theta;
 }
 
@@ -319,7 +322,7 @@ arma::mat ngssm::predict2(const arma::uvec& prior_types,
       switch(distribution) {
       case 1  :
         for (unsigned int ii = 0; ii < nsim_states; ii++) {
-          pred_store.col(ii) = exp(pred_store.col(ii)) % phi.subvec(n - n_ahead, n - 1);
+          pred_store.col(ii) = exp(pred_store.col(ii)) % ut.subvec(n - n_ahead, n - 1);
         }
         break;
       case 2  :
@@ -329,7 +332,7 @@ arma::mat ngssm::predict2(const arma::uvec& prior_types,
         break;
       case 3  :
         for (unsigned int ii = 0; ii < nsim_states; ii++) {
-          pred_store.col(ii) = exp(pred_store.col(ii));
+          pred_store.col(ii) = exp(pred_store.col(ii)) % ut.subvec(n - n_ahead, n - 1);
         }
         break;
       }
@@ -338,21 +341,23 @@ arma::mat ngssm::predict2(const arma::uvec& prior_types,
       case 1  :
         for (unsigned int ii = 0; ii < nsim_states; ii++) {
           for (unsigned int t = 0; t < n_ahead; t++) {
-            pred_store(t, ii) = R::rpois(exp(pred_store(t, ii)) * phi(n - n_ahead + t));
+            pred_store(t, ii) = R::rpois(exp(pred_store(t, ii)) * ut(n - n_ahead + t));
           }
         }
         break;
       case 2  :
         for (unsigned int ii = 0; ii < nsim_states; ii++) {
           for (unsigned int t = 0; t < n_ahead; t++) {
-            pred_store(t, ii) = R::rbinom(phi(n - n_ahead + t), exp(pred_store(t, ii)) / (1.0 + exp(pred_store(t, ii))));
+            pred_store(t, ii) = R::rbinom(ut(n - n_ahead + t), exp(pred_store(t, ii)) / 
+              (1.0 + exp(pred_store(t, ii))));
           }
         }
         break;
       case 3  :
         for (unsigned int ii = 0; ii < nsim_states; ii++) {
           for (unsigned int t = 0; t < n_ahead; t++) {
-            pred_store(t, ii) = R::rnbinom(phi(n - n_ahead + t), exp(pred_store(t, ii)));
+            pred_store(t, ii) = R::rnbinom(phi, exp(pred_store(t, ii)) * 
+              ut(n - n_ahead + t));
           }
         }
         break;
@@ -431,7 +436,7 @@ arma::mat ngssm::predict2(const arma::uvec& prior_types,
         switch(distribution) {
         case 1  :
           for (unsigned int ii = j * nsim_states; ii < (j + 1) * nsim_states; ii++) {
-            pred_store.col(ii) = exp(pred_store.col(ii)) % phi.subvec(n - n_ahead, n - 1);
+            pred_store.col(ii) = exp(pred_store.col(ii)) % ut.subvec(n - n_ahead, n - 1);
           }
           break;
         case 2  :
@@ -441,7 +446,7 @@ arma::mat ngssm::predict2(const arma::uvec& prior_types,
           break;
         case 3  :
           for (unsigned int ii = j * nsim_states; ii < (j + 1) * nsim_states; ii++) {
-            pred_store.col(ii) = exp(pred_store.col(ii));
+            pred_store.col(ii) = exp(pred_store.col(ii)) % ut.subvec(n - n_ahead, n - 1);
           }
           break;
         }
@@ -450,21 +455,22 @@ arma::mat ngssm::predict2(const arma::uvec& prior_types,
         case 1  :
           for (unsigned int ii = j * nsim_states; ii < (j + 1) * nsim_states; ii++) {
             for (unsigned int t = 0; t < n_ahead; t++) {
-              pred_store(t, ii) = R::rpois(exp(pred_store(t, ii)) * phi(n - n_ahead + t));
+              pred_store(t, ii) = R::rpois(exp(pred_store(t, ii)) * ut(n - n_ahead + t));
             }
           }
           break;
         case 2  :
           for (unsigned int ii = j * nsim_states; ii < (j + 1) * nsim_states; ii++) {
             for (unsigned int t = 0; t < n_ahead; t++) {
-              pred_store(t, ii) = R::rbinom(phi(n - n_ahead + t), exp(pred_store(t, ii)) / (1.0 + exp(pred_store(t, ii))));
+              pred_store(t, ii) = R::rbinom(ut(n - n_ahead + t), exp(pred_store(t, ii)) / (1.0 + exp(pred_store(t, ii))));
             }
           }
           break;
         case 3  :
           for (unsigned int ii = j * nsim_states; ii < (j + 1) * nsim_states; ii++) {
             for (unsigned int t = 0; t < n_ahead; t++) {
-              pred_store(t, ii) = R::rnbinom(phi(n - n_ahead + t), exp(pred_store(t, ii)));
+              pred_store(t, ii) = R::rnbinom(phi, exp(pred_store(t, ii)) * 
+                ut(n - n_ahead + t));
             }
           }
           break;
@@ -492,7 +498,7 @@ arma::vec ngssm::importance_weights(const arma::cube& alphasim) {
         if (arma::is_finite(ng_y(t))) {
           double simsignal = alphasim(0, t, i);
           weights(i) += -0.5 * (simsignal +
-            pow((ng_y(t) - xbeta(t)) / phi(t), 2) * exp(-simsignal)) +
+            pow((ng_y(t) - xbeta(t)) / phi, 2) * exp(-simsignal)) +
             0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
         }
       }
@@ -504,7 +510,7 @@ arma::vec ngssm::importance_weights(const arma::cube& alphasim) {
         if (arma::is_finite(ng_y(t))) {
           double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
             alphasim.slice(i).col(t) + xbeta(t));
-          weights(i) += ng_y(t) * simsignal  - phi(t) * exp(simsignal) +
+          weights(i) += ng_y(t) * simsignal  - ut(t) * exp(simsignal) +
             0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
         }
       }
@@ -516,7 +522,7 @@ arma::vec ngssm::importance_weights(const arma::cube& alphasim) {
         if (arma::is_finite(ng_y(t))) {
           double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
             alphasim.slice(i).col(t) + xbeta(t));
-          weights(i) += ng_y(t) * simsignal - phi(t) * log(1 + exp(simsignal)) +
+          weights(i) += ng_y(t) * simsignal - ut(t) * log(1 + exp(simsignal)) +
             0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
         }
       }
@@ -528,7 +534,8 @@ arma::vec ngssm::importance_weights(const arma::cube& alphasim) {
         if (arma::is_finite(ng_y(t))) {
           double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
             alphasim.slice(i).col(t) + xbeta(t));
-          weights(i) += ng_y(t) * simsignal - (ng_y(t) + phi(t)) * log(phi(t) + exp(simsignal)) +
+          weights(i) += ng_y(t) * simsignal - (ng_y(t) + phi) * 
+            log(phi + ut(t) * exp(simsignal)) +
             0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
         }
       }
@@ -548,7 +555,7 @@ double ngssm::scaling_factor(const arma::vec& signal) {
     for (unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(ng_y(t))) {
         ll_approx_u += -0.5 * (signal(t) +
-          pow((ng_y(t) - xbeta(t)) / phi(t), 2) * exp(-signal(t))) +
+          pow((ng_y(t) - xbeta(t)) / phi, 2) * exp(-signal(t))) +
           0.5 * pow(y(t) - signal(t), 2) / HH(t);
       }
     }
@@ -556,7 +563,8 @@ double ngssm::scaling_factor(const arma::vec& signal) {
   case 1  :
     for (unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(ng_y(t))) {
-        ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) - phi(t) * exp(signal(t) + xbeta(t)) +
+        ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) - 
+          ut(t) * exp(signal(t) + xbeta(t)) +
           0.5 * pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
       }
     }
@@ -564,7 +572,8 @@ double ngssm::scaling_factor(const arma::vec& signal) {
   case 2  :
     for (unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(ng_y(t))) {
-        ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) - phi(t) * log(1 + exp(signal(t) + xbeta(t))) +
+        ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) - 
+          ut(t) * log(1 + exp(signal(t) + xbeta(t))) +
           0.5 * std::pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
       }
     }
@@ -573,7 +582,7 @@ double ngssm::scaling_factor(const arma::vec& signal) {
     for (unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(ng_y(t))) {
         ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) -
-          (ng_y(t) + phi(t)) * log(phi(t) + exp(signal(t) + xbeta(t))) +
+          (ng_y(t) + phi) * log(phi + ut(t) * exp(signal(t) + xbeta(t))) +
           0.5 * std::pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
       }
     }
@@ -1339,29 +1348,29 @@ arma::vec ngssm::pyt(const unsigned int t, const arma::cube& alphasim) {
   switch(distribution) {
   case 0  :
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
-      V(i) = R::dnorm(ng_y(t), xbeta(t), phi(0)*exp(alphasim(0,t,i)/2.0), logp);
+      V(i) = R::dnorm(ng_y(t), xbeta(t), phi * exp(alphasim(0,t,i)/2.0), logp);
       
     }
     break;
   case 1  :
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
-      double exptmp = exp(arma::as_scalar(Z.col(t * Ztv).t() *
+      double exptmp = ut(t) * exp(arma::as_scalar(Z.col(t * Ztv).t() *
         alphasim.slice(i).col(t) + xbeta(t)));
-      V(i) = R::dpois(ng_y(t), phi(t) * exptmp, logp);
+      V(i) = R::dpois(ng_y(t), exptmp, logp);
     }
     break;
   case 2  :
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
       double exptmp = exp(arma::as_scalar(Z.col(t * Ztv).t() *
         alphasim.slice(i).col(t) + xbeta(t)));
-      V(i) = R::dbinom(ng_y(t), phi(t),  exptmp / (1.0 + exptmp), logp);
+      V(i) = R::dbinom(ng_y(t), ut(t),  exptmp / (1.0 + exptmp), logp);
     }
     break;
   case 3  :
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
-      double exptmp = exp(arma::as_scalar(Z.col(t * Ztv).t() *
+      double exptmp = ut(t) * exp(arma::as_scalar(Z.col(t * Ztv).t() *
         alphasim.slice(i).col(t) + xbeta(t)));
-      V(i) = R::dnbinom_mu(ng_y(t), phi(t), exptmp, logp);
+      V(i) = R::dnbinom_mu(ng_y(t), phi, exptmp, logp);
     }
     break;
   }

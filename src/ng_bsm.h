@@ -11,12 +11,12 @@ public:
   ng_bsm(const List&, unsigned int, bool);
 
   ng_bsm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
-    arma::mat, arma::vec, bool, bool, bool, arma::uvec, arma::mat, arma::vec,
-    unsigned int, unsigned int);
+    arma::mat, double, arma::vec, bool, bool, bool, arma::uvec, arma::mat, arma::vec,
+    unsigned int, unsigned int, bool);
 
   ng_bsm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
-    arma::mat, arma::vec, bool, bool, bool, arma::uvec, arma::mat, arma::vec,
-    unsigned int, unsigned int, bool);
+    arma::mat, double, arma::vec, bool, bool, bool, arma::uvec, arma::mat, arma::vec,
+    unsigned int, unsigned int, bool, bool);
 
   double proposal(const arma::vec&, const arma::vec&);
   void update_model(arma::vec);

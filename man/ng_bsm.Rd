@@ -4,7 +4,7 @@
 \alias{ng_bsm}
 \title{Non-Gaussian Basic Structural (Time Series) Model}
 \usage{
-ng_bsm(y, sd_level, sd_slope, sd_seasonal, sd_noise, distribution, phi = 1,
+ng_bsm(y, sd_level, sd_slope, sd_seasonal, sd_noise, distribution, phi, u = 1,
   beta, xreg = NULL, period = frequency(y), a1, P1)
 }
 \arguments{
@@ -27,9 +27,12 @@ See\link[=uniform]{priors} for details. If missing, no additional noise term is 
 \item{distribution}{distribution of the observation. Possible choices are
 \code{"poisson"} and \code{"binomial"}.}
 
-\item{phi}{Additional parameter vector relating to the non-Gaussian distribution.
-For Poisson distribution, this corresponds to offset term. For binomial, this
-is the number of trials.}
+\item{phi}{Additional parameter relating to the non-Gaussian distribution. 
+For Negative binomial distribution this is the dispersion term, and for other 
+distributions this is ignored.}
+
+\item{u}{Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
+term. For binomial, this is the number of trials.}
 
 \item{beta}{Prior for the regression coefficients.}
 

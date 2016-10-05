@@ -4,7 +4,8 @@
 \alias{gssm}
 \title{General linear-Gaussian state space models}
 \usage{
-gssm(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names)
+gssm(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names, H_prior, Z_prior,
+  T_prior, R_prior)
 }
 \arguments{
 \item{y}{Observations as time series (or vector) of length \eqn{n}.}
@@ -31,6 +32,8 @@ m x k x n array, or object which can be coerced to such.}
 value in MCMC. Defaults to vector of zeros.}
 
 \item{state_names}{Names for the states.}
+
+\item{H_prior, Z_prior, T_prior, R_prior}{Priors for the NA values in system matrices.}
 }
 \value{
 Object of class \code{gssm}.

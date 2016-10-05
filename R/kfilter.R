@@ -76,7 +76,8 @@ kfilter.ng_bsm <- function(object, ...) {
 kfilter.svm <- function(object, ...) {
   
   object$distribution <- 0L
-  object$phi <- rep(object$sigma, length(object$y))
+  object$phi <- object$sigma
+  object$u <- 1
   out <- ngssm_filter(object, object$init_signal)
   
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-

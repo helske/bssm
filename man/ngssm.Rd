@@ -4,8 +4,8 @@
 \alias{ngssm}
 \title{General non-Gaussian/non-linear state space models}
 \usage{
-ngssm(y, Z, T, R, a1, P1, distribution, phi = 1, xreg = NULL, beta,
-  state_names)
+ngssm(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL, beta,
+  state_names, Z_prior, T_prior, R_prior)
 }
 \arguments{
 \item{y}{Observations as time series (or vector) of length \eqn{n}.}
@@ -26,9 +26,12 @@ m x k x n array, or object which can be coerced to such.}
 \item{distribution}{distribution of the observation. Possible choices are
 \code{"poisson"}, \code{"binomial"}, and \code{"negative binomial"}.}
 
-\item{phi}{Additional parameter vector relating to the non-Gaussian distribution.
-For Poisson distribution, this corresponds to offset term. For binomial, this
-is the number of trials.}
+\item{phi}{Additional parameter relating to the non-Gaussian distribution. 
+For Negative binomial distribution this is the dispersion term, and for other 
+distributions this is ignored.}
+
+\item{u}{Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
+term. For binomial, this is the number of trials.}
 
 \item{xreg}{Matrix containing covariates.}
 
@@ -36,6 +39,8 @@ is the number of trials.}
 value in MCMC. Defaults to vector of zeros.}
 
 \item{state_names}{Names for the states.}
+
+\item{Z_prior, T_prior, R_prior}{Priors for the NA values in system matrices.}
 }
 \value{
 Object of class \code{bgssm}.

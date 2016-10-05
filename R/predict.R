@@ -21,9 +21,8 @@
 #' @param return_MCSE For method \code{"parametric"}, if \code{TRUE}, the Monte Carlo
 #' standard errors are also returned.
 #' @param nsim_states Number of samples used in importance sampling.
-#' @param newphi Vector of length \code{n_ahead} defining the future values of \eqn{\phi}.
-#' Defaults to 1, expect for negative binomial distribution, where the initial
-#' value is taken from \code{object$phi}.
+#' @param newu Vector of length \code{n_ahead} defining the future values of \eqn{u}.
+#' Defaults to 1.
 #' @param ... Ignored.
 #' @inheritParams run_mcmc.gssm
 #' @return List containing the mean predictions, quantiles and Monte Carlo
@@ -37,38 +36,11 @@ predict.gssm <- function(object, n_iter, priors, newdata = NULL,
   n_burnin = floor(n_iter / 2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S,
   seed = sample(.Machine$integer.max, size = 1), ...) {
-
+  
   interval <- pmatch(interval, c("mean", "response"))
   method <- match.arg(method, c("parametric", "quantile"))
-
-  Z_ind <- which(is.na(object$Z)) - 1L
-  Z_n <- length(Z_ind)
-  H_ind <- which(is.na(object$H)) - 1L
-  H_n <- length(H_ind)
-  T_ind <- which(is.na(object$T)) - 1L
-  T_n <- length(T_ind)
-  R_ind <- which(is.na(object$R)) - 1L
-  R_n <- length(R_ind)
   
-  if ((Z_n + H_n + T_n + R_n + length(object$coef)) == 0) {
-    stop("nothing to estimate. ")
-  }
   inits <- sapply(priors, "[[", "init")
-  if(length(inits) != (Z_n + H_n + T_n + R_n + length(object$coef))) {
-    stop("Number of unknown parameters is not equal to the number of priors.")
-  }
-  if(Z_n > 0) {
-    object$Z[is.na(object$Z)] <- inits[1:Z_n]
-  }
-  if(H_n > 0) {
-    object$H[is.na(object$H)] <- inits[Z_n + 1:H_n]
-  }
-  if(T_n > 0) {
-    object$T[is.na(object$T)] <- inits[Z_n + H_n + 1:T_n]
-  }
-  if(R_n > 0) {
-    object$R[is.na(object$R)] <- inits[Z_n + H_n + T_n + 1:R_n]
-  }
   
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(inits)), length(inits))
@@ -78,7 +50,7 @@ predict.gssm <- function(object, n_iter, priors, newdata = NULL,
   endtime <- end(object$y) + c(0, n_ahead)
   y_orig <- object$y
   object$y <- c(object$y, rep(NA, n_ahead))
-
+  
   if (length(object$coefs) > 0) {
     if (is.null(newdata) || nrow(newdata) != n_ahead ||
         ncol(newdata) != length(object$coefs)) {
@@ -86,22 +58,22 @@ predict.gssm <- function(object, n_iter, priors, newdata = NULL,
     }
     object$xreg <- rbind(object$xreg, newdata)
   }
-
+  
   if (any(c(dim(object$Z)[3], dim(object$H)[3], dim(object$T)[3], dim(object$R)[3]) > 1)) {
     stop("Time-varying system matrices in prediction are not yet supported.")
   }
   probs <- sort(unique(c(probs, 0.5)))
   if (method == "parametric") {
-
+    
     out <- gssm_predict(object, priors$prior_types, priors$param, n_iter,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-      Z_ind, H_ind, T_ind, R_ind, probs, seed)
-
+      object$Z_ind, object$H_ind, object$T_ind, object$R_ind, probs, seed)
+    
     if (return_MCSE) {
       ses <- matrix(0, n_ahead, length(probs))
-
+      
       nsim <- nrow(out$y_mean)
-
+      
       for (i in 1:n_ahead) {
         for (j in 1:length(probs)) {
           pnorms <- pnorm(q = out$intervals[i, j], out$y_mean[, i], out$y_sd[, i])
@@ -110,7 +82,7 @@ predict.gssm <- function(object, n_iter, priors, newdata = NULL,
             sum(dnorm(x = out$intervals[i, j], out$y_mean[, i], out$y_sd[, i]) / nsim)
         }
       }
-
+      
       pred <- list(y = object$y, mean = ts(colMeans(out$y_mean), end = endtime, frequency = frequency(object$y)),
         intervals = ts(out$intervals, end = endtime, frequency = frequency(object$y),
           names = paste0(100*probs, "%")),
@@ -122,15 +94,15 @@ predict.gssm <- function(object, n_iter, priors, newdata = NULL,
           names = paste0(100 * probs, "%")))
     }
   } else {
-
+    
     out <- gssm_predict2(object, priors$prior_types, priors$param, n_iter,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-      Z_ind, H_ind, T_ind, R_ind, seed)
-
+      object$Z_ind, object$H_ind, object$T_ind, object$R_ind, seed)
+    
     pred <- list(y = y_orig, mean = ts(rowMeans(out), end = endtime, frequency = frequency(object$y)),
       intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = frequency(object$y),
         names = paste0(100 * probs, "%")))
-
+    
   }
   class(pred) <- "predict_bssm"
   pred
@@ -158,21 +130,21 @@ predict.bsm <- function(object, n_iter, newdata = NULL,
   n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
   seed = sample(.Machine$integer.max, size = 1), ...) {
-
+  
   interval <- pmatch(interval, c("mean", "response"))
   method <- match.arg(method, c("parametric", "quantile"))
-
+  
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(sapply(object$priors, "[[", "init"))), length(object$priors))
   }
-
+  
   priors <- combine_priors(object$priors)
-
-
+  
+  
   endtime <- end(object$y) + c(0, n_ahead)
   y_orig <- object$y
   object$y <- c(object$y, rep(NA, n_ahead))
-
+  
   if (length(object$coefs) > 0) {
     if (is.null(newdata) || nrow(newdata) != n_ahead ||
         ncol(newdata) != length(object$coefs)) {
@@ -186,12 +158,12 @@ predict.bsm <- function(object, n_iter, newdata = NULL,
       priors$prior_types, priors$params, n_iter,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
       probs, seed, FALSE)
-
+    
     if (return_MCSE) {
       ses <- matrix(0, n_ahead, length(probs))
-
+      
       nsim <- nrow(out$y_mean)
-
+      
       for (i in 1:n_ahead) {
         for (j in 1:length(probs)) {
           pnorms <- pnorm(q = out$intervals[i, j], out$y_mean[, i], out$y_sd[, i])
@@ -200,7 +172,7 @@ predict.bsm <- function(object, n_iter, newdata = NULL,
             sum(dnorm(x = out$intervals[i, j], out$y_mean[, i], out$y_sd[, i]) / nsim)
         }
       }
-
+      
       pred <- list(y = y_orig, mean = ts(colMeans(out$y_mean), end = endtime, frequency = object$period),
         intervals = ts(out$intervals, end = endtime, frequency = object$period,
           names = paste0(100 * probs, "%")),
@@ -215,7 +187,7 @@ predict.bsm <- function(object, n_iter, newdata = NULL,
     out <- bsm_predict2(object, priors$prior_types, priors$params, n_iter,
       n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
       seed, FALSE)
-
+    
     pred <- list(y = y_orig, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
       intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = object$period,
         names = paste0(100 * probs, "%")))
@@ -225,57 +197,21 @@ predict.bsm <- function(object, n_iter, newdata = NULL,
 }
 #' @export
 #' @rdname predict
-predict.ngssm <- function(object, n_iter, nsim_states, priors,
+predict.ngssm <- function(object, n_iter, nsim_states,
   newdata = NULL,
   n_ahead = 1, interval = "mean",
   probs = c(0.05, 0.95),
   n_burnin = floor(n_iter / 2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S,
-  seed = sample(.Machine$integer.max, size = 1),  newphi = NULL, ...) {
+  seed = sample(.Machine$integer.max, size = 1),  newu = NULL, ...) {
   
   interval <- pmatch(interval, c("mean", "response"))
-   Z_ind <- which(is.na(object$Z)) - 1L
-  Z_n <- length(Z_ind)
-
-  T_ind <- which(is.na(object$T)) - 1L
-  T_n <- length(T_ind)
-  R_ind <- which(is.na(object$R)) - 1L
-  R_n <- length(R_ind)
   
-  if ((Z_n + T_n + R_n + length(object$coef)) == 0) {
-    stop("nothing to estimate. ")
-  }
   inits <- sapply(priors, "[[", "init")
-  if(length(inits) != (Z_n + T_n + R_n + length(object$coef) + nb)) {
-    stop("Number of unknown parameters is not equal to the number of priors.")
-  }
-  if(Z_n > 0) {
-    object$Z[is.na(object$Z)] <- inits[1:Z_n]
-  }
-
-  if(T_n > 0) {
-    object$T[is.na(object$T)] <- inits[Z_n + 1:T_n]
-  }
-  if(R_n > 0) {
-    object$R[is.na(object$R)] <- inits[Z_n + T_n + 1:R_n]
-  }
-  
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(inits)), length(inits))
   }
   
-  nb <- object$distribution == "negative binomial"
-  
-  if (Z_n + T_n + R_n + nb == 0) {
-    stop("nothing to estimate. ")
-  }
-  
-  if (missing(S)) {
-    S <- diag(Z_n  + T_n + R_n + nb)
-  }
-  if (nrow(S) == length(priors)) {
-    stop("Number of unknown parameters is not equal to the number of priors.")
-  }
   
   endtime <- end(object$y) + c(0, n_ahead)
   y_orig <- object$y
@@ -289,24 +225,32 @@ predict.ngssm <- function(object, n_iter, nsim_states, priors,
     object$xreg <- rbind(object$xreg, newdata)
   }
   
-  if (is.null(newphi) || length(newphi) != n_ahead) {
-    stop("newphi is missing or its length is not equal to n_ahead. ")
+  u_orig <- object$u
+  if (is.null(newu)) {
+    object$u <- c(object$u, rep(1, n_ahead))
+  } else {
+    if (length(newu) != n_ahead) {
+      stop("Length of newu is not equal to n_ahead. ")
+    } else {
+      object$u<- c(object$u, newu)
+    }
   }
-  
   
   if (any(c(dim(object$Z)[3], dim(object$T)[3], dim(object$R)[3]) > 1)) {
     stop("Time-varying system matrices in prediction are not yet supported.")
   }
-  object$phi <- c(object$phi, newphi)
   probs <- sort(unique(c(probs, 0.5)))
   object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
   priors <- combine_priors(priors)
   out <- ngssm_predict2(object, priors$prior_types, priors$params, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-    Z_ind, T_ind, R_ind, object$init_signal, seed)
+    object$Z_ind, object$T_ind, object$R_ind, object$init_signal, seed)
   
-  pred <- list(y = object$y, mean = ts(rowMeans(out), end = endtime, frequency = frequency(object$y)),
+  if (interval == 1) {
+    y_orig <- y_orig / u_orig
+  }
+  pred <- list(y = y_orig, mean = ts(rowMeans(out), end = endtime, frequency = frequency(object$y)),
     intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = frequency(object$y),
       names = paste0(100 * probs, "%")))
   
@@ -332,24 +276,21 @@ predict.ng_bsm <- function(object, n_iter, nsim_states,
   probs = c(0.05, 0.95),
   n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S,
-  seed = sample(.Machine$integer.max, size = 1), newphi = NULL,  ...) {
-
+  seed = sample(.Machine$integer.max, size = 1), newu = NULL,  ...) {
+  
   interval <- pmatch(interval, c("mean", "response"))
-
-  nb <- object$distribution == "negative binomial"
-
+  
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(sapply(object$priors, "[[", "init"))), length(object$priors))
   }
-
-  priors <- combine_priors(object$priors)
-
-
+  
+  
+  
   endtime <- end(object$y) + c(0, n_ahead)
   y_orig <- object$y
-  phi_orig <- object$phi
+  
   object$y <- c(object$y, rep(NA, n_ahead))
-
+  
   if (length(object$coefs) > 0) {
     if (!is.null(newdata) && (nrow(newdata) != n_ahead ||
         ncol(newdata) != length(object$coefs))) {
@@ -360,34 +301,33 @@ predict.ng_bsm <- function(object, n_iter, nsim_states,
     }
     object$xreg <- rbind(object$xreg, newdata)
   }
-  if (nb) {
-    object$phi <- c(object$phi, rep(object$phi[length(object$phi)], n_ahead))
+  u_orig <- object$u
+  if (is.null(newu)) {
+    object$u <- c(object$u, rep(1, n_ahead))
   } else {
-    if (is.null(newphi)) {
-      object$phi <- c(object$phi, rep(1, n_ahead))
+    if (length(newu) != n_ahead) {
+      stop("Length of newu is not equal to n_ahead. ")
     } else {
-      if (length(newphi) != n_ahead) {
-        stop("Length of newphi is not equal to n_ahead. ")
-      } else {
-        object$phi <- c(object$phi, newphi)
-      }
+      object$u<- c(object$u, newu)
     }
   }
+  priors <- combine_priors(object$priors)
   probs <- sort(unique(c(probs, 0.5)))
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
+  
   out <- ng_bsm_predict2(object, priors$prior_types, priors$params, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
     c(object$init_signal, rep(log(0.1), n_ahead)), seed, FALSE)
-
-  if (interval == 1 && (object$distribution != "negative binomial")) {
-    y_orig <- y_orig / phi_orig
+  
+  if (interval == 1) {
+    y_orig <- y_orig / u_orig
   }
   pred <- list(y = y_orig, mean = ts(rowMeans(out), end = endtime, frequency = object$period),
     intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = object$period,
       names = paste0(100 * probs, "%")))
-
-
+  
+  
   class(pred) <- "predict_bssm"
   pred
-
+  
 }

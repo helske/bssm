@@ -40,7 +40,7 @@ test_that("results for poisson model are comparable to KFAS",{
   diag(model_KFAS$P1) <- 1e2
   
   model_bssm <- ng_bsm(model_KFAS$y, P1 = diag(1e2,2), sd_slope = 0,
-    sd_level = 0.01, phi = 2:11, distribution = "poisson")
+    sd_level = 0.01, u = 2:11, distribution = "poisson")
   
   expect_equal(logLik(model_KFAS,convtol = 1e-12), logLik(model_bssm,0))
   out_KFAS <- KFS(model_KFAS, filtering = "state", convtol = 1e-12)
@@ -61,7 +61,7 @@ test_that("results for binomial model are comparable to KFAS", {
   diag(model_KFAS$P1) <- 1e2
   
   model_bssm <- ng_bsm(model_KFAS$y, P1 = diag(1e2,2), sd_slope = 0,
-    sd_level = 0.01, phi = 2:11, distribution = "binomial")
+    sd_level = 0.01, u = 2:11, distribution = "binomial")
   
   expect_equal(logLik(model_KFAS,convtol = 1e-12), logLik(model_bssm,0))
   out_KFAS <- KFS(model_KFAS, filtering = "state", convtol = 1e-12)

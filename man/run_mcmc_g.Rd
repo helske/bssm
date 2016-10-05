@@ -6,7 +6,7 @@
 \title{Bayesian Inference of Linear-Gaussian State Space Models}
 \usage{
 \method{run_mcmc}{gssm}(object, n_iter, sim_states = TRUE, type = "full",
-  priors, n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
+  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
@@ -32,8 +32,6 @@ states directly computes the  posterior means and variances of states using
 fast Kalman smoothing. This is slightly faster, memory  efficient and
 more accurate than calculations based on simulation smoother.
 \eqn{\theta}. Optional for \code{bsm} objects.}
-
-\item{priors}{Priors for the unknown parameters.}
 
 \item{n_burnin}{Length of the burn-in period which is disregarded from the
 results. Defaults to \code{n_iter / 2}.}

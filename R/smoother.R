@@ -114,7 +114,8 @@ smoother.ng_bsm <- function(object, ...) {
 smoother.svm <- function(object, ...) {
   
   object$distribution <- 0L
-  object$phi <- rep(object$sigma, length(object$y))
+  object$phi <- object$sigma
+  object$u <- 1
   
   out <- svm_smoother(object, object$init_signal)
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)

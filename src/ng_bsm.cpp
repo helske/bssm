@@ -13,10 +13,10 @@ ng_bsm::ng_bsm(const List& model, unsigned int seed, bool log_space) :
 
 //general constructor
 ng_bsm::ng_bsm(arma::vec y, arma::mat Z, arma::cube T,
-  arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi, bool slope, bool seasonal,
+  arma::cube R, arma::vec a1, arma::mat P1, double phi, arma::vec u, bool slope, bool seasonal,
   bool noise, arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int distribution,
-  unsigned int seed, bool log_space) :
-  ngssm(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, seed),
+  unsigned int seed, bool log_space, bool phi_est) :
+  ngssm(y, Z, T, R, a1, P1, phi, u, xreg, beta, distribution, seed, phi_est),
   slope(slope), seasonal(seasonal), noise(noise), fixed(fixed), level_est(fixed(0) == 0),
   slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0),
   log_space(log_space) {
@@ -24,10 +24,10 @@ ng_bsm::ng_bsm(arma::vec y, arma::mat Z, arma::cube T,
 
 //without log_space
 ng_bsm::ng_bsm(arma::vec y, arma::mat Z, arma::cube T,
-  arma::cube R, arma::vec a1, arma::mat P1, arma::vec phi, bool slope, bool seasonal,
+  arma::cube R, arma::vec a1, arma::mat P1, double phi, arma::vec u, bool slope, bool seasonal,
   bool noise, arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int distribution,
-  unsigned int seed) :
-  ngssm(y, Z, T, R, a1, P1, phi, xreg, beta, distribution, seed),
+  unsigned int seed, bool phi_est) :
+  ngssm(y, Z, T, R, a1, P1, phi, u, xreg, beta, distribution, seed, phi_est),
   slope(slope), seasonal(seasonal), noise(noise), fixed(fixed), level_est(fixed(0) == 0),
   slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0),
   log_space(false) {
@@ -54,10 +54,10 @@ double ng_bsm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
 
 void ng_bsm::update_model(arma::vec theta) {
 
-  if (sum(fixed) < 3 || noise) {
+  if (sum(fixed) < 3 || noise || phi_est) {
     if (log_space) {
-      theta.subvec(0, theta.n_elem - xreg.n_cols - (distribution == 3) - 1) =
-        exp(theta.subvec(0, theta.n_elem - xreg.n_cols - (distribution == 3) - 1));
+      theta.subvec(0, theta.n_elem - xreg.n_cols - phi_est - 1) =
+        exp(theta.subvec(0, theta.n_elem - xreg.n_cols - phi_est - 1));
     }
     // sd_level
     if (level_est) {
@@ -79,21 +79,22 @@ void ng_bsm::update_model(arma::vec theta) {
     }
     compute_RR();
   }
+  if(phi_est) {
+    phi = theta(level_est + slope_est + seasonal_est + noise);
+  }
+  
   if(xreg.n_cols > 0) {
-    beta = theta.subvec(theta.n_elem - xreg.n_cols - (distribution == 3),
-      theta.n_elem - 1 - (distribution == 3));
+    beta = theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1);
     compute_xbeta();
   }
-  if(distribution == 3) {
-    phi.fill(theta(theta.n_elem - 1));
-  }
+  
 
 }
 
 arma::vec ng_bsm::get_theta(void) {
 
   unsigned int npar = level_est + slope_est + seasonal_est + noise +
-    xreg.n_cols + (distribution == 3);
+    xreg.n_cols + phi_est;
 
   arma::vec theta(npar);
 
@@ -116,19 +117,20 @@ arma::vec ng_bsm::get_theta(void) {
         R(m - 1, 1 + slope + seasonal, 0);
     }
     if (log_space) {
-      theta.subvec(0, theta.n_elem - xreg.n_cols - (distribution == 3) - 1) =
-        log(theta.subvec(0, theta.n_elem - xreg.n_cols - (distribution == 3) - 1));
+      theta.subvec(0, theta.n_elem - xreg.n_cols - phi_est - 1) =
+        log(theta.subvec(0, theta.n_elem - xreg.n_cols - phi_est - 1));
     }
   }
-
+  
+  if(phi_est) {
+    theta(level_est + slope_est + seasonal_est + noise) = phi;
+  }
+  
   if(xreg.n_cols > 0) {
-    theta.subvec(theta.n_elem - xreg.n_cols - (distribution == 3),
-      theta.n_elem - 1 - (distribution == 3)) = beta;
+    theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1) = beta;
   }
 
-  if(distribution == 3) {
-    theta(theta.n_elem - 1) = phi(0);
-  }
+
   return theta;
 }
 

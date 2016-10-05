@@ -19,17 +19,17 @@
   gamma = 2/3, target_acceptance = 0.234, S,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
-\method{predict}{ngssm}(object, n_iter, nsim_states, priors, newdata = NULL,
+\method{predict}{ngssm}(object, n_iter, nsim_states, newdata = NULL,
   n_ahead = 1, interval = "mean", probs = c(0.05, 0.95),
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size =
-  1), newphi = NULL, ...)
+  1), newu = NULL, ...)
 
 \method{predict}{ng_bsm}(object, n_iter, nsim_states, newdata = NULL,
   n_ahead = 1, interval = "mean", probs = c(0.05, 0.95),
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, seed = sample(.Machine$integer.max, size =
-  1), newphi = NULL, ...)
+  1), newu = NULL, ...)
 }
 \arguments{
 \item{object}{Model object.}
@@ -75,9 +75,8 @@ distribution is \eqn{SS'}.}
 
 \item{nsim_states}{Number of samples used in importance sampling.}
 
-\item{newphi}{Vector of length \code{n_ahead} defining the future values of \eqn{\phi}.
-Defaults to 1, expect for negative binomial distribution, where the initial
-value is taken from \code{object$phi}.}
+\item{newu}{Vector of length \code{n_ahead} defining the future values of \eqn{u}.
+Defaults to 1.}
 }
 \value{
 List containing the mean predictions, quantiles and Monte Carlo

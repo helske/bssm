@@ -105,12 +105,12 @@ gssm_smoother <- function(model_) {
     .Call('bssm_gssm_smoother', PACKAGE = 'bssm', model_)
 }
 
-gssm_run_mcmc <- function(model_, prior_types, prior_pars, n_iter, sim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, seed, end_ram) {
-    .Call('bssm_gssm_run_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, sim_states, n_burnin, n_thin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, seed, end_ram)
+gssm_run_mcmc <- function(model_, prior_types, prior_pars, n_iter, sim_states, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, Z_ind, H_ind, T_ind, R_ind) {
+    .Call('bssm_gssm_run_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, sim_states, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, Z_ind, H_ind, T_ind, R_ind)
 }
 
-gssm_run_mcmc_summary <- function(model_, prior_types, prior_pars, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, seed, end_ram) {
-    .Call('bssm_gssm_run_mcmc_summary', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, Z_ind, H_ind, T_ind, R_ind, seed, end_ram)
+gssm_run_mcmc_summary <- function(model_, prior_types, prior_pars, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, seed, end_ram, Z_ind, H_ind, T_ind, R_ind) {
+    .Call('bssm_gssm_run_mcmc_summary', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, n_thin, n_burnin, gamma, target_acceptance, S, seed, end_ram, Z_ind, H_ind, T_ind, R_ind)
 }
 
 gssm_predict <- function(model_, prior_types, prior_pars, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval, Z_ind, H_ind, T_ind, R_ind, probs, seed) {

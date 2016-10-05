@@ -6,7 +6,7 @@
 \alias{run_mcmc.svm}
 \title{Bayesian inference of non-Gaussian or non-linear state space models using MCMC}
 \usage{
-\method{run_mcmc}{ngssm}(object, n_iter, nsim_states, priors, type = "full",
+\method{run_mcmc}{ngssm}(object, n_iter, nsim_states, type = "full",
   method = "PM", simulation_method = "IS", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
@@ -33,8 +33,6 @@
 \item{n_iter}{Number of MCMC iterations.}
 
 \item{nsim_states}{Number of state samples per MCMC iteration.}
-
-\item{priors}{Priors for the unknown parameters.}
 
 \item{type}{Either \code{"full"} (default), or \code{"summary"}. The
 former produces samples of states whereas the latter gives the mean and

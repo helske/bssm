@@ -42,6 +42,7 @@ logLik.ng_bsm <- function(object, nsim_states, seed = 1, ...) {
 logLik.svm <- function(object, nsim_states, seed = 1, ...) {
   
   object$distribution <- 0L
-  object$phi <- rep(object$sigma, length(object$y))
+  object$phi <- object$sigma
+  object$u <- 1
   svm_loglik(object, object$init_signal, nsim_states, seed)
 }
