@@ -3,7 +3,7 @@
 // from List
 ngssm::ngssm(const List& model, unsigned int seed) :
   gssm(model, seed, true), phi(model["phi"]), ut(as<arma::vec>(model["u"])),
-  distribution(model["distribution"]), phi_est(model["phi_est"]),
+  distribution(model["distribution"]), phi_est(as<bool>(model["phi_est"])), 
   ng_y(as<arma::vec>(model["y"])),
   max_iter(100), conv_tol(1.0e-8) {
 }
@@ -14,7 +14,7 @@ ngssm::ngssm(const List& model, arma::uvec Z_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
   gssm(model, Z_ind, T_ind, R_ind, seed, true),
   phi(model["phi"]), ut(as<arma::vec>(model["u"])), 
-  distribution(model["distribution"]), phi_est(model["phi_est"]),
+  distribution(model["distribution"]), phi_est(as<bool>(model["phi_est"])), 
   ng_y(as<arma::vec>(model["y"])),
   max_iter(100), conv_tol(1.0e-8) {
 }
