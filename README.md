@@ -6,7 +6,7 @@ bssm: an R package for Bayesian inference of exponential family and stochastic v
 
 Efficient methods for Bayesian inference of state space models where the observation density is Gaussian, Poisson, binomial or negative binomial, and where the state dynamics are Gaussian.
 
-For details, see [package vignette](https://github.com/helske/bssm/blob/master/inst/doc/bssm.pdf) and paper [Importance sampling type correction of Markov chain Monte Carlo and exact approximations](http://arxiv.org/abs/1609.02541).
+For details, see [package vignette](https://github.com/helske/bssm/blob/master/bssm.pdf) and paper [Importance sampling type correction of Markov chain Monte Carlo and exact approximations](http://arxiv.org/abs/1609.02541).
 
 Current Status
 ==========================================================================
