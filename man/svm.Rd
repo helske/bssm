@@ -4,12 +4,12 @@
 \alias{svm}
 \title{Stochastic Volatility Model}
 \usage{
-svm(y, ar, sd_ar, sigma, beta, xreg = NULL)
+svm(y, rho, sd_ar, sigma, beta, xreg = NULL)
 }
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
 
-\item{ar}{prior for autoregressive coefficient.}
+\item{rho}{prior for autoregressive coefficient.}
 
 \item{sd_ar}{Prior for the standard deviation of noise of the AR-process.}
 
@@ -28,17 +28,17 @@ first order autoregressive signal.
 }
 \examples{
 data("exchange")
-model <- svm(exchange, ar = uniform(0.98,-0.999,0.999), 
+model <- svm(exchange, rho = uniform(0.98,-0.999,0.999), 
  sd_ar = halfnormal(0.2, 5), sigma = halfnormal(1, 2))
 
 obj <- function(pars) {
-   -logLik(svm(exchange, ar = uniform(pars[1],-0.999,0.999), 
+   -logLik(svm(exchange, rho = uniform(pars[1],-0.999,0.999), 
    sd_ar = halfnormal(pars[2],sd=5), 
    sigma = halfnormal(pars[3],sd=2)), 100)
 }
 opt <- nlminb(c(0.98, 0.4, 1), obj, lower = c(-0.999, 1e-4, 1e-4), upper = c(0.999,10,10))
 pars <- opt$par
-model <- svm(exchange, ar = uniform(pars[1],-0.999,0.999), 
+model <- svm(exchange, rho = uniform(pars[1],-0.999,0.999), 
   sd_ar = halfnormal(pars[2],sd=5), 
   sigma = halfnormal(pars[3],sd=2))
 }

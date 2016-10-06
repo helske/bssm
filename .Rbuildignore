@@ -4,4 +4,5 @@
 ^README\.md$
 ^\.gitignore$
 ^\.travis\.yml$
-vignettes\bssm.pdf
+^inst/doc$
+^TODO$
