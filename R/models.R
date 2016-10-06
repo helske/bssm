@@ -503,7 +503,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' first order autoregressive signal.
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
-#' @param ar prior for autoregressive coefficient.
+#' @param rho prior for autoregressive coefficient.
 #' @param sigma Prior for sigma parameter of observation equation.
 #' @param sd_ar Prior for the standard deviation of noise of the AR-process.
 #' @param beta Prior for the regression coefficients.
@@ -512,20 +512,20 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' @export
 #' @examples
 #' data("exchange")
-#' model <- svm(exchange, ar = uniform(0.98,-0.999,0.999), 
+#' model <- svm(exchange, rho = uniform(0.98,-0.999,0.999), 
 #'  sd_ar = halfnormal(0.2, 5), sigma = halfnormal(1, 2))
 #'
 #' obj <- function(pars) {
-#'    -logLik(svm(exchange, ar = uniform(pars[1],-0.999,0.999), 
+#'    -logLik(svm(exchange, rho = uniform(pars[1],-0.999,0.999), 
 #'    sd_ar = halfnormal(pars[2],sd=5), 
 #'    sigma = halfnormal(pars[3],sd=2)), 100)
 #' }
 #' opt <- nlminb(c(0.98, 0.4, 1), obj, lower = c(-0.999, 1e-4, 1e-4), upper = c(0.999,10,10))
 #' pars <- opt$par
-#' model <- svm(exchange, ar = uniform(pars[1],-0.999,0.999), 
+#' model <- svm(exchange, rho = uniform(pars[1],-0.999,0.999), 
 #'   sd_ar = halfnormal(pars[2],sd=5), 
 #'   sigma = halfnormal(pars[3],sd=2))
-svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
+svm <- function(y, rho, sd_ar, sigma, beta, xreg = NULL) {
   
   check_y(y)
   n <- length(y)
@@ -561,15 +561,15 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
     
   }
   
-  check_ar(ar$init)
-  check_sd(sd_ar$init, "ar")
+  check_rho(rho$init)
+  check_sd(sd_ar$init, "rho")
   check_sd(sigma$init, "sigma", FALSE)
   
   a1 <- 0
-  P1 <- matrix(sd_ar$init^2 / (1 - ar$init^2))
+  P1 <- matrix(sd_ar$init^2 / (1 - rho$init^2))
   
   Z <- matrix(1)
-  T <- array(ar$init, c(1, 1, 1))
+  T <- array(rho$init, c(1, 1, 1))
   R <- array(sd_ar$init, c(1, 1, 1))
   
   init_signal <- log(pmax(1e-4, y^2)) - 2 * log(sigma$init)
@@ -578,13 +578,13 @@ svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
     rownames(T) <- colnames(T) <- rownames(R) <- "signal"
   
   if(ncol(xreg) > 1) {
-    priors <- c(list(ar, sd_ar, sigma), beta)
+    priors <- c(list(rho, sd_ar, sigma), beta)
   } else {
-    priors <- list(ar, sd_ar, sigma, beta)
+    priors <- list(rho, sd_ar, sigma, beta)
   }
   priors <- priors[!sapply(priors, is.null)]
   names(priors) <-
-    c("ar", "sd_ar", "sigma", names(coefs))
+    c("rho", "sd_ar", "sigma", names(coefs))
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, sigma = sigma$init, xreg = xreg, coefs = coefs,

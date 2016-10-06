@@ -51,17 +51,17 @@ check_beta <- function(x, k) {
     stop("Number of coefficients in beta is not equal to the number of columns of xreg.")
   }
   if (any(!is.finite(x))) {
-    stop("Argument beta must contain only finite values. ")
+    stop("Argument 'beta' must contain only finite values. ")
   }
 
 }
-check_ar <- function(x) {
+check_rho <- function(x) {
   
   if (length(x) != 1) {
-    stop(paste0("Argument ar must be of length one."))
+    stop(paste0("Argument 'rho' must be of length one."))
   }
   if (abs(x) >= 1) {
-    stop("Argument ar must be strictly between -1 and 1.")
+    stop("Argument 'rho' must be strictly between -1 and 1.")
   }
   
 }

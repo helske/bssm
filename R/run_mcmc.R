@@ -457,7 +457,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
     })
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-
-    c("ar", "sd_ar", "sigma", names(object$coefs))
+    c("rho", "sd_ar", "sigma", names(object$coefs))
   if(method == "PM") {
     out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
   }

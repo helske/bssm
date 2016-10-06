@@ -53,7 +53,7 @@ test_that("bad argument values for svm throws an error",{
   expect_error(svm(1))
   expect_error(svm(c(1, Inf)))
   expect_error(svm(1:10, sd_level = "character"))
-  expect_error(svm(1:10, ar = Inf))
+  expect_error(svm(1:10, rho = Inf))
   expect_error(svm(1:10, no_argument = 5))
   expect_error(svm(1:10, xreg = matrix(1:20), beta = uniform(0, 0, 1)))
   expect_error(svm(1:10, xreg = 1:10, beta = NA))

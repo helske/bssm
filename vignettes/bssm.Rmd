@@ -1,9 +1,10 @@
 ---
-title: "bssm: Bayesian Inference of Exponential Family State Space Models in R"
+title: "bssm: Bayesian Inference of Non-linear/Non-Gaussian State Space Models in R"
 author: |
   | Jouni Helske and Matti Vihola
   | University of Jyväskylä, Department of Mathematics and Statistics, Finland
-date: "September 14, 2016"
+date: "October 6, 2016"
+link-citations: true
 output: 
   pdf_document:
     fig_caption: yes
@@ -22,42 +23,44 @@ vignette: |
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+### this vignette is very much work in progress, for details see function documentation and paper by Vihola, Helske, and Franks (2016)
+
 # Introduction
 
-The R package `bssm` is designed for Bayesian inference of stochastic volatility and exponential family state space models. The exponential family state space model is assumed to have a form
+The R package `bssm` is designed for Bayesian inference of general state space models with Gaussian states dynamics and non-Gaussian and/or non-linear observational distribution. We define the state transition equation as
+$$
+\alpha_{t+1} = T_t \alpha_t + R_t \eta_t,
+$$
+where $\eta_t \sim N(0, I_k)$ and $\alpha_1 \sim N(a_1, P_1)$ independently of each other. For observation level equation, the `bssm` package currently supports basic stochastic volatility model and general exponential family state space models. The observation equation for the stochastic volatility model is defined as
+$$
+y_t = x'_t\beta + \sigma \exp(\alpha_t / 2)\epsilon_t, \quad \epsilon_t \sim N(0, 1),
+$$
+where $x_t$ contains the exogenous covariate values at time $t$, with $\beta$ corresponding to the regression coefficients. For stochastic volatility model the state equation is defined as
+$$
+\alpha_{t+1} = \rho \alpha_t + \sigma_{\eta} \eta_t,
+$$
+with $\alpha_1 \sim  N(0, \sigma^2_{\eta} / (1-\rho^2))$.
+
+For exponential family models, general state transition equation is used, and the observation equation has a general form
 
 $$
-\begin{aligned}
-p(y_t | Z_t \alpha_t, x'_t\beta) \qquad (\textrm{observation equation})\\
-\alpha_{t+1} = T_t \alpha_t + R_t \eta_t, \qquad (\textrm{transition equation})
-\end{aligned}
+p(y_t | Z_t \alpha_t, x'_t\beta, \phi, u_t).
 $$
-
-where $\eta_t \sim N(0, I_k)$ and $\alpha_1 \sim N(a_1, P_1)$ independently of each other, $x_t$ contains the exogenous covariate values at time time, with $\beta$ corresponding to the regression coefficients. Currently, following observational level distributions are supported:
+Currently, following observational level distributions are supported:
 
 * Gaussian distribution: $p(y_t | Z_t \alpha_t, x'_t\beta) = x'_t \beta + Z_t \alpha_t + H_t \epsilon_t$ with $\epsilon_t \sim N(0, 1)$.
 
-* Poisson distribution: $p(y_t | Z_t \alpha_t, x'_t \beta) = \textrm{Poisson}(\phi_t \textrm{exp}(x'_t \beta + Z_t \alpha_t))$, where $\phi_t$ is the exposure at time $t$.
+* Poisson distribution: $p(y_t | Z_t \alpha_t, x'_t \beta, u_t) = \textrm{Poisson}(u_t \exp(x'_t \beta + Z_t \alpha_t))$, where $u_t$ is the known exposure at time $t$.
 
-* Binomial distribution: $p(y_t | Z_t \alpha_t, x'_t \beta) = \textrm{binomial}(\phi_t, \textrm{exp}(x'_t \beta + Z_t \alpha_t) / (1 + \textrm{exp}(x'_t \beta + Z_t \alpha_t)))$, where $\phi_t$ is the size and $\textrm{exp}(x_t \beta + Z_t \alpha_t) / (1 + \textrm{exp}(x'_t \beta + Z_t \alpha_t))$ is the probability of the success.
+* Binomial distribution: $p(y_t | Z_t \alpha_t, x'_t \beta, u_t) = \textrm{binomial}(u_t, \exp(x'_t \beta + Z_t \alpha_t) / (1 + \exp(x'_t \beta + Z_t \alpha_t)))$, where $u_t$ is the size and $\exp(x_t \beta + Z_t \alpha_t) / (1 + \exp(x'_t \beta + Z_t \alpha_t))$ is the probability of the success.
 
-* Negative binomial distribution: $p(y_t | Z_t \alpha_t, x'_t \beta) = \textrm{negative binomial}(\textrm{exp}(x'_t \beta + Z_t \alpha_t), \phi)$, where $\textrm{exp}(x'_t \beta + Z_t \alpha_t)$ is the expected value and $\phi_t$ is the dispersion parameter.
+* Negative binomial distribution: $p(y_t | Z_t \alpha_t, x'_t \beta, \phi, u_t) = \textrm{negative binomial}(\exp(x'_t \beta + Z_t \alpha_t), \phi, u_t)$, where $u_t \exp(x'_t \beta + Z_t \alpha_t)$ is the expected value and $\phi$ is the dispersion parameter ($u_t$ is again exposure term).
 
-Currently only basic stochastic volatility model is supported, defined as 
-$$
-\begin{aligned}
-             y_t  &= \sigma 
-              \exp(\alpha_t/2)\epsilon_t,  &\epsilon_t &\sim N(0, 1)\\
-              \alpha_{t+1} &= \phi \alpha_t + \sigma_{\eta}\eta_t,
-              &\eta_t &\sim N(0, 1),
-\end{aligned}
-$$
-with $\alpha_1 \sim  N(0, \sigma^2_{\eta} / (1-\phi^2))$.
+The `bssm` package aims to provide easy-to-use and efficient functions for fully Bayesian inference of common time series models such basic structural time series model (BSM) [@Harvey1989] with exogenous covariates, making it straighforward and efficient to make predictions and other inference in a Bayesian setting.
 
-The `bssm` package aims to provide easy-to-use functions for fully Bayesian inference of common time series models such basic structural time series model (BSM) [@Harvey1989] with exogenous covariates, making it straighforward and efficient to make predictions and other inference in a Bayesian setting.
+The Bayesian framework of `bssm` is based on @vihola-helske-franks. The core methodology reliest on Markov chain Monte Carlo (MCMC) approach with adaptive random walk Metropolis updating, using RAM algorithm by [@Vihola2012]. 
 
-The Bayesian framework of `bssm` is based on [@vihola-helske-franks]. The core methodology reliest on Markov chain Monte Carlo (MCMC) approach with adaptive random walk Metropolis updating, using RAM algorithm by [@Vihola2012]. 
-The RAM algorithm approach seems to work very well in practice, and it allows an efficient "black-box" type of modelling were the user does not need to be too concerned of "tuning" of the MCMC algorithm. Several efficient MCMC variants can be used, such as pseudo-marginal MCMC based on particle filtering, optionally with delayed acceptance, as well as the two-step procedure based on importance sampling type correction introduced in [@vihola-helske-franks]. 
+Several efficient MCMC variants can be used, such as pseudo-marginal MCMC based on particle filtering, optionally with delayed acceptance, as well as the two-step procedure based on importance sampling type correction introduced in [@vihola-helske-franks].
 
 
 # MCMC algorithm for Gaussian state space models
@@ -78,7 +81,7 @@ If the interest is in the posterior means and variances of the states, we can re
 
 # Non-Gaussian models
 
-For non-Gaussian models we focus on exponential family models so that we can use the Laplace approximation of the observational density, giving us an approximating Gaussian model which has the same mode of $p(\alpha | y)$ as the original model. This is based on [@DK2000]. This approximating Gaussian model seems to work very well in practice, and thus we can use it in MCMC scheme directly, which results in an approximate Bayesian inference. We can also use the approximating model together with importance sampling which produces exact Bayesian inference on $p(\alpha, \theta | y)$. We can factor the likelihood of the non-Gaussian model as [@DK2012]
+The observational densities of our non-Gaussian/non-linear models are all twice differentiable, so we can straightforwardly use the Laplace approximation based on [@DK2000]. This gives us an approximating Gaussian model which has the same mode of $p(\alpha | y)$ as the original model. Often this approximating Gaussian model works well as such, and thus we can use it in MCMC scheme directly, which results in an approximate Bayesian inference. We can also use the approximating model together with importance sampling which produces exact Bayesian inference on $p(\alpha, \theta | y)$. We can factor the likelihood of the non-Gaussian model as [@DK2012]
 $$
 \begin{aligned}
 p(y | \theta) &= \int g(\alpha, y | \theta)\textrm{d}\alpha \\
@@ -102,7 +105,15 @@ $\min\left\{1, \frac{g(y | \theta'_i) \hat w_i }{g(y | \theta_{i-1}) \hat w_{i-1
 2. If accepted, perform the importance sampling of the states $\alpha$ and make the delayed acceptance with probability $\min\{1, \sum_{j=1}^N w_{i,j}^{\ast'} / \sum_{j=1}^N w_{i-1,j}^{\ast}\}$.
 3. If the delayed acceptance is successful, set $\theta_i = \theta'_i$ and sample one (or multiple) realization of the previously simulated states with weights $w_{i,j}, j = 1, \ldots, N$ (with replacement in case of multiple samples are stored). Otherwise, set $\theta_i = \theta_{i-1}$ and similarly for the states.
 
-## Prediction intervals
+## Particle filtering
+
+In addition to simulation smoother based importance sampling inference, `bssm` supports particle filtering for computing the log-likelihood estimates and simulating states. Two types of filters are available, classical bootstrap filter, and $\psi$-auxiliary filter based on @guarniero-johansen-lee, where we use same Gaussian approximation as in simulation smoother based importance sampling.
+
+## Importance-sampling type correction
+
+For efficient parallel computation, the importance-sampling type correction presented in @vihola-helske-franks can be used, where the MCMC algorithm targets the approximating posterior (based on the Gaussian model), and the correction to actual target posterior is made in offline fashion.
+
+# Prediction intervals
 
 For predicting future observations, one can extend the time series data with missing values which are handled straightforwardly by Kalman filter. This gives us point predictions in form of expected values, but for prediction intervals, no analytical formulas are available as the posterior distribution of the state is not necessarily normal. A standard way of obtaining the prediction intervals is to simulate future observations and use empirical quantiles for the limits of prediction interval. However, this is can be computationally expensive as a large number of simulations is needed for accurate values of tail probabilities. In addition of standard quantile method, the `bssm` package contains alternative method for Gaussian models based on the parametric method by [@HelskeNyblom2015, @Helske2016]. Here, instead of simulating the future values, we compute the expected values and variances of the future values using the Kalman filtering, and then solve simple equation based on the cumulative distribution function of Normal distribution. 
 
@@ -118,12 +129,12 @@ init_sd <- 0.1 * sd(log10(UKgas))
 prior <- halfnormal(init_sd, 1)
 model <- bsm(log10(UKgas), sd_y = prior, sd_level = prior,
   sd_slope = prior, sd_seasonal = prior)
-mcmc_out <- run_mcmc(model, n_iter = 6e4, n_burnin = 1e4)
+mcmc_out <- run_mcmc(model, n_iter = 6e4)
 mcmc_out
 
 plot(mcmc_out$theta)
 
-# posterior mode estimates (diffuse priors):
+# posterior mode estimates
 mcmc_out$theta[which.max(mcmc_out$posterior), ]
 
 # posterior covariance matrix:
@@ -149,7 +160,7 @@ ts.plot(log10(UKgas), pred$mean, pred$intervals[,-3],
   col = c(1, 2, c(3, 4, 4, 3)), lty = c(1, 1, rep(2, 4)))
 ```
 
-With \texttt{ggplot2}:
+With `ggplot2`:
 
 ```{r predict2, dev.args=list(pointsize = 10), fig.cap="Prediction plots with ggplot2."}
 require("ggplot2")
