@@ -44,5 +44,6 @@ logLik.svm <- function(object, nsim_states, seed = 1, ...) {
   object$distribution <- 0L
   object$phi <- object$sigma
   object$u <- 1
+  object$phi_est <- TRUE
   svm_loglik(object, object$init_signal, nsim_states, seed)
 }

@@ -510,6 +510,21 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' @param xreg Matrix containing covariates.
 #' @return Object of class \code{svm}.
 #' @export
+#' @examples
+#' data("exchange")
+#' model <- svm(exchange, ar = uniform(0.98,-0.999,0.999), 
+#'  sd_ar = halfnormal(0.2, 5), sigma = halfnormal(1, 2))
+#'
+#' obj <- function(pars) {
+#'    -logLik(svm(exchange, ar = uniform(pars[1],-0.999,0.999), 
+#'    sd_ar = halfnormal(pars[2],sd=5), 
+#'    sigma = halfnormal(pars[3],sd=2)), 100)
+#' }
+#' opt <- nlminb(c(0.98, 0.4, 1), obj, lower = c(-0.999, 1e-4, 1e-4), upper = c(0.999,10,10))
+#' pars <- opt$par
+#' model <- svm(exchange, ar = uniform(pars[1],-0.999,0.999), 
+#'   sd_ar = halfnormal(pars[2],sd=5), 
+#'   sigma = halfnormal(pars[3],sd=2))
 svm <- function(y, ar, sd_ar, sigma, beta, xreg = NULL) {
   
   check_y(y)

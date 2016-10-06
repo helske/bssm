@@ -116,7 +116,7 @@ smoother.svm <- function(object, ...) {
   object$distribution <- 0L
   object$phi <- object$sigma
   object$u <- 1
-  
+  object$phi_est <- TRUE
   out <- svm_smoother(object, object$init_signal)
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
   out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))

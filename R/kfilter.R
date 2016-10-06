@@ -78,7 +78,8 @@ kfilter.svm <- function(object, ...) {
   object$distribution <- 0L
   object$phi <- object$sigma
   object$u <- 1
-  out <- ngssm_filter(object, object$init_signal)
+  object$phi_est <- TRUE
+  out <- svm_filter(object, object$init_signal)
   
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)

@@ -35,6 +35,6 @@ importance_sample.svm <- function(object, nsim, seed = sample(.Machine$integer.m
   object$distribution <- 0L
   object$phi <- object$sigma
   object$u <- 1
-  
+  object$phi_est <- TRUE
   svm_importance_sample(object, object$init_signal, nsim, seed)
 }
