@@ -47,7 +47,7 @@ test_that("MCMC results for Poisson model are correct",{
   expect_equivalent(testvalues, out$theta)
   
   testvalues <- c(-2.25051173382636, 0.401204374024394, -1.29957037760506, 0.70044534511549, 
--1.29957037760506, -1.29957037760506)
+    -1.29957037760506, -1.29957037760506)
   expect_equivalent(testvalues, out$alpha[c(1,10,20,25, 31, 60)])
 })
 
@@ -62,18 +62,40 @@ test_that("MCMC results for binomial model are correct",{
     run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)), NA)
   
   testvalues <- structure(c(-38.4510899893105, -38.4510899893105, -38.4510899893105, 
--38.4510899893105, -38.2787954724052), .Dim = c(5L, 1L))
+    -38.4510899893105, -38.2787954724052), .Dim = c(5L, 1L))
   expect_equivalent(testvalues, out$posterior)
   
   testvalues <- structure(c(2.0499145967585, 2.0499145967585, 2.0499145967585, 
-2.0499145967585, 2.03647937119522), .Dim = c(5L, 1L), .Dimnames = list(
-    NULL, "sd_level"), mcpar = c(6, 10, 1), class = "mcmc")
+    2.0499145967585, 2.03647937119522), .Dim = c(5L, 1L), .Dimnames = list(
+      NULL, "sd_level"), mcpar = c(6, 10, 1), class = "mcmc")
   expect_equivalent(testvalues, out$theta)
   
   testvalues <- c(-0.129365208071896, -0.0764425225893368, 0.754866067120236, 
--0.0826085226842411, 0.754866067120236, 0.754866067120236)
+    -0.0826085226842411, 0.754866067120236, 0.754866067120236)
   expect_equivalent(testvalues, out$alpha[c(1,10,20,25, 31, 60)])
 })
 
 
+test_that("MCMC results for negative binomial model are correct",{
+  set.seed(123)
+  y <- rnbinom(100, mu = 5, size = 2)
+  expect_error(model_bssm <- ng_bsm(y,  sd_level = 0, 
+    phi = halfnormal(1, 2),
+    distribution = 'negative binomial'), NA)
+  
+  expect_error(out <- run_mcmc(model_bssm, n_iter = 20, n_burnin = 15, nsim_states = 5), NA)
+  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), 
+    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)), NA)
+  
+  testvalues <- structure(c(-263.765826199904, -263.765826199904, -261.661097641368, 
+    -262.375150730155, -262.375150730155), .Dim = c(5L, 1L))
+  expect_equivalent(testvalues, out$posterior)
+  
+  testvalues <- structure(c(1.16553263865597, 1.16553263865597, 1.35971289542647, 
+    1.28435318292968, 1.28435318292968), .Dim = c(5L, 1L), .Dimnames = list(
+      NULL, NULL), mcpar = c(16, 20, 1), class = "mcmc")
+  expect_equivalent(testvalues, out$theta)
+  
+  expect_equivalent(1.49337944854536, out$alpha[1])
+})
 
