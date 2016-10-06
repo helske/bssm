@@ -20,9 +20,9 @@ particle_filter <- function(object, nsim, ...) {
 #' @export
 particle_filter.gssm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
-
+  
   out <- gssm_particle_filter(object, nsim, seed)
-
+  
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -31,9 +31,9 @@ particle_filter.gssm <- function(object, nsim,
 #' @export
 particle_filter.bsm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
-
+  
   out <- bsm_particle_filter(object, nsim, seed)
-
+  
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -44,6 +44,8 @@ particle_filter.bsm <- function(object, nsim,
 #' @export
 particle_filter.ngssm <- function(object, nsim, filter_type = "bootstrap",
   seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  filter_type <- match.arg(filter_type, c("bootstrap", "psi"))
   
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
   
@@ -72,7 +74,8 @@ particle_filter.ng_bsm <- function(object, nsim, filter_type = "bootstrap",
 #' @export
 particle_filter.svm <- function(object, nsim, filter_type = "bootstrap",
   seed = sample(.Machine$integer.max, size = 1), ...) {
-
+  
+  filter_type <- match.arg(filter_type, c("bootstrap", "psi"))
   object$distribution <- 0L
   object$phi <- object$sigma
   object$u <- 1
