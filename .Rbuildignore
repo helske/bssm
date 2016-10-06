@@ -4,5 +4,5 @@
 ^README\.md$
 ^\.gitignore$
 ^\.travis\.yml$
-^inst/doc$
 ^TODO$
+^\.Rhistory$
