@@ -1048,7 +1048,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
             //accept_prob used in RAM
             accept_prob = std::min(1.0, exp(ll_init_prop - ll_init + prior_prop - prior + q));
             ll_prop = psi_filter_precomp(nsim_states, alpha_prop, V, omega, ll_g_prop);
-            pp = std::min(1.0, exp(ll_prop - ll_prop + prior_prop - prior + q));
+            pp = std::min(1.0, exp(ll_prop - ll + prior_prop - prior + q));
           } else {
             accept_prob = 0.0;
             pp = 0.0;
