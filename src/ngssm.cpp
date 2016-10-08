@@ -1026,7 +1026,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
         arma::cube alpha_prop(m, n, nsim_states);
         double ll_prop;
         double pp = 0.0;
-        
+        double ll_init_prop;
         if(bf) {
           
           ll_prop = particle_filter(nsim_states, alpha_prop, V, omega);
@@ -1042,7 +1042,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
             ll_approx = approx(signal, max_iter, conv_tol);
           }
           double ll_g_prop = log_likelihood(distribution != 0);
-          double ll_init_prop = ll_approx + ll_g_prop;
+          ll_init_prop = ll_approx + ll_g_prop;
           if(std::isfinite(ll_init_prop)) {
             double q = proposal(theta, theta_prop);
             //accept_prob used in RAM
@@ -1061,6 +1061,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
             acceptance_rate++;
           }
           ll = ll_prop;
+          ll_init = ll_init_prop;
           prior = prior_prop;
           theta = theta_prop;
           arma::vec weights = V.col(n-1);
