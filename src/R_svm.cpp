@@ -60,7 +60,7 @@ arma::mat svm_fast_smoother(const List& model_, arma::vec init_signal) {
   svm model(model_, 1);
   model.approx(init_signal, 1000, 1e-12);
   
-  return model.fast_smoother(true).t();
+  return model.fast_smoother(false).t();
 }
 
 // [[Rcpp::export]]
