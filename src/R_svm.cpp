@@ -70,7 +70,7 @@ arma::cube svm_sim_smoother(const List& model_, unsigned nsim,
   svm model(model_, seed);
   model.approx(init_signal, 1000, 1e-12);
   
-  return model.sim_smoother(nsim, true);
+  return model.sim_smoother(nsim, false);
 }
 // [[Rcpp::export]]
 List svm_smoother(const List& model_, arma::vec init_signal) {
