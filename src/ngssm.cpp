@@ -758,6 +758,9 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
   arma::mat& theta_store, arma::vec& posterior_store,
   arma::cube& alpha_store) {
   
+  if(nsim_states == 1) {
+    da = false;
+  }
   unsigned int npar = prior_types.n_elem;
   
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
