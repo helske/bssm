@@ -104,16 +104,16 @@ arma::vec ngssm::approx_iter(arma::vec& signal) {
     y = ng_y % HH + signal + xbeta - 1.0;
     break;
   case 2  : {
-    arma::vec exptmp = exp(signal + xbeta);
-    HH = pow(1.0 + exptmp, 2) / (ut % exptmp);
-    y = ng_y % HH + signal + xbeta - 1.0 - exptmp;
+      arma::vec exptmp = exp(signal + xbeta);
+      HH = pow(1.0 + exptmp, 2) / (ut % exptmp);
+      y = ng_y % HH + signal + xbeta - 1.0 - exptmp;
     }
     break;
   case 3  : {
     arma::vec exptmp = 1.0 / (exp(signal + xbeta) % ut);
     HH = 1.0 / phi + exptmp;
     y = signal + xbeta + ng_y % exptmp - 1.0;
-    }
+  }
     break;
   }
   // new signal
@@ -230,14 +230,14 @@ void ngssm::update_model(arma::vec theta) {
     compute_RR();
   }
   
-   if(phi_est) {
+  if(phi_est) {
     phi = theta(Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem);
   }
   if(xreg.n_cols > 0) {
     beta = theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1);
     compute_xbeta();
   }
- 
+  
 }
 
 // pick up theta from system matrices
@@ -257,7 +257,7 @@ arma::vec ngssm::get_theta(void) {
       Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem - 1) = R.elem(R_ind);
   }
   
-   if(phi_est) {
+  if(phi_est) {
     theta(Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem) = phi;
   }
   if(xreg.n_cols > 0) {
@@ -265,7 +265,7 @@ arma::vec ngssm::get_theta(void) {
       theta.n_elem - 1) = beta;
   }
   
- 
+  
   return theta;
 }
 
@@ -681,8 +681,11 @@ double ngssm::mcmc_approx(const arma::uvec& prior_types, const arma::mat& prior_
   
   for (unsigned int i = n_burnin  + 1; i < n_iter; i++) {
     
+    if (i % 16 == 0) {
+      checkUserInterrupt();
+    }
+    
     // sample from standard normal distribution
-    // arma::vec u = rnorm(npar);
     arma::vec u(npar);
     for(unsigned int ii = 0; ii < npar; ii++) {
       u(ii) = normal(engine);
@@ -801,8 +804,11 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
   std::uniform_real_distribution<> unif(0.0, 1.0);
   for (unsigned int i = 1; i < n_iter; i++) {
     
+    if (i % 16 == 0) {
+      checkUserInterrupt();
+    }
+    
     // sample from standard normal distribution
-    //arma::vec u = rnorm(npar);
     arma::vec u(npar);
     for(unsigned int ii = 0; ii < npar; ii++) {
       u(ii) = normal(engine);
@@ -962,8 +968,12 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   for (unsigned int i = 1; i < n_iter; i++) {
+    
+    if (i % 16 == 0) {
+      checkUserInterrupt();
+    }
+    
     // sample from standard normal distribution
-    //arma::vec u = rnorm(npar);
     arma::vec u(npar);
     for(unsigned int ii = 0; ii < npar; ii++) {
       u(ii) = normal(engine);
@@ -1158,8 +1168,12 @@ double ngssm::run_mcmc_summary(const arma::uvec& prior_types, const arma::mat& p
   std::uniform_real_distribution<> unif(0.0, 1.0);
   
   for (unsigned int i = 1; i < n_iter; i++) {
+    
+    if (i % 16 == 0) {
+      checkUserInterrupt();
+    }
+    
     // sample from standard normal distribution
-    //arma::vec u = rnorm(npar);
     arma::vec u(npar);
     for(unsigned int ii = 0; ii < npar; ii++) {
       u(ii) = normal(engine);
@@ -1571,7 +1585,7 @@ double ngssm::psi_filter_precomp(unsigned int nsim, arma::cube& alphasim, arma::
   arma::mat alphahat(m, n);
   arma::cube Vt(m, m, n);
   arma::cube Ct(m, m, n);
- 
+  
   smoother_ccov(alphahat, Vt, Ct, distribution != 0);
   conditional_dist_helper(Vt, Ct);
   std::normal_distribution<> normal(0.0, 1.0);

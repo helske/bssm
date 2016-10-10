@@ -266,8 +266,8 @@ double gssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
 }
 
 /* Fast state smoothing, only returns smoothed estimates of states
-* which are needed in simulation smoother
-*/
+ * which are needed in simulation smoother
+ */
 arma::mat gssm::fast_smoother(bool demean) {
   
   arma::mat at(m, n);
@@ -329,8 +329,8 @@ arma::mat gssm::fast_smoother(bool demean) {
 
 
 /* Fast state smoothing which returns also Ft, Kt and Lt which can be used
-* in subsequent calls of smoother in simulation smoother.
-*/
+ * in subsequent calls of smoother in simulation smoother.
+ */
 
 arma::mat gssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt, bool demean) {
   
@@ -392,7 +392,7 @@ arma::mat gssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt, boo
 }
 
 /* Fast state smoothing which uses precomputed Ft, Kt and Lt.
-*/
+ */
 
 arma::mat gssm::precomp_fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
   const arma::cube& Lt, bool demean) {
@@ -641,18 +641,18 @@ void gssm::smoother(arma::mat& at, arma::cube& Pt, bool demean) {
 
 //smoother which returns also cov(alpha_t, alpha_t-1)
 void gssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov, bool demean) {
-
+  
   at.col(0) = a1;
   Pt.slice(0) = P1;
   arma::vec vt(n);
   arma::vec Ft(n);
   arma::mat Kt(m, n);
-
+  
   arma::vec y_tmp = y;
   if (demean && xreg.n_cols > 0) {
     y -= xbeta;
   }
-
+  
   for (unsigned int t = 0; t < (n - 1); t++) {
     Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt.slice(t) * Z.col(t * Ztv) +
       HH(t * Htv));
@@ -681,7 +681,7 @@ void gssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov, bool d
     ccov.slice(t) = arma::symmatu(T.slice(t * Ttv) * Pt.slice(t) * T.slice(t * Ttv).t() +
       RR.slice(t * Rtv));
   }
-
+  
   arma::vec rt(m, arma::fill::zeros);
   arma::mat Nt(m, m, arma::fill::zeros);
   
@@ -703,7 +703,7 @@ void gssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov, bool d
     Pt.slice(t) -= arma::symmatu(Pt.slice(t) * Nt * Pt.slice(t));
     
   }
-
+  
   if (demean && xreg.n_cols > 0) {
     y = y_tmp;
   }
@@ -746,6 +746,10 @@ double gssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_pars
   std::uniform_real_distribution<> unif(0.0, 1.0);
   
   for (unsigned int i = 1; i < n_iter; i++) {
+    
+    if (i % 16 == 0) {
+      checkUserInterrupt();
+    }
     
     // sample from standard normal distribution
     arma::vec u(n_par);
@@ -882,6 +886,11 @@ List gssm::predict(const arma::uvec& prior_types, const arma::mat& prior_pars,
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   for (unsigned int i = 1; i < n_iter; i++) {
+    
+    if (i % 16 == 0) {
+      checkUserInterrupt();
+    }
+    
     // sample from standard normal distribution
     arma::vec u(n_par);
     for(unsigned int ii = 0; ii < n_par; ii++) {
