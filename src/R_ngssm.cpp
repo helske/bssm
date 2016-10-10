@@ -1,4 +1,5 @@
 #include "ngssm.h"
+#include "is_correction.h"
 
 // [[Rcpp::export]]
 double ngssm_loglik(const List& model_, arma::vec init_signal,

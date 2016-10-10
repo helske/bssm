@@ -1,5 +1,5 @@
 #include "svm.h"
-
+#include "is_correction.h"
 
 // [[Rcpp::export]]
 double svm_loglik(const List& model_, arma::vec init_signal, unsigned int nsim_states,

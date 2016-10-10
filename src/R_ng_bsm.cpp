@@ -1,4 +1,5 @@
 #include "ng_bsm.h"
+#include "is_correction.h"
 
 // [[Rcpp::export]]
 double ng_bsm_loglik(const List& model_, arma::vec init_signal, unsigned int nsim_states,
