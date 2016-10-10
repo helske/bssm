@@ -522,7 +522,7 @@ arma::vec ngssm::importance_weights(const arma::cube& alphasim) {
         if (arma::is_finite(ng_y(t))) {
           double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
             alphasim.slice(i).col(t) + xbeta(t));
-          weights(i) += ng_y(t) * simsignal - ut(t) * log(1 + exp(simsignal)) +
+          weights(i) += ng_y(t) * simsignal - ut(t) * log1p(exp(simsignal)) +
             0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
         }
       }
@@ -573,7 +573,7 @@ double ngssm::scaling_factor(const arma::vec& signal) {
     for (unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(ng_y(t))) {
         ll_approx_u += ng_y(t) * (signal(t) + xbeta(t)) - 
-          ut(t) * log(1 + exp(signal(t) + xbeta(t))) +
+          ut(t) * log1p(exp(signal(t) + xbeta(t))) +
           0.5 * std::pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
       }
     }
