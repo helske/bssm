@@ -9,6 +9,7 @@ test_that("Test conversion from SSModel to gssm",{
     T = array(c(1, 0, 1, 1), c(2, 2, 1)), R = array(diag(sqrt(2), 2), c(2, 2, 1)), 
     a1 = matrix(0, 2, 1), P1 = diag(2e3, 2)), NA)
   expect_error(conv_model_bssm <- as_gssm(model_KFAS), NA)
+  expect_equivalent(model_bssm, conv_model_bssm)
 })
 
 

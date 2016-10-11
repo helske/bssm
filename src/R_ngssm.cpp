@@ -194,9 +194,7 @@ arma::mat ngssm_predict2(const List& model_, arma::uvec& prior_types,
 List ngssm_importance_sample(const List& model_, arma::vec init_signal,
   unsigned int nsim_states,  unsigned int seed) {
   
-  ngssm model(model_, 1);
-  
-  
+  ngssm model(model_, seed);
   model.approx(init_signal, model.max_iter, model.conv_tol);
   
   arma::cube alpha = model.sim_smoother(nsim_states, true);
