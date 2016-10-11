@@ -97,7 +97,7 @@ List ngssm_run_mcmc(const List& model_,
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
   arma::mat theta_store(npar, n_samples);
-  arma::cube alpha_store(model.m, model.n, n_samples);
+  arma::cube alpha_store(model.n, model.m, n_samples);
   arma::vec posterior_store(n_samples);
   
   double acceptance_rate;
@@ -149,7 +149,7 @@ List ngssm_run_mcmc_is(const List& model_,
     end_ram, adapt_approx);
   
   arma::vec weights_store(counts.n_elem);
-  arma::cube alpha_store(model.m, model.n, counts.n_elem);
+  arma::cube alpha_store(model.n, model.m, counts.n_elem);
   
   if(sim_type == 1) {
     is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,

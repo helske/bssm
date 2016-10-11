@@ -79,7 +79,7 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
         sim_states, n_burnin, n_thin, gamma, target_acceptance, S, 
         seed, end_adaptive_phase, object$Z_ind,
         object$H_ind, object$T_ind, object$R_ind)
-      out$alpha <- aperm(out$alpha, c(2, 1, 3))
+
       colnames(out$alpha) <- names(object$a1)
       out
     },
@@ -126,7 +126,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
         sim_states, n_burnin, n_thin, gamma, target_acceptance, S, seed, 
         FALSE, end_adaptive_phase)
       
-      out$alpha <- aperm(out$alpha, c(2, 1, 3))
+
       colnames(out$alpha) <- names(object$a1)
       out
     },
@@ -246,7 +246,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
           pmatch(simulation_method, c("IS", "bootstrap", "psi")), const_m,
           object$Z_ind, object$T_ind, object$R_ind)
       }
-      out$alpha <- aperm(out$alpha, c(2, 1, 3))
+
       colnames(out$alpha) <- names(object$a1)
       out
     },
@@ -334,7 +334,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
           object$init_signal, seed, n_threads, end_adaptive_phase, adaptive_approx,
           pmatch(simulation_method, c("IS", "bootstrap", "psi")), const_m)
       }
-      out$alpha <- aperm(out$alpha, c(2, 1, 3))
+
       colnames(out$alpha) <- names(object$a1)
       out
     },
@@ -429,7 +429,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
           object$init_signal, seed, n_threads, end_adaptive_phase, adaptive_approx,
           pmatch(simulation_method, c("IS", "bootstrap", "psi")), const_m)
       }
-      out$alpha <- aperm(out$alpha, c(2, 1, 3))
+
       colnames(out$alpha) <- names(object$a1)
       out
     },

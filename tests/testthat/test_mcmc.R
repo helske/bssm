@@ -9,8 +9,8 @@ test_that("MCMC results for gaussian model are correct",{
   
   expect_error(out <- run_mcmc(model_bssm, n_iter = 5, nsim = 5), NA)
   
-  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1), 
-    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)), NA)
+  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-8], 
+    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-8]), NA)
   
   testvalues <- structure(c(-23.2747514859484, -23.4917121873825, -23.2613263226018), 
     .Dim = c(3L, 1L))
@@ -34,8 +34,8 @@ test_that("MCMC results for Poisson model are correct",{
     sd_level = uniform(2, 0, 10), u = 2:11, distribution = "poisson")
   
   expect_error(out <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), NA)
-  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), 
-    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)), NA)
+  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8], 
+    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8]), NA)
   
   testvalues <- structure(c(-39.2859389395516, -39.2859389395516, -39.2859389395516, 
     -37.8081239720664, -37.846333182345), .Dim = c(5L, 1L))
@@ -58,8 +58,8 @@ test_that("MCMC results for binomial model are correct",{
     sd_level = uniform(2, 0, 10), u = 22:31, distribution = "binomial")
   
   expect_error(out <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), NA)
-  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), 
-    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)), NA)
+  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8], 
+    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8]), NA)
   
   testvalues <- structure(c(-38.4510899893105, -38.4510899893105, -38.4510899893105, 
     -38.4510899893105, -38.2787954724052), .Dim = c(5L, 1L))
@@ -84,8 +84,8 @@ test_that("MCMC results for negative binomial model are correct",{
     distribution = 'negative binomial'), NA)
   
   expect_error(out <- run_mcmc(model_bssm, n_iter = 20, n_burnin = 15, nsim_states = 5), NA)
-  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), 
-    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)), NA)
+  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8], 
+    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8]), NA)
   
   testvalues <- structure(c(-263.765826199904, -263.765826199904, -261.661097641368, 
     -262.375150730155, -262.375150730155), .Dim = c(5L, 1L))

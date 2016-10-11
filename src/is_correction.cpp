@@ -41,7 +41,7 @@ void is_correction(T mod, const arma::mat& theta, const arma::mat& y_store, cons
 
       std::discrete_distribution<> sample(weights.begin(), weights.end());
 
-      alpha_store.slice(i) = alpha.slice(sample(mod.engine));
+      alpha_store.slice(i) = alpha.slice(sample(mod.engine)).t();
 
     }
   }

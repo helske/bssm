@@ -732,7 +732,7 @@ double gssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_pars
   
   if (n_burnin == 0) {
     if (sim_states) {
-      alpha_store.slice(0) = alpha;
+      alpha_store.slice(0) = alpha.t();
     }
     theta_store.col(0) = theta;
     posterior_store(0) = ll + prior;
@@ -790,7 +790,7 @@ double gssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_pars
       posterior_store(j) = ll + prior;
       theta_store.col(j) = theta;
       if (sim_states) {
-        alpha_store.slice(j) = alpha;
+        alpha_store.slice(j) = alpha.t();
       }
       
       j++;
@@ -813,7 +813,7 @@ double gssm::mcmc_summary(const arma::uvec& prior_types, const arma::mat& prior_
   arma::mat& alphahat, arma::cube& Vt) {
   
   unsigned int n_samples = posterior_store.n_elem;
-  arma::cube alpha_store(m, n, 0);
+  arma::cube alpha_store(n, m, 0);
   
   double acceptance_rate = run_mcmc(prior_types, prior_pars, n_iter, false,
     n_burnin, n_thin, gamma, target_acceptance, S, end_ram,

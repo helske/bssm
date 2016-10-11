@@ -792,7 +792,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
   if (n_burnin == 0) {
     theta_store.col(0) = theta;
     posterior_store(0) = ll + ll_w + prior;
-    alpha_store.slice(0) = alpha.slice(ind);
+    alpha_store.slice(0) = alpha.slice(ind).t();
     acceptance_rate++;
     j++;
   }
@@ -898,7 +898,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
     if ((i >= n_burnin) && (i % n_thin == 0) && j < n_samples) {
       posterior_store(j) = ll + ll_w + prior;
       theta_store.col(j) = theta;
-      alpha_store.slice(j) = alpha.slice(ind);
+      alpha_store.slice(j) = alpha.slice(ind).t();
       j++;
     }
     
@@ -959,7 +959,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
   if (n_burnin == 0) {
     theta_store.col(0) = theta;
     posterior_store(0) = ll + prior;
-    alpha_store.slice(0) = alpha.slice(ind);
+    alpha_store.slice(0) = alpha.slice(ind).t();
     acceptance_rate++;
     j++;
   }
@@ -1090,7 +1090,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
     if ((i >= n_burnin) && (i % n_thin == 0) && j < n_samples) {
       posterior_store(j) = ll  + prior;
       theta_store.col(j) = theta;
-      alpha_store.slice(j) = alpha.slice(ind);
+      alpha_store.slice(j) = alpha.slice(ind).t();
       j++;
     }
     

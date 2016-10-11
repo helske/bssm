@@ -74,7 +74,7 @@ List gssm_run_mcmc(const List& model_,
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
   arma::mat theta_store(npar, n_samples);
-  arma::cube alpha_store(model.m, model.n, n_samples * sim_states);
+  arma::cube alpha_store(model.n, model.m, n_samples * sim_states);
   arma::vec posterior_store(n_samples);
 
 

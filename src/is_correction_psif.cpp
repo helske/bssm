@@ -45,7 +45,7 @@ void is_correction_psif(T mod, const arma::mat& theta, const arma::mat& y_store,
       arma::vec tmp = V.col(mod.n - 1);
       std::discrete_distribution<> sample(tmp.begin(), tmp.end());
 
-      alpha_store.slice(i) = alpha.slice(sample(mod.engine));
+      alpha_store.slice(i) = alpha.slice(sample(mod.engine)).t();
 
     }
   }

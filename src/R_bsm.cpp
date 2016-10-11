@@ -217,7 +217,7 @@ List bsm_run_mcmc(const List& model_,
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
   arma::mat theta_store(npar, n_samples);
-  arma::cube alpha_store(model.m, model.n, sim_states * n_samples);
+  arma::cube alpha_store(model.n, model.m, sim_states * n_samples);
   arma::vec posterior_store(n_samples);
 
   double acceptance_rate = model.run_mcmc(prior_types, prior_pars, n_iter,
