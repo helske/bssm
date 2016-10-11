@@ -99,3 +99,30 @@ test_that("MCMC results for negative binomial model are correct",{
   expect_equivalent(1.49337944854536, out$alpha[1])
 })
 
+
+test_that("MCMC results for SV model are correct",{
+  set.seed(123)
+  expect_error(model_bssm <- svm(rnorm(10), rho = uniform(0.95,-0.999,0.999), 
+    sd_ar = halfnormal(1, 5), sigma = halfnormal(1, 2)), NA)
+  
+  expect_error(out <- run_mcmc(model_bssm, n_iter = 20, n_burnin = 15, nsim_states = 5), NA)
+  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8], 
+    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8]), NA)
+  
+  testvalues <- structure(c(-17.2785499634381, -17.1522385567832, -17.2408376389957, 
+    -17.2408376389957, -17.2529363969), .Dim = c(5L, 1L))
+  expect_equivalent(testvalues, out$posterior)
+  
+  testvalues <- structure(c(0.611645727466498, 0.784126255249186, 0.739990910881518, 
+    0.739990910881518, 0.538608198317944, 0.132471223920487, 0.260180586666946, 
+    0.305401598068018, 0.305401598068018, 0.449188287046116, 0.732778575928857, 
+    0.80046492329671, 0.817714439472359, 0.817714439472359, 1.02447292408947
+  ), .Dim = c(5L, 3L), .Dimnames = list(NULL, c("rho", "sd_ar", 
+    "sigma")), mcpar = c(16, 20, 1), class = "mcmc")
+  expect_equivalent(testvalues, out$theta)
+  
+  testvalues <- c(-0.0830748149852014, -0.198578873285639, 0.178440933808639, 
+    0.0256754390526584)
+  expect_equivalent(testvalues, out$alpha[c(1,10, 20, 50)])
+})
+

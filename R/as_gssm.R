@@ -6,10 +6,12 @@
 #' @param model Object of class \code{SSModel}.
 #' @param kappa For \code{SSModel} object, a prior variance for initial state
 #' used to replace exact diffuse elements of the original model.
+#' @param phi_prior For non-Gaussian model, prior for parameter phi.
+#' @param ... Additional arguments to \code{gssm} and \code{ngssm}.
 #' @return Object of class \code{gssm} or \code{ngssm}.
 #' @rdname as_gssm
 #' @export
-as_gssm <- function(model, kappa = 1e5) {
+as_gssm <- function(model, kappa = 1e5, ...) {
 
   if (!requireNamespace("KFAS", quietly = TRUE)) {
     stop("This function depends on the KFAS package. ", call. = FALSE)
@@ -45,15 +47,14 @@ as_gssm <- function(model, kappa = 1e5) {
 
   Z <- aperm(model$Z, c(2, 3, 1))
   dim(Z) <- dim(Z)[1:2]
-structure(list(y = model$y, Z = Z, H = model$H, T = model$T,
-  R = R, a1 = c(model$a1), P1 = model$P1, xreg = matrix(0, 0, 0),
-  beta = numeric(0)), class = "gssm")
+gssm(y = model$y, Z = Z, H = model$H, T = model$T,
+  R = R, a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
 }
 
 #' @rdname as_gssm
 #' @inheritParams as_gssm
 #' @export
-as_ngssm <- function(model, kappa = 1e5) {
+as_ngssm <- function(model, kappa = 1e5, phi_prior, ...) {
 
   if (!requireNamespace("KFAS", quietly = TRUE)) {
     stop("This function depends on the KFAS package. ", call. = FALSE)
@@ -67,7 +68,9 @@ as_ngssm <- function(model, kappa = 1e5) {
   if (model$distribution == "gamma") {
     stop("Gamma distribution is not yet supported.")
   }
-
+  if (model$distribution == "negative binomial" && length(unique(model$u)) > 1) {
+    stop("Time-varying dispersion parameter for negative binomial is not supported in 'bssm'.")
+  }
   model$P1[model$P1inf > 0] <- kappa
 
   tvr <- dim(model$R)[3] > 1
@@ -88,7 +91,7 @@ as_ngssm <- function(model, kappa = 1e5) {
   }
   Z <- aperm(model$Z, c(2, 3, 1))
   dim(Z) <- dim(Z)[1:2]
-  structure(list(y = model$y, Z = Z, T = model$T,
-    R = R, a1 = c(model$a1), P1 = model$P1, phi = c(model$u), xreg = matrix(0, 0, 0),
-    beta = numeric(0), distribution = model$distribution), class = "ngssm")
+  ngssm(y = model$y, Z = Z, T = model$T, R = R, a1 = c(model$a1), P1 = model$P1, 
+    phi = if(missing(phi_prior)) model$u[1] else phi_prior, distribution = model$distribution, 
+    state_names = rownames(model$a1), ...)
 }
