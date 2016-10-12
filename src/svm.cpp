@@ -97,7 +97,7 @@ double svm::prior_pdf(const arma::vec& theta, const arma::uvec& prior_types,
     } else {
       double v = 5.0;
       double tau2 = 0.01;
-      q = R::dbeta(theta(0), 7.768667, 1.264667, 1);
+      q = R::dbeta(theta(0), 19.251, 1.449, 1);
       q += v * log(v) - log(std::lgamma(v)) + v * log(tau2) - 
         (v + 1.0) * log(theta(1)) - (v * tau2 / theta(1));
     }
