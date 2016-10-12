@@ -95,9 +95,9 @@ List svm_run_mcmc(const List& model_,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int seed, bool end_ram,
-  bool adapt_approx, bool da, unsigned int sim_type) {
+  bool adapt_approx, bool da, unsigned int sim_type, bool gkl) {
   
-  svm model(clone(model_), seed);
+  svm model(clone(model_), seed, gkl);
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
@@ -131,9 +131,9 @@ List svm_run_mcmc_is(const List& model_,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int seed,
   unsigned int n_threads, bool end_ram, bool adapt_approx, 
-  unsigned int sim_type, bool const_m) {
+  unsigned int sim_type, bool const_m, bool gkl) {
   
-  svm model(clone(model_), seed);
+  svm model(clone(model_), seed, gkl);
   
   unsigned int npar = prior_types.n_elem;
   unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);

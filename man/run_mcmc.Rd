@@ -30,6 +30,6 @@ coerced acceptance rate". Statistics and Computing, Volume 22, Issue 5,
 pages 997--1008.
 Matti Vihola, Jouni Helske, Jordan Franks (2016). "Importance sampling type 
 correction of Markov chain Monte Carlo and exact approximations."
-_ArXiv e-prints_. 1609.02541.
+ArXiv:1609.02541.
 }
 

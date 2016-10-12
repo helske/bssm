@@ -34,7 +34,7 @@ public:
   virtual void smoother(arma::mat&, arma::cube&, bool);
   virtual void smoother_ccov(arma::mat&, arma::cube&, arma::cube&, bool);
     
-  double prior_pdf(const arma::vec&, const arma::uvec&, const arma::mat&);
+  virtual double prior_pdf(const arma::vec&, const arma::uvec&, const arma::mat&);
 
   virtual arma::mat predict2(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat, unsigned int,

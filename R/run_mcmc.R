@@ -19,7 +19,7 @@
 #' pages 997--1008.
 #' Matti Vihola, Jouni Helske, Jordan Franks (2016). "Importance sampling type 
 #' correction of Markov chain Monte Carlo and exact approximations."
-#' _ArXiv e-prints_. 1609.02541. 
+#' ArXiv:1609.02541. 
 run_mcmc <- function(object, n_iter, ...) {
   UseMethod("run_mcmc", object)
 }
@@ -65,9 +65,9 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   
   a <- proc.time()
   type <- match.arg(type, c("full", "summary"))
-
+  
   inits <- sapply(object$priors, "[[", "init")
- 
+  
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(inits)), length(inits))
   }
@@ -79,7 +79,7 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
         sim_states, n_burnin, n_thin, gamma, target_acceptance, S, 
         seed, end_adaptive_phase, object$Z_ind,
         object$H_ind, object$T_ind, object$R_ind)
-
+      
       colnames(out$alpha) <- names(object$a1)
       out
     },
@@ -126,7 +126,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
         sim_states, n_burnin, n_thin, gamma, target_acceptance, S, seed, 
         FALSE, end_adaptive_phase)
       
-
+      
       colnames(out$alpha) <- names(object$a1)
       out
     },
@@ -219,9 +219,9 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
     simulation_method <- "IS"
   }
   
- 
+  
   inits <- sapply(object$priors, "[[", "init")
- 
+  
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(inits)), length(inits))
   }
@@ -229,7 +229,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   
   object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
- 
+  
   out <-  switch(type,
     full = {
       if (method == "PM"){
@@ -246,13 +246,13 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
           pmatch(simulation_method, c("IS", "bootstrap", "psi")), const_m,
           object$Z_ind, object$T_ind, object$R_ind)
       }
-
+      
       colnames(out$alpha) <- names(object$a1)
       out
     },
     summary = {
-        stop("summary correction for general models is not yet implemented.")
-       
+      stop("summary correction for general models is not yet implemented.")
+      
       # if (method == "PM"){
       #   out <- ngssm_run_mcmc_summary(object, priors$prior_types, priors$params, n_iter,
       #     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
@@ -334,21 +334,21 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
           object$init_signal, seed, n_threads, end_adaptive_phase, adaptive_approx,
           pmatch(simulation_method, c("IS", "bootstrap", "psi")), const_m)
       }
-
+      
       colnames(out$alpha) <- names(object$a1)
       out
     },
     summary = {
-        if(simulation_method != "IS") {
-          stop("summary correction with particle filter is not yet implemented.")
-        }
+      if(simulation_method != "IS") {
+        stop("summary correction with particle filter is not yet implemented.")
+      }
       if (method == "PM"){
         out <- ng_bsm_run_mcmc_summary(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
           object$init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
           delayed_acceptance, pmatch(simulation_method, c("IS", "bootstrap", "psi")))
       } else {
-      
+        
         out <- ng_bsm_run_mcmc_summary_is(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
           object$init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
@@ -381,13 +381,19 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
 #' @method run_mcmc svm
 #' @rdname run_mcmc_ng
 #' @inheritParams run_mcmc.ngssm
+#' @param gkl_prior If \code{gkl_prior} is \code{TRUE}, hard-coded priors based on 
+#' Grothe, Kleppe, and Liesenfeld (2016) are used in SV model. See references for details.
 #' @export
+#' @references Oliver Grothe, Tore Selland Kleppe, Roman Liesenfeld (2016). 
+#' "Bayesian Analysis in Non-linear Non-Gaussian State-Space Models using Particle Gibbs". 
+#' ArXiv:1601.01125.
+#'  
 run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   method = "PM", simulation_method = "IS", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx  = TRUE, n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
+  seed = sample(.Machine$integer.max, size = 1), gkl_prior = FALSE, ...) {
   
   a <- proc.time()
   
@@ -406,8 +412,15 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   }
   
   if (missing(S)) {
-    S <- diag(0.1 * pmax(0.1, abs(sapply(object$priors, "[[", "init"))), length(object$priors))
+    inits <- abs(sapply(object$priors, "[[", "init"))
+    if(gkl_prior) {
+      inits[1] <- 0.5 * (inits[1] + 1)
+      inits[2] <- inits[2]^2
+      inits[3] <- log(inits[3])
+    }
+    S <- diag(0.1 * pmax(0.1, inits), length(inits))
   }
+  
   
   priors <- combine_priors(object$priors)
   
@@ -421,15 +434,15 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
         out <- svm_run_mcmc(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
           object$init_signal, seed, end_adaptive_phase, adaptive_approx,
-          delayed_acceptance, pmatch(simulation_method, c("IS", "bootstrap", "psi")))
+          delayed_acceptance, pmatch(simulation_method, c("IS", "bootstrap", "psi")), gkl_prior)
         
       } else {
         out <- svm_run_mcmc_is(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
           object$init_signal, seed, n_threads, end_adaptive_phase, adaptive_approx,
-          pmatch(simulation_method, c("IS", "bootstrap", "psi")), const_m)
+          pmatch(simulation_method, c("IS", "bootstrap", "psi")), const_m, gkl_prior)
       }
-
+      
       colnames(out$alpha) <- names(object$a1)
       out
     },
@@ -456,6 +469,11 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
       # out
     })
   
+  if (gkl_prior) {
+    out$theta[, 1] <- 2 * out$theta[, 1] - 1
+    out$theta[, 2] <- sqrt(out$theta[, 2])
+    out$theta[, 3] <- exp(out$theta[, 3])
+  }
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-
     c("rho", "sd_ar", "sigma", names(object$coefs))
   if(method == "PM") {
