@@ -51,7 +51,6 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
   arma::vec Ft(n, arma::fill::zeros);
   // log[p(signal)] + log[p(y | signal)]
   double ll = logp_signal(signal, Kt, Ft) + logp_y(signal);
-  
   unsigned int i = 0;
   while(i < max_iter) {
     // compute new guess of signal
@@ -180,7 +179,6 @@ double ngssm::precomp_logp_signal(arma::vec& signal, const arma::mat& Kt, const 
 double ngssm::logp_y(arma::vec& signal) {
   
   double logp = 0.0;
-  
   switch(distribution) {
   case 0  :
     for (unsigned int t = 0; t < n; t++) {
@@ -189,6 +187,7 @@ double ngssm::logp_y(arma::vec& signal) {
         pow((ng_y(t) - xbeta(t))/phi, 2) * exp(-signal(t)));
     }
   }
+  break;
   case 1  :
     for (unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(ng_y(t))) {

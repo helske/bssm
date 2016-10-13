@@ -26,7 +26,7 @@ void svm::update_model(arma::vec theta) {
   if(svm_type == 0) {
     phi = theta(2);
   } else {
-    C.fill(theta(2));
+    C.fill(theta(2) * (1.0 - theta(1)));
   }
   
   
@@ -45,7 +45,7 @@ arma::vec svm::get_theta(void) {
   if(svm_type == 0) {
     theta(2) = phi;
   } else {
-    theta(2) = C(0);
+    theta(2) = C(0) / (1.0 - theta(1));
   }
   if(xreg.n_cols > 0) {
     theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1) = beta;

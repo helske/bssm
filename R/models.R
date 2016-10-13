@@ -571,11 +571,11 @@ svm <- function(y, rho, sd_ar, sigma, mu, beta, xreg = NULL) {
   check_rho(rho$init)
   check_sd(sd_ar$init, "rho")
   if(missing(sigma)) {
-    svm_type <- 1
+    svm_type <- 1L
     check_mu(mu$init)
      init_signal <- log(pmax(1e-4, y^2))
   } else {
-    svm_type <- 0
+    svm_type <- 0L
   check_sd(sigma$init, "sigma", FALSE)
    init_signal <- log(pmax(1e-4, y^2)) - 2 * log(sigma$init)
   }
@@ -602,7 +602,7 @@ svm <- function(y, rho, sd_ar, sigma, mu, beta, xreg = NULL) {
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, phi = if (svm_type == 0) sigma$init else 1, xreg = xreg, coefs = coefs,
-    C = if (svm_type == 1) matrix(mu$init) else matrix(0), init_signal = init_signal, priors = priors, 
+    C = if (svm_type == 1) matrix(mu$init * (1 - T[1])) else matrix(0), init_signal = init_signal, priors = priors, 
     svm_type = svm_type, distribution = 0L, u = 1, phi_est = !as.logical(svm_type)), 
     class = c("svm", "ngssm"))
 }
