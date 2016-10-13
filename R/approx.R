@@ -28,10 +28,6 @@ gaussian_approx.ng_bsm <- function(object, max_iter =  100, conv_tol = 1e-8, ...
 #' @method gaussian_approx svm
 #' @export
 gaussian_approx.svm <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
-
-  object$distribution <- 0L
-  object$phi <- object$sigma
-  object$u <- 1
-  object$phi_est <- TRUE
+  
   svm_approx_model(object, object$init_signal, max_iter, conv_tol)
 }

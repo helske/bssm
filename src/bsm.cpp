@@ -14,7 +14,8 @@ bsm::bsm(const List& model, unsigned int seed, bool log_space) :
 bsm::bsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, bool slope, bool seasonal,
   arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int seed, bool log_space) :
-  gssm(y, Z, H, T, R, a1, P1, xreg, beta, seed), slope(slope), seasonal(seasonal),
+  gssm(y, Z, H, T, R, a1, P1, xreg, beta, arma::mat(a1.n_elem, 1, arma::fill::zeros), seed), 
+  slope(slope), seasonal(seasonal),
   fixed(fixed), y_est(fixed(0) == 0), level_est(fixed(1) == 0), slope_est(slope && fixed(2) == 0),
   seasonal_est(seasonal && fixed(3) == 0), log_space(log_space) {
 
@@ -24,7 +25,8 @@ bsm::bsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
 bsm::bsm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, bool slope, bool seasonal,
   arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int seed) :
-  gssm(y, Z, H, T, R, a1, P1, xreg, beta, seed), slope(slope), seasonal(seasonal),
+  gssm(y, Z, H, T, R, a1, P1, xreg, beta, arma::mat(a1.n_elem, 1, arma::fill::zeros), seed), 
+  slope(slope), seasonal(seasonal),
   fixed(fixed), y_est(fixed(0) == 0), level_est(fixed(1) == 0), slope_est(slope && fixed(2) == 0),
   seasonal_est(seasonal && fixed(3) == 0), log_space(false) {
 
@@ -130,13 +132,13 @@ double bsm::log_likelihood(bool demean) {
   arma::mat Pt = P1;
   if(demean && xreg.n_cols > 0) {
     for (unsigned int t = 0; t < n; t++) {
-      logLik += uv_filter(y(t) - xbeta(t), Z.unsafe_col(0), HH(0),
-        T.slice(0), RR.slice(0), at, Pt, zero_tol);
+      logLik += uv_filter(y(t) - xbeta(t), Z.col(0), HH(0),
+        T.slice(0), RR.slice(0), C.col(0), at, Pt, zero_tol);
     }
   } else {
     for (unsigned int t = 0; t < n; t++) {
-      logLik += uv_filter(y(t), Z.unsafe_col(0), HH(0),
-        T.slice(0), RR.slice(0), at, Pt, zero_tol);
+      logLik += uv_filter(y(t), Z.col(0), HH(0),
+        T.slice(0), RR.slice(0), C.col(0), at, Pt, zero_tol);
     }
   }
   return logLik;
@@ -155,7 +157,7 @@ double bsm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
       logLik += uv_filter_update(y(t) - xbeta(t), Z.col(0), HH(0),
         at.col(t), Pt.slice(t), att.col(t), Ptt.slice(t), zero_tol);
       // prediction
-      uv_filter_predict(T.slice(0), RR.slice(0), att.col(t),
+      uv_filter_predict(T.slice(0), RR.slice(0), C.col(0), att.col(t),
         Ptt.slice(t), at.col(t + 1),  Pt.slice(t + 1));
     }
   } else {
@@ -164,7 +166,7 @@ double bsm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
       logLik += uv_filter_update(y(t), Z.col(0), HH(0),
         at.col(t), Pt.slice(t), att.col(t), Ptt.slice(t), zero_tol);
       // prediction
-      uv_filter_predict(T.slice(0), RR.slice(0), att.col(t),
+      uv_filter_predict(T.slice(0), RR.slice(0), C.col(0), att.col(t),
         Ptt.slice(t), at.col(t + 1),  Pt.slice(t + 1));
     }
   }

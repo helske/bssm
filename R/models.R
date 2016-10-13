@@ -215,7 +215,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
     a1 = a1, P1 = P1, xreg = xreg, coefs = coefs,
     slope = slope, seasonal = seasonal, period = period,
-    fixed = as.integer(!notfixed), priors = priors), class = c("bsm", "gssm"))
+    fixed = as.integer(!notfixed), priors = priors, C = matrix(0, m, 1)), class = c("bsm", "gssm"))
 }
 
 #' Non-Gaussian Basic Structural (Time Series) Model
@@ -494,7 +494,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     slope = slope, seasonal = seasonal, noise = noise,
     period = period, fixed = as.integer(!notfixed), 
     distribution = distribution, init_signal = init_signal, 
-    priors = priors, phi_est = phi_est), class = c("ng_bsm", "ngssm"))
+    priors = priors, phi_est = phi_est, C = matrix(0, m, 1)), class = c("ng_bsm", "ngssm"))
 }
 
 #' Stochastic Volatility Model
@@ -505,11 +505,14 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' @param y Vector or a \code{\link{ts}} object of observations.
 #' @param rho prior for autoregressive coefficient.
 #' @param sigma Prior for sigma parameter of observation equation.
+#' @param mu Prior for mu parameter of transition equation. 
+#' Ignored if \code{sigma} is provided.
 #' @param sd_ar Prior for the standard deviation of noise of the AR-process.
 #' @param beta Prior for the regression coefficients.
 #' @param xreg Matrix containing covariates.
-#' @return Object of class \code{svm}.
+#' @return Object of class \code{svm} or \code{svm2}.
 #' @export
+#' @rdname svm
 #' @examples
 #' data("exchange")
 #' model <- svm(exchange, rho = uniform(0.98,-0.999,0.999), 
@@ -525,7 +528,11 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' model <- svm(exchange, rho = uniform(pars[1],-0.999,0.999), 
 #'   sd_ar = halfnormal(pars[2],sd=5), 
 #'   sigma = halfnormal(pars[3],sd=2))
-svm <- function(y, rho, sd_ar, sigma, beta, xreg = NULL) {
+svm <- function(y, rho, sd_ar, sigma, mu, beta, xreg = NULL) {
+  
+  if(!missing(sigma) && !missing(mu)) {
+    stop("Define either sigma or mu, but not both.")
+  }
   
   check_y(y)
   n <- length(y)
@@ -563,8 +570,15 @@ svm <- function(y, rho, sd_ar, sigma, beta, xreg = NULL) {
   
   check_rho(rho$init)
   check_sd(sd_ar$init, "rho")
+  if(missing(sigma)) {
+    svm_type <- 1
+    check_mu(mu$init)
+     init_signal <- log(pmax(1e-4, y^2))
+  } else {
+    svm_type <- 0
   check_sd(sigma$init, "sigma", FALSE)
-  
+   init_signal <- log(pmax(1e-4, y^2)) - 2 * log(sigma$init)
+  }
   a1 <- 0
   P1 <- matrix(sd_ar$init^2 / (1 - rho$init^2))
   
@@ -572,23 +586,25 @@ svm <- function(y, rho, sd_ar, sigma, beta, xreg = NULL) {
   T <- array(rho$init, c(1, 1, 1))
   R <- array(sd_ar$init, c(1, 1, 1))
   
-  init_signal <- log(pmax(1e-4, y^2)) - 2 * log(sigma$init)
+ 
   
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- "signal"
   
   if(ncol(xreg) > 1) {
-    priors <- c(list(rho, sd_ar, sigma), beta)
+    priors <- c(list(rho, sd_ar, if(svm_type==0) sigma else mu), beta)
   } else {
-    priors <- list(rho, sd_ar, sigma, beta)
+    priors <- list(rho, sd_ar, if(svm_type==0) sigma else mu, beta)
   }
   priors <- priors[!sapply(priors, is.null)]
   names(priors) <-
-    c("rho", "sd_ar", "sigma", names(coefs))
+    c("rho", "sd_ar", if(svm_type==0) "sigma" else "mu", names(coefs))
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
-    a1 = a1, P1 = P1, sigma = sigma$init, xreg = xreg, coefs = coefs,
-    init_signal = init_signal, priors = priors), class = c("svm", "ngssm"))
+    a1 = a1, P1 = P1, phi = if (svm_type == 0) sigma$init else 1, xreg = xreg, coefs = coefs,
+    C = if (svm_type == 1) matrix(mu$init) else matrix(0), init_signal = init_signal, priors = priors, 
+    svm_type = svm_type, distribution = 0L, u = 1, phi_est = !as.logical(svm_type)), 
+    class = c("svm", "ngssm"))
 }
 #'
 #' General linear-Gaussian state space models
@@ -767,7 +783,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   priors <- priors[sapply(priors, is_prior)]
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
-    xreg = xreg, coefs = coefs, priors = priors, Z_ind = Z_ind, 
+    xreg = xreg, coefs = coefs, priors = priors, C = matrix(0, m, 1), Z_ind = Z_ind, 
     H_ind = H_ind, T_ind = T_ind, R_ind = R_ind), class = "gssm")
 }
 #' General non-Gaussian/non-linear state space models
@@ -972,6 +988,6 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
   }
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
     xreg = xreg, coefs = coefs, distribution = distribution, 
-    init_signal = init_signal, priors = priors, Z_ind = Z_ind, 
+    init_signal = init_signal, priors = priors, C = matrix(0, m, 1), Z_ind = Z_ind, 
     T_ind = T_ind, R_ind = R_ind, phi_est = phi_est), class = "ngssm")
 }

@@ -6,8 +6,9 @@ gssm::gssm(const List& model, unsigned int seed) :
   H(as<arma::vec>(model["H"])), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
   a1(as<arma::vec>(model["a1"])), P1(as<arma::mat>(model["P1"])),
   xreg(as<arma::mat>(model["xreg"])), beta(as<arma::vec>(model["coefs"])),
+  C(as<arma::mat>(model["C"])),
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
-  n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
+  Ctv(C.n_cols > 1), n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
   RR(arma::cube(m, m, Rtv * (n - 1) + 1)), xbeta(arma::vec(n, arma::fill::zeros)),
   engine(seed), zero_tol(1e-8) {
   
@@ -26,7 +27,9 @@ gssm::gssm(const List& model, arma::uvec Z_ind, arma::uvec H_ind,
   H(as<arma::vec>(model["H"])), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
   a1(as<arma::vec>(model["a1"])), P1(as<arma::mat>(model["P1"])),
   xreg(as<arma::mat>(model["xreg"])), beta(as<arma::vec>(model["coefs"])),
+  C(as<arma::mat>(model["C"])),
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
+  Ctv(C.n_cols > 1), 
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
   RR(arma::cube(m, m, Rtv * (n - 1) + 1)), xbeta(arma::vec(n, arma::fill::zeros)),
   Z_ind(Z_ind), H_ind(H_ind), T_ind(T_ind), R_ind(R_ind), engine(seed), zero_tol(1e-8) {
@@ -43,7 +46,9 @@ gssm::gssm(const List& model, unsigned int seed, bool ng) :
   H(arma::vec(y.n_elem)), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
   a1(as<arma::vec>(model["a1"])), P1(as<arma::mat>(model["P1"])),
   xreg(as<arma::mat>(model["xreg"])), beta(as<arma::vec>(model["coefs"])),
+  C(as<arma::mat>(model["C"])),
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
+  Ctv(C.n_cols > 1), 
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
   RR(arma::cube(m, m, Rtv * (n - 1) + 1)), xbeta(arma::vec(n, arma::fill::zeros)),
   engine(seed), zero_tol(1e-8) {
@@ -62,7 +67,9 @@ gssm::gssm(const List& model, arma::uvec Z_ind,
   H(arma::vec(y.n_elem)), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
   a1(as<arma::vec>(model["a1"])), P1(as<arma::mat>(model["P1"])),
   xreg(as<arma::mat>(model["xreg"])), beta(as<arma::vec>(model["coefs"])),
+    C(as<arma::mat>(model["C"])),
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
+  Ctv(C.n_cols > 1), 
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
   RR(arma::cube(m, m, Rtv * (n - 1) + 1)), xbeta(arma::vec(n, arma::fill::zeros)),
   Z_ind(Z_ind), H_ind(arma::uvec(1)), T_ind(T_ind), R_ind(R_ind), engine(seed), zero_tol(1e-8) {
@@ -77,9 +84,11 @@ gssm::gssm(const List& model, arma::uvec Z_ind,
 //general constructor
 gssm::gssm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::mat xreg,
-  arma::vec beta, unsigned int seed) :
-  y(y), Z(Z), H(H), T(T), R(R), a1(a1), P1(P1),  xreg(xreg), beta(beta), Ztv(Z.n_cols > 1),
+  arma::vec beta, arma::mat C, unsigned int seed) :
+  y(y), Z(Z), H(H), T(T), R(R), a1(a1), P1(P1),  xreg(xreg), beta(beta), 
+  C(C), Ztv(Z.n_cols > 1),
   Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
+  Ctv(C.n_cols > 1), 
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
   RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
   xbeta(arma::vec(n, arma::fill::zeros)), engine(seed), zero_tol(1e-8) {
@@ -95,10 +104,10 @@ gssm::gssm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
 //general constructor with parameter indices
 gssm::gssm(arma::vec y, arma::mat Z, arma::vec H, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, arma::mat xreg,
-  arma::vec beta, arma::uvec Z_ind, arma::uvec H_ind,
+  arma::vec beta, arma::mat C, arma::uvec Z_ind, arma::uvec H_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
-  y(y), Z(Z), H(H), T(T), R(R), a1(a1), P1(P1),  xreg(xreg), beta(beta), Ztv(Z.n_cols > 1),
-  Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
+  y(y), Z(Z), H(H), T(T), R(R), a1(a1), P1(P1), xreg(xreg), beta(beta), C(C), Ztv(Z.n_cols > 1),
+  Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1), Ctv(C.n_cols > 1), 
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
   RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
   xbeta(arma::vec(n, arma::fill::zeros)),
@@ -220,19 +229,18 @@ double gssm::log_likelihood(bool demean) {
   
   if (demean && xreg.n_cols > 0) {
     for (unsigned int t = 0; t < n; t++) {
-      logLik += uv_filter(y(t) - xbeta(t), Z.unsafe_col(t * Ztv), HH(t * Htv),
-        T.slice(t * Ttv), RR.slice(t * Rtv), at, Pt, zero_tol);
+      logLik += uv_filter(y(t) - xbeta(t), Z.col(t * Ztv), HH(t * Htv),
+        T.slice(t * Ttv), RR.slice(t * Rtv), C.col(t * Ctv), at, Pt, zero_tol);
     }
   } else {
     for (unsigned int t = 0; t < n; t++) {
-      logLik += uv_filter(y(t), Z.unsafe_col(t * Ztv), HH(t * Htv),
-        T.slice(t * Ttv), RR.slice(t * Rtv), at, Pt, zero_tol);
+      logLik += uv_filter(y(t), Z.col(t * Ztv), HH(t * Htv),
+        T.slice(t * Ttv), RR.slice(t * Rtv), C.col(t * Ctv), at, Pt, zero_tol);
     }
   }
   
   return logLik;
 }
-
 
 double gssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
   arma::cube& Ptt, bool demean) {
@@ -248,7 +256,7 @@ double gssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
       logLik += uv_filter_update(y(t) - xbeta(t), Z.col(t * Ztv), HH(t * Htv),
         at.col(t), Pt.slice(t), att.col(t), Ptt.slice(t), zero_tol);
       // prediction
-      uv_filter_predict(T.slice(t * Ttv), RR.slice(t * Rtv), att.col(t),
+      uv_filter_predict(T.slice(t * Ttv), RR.slice(t * Rtv), C.col(t * Ctv), att.col(t),
         Ptt.slice(t), at.col(t + 1),  Pt.slice(t + 1));
     }
   } else {
@@ -257,7 +265,7 @@ double gssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
       logLik += uv_filter_update(y(t), Z.col(t * Ztv), HH(t * Htv),
         at.col(t), Pt.slice(t), att.col(t), Ptt.slice(t), zero_tol);
       // prediction
-      uv_filter_predict(T.slice(t * Ttv), RR.slice(t * Rtv), att.col(t),
+      uv_filter_predict(T.slice(t * Ttv), RR.slice(t * Rtv), C.col(t * Ctv), att.col(t),
         Ptt.slice(t), at.col(t + 1),  Pt.slice(t + 1));
     }
   }
@@ -288,10 +296,10 @@ arma::mat gssm::fast_smoother(bool demean) {
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol) {
       Kt.col(t) = Pt * Z.col(t * Ztv) / Ft(t);
       vt(t) = arma::as_scalar(y(t) - Z.col(t * Ztv).t() * at.col(t));
-      at.col(t + 1) = T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
+      at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
       Pt = arma::symmatu(T.slice(t * Ttv) * (Pt - Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     } else {
-      at.col(t + 1) = T.slice(t * Ttv) * at.col(t);
+      at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
       Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     }
   }
@@ -351,10 +359,10 @@ arma::mat gssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt, boo
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol) {
       Kt.col(t) = Pt * Z.col(t * Ztv) / Ft(t);
       vt(t) = arma::as_scalar(y(t) - Z.col(t * Ztv).t() * at.col(t));
-      at.col(t + 1) = T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
+      at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
       Pt = arma::symmatu(T.slice(t * Ttv) * (Pt - Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     } else {
-      at.col(t + 1) = T.slice(t * Ttv) * at.col(t);
+      at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
       Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     }
   }
@@ -413,9 +421,9 @@ arma::mat gssm::precomp_fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
   for (unsigned int t = 0; t < (n - 1); t++) {
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol) {
       vt(t) = arma::as_scalar(y(t) - Z.col(t * Ztv).t() * at.col(t));
-      at.col(t + 1) = T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
+      at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
     } else {
-      at.col(t + 1) = T.slice(t * Ttv) * at.col(t);
+      at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
     }
   }
   unsigned int t = n - 1;
@@ -499,7 +507,7 @@ arma::cube gssm::sim_smoother(unsigned int nsim, bool demean) {
         for(unsigned int j = 0; j < k; j++) {
           uk(j) = normal(engine);
         }
-        aplus.col(t + 1) = T.slice(t * Ttv) * aplus.col(t) + R.slice(t * Rtv) * uk;
+        aplus.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * aplus.col(t) + R.slice(t * Rtv) * uk;
       }
       if (arma::is_finite(y(n - 1))) {
         y(n - 1) = arma::as_scalar(Z.col((n - 1) * Ztv).t() * aplus.col(n - 1)) +
@@ -530,7 +538,7 @@ arma::cube gssm::sim_smoother(unsigned int nsim, bool demean) {
         for(unsigned int j = 0; j < k; j++) {
           uk(j) = normal(engine);
         }
-        aplus.col(t + 1) = T.slice(t * Ttv) * aplus.col(t) + R.slice(t * Rtv) * uk;
+        aplus.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * aplus.col(t) + R.slice(t * Rtv) * uk;
       }
       if (arma::is_finite(y(n - 1))) {
         y(n - 1) = arma::as_scalar(Z.col((n - 1) * Ztv).t() * aplus.col(n - 1)) +
@@ -561,7 +569,7 @@ arma::cube gssm::sim_smoother(unsigned int nsim, bool demean) {
       for(unsigned int j = 0; j < k; j++) {
         uk(j) = normal(engine);
       }
-      asim.slice(0).col(t + 1) = T.slice(t * Ttv) * asim.slice(0).col(t) +
+      asim.slice(0).col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * asim.slice(0).col(t) +
         R.slice(t * Rtv) * uk;
     }
     if (arma::is_finite(y(n - 1))) {
@@ -598,11 +606,11 @@ void gssm::smoother(arma::mat& at, arma::cube& Pt, bool demean) {
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol) {
       Kt.col(t) = Pt.slice(t) * Z.col(t * Ztv) / Ft(t);
       vt(t) = arma::as_scalar(y(t) - Z.col(t * Ztv).t() * at.col(t));
-      at.col(t + 1) = T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
+      at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (Pt.slice(t) -
         Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     } else {
-      at.col(t + 1) = T.slice(t * Ttv) * at.col(t);
+      at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * Pt.slice(t) * T.slice(t * Ttv).t() +
         RR.slice(t * Rtv));
     }
@@ -659,11 +667,11 @@ void gssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov, bool d
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol) {
       Kt.col(t) = Pt.slice(t) * Z.col(t * Ztv) / Ft(t);
       vt(t) = arma::as_scalar(y(t) - Z.col(t * Ztv).t() * at.col(t));
-      at.col(t + 1) = T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
+      at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (Pt.slice(t) -
         Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     } else {
-      at.col(t + 1) = T.slice(t * Ttv) * at.col(t);
+      at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * Pt.slice(t) * T.slice(t * Ttv).t() +
         RR.slice(t * Rtv));
     }
@@ -1105,7 +1113,7 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
       for(unsigned int j = 0; j < k; j++) {
         uk(j) = normal(engine);
       }
-      alphasim.slice(i).col(t + 1) = T.slice(t * Ttv) * alphatmp.col(i) +
+      alphasim.slice(i).col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * alphatmp.col(i) +
         R.slice(t * Rtv) * uk;
     }
     
@@ -1132,93 +1140,6 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
   
   return ll;
 }
-// 
-// //psi-auxiliary particle filter
-// double gssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V, arma::umat& ind) {
-// 
-//   arma::mat alphahat(m, n);
-//   arma::cube Vt(m, m, n);
-//   arma::cube Ct(m, m, n);
-//   smoother_ccov(alphahat, Vt, Ct, true);
-//   conditional_dist_helper(Vt, Ct);
-//   
-//   std::normal_distribution<> normal(0.0, 1.0);
-//   std::uniform_real_distribution<> unif(0.0, 1.0);
-//   for (unsigned int i = 0; i < nsim; i++) {
-//     arma::vec um(m);
-//     for(unsigned int j = 0; j < m; j++) {
-//       um(j) = normal(engine);
-//     }
-//     alphasim.slice(i).col(0) = alphahat.col(0) + Vt.slice(0) * um;
-//   }
-// 
-//   arma::vec Vnorm(nsim);
-//   double ll = 0.0;
-//   if(arma::is_finite(y(0))) {
-//     V.col(0).fill(log_likelihood(true));
-// //    for (unsigned int i = 0; i < nsim; i++) {
-//       // V(i, 0) = R::dnorm(y(0),
-//       //   arma::as_scalar(Z.col(0).t() * alphasim.slice(i).col(0) + xbeta(0)),
-//       //   H(0), 0);
-//     }
-//     double sumw = arma::sum(V.col(0));
-//     if(sumw > 0.0){
-//       Vnorm = V.col(0) / sumw;
-//     } else {
-//       return -arma::datum::inf;
-//     }
-//     ll = log(arma::mean(V.col(0)));
-//   } else {
-//     V.col(0).ones();
-//     Vnorm.fill(1.0/nsim);
-//   }
-// 
-//   for (unsigned int t = 0; t < (n - 1); t++) {
-// 
-//     arma::vec r(nsim);
-//     for (unsigned int i = 0; i < nsim; i++) {
-//       r(i) = unif(engine);
-//     }
-// 
-//     ind.col(t) = stratified_sample(Vnorm, r, nsim);
-// 
-//     arma::mat alphatmp(m, nsim);
-// 
-//     for (unsigned int i = 0; i < nsim; i++) {
-//       alphatmp.col(i) = alphasim.slice(ind(i, t)).col(t);
-//     }
-//     for (unsigned int i = 0; i < nsim; i++) {
-//       arma::vec uk(k);
-//       for(unsigned int j = 0; j < k; j++) {
-//         uk(j) = normal(engine);
-//       }
-//       alphasim.slice(i).col(t + 1) = T.slice(t * Ttv) * alphatmp.col(i) +
-//         R.slice(t * Rtv) * uk;
-//     }
-// 
-//     if(arma::is_finite(y(t + 1))) {
-//       for (unsigned int i = 0; i < nsim; i++) {
-//         V(i, t + 1) = R::dnorm(y(t + 1),
-//           arma::as_scalar(Z.col((t + 1) * Ztv).t() * alphasim.slice(i).col(t + 1) + xbeta(t + 1)),
-//           H((t + 1) * Htv), 0);
-//       }
-//       double sumw = arma::sum(V.col(t + 1));
-//       if(sumw > 0.0){
-//         Vnorm = V.col(t + 1) / sumw;
-//       } else {
-//         return -arma::datum::inf;
-//       }
-//       ll += log(arma::mean(V.col(t + 1)));
-//     } else {
-//       V.col(t + 1).ones();
-//       Vnorm.fill(1.0/nsim);
-//     }
-// 
-// 
-//   }
-// 
-//   return ll;
-// }
 
 void gssm::backtrack_pf2(const arma::cube& alpha, arma::mat& V, const arma::umat& ind) {
   
@@ -1231,7 +1152,7 @@ void gssm::backtrack_pf2(const arma::cube& alpha, arma::mat& V, const arma::umat
     for (unsigned int i = 0; i < nsim; i++) {
       for (unsigned int j = 0; j < nsim; j++) {
         B(j, i) = Vnorm(j) * dmvnorm1(alpha.slice(i).col(t),
-          T.slice((t-1) * Ttv) * alpha.slice(j).col(t - 1),
+          C.col((t-1) * Ctv) + T.slice((t-1) * Ttv) * alpha.slice(j).col(t - 1),
           R.slice((t-1) * Rtv), true, false);
       }
     }
@@ -1254,7 +1175,7 @@ arma::mat gssm::backward_simulate(arma::cube& alpha, arma::mat& V, arma::umat& i
     arma::vec Vnorm = V.col(t-1) / arma::sum(V.col(t-1));
     for (unsigned int j = 0; j < nsim; j++) {
       b(j) = Vnorm(j) * dmvnorm1(alpha.slice(I(t)).col(t),
-        T.slice((t-1) * Ttv) * alpha.slice(j).col(t - 1),
+        C.col((t-1) * Ctv) + T.slice((t-1) * Ttv) * alpha.slice(j).col(t - 1),
         R.slice((t-1) * Rtv), true, false);
     }
     b /= arma::sum(b);
@@ -1300,5 +1221,3 @@ double gssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
   
   return ll;
 }
-
-

@@ -13,9 +13,9 @@ public:
   gssm(const List&, unsigned int, bool);
   gssm(const List&, arma::uvec, arma::uvec, arma::uvec, unsigned int, bool);
   gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
-    arma::mat, arma::mat, arma::vec, unsigned int);
+    arma::mat, arma::mat, arma::vec, arma::mat, unsigned int);
   gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
-    arma::mat, arma::mat, arma::vec, arma::uvec, arma::uvec, arma::uvec,
+    arma::mat, arma::mat, arma::vec, arma::mat, arma::uvec, arma::uvec, arma::uvec,
     arma::uvec, unsigned int);
 
   virtual double proposal(const arma::vec&, const arma::vec&);
@@ -67,11 +67,13 @@ public:
   arma::mat P1;
   arma::mat xreg;
   arma::vec beta;
-
+  arma::mat C;
+  
   const unsigned int Ztv;
   const unsigned int Htv;
   const unsigned int Ttv;
   const unsigned int Rtv;
+  const unsigned int Ctv;
 
   const unsigned int n;
   const unsigned int m;

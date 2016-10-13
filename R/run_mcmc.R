@@ -410,11 +410,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   }
   
   priors <- combine_priors(object$priors)
-  
-  object$distribution <- 0L
-  object$phi <- object$sigma
-  object$u <- 1
-  object$phi_est <- TRUE
+
   out <-  switch(type,
     full = {
       if (method == "PM"){

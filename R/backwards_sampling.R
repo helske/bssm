@@ -74,10 +74,6 @@ particle_simulate.ng_bsm <- function(object, nsim, nsim_store = 1,
 particle_simulate.svm <- function(object, nsim, nsim_store = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
-  object$distribution <- 0
-  object$phi <- object$sigma
-  object$u <- 1
-  object$phi_est <- TRUE
   out <- svm_backward_simulate(object, nsim, seed, nsim_store)
 
   rownames(out$alpha) <- names(object$a1)

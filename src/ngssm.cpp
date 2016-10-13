@@ -22,8 +22,8 @@ ngssm::ngssm(const List& model, arma::uvec Z_ind,
 //general constructor
 ngssm::ngssm(arma::vec y, arma::mat Z, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, double phi, arma::vec u, arma::mat xreg,
-  arma::vec beta, unsigned int distribution, unsigned int seed, bool phi_est) :
-  gssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, seed),
+  arma::vec beta, arma::mat C, unsigned int distribution, unsigned int seed, bool phi_est) :
+  gssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, C, seed),
   phi(phi), ut(u), distribution(distribution), phi_est(phi_est), 
   ng_y(y), max_iter(100), conv_tol(1.0e-8) {
 }
@@ -31,9 +31,9 @@ ngssm::ngssm(arma::vec y, arma::mat Z, arma::cube T,
 //general constructor with parameter indices
 ngssm::ngssm(arma::vec y, arma::mat Z, arma::cube T,
   arma::cube R, arma::vec a1, arma::mat P1, double phi, arma::vec u, arma::mat xreg,
-  arma::vec beta, unsigned int distribution, arma::uvec Z_ind,
+  arma::vec beta, arma::mat, unsigned int distribution, arma::uvec Z_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed, bool phi_est) :
-  gssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, Z_ind,
+  gssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, C, Z_ind,
     arma::uvec(1), T_ind, R_ind, seed), phi(phi), ut(u),
     distribution(distribution), phi_est(phi_est), ng_y(y), 
     max_iter(100), conv_tol(1.0e-8) {
@@ -144,11 +144,11 @@ double ngssm::logp_signal(arma::vec& signal, arma::mat& Kt, arma::vec& Ft) {
     if (Ft(t) > arma::datum::eps) { // can be zero if P1 is zero
       double v = arma::as_scalar(signal(t) - Z.col(t * Ztv).t() * at);
       Kt.col(t) = Pt * Z.col(t * Ztv) / Ft(t);
-      at = T.slice(t * Ttv) * (at + Kt.col(t) * v);
+      at = C(t * Ctv) + T.slice(t * Ttv) * (at + Kt.col(t) * v);
       Pt = arma::symmatu(T.slice(t * Ttv) * (Pt - Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
       logLik -= 0.5 * (LOG2PI + log(Ft(t)) + v * v / Ft(t));
     } else {
-      at = T.slice(t * Ttv) * at;
+      at = C(t * Ctv) + T.slice(t * Ttv) * at;
       Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     }
   }
@@ -159,7 +159,6 @@ double ngssm::logp_signal(arma::vec& signal, arma::mat& Kt, arma::vec& Ft) {
 // fast computation of log[p(signal)] using the precomputed Kt and Ft
 double ngssm::precomp_logp_signal(arma::vec& signal, const arma::mat& Kt, const arma::vec& Ft) {
   
-  
   double logLik = 0.0;
   
   arma::vec at = a1;
@@ -167,10 +166,10 @@ double ngssm::precomp_logp_signal(arma::vec& signal, const arma::mat& Kt, const 
   for (unsigned int t = 0; t < n; t++) {
     if (Ft(t) > arma::datum::eps) {
       double v = arma::as_scalar(signal(t) - Z.col(t * Ztv).t() * at);
-      at = T.slice(t * Ttv) * (at + Kt.col(t) * v);
+      at = C(t * Ctv) + T.slice(t * Ttv) * (at + Kt.col(t) * v);
       logLik -= 0.5 * (LOG2PI + log(Ft(t)) + v * v / Ft(t));
     } else {
-      at = T.slice(t * Ttv) * at;
+      at = C(t * Ctv) + T.slice(t * Ttv) * at;
     }
   }
   
@@ -183,6 +182,13 @@ double ngssm::logp_y(arma::vec& signal) {
   double logp = 0.0;
   
   switch(distribution) {
+  case 0  :
+    for (unsigned int t = 0; t < n; t++) {
+    if (arma::is_finite(y(t))) {
+      logp -= 0.5 * (LOG2PI + 2.0 * log(phi) + signal(t) + 
+        pow((ng_y(t) - xbeta(t))/phi, 2) * exp(-signal(t)));
+    }
+  }
   case 1  :
     for (unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(ng_y(t))) {
@@ -1452,7 +1458,7 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
       for(unsigned int j = 0; j < k; j++) {
         uk(j) = normal(engine);
       }
-      alphasim.slice(i).col(t + 1) = T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
+      alphasim.slice(i).col(t + 1) = C(t * Ctv) + T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
     }
     
     if(arma::is_finite(y(t + 1))) {

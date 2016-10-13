@@ -55,6 +55,17 @@ check_beta <- function(x, k) {
   }
 
 }
+
+check_mu <- function(x) {
+
+ if (length(x) != 1) {
+    stop(paste0("Argument 'mu' must be of length one."))
+  }
+  if (any(!is.finite(x))) {
+    stop("Argument 'mu' must contain only finite values. ")
+  }
+
+}
 check_rho <- function(x) {
   
   if (length(x) != 1) {

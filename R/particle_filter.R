@@ -76,10 +76,6 @@ particle_filter.svm <- function(object, nsim, filter_type = "bootstrap",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   filter_type <- match.arg(filter_type, c("bootstrap", "psi"))
-  object$distribution <- 0L
-  object$phi <- object$sigma
-  object$u <- 1
-  object$phi_est <- TRUE
   out <- svm_particle_filter(object, nsim, seed, filter_type == "bootstrap", object$init_signal)
   
   rownames(out$alpha) <- names(object$a1)

@@ -90,10 +90,6 @@ particle_smoother.svm <- function(object, nsim, smoothing_method = "fs",
   if (smoothing_method == "fbs" && filter_type == "psi") {
     stop("FBS with psi-filter is not yet implemented.")
   }
-  object$distribution <- 0L
-  object$phi <- object$sigma
-  object$u <- 1
-  object$phi_est <- TRUE
   out <- svm_particle_smoother(object, nsim, seed, smoothing_method == "fs", 
     filter_type == "bootstrap", object$init_signal)
 
