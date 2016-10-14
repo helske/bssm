@@ -126,7 +126,6 @@ double gssm::prior_pdf(const arma::vec& theta, const arma::uvec& prior_types,
   const arma::mat& params) {
   
   double q = 0.0;
-  
   for(unsigned int i = 0; i < theta.n_elem; i++) {
     switch(prior_types(i)) {
     case 0  :
@@ -291,6 +290,7 @@ arma::mat gssm::fast_smoother(bool demean) {
   if (demean && xreg.n_cols > 0) {
     y -= xbeta;
   }
+ 
   for (unsigned int t = 0; t < (n - 1); t++) {
     Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt * Z.col(t * Ztv) + HH(t * Htv));
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol) {
@@ -311,7 +311,6 @@ arma::mat gssm::fast_smoother(bool demean) {
   }
   arma::mat rt(m, n);
   rt.col(n - 1).zeros();
-  
   for (int t = (n - 1); t > 0; t--) {
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol){
       arma::mat L = T.slice(t * Ttv) * (arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t());
@@ -326,9 +325,11 @@ arma::mat gssm::fast_smoother(bool demean) {
   } else {
     at.col(0) = a1 + P1 * T.slice(0).t() * rt.col(0);
   }
+
   for (unsigned int t = 0; t < (n - 1); t++) {
-    at.col(t + 1) = T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
+    at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
   }
+
   if (demean && xreg.n_cols > 0) {
     y = y_tmp;
   }
@@ -390,7 +391,7 @@ arma::mat gssm::fast_smoother2(arma::vec& Ft, arma::mat& Kt, arma::cube& Lt, boo
     at.col(0) = a1 + P1 * T.slice(0).t() * rt.col(0);
   }
   for (unsigned int t = 0; t < (n - 1); t++) {
-    at.col(t + 1) = T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
+    at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
   }
   
   if (demean && xreg.n_cols > 0) {
@@ -448,7 +449,7 @@ arma::mat gssm::precomp_fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
   }
   
   for (unsigned int t = 0; t < (n - 1); t++) {
-    at.col(t + 1) = T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
+    at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
   }
   
   if (demean && xreg.n_cols > 0) {
@@ -623,7 +624,7 @@ void gssm::smoother(arma::mat& at, arma::cube& Pt, bool demean) {
     Kt.col(t) = Pt.slice(t) * Z.col(t * Ztv) / Ft(t);
   }
   
-  
+ 
   arma::vec rt(m, arma::fill::zeros);
   arma::mat Nt(m, m, arma::fill::zeros);
   
@@ -639,7 +640,6 @@ void gssm::smoother(arma::mat& at, arma::cube& Pt, bool demean) {
     at.col(t) += Pt.slice(t) * rt;
     Pt.slice(t) -= arma::symmatu(Pt.slice(t) * Nt * Pt.slice(t));
   }
-  
   if (demean && xreg.n_cols > 0) {
     y = y_tmp;
   }

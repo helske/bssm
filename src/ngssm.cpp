@@ -50,14 +50,17 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
   arma::mat Kt(m, n, arma::fill::zeros);
   arma::vec Ft(n, arma::fill::zeros);
   // log[p(signal)] + log[p(y | signal)]
+ 
   double ll = logp_signal(signal, Kt, Ft) + logp_y(signal);
   unsigned int i = 0;
   while(i < max_iter) {
     // compute new guess of signal
     arma::vec signal_new = approx_iter(signal);
+
     //log[p(signal)] + log[p(y | signal)]
     double ll_new = precomp_logp_signal(signal_new, Kt, Ft) +
       logp_y(signal_new);
+  
     double diff = std::abs(ll_new - ll)/(0.1 + std::abs(ll_new));
     // Rcout<<arma::mean(arma::square(signal-signal_new))<<std::endl;
     // Rcout<<"diff "<<diff<<std::endl;
@@ -143,11 +146,11 @@ double ngssm::logp_signal(arma::vec& signal, arma::mat& Kt, arma::vec& Ft) {
     if (Ft(t) > arma::datum::eps) { // can be zero if P1 is zero
       double v = arma::as_scalar(signal(t) - Z.col(t * Ztv).t() * at);
       Kt.col(t) = Pt * Z.col(t * Ztv) / Ft(t);
-      at = C(t * Ctv) + T.slice(t * Ttv) * (at + Kt.col(t) * v);
+      at = C.col(t * Ctv) + T.slice(t * Ttv) * (at + Kt.col(t) * v);
       Pt = arma::symmatu(T.slice(t * Ttv) * (Pt - Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
       logLik -= 0.5 * (LOG2PI + log(Ft(t)) + v * v / Ft(t));
     } else {
-      at = C(t * Ctv) + T.slice(t * Ttv) * at;
+      at = C.col(t * Ctv) + T.slice(t * Ttv) * at;
       Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     }
   }
@@ -161,14 +164,13 @@ double ngssm::precomp_logp_signal(arma::vec& signal, const arma::mat& Kt, const 
   double logLik = 0.0;
   
   arma::vec at = a1;
-  
   for (unsigned int t = 0; t < n; t++) {
     if (Ft(t) > arma::datum::eps) {
       double v = arma::as_scalar(signal(t) - Z.col(t * Ztv).t() * at);
-      at = C(t * Ctv) + T.slice(t * Ttv) * (at + Kt.col(t) * v);
+      at = C.col(t * Ctv) + T.slice(t * Ttv) * (at + Kt.col(t) * v);
       logLik -= 0.5 * (LOG2PI + log(Ft(t)) + v * v / Ft(t));
     } else {
-      at = C(t * Ctv) + T.slice(t * Ttv) * at;
+      at = C.col(t * Ctv) + T.slice(t * Ttv) * at;
     }
   }
   
@@ -779,6 +781,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
   double ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
   double ll_approx_u = scaling_factor(signal);
   double ll = ll_approx + log_likelihood(distribution != 0);
+
   if (!std::isfinite(ll)) {
     Rcpp::stop("Non-finite log-likelihood from initial values. ");
   }
@@ -807,6 +810,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
   double ll_w_prop = 0.0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
+  
   for (unsigned int i = 1; i < n_iter; i++) {
     
     if (i % 16 == 0) {
@@ -822,7 +826,9 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
     arma::vec theta_prop = theta + S * u;
     
     // compute prior
+   
     double prior_prop = prior_pdf(theta_prop, prior_types, prior_pars);
+ 
     
     if (prior_prop > -arma::datum::inf) {
       // update parameters
@@ -833,11 +839,9 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
         ll_approx = approx(signal, max_iter, conv_tol);
         ll_approx_u = scaling_factor(signal);
       }
-      
       double ll_prop = ll_approx + log_likelihood(distribution != 0);
       //compute the acceptance probability
       // use explicit min(...) as we need this value later
-      
       if(!std::isfinite(ll_prop)) {
         accept_prob = 0.0;
       } else {
@@ -845,7 +849,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
         //used in RAM and DA
         accept_prob = std::min(1.0, exp(ll_prop - ll + prior_prop - prior + q));
         // initial acceptance based on hat_p(theta, alpha | y)
-        
+
         if (da) {
           if (unif(engine) < accept_prob) {
             // simulate states
@@ -1457,7 +1461,7 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
       for(unsigned int j = 0; j < k; j++) {
         uk(j) = normal(engine);
       }
-      alphasim.slice(i).col(t + 1) = C(t * Ctv) + T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
+      alphasim.slice(i).col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
     }
     
     if(arma::is_finite(y(t + 1))) {

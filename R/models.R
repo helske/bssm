@@ -449,7 +449,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   use_phi <- distribution %in% c("negative binomial", "gamma")
   phi_est <- FALSE
   if (use_phi) {
-   if (is_prior(phi)) {
+    if (is_prior(phi)) {
       check_phi(phi$init, distribution)
       phi_est <- TRUE
     } else {
@@ -466,7 +466,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
       u <- rep(u, length.out = n)
     }
   }
- 
+  
   init_signal <- initial_signal(y, u, distribution)
   
   
@@ -573,20 +573,20 @@ svm <- function(y, rho, sd_ar, sigma, mu, beta, xreg = NULL) {
   if(missing(sigma)) {
     svm_type <- 1L
     check_mu(mu$init)
-     init_signal <- log(pmax(1e-4, y^2))
+    init_signal <- log(pmax(1e-4, y^2))
   } else {
     svm_type <- 0L
-  check_sd(sigma$init, "sigma", FALSE)
-   init_signal <- log(pmax(1e-4, y^2)) - 2 * log(sigma$init)
+    check_sd(sigma$init, "sigma", FALSE)
+    init_signal <- log(pmax(1e-4, y^2)) - 2 * log(sigma$init)
   }
-  a1 <- 0
+  a1 <- if(svm_type) mu$init else 0
   P1 <- matrix(sd_ar$init^2 / (1 - rho$init^2))
   
   Z <- matrix(1)
   T <- array(rho$init, c(1, 1, 1))
   R <- array(sd_ar$init, c(1, 1, 1))
   
- 
+  
   
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- "signal"
@@ -602,7 +602,7 @@ svm <- function(y, rho, sd_ar, sigma, mu, beta, xreg = NULL) {
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, phi = if (svm_type == 0) sigma$init else 1, xreg = xreg, coefs = coefs,
-    C = if (svm_type == 1) matrix(mu$init * (1 - T[1])) else matrix(0), init_signal = init_signal, priors = priors, 
+    C = if (svm_type) matrix(mu$init * (1 - T[1])) else matrix(0), init_signal = init_signal, priors = priors, 
     svm_type = svm_type, distribution = 0L, u = 1, phi_est = !as.logical(svm_type)), 
     class = c("svm", "ngssm"))
 }
@@ -733,7 +733,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   T_n <- length(T_ind)
   R_ind <- which(is.na(R)) - 1L
   R_n <- length(R_ind)
- 
+  
   if (H_n > 0) {
     check_prior(H_prior, "H_prior")
     if (H_n == 1) {
@@ -752,7 +752,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
     }
   } else Z_prior <- NULL
   
- if (T_n > 0) {
+  if (T_n > 0) {
     check_prior(T_prior, "T_prior")
     if (T_n == 1) {
       T[is.na(T)] <- T_prior$init
@@ -761,7 +761,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
     }
   } else T_prior <- NULL
   
- if (R_n > 0) {
+  if (R_n > 0) {
     check_prior(R_prior, "R_prior")
     if (R_n == 1) {
       R[is.na(R)] <- R_prior$init
@@ -771,7 +771,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   } else R_prior <- NULL
   
   priors <- c(if(H_n > 1) Z_prior else list(H_prior), 
-      if(Z_n > 1) Z_prior else list(Z_prior), 
+    if(Z_n > 1) Z_prior else list(Z_prior), 
     if(T_n > 1) T_prior else list(T_prior), 
     if(R_n > 1) R_prior else list(R_prior), 
     if(ncol(xreg) > 1) beta else list(beta))
@@ -904,14 +904,14 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     }
   }
   
-   
+  
   Z_ind <- which(is.na(Z)) - 1L
   Z_n <- length(Z_ind)
   T_ind <- which(is.na(T)) - 1L
   T_n <- length(T_ind)
   R_ind <- which(is.na(R)) - 1L
   R_n <- length(R_ind)
- 
+  
   if (Z_n > 0) {
     check_prior(Z_prior, "Z_prior")
     if (Z_n == 1) {
@@ -921,7 +921,7 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     }
   } else Z_prior <- NULL
   
- if (T_n > 0) {
+  if (T_n > 0) {
     check_prior(T_prior, "T_prior")
     if (T_n == 1) {
       T[is.na(T)] <- T_prior$init
@@ -930,7 +930,7 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     }
   } else T_prior <- NULL
   
- if (R_n > 0) {
+  if (R_n > 0) {
     check_prior(R_prior, "R_prior")
     if (R_n == 1) {
       R[is.na(R)] <- R_prior$init
@@ -943,11 +943,11 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     "negative binomial"))
   
   use_phi <- distribution %in% c("negative binomial", "gamma")
-   phi_est <- FALSE
+  phi_est <- FALSE
   if (use_phi) {
-   if (is_prior(phi)) {
+    if (is_prior(phi)) {
       check_phi(phi$init, distribution)
-     phi_est <- TRUE
+      phi_est <- TRUE
     } else {
       check_phi(phi, distribution)
     }
@@ -962,7 +962,7 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
       u <- rep(u, length.out = n)
     }
   }
- 
+  
   init_signal <- initial_signal(y, u, distribution)
   
   if (missing(state_names)) {
@@ -972,7 +972,7 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     rownames(P1) <- colnames(P1) <- state_names
   
   
-    
+  
   priors <- c(if(Z_n > 1) Z_prior else list(Z_prior), 
     if(T_n > 1) T_prior else list(T_prior), 
     if(R_n > 1) R_prior else list(R_prior), list(phi), 

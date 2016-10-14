@@ -26,18 +26,18 @@ void svm::update_model(arma::vec theta) {
   if(svm_type == 0) {
     phi = theta(2);
   } else {
-    C.fill(theta(2) * (1.0 - theta(1)));
+    a1(0) = theta(2);
+    C.fill(theta(2) * (1.0 - theta(0)));
   }
-  
   
   if(xreg.n_cols > 0) {
     beta = theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1);
     compute_xbeta();
   }
-  
 }
 
 arma::vec svm::get_theta(void) {
+  
   arma::vec theta(3 + xreg.n_cols);
   
   theta(0) = T(0, 0, 0);
@@ -45,7 +45,7 @@ arma::vec svm::get_theta(void) {
   if(svm_type == 0) {
     theta(2) = phi;
   } else {
-    theta(2) = C(0) / (1.0 - theta(1));
+    theta(2) = a1(0);
   }
   if(xreg.n_cols > 0) {
     theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1) = beta;
@@ -60,6 +60,6 @@ arma::vec svm::approx_iter(arma::vec& signal) {
   HH = 2.0 * exp(signal) / pow((nz_y - xbeta)/phi, 2);
   y = signal + 1.0 - 0.5 * HH;
   H = sqrt(HH);
-  
+
   return arma::vectorise(fast_smoother(false));
 }
