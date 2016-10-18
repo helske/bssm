@@ -12,7 +12,8 @@
 Dataset containing daily log-returns from 1/10/81-28/6/85 as in [1]
 }
 \references{
-Durbin, Koopman (2012), "Time Series Analysis by State Space Methods".
+James Durbin, Siem Jan Koopman (2012). "Time Series Analysis by State Space Methods". 
+Oxford University Press.
 }
 \keyword{datasets}
 

@@ -25,7 +25,7 @@
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx = TRUE, n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+  seed = sample(.Machine$integer.max, size = 1), gkl_prior = FALSE, ...)
 }
 \arguments{
 \item{object}{Model object.}
@@ -77,8 +77,17 @@ once at the start of the MCMC.}
 \item{seed}{Seed for the random number generator.}
 
 \item{...}{Ignored.}
+
+\item{gkl_prior}{If \code{gkl_prior} is \code{TRUE}, hard-coded priors based on 
+Grothe, Kleppe, and Liesenfeld (2016) are used in SV model. Only applicable to model defined using
+sigma in observation equation. See references for details.}
 }
 \description{
 Methods for posterior inference of states and parameters.
+}
+\references{
+Oliver Grothe, Tore Selland Kleppe, Roman Liesenfeld (2016). 
+"Bayesian Analysis in Non-linear Non-Gaussian State-Space Models using Particle Gibbs". 
+ArXiv:1601.01125.
 }
 

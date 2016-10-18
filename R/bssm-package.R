@@ -37,7 +37,8 @@ NULL
 #' @format A vector of length 945.
 #' @source \url{http://www.ssfpack.com/DKbook.html}.
 #' @keywords datasets
-#' @references Durbin, Koopman (2012), "Time Series Analysis by State Space Methods".
+#' @references James Durbin, Siem Jan Koopman (2012). "Time Series Analysis by State Space Methods". 
+#' Oxford University Press.
 NULL
 #' Simulated Poisson time series data
 #'
