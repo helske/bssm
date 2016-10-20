@@ -30,7 +30,8 @@ public:
     unsigned int, arma::vec);
 
   virtual arma::vec importance_weights(const arma::cube&);
-  virtual double scaling_factor(const arma::vec&);
+  double scaling_factor(const arma::vec&);
+  arma::vec scaling_factor_vec(const arma::vec&);
 
 
   double run_mcmc(const arma::uvec&, const arma::mat&, unsigned int,

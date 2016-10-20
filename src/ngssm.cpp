@@ -598,6 +598,51 @@ double ngssm::scaling_factor(const arma::vec& signal) {
   return ll_approx_u;
 }
 
+//compute log[p(y|alphahat)/g(y|alphahat)] without constants
+arma::vec ngssm::scaling_factor_vec(const arma::vec& signal) {
+  
+  arma::vec ll_approx_u(n, arma::fill::zeros);
+  switch(distribution) {
+  case 0  :
+    for (unsigned int t = 0; t < n; t++) {
+      if (arma::is_finite(ng_y(t))) {
+        ll_approx_u(t) = -0.5 * (signal(t) +
+          pow((ng_y(t) - xbeta(t)) / phi, 2) * exp(-signal(t))) +
+          0.5 * pow(y(t) - signal(t), 2) / HH(t);
+      }
+    }
+    break;
+  case 1  :
+    for (unsigned int t = 0; t < n; t++) {
+      if (arma::is_finite(ng_y(t))) {
+        ll_approx_u(t) = ng_y(t) * (signal(t) + xbeta(t)) - 
+          ut(t) * exp(signal(t) + xbeta(t)) +
+          0.5 * pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
+      }
+    }
+    break;
+  case 2  :
+    for (unsigned int t = 0; t < n; t++) {
+      if (arma::is_finite(ng_y(t))) {
+        ll_approx_u(t) = ng_y(t) * (signal(t) + xbeta(t)) - 
+          ut(t) * log1p(exp(signal(t) + xbeta(t))) +
+          0.5 * std::pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
+      }
+    }
+    break;
+  case 3  :
+    for (unsigned int t = 0; t < n; t++) {
+      if (arma::is_finite(ng_y(t))) {
+        ll_approx_u(t) = ng_y(t) * (signal(t) + xbeta(t)) -
+          (ng_y(t) + phi) * log(phi + ut(t) * exp(signal(t) + xbeta(t))) +
+          0.5 * std::pow(y(t) - signal(t) - xbeta(t), 2) / HH(t);
+      }
+    }
+    break;
+  }
+  return ll_approx_u;
+}
+
 
 
 double ngssm::mcmc_approx(const arma::uvec& prior_types, const arma::mat& prior_pars,
@@ -1495,7 +1540,8 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
   arma::mat alphahat(m, n);
   arma::cube Vt(m, m, n);
   arma::cube Ct(m, m, n);
-  approx(signal, max_iter, conv_tol);
+  double ll_approx = approx(signal, max_iter, conv_tol);
+  arma::vec ll_approx_u = scaling_factor_vec(signal);
   double ll_g = log_likelihood(distribution != 0);
   smoother_ccov(alphahat, Vt, Ct, distribution != 0);
   conditional_dist_helper(Vt, Ct);
@@ -1518,19 +1564,19 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
         arma::as_scalar(Z.col(0).t() * alphasim.slice(i).col(0) + xbeta(0)),
         H(0), 1);
     }
-    double maxv = V.col(0).max();
-    V.col(0) = exp(V.col(0) - maxv);
+    //double maxv = V.col(0).max();
+    V.col(0) = exp(V.col(0) - ll_approx_u(0));
     double sumw = arma::sum(V.col(0));
     if(sumw > 0.0){
       Vnorm = V.col(0) / sumw;
     } else {
       return -arma::datum::inf;
     }
-    ll = maxv + log(arma::mean(V.col(0))) + ll_g;
+    ll = ll_approx + ll_g + log(arma::mean(V.col(0)));
   } else {
     V.col(0).ones();
     Vnorm.fill(1.0/nsim);
-    ll = ll_g;
+    ll = ll_g + ll_approx;
     //what if the first observation is missing??
   }
   
@@ -1564,15 +1610,15 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
           arma::as_scalar(Z.col(t * Ztv).t() * alphasim.slice(i).col(t + 1) + xbeta(t + 1)),
           H(t + 1), 1);
       }
-      double maxv = V.col(t + 1).max();
-      V.col(t + 1) = exp(V.col(t + 1) - maxv);
+      //double maxv = V.col(t + 1).max();
+      V.col(t + 1) = exp(V.col(t + 1) - ll_approx_u(t + 1));
       double sumw = arma::sum(V.col(t + 1));
       if(sumw > 0.0){
         Vnorm = V.col(t + 1) / sumw;
       } else {
         return -arma::datum::inf;
       }
-      ll += maxv + log(arma::mean(V.col(t + 1)));
+      ll += log(arma::mean(V.col(t + 1)));
     } else {
       V.col(t + 1).ones();
       Vnorm.fill(1.0/nsim);
