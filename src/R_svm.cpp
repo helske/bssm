@@ -104,8 +104,8 @@ List svm_run_mcmc(const List& model_,
   arma::mat theta_store(npar, n_samples);
   arma::cube alpha_store(model.n, model.m, n_samples);
   arma::vec posterior_store(n_samples);
-
- double acceptance_rate;
+  
+  double acceptance_rate;
   if(sim_type > 1){
     acceptance_rate = model.run_mcmc_pf(prior_types, prior_pars, n_iter, nsim_states, n_burnin,
       n_thin, gamma, target_acceptance, S, init_signal, end_ram, adapt_approx, da,
@@ -140,7 +140,7 @@ List svm_run_mcmc_is(const List& model_,
   
   arma::mat y_store(model.n, n_samples);
   arma::mat H_store(model.n, n_samples);
-  arma::vec ll_approx_u_store(n_samples);
+  arma::mat ll_approx_u_store(model.n, n_samples);
   arma::mat theta_store(npar, n_samples);
   arma::vec ll_store(n_samples);
   arma::vec prior_store(n_samples);
@@ -155,20 +155,20 @@ List svm_run_mcmc_is(const List& model_,
   arma::vec weights_store(counts.n_elem);
   arma::cube alpha_store(model.n, model.m, counts.n_elem);
   
-   if(sim_type == 1) {
-    is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,
+  if(sim_type == 1) {
+    is_correction(model, theta_store, y_store, H_store, arma::sum(ll_approx_u_store, 0).t(),
       counts, nsim_states, n_threads, weights_store, alpha_store, const_m);
-     prior_store += ll_store + weights_store;
-    } else {
-      if (sim_type == 2) {
+  } else {
+    if (sim_type == 2) {
       is_correction_bsf(model, theta_store, ll_store,
         counts, nsim_states, n_threads, weights_store, alpha_store, const_m);
-      } else {
-      is_correction_psif(model, theta_store, y_store, H_store, ll_store,
+    } else {
+      is_correction_psif(model, theta_store, y_store, H_store, ll_approx_u_store,
         counts, nsim_states, n_threads, weights_store, alpha_store, const_m);
     }
-    prior_store += weights_store;
   }
+  prior_store += ll_store + log(weights_store);
+  
   arma::inplace_trans(theta_store);
   return List::create(Named("alpha") = alpha_store,
     Named("theta") = theta_store, Named("counts") = counts,
@@ -180,7 +180,7 @@ List svm_run_mcmc_is(const List& model_,
 
 // [[Rcpp::export]]
 List svm_importance_sample(const List& model_, arma::vec init_signal, 
-   unsigned int nsim_states, unsigned int seed) {
+  unsigned int nsim_states, unsigned int seed) {
   
   svm model(model_, seed);
   
@@ -226,7 +226,10 @@ List svm_particle_filter(const List& model_, unsigned int nsim_states,
   if(bootstrap) {
     ll = model.particle_filter(nsim_states, alphasim, V, ind);
   } else {
-    ll = model.psi_filter(nsim_states, alphasim, V, ind, init_signal);  
+    double ll_g = model.approx(init_signal, model.max_iter, model.conv_tol);
+    ll_g += model.log_likelihood(model.distribution != 0);
+    arma::vec ll_approx_u = model.scaling_factor_vec(init_signal);
+    ll = model.psi_filter(nsim_states, alphasim, V, ind, ll_g, ll_approx_u);  
   }
   
   return List::create(
@@ -248,7 +251,10 @@ Rcpp::List svm_particle_smoother(const List& model_, unsigned int nsim_states,
   if (type == 1) {
     ll = model.particle_filter(nsim_states, alphasim, V, ind);
   } else {
-    ll = model.psi_filter(nsim_states, alphasim, V, ind, init_signal);
+    double ll_g = model.approx(init_signal, model.max_iter, model.conv_tol);
+    ll_g += model.log_likelihood(model.distribution != 0);
+    arma::vec ll_approx_u = model.scaling_factor_vec(init_signal);
+    ll = model.psi_filter(nsim_states, alphasim, V, ind, ll_g, ll_approx_u);
   }
   if(!arma::is_finite(ll)) {
     stop("Particle filtering returned likelihood value of zero. ");

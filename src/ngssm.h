@@ -29,7 +29,8 @@ public:
     unsigned int, unsigned int, double, double, arma::mat, unsigned int,
     unsigned int, arma::vec);
 
-  virtual arma::vec importance_weights(const arma::cube&);
+  arma::vec importance_weights(const arma::cube&);
+  arma::vec importance_weights_t(const unsigned int, const arma::cube&);
   double scaling_factor(const arma::vec&);
   arma::vec scaling_factor_vec(const arma::vec&);
 
@@ -51,7 +52,7 @@ public:
       unsigned int, unsigned int, unsigned int,
       unsigned int, double, double, arma::mat&,
       const arma::vec, arma::mat&, arma::vec&, arma::vec&,
-      arma::mat&, arma::mat&, arma::vec&, arma::uvec&, bool, bool);
+      arma::mat&, arma::mat&, arma::mat&, arma::uvec&, bool, bool);
 
 
   arma::cube invlink(const arma::cube&);
@@ -59,9 +60,9 @@ public:
   arma::vec pyt(const unsigned int, const arma::cube&);
 
   double particle_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
-  double psi_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&, arma::vec);
+  double psi_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&,
+    const double, const arma::vec&);
   
-  double psi_filter_precomp(unsigned int, arma::cube&, arma::mat&, arma::umat&, double);
   double phi;
   arma::vec ut;
   unsigned int distribution;

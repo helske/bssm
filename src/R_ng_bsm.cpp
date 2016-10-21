@@ -145,7 +145,7 @@ List ng_bsm_run_mcmc_is(const List& model_,
   
   arma::mat y_store(model.n, n_samples);
   arma::mat H_store(model.n, n_samples);
-  arma::vec ll_approx_u_store(n_samples);
+  arma::mat ll_approx_u_store(model.n, n_samples);
   arma::mat theta_store(npar, n_samples);
   arma::vec ll_store(n_samples);
   arma::vec prior_store(n_samples);
@@ -160,20 +160,21 @@ List ng_bsm_run_mcmc_is(const List& model_,
   arma::vec weights_store(counts.n_elem);
   arma::cube alpha_store(model.n, model.m, counts.n_elem);
   
+  
   if(sim_type == 1) {
-    is_correction(model, theta_store, y_store, H_store, ll_approx_u_store,
+    is_correction(model, theta_store, y_store, H_store, arma::sum(ll_approx_u_store, 0).t(),
       counts, nsim_states, n_threads, weights_store, alpha_store, const_m);
-     prior_store += ll_store + weights_store;
-    } else {
-      if (sim_type == 2) {
+  } else {
+    if (sim_type == 2) {
       is_correction_bsf(model, theta_store, ll_store,
         counts, nsim_states, n_threads, weights_store, alpha_store, const_m);
-      } else {
-      is_correction_psif(model, theta_store, y_store, H_store, ll_store,
+    } else {
+      is_correction_psif(model, theta_store, y_store, H_store, ll_approx_u_store,
         counts, nsim_states, n_threads, weights_store, alpha_store, const_m);
     }
-    prior_store += weights_store;
-  } 
+  }
+  prior_store += ll_store + log(weights_store);
+  
   arma::inplace_trans(theta_store);
   return List::create(Named("alpha") = alpha_store,
     Named("theta") = theta_store, Named("counts") = counts,
@@ -237,7 +238,7 @@ List ng_bsm_run_mcmc_summary_is(const List& model_,
   
   arma::mat y_store(model.n, n_samples);
   arma::mat H_store(model.n, n_samples);
-  arma::vec ll_approx_u_store(n_samples);
+  arma::mat ll_approx_u_store(model.n, n_samples);
   arma::mat theta_store(npar, n_samples);
   arma::vec ll_store(n_samples);
   arma::vec prior_store(n_samples);
@@ -255,7 +256,7 @@ List ng_bsm_run_mcmc_summary_is(const List& model_,
   arma::mat muhat(1, model.n);
   arma::cube Vmu(1, 1, model.n);
   
-  is_correction_summary(model, theta_store, y_store, H_store, ll_approx_u_store,
+  is_correction_summary(model, theta_store, y_store, H_store, arma::sum(ll_approx_u_store, 0).t(),
     counts, nsim_states, n_threads, weights_store, alphahat, Vt, muhat, Vmu, const_m);
   
   arma::inplace_trans(muhat);
@@ -333,7 +334,10 @@ List ng_bsm_particle_filter(const List& model_,
   if(bootstrap) {
     ll = model.particle_filter(nsim_states, alphasim, V, ind);
   } else {
-    ll = model.psi_filter(nsim_states, alphasim, V, ind, init_signal);  
+    double ll_g = model.approx(init_signal, model.max_iter, model.conv_tol);
+    ll_g += model.log_likelihood(model.distribution != 0);
+    arma::vec ll_approx_u = model.scaling_factor_vec(init_signal);
+    ll = model.psi_filter(nsim_states, alphasim, V, ind, ll_g, ll_approx_u);
   }
   return List::create(
     Named("alpha") = alphasim, Named("V") = V, Named("A") = ind,
@@ -354,7 +358,10 @@ Rcpp::List ng_bsm_particle_smoother(const List& model_, unsigned int nsim_states
   if (type == 1) {
     ll = model.particle_filter(nsim_states, alphasim, V, ind);
   } else {
-    ll = model.psi_filter(nsim_states, alphasim, V, ind, init_signal);
+     double ll_g = model.approx(init_signal, model.max_iter, model.conv_tol);
+    ll_g += model.log_likelihood(model.distribution != 0);
+    arma::vec ll_approx_u = model.scaling_factor_vec(init_signal);
+    ll = model.psi_filter(nsim_states, alphasim, V, ind, ll_g, ll_approx_u);
   }
   if(!arma::is_finite(ll)) {
     stop("Particle filtering returned likelihood value of zero. ");
