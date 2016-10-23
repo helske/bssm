@@ -55,8 +55,6 @@ distribution is \eqn{SS'}.}
 \item{...}{Ignored.}
 }
 \description{
-For general univariate Gaussian models, all \code{NA} values in
-\code{Z}, \code{H}, \code{T}, and \code{R} are estimated without any constraints
-(expect the bounds given by the uniform priors).
+Bayesian Inference of Linear-Gaussian State Space Models
 }
 

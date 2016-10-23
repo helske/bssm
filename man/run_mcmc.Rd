@@ -18,12 +18,6 @@ run_mcmc(object, n_iter, ...)
 Adaptive Markov chain Monte Carlo simulation of state space models using
 Robust Adaptive Metropolis algorithm by Vihola (2012).
 }
-\details{
-For general univariate  models, all \code{NA} values in
-\code{Z}, \code{H}, \code{T}, and \code{R} are estimated without any constraints
-(expect the bounds given by the priors). For specific model types (BSM, SV), 
-the unknown parameters and their priors are defined when building the model.
-}
 \references{
 Matti Vihola (2012). "Robust adaptive Metropolis algorithm with
 coerced acceptance rate". Statistics and Computing, Volume 22, Issue 5,
