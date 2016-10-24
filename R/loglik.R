@@ -23,7 +23,7 @@ logLik.bsm <- function(object, ...) {
 #' @method logLik ngssm
 #' @rdname logLik
 #' @export
-logLik.ngssm <- function(object, nsim_states, method = "psi", seed = 1, 
+logLik.ngssm <- function(object, nsim_states, method = "spdk", seed = 1, 
   max_iter = 100, conv_tol = 1e-8, ...) {
   
   method <- match.arg(method, c("psi", "spdk", "bootstrap"))
@@ -36,7 +36,7 @@ logLik.ngssm <- function(object, nsim_states, method = "psi", seed = 1,
 }
 #' @method logLik ng_bsm
 #' @export
-logLik.ng_bsm <- function(object, nsim_states, method = "psi", seed = 1,
+logLik.ng_bsm <- function(object, nsim_states, method = "spdk", seed = 1,
   max_iter = 100, conv_tol = 1e-8, ...) {
   
   method <- match.arg(method, c("psi", "spdk", "bootstrap"))
@@ -48,7 +48,7 @@ logLik.ng_bsm <- function(object, nsim_states, method = "psi", seed = 1,
 }
 #' @method logLik svm
 #' @export
-logLik.svm <- function(object, nsim_states, method = "psi", seed = 1,
+logLik.svm <- function(object, nsim_states, method = "spdk", seed = 1,
   max_iter = 100, conv_tol = 1e-8, ...) {
   
   method <- match.arg(method, c("psi", "spdk", "bootstrap"))
