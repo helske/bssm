@@ -393,7 +393,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   method <- match.arg(method, c("pm", "isc"))
   simulation_method <- match.arg(simulation_method, c("spdk", "bootstrap", "psi"))
   
-  if(gkl_prior && model$svm_type == 1) {
+  if(gkl_prior && object$svm_type == 1) {
     stop("gkl prior is not applicable for the SV model parameterized with mu.")
   }
   if (n_thin > 1 && method == "isc") {
