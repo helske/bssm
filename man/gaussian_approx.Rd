@@ -15,7 +15,7 @@ gaussian_approx(object, max_iter, conv_tol, ...)
 
 \item{max_iter}{Maximum number of iterations.}
 
-\item{conv_tol}{Tolerance parameter. ***Document properly later!***}
+\item{conv_tol}{Tolerance parameter.}
 
 \item{...}{Ignored.}
 }

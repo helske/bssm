@@ -7,7 +7,8 @@
 \usage{
 \method{logLik}{gssm}(object, ...)
 
-\method{logLik}{ngssm}(object, nsim_states, seed = 1, ...)
+\method{logLik}{ngssm}(object, nsim_states, method = "spdk", seed = 1,
+  max_iter = 100, conv_tol = 1e-08, ...)
 }
 \arguments{
 \item{object}{Model object.}
@@ -19,6 +20,10 @@ See vignette for details.}
 
 \item{seed}{Seed for the random number generator. Compared to other functions of the package, the
 default seed is fixed (as 1) in order to work properly in numerical optimization algorithms.}
+
+\item{max_iter}{Maximum number of iterations.}
+
+\item{conv_tol}{Tolerance parameter.}
 }
 \description{
 Computes the log-likelihood of the state space model of \code{bssm} package.
