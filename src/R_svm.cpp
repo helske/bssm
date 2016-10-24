@@ -3,30 +3,45 @@
 
 // [[Rcpp::export]]
 double svm_loglik(const List& model_, arma::vec init_signal, unsigned int nsim_states,
-  unsigned int seed) {
+  unsigned int method, unsigned int seed, unsigned int max_iter, double conv_tol) {
   
   svm model(model_, seed);
   
-  if (nsim_states < 2) {
-    model.conv_tol = 1.0e-12;
-    model.max_iter = 1000;
+  model.conv_tol = conv_tol;
+  model.max_iter = max_iter;
+  
+  double ll = 0.0;
+  if (method != 3 ){
+    ll = model.approx(init_signal, model.max_iter, model.conv_tol);
+    ll += model.log_likelihood(false);
   }
   
-  double ll = model.approx(init_signal, model.max_iter, model.conv_tol);
-  double ll_w = 0;
   if (!std::isfinite(ll)) {
     return -arma::datum::inf;
   } else {
-    if (nsim_states > 1) {
-      arma::vec weights(nsim_states);
-      arma::cube alpha = model.sim_smoother(nsim_states, false);
-      weights = model.importance_weights(alpha) - model.scaling_factor(init_signal);
-      double maxw = weights.max();
-      weights = exp(weights - maxw);
-      ll_w = log(arma::mean(weights)) + maxw;
+    if (nsim_states > 0) {
+      switch(method) {
+      case 1:
+        ll = model.psi_loglik(nsim_states, ll, model.scaling_factor_vec(init_signal));
+        break;
+      case 2  : {
+          
+          arma::vec weights(nsim_states);
+          arma::cube alpha = model.sim_smoother(nsim_states, false);
+          weights = model.importance_weights(alpha) - model.scaling_factor(init_signal);
+          double maxw = weights.max();
+          weights = exp(weights - maxw);
+          ll += log(arma::mean(weights)) + maxw;
+        }
+        break;
+        
+      case 3:
+        ll = model.bsf_loglik(nsim_states);
+        break;
+      }
     }
   }
-  return model.log_likelihood(false) + ll + ll_w;
+  return ll;
 }
 
 // [[Rcpp::export]]
@@ -220,20 +235,20 @@ List svm_particle_filter(const List& model_, unsigned int nsim_states,
   
   //fill with zeros in case of zero weights
   arma::cube alphasim(model.m, model.n, nsim_states, arma::fill::zeros);
-  arma::mat V(nsim_states, model.n, arma::fill::zeros);
+  arma::mat w(nsim_states, model.n, arma::fill::zeros);
   arma::umat ind(nsim_states, model.n - 1, arma::fill::zeros);
   double ll;
   if(bootstrap) {
-    ll = model.particle_filter(nsim_states, alphasim, V, ind);
+    ll = model.particle_filter(nsim_states, alphasim, w, ind);
   } else {
     double ll_g = model.approx(init_signal, model.max_iter, model.conv_tol);
-    ll_g += model.log_likelihood(model.distribution != 0);
+    ll_g += model.log_likelihood(false);
     arma::vec ll_approx_u = model.scaling_factor_vec(init_signal);
-    ll = model.psi_filter(nsim_states, alphasim, V, ind, ll_g, ll_approx_u);  
+    ll = model.psi_filter(nsim_states, alphasim, w, ind, ll_g, ll_approx_u);  
   }
   
   return List::create(
-    Named("alpha") = alphasim, Named("V") = V, Named("A") = ind,
+    Named("alpha") = alphasim, Named("w") = w, Named("A") = ind,
     Named("logLik") = ll);
 }
 
@@ -245,16 +260,16 @@ Rcpp::List svm_particle_smoother(const List& model_, unsigned int nsim_states,
   svm model(model_, seed);
   
   arma::cube alphasim(model.m, model.n, nsim_states);
-  arma::mat V(nsim_states, model.n);
+  arma::mat w(nsim_states, model.n);
   arma::umat ind(nsim_states, model.n - 1);
   double ll = 0.0;
   if (type == 1) {
-    ll = model.particle_filter(nsim_states, alphasim, V, ind);
+    ll = model.particle_filter(nsim_states, alphasim, w, ind);
   } else {
     double ll_g = model.approx(init_signal, model.max_iter, model.conv_tol);
-    ll_g += model.log_likelihood(model.distribution != 0);
+    ll_g += model.log_likelihood(false);
     arma::vec ll_approx_u = model.scaling_factor_vec(init_signal);
-    ll = model.psi_filter(nsim_states, alphasim, V, ind, ll_g, ll_approx_u);
+    ll = model.psi_filter(nsim_states, alphasim, w, ind, ll_g, ll_approx_u);
   }
   if(!arma::is_finite(ll)) {
     stop("Particle filtering returned likelihood value of zero. ");
@@ -264,26 +279,26 @@ Rcpp::List svm_particle_smoother(const List& model_, unsigned int nsim_states,
     
     arma::mat alphahat(model.n, model.m);
     
-    arma::vec Vnorm = V.col(model.n - 1)/arma::sum(V.col(model.n - 1));
+    arma::vec wnorm = w.col(model.n - 1)/arma::sum(w.col(model.n - 1));
     for(unsigned int t = 0; t < model.n; t ++){
       for(unsigned k = 0; k < model.m; k++) {
-        alphahat(t, k) = arma::dot(arma::vectorise(alphasim.tube(k, t)), Vnorm);
+        alphahat(t, k) = arma::dot(arma::vectorise(alphasim.tube(k, t)), wnorm);
       }
     }
     return List::create(
-      Named("alphahat") = alphahat, Named("V") = Vnorm,
+      Named("alphahat") = alphahat, Named("w") = w,
       Named("logLik") = ll, Named("alpha") = alphasim);
   } else {
-    model.backtrack_pf2(alphasim, V, ind);
+    model.backtrack_pf2(alphasim, w, ind);
     
     arma::mat alphahat(model.n, model.m);
     for(unsigned int t = 0; t < model.n; t ++){
-      arma::vec Vnorm = V.col(t)/arma::sum(V.col(t));
+      arma::vec wnorm = w.col(t)/arma::sum(w.col(t));
       for(unsigned k = 0; k < model.m; k++) {
-        alphahat(t, k) = arma::dot(arma::vectorise(alphasim.tube(k, t)), Vnorm);
+        alphahat(t, k) = arma::dot(arma::vectorise(alphasim.tube(k, t)), wnorm);
       }
     }
-    return List::create(Named("alphahat") = alphahat, Named("V") = V,
+    return List::create(Named("alphahat") = alphahat, Named("w") = w,
       Named("logLik") = ll, Named("alpha") = alphasim);
   }
   
@@ -296,15 +311,15 @@ Rcpp::List svm_backward_simulate(const List& model_, unsigned int nsim_states,
   svm model(model_, seed);
   
   arma::cube alphasim(model.m, model.n, nsim_states);
-  arma::mat V(nsim_states, model.n);
+  arma::mat w(nsim_states, model.n);
   arma::umat ind(nsim_states, model.n - 1);
-  double ll = model.particle_filter(nsim_states, alphasim, V, ind);
+  double ll = model.particle_filter(nsim_states, alphasim, w, ind);
   if(!arma::is_finite(ll)) {
     stop("Particle filtering returned likelihood value of zero. ");
   }
   arma::cube alpha(model.m, model.n, nsim_store);
   for (unsigned int i = 0; i < nsim_store; i++) {
-    alpha.slice(i) = model.backward_simulate(alphasim, V, ind);
+    alpha.slice(i) = model.backward_simulate(alphasim, w, ind);
     
   }
   return List::create(Named("alpha") = alpha,

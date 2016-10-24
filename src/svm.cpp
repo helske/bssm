@@ -29,11 +29,11 @@ void svm::update_model(arma::vec theta) {
   P1(0, 0) = theta(1) * theta(1) / (1 - theta(0) * theta(0));
   
   if(svm_type == 0) {
-     if(gkl) {
-    theta(0) = 2.0 * theta(0) - 1.0;
-    theta(1) = sqrt(theta(1));
-    theta(2) = exp(theta(2));
-  }
+    if(gkl) {
+      theta(0) = 2.0 * theta(0) - 1.0;
+      theta(1) = sqrt(theta(1));
+      theta(2) = exp(theta(2));
+    }
     phi = theta(2);
   } else {
     a1(0) = theta(2);
@@ -75,8 +75,14 @@ arma::vec svm::approx_iter(arma::vec& signal) {
   HH = 2.0 * exp(signal) / pow((nz_y - xbeta)/phi, 2);
   y = signal + 1.0 - 0.5 * HH;
   H = sqrt(HH);
-  
-  return arma::vectorise(fast_smoother(false));
+  arma::vec signal_new(n);
+  // new signal
+  if (max_iter > 0) {
+    signal_new = arma::vectorise(fast_smoother(false));
+  } else {
+    signal_new = signal;
+  }
+  return signal_new;
 }
 
 double svm::prior_pdf(const arma::vec& theta, const arma::uvec& prior_types,
@@ -115,4 +121,3 @@ double svm::prior_pdf(const arma::vec& theta, const arma::uvec& prior_types,
   return q;
 }
 
-  

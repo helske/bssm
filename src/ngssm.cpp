@@ -53,6 +53,9 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
   
   double ll = logp_signal(signal, Kt, Ft) + logp_y(signal);
   unsigned int i = 0;
+  if(max_iter == 0) {
+     approx_iter(signal);
+  } else {
   while(i < max_iter) {
     // compute new guess of signal
     arma::vec signal_new = approx_iter(signal);
@@ -75,6 +78,7 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
     }
     
     i++;
+  }
   }
   ll = 0.0;
   // log[g(pseudo_y | signal)]
@@ -101,32 +105,33 @@ arma::vec ngssm::approx_iter(arma::vec& signal) {
   
   // new pseudo y and H
   switch(distribution) {
-  case 1  :
-    HH = 1.0 / (exp(signal + xbeta) % ut);
-    y = ng_y % HH + signal + xbeta - 1.0;
-    break;
-  case 2  : {
+    case 1: {
+      HH = 1.0 / (exp(signal + xbeta) % ut);
+      y = ng_y % HH + signal + xbeta - 1.0;
+    } break;
+    case 2: {
       arma::vec exptmp = exp(signal + xbeta);
       HH = pow(1.0 + exptmp, 2) / (ut % exptmp);
       y = ng_y % HH + signal + xbeta - 1.0 - exptmp;
-    }
-    break;
-  case 3  : {
-    arma::vec exptmp = 1.0 / (exp(signal + xbeta) % ut);
-    HH = 1.0 / phi + exptmp;
-    y = signal + xbeta + ng_y % exptmp - 1.0;
-  }
-    break;
-  }
-  // new signal
-  
-  arma::mat alpha = fast_smoother(true);
-  arma::vec signal_new(n);
-  
-  for (unsigned int t = 0; t < n; t++) {
-    signal_new(t) = arma::as_scalar(Z.col(Ztv * t).t() * alpha.col(t));
+    } break;
+    case 3: {
+      arma::vec exptmp = 1.0 / (exp(signal + xbeta) % ut);
+      HH = 1.0 / phi + exptmp;
+      y = signal + xbeta + ng_y % exptmp - 1.0;
+    } break;
   }
   H = sqrt(HH);
+  
+   arma::vec signal_new(n);
+  // new signal
+  if (max_iter > 0) {
+    arma::mat alpha = fast_smoother(true);
+    for (unsigned int t = 0; t < n; t++) {
+      signal_new(t) = arma::as_scalar(Z.col(Ztv * t).t() * alpha.col(t));
+    }
+  } else {
+    signal_new = signal;
+  }
   
   return signal_new;
 }
@@ -596,7 +601,50 @@ arma::vec ngssm::importance_weights_t(const unsigned int t, const arma::cube& al
   }
   return weights;
 }
-
+//compute log-weights
+arma::vec ngssm::importance_weights_t(const unsigned int t, const arma::mat& alphasim) {
+  
+  arma::vec weights(alphasim.n_cols, arma::fill::zeros);
+  if (arma::is_finite(ng_y(t))) {
+    
+    switch(distribution) {
+    case 0  :
+      for (unsigned int i = 0; i < alphasim.n_cols; i++) {
+        double simsignal = alphasim(0, i);
+        weights(i) = -0.5 * (simsignal +
+          pow((ng_y(t) - xbeta(t)) / phi, 2) * exp(-simsignal)) +
+          0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
+      }
+      break;
+    case 1  :
+      for (unsigned int i = 0; i < alphasim.n_cols; i++) {
+        double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+          alphasim.col(i) + xbeta(t));
+        weights(i) = ng_y(t) * simsignal  - ut(t) * exp(simsignal) +
+          0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
+      }
+      break;
+    case 2  :
+      for (unsigned int i = 0; i < alphasim.n_cols; i++) {
+        double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+          alphasim.col(i) + xbeta(t));
+        weights(i) = ng_y(t) * simsignal - ut(t) * log1p(exp(simsignal)) +
+          0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
+      }
+      break;
+    case 3  :
+      for (unsigned int i = 0; i < alphasim.n_cols; i++) {
+        double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+          alphasim.col(i) + xbeta(t));
+        weights(i) = ng_y(t) * simsignal - (ng_y(t) + phi) * 
+          log(phi + ut(t) * exp(simsignal)) +
+          0.5 * std::pow(y(t) - simsignal, 2) / HH(t);
+      }
+      break;
+    }
+  }
+  return weights;
+}
 //compute log[p(y|alphahat)/g(y|alphahat)] without constants
 double ngssm::scaling_factor(const arma::vec& signal) {
   
@@ -1035,13 +1083,13 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
   }
   double ll_init = ll_g + ll_approx;
   arma::cube alpha(m, n, nsim_states);
-  arma::mat V(nsim_states, n);
+  arma::mat w(nsim_states, n);
   arma::umat omega(nsim_states, n - 1);
   double ll;
   if (bf){
-    ll = particle_filter(nsim_states, alpha, V, omega);
+    ll = particle_filter(nsim_states, alpha, w, omega);
   } else {
-    ll = psi_filter(nsim_states, alpha, V, omega, ll_init, ll_approx_u);
+    ll = psi_filter(nsim_states, alpha, w, omega, ll_init, ll_approx_u);
   }
   backtrack_pf(alpha, omega);
   if (!std::isfinite(ll)) {
@@ -1050,7 +1098,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
   
   unsigned int ind = 0;
   
-  arma::vec weights = V.col(n - 1);
+  arma::vec weights = w.col(n - 1);
   std::discrete_distribution<> sample(weights.begin(), weights.end());
   ind = sample(engine);
   unsigned int j = 0;
@@ -1106,12 +1154,12 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
             arma::cube alpha_prop(m, n, nsim_states);
             double ll_prop;
             if(bf) {
-              ll_prop = particle_filter(nsim_states, alpha_prop, V, omega);
+              ll_prop = particle_filter(nsim_states, alpha_prop, w, omega);
             } else {
               if(adapt_approx) {
                 ll_approx_u = scaling_factor_vec(signal);
               }
-              ll_prop = psi_filter(nsim_states, alpha_prop, V, omega, ll_init_prop, ll_approx_u);
+              ll_prop = psi_filter(nsim_states, alpha_prop, w, omega, ll_init_prop, ll_approx_u);
             }
             // delayed acceptance ratio
             double pp = 0.0;
@@ -1126,7 +1174,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
               ll_init = ll_init_prop;
               prior = prior_prop;
               theta = theta_prop;
-              arma::vec weights = V.col(n-1);
+              arma::vec weights = w.col(n-1);
               std::discrete_distribution<> sample(weights.begin(), weights.end());
               ind = sample(engine);
               alpha = alpha_prop;
@@ -1142,7 +1190,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
         double ll_init_prop;
         if(bf) {
           
-          ll_prop = particle_filter(nsim_states, alpha_prop, V, omega);
+          ll_prop = particle_filter(nsim_states, alpha_prop, w, omega);
           if(std::isfinite(ll_prop)) {
             double q = proposal(theta, theta_prop);
             accept_prob = std::min(1.0, exp(ll_prop - ll + prior_prop - prior + q));
@@ -1163,7 +1211,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
               ll_approx_u = scaling_factor_vec(signal);
             }
             accept_prob = std::min(1.0, exp(ll_init_prop - ll_init + prior_prop - prior + q));
-            ll_prop = psi_filter(nsim_states, alpha_prop, V, omega, ll_init_prop, ll_approx_u);
+            ll_prop = psi_filter(nsim_states, alpha_prop, w, omega, ll_init_prop, ll_approx_u);
             pp = std::min(1.0, exp(ll_prop - ll + prior_prop - prior + q));
           } else {
             accept_prob = 0.0;
@@ -1180,7 +1228,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
           ll_init = ll_init_prop;
           prior = prior_prop;
           theta = theta_prop;
-          arma::vec weights = V.col(n-1);
+          arma::vec weights = w.col(n-1);
           std::discrete_distribution<> sample(weights.begin(), weights.end());
           ind = sample(engine);
           alpha = alpha_prop;
@@ -1464,12 +1512,12 @@ arma::cube ngssm::invlink(const arma::cube& alpha) {
 arma::vec ngssm::pyt(const unsigned int t, const arma::cube& alphasim) {
   
   int logp = 1;
-  arma::vec V(alphasim.n_slices);
+  arma::vec w(alphasim.n_slices);
   
   switch(distribution) {
   case 0  :
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
-      V(i) = R::dnorm(ng_y(t), xbeta(t), phi * exp(alphasim(0,t,i)/2.0), logp);
+      w(i) = R::dnorm(ng_y(t), xbeta(t), phi * exp(alphasim(0,t,i)/2.0), logp);
       
     }
     break;
@@ -1477,30 +1525,69 @@ arma::vec ngssm::pyt(const unsigned int t, const arma::cube& alphasim) {
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
       double exptmp = ut(t) * exp(arma::as_scalar(Z.col(t * Ztv).t() *
         alphasim.slice(i).col(t) + xbeta(t)));
-      V(i) = R::dpois(ng_y(t), exptmp, logp);
+      w(i) = R::dpois(ng_y(t), exptmp, logp);
     }
     break;
   case 2  :
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
       double exptmp = exp(arma::as_scalar(Z.col(t * Ztv).t() *
         alphasim.slice(i).col(t) + xbeta(t)));
-      V(i) = R::dbinom(ng_y(t), ut(t),  exptmp / (1.0 + exptmp), logp);
+      w(i) = R::dbinom(ng_y(t), ut(t),  exptmp / (1.0 + exptmp), logp);
     }
     break;
   case 3  :
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
       double exptmp = ut(t) * exp(arma::as_scalar(Z.col(t * Ztv).t() *
         alphasim.slice(i).col(t) + xbeta(t)));
-      V(i) = R::dnbinom_mu(ng_y(t), phi, exptmp, logp);
+      w(i) = R::dnbinom_mu(ng_y(t), phi, exptmp, logp);
     }
     break;
   }
-  return V;
+  return w;
+}
+
+
+//compute p(y_t| xbeta_t, Z_t alpha_t)
+arma::vec ngssm::pyt(const unsigned int t, const arma::mat& alphasim) {
+  
+  int logp = 1;
+  arma::vec w(alphasim.n_cols);
+  
+  switch(distribution) {
+  case 0  :
+    for (unsigned int i = 0; i < alphasim.n_cols; i++) {
+      w(i) = R::dnorm(ng_y(t), xbeta(t), phi * exp(alphasim(0,i)/2.0), logp);
+      
+    }
+    break;
+  case 1  :
+    for (unsigned int i = 0; i < alphasim.n_cols; i++) {
+      double exptmp = ut(t) * exp(arma::as_scalar(Z.col(t * Ztv).t() *
+        alphasim.col(i) + xbeta(t)));
+      w(i) = R::dpois(ng_y(t), exptmp, logp);
+    }
+    break;
+  case 2  :
+    for (unsigned int i = 0; i < alphasim.n_cols; i++) {
+      double exptmp = exp(arma::as_scalar(Z.col(t * Ztv).t() *
+        alphasim.col(i) + xbeta(t)));
+      w(i) = R::dbinom(ng_y(t), ut(t),  exptmp / (1.0 + exptmp), logp);
+    }
+    break;
+  case 3  :
+    for (unsigned int i = 0; i < alphasim.n_cols; i++) {
+      double exptmp = ut(t) * exp(arma::as_scalar(Z.col(t * Ztv).t() *
+        alphasim.col(i) + xbeta(t)));
+      w(i) = R::dnbinom_mu(ng_y(t), phi, exptmp, logp);
+    }
+    break;
+  }
+  return w;
 }
 
 
 //particle filter
-double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V, arma::umat& ind) {
+double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& w, arma::umat& ind) {
   
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
@@ -1518,22 +1605,22 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
     }
     alphasim.slice(i).col(0) = a1 + L_P1 * um;
   }
-  arma::vec Vnorm(nsim);
+  arma::vec wnorm(nsim);
   double ll = 0.0;
   if(arma::is_finite(y(0))) {
-    V.col(0) = pyt(0, alphasim);
-    double maxv = V.col(0).max();
-    V.col(0) = exp(V.col(0) - maxv);
-    double sumw = arma::sum(V.col(0));
+    w.col(0) = pyt(0, alphasim);
+    double maxv = w.col(0).max();
+    w.col(0) = exp(w.col(0) - maxv);
+    double sumw = arma::sum(w.col(0));
     if(sumw > 0.0){
-      Vnorm = V.col(0) / sumw;
+      wnorm = w.col(0) / sumw;
     } else {
       return -arma::datum::inf;
     }
-    ll = maxv + log(arma::mean(V.col(0)));
+    ll = maxv + log(sumw / nsim);
   } else {
-    V.col(0).ones();
-    Vnorm.fill(1.0/nsim);
+    w.col(0).ones();
+    wnorm.fill(1.0/nsim);
   }
   for (unsigned int t = 0; t < (n - 1); t++) {
     
@@ -1542,7 +1629,7 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
       r(i) = unif(engine);
     }
     
-    ind.col(t) = stratified_sample(Vnorm, r, nsim);
+    ind.col(t) = stratified_sample(wnorm, r, nsim);
     
     arma::mat alphatmp(m, nsim);
     
@@ -1559,20 +1646,20 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
     }
     
     if(arma::is_finite(y(t + 1))) {
-      V.col(t + 1) = pyt(t + 1, alphasim);
+      w.col(t + 1) = pyt(t + 1, alphasim);
       
-      double maxv = V.col(t + 1).max();
-      V.col(t + 1) = exp(V.col(t + 1) - maxv);
-      double sumw = arma::sum(V.col(t + 1));
+      double maxv = w.col(t + 1).max();
+      w.col(t + 1) = exp(w.col(t + 1) - maxv);
+      double sumw = arma::sum(w.col(t + 1));
       if(sumw > 0.0){
-        Vnorm = V.col(t + 1) / sumw;
+        wnorm = w.col(t + 1) / sumw;
       } else {
         return -arma::datum::inf;
       }
-      ll += maxv + log(arma::mean(V.col(t + 1)));
+      ll += maxv + log(sumw / nsim);
     } else {
-      V.col(t + 1).ones();
-      Vnorm.fill(1.0/nsim);
+      w.col(t + 1).ones();
+      wnorm.fill(1.0/nsim);
     }
     
     
@@ -1583,7 +1670,7 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
 
 
 //psi-auxiliary particle filter
-double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V, 
+double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& w, 
   arma::umat& ind, const double ll_g, const arma::vec& ll_approx_u) {
   
   arma::mat alphahat(m, n);
@@ -1601,23 +1688,22 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
     alphasim.slice(i).col(0) = alphahat.col(0) + Vt.slice(0) * um;
   }
   
-  arma::vec Vnorm(nsim);
+  arma::vec wnorm(nsim);
   double ll = 0.0;
   if(arma::is_finite(y(0))) {
     //don't add gaussian likelihood to weights
-    V.col(0) = exp(importance_weights_t(0, alphasim) - ll_approx_u(0)); 
-    double sumw = arma::sum(V.col(0));
+    w.col(0) = exp(importance_weights_t(0, alphasim) - ll_approx_u(0)); 
+    double sumw = arma::sum(w.col(0));
     if(sumw > 0.0){
-      Vnorm = V.col(0) / sumw;
+      wnorm = w.col(0) / sumw;
     } else {
       return -arma::datum::inf;
     }
-    ll = ll_g + log(arma::mean(V.col(0)));
+    ll = ll_g + log(sumw / nsim);
   } else {
-    V.col(0).ones();
-    Vnorm.fill(1.0/nsim);
+    w.col(0).ones();
+    wnorm.fill(1.0/nsim);
     ll = ll_g;
-    //what if the first observation is missing??
   }
   for (unsigned int t = 0; t < (n - 1); t++) {
     
@@ -1626,7 +1712,7 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
       r(i) = unif(engine);
     }
     
-    ind.col(t) = stratified_sample(Vnorm, r, nsim);
+    ind.col(t) = stratified_sample(wnorm, r, nsim);
     
     arma::mat alphatmp(m, nsim);
     
@@ -1643,21 +1729,181 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V,
     }
     
     if(arma::is_finite(y(t + 1))) {
-      V.col(t + 1) = exp(importance_weights_t(t + 1, alphasim)- ll_approx_u(t + 1)); 
-      double sumw = arma::sum(V.col(t + 1));
+      w.col(t + 1) = exp(importance_weights_t(t + 1, alphasim)- ll_approx_u(t + 1)); 
+      double sumw = arma::sum(w.col(t + 1));
       if(sumw > 0.0){
-        Vnorm = V.col(t + 1) / sumw;
+        wnorm = w.col(t + 1) / sumw;
       } else {
         return -arma::datum::inf;
       }
-      ll += log(arma::mean(V.col(t + 1)));
+      ll += log(sumw / nsim);
     } else {
-      V.col(t + 1).ones();
-      Vnorm.fill(1.0/nsim);
+      w.col(t + 1).ones();
+      wnorm.fill(1.0/nsim);
     }
     
     
   }
   
+  return ll;
+}
+
+//psi-auxiliary particle filter
+double ngssm::psi_loglik(unsigned int nsim, const double ll_g, const arma::vec& ll_approx_u) {
+  
+  arma::mat alphahat(m, n);
+  arma::cube Vt(m, m, n);
+  arma::cube Ct(m, m, n);
+  smoother_ccov(alphahat, Vt, Ct, distribution != 0);
+  conditional_dist_helper(Vt, Ct);
+  arma::mat alphasim(m, nsim);
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+  for (unsigned int i = 0; i < nsim; i++) {
+    arma::vec um(m);
+    for(unsigned int j = 0; j < m; j++) {
+      um(j) = normal(engine);
+    }
+    alphasim.col(i) = alphahat.col(0) + Vt.slice(0) * um;
+  }
+  
+  arma::vec w(nsim);
+  arma::vec wnorm(nsim);
+  double ll = 0.0;
+  if(arma::is_finite(y(0))) {
+    //don't add gaussian likelihood to weights
+    w = exp(importance_weights_t(0, alphasim) - ll_approx_u(0)); 
+    double sumw = arma::sum(w);
+    if(sumw > 0.0){
+      wnorm = w / sumw;
+    } else {
+      return -arma::datum::inf;
+    }
+    ll = ll_g + log(sumw / nsim);
+  } else {
+    wnorm.fill(1.0/nsim);
+    ll = ll_g;
+  }
+  
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    
+    arma::vec r(nsim);
+    for (unsigned int i = 0; i < nsim; i++) {
+      r(i) = unif(engine);
+    }
+    
+    arma::uvec ind = stratified_sample(wnorm, r, nsim);
+    
+    arma::mat alphatmp(m, nsim);
+    
+    for (unsigned int i = 0; i < nsim; i++) {
+      alphatmp.col(i) = alphasim.col(ind(i));
+    }
+    for (unsigned int i = 0; i < nsim; i++) {
+      arma::vec um(m);
+      for(unsigned int j = 0; j < m; j++) {
+        um(j) = normal(engine);
+      }
+      alphasim.col(i) = alphahat.col(t + 1) + 
+        Ct.slice(t + 1) * (alphatmp.col(i) - alphahat.col(t)) + Vt.slice(t + 1) * um;
+    }
+    
+    if(arma::is_finite(y(t + 1))) {
+      w = exp(importance_weights_t(t + 1, alphasim)- ll_approx_u(t + 1)); 
+      double sumw = arma::sum(w);
+      if(sumw > 0.0){
+        wnorm = w / sumw;
+      } else {
+        return -arma::datum::inf;
+      }
+      ll += log(sumw / nsim);
+    } else {
+      wnorm.fill(1.0/nsim);
+    }
+  }
+  
+  return ll;
+}
+
+double ngssm::bsf_loglik(unsigned int nsim) {
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+  
+  arma::uvec nonzero = arma::find(P1.diag() > 0);
+  arma::mat L_P1(m, m, arma::fill::zeros);
+  arma::mat alphasim(m, nsim);
+  if (nonzero.n_elem > 0) {
+    L_P1.submat(nonzero, nonzero) =
+      arma::chol(P1.submat(nonzero, nonzero), "lower");
+  }
+  for (unsigned int i = 0; i < nsim; i++) {
+    arma::vec um(m);
+    for(unsigned int j = 0; j < m; j++) {
+      um(j) = normal(engine);
+    }
+    alphasim.col(i) = a1 + L_P1 * um;
+  }
+  
+  arma::vec w(nsim);
+  arma::vec wnorm(nsim);
+  double ll = 0.0;
+  if(arma::is_finite(y(0))) {
+    w = pyt(0, alphasim);
+    double maxv = w.max();
+    w = exp(w - maxv);
+    double sumw = arma::sum(w);
+    if(sumw > 0.0){
+      wnorm = w / sumw;
+    } else {
+      return -arma::datum::inf;
+    }
+    ll = maxv + log(sumw / nsim);
+  } else {
+    wnorm.fill(1.0/nsim);
+  }
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    
+    arma::vec r(nsim);
+    for (unsigned int i = 0; i < nsim; i++) {
+      r(i) = unif(engine);
+    }
+    
+    arma::uvec ind = stratified_sample(wnorm, r, nsim);
+    
+    arma::mat alphatmp(m, nsim);
+    
+    
+    for (unsigned int i = 0; i < nsim; i++) {
+      alphatmp.col(i) = alphasim.col(ind(i));
+    }
+    
+    for (unsigned int i = 0; i < nsim; i++) {
+      arma::vec uk(k);
+      for(unsigned int j = 0; j < k; j++) {
+        uk(j) = normal(engine);
+      }
+      alphasim.col(i) = C.col(t * Ctv) + T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
+    }
+    
+    if(arma::is_finite(y(t + 1))) {
+      w = pyt(t + 1, alphasim);
+      
+      double maxv = w.max();
+      w = exp(w - maxv);
+      double sumw = arma::sum(w);
+      if(sumw > 0.0){
+        wnorm = w / sumw;
+      } else {
+        return -arma::datum::inf;
+      }
+      ll += maxv + log(sumw / nsim);
+    } else {
+      w.ones();
+      wnorm.fill(1.0/nsim);
+    }
+    
+    
+  }
   return ll;
 }

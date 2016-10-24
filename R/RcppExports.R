@@ -133,8 +133,8 @@ gssm_backward_simulate <- function(model_, nsim_states, seed, nsim_store) {
     .Call('bssm_gssm_backward_simulate', PACKAGE = 'bssm', model_, nsim_states, seed, nsim_store)
 }
 
-ng_bsm_loglik <- function(model_, init_signal, nsim_states, seed) {
-    .Call('bssm_ng_bsm_loglik', PACKAGE = 'bssm', model_, init_signal, nsim_states, seed)
+ng_bsm_loglik <- function(model_, init_signal, nsim_states, method, seed, max_iter, conv_tol) {
+    .Call('bssm_ng_bsm_loglik', PACKAGE = 'bssm', model_, init_signal, nsim_states, method, seed, max_iter, conv_tol)
 }
 
 ng_bsm_filter <- function(model_, init_signal) {
@@ -193,8 +193,8 @@ ng_bsm_backward_simulate <- function(model_, nsim_states, seed, nsim_store) {
     .Call('bssm_ng_bsm_backward_simulate', PACKAGE = 'bssm', model_, nsim_states, seed, nsim_store)
 }
 
-ngssm_loglik <- function(model_, init_signal, nsim_states, seed) {
-    .Call('bssm_ngssm_loglik', PACKAGE = 'bssm', model_, init_signal, nsim_states, seed)
+ngssm_loglik <- function(model_, init_signal, nsim_states, method, seed, max_iter, conv_tol) {
+    .Call('bssm_ngssm_loglik', PACKAGE = 'bssm', model_, init_signal, nsim_states, method, seed, max_iter, conv_tol)
 }
 
 ngssm_filter <- function(model_, init_signal) {
@@ -245,8 +245,8 @@ ngssm_backward_simulate <- function(model_, nsim_states, seed, nsim_store) {
     .Call('bssm_ngssm_backward_simulate', PACKAGE = 'bssm', model_, nsim_states, seed, nsim_store)
 }
 
-svm_loglik <- function(model_, init_signal, nsim_states, seed) {
-    .Call('bssm_svm_loglik', PACKAGE = 'bssm', model_, init_signal, nsim_states, seed)
+svm_loglik <- function(model_, init_signal, nsim_states, method, seed, max_iter, conv_tol) {
+    .Call('bssm_svm_loglik', PACKAGE = 'bssm', model_, init_signal, nsim_states, method, seed, max_iter, conv_tol)
 }
 
 svm_filter <- function(model_, init_signal) {

@@ -515,16 +515,19 @@ BEGIN_RCPP
 END_RCPP
 }
 // ng_bsm_loglik
-double ng_bsm_loglik(const List& model_, arma::vec init_signal, unsigned int nsim_states, unsigned int seed);
-RcppExport SEXP bssm_ng_bsm_loglik(SEXP model_SEXP, SEXP init_signalSEXP, SEXP nsim_statesSEXP, SEXP seedSEXP) {
+double ng_bsm_loglik(const List& model_, arma::vec init_signal, unsigned int nsim_states, unsigned int method, unsigned int seed, unsigned int max_iter, double conv_tol);
+RcppExport SEXP bssm_ng_bsm_loglik(SEXP model_SEXP, SEXP init_signalSEXP, SEXP nsim_statesSEXP, SEXP methodSEXP, SEXP seedSEXP, SEXP max_iterSEXP, SEXP conv_tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const List& >::type model_(model_SEXP);
     Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type method(methodSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(ng_bsm_loglik(model_, init_signal, nsim_states, seed));
+    Rcpp::traits::input_parameter< unsigned int >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< double >::type conv_tol(conv_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(ng_bsm_loglik(model_, init_signal, nsim_states, method, seed, max_iter, conv_tol));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -784,16 +787,19 @@ BEGIN_RCPP
 END_RCPP
 }
 // ngssm_loglik
-double ngssm_loglik(const List& model_, arma::vec init_signal, unsigned int nsim_states, unsigned int seed);
-RcppExport SEXP bssm_ngssm_loglik(SEXP model_SEXP, SEXP init_signalSEXP, SEXP nsim_statesSEXP, SEXP seedSEXP) {
+double ngssm_loglik(const List& model_, arma::vec init_signal, unsigned int nsim_states, unsigned int method, unsigned int seed, unsigned int max_iter, double conv_tol);
+RcppExport SEXP bssm_ngssm_loglik(SEXP model_SEXP, SEXP init_signalSEXP, SEXP nsim_statesSEXP, SEXP methodSEXP, SEXP seedSEXP, SEXP max_iterSEXP, SEXP conv_tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const List& >::type model_(model_SEXP);
     Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type method(methodSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(ngssm_loglik(model_, init_signal, nsim_states, seed));
+    Rcpp::traits::input_parameter< unsigned int >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< double >::type conv_tol(conv_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(ngssm_loglik(model_, init_signal, nsim_states, method, seed, max_iter, conv_tol));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -1007,16 +1013,19 @@ BEGIN_RCPP
 END_RCPP
 }
 // svm_loglik
-double svm_loglik(const List& model_, arma::vec init_signal, unsigned int nsim_states, unsigned int seed);
-RcppExport SEXP bssm_svm_loglik(SEXP model_SEXP, SEXP init_signalSEXP, SEXP nsim_statesSEXP, SEXP seedSEXP) {
+double svm_loglik(const List& model_, arma::vec init_signal, unsigned int nsim_states, unsigned int method, unsigned int seed, unsigned int max_iter, double conv_tol);
+RcppExport SEXP bssm_svm_loglik(SEXP model_SEXP, SEXP init_signalSEXP, SEXP nsim_statesSEXP, SEXP methodSEXP, SEXP seedSEXP, SEXP max_iterSEXP, SEXP conv_tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const List& >::type model_(model_SEXP);
     Rcpp::traits::input_parameter< arma::vec >::type init_signal(init_signalSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type method(methodSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(svm_loglik(model_, init_signal, nsim_states, seed));
+    Rcpp::traits::input_parameter< unsigned int >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< double >::type conv_tol(conv_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(svm_loglik(model_, init_signal, nsim_states, method, seed, max_iter, conv_tol));
     return rcpp_result_gen;
 END_RCPP
 }

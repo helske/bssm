@@ -186,7 +186,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
 #' @param ... Ignored.
 #' @export
 run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
-  method = "pm", simulation_method = "spdk", const_m = TRUE,
+  method = "pm", simulation_method = "psi", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx  = TRUE, n_threads = 1,
@@ -280,7 +280,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
 #' @rdname run_mcmc_ng
 #' @export
 run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
-  method = "pm", simulation_method = "spdk", const_m = TRUE,
+  method = "pm", simulation_method = "psi", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx  = TRUE, n_threads = 1,
@@ -381,7 +381,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
 #' ArXiv:1601.01125.
 #'  
 run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
-  method = "pm", simulation_method = "spdk", const_m = TRUE,
+  method = "pm", simulation_method = "psi", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx  = TRUE, n_threads = 1,

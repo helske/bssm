@@ -1055,7 +1055,7 @@ arma::mat gssm::predict2(const arma::uvec& prior_types,
 }
 
 //particle filter
-double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V, arma::umat& ind) {
+double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& w, arma::umat& ind) {
   
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
@@ -1074,24 +1074,24 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
     alphasim.slice(i).col(0) = a1 + L_P1 * um;
   }
   
-  arma::vec Vnorm(nsim);
+  arma::vec wnorm(nsim);
   double ll = 0.0;
   if(arma::is_finite(y(0))) {
     for (unsigned int i = 0; i < nsim; i++) {
-      V(i, 0) = R::dnorm(y(0),
+      w(i, 0) = R::dnorm(y(0),
         arma::as_scalar(Z.col(0).t() * alphasim.slice(i).col(0) + xbeta(0)),
         H(0), 0);
     }
-    double sumw = arma::sum(V.col(0));
+    double sumw = arma::sum(w.col(0));
     if(sumw > 0.0){
-      Vnorm = V.col(0) / sumw;
+      wnorm = w.col(0) / sumw;
     } else {
       return -arma::datum::inf;
     }
-    ll = log(arma::mean(V.col(0)));
+    ll = log(arma::mean(w.col(0)));
   } else {
-    V.col(0).ones();
-    Vnorm.fill(1.0/nsim);
+    w.col(0).ones();
+    wnorm.fill(1.0/nsim);
   }
   
   for (unsigned int t = 0; t < (n - 1); t++) {
@@ -1101,7 +1101,7 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
       r(i) = unif(engine);
     }
     
-    ind.col(t) = stratified_sample(Vnorm, r, nsim);
+    ind.col(t) = stratified_sample(wnorm, r, nsim);
     
     arma::mat alphatmp(m, nsim);
     
@@ -1119,20 +1119,20 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
     
     if(arma::is_finite(y(t + 1))) {
       for (unsigned int i = 0; i < nsim; i++) {
-        V(i, t + 1) = R::dnorm(y(t + 1),
+        w(i, t + 1) = R::dnorm(y(t + 1),
           arma::as_scalar(Z.col((t + 1) * Ztv).t() * alphasim.slice(i).col(t + 1) + xbeta(t + 1)),
           H((t + 1) * Htv), 0);
       }
-      double sumw = arma::sum(V.col(t + 1));
+      double sumw = arma::sum(w.col(t + 1));
       if(sumw > 0.0){
-        Vnorm = V.col(t + 1) / sumw;
+        wnorm = w.col(t + 1) / sumw;
       } else {
         return -arma::datum::inf;
       }
-      ll += log(arma::mean(V.col(t + 1)));
+      ll += log(arma::mean(w.col(t + 1)));
     } else {
-      V.col(t + 1).ones();
-      Vnorm.fill(1.0/nsim);
+      w.col(t + 1).ones();
+      wnorm.fill(1.0/nsim);
     }
     
     
@@ -1141,40 +1141,40 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
   return ll;
 }
 
-void gssm::backtrack_pf2(const arma::cube& alpha, arma::mat& V, const arma::umat& ind) {
+void gssm::backtrack_pf2(const arma::cube& alpha, arma::mat& w, const arma::umat& ind) {
   
   unsigned int nsim = alpha.n_slices;
-  V.col(n-1) = V.col(n-1) / arma::sum(V.col(n-1));
+  w.col(n-1) = w.col(n-1) / arma::sum(w.col(n-1));
   
   for (int t = n - 1; t > 0; t--) {
     arma::mat B(nsim, nsim);
-    arma::vec Vnorm = V.col(t-1) / arma::sum(V.col(t-1));
+    arma::vec wnorm = w.col(t-1) / arma::sum(w.col(t-1));
     for (unsigned int i = 0; i < nsim; i++) {
       for (unsigned int j = 0; j < nsim; j++) {
-        B(j, i) = Vnorm(j) * dmvnorm1(alpha.slice(i).col(t),
+        B(j, i) = wnorm(j) * dmvnorm1(alpha.slice(i).col(t),
           C.col((t-1) * Ctv) + T.slice((t-1) * Ttv) * alpha.slice(j).col(t - 1),
           R.slice((t-1) * Rtv), true, false);
       }
     }
     B.each_row() /= arma::sum(B, 0);
-    V.col(t-1) = B * V.col(t);
+    w.col(t-1) = B * w.col(t);
   }
 }
 
-arma::mat gssm::backward_simulate(arma::cube& alpha, arma::mat& V, arma::umat& ind) {
+arma::mat gssm::backward_simulate(arma::cube& alpha, arma::mat& w, arma::umat& ind) {
   
   unsigned int nsim = alpha.n_slices;
   arma::vec I(n);
-  arma::vec Vnorm = V.col(n-1) / arma::sum(V.col(n-1));
-  std::discrete_distribution<> sample(Vnorm.begin(), Vnorm.end());
+  arma::vec wnorm = w.col(n-1) / arma::sum(w.col(n-1));
+  std::discrete_distribution<> sample(wnorm.begin(), wnorm.end());
   arma::mat alphasim(m, n);
   I(n-1) = sample(engine);
   alphasim.col(n - 1) = alpha.slice(I(n - 1)).col(n - 1);
   for (int t = n - 1; t > 0; t--) {
     arma::vec b(nsim);
-    arma::vec Vnorm = V.col(t-1) / arma::sum(V.col(t-1));
+    arma::vec wnorm = w.col(t-1) / arma::sum(w.col(t-1));
     for (unsigned int j = 0; j < nsim; j++) {
-      b(j) = Vnorm(j) * dmvnorm1(alpha.slice(I(t)).col(t),
+      b(j) = wnorm(j) * dmvnorm1(alpha.slice(I(t)).col(t),
         C.col((t-1) * Ctv) + T.slice((t-1) * Ttv) * alpha.slice(j).col(t - 1),
         R.slice((t-1) * Rtv), true, false);
     }
@@ -1188,7 +1188,7 @@ arma::mat gssm::backward_simulate(arma::cube& alpha, arma::mat& V, arma::umat& i
 
 
 //psi-auxiliary particle filter
-double gssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& V, 
+double gssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& w, 
   arma::umat& ind) {
   
   arma::mat alphahat(m, n);
