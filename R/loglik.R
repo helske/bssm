@@ -7,6 +7,8 @@
 #' See vignette for details.
 #' @param seed Seed for the random number generator. Compared to other functions of the package, the
 #' default seed is fixed (as 1) in order to work properly in numerical optimization algorithms.
+#' @param max_iter Maximum number of iterations.
+#' @param conv_tol Tolerance parameter.
 #' @param ... Ignored.
 #' @importFrom stats logLik
 #' @method logLik gssm

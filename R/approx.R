@@ -3,7 +3,7 @@
 #' Returns the approximating Gaussian model.
 #' @param object model object.
 #' @param max_iter Maximum number of iterations.
-#' @param conv_tol Tolerance parameter. ***Document properly later!***
+#' @param conv_tol Tolerance parameter.
 #' @param ... Ignored.
 #' @export
 #' @rdname gaussian_approx
