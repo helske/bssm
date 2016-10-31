@@ -13,7 +13,6 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
   
   unsigned n_iter = theta.n_cols;
   
-  arma::uvec cum_counts = arma::cumsum(counts);
   alphahat.zeros();
   Vt.zeros();
   mu.zeros();
@@ -23,7 +22,7 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
   double cumsumw = 0;
 #pragma omp parallel num_threads(n_threads) default(none)           \
   shared(n_threads, ll_approx_u, n_iter, nsim_states, y_store, H_store, theta, \
-    weights_store, counts, cum_counts, alphahat, Vt, Valpha, mu, Vmu, Vmu2, cumsumw, const_m) firstprivate(mod)
+    weights_store, counts, alphahat, Vt, Valpha, mu, Vmu, Vmu2, cumsumw, const_m) firstprivate(mod)
     {
 #ifdef _OPENMP
       if (n_threads > 1) {
@@ -56,7 +55,7 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
         
 #pragma omp critical
 {
-  double w = arma::mean(weights)*counts(i);
+  double w = weights_store(i) * counts(i);
   
   
   arma::mat diff = alphahat_i - alphahat;
@@ -80,8 +79,8 @@ void is_correction_summary(T mod, const arma::mat& theta, const arma::mat& y_sto
 
       }
     }
-  Vt = Vt + Valpha/cumsumw;// * sum(counts) / (sum(counts) - 1);
-  Vmu = Vmu + Vmu2/cumsumw;// * sum(counts) / (sum(counts) - 1);
+  Vt = Vt + Valpha/cumsumw;
+  Vmu = Vmu + Vmu2/cumsumw;
   
   
 }
