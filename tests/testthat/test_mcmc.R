@@ -126,3 +126,37 @@ test_that("MCMC results for SV model are correct",{
   expect_equivalent(testvalues, out$alpha[c(1,10, 20, 50)])
 })
 
+
+test_that("MCMC results for SV model using IS-correction are correct",{
+  set.seed(123)
+  expect_error(model_bssm <- svm(rnorm(10), rho = uniform(0.95,-0.999,0.999), 
+    sd_ar = halfnormal(1, 5), sigma = halfnormal(1, 2)), NA)
+  
+  expect_error(out <- run_mcmc(model_bssm, n_iter = 20, n_burnin = 15, nsim_states = 5,
+    method = "isc"), NA)
+  expect_error(identical(run_mcmc(model_bssm, n_iter = 100, nsim_states = 10,
+    method = "isc")[-8], 
+    run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, method = "isc")[-8]), NA)
+  expect_error(identical(run_mcmc(model_bssm, n_iter = 100, nsim_states = 10,
+    method = "isc", simulation_method = "psi")[-8], 
+    run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, method = "isc",
+      simulation_method = "psi")[-8]), NA)
+  expect_error(identical(run_mcmc(model_bssm, n_iter = 100, nsim_states = 10,
+    method = "isc", simulation_method = "psi")[-8], 
+    run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, method = "isc", 
+      simulation_method = "psi")[-8]), NA)
+  testvalues <- structure(c(-19.0505020531966, -19.3483555773888, -19.2742098743496, 
+-17.9587002271749), .Dim = c(4L, 1L))
+  expect_equivalent(testvalues, out$posterior)
+  
+  testvalues <- structure(c(0.741988771923731, 0.697340092900775, 0.628452176724537, 
+0.379346527686448, 1.19914545826558, 1.46878142788352, 1.56475733617601, 
+1.41912717643135, 1.02106720262573, 0.5352855667731, 0.556124259401741, 
+0.617628937905398), .Dim = c(4L, 3L), .Dimnames = list(NULL, 
+    c("rho", "sd_ar", "sigma")))
+  expect_equivalent(testvalues, out$theta)
+  
+  testvalues <- c(-0.357482373598444, 0.239536835878186, 1.39616333824964)
+  expect_equivalent(testvalues, out$alpha[c(1,10, 20)])
+})
+
