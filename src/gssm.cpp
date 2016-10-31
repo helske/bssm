@@ -461,8 +461,8 @@ arma::mat gssm::precomp_fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
 
 arma::cube gssm::sim_smoother(unsigned int nsim, bool demean) {
   
-  // keep importance sampling more comparative with particle filtering
-  bool antithetic = false;
+  // always use antithetics...
+  bool antithetic = true;
   ///////
   arma::vec y_tmp = y;
   
