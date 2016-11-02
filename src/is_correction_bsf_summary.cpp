@@ -7,8 +7,8 @@
 template <typename T>
 void is_correction_bsf_summary(T mod, const arma::mat& theta,
   const arma::vec& ll_store, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::vec& weights_store, arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, 
-  bool const_m) {
+  unsigned int n_threads, arma::vec& weights_store, arma::mat& alphahat, arma::cube& Vt, 
+  arma::mat& mu, arma::cube& Vmu, bool const_m, const arma::uvec& seeds) {
   
   unsigned n_iter = theta.n_cols;
   
@@ -22,11 +22,11 @@ void is_correction_bsf_summary(T mod, const arma::mat& theta,
   
 #pragma omp parallel num_threads(n_threads) default(none)                      \
   shared(n_threads, ll_store, n_iter, nsim_states, theta, \
-    weights_store, counts, alphahat, Vt, Valpha, mu, Vmu, Vmu2, cumsumw, const_m) firstprivate(mod)
+    weights_store, counts, alphahat, Vt, Valpha, mu, Vmu, Vmu2, cumsumw, const_m, seeds) firstprivate(mod)
     {
 #ifdef _OPENMP
       if (n_threads > 1) {
-        mod.engine = std::mt19937(omp_get_thread_num() + 1);
+        mod.engine = std::mt19937(seeds(omp_get_thread_num()));
       }
 #endif
 #pragma omp for schedule(static)
@@ -85,12 +85,12 @@ void is_correction_bsf_summary(T mod, const arma::mat& theta,
 template void is_correction_bsf_summary<ngssm>(ngssm mod, const arma::mat& theta, 
   const arma::vec& ll_store, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::vec& weights_store, arma::mat& alphahat, arma::cube& Vt, 
-  arma::mat& mu, arma::cube& Vmu, bool const_m);
+  arma::mat& mu, arma::cube& Vmu, bool const_m, const arma::uvec& seeds);
 template void is_correction_bsf_summary<ng_bsm>(ng_bsm mod, const arma::mat& theta,
   const arma::vec& ll_store, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::vec& weights_store, arma::mat& alphahat, arma::cube& Vt, 
-  arma::mat& mu, arma::cube& Vmu, bool const_m);
+  arma::mat& mu, arma::cube& Vmu, bool const_m, const arma::uvec& seeds);
 template void is_correction_bsf_summary<svm>(svm mod, const arma::mat& theta,
   const arma::vec& ll_store, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::vec& weights_store, arma::mat& alphahat, arma::cube& Vt, 
-  arma::mat& mu, arma::cube& Vmu, bool const_m);
+  arma::mat& mu, arma::cube& Vmu, bool const_m, const arma::uvec& seeds);

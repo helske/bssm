@@ -152,7 +152,7 @@ List ng_bsm_run_mcmc_is(const List& model_,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int seed,
   unsigned int n_threads, bool end_ram, bool adapt_approx, 
-  unsigned int sim_type, bool const_m) {
+  unsigned int sim_type, bool const_m, const arma::uvec& seeds) {
   
   ng_bsm model(clone(model_), seed, false);
   
@@ -179,14 +179,14 @@ List ng_bsm_run_mcmc_is(const List& model_,
   
   if(sim_type == 1) {
     is_correction(model, theta_store, y_store, H_store, arma::sum(ll_approx_u_store, 0).t(),
-      counts, nsim_states, n_threads, weights_store, alpha_store, const_m);
+      counts, nsim_states, n_threads, weights_store, alpha_store, const_m, seeds);
   } else {
     if (sim_type == 2) {
       is_correction_bsf(model, theta_store, ll_store,
-        counts, nsim_states, n_threads, weights_store, alpha_store, const_m);
+        counts, nsim_states, n_threads, weights_store, alpha_store, const_m, seeds);
     } else {
       is_correction_psif(model, theta_store, y_store, H_store, ll_approx_u_store,
-        counts, nsim_states, n_threads, weights_store, alpha_store, const_m);
+        counts, nsim_states, n_threads, weights_store, alpha_store, const_m, seeds);
     }
   }
   prior_store += ll_store + log(weights_store);
@@ -245,7 +245,7 @@ List ng_bsm_run_mcmc_summary_is(const List& model_,
   double gamma, double target_acceptance, arma::mat S,
   arma::vec& init_signal, unsigned int seed,
   unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int sim_type,
-  bool const_m) {
+  bool const_m, const arma::uvec& seeds) {
   
   ng_bsm model(clone(model_), seed, false);
   
@@ -273,7 +273,7 @@ List ng_bsm_run_mcmc_summary_is(const List& model_,
   arma::cube Vmu(1, 1, model.n);
   
   is_correction_summary(model, theta_store, y_store, H_store, arma::sum(ll_approx_u_store, 0).t(),
-    counts, nsim_states, n_threads, weights_store, alphahat, Vt, muhat, Vmu, const_m);
+    counts, nsim_states, n_threads, weights_store, alphahat, Vt, muhat, Vmu, const_m, seeds);
   
   arma::inplace_trans(muhat);
   arma::inplace_trans(alphahat);

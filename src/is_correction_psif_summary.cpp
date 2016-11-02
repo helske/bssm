@@ -8,7 +8,7 @@ template <typename T>
 void is_correction_psif_summary(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::mat& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::vec& weights_store, arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, 
-  bool const_m) {
+  bool const_m, const arma::uvec& seeds) {
   
   unsigned n_iter = theta.n_cols;
    
@@ -22,11 +22,11 @@ void is_correction_psif_summary(T mod, const arma::mat& theta, const arma::mat& 
   
 #pragma omp parallel num_threads(n_threads) default(none)                      \
   shared(n_threads, ll_approx_u, n_iter, nsim_states, y_store, H_store, theta, \
-    weights_store, counts, alphahat, Vt, Valpha, mu, Vmu, Vmu2, cumsumw, const_m) firstprivate(mod)
+    weights_store, counts, alphahat, Vt, Valpha, mu, Vmu, Vmu2, cumsumw, const_m, seeds) firstprivate(mod)
     {
 #ifdef _OPENMP
       if (n_threads > 1) {
-        mod.engine = std::mt19937(omp_get_thread_num() + 1);
+        mod.engine = std::mt19937(seeds(omp_get_thread_num()));
       }
 #endif
 #pragma omp for schedule(static)
@@ -85,12 +85,18 @@ void is_correction_psif_summary(T mod, const arma::mat& theta, const arma::mat& 
   Vmu = Vmu + Vmu2/cumsumw;
 }
 
-template void is_correction_psif_summary<ngssm>(ngssm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
+template void is_correction_psif_summary<ngssm>(ngssm mod, const arma::mat& theta, 
+  const arma::mat& y_store, const arma::mat& H_store,
   const arma::mat& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::vec& weights_store, arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_m);
-template void is_correction_psif_summary<ng_bsm>(ng_bsm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
+  unsigned int n_threads, arma::vec& weights_store, arma::mat& alphahat, 
+  arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_m, const arma::uvec& seeds);
+template void is_correction_psif_summary<ng_bsm>(ng_bsm mod, const arma::mat& theta, 
+  const arma::mat& y_store, const arma::mat& H_store,
   const arma::mat& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::vec& weights_store, arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_m);
-template void is_correction_psif_summary<svm>(svm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
+  unsigned int n_threads, arma::vec& weights_store, arma::mat& alphahat, 
+  arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_m, const arma::uvec& seeds);
+template void is_correction_psif_summary<svm>(svm mod, const arma::mat& theta, 
+  const arma::mat& y_store, const arma::mat& H_store,
   const arma::mat& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::vec& weights_store, arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_m);
+  unsigned int n_threads, arma::vec& weights_store, arma::mat& alphahat, 
+  arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool const_m, const arma::uvec& seeds);

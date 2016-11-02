@@ -235,7 +235,8 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
           object$init_signal, seed, n_threads, end_adaptive_phase, adaptive_approx,
           pmatch(simulation_method, c("spdk", "bootstrap", "psi")), const_m,
-          object$Z_ind, object$T_ind, object$R_ind)
+          object$Z_ind, object$T_ind, object$R_ind, 
+          sample(.Machine$integer.max, size = n_threads))
       }
       
       colnames(out$alpha) <- names(object$a1)
@@ -323,7 +324,8 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
         out <- ng_bsm_run_mcmc_is(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
           object$init_signal, seed, n_threads, end_adaptive_phase, adaptive_approx,
-          pmatch(simulation_method, c("spdk", "bootstrap", "psi")), const_m)
+          pmatch(simulation_method, c("spdk", "bootstrap", "psi")), const_m, 
+          sample(.Machine$integer.max, size = n_threads))
       }
       
       colnames(out$alpha) <- names(object$a1)
@@ -343,7 +345,8 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
         out <- ng_bsm_run_mcmc_summary_is(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
           object$init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
-          pmatch(simulation_method, c("spdk", "bootstrap", "psi")), const_m)
+          pmatch(simulation_method, c("spdk", "bootstrap", "psi")), const_m, 
+          sample(.Machine$integer.max, size = n_threads))
       }
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
@@ -431,7 +434,8 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
         out <- svm_run_mcmc_is(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
           object$init_signal, seed, n_threads, end_adaptive_phase, adaptive_approx,
-          pmatch(simulation_method, c("spdk", "bootstrap", "psi")), const_m, gkl_prior)
+          pmatch(simulation_method, c("spdk", "bootstrap", "psi")), const_m, gkl_prior, 
+          sample(.Machine$integer.max, size = n_threads))
       }
       
       colnames(out$alpha) <- names(object$a1)

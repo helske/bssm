@@ -608,8 +608,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // ng_bsm_run_mcmc_is
-List ng_bsm_run_mcmc_is(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int sim_type, bool const_m);
-RcppExport SEXP bssm_ng_bsm_run_mcmc_is(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP, SEXP sim_typeSEXP, SEXP const_mSEXP) {
+List ng_bsm_run_mcmc_is(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int sim_type, bool const_m, const arma::uvec& seeds);
+RcppExport SEXP bssm_ng_bsm_run_mcmc_is(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP, SEXP sim_typeSEXP, SEXP const_mSEXP, SEXP seedsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -630,7 +630,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type adapt_approx(adapt_approxSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type sim_type(sim_typeSEXP);
     Rcpp::traits::input_parameter< bool >::type const_m(const_mSEXP);
-    rcpp_result_gen = Rcpp::wrap(ng_bsm_run_mcmc_is(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, sim_type, const_m));
+    Rcpp::traits::input_parameter< const arma::uvec& >::type seeds(seedsSEXP);
+    rcpp_result_gen = Rcpp::wrap(ng_bsm_run_mcmc_is(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, sim_type, const_m, seeds));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -662,8 +663,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // ng_bsm_run_mcmc_summary_is
-List ng_bsm_run_mcmc_summary_is(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int sim_type, bool const_m);
-RcppExport SEXP bssm_ng_bsm_run_mcmc_summary_is(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP, SEXP sim_typeSEXP, SEXP const_mSEXP) {
+List ng_bsm_run_mcmc_summary_is(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int sim_type, bool const_m, const arma::uvec& seeds);
+RcppExport SEXP bssm_ng_bsm_run_mcmc_summary_is(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP, SEXP sim_typeSEXP, SEXP const_mSEXP, SEXP seedsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -684,7 +685,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type adapt_approx(adapt_approxSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type sim_type(sim_typeSEXP);
     Rcpp::traits::input_parameter< bool >::type const_m(const_mSEXP);
-    rcpp_result_gen = Rcpp::wrap(ng_bsm_run_mcmc_summary_is(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, sim_type, const_m));
+    Rcpp::traits::input_parameter< const arma::uvec& >::type seeds(seedsSEXP);
+    rcpp_result_gen = Rcpp::wrap(ng_bsm_run_mcmc_summary_is(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, sim_type, const_m, seeds));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -883,8 +885,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // ngssm_run_mcmc_is
-List ngssm_run_mcmc_is(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int sim_type, bool const_m, arma::uvec Z_ind, arma::uvec T_ind, arma::uvec R_ind);
-RcppExport SEXP bssm_ngssm_run_mcmc_is(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP, SEXP sim_typeSEXP, SEXP const_mSEXP, SEXP Z_indSEXP, SEXP T_indSEXP, SEXP R_indSEXP) {
+List ngssm_run_mcmc_is(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int sim_type, bool const_m, arma::uvec Z_ind, arma::uvec T_ind, arma::uvec R_ind, const arma::uvec& seeds);
+RcppExport SEXP bssm_ngssm_run_mcmc_is(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP, SEXP sim_typeSEXP, SEXP const_mSEXP, SEXP Z_indSEXP, SEXP T_indSEXP, SEXP R_indSEXP, SEXP seedsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -908,7 +910,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::uvec >::type Z_ind(Z_indSEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type T_ind(T_indSEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type R_ind(R_indSEXP);
-    rcpp_result_gen = Rcpp::wrap(ngssm_run_mcmc_is(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, sim_type, const_m, Z_ind, T_ind, R_ind));
+    Rcpp::traits::input_parameter< const arma::uvec& >::type seeds(seedsSEXP);
+    rcpp_result_gen = Rcpp::wrap(ngssm_run_mcmc_is(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, sim_type, const_m, Z_ind, T_ind, R_ind, seeds));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -1107,8 +1110,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // svm_run_mcmc_is
-List svm_run_mcmc_is(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int sim_type, bool const_m, bool gkl);
-RcppExport SEXP bssm_svm_run_mcmc_is(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP, SEXP sim_typeSEXP, SEXP const_mSEXP, SEXP gklSEXP) {
+List svm_run_mcmc_is(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, arma::vec& init_signal, unsigned int seed, unsigned int n_threads, bool end_ram, bool adapt_approx, unsigned int sim_type, bool const_m, bool gkl, const arma::uvec& seeds);
+RcppExport SEXP bssm_svm_run_mcmc_is(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP nsim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP init_signalSEXP, SEXP seedSEXP, SEXP n_threadsSEXP, SEXP end_ramSEXP, SEXP adapt_approxSEXP, SEXP sim_typeSEXP, SEXP const_mSEXP, SEXP gklSEXP, SEXP seedsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -1130,7 +1133,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< unsigned int >::type sim_type(sim_typeSEXP);
     Rcpp::traits::input_parameter< bool >::type const_m(const_mSEXP);
     Rcpp::traits::input_parameter< bool >::type gkl(gklSEXP);
-    rcpp_result_gen = Rcpp::wrap(svm_run_mcmc_is(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, sim_type, const_m, gkl));
+    Rcpp::traits::input_parameter< const arma::uvec& >::type seeds(seedsSEXP);
+    rcpp_result_gen = Rcpp::wrap(svm_run_mcmc_is(model_, prior_types, prior_pars, n_iter, nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal, seed, n_threads, end_ram, adapt_approx, sim_type, const_m, gkl, seeds));
     return rcpp_result_gen;
 END_RCPP
 }

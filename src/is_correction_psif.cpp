@@ -7,17 +7,18 @@
 template <typename T>
 void is_correction_psif(T mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
   const arma::mat& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, bool const_m) {
+  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, bool const_m, 
+  const arma::uvec& seeds) {
 
   unsigned n_iter = theta.n_cols;
 
 #pragma omp parallel num_threads(n_threads) default(none) \
   shared(n_threads, ll_approx_u, n_iter, nsim_states, y_store, H_store, theta, \
-    weights_store, alpha_store, counts, const_m) firstprivate(mod)
+    weights_store, alpha_store, counts, const_m, seeds) firstprivate(mod)
   {
 #ifdef _OPENMP
       if (n_threads > 1) {
-        mod.engine = std::mt19937(omp_get_thread_num() + 1);
+        mod.engine = std::mt19937(seeds(omp_get_thread_num()));
       }
 #endif
 #pragma omp for schedule(static)
@@ -51,12 +52,18 @@ void is_correction_psif(T mod, const arma::mat& theta, const arma::mat& y_store,
 
 }
 
-template void is_correction_psif<ngssm>(ngssm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
+template void is_correction_psif<ngssm>(ngssm mod, const arma::mat& theta, 
+  const arma::mat& y_store, const arma::mat& H_store,
   const arma::mat& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, bool const_m);
-template void is_correction_psif<ng_bsm>(ng_bsm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
+  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, 
+  bool const_m, const arma::uvec& seeds);
+template void is_correction_psif<ng_bsm>(ng_bsm mod, const arma::mat& theta, 
+  const arma::mat& y_store, const arma::mat& H_store,
   const arma::mat& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, bool const_m);
-template void is_correction_psif<svm>(svm mod, const arma::mat& theta, const arma::mat& y_store, const arma::mat& H_store,
+  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, 
+  bool const_m, const arma::uvec& seeds);
+template void is_correction_psif<svm>(svm mod, const arma::mat& theta, 
+  const arma::mat& y_store, const arma::mat& H_store,
   const arma::mat& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
-  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, bool const_m);
+  unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, 
+  bool const_m, const arma::uvec& seeds);
