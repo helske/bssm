@@ -9,47 +9,44 @@ void is_correction_psif(T mod, const arma::mat& theta, const arma::mat& y_store,
   const arma::mat& ll_approx_u, const arma::uvec& counts, unsigned int nsim_states,
   unsigned int n_threads, arma::vec& weights_store, arma::cube& alpha_store, bool const_m, 
   const arma::uvec& seeds) {
-
+  
   unsigned n_iter = theta.n_cols;
-
-#pragma omp parallel num_threads(n_threads) default(none) \
+#pragma omp parallel num_threads(n_threads) default(none)                      \
   shared(n_threads, ll_approx_u, n_iter, nsim_states, y_store, H_store, theta, \
     weights_store, alpha_store, counts, const_m, seeds) firstprivate(mod)
-  {
+    {
 #ifdef _OPENMP
-      if (n_threads > 1) {
-        mod.engine = std::mt19937(seeds(omp_get_thread_num()));
-      }
+      mod.engine = std::mt19937(seeds(omp_get_thread_num()));
 #endif
 #pragma omp for schedule(static)
-    for (unsigned int i = 0; i < n_iter; i++) {
-
-      mod.y = y_store.col(i);
-      mod.H = H_store.col(i);
-      mod.HH = arma::square(H_store.col(i));
-      arma::vec theta_i = theta.col(i);
-      mod.update_model(theta_i);
-
-      unsigned int m = nsim_states;
-      if (!const_m) {
-        m *= counts(i);
+      for (unsigned int i = 0; i < n_iter; i++) {
+        
+        mod.y = y_store.col(i);
+        mod.H = H_store.col(i);
+        mod.HH = arma::square(H_store.col(i));
+        arma::vec theta_i = theta.col(i);
+        mod.update_model(theta_i);
+        
+        unsigned int m = nsim_states;
+        if (!const_m) {
+          m *= counts(i);
+        }
+        arma::cube alpha(mod.m, mod.n, m);
+        arma::mat V(m, mod.n);
+        arma::umat ind(m, mod.n - 1);
+        
+        weights_store(i) = exp(mod.psi_filter(m, alpha, V, ind, 0.0, ll_approx_u.col(i)));
+        //backtrack all, could speed up a bit by tracking only one
+        backtrack_pf(alpha, ind);
+        
+        arma::vec tmp = V.col(mod.n - 1);
+        std::discrete_distribution<> sample(tmp.begin(), tmp.end());
+        
+        alpha_store.slice(i) = alpha.slice(sample(mod.engine)).t();
+        
       }
-      arma::cube alpha(mod.m, mod.n, m);
-      arma::mat V(m, mod.n);
-      arma::umat ind(m, mod.n - 1);
-      
-      weights_store(i) = exp(mod.psi_filter(m, alpha, V, ind, 0.0, ll_approx_u.col(i)));
-      //backtrack all, could speed up a bit by tracking only one
-      backtrack_pf(alpha, ind);
-      
-      arma::vec tmp = V.col(mod.n - 1);
-      std::discrete_distribution<> sample(tmp.begin(), tmp.end());
-
-      alpha_store.slice(i) = alpha.slice(sample(mod.engine)).t();
-
     }
-  }
-
+  
 }
 
 template void is_correction_psif<ngssm>(ngssm mod, const arma::mat& theta, 

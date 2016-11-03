@@ -192,6 +192,8 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   adaptive_approx  = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  set.seed(seed) #needed for reproducible parallel thread seeding
+  
   a <- proc.time()
   
   nb <- object$distribution == "negative binomial"
@@ -286,6 +288,8 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx  = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  set.seed(seed) #needed for reproducible parallel thread seeding
   
   a <- proc.time()
   nb <- FALSE
@@ -389,6 +393,8 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx  = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), gkl_prior = FALSE, ...) {
+  
+  set.seed(seed) #needed for reproducible parallel thread seeding
   
   a <- proc.time()
   
