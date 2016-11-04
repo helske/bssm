@@ -67,7 +67,7 @@ gssm::gssm(const List& model, arma::uvec Z_ind,
   H(arma::vec(y.n_elem)), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
   a1(as<arma::vec>(model["a1"])), P1(as<arma::mat>(model["P1"])),
   xreg(as<arma::mat>(model["xreg"])), beta(as<arma::vec>(model["coefs"])),
-    C(as<arma::mat>(model["C"])),
+  C(as<arma::mat>(model["C"])),
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
   Ctv(C.n_cols > 1), 
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
@@ -290,7 +290,7 @@ arma::mat gssm::fast_smoother(bool demean) {
   if (demean && xreg.n_cols > 0) {
     y -= xbeta;
   }
- 
+  
   for (unsigned int t = 0; t < (n - 1); t++) {
     Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt * Z.col(t * Ztv) + HH(t * Htv));
     if (arma::is_finite(y(t)) && Ft(t) > zero_tol) {
@@ -325,11 +325,11 @@ arma::mat gssm::fast_smoother(bool demean) {
   } else {
     at.col(0) = a1 + P1 * T.slice(0).t() * rt.col(0);
   }
-
+  
   for (unsigned int t = 0; t < (n - 1); t++) {
     at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
   }
-
+  
   if (demean && xreg.n_cols > 0) {
     y = y_tmp;
   }
@@ -624,7 +624,7 @@ void gssm::smoother(arma::mat& at, arma::cube& Pt, bool demean) {
     Kt.col(t) = Pt.slice(t) * Z.col(t * Ztv) / Ft(t);
   }
   
- 
+  
   arma::vec rt(m, arma::fill::zeros);
   arma::mat Nt(m, m, arma::fill::zeros);
   
@@ -1056,10 +1056,10 @@ arma::mat gssm::predict2(const arma::uvec& prior_types,
 
 //particle filter
 double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& w, arma::umat& ind) {
-  
+
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
-  
+
   arma::uvec nonzero = arma::find(P1.diag() > 0);
   arma::mat L_P1(m, m, arma::fill::zeros);
   if (nonzero.n_elem > 0) {
@@ -1073,38 +1073,40 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
     }
     alphasim.slice(i).col(0) = a1 + L_P1 * um;
   }
-  
+
   arma::vec wnorm(nsim);
   double ll = 0.0;
   if(arma::is_finite(y(0))) {
     for (unsigned int i = 0; i < nsim; i++) {
       w(i, 0) = R::dnorm(y(0),
         arma::as_scalar(Z.col(0).t() * alphasim.slice(i).col(0) + xbeta(0)),
-        H(0), 0);
+        H(0), 1);
     }
+    double maxv = w.col(0).max();
+    w.col(0) = exp(w.col(0) - maxv);
     double sumw = arma::sum(w.col(0));
     if(sumw > 0.0){
       wnorm = w.col(0) / sumw;
     } else {
       return -arma::datum::inf;
     }
-    ll = log(arma::mean(w.col(0)));
+    ll = maxv + log(sumw / nsim);
   } else {
     w.col(0).ones();
     wnorm.fill(1.0/nsim);
   }
-  
+
   for (unsigned int t = 0; t < (n - 1); t++) {
-    
+
     arma::vec r(nsim);
     for (unsigned int i = 0; i < nsim; i++) {
       r(i) = unif(engine);
     }
-    
+
     ind.col(t) = stratified_sample(wnorm, r, nsim);
-    
+
     arma::mat alphatmp(m, nsim);
-    
+
     for (unsigned int i = 0; i < nsim; i++) {
       alphatmp.col(i) = alphasim.slice(ind(i, t)).col(t);
     }
@@ -1116,28 +1118,30 @@ double gssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat&
       alphasim.slice(i).col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * alphatmp.col(i) +
         R.slice(t * Rtv) * uk;
     }
-    
+
     if(arma::is_finite(y(t + 1))) {
       for (unsigned int i = 0; i < nsim; i++) {
         w(i, t + 1) = R::dnorm(y(t + 1),
           arma::as_scalar(Z.col((t + 1) * Ztv).t() * alphasim.slice(i).col(t + 1) + xbeta(t + 1)),
-          H((t + 1) * Htv), 0);
+          H((t + 1) * Htv), 1);
       }
+      double maxv = w.col(t + 1).max();
+      w.col(t + 1) = exp(w.col(t + 1) - maxv);
       double sumw = arma::sum(w.col(t + 1));
       if(sumw > 0.0){
         wnorm = w.col(t + 1) / sumw;
       } else {
         return -arma::datum::inf;
       }
-      ll += log(arma::mean(w.col(t + 1)));
+      ll += maxv + log(sumw / nsim);
     } else {
       w.col(t + 1).ones();
       wnorm.fill(1.0/nsim);
     }
-    
-    
+
+
   }
-  
+
   return ll;
 }
 
