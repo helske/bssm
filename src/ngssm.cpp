@@ -54,31 +54,31 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
   double ll = logp_signal(signal, Kt, Ft) + logp_y(signal);
   unsigned int i = 0;
   if(max_iter == 0) {
-     approx_iter(signal);
+    approx_iter(signal);
   } else {
-  while(i < max_iter) {
-    // compute new guess of signal
-    arma::vec signal_new = approx_iter(signal);
-    
-    //log[p(signal)] + log[p(y | signal)]
-    double ll_new = precomp_logp_signal(signal_new, Kt, Ft) +
-      logp_y(signal_new);
-    
-    double diff = std::abs(ll_new - ll)/(0.1 + std::abs(ll_new));
-    // Rcout<<arma::mean(arma::square(signal-signal_new))<<std::endl;
-    // Rcout<<"diff "<<diff<<std::endl;
-    signal = signal_new;
-    if(!std::isfinite(ll_new) || signal.has_nan()){
-      return -arma::datum::inf;
+    while(i < max_iter) {
+      // compute new guess of signal
+      arma::vec signal_new = approx_iter(signal);
+      
+      //log[p(signal)] + log[p(y | signal)]
+      double ll_new = precomp_logp_signal(signal_new, Kt, Ft) +
+        logp_y(signal_new);
+      
+      double diff = std::abs(ll_new - ll)/(0.1 + std::abs(ll_new));
+      // Rcout<<arma::mean(arma::square(signal-signal_new))<<std::endl;
+      // Rcout<<"diff "<<diff<<std::endl;
+      signal = signal_new;
+      if(!std::isfinite(ll_new) || signal.has_nan()){
+        return -arma::datum::inf;
+      }
+      if (diff < conv_tol) {
+        break;
+      } else {
+        ll = ll_new;
+      }
+      
+      i++;
     }
-    if (diff < conv_tol) {
-      break;
-    } else {
-      ll = ll_new;
-    }
-    
-    i++;
-  }
   }
   ll = 0.0;
   // log[g(pseudo_y | signal)]
@@ -105,24 +105,24 @@ arma::vec ngssm::approx_iter(arma::vec& signal) {
   
   // new pseudo y and H
   switch(distribution) {
-    case 1: {
-      HH = 1.0 / (exp(signal + xbeta) % ut);
-      y = ng_y % HH + signal + xbeta - 1.0;
-    } break;
-    case 2: {
-      arma::vec exptmp = exp(signal + xbeta);
-      HH = pow(1.0 + exptmp, 2) / (ut % exptmp);
-      y = ng_y % HH + signal + xbeta - 1.0 - exptmp;
-    } break;
-    case 3: {
-      arma::vec exptmp = 1.0 / (exp(signal + xbeta) % ut);
-      HH = 1.0 / phi + exptmp;
-      y = signal + xbeta + ng_y % exptmp - 1.0;
-    } break;
+  case 1: {
+  HH = 1.0 / (exp(signal + xbeta) % ut);
+  y = ng_y % HH + signal + xbeta - 1.0;
+} break;
+  case 2: {
+    arma::vec exptmp = exp(signal + xbeta);
+    HH = pow(1.0 + exptmp, 2) / (ut % exptmp);
+    y = ng_y % HH + signal + xbeta - 1.0 - exptmp;
+  } break;
+  case 3: {
+    arma::vec exptmp = 1.0 / (exp(signal + xbeta) % ut);
+    HH = 1.0 / phi + exptmp;
+    y = signal + xbeta + ng_y % exptmp - 1.0;
+  } break;
   }
   H = sqrt(HH);
   
-   arma::vec signal_new(n);
+  arma::vec signal_new(n);
   // new signal
   if (max_iter > 0) {
     arma::mat alpha = fast_smoother(true);
@@ -604,7 +604,7 @@ arma::vec ngssm::importance_weights_t(const unsigned int t, const arma::cube& al
 //compute log-weights
 arma::vec ngssm::importance_weights_t(const unsigned int t, const arma::mat& alphasim) {
   
-  arma::vec weights(alphasim.n_cols, arma::fill::zeros);
+  arma::vec weights(alphasim.n_cols);
   if (arma::is_finite(ng_y(t))) {
     
     switch(distribution) {
@@ -1511,78 +1511,83 @@ arma::cube ngssm::invlink(const arma::cube& alpha) {
 //compute p(y_t| xbeta_t, Z_t alpha_t)
 arma::vec ngssm::pyt(const unsigned int t, const arma::cube& alphasim) {
   
-  int logp = 1;
-  arma::vec w(alphasim.n_slices);
+  arma::vec weights(alphasim.n_slices);
   
   switch(distribution) {
-  case 0  :
+  case 0  : {
+      double x = pow((ng_y(t) - xbeta(t)) / phi, 2);
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
-      w(i) = R::dnorm(ng_y(t), xbeta(t), phi * exp(alphasim(0,t,i)/2.0), logp);
-      
+      double simsignal = alphasim(0, t, i);
+      weights(i) = -0.5 * (simsignal + x * exp(-simsignal));
     }
-    break;
+  } break;
   case 1  :
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
-      double exptmp = ut(t) * exp(arma::as_scalar(Z.col(t * Ztv).t() *
-        alphasim.slice(i).col(t) + xbeta(t)));
-      w(i) = R::dpois(ng_y(t), exptmp, logp);
+      double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+        alphasim.slice(i).col(t) + xbeta(t));
+      weights(i) = ng_y(t) * simsignal  - ut(t) * exp(simsignal);
     }
     break;
   case 2  :
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
-      double exptmp = exp(arma::as_scalar(Z.col(t * Ztv).t() *
-        alphasim.slice(i).col(t) + xbeta(t)));
-      w(i) = R::dbinom(ng_y(t), ut(t),  exptmp / (1.0 + exptmp), logp);
+      double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+        alphasim.slice(i).col(t) + xbeta(t));
+      weights(i) = ng_y(t) * simsignal - ut(t) * log1p(exp(simsignal));
     }
     break;
   case 3  :
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
-      double exptmp = ut(t) * exp(arma::as_scalar(Z.col(t * Ztv).t() *
-        alphasim.slice(i).col(t) + xbeta(t)));
-      w(i) = R::dnbinom_mu(ng_y(t), phi, exptmp, logp);
+      double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+        alphasim.slice(i).col(t) + xbeta(t));
+      weights(i) = ng_y(t) * simsignal - (ng_y(t) + phi) * 
+        log(phi + ut(t) * exp(simsignal));
     }
     break;
   }
-  return w;
+  
+  return weights;
 }
-
 
 //compute p(y_t| xbeta_t, Z_t alpha_t)
 arma::vec ngssm::pyt(const unsigned int t, const arma::mat& alphasim) {
   
-  int logp = 1;
-  arma::vec w(alphasim.n_cols);
+  arma::vec weights(alphasim.n_cols);
   
-  switch(distribution) {
-  case 0  :
-    for (unsigned int i = 0; i < alphasim.n_cols; i++) {
-      w(i) = R::dnorm(ng_y(t), xbeta(t), phi * exp(alphasim(0,i)/2.0), logp);
-      
+  if (arma::is_finite(ng_y(t))) {
+    
+    switch(distribution) {
+    case 0  : {
+      double x = pow((ng_y(t) - xbeta(t)) / phi, 2);
+      for (unsigned int i = 0; i < alphasim.n_cols; i++) {
+        double simsignal = alphasim(0, i);
+        weights(i) = -0.5 * (simsignal + x * exp(-simsignal));
+      }
+    } break;
+    case 1  :
+      for (unsigned int i = 0; i < alphasim.n_cols; i++) {
+        double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+          alphasim.col(i) + xbeta(t));
+        weights(i) = ng_y(t) * simsignal  - ut(t) * exp(simsignal);
+      }
+      break;
+    case 2  :
+      for (unsigned int i = 0; i < alphasim.n_cols; i++) {
+        double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+          alphasim.col(i) + xbeta(t));
+        weights(i) = ng_y(t) * simsignal - ut(t) * log1p(exp(simsignal));
+      }
+      break;
+    case 3  :
+      for (unsigned int i = 0; i < alphasim.n_cols; i++) {
+        double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+          alphasim.col(i) + xbeta(t));
+        weights(i) = ng_y(t) * simsignal - (ng_y(t) + phi) * 
+          log(phi + ut(t) * exp(simsignal));
+      }
+      break;
     }
-    break;
-  case 1  :
-    for (unsigned int i = 0; i < alphasim.n_cols; i++) {
-      double exptmp = ut(t) * exp(arma::as_scalar(Z.col(t * Ztv).t() *
-        alphasim.col(i) + xbeta(t)));
-      w(i) = R::dpois(ng_y(t), exptmp, logp);
-    }
-    break;
-  case 2  :
-    for (unsigned int i = 0; i < alphasim.n_cols; i++) {
-      double exptmp = exp(arma::as_scalar(Z.col(t * Ztv).t() *
-        alphasim.col(i) + xbeta(t)));
-      w(i) = R::dbinom(ng_y(t), ut(t),  exptmp / (1.0 + exptmp), logp);
-    }
-    break;
-  case 3  :
-    for (unsigned int i = 0; i < alphasim.n_cols; i++) {
-      double exptmp = ut(t) * exp(arma::as_scalar(Z.col(t * Ztv).t() *
-        alphasim.col(i) + xbeta(t)));
-      w(i) = R::dnbinom_mu(ng_y(t), phi, exptmp, logp);
-    }
-    break;
   }
-  return w;
+  return weights;
 }
 
 

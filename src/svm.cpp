@@ -23,11 +23,6 @@ svm::svm(arma::vec y, arma::mat Z, arma::cube T,
 
 void svm::update_model(arma::vec theta) {
   
-  T(0, 0, 0) = theta(0);
-  R(0, 0, 0) = theta(1);
-  compute_RR();
-  P1(0, 0) = theta(1) * theta(1) / (1 - theta(0) * theta(0));
-  
   if(svm_type == 0) {
     if(gkl) {
       theta(0) = 2.0 * theta(0) - 1.0;
@@ -39,6 +34,13 @@ void svm::update_model(arma::vec theta) {
     a1(0) = theta(2);
     C.fill(theta(2) * (1.0 - theta(0)));
   }
+  
+  T(0, 0, 0) = theta(0);
+  R(0, 0, 0) = theta(1);
+  compute_RR();
+  P1(0, 0) = theta(1) * theta(1) / (1 - theta(0) * theta(0));
+  
+  
   if(xreg.n_cols > 0) {
     beta = theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1);
     compute_xbeta();
