@@ -1,4 +1,5 @@
 #include "ngssm.h"
+#include "distr_consts.h"
 
 // from List
 ngssm::ngssm(const List& model, unsigned int seed) :
@@ -50,7 +51,7 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
   arma::mat Kt(m, n, arma::fill::zeros);
   arma::vec Ft(n, arma::fill::zeros);
   // log[p(signal)] + log[p(y | signal)]
-  
+ 
   double ll = logp_signal(signal, Kt, Ft) + logp_y(signal);
   unsigned int i = 0;
   if(max_iter == 0) {
@@ -59,7 +60,7 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
     while(i < max_iter) {
       // compute new guess of signal
       arma::vec signal_new = approx_iter(signal);
-      
+   
       //log[p(signal)] + log[p(y | signal)]
       double ll_new = precomp_logp_signal(signal_new, Kt, Ft) +
         logp_y(signal_new);
@@ -189,7 +190,7 @@ double ngssm::logp_y(arma::vec& signal) {
   switch(distribution) {
   case 0  :
     for (unsigned int t = 0; t < n; t++) {
-      if (arma::is_finite(y(t))) {
+      if (arma::is_finite(ng_y(t))) {
         logp -= 0.5 * (LOG2PI + 2.0 * log(phi) + signal(t) + 
           pow((ng_y(t) - xbeta(t))/phi, 2) * exp(-signal(t)));
       }
@@ -1515,7 +1516,7 @@ arma::vec ngssm::pyt(const unsigned int t, const arma::cube& alphasim) {
   
   switch(distribution) {
   case 0  : {
-      double x = pow((ng_y(t) - xbeta(t)) / phi, 2);
+    double x = pow((ng_y(t) - xbeta(t)) / phi, 2);
     for (unsigned int i = 0; i < alphasim.n_slices; i++) {
       double simsignal = alphasim(0, t, i);
       weights(i) = -0.5 * (simsignal + x * exp(-simsignal));
@@ -1557,12 +1558,12 @@ arma::vec ngssm::pyt(const unsigned int t, const arma::mat& alphasim) {
     
     switch(distribution) {
     case 0  : {
-      double x = pow((ng_y(t) - xbeta(t)) / phi, 2);
-      for (unsigned int i = 0; i < alphasim.n_cols; i++) {
-        double simsignal = alphasim(0, i);
-        weights(i) = -0.5 * (simsignal + x * exp(-simsignal));
-      }
-    } break;
+    double x = pow((ng_y(t) - xbeta(t)) / phi, 2);
+    for (unsigned int i = 0; i < alphasim.n_cols; i++) {
+      double simsignal = alphasim(0, i);
+      weights(i) = -0.5 * (simsignal + x * exp(-simsignal));
+    }
+  } break;
     case 1  :
       for (unsigned int i = 0; i < alphasim.n_cols; i++) {
         double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
@@ -1612,7 +1613,26 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
   }
   arma::vec wnorm(nsim);
   double ll = 0.0;
-  if(arma::is_finite(y(0))) {
+  double const_term = 0.0;
+  switch(distribution) {
+  case 0 : 
+    const_term = arma::uvec(arma::find_finite(ng_y)).n_elem * norm_log_const(phi);
+    break;
+  case 1 : {
+      arma::uvec y_ind(find_finite(ng_y));
+      const_term = poisson_log_const(ng_y(y_ind), ut(y_ind));
+    } break;
+  case 2 : {
+    arma::uvec y_ind(find_finite(ng_y));
+    const_term = binomial_log_const(ng_y(y_ind), ut(y_ind));
+  } break;
+  case 3 : {
+    arma::uvec y_ind(find_finite(ng_y));
+    const_term = negbin_log_const(ng_y(y_ind), ut(y_ind), phi);
+  } break;
+  }
+  
+  if(arma::is_finite(ng_y(0))) {
     w.col(0) = pyt(0, alphasim);
     double maxv = w.col(0).max();
     w.col(0) = exp(w.col(0) - maxv);
@@ -1650,7 +1670,7 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
       alphasim.slice(i).col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
     }
     
-    if(arma::is_finite(y(t + 1))) {
+    if(arma::is_finite(ng_y(t + 1))) {
       w.col(t + 1) = pyt(t + 1, alphasim);
       
       double maxv = w.col(t + 1).max();
@@ -1669,7 +1689,7 @@ double ngssm::particle_filter(unsigned int nsim, arma::cube& alphasim, arma::mat
     
     
   }
-  return ll;
+  return ll + const_term;
 }
 
 
@@ -1695,7 +1715,7 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& w,
   
   arma::vec wnorm(nsim);
   double ll = 0.0;
-  if(arma::is_finite(y(0))) {
+  if(arma::is_finite(ng_y(0))) {
     //don't add gaussian likelihood to weights
     w.col(0) = exp(importance_weights_t(0, alphasim) - ll_approx_u(0)); 
     double sumw = arma::sum(w.col(0));
@@ -1733,7 +1753,7 @@ double ngssm::psi_filter(unsigned int nsim, arma::cube& alphasim, arma::mat& w,
         Ct.slice(t + 1) * (alphatmp.col(i) - alphahat.col(t)) + Vt.slice(t + 1) * um;
     }
     
-    if(arma::is_finite(y(t + 1))) {
+    if(arma::is_finite(ng_y(t + 1))) {
       w.col(t + 1) = exp(importance_weights_t(t + 1, alphasim)- ll_approx_u(t + 1)); 
       double sumw = arma::sum(w.col(t + 1));
       if(sumw > 0.0){
@@ -1775,7 +1795,7 @@ double ngssm::psi_loglik(unsigned int nsim, const double ll_g, const arma::vec& 
   arma::vec w(nsim);
   arma::vec wnorm(nsim);
   double ll = 0.0;
-  if(arma::is_finite(y(0))) {
+  if(arma::is_finite(ng_y(0))) {
     //don't add gaussian likelihood to weights
     w = exp(importance_weights_t(0, alphasim) - ll_approx_u(0)); 
     double sumw = arma::sum(w);
@@ -1813,7 +1833,7 @@ double ngssm::psi_loglik(unsigned int nsim, const double ll_g, const arma::vec& 
         Ct.slice(t + 1) * (alphatmp.col(i) - alphahat.col(t)) + Vt.slice(t + 1) * um;
     }
     
-    if(arma::is_finite(y(t + 1))) {
+    if(arma::is_finite(ng_y(t + 1))) {
       w = exp(importance_weights_t(t + 1, alphasim)- ll_approx_u(t + 1)); 
       double sumw = arma::sum(w);
       if(sumw > 0.0){
@@ -1853,7 +1873,25 @@ double ngssm::bsf_loglik(unsigned int nsim) {
   arma::vec w(nsim);
   arma::vec wnorm(nsim);
   double ll = 0.0;
-  if(arma::is_finite(y(0))) {
+  double const_term = 0.0;
+  switch(distribution) {
+  case 0 : 
+    const_term = arma::uvec(arma::find_finite(ng_y)).n_elem * norm_log_const(phi);
+    break;
+  case 1 : {
+      arma::uvec y_ind(find_finite(ng_y));
+      const_term = poisson_log_const(ng_y(y_ind), ut(y_ind));
+    } break;
+  case 2 : {
+    arma::uvec y_ind(find_finite(ng_y));
+    const_term = binomial_log_const(ng_y(y_ind), ut(y_ind));
+  } break;
+  case 3 : {
+    arma::uvec y_ind(find_finite(ng_y));
+    const_term = negbin_log_const(ng_y(y_ind), ut(y_ind), phi);
+  } break;
+  }
+  if(arma::is_finite(ng_y(0))) {
     w = pyt(0, alphasim);
     double maxv = w.max();
     w = exp(w - maxv);
@@ -1891,7 +1929,7 @@ double ngssm::bsf_loglik(unsigned int nsim) {
       alphasim.col(i) = C.col(t * Ctv) + T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
     }
     
-    if(arma::is_finite(y(t + 1))) {
+    if(arma::is_finite(ng_y(t + 1))) {
       w = pyt(t + 1, alphasim);
       
       double maxv = w.max();
@@ -1910,5 +1948,5 @@ double ngssm::bsf_loglik(unsigned int nsim) {
     
     
   }
-  return ll;
+  return ll + const_term;
 }

@@ -1,7 +1,6 @@
 #include <RcppArmadillo.h>
 using namespace Rcpp;
 
-
 // [[Rcpp::export]]
 arma::mat cholupdate(arma::mat L, arma::vec u) {
   unsigned int n = u.n_elem - 1;
