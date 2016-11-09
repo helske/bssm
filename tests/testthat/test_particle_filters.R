@@ -60,7 +60,7 @@ test_that("Test that negative binomial ng_bsm give identical results with ngssm"
 })
 
 
-test_that("Test that still svm works",{
+test_that("Test that svm still works",{
   data("exchange")
   model <- svm(exchange, rho = uniform(0.98,-0.999,0.999), 
     sd_ar = halfnormal(0.2, 5), sigma = halfnormal(1, 2))

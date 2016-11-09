@@ -12,28 +12,28 @@
 #' @rdname as_gssm
 #' @export
 as_gssm <- function(model, kappa = 1e5, ...) {
-
+  
   if (!requireNamespace("KFAS", quietly = TRUE)) {
     stop("This function depends on the KFAS package. ", call. = FALSE)
   }
-
+  
   if (attr(model, "p") > 1) {
     stop("Only univariate time series are supported.")
   }
-
+  
   if (model$distribution != "gaussian") {
     stop("SSModel object contains non-Gaussian series.")
   }
-
+  
   model$P1[model$P1inf > 0] <- kappa
   model$H <- sqrt(c(model$H))
-
+  
   tvr <- dim(model$R)[3] > 1
   tvq <- dim(model$Q)[3] > 1
   tvrq <- max(tvr, tvq)
-
+  
   R <- array(0, c(dim(model$R)[1:2], tvrq * (nrow(model$y) - 1) + 1))
-
+  
   if (dim(model$R)[2] > 1) {
     for (i in 1:dim(R)[3]) {
       L <- KFAS::ldl(model$Q[, , (i - 1) * tvq + 1])
@@ -44,18 +44,18 @@ as_gssm <- function(model, kappa = 1e5, ...) {
   } else {
     R <- model$R * sqrt(c(model$Q))
   }
-
+  
   Z <- aperm(model$Z, c(2, 3, 1))
   dim(Z) <- dim(Z)[1:2]
-gssm(y = model$y, Z = Z, H = model$H, T = model$T,
-  R = R, a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
+  gssm(y = model$y, Z = Z, H = model$H, T = model$T,
+    R = R, a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
 }
 
 #' @rdname as_gssm
 #' @inheritParams as_gssm
 #' @export
 as_ngssm <- function(model, kappa = 1e5, phi_prior, ...) {
-
+  
   if (!requireNamespace("KFAS", quietly = TRUE)) {
     stop("This function depends on the KFAS package. ", call. = FALSE)
   }
@@ -72,13 +72,13 @@ as_ngssm <- function(model, kappa = 1e5, phi_prior, ...) {
     stop("Time-varying dispersion parameter for negative binomial is not supported in 'bssm'.")
   }
   model$P1[model$P1inf > 0] <- kappa
-
+  
   tvr <- dim(model$R)[3] > 1
   tvq <- dim(model$Q)[3] > 1
   tvrq <- max(tvr, tvq)
-
+  
   R <- array(0, c(dim(model$R)[1:2], tvrq * (nrow(model$y) - 1) + 1))
-
+  
   if (dim(model$R)[2] > 1) {
     for (i in 1:dim(R)[3]) {
       L <- KFAS::ldl(model$Q[, , (i - 1) * tvq + 1])
@@ -91,7 +91,26 @@ as_ngssm <- function(model, kappa = 1e5, phi_prior, ...) {
   }
   Z <- aperm(model$Z, c(2, 3, 1))
   dim(Z) <- dim(Z)[1:2]
+  
+  switch(model$distribution,
+    poisson = {
+      phi <- 1
+      u <- model$u
+    },
+    binomial = {
+      phi <- 1
+      u <- model$u
+    },
+    gamma = {
+      phi <- model$u[1]
+      u <- rep(1, length(model$u))
+    },
+    "negative binomial" = {
+      phi <- model$u[1]
+      u <- rep(1, length(model$u))
+    })
+  if(!missing(phi_prior)) phi <- phi_prior
   ngssm(y = model$y, Z = Z, T = model$T, R = R, a1 = c(model$a1), P1 = model$P1, 
-    phi = if(missing(phi_prior)) model$u[1] else phi_prior, distribution = model$distribution, 
+    phi = phi, u = u, distribution = model$distribution, 
     state_names = rownames(model$a1), ...)
 }
