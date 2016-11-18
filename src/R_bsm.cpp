@@ -259,6 +259,7 @@ List bsm_run_mcmc_summary(const List& model_, arma::uvec& prior_types,
     gamma, target_acceptance, S,  end_ram, theta_store, posterior_store, alphahat, Vt);
 
   arma::inplace_trans(alphahat);
+  arma::inplace_trans(theta_store);
   return List::create(Named("alphahat") = alphahat,
     Named("Vt") = Vt, Named("theta") = theta_store,
     Named("acceptance_rate") = acceptance_rate,
