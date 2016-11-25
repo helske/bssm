@@ -1,8 +1,9 @@
 #include "ng_bsm.h"
 #include "is_correction.h"
+#include "backtrack.h"
 
 // [[Rcpp::export]]
-double ng_bsm_loglik(const List& model_, arma::vec init_signal, unsigned int nsim_states,
+double ng_bsm_loglik(const Rcpp::List& model_, arma::vec init_signal, unsigned int nsim_states,
   unsigned int method, unsigned int seed, unsigned int max_iter, double conv_tol) {
   
   ng_bsm model(model_, seed, false);
@@ -46,7 +47,7 @@ double ng_bsm_loglik(const List& model_, arma::vec init_signal, unsigned int nsi
 }
 
 // [[Rcpp::export]]
-List ng_bsm_filter(const List& model_, arma::vec init_signal) {
+Rcpp::List ng_bsm_filter(const Rcpp::List& model_, arma::vec init_signal) {
   
   ng_bsm model(model_, 1, false);
   
@@ -62,17 +63,17 @@ List ng_bsm_filter(const List& model_, arma::vec init_signal) {
   arma::inplace_trans(at);
   arma::inplace_trans(att);
   
-  return List::create(
-    Named("at") = at,
-    Named("att") = att,
-    Named("Pt") = Pt,
-    Named("Ptt") = Ptt,
-    Named("logLik") = logLik);
+  return Rcpp::List::create(
+    Rcpp::Named("at") = at,
+    Rcpp::Named("att") = att,
+    Rcpp::Named("Pt") = Pt,
+    Rcpp::Named("Ptt") = Ptt,
+    Rcpp::Named("logLik") = logLik);
 }
 
 
 // [[Rcpp::export]]
-arma::mat ng_bsm_fast_smoother(const List& model_, arma::vec init_signal) {
+arma::mat ng_bsm_fast_smoother(const Rcpp::List& model_, arma::vec init_signal) {
   
   ng_bsm model(model_, 1, false);
   model.approx(init_signal, 1000, 1e-12);
@@ -81,7 +82,7 @@ arma::mat ng_bsm_fast_smoother(const List& model_, arma::vec init_signal) {
 }
 
 // [[Rcpp::export]]
-arma::cube ng_bsm_sim_smoother(const List& model_, unsigned nsim,
+arma::cube ng_bsm_sim_smoother(const Rcpp::List& model_, unsigned nsim,
   arma::vec init_signal, unsigned int seed) {
   
   ng_bsm model(model_, seed, false);
@@ -92,7 +93,7 @@ arma::cube ng_bsm_sim_smoother(const List& model_, unsigned nsim,
 
 
 // [[Rcpp::export]]
-List ng_bsm_smoother(const List& model_, arma::vec init_signal) {
+Rcpp::List ng_bsm_smoother(const Rcpp::List& model_, arma::vec init_signal) {
   
   ng_bsm model(model_, 1, false);
   
@@ -104,14 +105,14 @@ List ng_bsm_smoother(const List& model_, arma::vec init_signal) {
   model.smoother(alphahat, Vt, true);
   arma::inplace_trans(alphahat);
   
-  return List::create(
-    Named("alphahat") = alphahat,
-    Named("Vt") = Vt);
+  return Rcpp::List::create(
+    Rcpp::Named("alphahat") = alphahat,
+    Rcpp::Named("Vt") = Vt);
 }
 
 
 // [[Rcpp::export]]
-List ng_bsm_run_mcmc(const List& model_,
+Rcpp::List ng_bsm_run_mcmc(const Rcpp::List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
@@ -139,14 +140,14 @@ List ng_bsm_run_mcmc(const List& model_,
   
   arma::inplace_trans(theta_store);
   
-  return List::create(Named("alpha") = alpha_store,
-    Named("theta") = theta_store,
-    Named("acceptance_rate") = acceptance_rate,
-    Named("S") = S,  Named("posterior") = posterior_store);
+  return Rcpp::List::create(Rcpp::Named("alpha") = alpha_store,
+    Rcpp::Named("theta") = theta_store,
+    Rcpp::Named("acceptance_rate") = acceptance_rate,
+    Rcpp::Named("S") = S,  Rcpp::Named("posterior") = posterior_store);
 }
 
 // [[Rcpp::export]]
-List ng_bsm_run_mcmc_is(const List& model_,
+Rcpp::List ng_bsm_run_mcmc_is(const Rcpp::List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
@@ -192,18 +193,18 @@ List ng_bsm_run_mcmc_is(const List& model_,
   prior_store += ll_store + log(weights_store);
   
   arma::inplace_trans(theta_store);
-  return List::create(Named("alpha") = alpha_store,
-    Named("theta") = theta_store, Named("counts") = counts,
-    Named("acceptance_rate") = acceptance_rate,
-    Named("S") = S,  Named("posterior") = prior_store,
-    Named("weights") = weights_store);
+  return Rcpp::List::create(Rcpp::Named("alpha") = alpha_store,
+    Rcpp::Named("theta") = theta_store, Rcpp::Named("counts") = counts,
+    Rcpp::Named("acceptance_rate") = acceptance_rate,
+    Rcpp::Named("S") = S,  Rcpp::Named("posterior") = prior_store,
+    Rcpp::Named("weights") = weights_store);
 }
 
 
 
 
 // [[Rcpp::export]]
-List ng_bsm_run_mcmc_summary(const List& model_,
+Rcpp::List ng_bsm_run_mcmc_summary(const Rcpp::List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
@@ -230,16 +231,16 @@ List ng_bsm_run_mcmc_summary(const List& model_,
   arma::inplace_trans(mu);
   arma::inplace_trans(alphahat);
   arma::inplace_trans(theta_store);
-  return List::create(Named("alphahat") = alphahat, Named("Vt") =  Vt,
-    Named("muhat") = mu, Named("Vmu") =  Vmu,
-    Named("theta") = theta_store,
-    Named("acceptance_rate") = acceptance_rate,
-    Named("S") = S,  Named("posterior") = posterior_store);
+  return Rcpp::List::create(Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") =  Vt,
+    Rcpp::Named("muhat") = mu, Rcpp::Named("Vmu") =  Vmu,
+    Rcpp::Named("theta") = theta_store,
+    Rcpp::Named("acceptance_rate") = acceptance_rate,
+    Rcpp::Named("S") = S,  Rcpp::Named("posterior") = posterior_store);
   
 }
 
 // [[Rcpp::export]]
-List ng_bsm_run_mcmc_summary_is(const List& model_,
+Rcpp::List ng_bsm_run_mcmc_summary_is(const Rcpp::List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
@@ -278,16 +279,16 @@ List ng_bsm_run_mcmc_summary_is(const List& model_,
   arma::inplace_trans(muhat);
   arma::inplace_trans(alphahat);
   arma::inplace_trans(theta_store);
-  return List::create(Named("alphahat") = alphahat,  Named("Vt") = Vt,
-    Named("muhat") = muhat,  Named("Vmu") = Vmu,
-    Named("theta") = theta_store, Named("counts") = counts,
-    Named("acceptance_rate") = acceptance_rate,
-    Named("S") = S,  Named("posterior_approx") = ll_store + prior_store,
-    Named("weights") = weights_store);
+  return Rcpp::List::create(Rcpp::Named("alphahat") = alphahat,  Rcpp::Named("Vt") = Vt,
+    Rcpp::Named("muhat") = muhat,  Rcpp::Named("Vmu") = Vmu,
+    Rcpp::Named("theta") = theta_store, Rcpp::Named("counts") = counts,
+    Rcpp::Named("acceptance_rate") = acceptance_rate,
+    Rcpp::Named("S") = S,  Rcpp::Named("posterior_approx") = ll_store + prior_store,
+    Rcpp::Named("weights") = weights_store);
 }
 
 // [[Rcpp::export]]
-arma::mat ng_bsm_predict2(const List& model_, arma::uvec& prior_types,
+arma::mat ng_bsm_predict2(const Rcpp::List& model_, arma::uvec& prior_types,
   arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
@@ -302,7 +303,7 @@ arma::mat ng_bsm_predict2(const List& model_, arma::uvec& prior_types,
 }
 
 // [[Rcpp::export]]
-List ng_bsm_importance_sample(const List& model_, arma::vec init_signal,
+Rcpp::List ng_bsm_importance_sample(const Rcpp::List& model_, arma::vec init_signal,
   unsigned int nsim_states, unsigned int seed) {
   
   ng_bsm model(model_, seed, false);
@@ -313,13 +314,13 @@ List ng_bsm_importance_sample(const List& model_, arma::vec init_signal,
   arma::vec weights = exp(model.importance_weights(alpha) -
     model.scaling_factor(init_signal));
   
-  return List::create(
-    Named("alpha") = alpha,
-    Named("weights") = weights);
+  return Rcpp::List::create(
+    Rcpp::Named("alpha") = alpha,
+    Rcpp::Named("weights") = weights);
 }
 
 // [[Rcpp::export]]
-List ng_bsm_approx_model(const List& model_, arma::vec init_signal, unsigned int max_iter,
+Rcpp::List ng_bsm_approx_model(const Rcpp::List& model_, arma::vec init_signal, unsigned int max_iter,
   double conv_tol) {
   
   ng_bsm model(model_, 1, false);
@@ -327,16 +328,16 @@ List ng_bsm_approx_model(const List& model_, arma::vec init_signal, unsigned int
   double ll = model.approx(init_signal, max_iter, conv_tol);
   
   
-  return List::create(
-    Named("y") = model.y,
-    Named("H") = model.H,
-    Named("logLik") = ll,
-    Named("signal") = init_signal);
+  return Rcpp::List::create(
+    Rcpp::Named("y") = model.y,
+    Rcpp::Named("H") = model.H,
+    Rcpp::Named("logLik") = ll,
+    Rcpp::Named("signal") = init_signal);
 }
 
 
 // [[Rcpp::export]]
-List ng_bsm_particle_filter(const List& model_,
+Rcpp::List ng_bsm_particle_filter(const Rcpp::List& model_,
   unsigned int nsim_states, unsigned int seed, bool bootstrap, 
   arma::vec init_signal) {
   
@@ -355,14 +356,14 @@ List ng_bsm_particle_filter(const List& model_,
     arma::vec ll_approx_u = model.scaling_factor_vec(init_signal);
     ll = model.psi_filter(nsim_states, alphasim, w, ind, ll_g, ll_approx_u);
   }
-  return List::create(
-    Named("alpha") = alphasim, Named("w") = w, Named("A") = ind,
-    Named("logLik") = ll);
+  return Rcpp::List::create(
+    Rcpp::Named("alpha") = alphasim, Rcpp::Named("w") = w, Rcpp::Named("A") = ind,
+    Rcpp::Named("logLik") = ll);
 }
 
 
 // [[Rcpp::export]]
-Rcpp::List ng_bsm_particle_smoother(const List& model_, unsigned int nsim_states,
+Rcpp::List ng_bsm_particle_smoother(const Rcpp::List& model_, unsigned int nsim_states,
   unsigned int seed, unsigned int method, unsigned int type, arma::vec init_signal) {
   
   ng_bsm model(model_, seed, false);
@@ -380,7 +381,7 @@ Rcpp::List ng_bsm_particle_smoother(const List& model_, unsigned int nsim_states
     ll = model.psi_filter(nsim_states, alphasim, w, ind, ll_g, ll_approx_u);
   }
   if(!arma::is_finite(ll)) {
-    stop("Particle filtering returned likelihood value of zero. ");
+    Rcpp::stop("Particle filtering returned likelihood value of zero. ");
   }
   
   if(method == 1) {
@@ -394,9 +395,9 @@ Rcpp::List ng_bsm_particle_smoother(const List& model_, unsigned int nsim_states
         alphahat(t, k) = arma::dot(arma::vectorise(alphasim.tube(k, t)), wnorm);
       }
     }
-    return List::create(
-      Named("alphahat") = alphahat, Named("w") = w,
-      Named("logLik") = ll, Named("alpha") = alphasim);
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = alphahat, Rcpp::Named("w") = w,
+      Rcpp::Named("logLik") = ll, Rcpp::Named("alpha") = alphasim);
   } else {
     model.backtrack_pf2(alphasim, w, ind);
     
@@ -407,15 +408,15 @@ Rcpp::List ng_bsm_particle_smoother(const List& model_, unsigned int nsim_states
         alphahat(t, k) = arma::dot(arma::vectorise(alphasim.tube(k, t)), wnorm);
       }
     }
-    return List::create(Named("alphahat") = alphahat, Named("w") = w,
-      Named("logLik") = ll, Named("alpha") = alphasim);
+    return Rcpp::List::create(Rcpp::Named("alphahat") = alphahat, Rcpp::Named("w") = w,
+      Rcpp::Named("logLik") = ll, Rcpp::Named("alpha") = alphasim);
   }
   
 }
 
 
 // [[Rcpp::export]]
-Rcpp::List ng_bsm_backward_simulate(const List& model_, unsigned int nsim_states, 
+Rcpp::List ng_bsm_backward_simulate(const Rcpp::List& model_, unsigned int nsim_states, 
   unsigned int seed, unsigned int nsim_store) {
   
   ng_bsm model(model_, seed, false);
@@ -425,12 +426,12 @@ Rcpp::List ng_bsm_backward_simulate(const List& model_, unsigned int nsim_states
   arma::umat ind(nsim_states, model.n - 1);
   double ll = model.particle_filter(nsim_states, alphasim, w, ind);
   if(!arma::is_finite(ll)) {
-    stop("Particle filtering returned likelihood value of zero. ");
+    Rcpp::stop("Particle filtering returned likelihood value of zero. ");
   }
   arma::cube alpha(model.m, model.n, nsim_store);
   for (unsigned int i = 0; i < nsim_store; i++) {
     alpha.slice(i) = model.backward_simulate(alphasim, w, ind);
   }
-  return List::create(Named("alpha") = alpha,
-    Named("logLik") = ll);
+  return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
+    Rcpp::Named("logLik") = ll);
 }

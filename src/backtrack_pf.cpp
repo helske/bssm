@@ -1,8 +1,5 @@
-
 #include <RcppArmadillo.h>
-using namespace Rcpp;
 
-// [[Rcpp::export]]
 void backtrack_pf(arma::cube& alpha, arma::umat& ind) {
   
   arma::uvec b(alpha.n_slices);

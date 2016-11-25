@@ -7,8 +7,8 @@ class svm: public ngssm {
   
 public:
   
-  svm(const List&, unsigned int);
-  svm(const List&, unsigned int, bool);
+  svm(const Rcpp::List&, unsigned int);
+  svm(const Rcpp::List&, unsigned int, bool);
   
   svm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, double, arma::mat, arma::vec, arma::mat, unsigned int, unsigned int);

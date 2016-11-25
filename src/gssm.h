@@ -1,17 +1,17 @@
 #ifndef GSSM_H
 #define GSSM_H
 
-#include "bssm.h"
+#include <RcppArmadillo.h>
 
 class gssm {
 
 public:
 
-  gssm(const List&, unsigned int);
-  gssm(const List&, arma::uvec, arma::uvec, arma::uvec, arma::uvec,
+  gssm(const Rcpp::List&, unsigned int);
+  gssm(const Rcpp::List&, arma::uvec, arma::uvec, arma::uvec, arma::uvec,
     unsigned int);
-  gssm(const List&, unsigned int, bool);
-  gssm(const List&, arma::uvec, arma::uvec, arma::uvec, unsigned int, bool);
+  gssm(const Rcpp::List&, unsigned int, bool);
+  gssm(const Rcpp::List&, arma::uvec, arma::uvec, arma::uvec, unsigned int, bool);
   gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
     arma::mat, arma::mat, arma::vec, arma::mat, unsigned int);
   gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
@@ -39,7 +39,7 @@ public:
   virtual arma::mat predict2(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat, unsigned int,
     unsigned int);
-  virtual List predict(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
+  virtual Rcpp::List predict(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat, unsigned int,
     unsigned int, arma::vec);
 

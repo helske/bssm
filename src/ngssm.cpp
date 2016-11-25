@@ -1,22 +1,28 @@
+#include <ramcmc.h>
+#include "bssm.h"
 #include "ngssm.h"
 #include "distr_consts.h"
+#include "summary.h"
+#include "sample.h"
+#include "cond_dist.h"
+#include "backtrack.h"
 
-// from List
-ngssm::ngssm(const List& model, unsigned int seed) :
-  gssm(model, seed, true), phi(model["phi"]), ut(as<arma::vec>(model["u"])),
-  distribution(model["distribution"]), phi_est(as<bool>(model["phi_est"])), 
-  ng_y(as<arma::vec>(model["y"])),
+// from Rcpp::List
+ngssm::ngssm(const Rcpp::List& model, unsigned int seed) :
+  gssm(model, seed, true), phi(model["phi"]), ut(Rcpp::as<arma::vec>(model["u"])),
+  distribution(model["distribution"]), phi_est(Rcpp::as<bool>(model["phi_est"])), 
+  ng_y(Rcpp::as<arma::vec>(model["y"])),
   max_iter(100), conv_tol(1.0e-8) {
 }
 
-// from List
+// from Rcpp::List
 // with parameter indices
-ngssm::ngssm(const List& model, arma::uvec Z_ind,
+ngssm::ngssm(const Rcpp::List& model, arma::uvec Z_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
   gssm(model, Z_ind, T_ind, R_ind, seed, true),
-  phi(model["phi"]), ut(as<arma::vec>(model["u"])), 
-  distribution(model["distribution"]), phi_est(as<bool>(model["phi_est"])), 
-  ng_y(as<arma::vec>(model["y"])),
+  phi(model["phi"]), ut(Rcpp::as<arma::vec>(model["u"])), 
+  distribution(model["distribution"]), phi_est(Rcpp::as<bool>(model["phi_est"])), 
+  ng_y(Rcpp::as<arma::vec>(model["y"])),
   max_iter(100), conv_tol(1.0e-8) {
 }
 
@@ -492,7 +498,7 @@ arma::mat ngssm::predict2(const arma::uvec& prior_types,
       j++;
     }
     
-    adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
     
   }
   
@@ -764,6 +770,10 @@ double ngssm::mcmc_approx(const arma::uvec& prior_types, const arma::mat& prior_
   std::uniform_real_distribution<> unif(0.0, 1.0);
   for(unsigned int i = 0; i < n_burnin; i++) {
     
+     if (i % 16 == 0) {
+     Rcpp::checkUserInterrupt();
+    }
+    
     // sample from standard normal distribution
     // arma::vec u = rnorm(npar);
     arma::vec u(npar);
@@ -799,7 +809,7 @@ double ngssm::mcmc_approx(const arma::uvec& prior_types, const arma::mat& prior_
         theta = theta_prop;
       }
     } else accept_prob = 0.0;
-    adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
     
   }
   
@@ -827,7 +837,7 @@ double ngssm::mcmc_approx(const arma::uvec& prior_types, const arma::mat& prior_
   for (unsigned int i = n_burnin  + 1; i < n_iter; i++) {
     
     if (i % 16 == 0) {
-      checkUserInterrupt();
+      Rcpp::checkUserInterrupt();
     }
     
     // sample from standard normal distribution
@@ -883,7 +893,7 @@ double ngssm::mcmc_approx(const arma::uvec& prior_types, const arma::mat& prior_
     }
     
     if (!end_ram) {
-      adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+      ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
     }
     
   }
@@ -952,7 +962,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
   for (unsigned int i = 1; i < n_iter; i++) {
     
     if (i % 16 == 0) {
-      checkUserInterrupt();
+     Rcpp::checkUserInterrupt();
     }
     
     // sample from standard normal distribution
@@ -1050,7 +1060,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
     }
     
     if (!end_ram || i < n_burnin) {
-      adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+      ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
     }
     
   }
@@ -1117,7 +1127,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
   for (unsigned int i = 1; i < n_iter; i++) {
     
     if (i % 16 == 0) {
-      checkUserInterrupt();
+      Rcpp::checkUserInterrupt();
     }
     
     // sample from standard normal distribution
@@ -1247,7 +1257,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
     }
     
     if (!end_ram || i < n_burnin) {
-      adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+      ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
     }
     
   }
@@ -1322,7 +1332,7 @@ double ngssm::run_mcmc_summary(const arma::uvec& prior_types, const arma::mat& p
   for (unsigned int i = 1; i < n_iter; i++) {
     
     if (i % 16 == 0) {
-      checkUserInterrupt();
+      Rcpp::checkUserInterrupt();
     }
     
     // sample from standard normal distribution
@@ -1426,7 +1436,7 @@ double ngssm::run_mcmc_summary(const arma::uvec& prior_types, const arma::mat& p
     }
     
     if (!end_ram || i < n_burnin) {
-      adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+      ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
     }
     
   }

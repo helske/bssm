@@ -1,14 +1,14 @@
 #include "svm.h"
 
 // from List
-svm::svm(const List& model, unsigned int seed) :
-  ngssm(model, seed), nz_y(as<arma::vec>(model["y"])), svm_type(model["svm_type"]) {
+svm::svm(const Rcpp::List& model, unsigned int seed) :
+  ngssm(model, seed), nz_y(Rcpp::as<arma::vec>(model["y"])), svm_type(model["svm_type"]) {
   nz_y(arma::find(abs(y) < 1e-4)).fill(1e-4);
 }
 
 // from List, with gkl
-svm::svm(const List& model, unsigned int seed, bool gkl) :
-  ngssm(model, seed), nz_y(as<arma::vec>(model["y"])), svm_type(model["svm_type"]), gkl(gkl) {
+svm::svm(const Rcpp::List& model, unsigned int seed, bool gkl) :
+  ngssm(model, seed), nz_y(Rcpp::as<arma::vec>(model["y"])), svm_type(model["svm_type"]), gkl(gkl) {
   nz_y(arma::find(abs(y) < 1e-4)).fill(1e-4);
 }
 

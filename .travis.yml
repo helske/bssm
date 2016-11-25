@@ -9,6 +9,7 @@ r:
 
 r_github_packages:
   - hadley/devtools
+  - helske/ramcmc
 r_packages:
   - covr
 addons:

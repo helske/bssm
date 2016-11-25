@@ -1,9 +1,7 @@
 //http://gallery.rcpp.org/articles/dmvnorm_arma/
 //with small modifications
 #include <RcppArmadillo.h>
-using namespace Rcpp;
 
-// [[Rcpp::export]]
 double dmvnorm1(const arma::vec& x, const arma::vec& mean,  
   const arma::mat& sigma, bool lwr, bool logd) { 
   

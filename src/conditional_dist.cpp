@@ -1,8 +1,5 @@
-
 #include <RcppArmadillo.h>
-using namespace Rcpp;
 
-// [[Rcpp::export]]
 void conditional_dist_helper(arma::cube& V, arma::cube& C) {
   
   for (int t = V.n_slices - 1; t > 0; t--) {

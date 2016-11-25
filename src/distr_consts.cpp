@@ -2,8 +2,6 @@
 // constants (independent of states) for particle filter
 // use same notation as in bssm models expect norm/svm
 
-using namespace Rcpp;
-
 double norm_log_const(const double sd) {
   return -0.5 * log(2.0 * M_PI) - log(sd);
 }

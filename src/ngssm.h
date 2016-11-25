@@ -7,8 +7,8 @@ class ngssm: public gssm {
 public:
   
   
-  ngssm(const List&, unsigned int);
-  ngssm(const List&, arma::uvec, arma::uvec, arma::uvec, unsigned int);
+  ngssm(const Rcpp::List&, unsigned int);
+  ngssm(const Rcpp::List&, arma::uvec, arma::uvec, arma::uvec, unsigned int);
   
   ngssm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, double, arma::vec, arma::mat, arma::vec, arma::mat, unsigned int, unsigned int, bool);

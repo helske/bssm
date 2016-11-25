@@ -1,13 +1,14 @@
 #include "bsm.h"
+#include "backtrack.h"
 
 // [[Rcpp::export]]
-double bsm_loglik(const List& model_) {
+double bsm_loglik(const Rcpp::List& model_) {
   bsm model(model_, 1, false);
   return model.log_likelihood(true);
 }
 
 // [[Rcpp::export]]
-List bsm_filter(const List& model_) {
+Rcpp::List bsm_filter(const Rcpp::List& model_) {
 
   bsm model(model_, 1, false);
 
@@ -21,17 +22,17 @@ List bsm_filter(const List& model_) {
   arma::inplace_trans(at);
   arma::inplace_trans(att);
 
-  return List::create(
-    Named("at") = at,
-    Named("att") = att,
-    Named("Pt") = Pt,
-    Named("Ptt") = Ptt,
-    Named("logLik") = logLik);
+  return Rcpp::List::create(
+    Rcpp::Named("at") = at,
+    Rcpp::Named("att") = att,
+    Rcpp::Named("Pt") = Pt,
+    Rcpp::Named("Ptt") = Ptt,
+    Rcpp::Named("logLik") = logLik);
 }
 
 
 // [[Rcpp::export]]
-arma::mat bsm_fast_smoother(const List& model_) {
+arma::mat bsm_fast_smoother(const Rcpp::List& model_) {
 
   bsm model(model_, 1, false);
 
@@ -39,7 +40,7 @@ arma::mat bsm_fast_smoother(const List& model_) {
 }
 
 // [[Rcpp::export]]
-arma::cube bsm_sim_smoother(const List& model_, unsigned int nsim, unsigned int seed) {
+arma::cube bsm_sim_smoother(const Rcpp::List& model_, unsigned int nsim, unsigned int seed) {
 
   bsm model(model_, seed, false);
   return model.sim_smoother(nsim, true);
@@ -47,7 +48,7 @@ arma::cube bsm_sim_smoother(const List& model_, unsigned int nsim, unsigned int 
 
 
 // [[Rcpp::export]]
-List bsm_smoother(const List& model_) {
+Rcpp::List bsm_smoother(const Rcpp::List& model_) {
 
   bsm model(model_, 1, false);
 
@@ -57,13 +58,13 @@ List bsm_smoother(const List& model_) {
   model.smoother(alphahat, Vt, true);
   arma::inplace_trans(alphahat);
 
-  return List::create(
-    Named("alphahat") = alphahat,
-    Named("Vt") = Vt);
+  return Rcpp::List::create(
+    Rcpp::Named("alphahat") = alphahat,
+    Rcpp::Named("Vt") = Vt);
 }
 
 // [[Rcpp::export]]
-List bsm_ccov_smoother(const List& model_) {
+Rcpp::List bsm_ccov_smoother(const Rcpp::List& model_) {
   
   bsm model(model_, 1, false);
   
@@ -73,13 +74,13 @@ List bsm_ccov_smoother(const List& model_) {
   model.smoother_ccov(alphahat, Vt, Ct, true);
   arma::inplace_trans(alphahat);
   
-  return List::create(
-    Named("alphahat") = alphahat,
-    Named("Vt") = Vt, Named("Ct") = Ct);
+  return Rcpp::List::create(
+    Rcpp::Named("alphahat") = alphahat,
+    Rcpp::Named("Vt") = Vt, Rcpp::Named("Ct") = Ct);
 }
 
 // [[Rcpp::export]]
-arma::mat bsm_predict2(const List& model_, arma::uvec& prior_types, arma::mat& prior_pars,
+arma::mat bsm_predict2(const Rcpp::List& model_, arma::uvec& prior_types, arma::mat& prior_pars,
   unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
   unsigned int interval, unsigned int seed, bool log_space) {
@@ -92,7 +93,7 @@ arma::mat bsm_predict2(const List& model_, arma::uvec& prior_types, arma::mat& p
 
 
 // [[Rcpp::export]]
-List bsm_predict(const List& model_,
+Rcpp::List bsm_predict(const Rcpp::List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
@@ -106,7 +107,7 @@ List bsm_predict(const List& model_,
 }
 
 // [[Rcpp::export]]
-Rcpp::List bsm_particle_filter(const List& model_, unsigned int nsim_states, unsigned int seed) {
+Rcpp::List bsm_particle_filter(const Rcpp::List& model_, unsigned int nsim_states, unsigned int seed) {
 
   bsm model(model_, seed, false);
   //fill with zeros in case of zero weights
@@ -114,13 +115,13 @@ Rcpp::List bsm_particle_filter(const List& model_, unsigned int nsim_states, uns
   arma::mat w(nsim_states, model.n, arma::fill::zeros);
   arma::umat ind(nsim_states, model.n - 1, arma::fill::zeros);
   double ll = model.particle_filter(nsim_states, alphasim, w, ind);
-  return List::create(
-    Named("alpha") = alphasim, Named("w") = w, Named("A") = ind,
-    Named("logLik") = ll);
+  return Rcpp::List::create(
+    Rcpp::Named("alpha") = alphasim, Rcpp::Named("w") = w, Rcpp::Named("A") = ind,
+    Rcpp::Named("logLik") = ll);
 }
 
 // [[Rcpp::export]]
-List bsm_particle_filter2(const List& model_,
+Rcpp::List bsm_particle_filter2(const Rcpp::List& model_,
   unsigned int nsim_states, unsigned int seed, bool bootstrap) {
   
   bsm model(model_, seed, false);
@@ -135,12 +136,12 @@ List bsm_particle_filter2(const List& model_,
   } else {
     ll = model.psi_filter(nsim_states, alphasim, w, ind);  
   }
-  return List::create(
-    Named("alpha") = alphasim, Named("w") = w, Named("A") = ind,
-    Named("logLik") = ll);
+  return Rcpp::List::create(
+    Rcpp::Named("alpha") = alphasim, Rcpp::Named("w") = w, Rcpp::Named("A") = ind,
+    Rcpp::Named("logLik") = ll);
 }
 // [[Rcpp::export]]
-Rcpp::List bsm_particle_smoother(const List& model_, unsigned int nsim_states, 
+Rcpp::List bsm_particle_smoother(const Rcpp::List& model_, unsigned int nsim_states, 
   unsigned int seed, bool fs) {
 
   bsm model(model_, seed, false);
@@ -150,7 +151,7 @@ Rcpp::List bsm_particle_smoother(const List& model_, unsigned int nsim_states,
   arma::umat ind(nsim_states, model.n - 1);
   double ll = model.particle_filter(nsim_states, alphasim, w, ind);
   if(!arma::is_finite(ll)) {
-    stop("Particle filtering returned likelihood value of zero. ");
+    Rcpp::stop("Particle filtering returned likelihood value of zero. ");
   }
   if(fs) {
     backtrack_pf(alphasim, ind);
@@ -163,9 +164,9 @@ Rcpp::List bsm_particle_smoother(const List& model_, unsigned int nsim_states,
         alphahat(t, k) = arma::dot(arma::vectorise(alphasim.tube(k, t)), wnorm);
       }
     }
-    return List::create(
-      Named("alphahat") = alphahat, Named("w") = w,
-      Named("logLik") = ll, Named("alpha") = alphasim);
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = alphahat, Rcpp::Named("w") = w,
+      Rcpp::Named("logLik") = ll, Rcpp::Named("alpha") = alphasim);
   } else {
     model.backtrack_pf2(alphasim, w, ind);
 
@@ -176,14 +177,14 @@ Rcpp::List bsm_particle_smoother(const List& model_, unsigned int nsim_states,
         alphahat(t, k) = arma::dot(arma::vectorise(alphasim.tube(k, t)), wnorm);
       }
     }
-    return List::create(Named("alphahat") = alphahat, Named("w") = w,
-      Named("logLik") = ll, Named("alpha") = alphasim);
+    return Rcpp::List::create(Rcpp::Named("alphahat") = alphahat, Rcpp::Named("w") = w,
+      Rcpp::Named("logLik") = ll, Rcpp::Named("alpha") = alphasim);
   }
 
 }
 
 // [[Rcpp::export]]
-Rcpp::List bsm_backward_simulate(const List& model_, unsigned int nsim_states, unsigned int seed,
+Rcpp::List bsm_backward_simulate(const Rcpp::List& model_, unsigned int nsim_states, unsigned int seed,
   unsigned int nsim_store) {
 
   bsm model(model_, seed, false);
@@ -193,19 +194,19 @@ Rcpp::List bsm_backward_simulate(const List& model_, unsigned int nsim_states, u
   arma::umat ind(nsim_states, model.n - 1);
   double ll = model.particle_filter(nsim_states, alphasim, w, ind);
   if(!arma::is_finite(ll)) {
-    stop("Particle filtering returned likelihood value of zero. ");
+    Rcpp::stop("Particle filtering returned likelihood value of zero. ");
   }
   arma::cube alpha(model.m, model.n, nsim_store);
   for (unsigned int i = 0; i < nsim_store; i++) {
     alpha.slice(i) = model.backward_simulate(alphasim, w, ind);
 
   }
-  return List::create(Named("alpha") = alpha,
-    Named("logLik") = ll);
+  return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
+    Rcpp::Named("logLik") = ll);
 }
 
 // [[Rcpp::export]]
-List bsm_run_mcmc(const List& model_,
+Rcpp::List bsm_run_mcmc(const Rcpp::List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   bool sim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat& S,
@@ -226,22 +227,22 @@ List bsm_run_mcmc(const List& model_,
   arma::inplace_trans(theta_store);
 
   if(sim_states) {
-    return List::create(Named("alpha") = alpha_store,
-      Named("theta") = theta_store,
-      Named("acceptance_rate") = acceptance_rate,
-      Named("S") = S,  Named("posterior") = posterior_store);
+    return Rcpp::List::create(Rcpp::Named("alpha") = alpha_store,
+      Rcpp::Named("theta") = theta_store,
+      Rcpp::Named("acceptance_rate") = acceptance_rate,
+      Rcpp::Named("S") = S,  Rcpp::Named("posterior") = posterior_store);
   } else {
-    return List::create(
-      Named("theta") = theta_store,
-      Named("acceptance_rate") = acceptance_rate,
-      Named("S") = S,  Named("posterior") = posterior_store);
+    return Rcpp::List::create(
+      Rcpp::Named("theta") = theta_store,
+      Rcpp::Named("acceptance_rate") = acceptance_rate,
+      Rcpp::Named("S") = S,  Rcpp::Named("posterior") = posterior_store);
   }
 
 }
 
 
 // [[Rcpp::export]]
-List bsm_run_mcmc_summary(const List& model_, arma::uvec& prior_types,
+Rcpp::List bsm_run_mcmc_summary(const Rcpp::List& model_, arma::uvec& prior_types,
   arma::mat& prior_pars, unsigned int n_iter, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
   unsigned int seed, bool log_space, bool end_ram) {
@@ -260,10 +261,10 @@ List bsm_run_mcmc_summary(const List& model_, arma::uvec& prior_types,
 
   arma::inplace_trans(alphahat);
   arma::inplace_trans(theta_store);
-  return List::create(Named("alphahat") = alphahat,
-    Named("Vt") = Vt, Named("theta") = theta_store,
-    Named("acceptance_rate") = acceptance_rate,
-    Named("S") = S,  Named("posterior") = posterior_store);
+  return Rcpp::List::create(Rcpp::Named("alphahat") = alphahat,
+    Rcpp::Named("Vt") = Vt, Rcpp::Named("theta") = theta_store,
+    Rcpp::Named("acceptance_rate") = acceptance_rate,
+    Rcpp::Named("S") = S,  Rcpp::Named("posterior") = posterior_store);
 }
 
 

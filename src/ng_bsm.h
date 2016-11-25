@@ -8,7 +8,7 @@ class ng_bsm: public ngssm {
 public:
 
 
-  ng_bsm(const List&, unsigned int, bool);
+  ng_bsm(const Rcpp::List&, unsigned int, bool);
 
   ng_bsm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
     arma::mat, double, arma::vec, bool, bool, bool, arma::uvec, arma::mat, arma::vec,

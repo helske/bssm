@@ -1,10 +1,11 @@
 #include "bsm.h"
+#include "filter.h"
 
-// from List
-bsm::bsm(const List& model, unsigned int seed, bool log_space) :
-  gssm(model, seed), slope(as<bool>(model["slope"])),
-  seasonal(as<bool>(model["seasonal"])),
-  fixed(as<arma::uvec>(model["fixed"])), y_est(fixed(0) == 0), level_est(fixed(1) == 0),
+// from Rcpp::List
+bsm::bsm(const Rcpp::List& model, unsigned int seed, bool log_space) :
+  gssm(model, seed), slope(Rcpp::as<bool>(model["slope"])),
+  seasonal(Rcpp::as<bool>(model["seasonal"])),
+  fixed(Rcpp::as<arma::uvec>(model["fixed"])), y_est(fixed(0) == 0), level_est(fixed(1) == 0),
   slope_est(slope && fixed(2) == 0), seasonal_est(seasonal && fixed(3) == 0),
   log_space(log_space) {
 

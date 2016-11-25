@@ -1,8 +1,9 @@
 #include "ngssm.h"
 #include "is_correction.h"
+#include "backtrack.h"
 
 // [[Rcpp::export]]
-double ngssm_loglik(const List& model_, arma::vec init_signal,
+double ngssm_loglik(const Rcpp::List& model_, arma::vec init_signal,
   unsigned int nsim_states, unsigned int method, unsigned int seed,
    unsigned int max_iter, double conv_tol) {
   
@@ -27,7 +28,6 @@ double ngssm_loglik(const List& model_, arma::vec init_signal,
         ll = model.psi_loglik(nsim_states, ll, model.scaling_factor_vec(init_signal));
         break;
       case 2  : {
-          
           arma::vec weights(nsim_states);
           arma::cube alpha = model.sim_smoother(nsim_states, true);
           weights = model.importance_weights(alpha) - model.scaling_factor(init_signal);
@@ -36,7 +36,6 @@ double ngssm_loglik(const List& model_, arma::vec init_signal,
           ll += log(arma::mean(weights)) + maxw;
         }
         break;
-        
       case 3:
         ll = model.bsf_loglik(nsim_states);
         break;
@@ -49,7 +48,7 @@ double ngssm_loglik(const List& model_, arma::vec init_signal,
 
 
 // [[Rcpp::export]]
-List ngssm_filter(const List& model_, arma::vec init_signal) {
+Rcpp::List ngssm_filter(const Rcpp::List& model_, arma::vec init_signal) {
   
   ngssm model(model_, 1);
   
@@ -65,16 +64,16 @@ List ngssm_filter(const List& model_, arma::vec init_signal) {
   arma::inplace_trans(at);
   arma::inplace_trans(att);
   
-  return List::create(
-    Named("at") = at,
-    Named("att") = att,
-    Named("Pt") = Pt,
-    Named("Ptt") = Ptt,
-    Named("logLik") = logLik);
+  return Rcpp::List::create(
+    Rcpp::Named("at") = at,
+    Rcpp::Named("att") = att,
+    Rcpp::Named("Pt") = Pt,
+    Rcpp::Named("Ptt") = Ptt,
+    Rcpp::Named("logLik") = logLik);
 }
 
 // [[Rcpp::export]]
-arma::mat ngssm_fast_smoother(const List& model_, arma::vec init_signal) {
+arma::mat ngssm_fast_smoother(const Rcpp::List& model_, arma::vec init_signal) {
   
   ngssm model(model_, 1);
   model.approx(init_signal, 1000, 1e-12);
@@ -83,7 +82,7 @@ arma::mat ngssm_fast_smoother(const List& model_, arma::vec init_signal) {
 }
 
 // [[Rcpp::export]]
-arma::cube ngssm_sim_smoother(const List& model_, unsigned nsim,
+arma::cube ngssm_sim_smoother(const Rcpp::List& model_, unsigned nsim,
   arma::vec init_signal, unsigned int seed) {
   
   ngssm model(model_, seed);
@@ -93,7 +92,7 @@ arma::cube ngssm_sim_smoother(const List& model_, unsigned nsim,
 }
 
 // [[Rcpp::export]]
-List ngssm_smoother(const List& model_, arma::vec init_signal) {
+Rcpp::List ngssm_smoother(const Rcpp::List& model_, arma::vec init_signal) {
   
   ngssm model(model_, 1);
   
@@ -105,12 +104,12 @@ List ngssm_smoother(const List& model_, arma::vec init_signal) {
   model.smoother(alphahat, Vt, true);
   arma::inplace_trans(alphahat);
   
-  return List::create(
-    Named("alphahat") = alphahat,
-    Named("Vt") = Vt);
+  return Rcpp::List::create(
+    Rcpp::Named("alphahat") = alphahat,
+    Rcpp::Named("Vt") = Vt);
 }
 // [[Rcpp::export]]
-List ngssm_run_mcmc(const List& model_,
+Rcpp::List ngssm_run_mcmc(const Rcpp::List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
@@ -138,15 +137,15 @@ List ngssm_run_mcmc(const List& model_,
   }
   
   arma::inplace_trans(theta_store);
-  return List::create(Named("alpha") = alpha_store,
-    Named("theta") = theta_store,
-    Named("acceptance_rate") = acceptance_rate,
-    Named("S") = S,  Named("posterior") = posterior_store);
+  return Rcpp::List::create(Rcpp::Named("alpha") = alpha_store,
+    Rcpp::Named("theta") = theta_store,
+    Rcpp::Named("acceptance_rate") = acceptance_rate,
+    Rcpp::Named("S") = S,  Rcpp::Named("posterior") = posterior_store);
 }
 
 
 // [[Rcpp::export]]
-List ngssm_run_mcmc_is(const List& model_,
+Rcpp::List ngssm_run_mcmc_is(const Rcpp::List& model_,
   arma::uvec& prior_types, arma::mat& prior_pars, unsigned int n_iter,
   unsigned int nsim_states, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
@@ -192,15 +191,15 @@ List ngssm_run_mcmc_is(const List& model_,
   prior_store += ll_store + log(weights_store);
   
   arma::inplace_trans(theta_store);
-  return List::create(Named("alpha") = alpha_store,
-    Named("theta") = theta_store, Named("counts") = counts,
-    Named("acceptance_rate") = acceptance_rate,
-    Named("S") = S,  Named("posterior") = prior_store,
-    Named("weights") = weights_store);
+  return Rcpp::List::create(Rcpp::Named("alpha") = alpha_store,
+    Rcpp::Named("theta") = theta_store, Rcpp::Named("counts") = counts,
+    Rcpp::Named("acceptance_rate") = acceptance_rate,
+    Rcpp::Named("S") = S,  Rcpp::Named("posterior") = prior_store,
+    Rcpp::Named("weights") = weights_store);
 }
 
 // [[Rcpp::export]]
-arma::mat ngssm_predict2(const List& model_, arma::uvec& prior_types,
+arma::mat ngssm_predict2(const Rcpp::List& model_, arma::uvec& prior_types,
   arma::mat& prior_pars, unsigned int n_iter, unsigned int nsim_states,
   unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat& S, unsigned int n_ahead,
@@ -217,7 +216,7 @@ arma::mat ngssm_predict2(const List& model_, arma::uvec& prior_types,
 
 
 // [[Rcpp::export]]
-List ngssm_importance_sample(const List& model_, arma::vec init_signal,
+Rcpp::List ngssm_importance_sample(const Rcpp::List& model_, arma::vec init_signal,
   unsigned int nsim_states,  unsigned int seed) {
   
   ngssm model(model_, seed);
@@ -227,28 +226,28 @@ List ngssm_importance_sample(const List& model_, arma::vec init_signal,
   arma::vec weights = exp(model.importance_weights(alpha) -
     model.scaling_factor(init_signal));
   
-  return List::create(
-    Named("alpha") = alpha,
-    Named("weights") = weights);
+  return Rcpp::List::create(
+    Rcpp::Named("alpha") = alpha,
+    Rcpp::Named("weights") = weights);
 }
 
 // [[Rcpp::export]]
-List ngssm_approx_model(const List& model_, arma::vec init_signal,
+Rcpp::List ngssm_approx_model(const Rcpp::List& model_, arma::vec init_signal,
   unsigned int max_iter, double conv_tol) {
   
   ngssm model(model_, 1);
   
   double ll = model.approx(init_signal, max_iter, conv_tol);
   
-  return List::create(
-    Named("y") = model.y,
-    Named("H") = model.H,
-    Named("logLik") = ll,
-    Named("signal") = init_signal);
+  return Rcpp::List::create(
+    Rcpp::Named("y") = model.y,
+    Rcpp::Named("H") = model.H,
+    Rcpp::Named("logLik") = ll,
+    Rcpp::Named("signal") = init_signal);
 }
 
 // [[Rcpp::export]]
-Rcpp::List ngssm_particle_filter(const List& model_, unsigned int nsim_states, 
+Rcpp::List ngssm_particle_filter(const Rcpp::List& model_, unsigned int nsim_states, 
   unsigned int seed,bool bootstrap, arma::vec init_signal) {
   
   ngssm model(model_, seed);
@@ -266,13 +265,13 @@ Rcpp::List ngssm_particle_filter(const List& model_, unsigned int nsim_states,
     ll = model.psi_filter(nsim_states, alphasim, w, ind, ll_g, ll_approx_u);
   }
   
-  return List::create(
-    Named("alpha") = alphasim, Named("w") = w, Named("A") = ind,
-    Named("logLik") = ll);
+  return Rcpp::List::create(
+    Rcpp::Named("alpha") = alphasim, Rcpp::Named("w") = w, Rcpp::Named("A") = ind,
+    Rcpp::Named("logLik") = ll);
 }
 
 // [[Rcpp::export]]
-Rcpp::List ngssm_particle_smoother(const List& model_, unsigned int nsim_states, 
+Rcpp::List ngssm_particle_smoother(const Rcpp::List& model_, unsigned int nsim_states, 
   unsigned int seed, bool fs, bool bootstrap, arma::vec init_signal) {
   
   ngssm model(model_, seed);
@@ -290,7 +289,7 @@ Rcpp::List ngssm_particle_smoother(const List& model_, unsigned int nsim_states,
     ll = model.psi_filter(nsim_states, alphasim, w, ind, ll_g, ll_approx_u); 
   }
   if(!arma::is_finite(ll)) {
-    stop("Particle filtering returned likelihood value of zero. ");
+    Rcpp::stop("Particle filtering returned likelihood value of zero. ");
   }
   if(fs) {
     backtrack_pf(alphasim, ind);
@@ -303,9 +302,9 @@ Rcpp::List ngssm_particle_smoother(const List& model_, unsigned int nsim_states,
         alphahat(t, k) = arma::dot(arma::vectorise(alphasim.tube(k, t)), wnorm);
       }
     }
-    return List::create(
-      Named("alphahat") = alphahat, Named("w") = w,
-      Named("logLik") = ll, Named("alpha") = alphasim);
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = alphahat, Rcpp::Named("w") = w,
+      Rcpp::Named("logLik") = ll, Rcpp::Named("alpha") = alphasim);
   } else {
     model.backtrack_pf2(alphasim, w, ind);
     
@@ -316,14 +315,14 @@ Rcpp::List ngssm_particle_smoother(const List& model_, unsigned int nsim_states,
         alphahat(t, k) = arma::dot(arma::vectorise(alphasim.tube(k, t)), wnorm);
       }
     }
-    return List::create(Named("alphahat") = alphahat, Named("w") = w,
-      Named("logLik") = ll, Named("alpha") = alphasim);
+    return Rcpp::List::create(Rcpp::Named("alphahat") = alphahat, Rcpp::Named("w") = w,
+      Rcpp::Named("logLik") = ll, Rcpp::Named("alpha") = alphasim);
   }
   
 }
 
 // [[Rcpp::export]]
-Rcpp::List ngssm_backward_simulate(const List& model_, unsigned int nsim_states, unsigned int seed,
+Rcpp::List ngssm_backward_simulate(const Rcpp::List& model_, unsigned int nsim_states, unsigned int seed,
   unsigned int nsim_store) {
   
   ngssm model(model_, seed);
@@ -333,13 +332,13 @@ Rcpp::List ngssm_backward_simulate(const List& model_, unsigned int nsim_states,
   arma::umat ind(nsim_states, model.n - 1);
   double ll = model.particle_filter(nsim_states, alphasim, w, ind);
   if(!arma::is_finite(ll)) {
-    stop("Particle filtering returned likelihood value of zero. ");
+    Rcpp::stop("Particle filtering returned likelihood value of zero. ");
   }
   arma::cube alpha(model.m, model.n, nsim_store);
   for (unsigned int i = 0; i < nsim_store; i++) {
     alpha.slice(i) = model.backward_simulate(alphasim, w, ind);
     
   }
-  return List::create(Named("alpha") = alpha,
-    Named("logLik") = ll);
+  return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
+    Rcpp::Named("logLik") = ll);
 }

@@ -1,7 +1,5 @@
 #include <RcppArmadillo.h>
-using namespace Rcpp;
 
-// [[Rcpp::export]]
 void running_summary(const arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, const unsigned int n) {
   
  // if(n > 0){
@@ -18,7 +16,6 @@ void running_summary(const arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, c
   //}
 }
 
-// [[Rcpp::export]]
 void running_weighted_summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, const arma::vec& weights) {
   
   cov_x.zeros();

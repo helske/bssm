@@ -1,8 +1,10 @@
-#include "bssm.h"
 #include "gssm.h"
 #include "bsm.h"
 
-// [[Rcpp::plugins(openmp)]]
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 template <typename T>
 arma::cube sample_states(T mod, const arma::mat& theta, const arma::uvec& counts,
   unsigned int nsim_states, unsigned int n_threads) {

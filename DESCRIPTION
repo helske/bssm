@@ -1,8 +1,8 @@
 Package: bssm
 Type: Package
 Title: Bayesian Inference of State Space Models
-Version: 0.0.6
-Date: 2016-09-09
+Version: 0.0.71
+Date: 2016-11-25
 Author: Jouni Helske, Matti Vihola
 Maintainer: Jouni Helske <jouni.helske@jyu.fi>
 Description: Efficient methods for Bayesian forecasting of state space models where the observation density is Gaussian, Poisson or binomial, and where the state processes are Gaussian.
@@ -17,7 +17,7 @@ Imports:
     coda (>= 0.18-1),
     ggplot2 (>= 2.0.0),
     Rcpp (>= 0.12.3)
-LinkingTo: BH, Rcpp, RcppArmadillo
+LinkingTo: BH, Rcpp, RcppArmadillo, ramcmc
 SystemRequirements: C++11
 RoxygenNote: 5.0.1
 VignetteBuilder: knitr

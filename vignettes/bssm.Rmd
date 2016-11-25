@@ -27,26 +27,29 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-The R package `bssm` is designed for Bayesian inference of general state space models with Gaussian states dynamics and non-Gaussian and/or non-linear observational distribution. We define the state transition equation as
+The `R` [@r-core] package `bssm` is designed for Bayesian inference of general state space models with Gaussian state dynamics and non-Gaussian and/or non-linear observational distribution. The package aims to provide easy-to-use and efficient functions for fully Bayesian inference of common time series models such basic structural time series model (BSM) [@Harvey1989] with exogenous covariates, making it straighforward and efficient to make predictions and other inference in a Bayesian and non-Bayesian setting.
+
+The Bayesian framework of `bssm` is based on @vihola-helske-franks. The core methodology relies on Markov chain Monte Carlo (MCMC) approach with adaptive random walk Metropolis updating, using RAM algorithm by [@Vihola2012]. 
+
+Several efficient MCMC variants can be used, such as pseudo-marginal MCMC based on particle filtering, optionally with delayed acceptance, as well as the two-step procedure based on importance sampling type correction introduced in [@vihola-helske-franks].
+
+In this vignette we will first introduce the basic state space modelling framework used in `bssm`, and the relevant algorithms. We then give several illustrations how to use `bssm` in practice, compare different algorithmic variations and finally compare the package to some other existing `R` packages.
+
+
+# State space models with Gaussian dynamics
+
+Denote a sequence of observations $(y_1,\ldots,y_T)$ as $y_{1:T}$, and sequence of latent state variables $(\alpha_1,\ldots, \alpha_T)$ as $\alpha_{1:T}$. Note that in general both the observations and the states can be multivariate. A general state space model consists of two parts: observation level densities $g_t(y_t | \alpha_t)$ and latent state transition densities $\mu_t(\alpha_{t+1} | \alpha_t)$. In context of `bssm`, we focus on univariate observations and small class of densities $g_t$ which we will describe shortly. In all our cases the state transitions are Gaussian:
 $$
 \alpha_{t+1} = T_t \alpha_t + R_t \eta_t,
 $$
-where $\eta_t \sim N(0, I_k)$ and $\alpha_1 \sim N(a_1, P_1)$ independently of each other. For observation level equation, the `bssm` package currently supports basic stochastic volatility model and general exponential family state space models. The observation equation for the stochastic volatility model is defined as
-$$
-y_t = x'_t\beta + \sigma \exp(\alpha_t / 2)\epsilon_t, \quad \epsilon_t \sim N(0, 1),
-$$
-where $x_t$ contains the exogenous covariate values at time $t$, with $\beta$ corresponding to the regression coefficients. For stochastic volatility model the state equation is defined as
-$$
-\alpha_{t+1} = \rho \alpha_t + \sigma_{\eta} \eta_t,
-$$
-with $\alpha_1 \sim  N(0, \sigma^2_{\eta} / (1-\rho^2))$.
+where $\eta_t \sim N(0, I_k)$ and $\alpha_1 \sim N(a_1, P_1)$ independently of each other. For observation level density, the `bssm` package currently supports basic stochastic volatility model and general exponential family state space models. 
 
-For exponential family models, general state transition equation is used, and the observation equation has a general form
+For exponential family models, the observation equation has a general form
 
 $$
-p(y_t | Z_t \alpha_t, x'_t\beta, \phi, u_t).
+p(y_t | Z_t \alpha_t, x'_t\beta, \phi, u_t),
 $$
-Currently, following observational level distributions are supported:
+where $x_t$ contains the exogenous covariate values at time $t$, with $\beta$ corresponding to the regression coefficients. Parameter $\phi$ and the known vector $u_t$ are distribution specific and can be omitted in some cases. Currently, following observational level distributions are supported:
 
 * Gaussian distribution: $p(y_t | Z_t \alpha_t, x'_t\beta) = x'_t \beta + Z_t \alpha_t + H_t \epsilon_t$ with $\epsilon_t \sim N(0, 1)$.
 
@@ -56,21 +59,32 @@ Currently, following observational level distributions are supported:
 
 * Negative binomial distribution: $p(y_t | Z_t \alpha_t, x'_t \beta, \phi, u_t) = \textrm{negative binomial}(\exp(x'_t \beta + Z_t \alpha_t), \phi, u_t)$, where $u_t \exp(x'_t \beta + Z_t \alpha_t)$ is the expected value and $\phi$ is the dispersion parameter ($u_t$ is again exposure term).
 
-The `bssm` package aims to provide easy-to-use and efficient functions for fully Bayesian inference of common time series models such basic structural time series model (BSM) [@Harvey1989] with exogenous covariates, making it straighforward and efficient to make predictions and other inference in a Bayesian setting.
+For stochastic volatility model, there are two possible parameterizations available. In general for we have
+$$
+y_t = x'_t\beta + \sigma \exp(\alpha_t / 2)\epsilon_t, \quad \epsilon_t \sim N(0, 1),
+$$
+and
+$$
+\alpha_{t+1} = \mu + \rho (\alpha_t - \mu) + \sigma_{\eta} \eta_t,
+$$
+with $\alpha_1 \sim  N(\mu, \sigma^2_{\eta} / (1-\rho^2))$. For identifiability purposes we must either choose $\sigma=1$ or $\mu=0$. Although analytically identical, we illustrate on Section X that the parameterization with $\mu$ is often preferable.
 
-The Bayesian framework of `bssm` is based on @vihola-helske-franks. The core methodology reliest on Markov chain Monte Carlo (MCMC) approach with adaptive random walk Metropolis updating, using RAM algorithm by [@Vihola2012]. 
 
-Several efficient MCMC variants can be used, such as pseudo-marginal MCMC based on particle filtering, optionally with delayed acceptance, as well as the two-step procedure based on importance sampling type correction introduced in [@vihola-helske-franks].
+Typically some of the model components such as $\beta$, $T_t$ or $R_t$ depend on unknown parameter vector $\theta$, so $g_t(y_t | \alpha_t)$ and $\mu_t(\alpha_{t+1} | \alpha_t)$ depend implicitly on $\theta$. Given the prior $p(\theta)$, the joint posterior of $\theta$ and $\alpha_{1:T}$ is given as
 
+$$
+p(\alpha_{1:T}, \theta | y_{1:T}) \propto p(\theta) p(\alpha_{1:T}, y_{1:T} | \theta) = p(\theta) p(y_{1:T} | \theta) p(\alpha_{1:T} | y_{1:T}, \theta),
+$$
+where $p(y_{1:T} | \theta)$ is the marginal likelihood, and $p(\alpha_{1:T} | y_{1:T}, \theta)$ is often referred as a smoothing distribution. For Gaussian models, the marginal likelihood and the smoothing distribution has analytical forms, so we are able to evaluate the posterior up to the normalizing constants. This is generally not true for non-Gaussian and non-linear models, so we must resort to more complex methods. We will introduce the basic concepts in a Gaussian case, and then extend the theory to non-Gaussian case.
 
-# MCMC algorithm for Gaussian state space models
+## MCMC for Gaussian state space models
 
-For Gaussian models given the parameters $\theta$, the likelihood of the model can be computed using the well known Kalman filter recursions. The complete adaptive MCMC algorithm of `bssm` for Gaussian models is as follows (modified from [@Vihola2012]).
+For Gaussian models given the parameters $\theta$, the marginal likelihood $p(y_{1:T} | \theta)$ can be computed using the well known Kalman filter recursions, and there are several algorithms for simulating the states $\alpha_{1:T}$ from the smoothing distribution $p(\alpha_{1:T} | y_{1:T})$ (see for example @DK2012). Therefore we can straightforwardly (at least in principle) apply standard MCMC algoritms. In `bssm`, we use an adaptive random walk metropolis algorithm based on RAM [@Vihola2012] where we fix the target acceptance rate beforehand. The complete adaptive MCMC algorithm of `bssm` for Gaussian models is as follows.
 
 Given the target acceptance rate $\alpha^{\ast}$ (e.g. 0.234) and $\gamma \in (0,1]$, at iteration $i$
 
 1. Compute the proposal $\theta'_i = \theta_{i-1} + S_{i-1} u_i$, where $u_i$ is simulated from the standard $d$-dimensional Gaussian distribution and $S_{i-1}$ is a lower diagonal matrix with positive diagonal elements. 
-2. Accept the proposal with probability $\alpha_i := \min\{1, p(y | \theta'_i) / p(y | \theta_{i-1})\}$.
+2. Accept the proposal with probability $\alpha_i := \min\{1, p(\theta')p(y | \theta'_i) / p(y | \theta_{i-1})\}$.
 3. If the proposal $\theta'_i$ is accepted, set $\theta_i = \theta'_i$ and simulate a realization (or multiple realizations) of the states $\alpha$ from $p(\alpha | y, \theta'_i)$ using the simulation smoothing algorithm by [@DK2002]. Otherwise, set $\theta_i = \theta_{i-1}$ and $(\alpha_1,\ldots,\alpha_n)_i = (\alpha_1,\ldots,\alpha_n)_{i-1}$.
 4. Compute (using Cholesky update or downdate algorithm) the Cholesky factor matrix $S_i$ satisfying the equation
 $$

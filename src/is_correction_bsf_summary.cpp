@@ -1,9 +1,12 @@
-#include "bssm.h"
 #include "ngssm.h"
 #include "ng_bsm.h"
 #include "svm.h"
+#include "backtrack.h"
+#include "summary.h"
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
-// [[Rcpp::plugins(openmp)]]
 template <typename T>
 void is_correction_bsf_summary(T mod, const arma::mat& theta,
   const arma::vec& ll_store, const arma::uvec& counts, unsigned int nsim_states,

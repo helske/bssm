@@ -1,12 +1,19 @@
+#include <ramcmc.h>
+
 #include "gssm.h"
+#include "filter.h"
+#include "intervals.h"
+#include "sample.h"
+#include "dmvnorm.h"
+#include "cond_dist.h"
 
 // from List
-gssm::gssm(const List& model, unsigned int seed) :
-  y(as<arma::vec>(model["y"])), Z(as<arma::mat>(model["Z"])),
-  H(as<arma::vec>(model["H"])), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
-  a1(as<arma::vec>(model["a1"])), P1(as<arma::mat>(model["P1"])),
-  xreg(as<arma::mat>(model["xreg"])), beta(as<arma::vec>(model["coefs"])),
-  C(as<arma::mat>(model["C"])),
+gssm::gssm(const Rcpp::List& model, unsigned int seed) :
+  y(Rcpp::as<arma::vec>(model["y"])), Z(Rcpp::as<arma::mat>(model["Z"])),
+  H(Rcpp::as<arma::vec>(model["H"])), T(Rcpp::as<arma::cube>(model["T"])), R(Rcpp::as<arma::cube>(model["R"])),
+  a1(Rcpp::as<arma::vec>(model["a1"])), P1(Rcpp::as<arma::mat>(model["P1"])),
+  xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(Rcpp::as<arma::vec>(model["coefs"])),
+  C(Rcpp::as<arma::mat>(model["C"])),
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
   Ctv(C.n_cols > 1), n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
   RR(arma::cube(m, m, Rtv * (n - 1) + 1)), xbeta(arma::vec(n, arma::fill::zeros)),
@@ -21,13 +28,13 @@ gssm::gssm(const List& model, unsigned int seed) :
 
 // from List
 // with parameter indices
-gssm::gssm(const List& model, arma::uvec Z_ind, arma::uvec H_ind,
+gssm::gssm(const Rcpp::List& model, arma::uvec Z_ind, arma::uvec H_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed) :
-  y(as<arma::vec>(model["y"])), Z(as<arma::mat>(model["Z"])),
-  H(as<arma::vec>(model["H"])), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
-  a1(as<arma::vec>(model["a1"])), P1(as<arma::mat>(model["P1"])),
-  xreg(as<arma::mat>(model["xreg"])), beta(as<arma::vec>(model["coefs"])),
-  C(as<arma::mat>(model["C"])),
+  y(Rcpp::as<arma::vec>(model["y"])), Z(Rcpp::as<arma::mat>(model["Z"])),
+  H(Rcpp::as<arma::vec>(model["H"])), T(Rcpp::as<arma::cube>(model["T"])), R(Rcpp::as<arma::cube>(model["R"])),
+  a1(Rcpp::as<arma::vec>(model["a1"])), P1(Rcpp::as<arma::mat>(model["P1"])),
+  xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(Rcpp::as<arma::vec>(model["coefs"])),
+  C(Rcpp::as<arma::mat>(model["C"])),
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
   Ctv(C.n_cols > 1), 
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
@@ -41,12 +48,12 @@ gssm::gssm(const List& model, arma::uvec Z_ind, arma::uvec H_ind,
   compute_RR();
 }
 // from List for non-gaussian models, ng value is not actually used, cheap trick...
-gssm::gssm(const List& model, unsigned int seed, bool ng) :
-  y(as<arma::vec>(model["y"])), Z(as<arma::mat>(model["Z"])),
-  H(arma::vec(y.n_elem)), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
-  a1(as<arma::vec>(model["a1"])), P1(as<arma::mat>(model["P1"])),
-  xreg(as<arma::mat>(model["xreg"])), beta(as<arma::vec>(model["coefs"])),
-  C(as<arma::mat>(model["C"])),
+gssm::gssm(const Rcpp::List& model, unsigned int seed, bool ng) :
+  y(Rcpp::as<arma::vec>(model["y"])), Z(Rcpp::as<arma::mat>(model["Z"])),
+  H(arma::vec(y.n_elem)), T(Rcpp::as<arma::cube>(model["T"])), R(Rcpp::as<arma::cube>(model["R"])),
+  a1(Rcpp::as<arma::vec>(model["a1"])), P1(Rcpp::as<arma::mat>(model["P1"])),
+  xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(Rcpp::as<arma::vec>(model["coefs"])),
+  C(Rcpp::as<arma::mat>(model["C"])),
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
   Ctv(C.n_cols > 1), 
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
@@ -61,13 +68,13 @@ gssm::gssm(const List& model, unsigned int seed, bool ng) :
 }
 // from List for non-gaussian models, ng value is not actually used, cheap trick...
 // with parameter indices
-gssm::gssm(const List& model, arma::uvec Z_ind,
+gssm::gssm(const Rcpp::List& model, arma::uvec Z_ind,
   arma::uvec T_ind, arma::uvec R_ind, unsigned int seed, bool ng) :
-  y(as<arma::vec>(model["y"])), Z(as<arma::mat>(model["Z"])),
-  H(arma::vec(y.n_elem)), T(as<arma::cube>(model["T"])), R(as<arma::cube>(model["R"])),
-  a1(as<arma::vec>(model["a1"])), P1(as<arma::mat>(model["P1"])),
-  xreg(as<arma::mat>(model["xreg"])), beta(as<arma::vec>(model["coefs"])),
-  C(as<arma::mat>(model["C"])),
+  y(Rcpp::as<arma::vec>(model["y"])), Z(Rcpp::as<arma::mat>(model["Z"])),
+  H(arma::vec(y.n_elem)), T(Rcpp::as<arma::cube>(model["T"])), R(Rcpp::as<arma::cube>(model["R"])),
+  a1(Rcpp::as<arma::vec>(model["a1"])), P1(Rcpp::as<arma::mat>(model["P1"])),
+  xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(Rcpp::as<arma::vec>(model["coefs"])),
+  C(Rcpp::as<arma::mat>(model["C"])),
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
   Ctv(C.n_cols > 1), 
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
@@ -756,7 +763,7 @@ double gssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_pars
   for (unsigned int i = 1; i < n_iter; i++) {
     
     if (i % 16 == 0) {
-      checkUserInterrupt();
+      Rcpp::checkUserInterrupt();
     }
     
     // sample from standard normal distribution
@@ -805,7 +812,7 @@ double gssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_pars
     }
     
     if (!end_ram || i < n_burnin) {
-      adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+      ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
     }
     
   }
@@ -853,7 +860,7 @@ double gssm::mcmc_summary(const arma::uvec& prior_types, const arma::mat& prior_
   return acceptance_rate;
 }
 
-List gssm::predict(const arma::uvec& prior_types, const arma::mat& prior_pars,
+Rcpp::List gssm::predict(const arma::uvec& prior_types, const arma::mat& prior_pars,
   unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin, double gamma,
   double target_acceptance, arma::mat S, unsigned int n_ahead,
   unsigned int interval, arma::vec probs) {
@@ -896,7 +903,7 @@ List gssm::predict(const arma::uvec& prior_types, const arma::mat& prior_pars,
   for (unsigned int i = 1; i < n_iter; i++) {
     
     if (i % 16 == 0) {
-      checkUserInterrupt();
+      Rcpp::checkUserInterrupt();
     }
     
     // sample from standard normal distribution
@@ -944,7 +951,7 @@ List gssm::predict(const arma::uvec& prior_types, const arma::mat& prior_pars,
       j++;
     }
     
-    adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
     
   }
   
@@ -953,8 +960,8 @@ List gssm::predict(const arma::uvec& prior_types, const arma::mat& prior_pars,
   arma::inplace_trans(y_var);
   y_var = sqrt(y_var);
   arma::mat intv = intervals(y_mean, y_var, probs, n_ahead);
-  return List::create(Named("intervals") = intv, Named("y_mean") = y_mean,
-    Named("y_sd") = y_var);
+  return Rcpp::List::create(Rcpp::Named("intervals") = intv, Rcpp::Named("y_mean") = y_mean,
+    Rcpp::Named("y_sd") = y_var);
 }
 
 
@@ -1046,7 +1053,7 @@ arma::mat gssm::predict2(const arma::uvec& prior_types,
       j++;
     }
     
-    adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
     
   }
   
