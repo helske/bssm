@@ -1,16 +1,16 @@
 context("Test MCMC")
 
 
-test_that("MCMC results for gaussian model are correct",{
+test_that("MCMC results for Gaussian model are correct",{
   set.seed(123)
   model_bssm <- bsm(rnorm(10,3), P1 = diag(2,2), sd_slope = 0,
     sd_y = uniform(1, 0, 10), 
     sd_level = uniform(1, 0, 10))
   
-  expect_error(out <- run_mcmc(model_bssm, n_iter = 5, nsim = 5), NA)
+  expect_error(out <- run_mcmc(model_bssm, n_iter = 5), NA)
   
-  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-8], 
-    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-8]), NA)
+  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, seed = 1)[-8], 
+    run_mcmc(model_bssm, n_iter = 10, seed = 1)[-8]), NA)
   
   testvalues <- structure(c(-23.2747514859484, -23.4917121873825, -23.2613263226018
   ), .Dim = c(3L, 1L))
