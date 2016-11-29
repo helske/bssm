@@ -3,7 +3,7 @@
 #' Prints some basic summaries from the MCMC run by  \code{\link{run_mcmc}}.
 #' 
 #' @method print mcmc_output
-#' @importFrom diagis weighted_mean, weighted_var, weighted_se
+#' @importFrom diagis weighted_mean weighted_var weighted_se
 #' @importFrom coda spectrum0.ar
 #' @param x Output from \code{\link{run_mcmc}}.
 #' @param ... Ignored.

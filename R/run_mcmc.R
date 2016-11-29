@@ -55,6 +55,9 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   a <- proc.time()
+  
+  check_targe(target)
+  
   type <- match.arg(type, c("full", "summary"))
   
   inits <- sapply(object$priors, "[[", "init")
@@ -71,7 +74,7 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
         seed, end_adaptive_phase, object$Z_ind,
         object$H_ind, object$T_ind, object$R_ind)
       if (sim_states) {
-      colnames(out$alpha) <- names(object$a1)
+        colnames(out$alpha) <- names(object$a1)
       }
       out
     },
@@ -105,6 +108,8 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   a <- proc.time()
+  check_targe(target)
+  
   type <- match.arg(type, c("full", "summary"))
   
   if (missing(S)) {
@@ -118,9 +123,9 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
       out <- bsm_run_mcmc(object, priors$prior_type, priors$params, n_iter,
         sim_states, n_burnin, n_thin, gamma, target_acceptance, S, seed, 
         FALSE, end_adaptive_phase)
-   
-       if (sim_states) {
-      colnames(out$alpha) <- names(object$a1)
+      
+      if (sim_states) {
+        colnames(out$alpha) <- names(object$a1)
       }
       out
     },
@@ -199,7 +204,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   set.seed(seed) #needed for reproducible parallel thread seeding
   
   a <- proc.time()
-  
+  check_targe(target)
   nb <- object$distribution == "negative binomial"
   
   type <- match.arg(type, c("full", "summary"))
@@ -276,9 +281,9 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
     out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
     out$jump_chain <- FALSE
   } else {
-      out$jump_chain <- TRUE
-  out$n_iter <- n_iter
-  out$n_burnin <- n_burnin
+    out$jump_chain <- TRUE
+    out$n_iter <- n_iter
+    out$n_burnin <- n_burnin
   }
   out$call <- match.call()
   out$seed <- seed
@@ -301,6 +306,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   set.seed(seed) #needed for reproducible parallel thread seeding
   
   a <- proc.time()
+  check_targe(target)
   nb <- FALSE
   
   type <- match.arg(type, c("full", "summary"))
@@ -372,13 +378,13 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-
     c(c("sd_level", "sd_slope", "sd_seasonal", "sd_noise")[names_ind],
       colnames(object$xreg), if (nb) "nb_dispersion")
-   if(method == "pm") {
+  if(method == "pm") {
     out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
     out$jump_chain <- FALSE
   } else {
-      out$jump_chain <- TRUE
-  out$n_iter <- n_iter
-  out$n_burnin <- n_burnin
+    out$jump_chain <- TRUE
+    out$n_iter <- n_iter
+    out$n_burnin <- n_burnin
   }
   out$call <- match.call()
   out$seed <- seed
@@ -411,7 +417,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   set.seed(seed) #needed for reproducible parallel thread seeding
   
   a <- proc.time()
-  
+  check_targe(target)
   type <- match.arg(type, c("full", "summary"))
   method <- match.arg(method, c("pm", "isc"))
   simulation_method <- match.arg(simulation_method, c("spdk", "bootstrap", "psi"))
@@ -441,7 +447,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   
   
   priors <- combine_priors(object$priors)
-
+  
   out <-  switch(type,
     full = {
       if (method == "pm"){
@@ -495,13 +501,13 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
     out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
     out$jump_chain <- FALSE
   } else {
-      out$jump_chain <- TRUE
-  out$n_iter <- n_iter
-  out$n_burnin <- n_burnin
+    out$jump_chain <- TRUE
+    out$n_iter <- n_iter
+    out$n_burnin <- n_burnin
   }
   out$call <- match.call()
   out$seed <- seed
-
+  
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   out
