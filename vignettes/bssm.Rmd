@@ -95,7 +95,7 @@ If the interest is in the posterior means and variances of the states, we can re
 
 # Non-Gaussian models
 
-The observational densities of our non-Gaussian/non-linear models are all twice differentiable, so we can straightforwardly use the Laplace approximation based on [@DK2000]. This gives us an approximating Gaussian model which has the same mode of $p(\alpha | y)$ as the original model. Often this approximating Gaussian model works well as such, and thus we can use it in MCMC scheme directly, which results in an approximate Bayesian inference. We can also use the approximating model together with importance sampling which produces exact Bayesian inference on $p(\alpha, \theta | y)$. We can factor the likelihood of the non-Gaussian model as [@DK2012]
+The observational densities of our non-Gaussian/non-linear models are all twice differentiable, so we can straightforwardly use the Laplace approximation based on [@DK2000]. This gives us an approximating Gaussian model which has the same mode of $p(\alpha | y)$ as the original model. Often this approximating Gaussian model works well as such, and thus we can use it in MCMC scheme directly, which results in an approximate Bayesian inference. We can also use the approximating model together with importance sampling or particle filtering, which produces exact Bayesian inference on $p(\alpha, \theta | y)$. We can factor the likelihood of the non-Gaussian model as [@DK2012]
 $$
 \begin{aligned}
 p(y | \theta) &= \int g(\alpha, y | \theta)\textrm{d}\alpha \\
@@ -111,8 +111,8 @@ $$
 &\approx \log g(y | \theta) + \log \hat w  + \log \frac{1}{N}\sum_{j=1}^N w_j^{\ast},
 \end{aligned}
 $$
-where $\hat \alpha$ is the conditional mode estimate obtained from the approximating Gaussian model. For approximating inference without the importance sampling we simply omit the term $\log \frac{1}{N}\sum_{j=1}^N w_i^{\ast}$.
-In principle, using the exact Bayesian inference we should simulate multiple realizations of the states $\alpha$ in each iteration of MCMC in order to compute $\log \frac{1}{N}\sum_{j=1}^N w_j^{\ast}$. Fortunately, we can use so called delayed acceptance approach [@Christen2005; @Banterle2015] which speeds up the computation considerably:
+where $\hat \alpha$ is the conditional mode estimate obtained from the approximating Gaussian model. For approximating inference, we simply omit the term $\log \frac{1}{N}\sum_{j=1}^N w_i^{\ast}$.
+In principle, when using the exact Bayesian inference we should simulate multiple realizations of the states $\alpha$ in each iteration of MCMC in order to compute $\log \frac{1}{N}\sum_{j=1}^N w_j^{\ast}$. Fortunately, we can use so called delayed acceptance approach [@Christen2005; @Banterle2015] which speeds up the computation considerably:
 
 1. Make initial acceptance of the given proposal $\theta'_i$ with probability 
 $\min\left\{1, \frac{g(y | \theta'_i) \hat w_i }{g(y | \theta_{i-1}) \hat w_{i-1}}\right\}$.
@@ -121,7 +121,7 @@ $\min\left\{1, \frac{g(y | \theta'_i) \hat w_i }{g(y | \theta_{i-1}) \hat w_{i-1
 
 ## Particle filtering
 
-In addition to simulation smoother based importance sampling inference, `bssm` supports particle filtering for computing the log-likelihood estimates and simulating states. Two types of filters are available, classical bootstrap filter, and $\psi$-auxiliary filter based on @guarniero-johansen-lee, where we use same Gaussian approximation as in simulation smoother based importance sampling.
+In addition to simulation smoother based importance sampling inference, `bssm` supports particle filtering for computing the log-likelihood estimates and simulating states. Two types of filters are available, classical bootstrap filter, and $\psi$-filter based on @guarniero-johansen-lee, where we use same Gaussian approximation as in simulation smoother based importance sampling.
 
 ## Importance-sampling type correction
 

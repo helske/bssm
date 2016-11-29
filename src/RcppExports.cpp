@@ -6,55 +6,6 @@
 
 using namespace Rcpp;
 
-// dmvnorm2
-arma::vec dmvnorm2(const arma::mat& x, const arma::mat& mean, arma::mat sigma, bool lwr, bool logd, const arma::mat& A);
-RcppExport SEXP bssm_dmvnorm2(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP lwrSEXP, SEXP logdSEXP, SEXP ASEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type mean(meanSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< bool >::type lwr(lwrSEXP);
-    Rcpp::traits::input_parameter< bool >::type logd(logdSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
-    rcpp_result_gen = Rcpp::wrap(dmvnorm2(x, mean, sigma, lwr, logd, A));
-    return rcpp_result_gen;
-END_RCPP
-}
-// uv_filter
-double uv_filter(const double y, const arma::vec& Z, const double HH, const arma::mat& T, const arma::mat& RR, const arma::vec& C, arma::vec& at, arma::mat& Pt, const double zero_tol);
-RcppExport SEXP bssm_uv_filter(SEXP ySEXP, SEXP ZSEXP, SEXP HHSEXP, SEXP TSEXP, SEXP RRSEXP, SEXP CSEXP, SEXP atSEXP, SEXP PtSEXP, SEXP zero_tolSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const double >::type y(ySEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type Z(ZSEXP);
-    Rcpp::traits::input_parameter< const double >::type HH(HHSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type T(TSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type RR(RRSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type C(CSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type at(atSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type Pt(PtSEXP);
-    Rcpp::traits::input_parameter< const double >::type zero_tol(zero_tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(uv_filter(y, Z, HH, T, RR, C, at, Pt, zero_tol));
-    return rcpp_result_gen;
-END_RCPP
-}
-// intervals
-arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
-RcppExport SEXP bssm_intervals(SEXP meansSEXP, SEXP sdsSEXP, SEXP probsSEXP, SEXP n_aheadSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type means(meansSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type sds(sdsSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type n_ahead(n_aheadSEXP);
-    rcpp_result_gen = Rcpp::wrap(intervals(means, sds, probs, n_ahead));
-    return rcpp_result_gen;
-END_RCPP
-}
 // bsm_loglik
 double bsm_loglik(const Rcpp::List& model_);
 RcppExport SEXP bssm_bsm_loglik(SEXP model_SEXP) {
@@ -1166,6 +1117,55 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type nsim_store(nsim_storeSEXP);
     rcpp_result_gen = Rcpp::wrap(svm_backward_simulate(model_, nsim_states, seed, nsim_store));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dmvnorm2
+arma::vec dmvnorm2(const arma::mat& x, const arma::mat& mean, arma::mat sigma, bool lwr, bool logd, const arma::mat& A);
+RcppExport SEXP bssm_dmvnorm2(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP lwrSEXP, SEXP logdSEXP, SEXP ASEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< bool >::type lwr(lwrSEXP);
+    Rcpp::traits::input_parameter< bool >::type logd(logdSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    rcpp_result_gen = Rcpp::wrap(dmvnorm2(x, mean, sigma, lwr, logd, A));
+    return rcpp_result_gen;
+END_RCPP
+}
+// uv_filter
+double uv_filter(const double y, const arma::vec& Z, const double HH, const arma::mat& T, const arma::mat& RR, const arma::vec& C, arma::vec& at, arma::mat& Pt, const double zero_tol);
+RcppExport SEXP bssm_uv_filter(SEXP ySEXP, SEXP ZSEXP, SEXP HHSEXP, SEXP TSEXP, SEXP RRSEXP, SEXP CSEXP, SEXP atSEXP, SEXP PtSEXP, SEXP zero_tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const double >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< const double >::type HH(HHSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type T(TSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type RR(RRSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type C(CSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type at(atSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type Pt(PtSEXP);
+    Rcpp::traits::input_parameter< const double >::type zero_tol(zero_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(uv_filter(y, Z, HH, T, RR, C, at, Pt, zero_tol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// intervals
+arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
+RcppExport SEXP bssm_intervals(SEXP meansSEXP, SEXP sdsSEXP, SEXP probsSEXP, SEXP n_aheadSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type means(meansSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type sds(sdsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_ahead(n_aheadSEXP);
+    rcpp_result_gen = Rcpp::wrap(intervals(means, sds, probs, n_ahead));
     return rcpp_result_gen;
 END_RCPP
 }

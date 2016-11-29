@@ -812,7 +812,7 @@ double gssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_pars
     }
     
     if (!end_ram || i < n_burnin) {
-      ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+      ramcmc::adapt_L(S, u, accept_prob, target_acceptance, i, gamma);
     }
     
   }
@@ -951,7 +951,7 @@ Rcpp::List gssm::predict(const arma::uvec& prior_types, const arma::mat& prior_p
       j++;
     }
     
-    ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    ramcmc::adapt_L(S, u, accept_prob, target_acceptance, i, gamma);
     
   }
   
@@ -1053,7 +1053,7 @@ arma::mat gssm::predict2(const arma::uvec& prior_types,
       j++;
     }
     
-    ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    ramcmc::adapt_L(S, u, accept_prob, target_acceptance, i, gamma);
     
   }
   

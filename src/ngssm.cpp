@@ -498,7 +498,7 @@ arma::mat ngssm::predict2(const arma::uvec& prior_types,
       j++;
     }
     
-    ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    ramcmc::adapt_L(S, u, accept_prob, target_acceptance, i, gamma);
     
   }
   
@@ -809,7 +809,7 @@ double ngssm::mcmc_approx(const arma::uvec& prior_types, const arma::mat& prior_
         theta = theta_prop;
       }
     } else accept_prob = 0.0;
-    ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+    ramcmc::adapt_L(S, u, accept_prob, target_acceptance, i, gamma);
     
   }
   
@@ -893,7 +893,7 @@ double ngssm::mcmc_approx(const arma::uvec& prior_types, const arma::mat& prior_
     }
     
     if (!end_ram) {
-      ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+      ramcmc::adapt_L(S, u, accept_prob, target_acceptance, i, gamma);
     }
     
   }
@@ -1060,7 +1060,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
     }
     
     if (!end_ram || i < n_burnin) {
-      ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+      ramcmc::adapt_L(S, u, accept_prob, target_acceptance, i, gamma);
     }
     
   }
@@ -1196,9 +1196,9 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
       } else {
         // simulate states
         arma::cube alpha_prop(m, n, nsim_states);
-        double ll_prop;
+        double ll_prop = 0.0;
         double pp = 0.0;
-        double ll_init_prop;
+        double ll_init_prop = 0.0;
         if(bf) {
           
           ll_prop = particle_filter(nsim_states, alpha_prop, w, omega);
@@ -1257,7 +1257,7 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
     }
     
     if (!end_ram || i < n_burnin) {
-      ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+      ramcmc::adapt_L(S, u, accept_prob, target_acceptance, i, gamma);
     }
     
   }
@@ -1436,7 +1436,7 @@ double ngssm::run_mcmc_summary(const arma::uvec& prior_types, const arma::mat& p
     }
     
     if (!end_ram || i < n_burnin) {
-      ramcmc::adjust_S(S, u, accept_prob, target_acceptance, i, gamma);
+      ramcmc::adapt_L(S, u, accept_prob, target_acceptance, i, gamma);
     }
     
   }
