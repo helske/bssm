@@ -56,7 +56,7 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   
   a <- proc.time()
   
-  check_target(target)
+  check_target(target_acceptance)
   
   type <- match.arg(type, c("full", "summary"))
   
@@ -108,7 +108,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   a <- proc.time()
-  check_target(target)
+  check_target(target_acceptance)
   
   type <- match.arg(type, c("full", "summary"))
   
@@ -204,7 +204,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   set.seed(seed) #needed for reproducible parallel thread seeding
   
   a <- proc.time()
-  check_target(target)
+  check_target(target_acceptance)
   nb <- object$distribution == "negative binomial"
   
   type <- match.arg(type, c("full", "summary"))
@@ -306,7 +306,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   set.seed(seed) #needed for reproducible parallel thread seeding
   
   a <- proc.time()
-  check_target(target)
+  check_target(target_acceptance)
   nb <- FALSE
   
   type <- match.arg(type, c("full", "summary"))
@@ -417,7 +417,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   set.seed(seed) #needed for reproducible parallel thread seeding
   
   a <- proc.time()
-  check_target(target)
+  check_target(target_acceptance)
   type <- match.arg(type, c("full", "summary"))
   method <- match.arg(method, c("pm", "isc"))
   simulation_method <- match.arg(simulation_method, c("spdk", "bootstrap", "psi"))
