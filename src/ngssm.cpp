@@ -57,7 +57,7 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
   arma::mat Kt(m, n, arma::fill::zeros);
   arma::vec Ft(n, arma::fill::zeros);
   // log[p(signal)] + log[p(y | signal)]
- 
+  
   double ll = logp_signal(signal, Kt, Ft) + logp_y(signal);
   unsigned int i = 0;
   if(max_iter == 0) {
@@ -66,7 +66,7 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
     while(i < max_iter) {
       // compute new guess of signal
       arma::vec signal_new = approx_iter(signal);
-   
+      
       //log[p(signal)] + log[p(y | signal)]
       double ll_new = precomp_logp_signal(signal_new, Kt, Ft) +
         logp_y(signal_new);
@@ -770,8 +770,8 @@ double ngssm::mcmc_approx(const arma::uvec& prior_types, const arma::mat& prior_
   std::uniform_real_distribution<> unif(0.0, 1.0);
   for(unsigned int i = 0; i < n_burnin; i++) {
     
-     if (i % 16 == 0) {
-     Rcpp::checkUserInterrupt();
+    if (i % 16 == 0) {
+      Rcpp::checkUserInterrupt();
     }
     
     // sample from standard normal distribution
@@ -962,7 +962,7 @@ double ngssm::run_mcmc(const arma::uvec& prior_types, const arma::mat& prior_par
   for (unsigned int i = 1; i < n_iter; i++) {
     
     if (i % 16 == 0) {
-     Rcpp::checkUserInterrupt();
+      Rcpp::checkUserInterrupt();
     }
     
     // sample from standard normal distribution
@@ -1265,9 +1265,6 @@ double ngssm::run_mcmc_pf(const arma::uvec& prior_types, const arma::mat& prior_
   return acceptance_rate / (n_iter - n_burnin);
 }
 
-
-
-
 double ngssm::run_mcmc_summary(const arma::uvec& prior_types, const arma::mat& prior_pars,
   unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin,
   unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
@@ -1301,22 +1298,11 @@ double ngssm::run_mcmc_summary(const arma::uvec& prior_types, const arma::mat& p
   
   unsigned int j = 0;
   
-  arma::cube Valpha(m, m, n, arma::fill::zeros);
+  arma::cube Vt2(m, m, n, arma::fill::zeros);
   arma::cube Vmu2(1, 1, n, arma::fill::zeros);
   
   if (n_burnin == 0) {
-    arma::mat alphahat_i(m, n);
-    arma::cube Vt_i(m, m, n);
-    running_weighted_summary(alpha, alphahat_i, Vt_i, weights);
-    Vt += (Vt_i - Vt) / (j + 1);
-    running_summary(alphahat_i, alphahat, Valpha, j);
-    
-    arma::mat mu_i(1, n);
-    arma::cube Vmu_i(1, 1, n);
-    running_weighted_summary(invlink(alpha), mu_i, Vmu_i, weights);
-    Vmu += (Vmu_i - Vmu) / (j + 1);
-    running_summary(mu_i, mu, Vmu2, j);
-    
+    summary_iter(j, alpha, weights, alphahat, Vt, Vt2, mu, Vmu, Vmu2);
     theta_store.col(0) = theta;
     posterior_store(0) = ll + ll_w + prior;
     acceptance_rate++;
@@ -1371,8 +1357,8 @@ double ngssm::run_mcmc_summary(const arma::uvec& prior_types, const arma::mat& p
           if (unif(engine) < accept_prob) {
             // simulate states
             alpha_prop = sim_smoother(nsim_states, distribution != 0);
-            arma::vec weights = exp(importance_weights(alpha_prop) - ll_approx_u);
-            ll_w_prop = log(sum(weights) / nsim_states);
+            arma::vec weights_prop = exp(importance_weights(alpha_prop) - ll_approx_u);
+            ll_w_prop = log(sum(weights_prop) / nsim_states);
             // delayed acceptance ratio
             double pp = 0;
             if(std::isfinite(ll_w_prop)) {
@@ -1387,14 +1373,16 @@ double ngssm::run_mcmc_summary(const arma::uvec& prior_types, const arma::mat& p
               ll_w = ll_w_prop;
               theta = theta_prop;
               alpha = alpha_prop;
+              weights = weights_prop;
             }
           }
         } else {
           // if nsim_states = 1, target hat_p(theta, alpha | y)
           alpha_prop = sim_smoother(nsim_states, distribution != 0);
+          arma::vec weights_prop = weights;
           if (nsim_states > 1) {
-            weights = exp(importance_weights(alpha_prop) - ll_approx_u);
-            ll_w_prop = log(sum(weights) / nsim_states);
+            weights_prop = exp(importance_weights(alpha_prop) - ll_approx_u);
+            ll_w_prop = log(sum(weights_prop) / nsim_states);
             
           }
           double pp = std::min(1.0, exp(ll_prop - ll + ll_w_prop - ll_w +
@@ -1409,7 +1397,7 @@ double ngssm::run_mcmc_summary(const arma::uvec& prior_types, const arma::mat& p
             prior = prior_prop;
             theta = theta_prop;
             alpha = alpha_prop;
-            
+            weights = weights_prop;
           }
         }
       }
@@ -1418,17 +1406,7 @@ double ngssm::run_mcmc_summary(const arma::uvec& prior_types, const arma::mat& p
     //store
     if ((i >= n_burnin) && (i % n_thin == 0) && j < n_samples) {
       update_model(theta);
-      arma::mat alphahat_i(m, n);
-      arma::cube Vt_i(m, m, n);
-      running_weighted_summary(alpha, alphahat_i, Vt_i, weights);
-      Vt += (Vt_i - Vt) / (j + 1);
-      running_summary(alphahat_i, alphahat, Valpha, j);
-      
-      arma::mat mu_i(1, n);
-      arma::cube Vmu_i(1, 1, n);
-      running_weighted_summary(invlink(alpha), mu_i, Vmu_i, weights);
-      Vmu += (Vmu_i - Vmu) / (j + 1);
-      running_summary(mu_i, mu, Vmu2, j);
+      summary_iter(j, alpha, weights, alphahat, Vt, Vt2, mu, Vmu, Vmu2);
       
       posterior_store(j) = ll + ll_w + prior;
       theta_store.col(j) = theta;
@@ -1442,10 +1420,205 @@ double ngssm::run_mcmc_summary(const arma::uvec& prior_types, const arma::mat& p
   }
   
   
-  Vt = Vt + Valpha;
+  Vt = Vt + Vt2;
   Vmu = Vmu + Vmu2;
   return acceptance_rate / (n_iter - n_burnin);
   
+}
+
+
+double ngssm::run_mcmc_summary_pf(const arma::uvec& prior_types, const arma::mat& prior_pars,
+  unsigned int n_iter, unsigned int nsim_states, unsigned int n_burnin,
+  unsigned int n_thin, double gamma, double target_acceptance, arma::mat& S,
+  const arma::vec init_signal, bool end_ram, bool adapt_approx, bool da,
+  arma::mat& theta_store, arma::vec& posterior_store,
+  arma::mat& alphahat, arma::cube& Vt, arma::mat& mu, arma::cube& Vmu, bool bf) {
+  
+  unsigned int npar = prior_types.n_elem;
+  unsigned int n_samples = floor((n_iter - n_burnin) / n_thin);
+  double acceptance_rate = 0.0;
+  
+  arma::vec theta = get_theta();
+  double prior = prior_pdf(theta, prior_types, prior_pars);
+  
+  
+  double ll_g = 0.0;
+  double ll_approx = 0.0;
+  arma::vec ll_approx_u(n, arma::fill::zeros);
+  if(da || !bf) {
+    arma::vec signal = init_signal;
+    ll_approx = approx(signal, max_iter, conv_tol); // log[p(y_ng|alphahat)/g(y|alphahat)]
+    ll_g = log_likelihood(distribution != 0);
+    ll_approx_u = scaling_factor_vec(signal);
+  }
+  double ll_init = ll_g + ll_approx;
+  arma::cube alpha(m, n, nsim_states);
+  arma::mat w(nsim_states, n);
+  arma::umat omega(nsim_states, n - 1);
+  double ll;
+  if (bf){
+    ll = particle_filter(nsim_states, alpha, w, omega);
+  } else {
+    ll = psi_filter(nsim_states, alpha, w, omega, ll_init, ll_approx_u);
+  }
+  backtrack_pf(alpha, omega);
+  if (!std::isfinite(ll)) {
+    Rcpp::stop("Non-finite log-likelihood from initial values. ");
+  }
+  
+  unsigned int j = 0;
+  arma::cube Vt2(m, m, n, arma::fill::zeros);
+  arma::cube Vmu2(1, 1, n, arma::fill::zeros);
+  arma::vec weights = w.col(n - 1);
+  if (n_burnin == 0) {
+    
+    summary_iter(j, alpha, weights, alphahat, Vt, Vt2, mu, Vmu, Vmu2);
+    theta_store.col(0) = theta;
+    posterior_store(0) = ll + prior;
+    acceptance_rate++;
+    j++;
+  }
+  
+  double accept_prob = 0.0;
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+  for (unsigned int i = 1; i < n_iter; i++) {
+    
+    if (i % 16 == 0) {
+      Rcpp::checkUserInterrupt();
+    }
+    
+    // sample from standard normal distribution
+    arma::vec u(npar);
+    for(unsigned int ii = 0; ii < npar; ii++) {
+      u(ii) = normal(engine);
+    }
+    // propose new theta
+    arma::vec theta_prop = theta + S * u;
+    // compute prior
+    double prior_prop = prior_pdf(theta_prop, prior_types, prior_pars);
+    
+    if (prior_prop > -arma::datum::inf) {
+      // update parameters
+      update_model(theta_prop);
+      
+      if(da){
+        arma::vec signal = init_signal;
+        if (adapt_approx) {
+          ll_approx = approx(signal, max_iter, conv_tol);
+        }
+        double ll_init_prop = ll_approx + log_likelihood(distribution != 0);
+        //compute the acceptance probability
+        // use explicit min(...) as we need this value later
+        
+        if(!std::isfinite(ll_init_prop)) {
+          accept_prob = 0.0;
+        } else {
+          double q = proposal(theta, theta_prop);
+          //used in RAM and DA
+          accept_prob = std::min(1.0, exp(ll_init_prop + prior_prop - ll_init  - prior + q));
+          // initial acceptance based on hat_p(theta, alpha | y)
+          if (unif(engine) < accept_prob) {
+            // simulate states
+            arma::cube alpha_prop(m, n, nsim_states);
+            double ll_prop;
+            if(bf) {
+              ll_prop = particle_filter(nsim_states, alpha_prop, w, omega);
+            } else {
+              if(adapt_approx) {
+                ll_approx_u = scaling_factor_vec(signal);
+              }
+              ll_prop = psi_filter(nsim_states, alpha_prop, w, omega, ll_init_prop, ll_approx_u);
+            }
+            // delayed acceptance ratio
+            double pp = 0.0;
+            if(std::isfinite(ll_prop)) {
+              pp = std::min(1.0, exp(ll_prop + ll_init - ll - ll_init_prop));
+            }
+            if (unif(engine) < pp) {
+              if (i >= n_burnin) {
+                acceptance_rate++;
+              }
+              ll = ll_prop;
+              ll_init = ll_init_prop;
+              prior = prior_prop;
+              theta = theta_prop;
+              weights = w.col(n-1);
+              alpha = alpha_prop;
+              backtrack_pf(alpha, omega);
+            }
+          }
+        }
+      } else {
+        // simulate states
+        arma::cube alpha_prop(m, n, nsim_states);
+        double ll_prop = 0.0;
+        double pp = 0.0;
+        double ll_init_prop = 0.0;
+        if(bf) {
+          
+          ll_prop = particle_filter(nsim_states, alpha_prop, w, omega);
+          if(std::isfinite(ll_prop)) {
+            double q = proposal(theta, theta_prop);
+            accept_prob = std::min(1.0, exp(ll_prop - ll + prior_prop - prior + q));
+          } else accept_prob = 0.0;
+          pp = accept_prob;
+        } else {
+          
+          arma::vec signal = init_signal;
+          if (adapt_approx) {
+            ll_approx = approx(signal, max_iter, conv_tol);
+            
+          }
+          ll_init_prop = ll_approx + log_likelihood(distribution != 0);
+          if(std::isfinite(ll_init_prop)) {
+            double q = proposal(theta, theta_prop);
+            //accept_prob used in RAM
+            if(adapt_approx){
+              ll_approx_u = scaling_factor_vec(signal);
+            }
+            accept_prob = std::min(1.0, exp(ll_init_prop - ll_init + prior_prop - prior + q));
+            ll_prop = psi_filter(nsim_states, alpha_prop, w, omega, ll_init_prop, ll_approx_u);
+            pp = std::min(1.0, exp(ll_prop - ll + prior_prop - prior + q));
+          } else {
+            accept_prob = 0.0;
+            pp = 0.0;
+          }
+          
+        }
+        
+        if (unif(engine) < pp) {
+          if (i >= n_burnin) {
+            acceptance_rate++;
+          }
+          ll = ll_prop;
+          ll_init = ll_init_prop;
+          prior = prior_prop;
+          theta = theta_prop;
+          weights = w.col(n-1);
+          alpha = alpha_prop;
+          backtrack_pf(alpha, omega);
+        }
+      }
+    } else accept_prob = 0.0;
+    
+    //store
+    if ((i >= n_burnin) && (i % n_thin == 0) && j < n_samples) {
+      
+      summary_iter(j, alpha, weights, alphahat, Vt, Vt2, mu, Vmu, Vmu2);
+      posterior_store(j) = ll  + prior;
+      theta_store.col(j) = theta;
+      j++;
+    }
+    
+    if (!end_ram || i < n_burnin) {
+      ramcmc::adapt_S(S, u, accept_prob, target_acceptance, i, gamma);
+    }
+    
+  }
+  Vt = Vt + Vt2;
+  Vmu = Vmu + Vmu2;
+  return acceptance_rate / (n_iter - n_burnin);
 }
 
 arma::cube ngssm::invlink(const arma::cube& alpha) {
@@ -1518,6 +1691,22 @@ arma::cube ngssm::invlink(const arma::cube& alpha) {
 }
 
 
+void ngssm::summary_iter(const unsigned int j, const arma::cube& alpha, const arma::vec& weights, 
+  arma::mat& alphahat, arma::cube& Vt, arma::cube& Valpha, arma::mat& mu, 
+  arma::cube& Vmu, arma::cube& Vmu2) {
+  
+  arma::mat alphahat_i(m, n);
+  arma::cube Vt_i(m, m, n);
+  running_weighted_summary(alpha, alphahat_i, Vt_i, weights);
+  Vt += (Vt_i - Vt) / (j + 1);
+  running_summary(alphahat_i, alphahat, Valpha, j);
+  
+  arma::mat mu_i(1, n);
+  arma::cube Vmu_i(1, 1, n);
+  running_weighted_summary(invlink(alpha), mu_i, Vmu_i, weights);
+  Vmu += (Vmu_i - Vmu) / (j + 1);
+  running_summary(mu_i, mu, Vmu2, j);
+}
 
 //compute p(y_t| xbeta_t, Z_t alpha_t)
 arma::vec ngssm::pyt(const unsigned int t, const arma::cube& alphasim) {

@@ -223,10 +223,18 @@ Rcpp::List ng_bsm_run_mcmc_summary(const Rcpp::List& model_,
   arma::mat mu(1, model.n, arma::fill::zeros);
   arma::cube Vmu(1, 1, model.n, arma::fill::zeros);
   
-  double acceptance_rate = model.run_mcmc_summary(prior_types, prior_pars, n_iter,
-    nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal,
-    end_ram, adapt_approx, da, theta_store, posterior_store, alphahat,
-    Vt, mu, Vmu);
+  double acceptance_rate;
+  if(sim_type > 1){
+    acceptance_rate = model.run_mcmc_summary_pf(prior_types, prior_pars, n_iter,
+      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal,
+      end_ram, adapt_approx, da, theta_store, posterior_store, alphahat,
+      Vt, mu, Vmu, sim_type == 2);
+  } else {
+    acceptance_rate = model.run_mcmc_summary(prior_types, prior_pars, n_iter,
+      nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, init_signal,
+      end_ram, adapt_approx, da, theta_store, posterior_store, alphahat,
+      Vt, mu, Vmu);
+  }
   
   arma::inplace_trans(mu);
   arma::inplace_trans(alphahat);
@@ -273,8 +281,22 @@ Rcpp::List ng_bsm_run_mcmc_summary_is(const Rcpp::List& model_,
   arma::mat muhat(1, model.n);
   arma::cube Vmu(1, 1, model.n);
   
-  is_correction_summary(model, theta_store, y_store, H_store, arma::sum(ll_approx_u_store, 0).t(),
-    counts, nsim_states, n_threads, weights_store, alphahat, Vt, muhat, Vmu, const_m, seeds);
+  if(sim_type == 1) {
+    
+    is_correction_summary(model, theta_store, y_store, H_store, arma::sum(ll_approx_u_store, 0).t(),
+      counts, nsim_states, n_threads, weights_store, alphahat, Vt, muhat, Vmu, const_m, seeds);
+  } else {
+    if (sim_type == 2) {
+      is_correction_bsf_summary(model, theta_store, ll_store, counts, nsim_states,
+        n_threads, weights_store, alphahat, Vt, muhat, Vmu, const_m, seeds);
+    } else {
+      is_correction_psif_summary(model, theta_store, y_store, H_store, ll_approx_u_store,
+        counts, nsim_states, n_threads, weights_store, alphahat, Vt, muhat, 
+        Vmu, const_m, seeds);
+      
+    }
+  }
+  prior_store += ll_store + log(weights_store);
   
   arma::inplace_trans(muhat);
   arma::inplace_trans(alphahat);

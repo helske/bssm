@@ -49,6 +49,13 @@ public:
     unsigned int, unsigned int, unsigned int, double, double, arma::mat&, const arma::vec,
     bool, bool, bool, arma::mat&, arma::vec&, arma::mat&, arma::cube&, arma::mat&, arma::cube&);
   
+  double run_mcmc_summary_pf(const arma::uvec&, const arma::mat&,
+  unsigned int, unsigned int, unsigned int,
+  unsigned int, double, double, arma::mat&,
+  const arma::vec, bool, bool, bool,
+  arma::mat&, arma::vec&,
+  arma::mat&, arma::cube&, arma::mat&, arma::cube&, bool); 
+    
   double mcmc_approx(const arma::uvec&, const arma::mat&,
     unsigned int, unsigned int, unsigned int,
     unsigned int, double, double, arma::mat&,
@@ -57,6 +64,9 @@ public:
   
   
   arma::cube invlink(const arma::cube&);
+  
+  void summary_iter(const unsigned int, const arma::cube&, const arma::vec&, 
+    arma::mat&, arma::cube&, arma::cube&, arma::mat&, arma::cube&, arma::cube&);
   
   arma::vec pyt(const unsigned int, const arma::cube&);
   arma::vec pyt(const unsigned int, const arma::mat&);

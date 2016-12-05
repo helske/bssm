@@ -351,9 +351,6 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
       out
     },
     summary = {
-      if(simulation_method != "isc") {
-        stop("summary correction with particle filter is not yet implemented.")
-      }
       if (method == "pm"){
         out <- ng_bsm_run_mcmc_summary(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
