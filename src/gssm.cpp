@@ -1162,7 +1162,7 @@ void gssm::backtrack_pf2(const arma::cube& alpha, arma::mat& w, const arma::umat
     arma::vec wnorm = w.col(t-1) / arma::sum(w.col(t-1));
     for (unsigned int i = 0; i < nsim; i++) {
       for (unsigned int j = 0; j < nsim; j++) {
-        B(j, i) = wnorm(j) * dmvnorm1(alpha.slice(i).col(t),
+        B(j, i) = wnorm(j) * dmvnorm(alpha.slice(i).col(t),
           C.col((t-1) * Ctv) + T.slice((t-1) * Ttv) * alpha.slice(j).col(t - 1),
           R.slice((t-1) * Rtv), true, false);
       }
@@ -1185,7 +1185,7 @@ arma::mat gssm::backward_simulate(arma::cube& alpha, arma::mat& w, arma::umat& i
     arma::vec b(nsim);
     arma::vec wnorm = w.col(t-1) / arma::sum(w.col(t-1));
     for (unsigned int j = 0; j < nsim; j++) {
-      b(j) = wnorm(j) * dmvnorm1(alpha.slice(I(t)).col(t),
+      b(j) = wnorm(j) * dmvnorm(alpha.slice(I(t)).col(t),
         C.col((t-1) * Ctv) + T.slice((t-1) * Ttv) * alpha.slice(j).col(t - 1),
         R.slice((t-1) * Rtv), true, false);
     }

@@ -1,27 +1,29 @@
 #include <RcppArmadillo.h>
 
-void conditional_dist_helper(arma::cube& V, arma::cube& C) {
+// [[Rcpp::export]]
+void conditional_dist_helper(arma::cube& Vt, arma::cube& Ct) {
   
-  for (int t = V.n_slices - 1; t > 0; t--) {
-    arma::mat tmp(V.n_cols, V.n_cols, arma::fill::zeros);
-    if(any(V.slice(t - 1).diag() > 0.0)) {
-      tmp = C.slice(t-1).t() * arma::pinv(V.slice(t - 1));
-      V.slice(t) -= tmp * C.slice(t-1);
-    }
-    arma::uvec nonzero = arma::find(V.slice(t).diag() > 0);
-    arma::mat L(V.n_cols, V.n_cols, arma::fill::zeros);
-    if (nonzero.n_elem > 0) {
-      L.submat(nonzero, nonzero) =
-        arma::chol(V.slice(t).submat(nonzero, nonzero), "lower");
-    }
-    V.slice(t) = L;
-    C.slice(t) = tmp;
+  unsigned int p = Vt.n_cols;
+  for (int t = Vt.n_slices - 1; t > 0; t--) {
+    arma::mat U(p, p);
+    arma::mat V(p, p);
+    arma::vec s(p);
+    arma::svd_econ(U, s, V, Vt.slice(t - 1), "left");
+     arma::uvec nonzero = arma::find(s > (arma::datum::eps * p * s(0)));
+    arma::mat tmp = Ct.slice(t - 1).t() * U.cols(nonzero) * 
+      arma::diagmat(1.0 / s(nonzero)) * U.cols(nonzero).t();
+    Vt.slice(t) -= tmp * Ct.slice(t - 1);
+    Ct.slice(t) = tmp;
+    
+    arma::svd_econ(U, s, V, Vt.slice(t), "left");
+    
+    Vt.slice(t) = U * arma::diagmat(arma::sqrt(s));
+    
   }
-  arma::uvec nonzero = arma::find(V.slice(0).diag() > 0);
-  arma::mat L(V.n_cols, V.n_cols, arma::fill::zeros);
-  if (nonzero.n_elem > 0) {
-    L.submat(nonzero, nonzero) =
-      arma::chol(V.slice(0).submat(nonzero, nonzero), "lower");
-  }
-  V.slice(0) = L;
+  arma::mat U(p, p);
+  arma::mat V(p, p);
+  arma::vec s(p);
+  arma::svd_econ(U, s, V, Vt.slice(0), "left");
+  
+  Vt.slice(0) = U * arma::diagmat(arma::sqrt(s));
 }

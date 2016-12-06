@@ -6,19 +6,29 @@
 
 using namespace Rcpp;
 
-// dmvnorm2
-arma::vec dmvnorm2(const arma::mat& x, const arma::mat& mean, arma::mat sigma, bool lwr, bool logd, const arma::mat& A);
-RcppExport SEXP bssm_dmvnorm2(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP lwrSEXP, SEXP logdSEXP, SEXP ASEXP) {
+// conditional_dist_helper
+void conditional_dist_helper(arma::cube& Vt, arma::cube& Ct);
+RcppExport SEXP bssm_conditional_dist_helper(SEXP VtSEXP, SEXP CtSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::cube& >::type Vt(VtSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type Ct(CtSEXP);
+    conditional_dist_helper(Vt, Ct);
+    return R_NilValue;
+END_RCPP
+}
+// dmvnorm
+double dmvnorm(const arma::vec& x, const arma::vec& mean, const arma::mat& sigma, const bool lwr, const bool logd);
+RcppExport SEXP bssm_dmvnorm(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP lwrSEXP, SEXP logdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type mean(meanSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< bool >::type lwr(lwrSEXP);
-    Rcpp::traits::input_parameter< bool >::type logd(logdSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
-    rcpp_result_gen = Rcpp::wrap(dmvnorm2(x, mean, sigma, lwr, logd, A));
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< const bool >::type lwr(lwrSEXP);
+    Rcpp::traits::input_parameter< const bool >::type logd(logdSEXP);
+    rcpp_result_gen = Rcpp::wrap(dmvnorm(x, mean, sigma, lwr, logd));
     return rcpp_result_gen;
 END_RCPP
 }
