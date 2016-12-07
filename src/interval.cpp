@@ -18,7 +18,6 @@ private:
 
 // [[Rcpp::depends(BH)]]
 // [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::export]]
 arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead) {
 
   int digits = std::numeric_limits<double>::digits;
