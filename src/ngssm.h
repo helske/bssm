@@ -23,7 +23,7 @@ public:
   virtual double logp_signal(arma::vec&, arma::mat&, arma::vec&);
   virtual double precomp_logp_signal(arma::vec&, const arma::mat&, const arma::vec&);
   virtual double logp_y(arma::vec&);
-  virtual arma::vec approx_iter(arma::vec&);
+  virtual arma::vec approx_iter(const arma::vec&);
   
   virtual arma::mat predict2(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
     unsigned int, unsigned int, double, double, arma::mat, unsigned int,

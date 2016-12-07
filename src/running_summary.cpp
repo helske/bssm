@@ -1,6 +1,7 @@
 #include <RcppArmadillo.h>
 
-void running_summary(const arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, const unsigned int n) {
+void running_summary(const arma::mat& x, arma::mat& mean_x, arma::cube& cov_x,
+  unsigned int n) {
   
   cov_x *= n;
 
@@ -13,7 +14,8 @@ void running_summary(const arma::mat& x, arma::mat& mean_x, arma::cube& cov_x, c
   
 }
 
-void running_weighted_summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, const arma::vec& weights) {
+void running_weighted_summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, 
+  const arma::vec& weights) {
   
   cov_x.zeros();
   mean_x.zeros();

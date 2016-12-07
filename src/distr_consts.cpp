@@ -1,20 +1,21 @@
-#include <RcppArmadillo.h>
 // constants (independent of states) for particle filter
 // use same notation as in bssm models expect norm/svm
 
-double norm_log_const(const double sd) {
+#include <RcppArmadillo.h>
+
+double norm_log_const(double sd) {
   return -0.5 * log(2.0 * M_PI) - log(sd);
 }
 
-double poisson_log_const(const double y, const double u) {
+double poisson_log_const(double y, double u) {
   return -lgamma(y + 1) + y * log(u);
 }
 
-double binomial_log_const(const double y, const double u) {
+double binomial_log_const(double y, double u) {
   return R::lchoose(u, y);
 }
 
-double negbin_log_const(const double y, const double u, const double phi) {
+double negbin_log_const(double y, double u, double phi) {
   return R::lchoose(y + phi - 1, y) + phi * log(phi) + y * log(u);
 }
 
@@ -34,7 +35,7 @@ double binomial_log_const(const arma::vec& y, const arma::vec& u) {
   return res;
 }
 
-double negbin_log_const(const arma::vec&  y, const arma::vec& u, const double phi) {
+double negbin_log_const(const arma::vec&  y, const arma::vec& u, double phi) {
   double res = 0.0;
   for(unsigned int i = 0; i < y.n_elem; i++) {
     res += R::lchoose(y(i) + phi - 1, y(i)) + phi*log(phi) + y(i) * log(u(i));

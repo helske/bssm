@@ -4,6 +4,6 @@
 #include <RcppArmadillo.h>
 
 double dmvnorm(const arma::vec& x, const arma::vec& mean,  
-  const arma::mat& sigma, const bool lwr = false, const bool logd = false);
+  const arma::mat& sigma, bool lwr, bool logd);
 
 #endif

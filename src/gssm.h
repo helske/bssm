@@ -8,32 +8,29 @@ class gssm {
 public:
 
   gssm(const Rcpp::List&, unsigned int);
-  gssm(const Rcpp::List&, arma::uvec, arma::uvec, arma::uvec, arma::uvec,
-    unsigned int);
+  gssm(const Rcpp::List&, const arma::uvec&, const arma::uvec&, const arma::uvec&, 
+    const arma::uvec&, unsigned int);
   gssm(const Rcpp::List&, unsigned int, bool);
-  gssm(const Rcpp::List&, arma::uvec, arma::uvec, arma::uvec, unsigned int, bool);
-  gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
-    arma::mat, arma::mat, arma::vec, arma::mat, unsigned int);
-  gssm(arma::vec, arma::mat, arma::vec, arma::cube, arma::cube, arma::vec,
-    arma::mat, arma::mat, arma::vec, arma::mat, arma::uvec, arma::uvec, arma::uvec,
-    arma::uvec, unsigned int);
+  gssm(const Rcpp::List&, const arma::uvec&, const arma::uvec&, 
+    const arma::uvec&, unsigned int, bool);
 
+  void compute_RR();
+  void compute_HH();
+  void compute_xbeta();
+  
+  double log_likelihood(bool);
+  double filter(arma::mat&, arma::mat&, arma::cube&, arma::cube&, bool);
+  arma::mat fast_smoother(bool);
+  arma::mat fast_smoother2(arma::vec&, arma::mat&, arma::cube&, bool);
+  arma::mat precomp_fast_smoother(const arma::vec&, const arma::mat&,
+    const arma::cube&, bool);
+  arma::cube sim_smoother(unsigned int, bool);
+  void smoother(arma::mat&, arma::cube&, bool);
+  void smoother_ccov(arma::mat&, arma::cube&, arma::cube&, bool);
+  
   virtual double proposal(const arma::vec&, const arma::vec&);
   virtual void update_model(arma::vec);
-  virtual arma::vec get_theta(void);
-  void compute_RR(void);
-  void compute_HH(void);
-  void compute_xbeta(void);
-  virtual double log_likelihood(bool);
-  virtual double filter(arma::mat&, arma::mat&, arma::cube&, arma::cube&, bool);
-  virtual arma::mat fast_smoother(bool);
-  virtual arma::mat fast_smoother2(arma::vec&, arma::mat&, arma::cube&, bool);
-  virtual arma::mat precomp_fast_smoother(const arma::vec&, const arma::mat&,
-    const arma::cube&, bool);
-  virtual arma::cube sim_smoother(unsigned int, bool);
-  virtual void smoother(arma::mat&, arma::cube&, bool);
-  virtual void smoother_ccov(arma::mat&, arma::cube&, arma::cube&, bool);
-    
+  virtual arma::vec get_theta();
   virtual double prior_pdf(const arma::vec&, const arma::uvec&, const arma::mat&);
 
   virtual arma::mat predict2(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,

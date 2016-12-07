@@ -1,5 +1,4 @@
 #include "ng_bsm.h"
-#include "filter.h"
 
 // from Rcpp::List
 ng_bsm::ng_bsm(const Rcpp::List& model, unsigned int seed, bool log_space) :
@@ -9,31 +8,6 @@ ng_bsm::ng_bsm(const Rcpp::List& model, unsigned int seed, bool log_space) :
   fixed(Rcpp::as<arma::uvec>(model["fixed"])), level_est(fixed(0) == 0),
   slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0),
   log_space(log_space) {
-}
-
-
-//general constructor
-ng_bsm::ng_bsm(arma::vec y, arma::mat Z, arma::cube T,
-  arma::cube R, arma::vec a1, arma::mat P1, double phi, arma::vec u, bool slope, bool seasonal,
-  bool noise, arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int distribution,
-  unsigned int seed, bool log_space, bool phi_est) :
-  ngssm(y, Z, T, R, a1, P1, phi, u, xreg, beta, arma::mat(a1.n_elem, 1, arma::fill::zeros), 
-    distribution, seed, phi_est),
-  slope(slope), seasonal(seasonal), noise(noise), fixed(fixed), level_est(fixed(0) == 0),
-  slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0),
-  log_space(log_space) {
-}
-
-//without log_space
-ng_bsm::ng_bsm(arma::vec y, arma::mat Z, arma::cube T,
-  arma::cube R, arma::vec a1, arma::mat P1, double phi, arma::vec u, bool slope, bool seasonal,
-  bool noise, arma::uvec fixed, arma::mat xreg, arma::vec beta, unsigned int distribution,
-  unsigned int seed, bool phi_est) :
-  ngssm(y, Z, T, R, a1, P1, phi, u, xreg, beta, arma::mat(a1.n_elem, 1, arma::fill::zeros), 
-    distribution, seed, phi_est),
-  slope(slope), seasonal(seasonal), noise(noise), fixed(fixed), level_est(fixed(0) == 0),
-  slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0),
-  log_space(false) {
 }
 
 double ng_bsm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
@@ -136,26 +110,3 @@ arma::vec ng_bsm::get_theta(void) {
 
   return theta;
 }
-
-// from approximating model
-double ng_bsm::log_likelihood(bool demean) {
-
-  double logLik = 0;
-  arma::vec at = a1;
-  arma::mat Pt = P1;
-
-  if (demean && xreg.n_cols > 0) {
-    for (unsigned int t = 0; t < n; t++) {
-      logLik += uv_filter(y(t) - xbeta(t), Z.col(0), HH(t),
-        T.slice(0), RR.slice(0), C.col(0), at, Pt, zero_tol);
-    }
-  } else {
-    for (unsigned int t = 0; t < n; t++) {
-      logLik += uv_filter(y(t), Z.col(0), HH(t),
-        T.slice(0), RR.slice(0), C.col(0), at, Pt, zero_tol);
-    }
-  }
-
-  return logLik;
-}
-

@@ -1,6 +1,6 @@
 #include <RcppArmadillo.h>
 double dmvnorm(const arma::vec& x, const arma::vec& mean,  
-  const arma::mat& sigma, const bool lwr, const bool logd) { 
+  const arma::mat& sigma, bool lwr, bool logd) { 
   
   double out = -arma::datum::inf;
   

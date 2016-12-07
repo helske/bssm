@@ -26,25 +26,6 @@ ngssm::ngssm(const Rcpp::List& model, arma::uvec Z_ind,
   max_iter(100), conv_tol(1.0e-8) {
 }
 
-//general constructor
-ngssm::ngssm(arma::vec y, arma::mat Z, arma::cube T,
-  arma::cube R, arma::vec a1, arma::mat P1, double phi, arma::vec u, arma::mat xreg,
-  arma::vec beta, arma::mat C, unsigned int distribution, unsigned int seed, bool phi_est) :
-  gssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, C, seed),
-  phi(phi), ut(u), distribution(distribution), phi_est(phi_est), 
-  ng_y(y), max_iter(100), conv_tol(1.0e-8) {
-}
-
-//general constructor with parameter indices
-ngssm::ngssm(arma::vec y, arma::mat Z, arma::cube T,
-  arma::cube R, arma::vec a1, arma::mat P1, double phi, arma::vec u, arma::mat xreg,
-  arma::vec beta, arma::mat, unsigned int distribution, arma::uvec Z_ind,
-  arma::uvec T_ind, arma::uvec R_ind, unsigned int seed, bool phi_est) :
-  gssm(y, Z, arma::vec(y.n_elem), T, R, a1, P1, xreg, beta, C, Z_ind,
-    arma::uvec(1), T_ind, R_ind, seed), phi(phi), ut(u),
-    distribution(distribution), phi_est(phi_est), ng_y(y), 
-    max_iter(100), conv_tol(1.0e-8) {
-}
 
 double ngssm::proposal(const arma::vec& theta, const arma::vec& theta_prop) {
   return 0.0;
@@ -76,6 +57,8 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
       // Rcout<<"diff "<<diff<<std::endl;
       signal = signal_new;
       if(!std::isfinite(ll_new) || signal.has_nan()){
+        Rcpp::Rcout<<"                INF:"<<ll_new<<std::endl;
+        Rcpp::Rcout<<get_theta()<<std::endl;
         return -arma::datum::inf;
       }
       if (diff < conv_tol) {
@@ -108,7 +91,7 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
 
 // compute new values of pseudo y and H given the signal
 // and the new signal using Kalman smoothing
-arma::vec ngssm::approx_iter(arma::vec& signal) {
+arma::vec ngssm::approx_iter(const arma::vec& signal) {
   
   // new pseudo y and H
   switch(distribution) {

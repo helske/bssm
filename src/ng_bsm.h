@@ -7,25 +7,13 @@ class ng_bsm: public ngssm {
 
 public:
 
-
   ng_bsm(const Rcpp::List&, unsigned int, bool);
-
-  ng_bsm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
-    arma::mat, double, arma::vec, bool, bool, bool, arma::uvec, arma::mat, arma::vec,
-    unsigned int, unsigned int, bool);
-
-  ng_bsm(arma::vec, arma::mat, arma::cube, arma::cube, arma::vec,
-    arma::mat, double, arma::vec, bool, bool, bool, arma::uvec, arma::mat, arma::vec,
-    unsigned int, unsigned int, bool, bool);
 
   double proposal(const arma::vec&, const arma::vec&);
   void update_model(arma::vec);
   arma::vec get_theta(void);
 
-  // log-likelihood of the approximating Gaussian model
-  double log_likelihood(bool);
-
-//private:
+private:
   const bool slope;
   const bool seasonal;
   const bool noise;

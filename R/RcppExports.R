@@ -5,14 +5,6 @@ conditional_dist_helper <- function(Vt, Ct) {
     invisible(.Call('bssm_conditional_dist_helper', PACKAGE = 'bssm', Vt, Ct))
 }
 
-dmvnorm <- function(x, mean, sigma, lwr, logd) {
-    .Call('bssm_dmvnorm', PACKAGE = 'bssm', x, mean, sigma, lwr, logd)
-}
-
-uv_filter <- function(y, Z, HH, T, RR, C, at, Pt, zero_tol) {
-    .Call('bssm_uv_filter', PACKAGE = 'bssm', y, Z, HH, T, RR, C, at, Pt, zero_tol)
-}
-
 intervals <- function(means, sds, probs, n_ahead) {
     .Call('bssm_intervals', PACKAGE = 'bssm', means, sds, probs, n_ahead)
 }

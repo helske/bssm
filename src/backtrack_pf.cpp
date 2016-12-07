@@ -1,6 +1,8 @@
+//back-tracking for filter smoother
+
 #include <RcppArmadillo.h>
 
-void backtrack_pf(arma::cube& alpha, arma::umat& ind) {
+void backtrack_pf(arma::cube& alpha, const arma::umat& ind) {
   
   arma::uvec b(alpha.n_slices);
   for(unsigned int i = 0; i < b.n_elem; i++) {
