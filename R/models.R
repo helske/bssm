@@ -246,6 +246,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' @param xreg Matrix containing covariates.
 #' @param period Length of the seasonal component i.e. the number of
 #' observations per season. Default is \code{frequency(y)}.
+#' @param noise_const Vector of constant coefficients for the standard deviation of additional noise component.
 #' @param a1 Prior means for the initial states (level, slope, seasonals).
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
