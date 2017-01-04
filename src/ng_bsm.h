@@ -22,6 +22,7 @@ private:
   const bool slope_est;
   const bool seasonal_est;
   const bool log_space;
+  const arma::vec noise_const;
 
 };
 

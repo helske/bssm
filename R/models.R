@@ -277,7 +277,8 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' autoplot(pred)
 #' }
 ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
-  distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), a1, P1) {
+  distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), 
+  noise_const, a1, P1) {
   
   
   check_y(y)
@@ -366,6 +367,9 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   } else {
     check_sd(sd_noise$init, "noise")
     noise <- TRUE
+    if (!missing(noise_const) && length(noise_const) != n) {
+      stop("Argument 'noise_const' must be a vector of lenght 'n'.")
+    }
   }
   
   npar_R <- 1L + as.integer(slope) + as.integer(seasonal) + as.integer(noise)
@@ -413,6 +417,8 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     T[cbind(1 + slope + 2:(period - 1), 1 + slope + 1:(period - 2))] <- 1
   }
   
+  dim(T) <- c(m, m, 1)
+  
   R <- matrix(0, m, max(1, npar_R))
   
   if (notfixed["level"]) {
@@ -440,7 +446,17 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     P1[m, m] <- sd_noise$init^2
     Z[m] <- 1
     state_names <- c(state_names, "noise")
-    R[m, max(1, ncol(R) - 1)] <- sd_noise$init
+   
+    if (missing(noise_const)) {
+      R[m, ncol(R)] <- sd_noise$init
+      dim(R) <- c(m, ncol(R), 1)
+      noise_const <- NA
+    } else {
+      R <- array(R, c(dim(R), n))
+      R[m, ncol(R), ] <- sd_noise$init * noise_const
+    } 
+  } else {
+    noise_const <- NA
   }
   
   distribution <- match.arg(distribution, c("poisson", "binomial",
@@ -469,10 +485,6 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   
   init_signal <- initial_signal(y, u, distribution)
   
-  
-  dim(T) <- c(m, m, 1)
-  dim(R) <- c(m, ncol(R), 1)
-  
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
   
@@ -494,7 +506,8 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     slope = slope, seasonal = seasonal, noise = noise,
     period = period, fixed = as.integer(!notfixed), 
     distribution = distribution, init_signal = init_signal, 
-    priors = priors, phi_est = phi_est, C = matrix(0, m, 1)), class = c("ng_bsm", "ngssm"))
+    priors = priors, phi_est = phi_est, C = matrix(0, m, 1), 
+    noise_const = noise_const), class = c("ng_bsm", "ngssm"))
 }
 
 #' Stochastic Volatility Model

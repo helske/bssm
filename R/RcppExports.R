@@ -5,10 +5,6 @@ conditional_dist_helper <- function(Vt, Ct) {
     invisible(.Call('bssm_conditional_dist_helper', PACKAGE = 'bssm', Vt, Ct))
 }
 
-intervals <- function(means, sds, probs, n_ahead) {
-    .Call('bssm_intervals', PACKAGE = 'bssm', means, sds, probs, n_ahead)
-}
-
 bsm_loglik <- function(model_) {
     .Call('bssm_bsm_loglik', PACKAGE = 'bssm', model_)
 }

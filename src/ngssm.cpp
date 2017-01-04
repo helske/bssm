@@ -57,8 +57,6 @@ double ngssm::approx(arma::vec& signal, unsigned int max_iter, double conv_tol) 
       // Rcout<<"diff "<<diff<<std::endl;
       signal = signal_new;
       if(!std::isfinite(ll_new) || signal.has_nan()){
-        Rcpp::Rcout<<"                INF:"<<ll_new<<std::endl;
-        Rcpp::Rcout<<get_theta()<<std::endl;
         return -arma::datum::inf;
       }
       if (diff < conv_tol) {

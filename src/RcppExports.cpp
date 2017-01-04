@@ -17,20 +17,6 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// intervals
-arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& probs, unsigned int n_ahead);
-RcppExport SEXP bssm_intervals(SEXP meansSEXP, SEXP sdsSEXP, SEXP probsSEXP, SEXP n_aheadSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type means(meansSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type sds(sdsSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type n_ahead(n_aheadSEXP);
-    rcpp_result_gen = Rcpp::wrap(intervals(means, sds, probs, n_ahead));
-    return rcpp_result_gen;
-END_RCPP
-}
 // bsm_loglik
 double bsm_loglik(const Rcpp::List& model_);
 RcppExport SEXP bssm_bsm_loglik(SEXP model_SEXP) {
