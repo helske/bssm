@@ -457,6 +457,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     } 
   } else {
     noise_const <- NA
+    dim(R) <- c(dim(R), 1)
   }
   
   distribution <- match.arg(distribution, c("poisson", "binomial",
