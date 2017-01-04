@@ -2,9 +2,9 @@
 #define GSSM_H
 
 #include <RcppArmadillo.h>
+#include "ssm.h"
 
-class gssm {
-
+class gssm : public ssm {
 public:
 
   gssm(const Rcpp::List&, unsigned int);
@@ -13,46 +13,46 @@ public:
   gssm(const Rcpp::List&, unsigned int, bool);
   gssm(const Rcpp::List&, const arma::uvec&, const arma::uvec&, 
     const arma::uvec&, unsigned int, bool);
-
+  
+  virtual void set_theta(arma::vec);
+  virtual arma::vec get_theta();
+ 
   void compute_RR();
   void compute_HH();
   void compute_xbeta();
   
-  double log_likelihood(bool);
-  double filter(arma::mat&, arma::mat&, arma::cube&, arma::cube&, bool);
-  arma::mat fast_smoother(bool);
-  arma::mat fast_smoother2(arma::vec&, arma::mat&, arma::cube&, bool);
-  arma::mat precomp_fast_smoother(const arma::vec&, const arma::mat&,
-    const arma::cube&, bool);
-  arma::cube sim_smoother(unsigned int, bool);
-  void smoother(arma::mat&, arma::cube&, bool);
-  void smoother_ccov(arma::mat&, arma::cube&, arma::cube&, bool);
+  double log_likelihood();
+  // double filter(arma::mat&, arma::mat&, arma::cube&, arma::cube&, bool);
+  // arma::mat fast_smoother(bool);
+  // arma::mat fast_smoother2(arma::vec&, arma::mat&, arma::cube&, bool);
+  // arma::mat precomp_fast_smoother(const arma::vec&, const arma::mat&,
+  //   const arma::cube&, bool);
+  // arma::cube sim_smoother(unsigned int, bool);
+  // void smoother(arma::mat&, arma::cube&, bool);
+  // void smoother_ccov(arma::mat&, arma::cube&, arma::cube&, bool);
   
-  virtual double proposal(const arma::vec&, const arma::vec&);
-  virtual void update_model(arma::vec);
-  virtual arma::vec get_theta();
-  virtual double prior_pdf(const arma::vec&, const arma::uvec&, const arma::mat&);
 
-  virtual arma::mat predict2(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
-    unsigned int, double, double, arma::mat, unsigned int,
-    unsigned int);
-  virtual Rcpp::List predict(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
-    unsigned int, double, double, arma::mat, unsigned int,
-    unsigned int, arma::vec);
-
-  virtual double run_mcmc(const arma::uvec&, const arma::mat&, unsigned int, bool,
-    unsigned int, unsigned int, double, double, arma::mat&, bool,
-    arma::mat&, arma::vec&, arma::cube&);
-
-  virtual double mcmc_summary(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
-    unsigned int, double, double, arma::mat&, bool, arma::mat&, arma::vec&, arma::mat&, arma::cube&);
-
-  virtual double particle_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
-  virtual double psi_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
-  
-  void backtrack_pf2(const arma::cube&, arma::mat&, const arma::umat&);
-
-  arma::mat backward_simulate(arma::cube&, arma::mat&, arma::umat&);
+// 
+//   virtual arma::mat predict2(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
+//     unsigned int, double, double, arma::mat, unsigned int,
+//     unsigned int);
+//   virtual Rcpp::List predict(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
+//     unsigned int, double, double, arma::mat, unsigned int,
+//     unsigned int, arma::vec);
+// 
+//   virtual double run_mcmc(const arma::uvec&, const arma::mat&, unsigned int, bool,
+//     unsigned int, unsigned int, double, double, arma::mat&, bool,
+//     arma::mat&, arma::vec&, arma::cube&);
+// 
+//   virtual double mcmc_summary(const arma::uvec&, const arma::mat&, unsigned int, unsigned int,
+//     unsigned int, double, double, arma::mat&, bool, arma::mat&, arma::vec&, arma::mat&, arma::cube&);
+// 
+//   virtual double particle_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
+//   virtual double psi_filter(unsigned int, arma::cube&, arma::mat&, arma::umat&);
+//   
+//   void backtrack_pf2(const arma::cube&, arma::mat&, const arma::umat&);
+// 
+//   arma::mat backward_simulate(arma::cube&, arma::mat&, arma::umat&);
 
   arma::vec y;
   arma::mat Z;

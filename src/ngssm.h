@@ -1,9 +1,9 @@
 #ifndef NGSSM_H
 #define NGSSM_H
 
-#include "gssm.h"
+#include "ssm.h"
 
-class ngssm: public gssm {
+class ngssm: protected ssm {
 public:
   
   
@@ -82,6 +82,34 @@ public:
   const arma::vec ng_y;
   unsigned int max_iter;
   double conv_tol;
+  
+    arma::vec y;
+  arma::mat Z;
+  arma::cube T;
+  arma::cube R;
+  arma::cube Q;
+  arma::vec a1;
+  arma::mat P1;
+  arma::mat xreg;
+  arma::vec beta;
+  arma::mat C;
+  
+  const unsigned int Ztv;
+  const unsigned int Ttv;
+  const unsigned int Rtv;
+  const unsigned int Ctv;
+
+  const unsigned int k;
+
+
+  arma::cube RR;
+
+  arma::vec xbeta;
+
+  arma::uvec Z_ind;
+  arma::uvec T_ind;
+  arma::uvec R_ind;
+  const double zero_tol;
 };
 
 
