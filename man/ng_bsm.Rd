@@ -5,7 +5,7 @@
 \title{Non-Gaussian Basic Structural (Time Series) Model}
 \usage{
 ng_bsm(y, sd_level, sd_slope, sd_seasonal, sd_noise, distribution, phi, u = 1,
-  beta, xreg = NULL, period = frequency(y), a1, P1)
+  beta, xreg = NULL, period = frequency(y), noise_const, a1, P1)
 }
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
@@ -40,6 +40,8 @@ term. For binomial, this is the number of trials.}
 
 \item{period}{Length of the seasonal component i.e. the number of
 observations per season. Default is \code{frequency(y)}.}
+
+\item{noise_const}{Vector of constant coefficients for the standard deviation of additional noise component.}
 
 \item{a1}{Prior means for the initial states (level, slope, seasonals).
 Defaults to vector of zeros.}
