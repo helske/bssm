@@ -307,7 +307,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   
   a <- proc.time()
   check_target(target_acceptance)
-  nb <- FALSE
+  nb <- model$distribution == "negative binomial"
   
   type <- match.arg(type, c("full", "summary"))
   method <- match.arg(method, c("pm", "isc"))
