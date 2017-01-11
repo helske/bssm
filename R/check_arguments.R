@@ -1,4 +1,4 @@
-check_y <- function(x) {
+check_y <- function(x, distribution = "gaussian") {
   
   if ((!is.numeric(x) && !all(is.na(x))) || (!is.null(dim(x)[2]) && dim(x)[2] > 1)) {
     stop("Argument y must be a numeric vector or a univariate time series object.")
@@ -8,6 +8,10 @@ check_y <- function(x) {
   }
   if (length(x) < 2) {
     stop("Length of argument y must be at least two.")
+  }
+  
+  if (distribution != "gaussian") {
+    if (!isTRUE(all(y == floor(y)))) stop("'y' must contain only non-negative integer values.")
   }
   
 }

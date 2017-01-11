@@ -16,7 +16,7 @@ gssm::gssm(const Rcpp::List& model, unsigned int seed) :
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
   Ctv(C.n_cols > 1), n(y.n_elem), m(a1.n_elem), k(R.n_cols), HH(arma::vec(Htv * (n - 1) + 1)),
   RR(arma::cube(m, m, Rtv * (n - 1) + 1)), xbeta(arma::vec(n, arma::fill::zeros)),
-  engine(seed), zero_tol(1e-8) {
+  engine(seed), zero_tol(1e-8), noise_const(Rcpp::as<arma::vec>(model["noise_const"])) {
   
   if(xreg.n_cols > 0) {
     compute_xbeta();

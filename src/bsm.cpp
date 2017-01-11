@@ -13,7 +13,6 @@ bsm::bsm(const Rcpp::List& model, unsigned int seed, bool log_space) :
   slope_est(slope && fixed(2) == 0), 
   seasonal_est(seasonal && fixed(3) == 0),
   log_space(log_space) {
-  
 }
 
 // for proposal on log-space, compute the (non-symmetric) ratio of proposals
@@ -50,8 +49,13 @@ void bsm::update_model(arma::vec theta) {
   
   if (sum(fixed) < 4) {
     if (y_est) {
-      H(0) = theta(0);
-      HH(0) = pow(theta(0), 2);
+      if (noise_const.n_elem > 1) {
+        H = theta(0) * noise_const;
+      } else {
+        H.fill(theta(0));
+      }
+      compute_HH();
+      //HH(0) = pow(theta(0), 2);
     }
     // sd_level
     if (level_est) {
@@ -84,7 +88,12 @@ arma::vec bsm::get_theta() {
   
   if (sum(fixed) < 4) {
     if(y_est) {
-      theta(0) = H(0);
+      if (noise_const.n_elem > 1) {
+        theta(0) = H(0) / noise_const(0);
+      } else {
+        theta(0) = H(0);
+      }
+     
     }
     // sd_level
     if (level_est) {

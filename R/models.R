@@ -35,7 +35,7 @@
 #' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
 #'
 bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
-  beta, xreg = NULL, period = frequency(y), a1, P1) {
+  beta, xreg = NULL, period = frequency(y), a1, P1, noise_const) {
   
   check_y(y)
   n <- length(y)
@@ -212,10 +212,13 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   names(priors) <- c("sd_y", "sd_level", "sd_slope", "sd_seasonal", names(coefs))
   priors <- priors[sapply(priors, is_prior)]
   
-  structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
+  if (missing(noise_const)) noise_const <- 1
+  
+  structure(list(y = as.ts(y), Z = Z, H = H * noise_const, T = T, R = R,
     a1 = a1, P1 = P1, xreg = xreg, coefs = coefs,
     slope = slope, seasonal = seasonal, period = period,
-    fixed = as.integer(!notfixed), priors = priors, C = matrix(0, m, 1)), class = c("bsm", "gssm"))
+    fixed = as.integer(!notfixed), priors = priors, C = matrix(0, m, 1),
+    noise_const = noise_const), class = c("bsm", "gssm"))
 }
 
 #' Non-Gaussian Basic Structural (Time Series) Model
@@ -246,7 +249,9 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' @param xreg Matrix containing covariates.
 #' @param period Length of the seasonal component i.e. the number of
 #' observations per season. Default is \code{frequency(y)}.
-#' @param noise_const Vector of constant coefficients for the standard deviation of additional noise component.
+#' @param noise_const Vector of constant coefficients for the standard deviation 
+#' of additional noise component. Must have length n + 1, where the first element 
+#' is used for corresponding element in P1, and rest are used in R_t.
 #' @param a1 Prior means for the initial states (level, slope, seasonals).
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
@@ -282,9 +287,11 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   noise_const, a1, P1) {
   
   
-  check_y(y)
-  n <- length(y)
+  distribution <- match.arg(distribution, c("poisson", "binomial",
+    "negative binomial"))
   
+  check_y(y, distribution)
+  n <- length(y)
   if (is.null(xreg)) {
     xreg <- matrix(0, 0, 0)
     coefs <- numeric(0)
@@ -368,8 +375,8 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   } else {
     check_sd(sd_noise$init, "noise")
     noise <- TRUE
-    if (!missing(noise_const) && length(noise_const) != n) {
-      stop("Argument 'noise_const' must be a vector of lenght 'n'.")
+    if (!missing(noise_const) && length(noise_const) != (n + 1)) {
+      stop("Argument 'noise_const' must be a vector of lenght 'n + 1'.")
     }
   }
   
@@ -444,25 +451,23 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   
   #additional noise term
   if (noise) {
-    P1[m, m] <- sd_noise$init^2
     Z[m] <- 1
     state_names <- c(state_names, "noise")
    
     if (missing(noise_const)) {
+      P1[m, m] <- sd_noise$init^2
       R[m, ncol(R)] <- sd_noise$init
       dim(R) <- c(m, ncol(R), 1)
       noise_const <- NA
     } else {
+      P1[m, m] <- (sd_noise$init * noise_const[1])^2
       R <- array(R, c(dim(R), n))
-      R[m, ncol(R), ] <- sd_noise$init * noise_const
+      R[m, ncol(R), ] <- sd_noise$init * noise_const[-1]
     } 
   } else {
     noise_const <- NA
     dim(R) <- c(dim(R), 1)
   }
-  
-  distribution <- match.arg(distribution, c("poisson", "binomial",
-    "negative binomial"))
   
   use_phi <- distribution %in% c("negative binomial", "gamma")
   phi_est <- FALSE
@@ -839,7 +844,11 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL, 
   beta, state_names, Z_prior, T_prior, R_prior) {
   
-  check_y(y)
+  distribution <- match.arg(distribution, c("poisson", "binomial",
+    "negative binomial"))
+  
+  check_y(y, distribution)
+  
   n <- length(y)
   
   if (is.null(xreg)) {
@@ -953,9 +962,6 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
       R[is.na(R)] <-  sapply(R_prior, "[[", "init")
     }
   } else R_prior <- NULL
-  
-  distribution <- match.arg(distribution, c("poisson", "binomial",
-    "negative binomial"))
   
   use_phi <- distribution %in% c("negative binomial", "gamma")
   phi_est <- FALSE

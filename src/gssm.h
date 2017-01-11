@@ -87,6 +87,8 @@ public:
   arma::uvec R_ind;
   std::mt19937 engine;
   const double zero_tol;
+  
+  const arma::vec noise_const;
 };
 
 

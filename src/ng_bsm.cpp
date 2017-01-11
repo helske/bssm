@@ -61,8 +61,10 @@ void ng_bsm::update_model(arma::vec theta) {
     if (noise_const.n_elem == 1) {
       R.slice(0) = R1;
     } else {
+      P1(m - 1, m - 1) *= std::pow(noise_const(0), 2);
       R.each_slice() = R1;
-      R.tube(m - 1, 1 + slope + seasonal) = noise_const * theta(level_est + slope_est + seasonal_est);
+      R.tube(m - 1, 1 + slope + seasonal) = noise_const.subvec(1, n) * 
+        theta(level_est + slope_est + seasonal_est);
     }
     
     compute_RR();

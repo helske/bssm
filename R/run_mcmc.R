@@ -301,13 +301,13 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx  = TRUE, n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
+  seed = sample(.Machine$integer.max, size = 1), noise_const...) {
   
   set.seed(seed) #needed for reproducible parallel thread seeding
   
   a <- proc.time()
   check_target(target_acceptance)
-  nb <- model$distribution == "negative binomial"
+  nb <- object$distribution == "negative binomial"
   
   type <- match.arg(type, c("full", "summary"))
   method <- match.arg(method, c("pm", "isc"))
