@@ -31,7 +31,7 @@ run_mcmc <- function(object, n_iter, ...) {
 #' regression coefficients \eqn{\beta}). This can be used for faster inference of
 #' \eqn{\theta} only, or as an preliminary run for obtaining
 #' initial values for \code{S}. Option \code{"summary"} does not simulate
-#' states directly computes the  posterior means and variances of states using
+#' states directly but computes the posterior means and variances of states using
 #' fast Kalman smoothing. This is slightly faster, memory  efficient and
 #' more accurate than calculations based on simulation smoother.
 #' \eqn{\theta}. Optional for \code{bsm} objects.
@@ -72,7 +72,7 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
       out <- gssm_run_mcmc(object, priors$prior_types, priors$params, n_iter,
         sim_states, n_burnin, n_thin, gamma, target_acceptance, S, 
         seed, end_adaptive_phase, object$Z_ind,
-        object$H_ind, object$T_ind, object$R_ind)
+        object$H_ind, object$T_ind, object$R_ind, model_type = 1L)
       if (sim_states) {
         colnames(out$alpha) <- names(object$a1)
       }
@@ -105,7 +105,7 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
 run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
+  n_threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
   
   a <- proc.time()
   check_target(target_acceptance)
@@ -120,9 +120,9 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   
   out <- switch(type,
     full = {
-      out <- bsm_run_mcmc(object, priors$prior_type, priors$params, n_iter,
-        sim_states, n_burnin, n_thin, gamma, target_acceptance, S, seed, 
-        FALSE, end_adaptive_phase)
+      out <- gaussian_mcmc(object, priors$prior_type, priors$params, sim_states, 
+        n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, 
+        end_adaptive_phase, n_threads, model_type = 2L)
       
       if (sim_states) {
         colnames(out$alpha) <- names(object$a1)
@@ -132,7 +132,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
     summary = {
       out <- bsm_run_mcmc_summary(object, priors$prior_type, priors$params, 
         n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed,
-        FALSE, end_adaptive_phase)
+        end_adaptive_phase)
       
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y),
@@ -298,24 +298,20 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
 #' @export
 run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   method = "pm", simulation_method = "spdk", const_m = TRUE,
-  delayed_acceptance = TRUE, n_burnin = floor(n_iter/2),
-  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
+  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx  = TRUE, n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
+  seed = sample(.Machine$integer.max, size = 1), max_iter = 100, conv_tol = 1e-8, ...) {
   
   set.seed(seed) #needed for reproducible parallel thread seeding
   
   a <- proc.time()
   check_target(target_acceptance)
-  nb <- FALSE
   
   type <- match.arg(type, c("full", "summary"))
   method <- match.arg(method, c("pm", "isc"))
   simulation_method <- match.arg(simulation_method, c("spdk", "bootstrap", "psi"))
   
-  if (n_thin > 1 && method == "isc") {
-    stop ("Thinning with block-IS algorithm is not supported.")
-  }
   
   if (nsim_states < 2) {
     #approximate inference
@@ -324,21 +320,24 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   }
   
   if (missing(S)) {
-    S <- diag(0.1 * pmax(0.1, abs(sapply(object$priors, "[[", "init"))), length(object$priors))
+    S <- diag(0.1 * pmax(0.1, abs(sapply(object$priors, "[[", "init"))), 
+      length(object$priors))
   }
   
   priors <- combine_priors(object$priors)
   
-  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
+  object$distribution <- pmatch(object$distribution, 
+    c("poisson", "binomial", "negative binomial"))
   
   out <-  switch(type,
     full = {
       if (method == "pm"){
-        out <- ng_bsm_run_mcmc(object, priors$prior_types, priors$params, n_iter,
-          nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-          object$init_signal, seed, end_adaptive_phase, adaptive_approx,
-          delayed_acceptance, pmatch(simulation_method, c("spdk", "bootstrap", "psi")))
-        
+        out <- nongaussian_mcmc(object, priors$prior_types, priors$params, 
+          nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+          seed, end_adaptive_phase, n_threads, adaptive_approx, object$init_signal, 
+          max_iter, conv_tol, delayed_acceptance, 
+          pmatch(simulation_method, c("spdk", "bootstrap", "psi")), model_type = 2L)
+      
       } else {
         out <- ng_bsm_run_mcmc_is(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
@@ -374,12 +373,11 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
     c(!object$fixed & c(TRUE, object$slope, object$seasonal), object$noise)
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-
     c(c("sd_level", "sd_slope", "sd_seasonal", "sd_noise")[names_ind],
-      colnames(object$xreg), if (nb) "nb_dispersion")
+      colnames(object$xreg), 
+      if (object$distribution == "negative binomial") "nb_dispersion")
   if(method == "pm") {
     out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
-    out$jump_chain <- FALSE
   } else {
-    out$jump_chain <- TRUE
     out$n_iter <- n_iter
     out$n_burnin <- n_burnin
   }

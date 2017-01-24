@@ -35,7 +35,7 @@
 #' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
 #'
 bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
-  beta, xreg = NULL, period = frequency(y), a1, P1) {
+  beta, xreg = NULL, period = frequency(y), a1, P1, obs_intercept, state_intercept) {
   
   check_y(y)
   n <- length(y)
@@ -212,10 +212,21 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   names(priors) <- c("sd_y", "sd_level", "sd_slope", "sd_seasonal", names(coefs))
   priors <- priors[sapply(priors, is_prior)]
   
+  if (!missing(obs_intercept)) {
+    check_obs_intercept(obs_intercept)
+  } else {
+    obs_intercept <- 0
+  }
+  if (!missing(state_intercept)) {
+    check_state_intercept(state_intercept)
+  } else {
+    state_intercept <- matrix(0, m, 1)
+  }
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
     a1 = a1, P1 = P1, xreg = xreg, coefs = coefs,
     slope = slope, seasonal = seasonal, period = period,
-    fixed = as.integer(!notfixed), priors = priors, C = matrix(0, m, 1)), class = c("bsm", "gssm"))
+    fixed = as.integer(!notfixed), priors = priors, obs_intercept = obs_intercept,
+    state_intercept = state_intercept), class = c("bsm", "gssm"))
 }
 
 #' Non-Gaussian Basic Structural (Time Series) Model
@@ -277,7 +288,8 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' autoplot(pred)
 #' }
 ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
-  distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), a1, P1) {
+  distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), a1, P1, 
+  state_intercept) {
   
   
   check_y(y)
@@ -489,12 +501,21 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     phi <- phi$init
   }
   
+  obs_intercept <- 0
+  
+  if (!missing(state_intercept)) {
+    check_state_intercept(state_intercept)
+  } else {
+    state_intercept <- matrix(0, m, 1)
+  }
+  
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, phi = phi, u = u, xreg = xreg, coefs = coefs,
     slope = slope, seasonal = seasonal, noise = noise,
     period = period, fixed = as.integer(!notfixed), 
     distribution = distribution, init_signal = init_signal, 
-    priors = priors, phi_est = phi_est, C = matrix(0, m, 1)), class = c("ng_bsm", "ngssm"))
+    priors = priors, phi_est = phi_est, obs_intercept = obs_intercept,
+    state_intercept = state_intercept), class = c("ng_bsm", "ngssm"))
 }
 
 #' Stochastic Volatility Model
@@ -600,10 +621,14 @@ svm <- function(y, rho, sd_ar, sigma, mu, beta, xreg = NULL) {
   names(priors) <-
     c("rho", "sd_ar", if(svm_type==0) "sigma" else "mu", names(coefs))
   
+  state_intercept <- if (svm_type) matrix(mu$init * (1 - T[1])) else matrix(0)
+  obs_intercept <- 0
+  
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, phi = if (svm_type == 0) sigma$init else 1, xreg = xreg, coefs = coefs,
-    C = if (svm_type) matrix(mu$init * (1 - T[1])) else matrix(0), init_signal = init_signal, priors = priors, 
-    svm_type = svm_type, distribution = 0L, u = 1, phi_est = !as.logical(svm_type)), 
+    C = , init_signal = init_signal, priors = priors, 
+    svm_type = svm_type, distribution = 0L, u = 1, phi_est = !as.logical(svm_type),
+    obs_intercept = obs_intercept, state_intercept = state_intercept), 
     class = c("svm", "ngssm"))
 }
 #'
@@ -612,8 +637,8 @@ svm <- function(y, rho, sd_ar, sigma, mu, beta, xreg = NULL) {
 #' Construct an object of class \code{gssm} by defining the corresponding terms
 #' of the observation and state equation:
 #'
-#' \deqn{y_t = Z_t \alpha_t + H_t \epsilon_t, (\textrm{observation equation})}
-#' \deqn{\alpha_{t+1} = T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
+#' \deqn{y_t = D_t + Z_t \alpha_t + H_t \epsilon_t, (\textrm{observation equation})}
+#' \deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
 #'
 #' where \eqn{\epsilon_t \sim N(0, 1)}, \eqn{\eta_t \sim N(0, I_k)} and
 #' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
@@ -637,7 +662,7 @@ svm <- function(y, rho, sd_ar, sigma, mu, beta, xreg = NULL) {
 #' @return Object of class \code{gssm}.
 #' @export
 gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
-  H_prior, Z_prior, T_prior, R_prior) {
+  H_prior, Z_prior, T_prior, R_prior, obs_intercept, state_intercept) {
   
   check_y(y)
   n <- length(y)
@@ -782,9 +807,21 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
     if(R_n > 0) paste0("R_",1:R_n), names(coefs))
   priors <- priors[sapply(priors, is_prior)]
   
+  if (!missing(obs_intercept)) {
+    check_obs_intercept(obs_intercept)
+  } else {
+    obs_intercept <- 0
+  }
+  if (!missing(state_intercept)) {
+    check_state_intercept(state_intercept)
+  } else {
+    state_intercept <- matrix(0, m, 1)
+  }
+  
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
-    xreg = xreg, coefs = coefs, priors = priors, C = matrix(0, m, 1), Z_ind = Z_ind, 
-    H_ind = H_ind, T_ind = T_ind, R_ind = R_ind), class = "gssm")
+    xreg = xreg, coefs = coefs, priors = priors, Z_ind = Z_ind, 
+    H_ind = H_ind, T_ind = T_ind, R_ind = R_ind, obs_intercept = obs_intercept,
+    state_intercept = state_intercept), class = "gssm")
 }
 #' General non-Gaussian/non-linear state space models
 #'
@@ -822,7 +859,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 #' @return Object of class \code{bgssm}.
 #' @export
 ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL, 
-  beta, state_names, Z_prior, T_prior, R_prior) {
+  beta, state_names, Z_prior, T_prior, R_prior, state_intercept) {
   
   check_y(y)
   n <- length(y)
@@ -986,8 +1023,18 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
   if (phi_est) {
     phi <- phi$init
   }
+  
+  obs_intercept <- 0
+  
+  if (!missing(state_intercept)) {
+    check_state_intercept(state_intercept)
+  } else {
+    state_intercept <- matrix(0, m, 1)
+  }
+  
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
     xreg = xreg, coefs = coefs, distribution = distribution, 
-    init_signal = init_signal, priors = priors, C = matrix(0, m, 1), Z_ind = Z_ind, 
-    T_ind = T_ind, R_ind = R_ind, phi_est = phi_est), class = "ngssm")
+    init_signal = init_signal, priors = priors, Z_ind = Z_ind, 
+    T_ind = T_ind, R_ind = R_ind, phi_est = phi_est, obs_intercept = obs_intercept,
+    state_intercept = state_intercept), class = "ngssm")
 }

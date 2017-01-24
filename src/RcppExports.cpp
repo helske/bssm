@@ -6,14 +6,14 @@
 
 using namespace Rcpp;
 
-// conditional_dist_helper
-void conditional_dist_helper(arma::cube& Vt, arma::cube& Ct);
-RcppExport SEXP bssm_conditional_dist_helper(SEXP VtSEXP, SEXP CtSEXP) {
+// conditional_cov
+void conditional_cov(arma::cube& Vt, arma::cube& Ct);
+RcppExport SEXP bssm_conditional_cov(SEXP VtSEXP, SEXP CtSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::cube& >::type Vt(VtSEXP);
     Rcpp::traits::input_parameter< arma::cube& >::type Ct(CtSEXP);
-    conditional_dist_helper(Vt, Ct);
+    conditional_cov(Vt, Ct);
     return R_NilValue;
 END_RCPP
 }
@@ -36,26 +36,85 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// bsm_run_mcmc
-Rcpp::List bsm_run_mcmc(const Rcpp::List& model_, arma::uvec prior_types, arma::mat prior_pars, unsigned int n_iter, bool sim_states, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, unsigned int seed, bool log_space, bool end_ram);
-RcppExport SEXP bssm_bsm_run_mcmc(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP n_iterSEXP, SEXP sim_statesSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP seedSEXP, SEXP log_spaceSEXP, SEXP end_ramSEXP) {
+// bsm_loglik
+double bsm_loglik(const Rcpp::List& model_);
+RcppExport SEXP bssm_bsm_loglik(SEXP model_SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type model_(model_SEXP);
+    rcpp_result_gen = Rcpp::wrap(bsm_loglik(model_));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ng_bsm_loglik
+Rcpp::List ng_bsm_loglik(const Rcpp::List& model_, arma::vec mode_estimate, unsigned int nsim_states, unsigned int simulation_method, unsigned int seed, unsigned int max_iter, double conv_tol);
+RcppExport SEXP bssm_ng_bsm_loglik(SEXP model_SEXP, SEXP mode_estimateSEXP, SEXP nsim_statesSEXP, SEXP simulation_methodSEXP, SEXP seedSEXP, SEXP max_iterSEXP, SEXP conv_tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type model_(model_SEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mode_estimate(mode_estimateSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type simulation_method(simulation_methodSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< double >::type conv_tol(conv_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(ng_bsm_loglik(model_, mode_estimate, nsim_states, simulation_method, seed, max_iter, conv_tol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// gaussian_mcmc
+Rcpp::List gaussian_mcmc(const Rcpp::List& model_, arma::uvec prior_types, arma::mat prior_pars, bool sim_states, unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, unsigned int seed, bool end_ram, unsigned int n_threads, unsigned int model_type);
+RcppExport SEXP bssm_gaussian_mcmc(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP sim_statesSEXP, SEXP n_iterSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP seedSEXP, SEXP end_ramSEXP, SEXP n_threadsSEXP, SEXP model_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Rcpp::List& >::type model_(model_SEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type prior_types(prior_typesSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type prior_pars(prior_parsSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type n_iter(n_iterSEXP);
     Rcpp::traits::input_parameter< bool >::type sim_states(sim_statesSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_iter(n_iterSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type n_burnin(n_burninSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type n_thin(n_thinSEXP);
     Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< double >::type target_acceptance(target_acceptanceSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type S(SSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
-    Rcpp::traits::input_parameter< bool >::type log_space(log_spaceSEXP);
     Rcpp::traits::input_parameter< bool >::type end_ram(end_ramSEXP);
-    rcpp_result_gen = Rcpp::wrap(bsm_run_mcmc(model_, prior_types, prior_pars, n_iter, sim_states, n_burnin, n_thin, gamma, target_acceptance, S, seed, log_space, end_ram));
+    Rcpp::traits::input_parameter< unsigned int >::type n_threads(n_threadsSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type model_type(model_typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(gaussian_mcmc(model_, prior_types, prior_pars, sim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type));
+    return rcpp_result_gen;
+END_RCPP
+}
+// nongaussian_mcmc
+Rcpp::List nongaussian_mcmc(const Rcpp::List& model_, arma::uvec prior_types, arma::mat prior_pars, unsigned int nsim_states, unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin, double gamma, double target_acceptance, arma::mat S, unsigned int seed, bool end_ram, unsigned int n_threads, bool local_approx, arma::vec initial_mode, unsigned int max_iter, double conv_tol, bool delayed_acceptance, unsigned int simulation_method, unsigned int model_type);
+RcppExport SEXP bssm_nongaussian_mcmc(SEXP model_SEXP, SEXP prior_typesSEXP, SEXP prior_parsSEXP, SEXP nsim_statesSEXP, SEXP n_iterSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP seedSEXP, SEXP end_ramSEXP, SEXP n_threadsSEXP, SEXP local_approxSEXP, SEXP initial_modeSEXP, SEXP max_iterSEXP, SEXP conv_tolSEXP, SEXP delayed_acceptanceSEXP, SEXP simulation_methodSEXP, SEXP model_typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type model_(model_SEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type prior_types(prior_typesSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type prior_pars(prior_parsSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_iter(n_iterSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_burnin(n_burninSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_thin(n_thinSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< double >::type target_acceptance(target_acceptanceSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type S(SSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< bool >::type end_ram(end_ramSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type n_threads(n_threadsSEXP);
+    Rcpp::traits::input_parameter< bool >::type local_approx(local_approxSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type initial_mode(initial_modeSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< double >::type conv_tol(conv_tolSEXP);
+    Rcpp::traits::input_parameter< bool >::type delayed_acceptance(delayed_acceptanceSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type simulation_method(simulation_methodSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type model_type(model_typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(nongaussian_mcmc(model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, delayed_acceptance, simulation_method, model_type));
     return rcpp_result_gen;
 END_RCPP
 }

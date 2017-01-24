@@ -8,12 +8,12 @@
 #' @param x Output from \code{\link{run_mcmc}}.
 #' @param ... Ignored.
 #' @export
-print.mcmc_output <- function(x, ...) {
+print.mcmc_output <- function(x, jump_chain = TRUE,...) {
   
   cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"), 
     "\n", sep = "")
   
-  if (x$jump_chain){
+  if (jump_chain){
     cat("\n", "Iterations = ", x$burnin + 1, ":", x$n_iter, "\n", sep = "")
     cat("Thinning interval = 1\n")
   } else {
@@ -23,7 +23,7 @@ print.mcmc_output <- function(x, ...) {
   cat("\nAcceptance rate after the burn-in period: ", paste(x$acceptance_rate,"\n", sep = ""))
   
   cat("\nSummary for theta:\n\n")
-  if (x$jump_chain) {
+  if (jump_chain) {
     if(!is.null(x$weights)) {
     w <- x$weights * x$counts
     } else w <- x$counts
@@ -32,7 +32,7 @@ print.mcmc_output <- function(x, ...) {
     se_theta <- sqrt(weighted_se(x$theta, w)^2 + x$acceptance_rate*spectrum0.ar(x$theta)$spec/nrow(x$theta))
     print(c(Mean = mean_theta, SD = sd_theta, "Asymptotic SE" = se_theta))
     cat("Effective sample sizes for theta:\n\n")
-    print(weighted_var(x$theta, w) / se_theta^2)
+    print(diag(weighted_var(x$theta, w)) / se_theta^2)
   } else {
     print(summary(x$theta)$stat)
     cat("\nEffective sample sizes for theta:\n\n")
