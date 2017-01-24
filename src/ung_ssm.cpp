@@ -457,19 +457,25 @@ arma::vec ung_ssm::log_obs_density(const unsigned int t, const arma::cube& alpha
 double ung_ssm::bsf_filter(unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
   
-  arma::mat U(m, m);
-  arma::mat V(m, m);
-  arma::vec s(m);
-  arma::svd_econ(U, s, V, P1, "left");
-  arma::uvec nonzero = arma::find(s > (arma::datum::eps * m * s(0)));
-  
+  // arma::mat U(m, m);
+  // arma::mat V(m, m);
+  // arma::vec s(m);
+  // arma::svd_econ(U, s, V, P1, "left");
+  // arma::uvec nonzero = arma::find(s > (arma::datum::eps * m * s(0)));
+  // arma::mat L = arma::diagmat(1.0 / s(nonzero)) U
+  arma::uvec nonzero = arma::find(P1.diag() > 0);
+  arma::mat L_P1(m, m, arma::fill::zeros);
+  if (nonzero.n_elem > 0) {
+    L_P1.submat(nonzero, nonzero) =
+      arma::chol(P1.submat(nonzero, nonzero), "lower");
+  }
   std::normal_distribution<> normal(0.0, 1.0);
   for (unsigned int i = 0; i < nsim; i++) {
     arma::vec um(m);
     for(unsigned int j = 0; j < m; j++) {
       um(j) = normal(engine);
     }
-    alpha.slice(i).col(0) = a1 + U * um;
+    alpha.slice(i).col(0) = a1 + L_P1 * um;
   }
   
   std::uniform_real_distribution<> unif(0.0, 1.0);

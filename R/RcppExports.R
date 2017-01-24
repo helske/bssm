@@ -9,19 +9,19 @@ uv_filter <- function(y, Z, HH, T, RR, C, at, Pt, zero_tol) {
     .Call('bssm_uv_filter', PACKAGE = 'bssm', y, Z, HH, T, RR, C, at, Pt, zero_tol)
 }
 
-bsm_loglik <- function(model_) {
-    .Call('bssm_bsm_loglik', PACKAGE = 'bssm', model_)
+gaussian_loglik <- function(model_, model_type) {
+    .Call('bssm_gaussian_loglik', PACKAGE = 'bssm', model_, model_type)
 }
 
-ng_bsm_loglik <- function(model_, mode_estimate, nsim_states, simulation_method, seed, max_iter, conv_tol) {
-    .Call('bssm_ng_bsm_loglik', PACKAGE = 'bssm', model_, mode_estimate, nsim_states, simulation_method, seed, max_iter, conv_tol)
+nongaussian_loglik <- function(model_, mode_estimate, nsim_states, simulation_method, seed, max_iter, conv_tol, model_type) {
+    .Call('bssm_nongaussian_loglik', PACKAGE = 'bssm', model_, mode_estimate, nsim_states, simulation_method, seed, max_iter, conv_tol, model_type)
 }
 
 gaussian_mcmc <- function(model_, prior_types, prior_pars, sim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type) {
     .Call('bssm_gaussian_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, sim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type)
 }
 
-nongaussian_mcmc <- function(model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, delayed_acceptance, simulation_method, model_type) {
-    .Call('bssm_nongaussian_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, delayed_acceptance, simulation_method, model_type)
+nongaussian_pm_mcmc <- function(model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, delayed_acceptance, simulation_method, model_type) {
+    .Call('bssm_nongaussian_pm_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, delayed_acceptance, simulation_method, model_type)
 }
 

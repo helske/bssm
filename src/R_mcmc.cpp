@@ -53,7 +53,7 @@ Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
 }
 
 // [[Rcpp::export]]
-Rcpp::List nongaussian_mcmc(const Rcpp::List& model_,
+Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
   arma::uvec prior_types, arma::mat prior_pars, unsigned int nsim_states, 
   unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
@@ -80,15 +80,27 @@ Rcpp::List nongaussian_mcmc(const Rcpp::List& model_,
   switch (model_type) {
   case 1: {
     ung_ssm model(clone(model_), seed);
-    mcmc_run.pm_mcmc_psi(model, end_ram, nsim_states, local_approx, initial_mode, 
-      max_iter, conv_tol);
-    
+    switch (simulation_method) {
+    case 1: 
+      mcmc_run.pm_mcmc_psi(model, end_ram, nsim_states, local_approx, initial_mode, 
+        max_iter, conv_tol);
+      break;
+    case 2:
+      mcmc_run.pm_mcmc_bsf(model, end_ram, nsim_states);
+      break;
+    }
   } break;
   case 2: {
     ung_bsm model(clone(model_), seed);
-    mcmc_run.pm_mcmc_psi(model, end_ram, nsim_states, local_approx, initial_mode, 
-      max_iter, conv_tol);
-    
+    switch (simulation_method) {
+    case 1: 
+      mcmc_run.pm_mcmc_psi(model, end_ram, nsim_states, local_approx, initial_mode, 
+        max_iter, conv_tol);
+      break;
+    case 2:
+      mcmc_run.pm_mcmc_bsf(model, end_ram, nsim_states);
+      break;
+    }
   } break;
   }
   
