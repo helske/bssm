@@ -42,7 +42,7 @@ sim_smoother.ngssm <- function(object, nsim = 1, seed = sample(.Machine$integer.
   object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
 
-  out <- ngssm_sim_smoother(object, nsim, object$init_signal, seed)
+  out <- ngssm_sim_smoother(object, nsim, object$initial_mode, seed)
   rownames(out) <- names(object$a1)
   aperm(out, c(2, 1, 3))
 }
@@ -51,7 +51,7 @@ sim_smoother.ngssm <- function(object, nsim = 1, seed = sample(.Machine$integer.
 sim_smoother.ng_bsm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
 
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  out <- ng_bsm_sim_smoother(object, nsim, object$init_signal, seed)
+  out <- ng_bsm_sim_smoother(object, nsim, object$initial_mode, seed)
 
   rownames(out) <- names(object$a1)
   aperm(out, c(2, 1, 3))
@@ -60,7 +60,7 @@ sim_smoother.ng_bsm <- function(object, nsim = 1, seed = sample(.Machine$integer
 #' @export
 sim_smoother.svm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
 
-  out <- svm_sim_smoother(object, nsim, object$init_signal, seed)
+  out <- svm_sim_smoother(object, nsim, object$initial_mode, seed)
 
   rownames(out) <- names(object$a1)
   aperm(out, c(2, 1, 3))

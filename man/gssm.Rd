@@ -5,7 +5,7 @@
 \title{General linear-Gaussian state space models}
 \usage{
 gssm(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names, H_prior, Z_prior,
-  T_prior, R_prior)
+  T_prior, R_prior, obs_intercept, state_intercept)
 }
 \arguments{
 \item{y}{Observations as time series (or vector) of length \eqn{n}.}
@@ -43,8 +43,8 @@ Construct an object of class \code{gssm} by defining the corresponding terms
 of the observation and state equation:
 }
 \details{
-\deqn{y_t = Z_t \alpha_t + H_t \epsilon_t, (\textrm{observation equation})}
-\deqn{\alpha_{t+1} = T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
+\deqn{y_t = D_t + Z_t \alpha_t + H_t \epsilon_t, (\textrm{observation equation})}
+\deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
 
 where \eqn{\epsilon_t \sim N(0, 1)}, \eqn{\eta_t \sim N(0, I_k)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.

@@ -5,7 +5,7 @@
 \title{General non-Gaussian/non-linear state space models}
 \usage{
 ngssm(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL, beta,
-  state_names, Z_prior, T_prior, R_prior)
+  state_names, Z_prior, T_prior, R_prior, state_intercept)
 }
 \arguments{
 \item{y}{Observations as time series (or vector) of length \eqn{n}.}

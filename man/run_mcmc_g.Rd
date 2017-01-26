@@ -12,7 +12,7 @@
 
 \method{run_mcmc}{bsm}(object, n_iter, sim_states = TRUE, type = "full",
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
@@ -28,7 +28,7 @@ samples from the posterior \eqn{p(\alpha, \theta}. Option
 regression coefficients \eqn{\beta}). This can be used for faster inference of
 \eqn{\theta} only, or as an preliminary run for obtaining
 initial values for \code{S}. Option \code{"summary"} does not simulate
-states directly computes the  posterior means and variances of states using
+states directly but computes the posterior means and variances of states using
 fast Kalman smoothing. This is slightly faster, memory  efficient and
 more accurate than calculations based on simulation smoother.
 \eqn{\theta}. Optional for \code{bsm} objects.}

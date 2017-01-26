@@ -1,7 +1,7 @@
 
 
 #' @importFrom stats qlogis
-initial_signal <- function(y, u, distribution) {
+init_mode <- function(y, u, distribution) {
   
   switch(distribution,
     poisson = {

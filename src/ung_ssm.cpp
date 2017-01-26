@@ -145,7 +145,6 @@ ugg_ssm ung_ssm::approximate(arma::vec& mode_estimate, const unsigned int max_it
   //Construct y and H for the Gaussian model
   arma::vec approx_y(n);
   arma::vec approx_H(n);
-  laplace_iter(mode_estimate, approx_y, approx_H);
   ugg_ssm approx_model(approx_y, Z, approx_H, T, R, a1, P1, xreg, beta, D, C, seed);
   
   unsigned int i = 0;
@@ -153,6 +152,9 @@ ugg_ssm ung_ssm::approximate(arma::vec& mode_estimate, const unsigned int max_it
   
   while(i < max_iter && diff > conv_tol) {
     i++;
+    //Construct y and H for the Gaussian model
+    laplace_iter(mode_estimate, approx_model.y, approx_model.H);
+    approx_model.compute_HH();
     // compute new guess of mode
     arma::vec mode_estimate_new(n);
     if (distribution == 0) {
@@ -165,8 +167,6 @@ ugg_ssm ung_ssm::approximate(arma::vec& mode_estimate, const unsigned int max_it
     }
     diff = arma::mean(arma::square(mode_estimate_new - mode_estimate));
     mode_estimate = mode_estimate_new;
-    laplace_iter(mode_estimate, approx_model.y, approx_model.H);
-    approx_model.compute_HH();
   }
   
   return approx_model;
@@ -187,14 +187,14 @@ void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate, const
   approx_model.C = C;
   approx_model.RR = RR;
   approx_model.xbeta = xbeta;
-  //Construct y and H for the Gaussian model, start always from the initial estimate
-  laplace_iter(mode_estimate, approx_model.y,  approx_model.H);
-  approx_model.compute_HH();
   
   unsigned int i = 0;
   double diff = conv_tol + 1; 
   while(i < max_iter && diff > conv_tol) {
     i++;
+    //Construct y and H for the Gaussian model
+    laplace_iter(mode_estimate, approx_model.y, approx_model.H);
+    approx_model.compute_HH();
     // compute new guess of mode
     arma::vec mode_estimate_new(n);
     if (distribution == 0) {
@@ -207,8 +207,6 @@ void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate, const
     }
     diff = arma::mean(arma::square(mode_estimate_new - mode_estimate));
     mode_estimate = mode_estimate_new;
-    laplace_iter(mode_estimate, approx_model.y, approx_model.H);
-    approx_model.compute_HH();
   }
 }
 

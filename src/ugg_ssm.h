@@ -53,6 +53,9 @@ public:
     arma::cube& Lt) const;
   // smoothing which also returns covariances cov(alpha_t, alpha_t-1)
   void smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) const;
+  double filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
+    arma::cube& Ptt) const;
+  void smoother(arma::mat& at, arma::cube& Pt) const;
   
   arma::vec y;
   arma::mat Z;

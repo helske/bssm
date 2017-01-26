@@ -5,7 +5,7 @@
 \title{Basic Structural (Time Series) Model}
 \usage{
 bsm(y, sd_y, sd_level, sd_slope, sd_seasonal, beta, xreg = NULL,
-  period = frequency(y), a1, P1)
+  period = frequency(y), a1, P1, obs_intercept, state_intercept)
 }
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}

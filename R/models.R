@@ -479,7 +479,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     }
   }
   
-  init_signal <- initial_signal(y, u, distribution)
+  initial_mode <- init_mode(y, u, distribution)
   
   
   dim(T) <- c(m, m, 1)
@@ -513,7 +513,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     a1 = a1, P1 = P1, phi = phi, u = u, xreg = xreg, coefs = coefs,
     slope = slope, seasonal = seasonal, noise = noise,
     period = period, fixed = as.integer(!notfixed), 
-    distribution = distribution, init_signal = init_signal, 
+    distribution = distribution, initial_mode = initial_mode, 
     priors = priors, phi_est = phi_est, obs_intercept = obs_intercept,
     state_intercept = state_intercept), class = c("ng_bsm", "ngssm"))
 }
@@ -594,11 +594,11 @@ svm <- function(y, rho, sd_ar, sigma, mu, beta, xreg = NULL) {
   if(missing(sigma)) {
     svm_type <- 1L
     check_mu(mu$init)
-    init_signal <- log(pmax(1e-4, y^2))
+    initial_mode <- log(pmax(1e-4, y^2))
   } else {
     svm_type <- 0L
     check_sd(sigma$init, "sigma", FALSE)
-    init_signal <- log(pmax(1e-4, y^2)) - 2 * log(sigma$init)
+    initial_mode <- log(pmax(1e-4, y^2)) - 2 * log(sigma$init)
   }
   a1 <- if(svm_type) mu$init else 0
   P1 <- matrix(sd_ar$init^2 / (1 - rho$init^2))
@@ -626,7 +626,7 @@ svm <- function(y, rho, sd_ar, sigma, mu, beta, xreg = NULL) {
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, phi = if (svm_type == 0) sigma$init else 1, xreg = xreg, coefs = coefs,
-    C = , init_signal = init_signal, priors = priors, 
+    C = , initial_mode = initial_mode, priors = priors, 
     svm_type = svm_type, distribution = 0L, u = 1, phi_est = !as.logical(svm_type),
     obs_intercept = obs_intercept, state_intercept = state_intercept), 
     class = c("svm", "ngssm"))
@@ -1000,7 +1000,7 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     }
   }
   
-  init_signal <- initial_signal(y, u, distribution)
+  initial_mode <- init_mode(y, u, distribution)
   
   if (missing(state_names)) {
     state_names <- paste("State", 1:m)
@@ -1034,7 +1034,7 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
   
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
     xreg = xreg, coefs = coefs, distribution = distribution, 
-    init_signal = init_signal, priors = priors, Z_ind = Z_ind, 
+    initial_mode = initial_mode, priors = priors, Z_ind = Z_ind, 
     T_ind = T_ind, R_ind = R_ind, phi_est = phi_est, obs_intercept = obs_intercept,
     state_intercept = state_intercept), class = "ngssm")
 }

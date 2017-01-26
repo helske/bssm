@@ -5,8 +5,8 @@ conditional_cov <- function(Vt, Ct) {
     invisible(.Call('bssm_conditional_cov', PACKAGE = 'bssm', Vt, Ct))
 }
 
-uv_filter <- function(y, Z, HH, T, RR, C, at, Pt, zero_tol) {
-    .Call('bssm_uv_filter', PACKAGE = 'bssm', y, Z, HH, T, RR, C, at, Pt, zero_tol)
+gaussian_approx_model <- function(model_, mode_estimate, max_iter, conv_tol, model_type) {
+    .Call('bssm_gaussian_approx_model', PACKAGE = 'bssm', model_, mode_estimate, max_iter, conv_tol, model_type)
 }
 
 gaussian_loglik <- function(model_, model_type) {
@@ -21,7 +21,15 @@ gaussian_mcmc <- function(model_, prior_types, prior_pars, sim_states, n_iter, n
     .Call('bssm_gaussian_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, sim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type)
 }
 
-nongaussian_pm_mcmc <- function(model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, delayed_acceptance, simulation_method, model_type) {
-    .Call('bssm_nongaussian_pm_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, delayed_acceptance, simulation_method, model_type)
+nongaussian_pm_mcmc <- function(model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, model_type) {
+    .Call('bssm_nongaussian_pm_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, model_type)
+}
+
+nongaussian_da_mcmc <- function(model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, model_type) {
+    .Call('bssm_nongaussian_da_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, model_type)
+}
+
+nongaussian_is_mcmc <- function(model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, const_sim, model_type) {
+    .Call('bssm_nongaussian_is_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, const_sim, model_type)
 }
 

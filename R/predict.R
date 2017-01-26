@@ -245,7 +245,7 @@ predict.ngssm <- function(object, n_iter, nsim_states,
   priors <- combine_priors(priors)
   out <- ngssm_predict2(object, priors$prior_types, priors$params, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-    object$Z_ind, object$T_ind, object$R_ind, object$init_signal, seed)
+    object$Z_ind, object$T_ind, object$R_ind, object$initial_mode, seed)
   
   if (interval == 1) {
     y_orig <- y_orig / u_orig
@@ -317,7 +317,7 @@ predict.ng_bsm <- function(object, n_iter, nsim_states,
   
   out <- ng_bsm_predict2(object, priors$prior_types, priors$params, n_iter,
     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-    c(object$init_signal, rep(log(0.1), n_ahead)), seed, FALSE)
+    c(object$initial_mode, rep(log(0.1), n_ahead)), seed, FALSE)
   
   if (interval == 1) {
     y_orig <- y_orig / u_orig

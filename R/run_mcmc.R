@@ -89,10 +89,11 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
       out
     }
   )
-  out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
   out$call <- match.call()
   out$seed <- seed
-  out$jump_chain <- FALSE
+  out$n_iter <- n_iter
+  out$n_burnin <- n_burnin
+  out$n_thin <- n_thin
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   out
@@ -144,10 +145,12 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-
     c(c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind],
       colnames(object$xreg))
-  out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
+
   out$call <- match.call()
   out$seed <- seed
-  out$jump_chain <- FALSE
+  out$n_iter <- n_iter
+  out$n_burnin <- n_burnin
+  out$n_thin <- n_thin
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   out
@@ -187,7 +190,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
 #' algorithm, so that the covariance matrix of the Gaussian proposal
 #' distribution is \eqn{SS'}.
 #' @param end_adaptive_phase If \code{TRUE} (default), $S$ is held fixed after the burnin period.
-#' @param adaptive_approx If \code{TRUE} (default), Gaussian approximation needed for 
+#' @param local_approx If \code{TRUE} (default), Gaussian approximation needed for 
 #' importance sampling is performed at each iteration. If false, approximation is updated only 
 #' once at the start of the MCMC.
 #' @param n_threads Number of threads for state simulation.
@@ -198,7 +201,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   method = "pm", simulation_method = "psi", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  adaptive_approx  = TRUE, n_threads = 1,
+  local_approx  = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   set.seed(seed) #needed for reproducible parallel thread seeding
@@ -234,16 +237,24 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   out <-  switch(type,
     full = {
       if (method == "pm"){
-        out <- ngssm_run_mcmc(object, priors$prior_types, priors$params, n_iter,
+        if(delayed_acceptance) {
+          out <- nongaussian_da_mcmc(object, priors$prior_types, priors$params, n_iter,
+            nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
+            object$initial_mode, seed, end_adaptive_phase, local_approx,
+            delayed_acceptance, pmatch(simulation_method, c("psi", "bsf", "spdk")),
+            object$Z_ind, object$T_ind, object$R_ind, model_type = 1L)
+        } else {
+        out <- nongaussian_pm_mcmc(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-          object$init_signal, seed, end_adaptive_phase, adaptive_approx,
+          object$initial_mode, seed, end_adaptive_phase, local_approx,
           delayed_acceptance, pmatch(simulation_method, c("psi", "bsf", "spdk")),
-          object$Z_ind, object$T_ind, object$R_ind)
+          object$Z_ind, object$T_ind, object$R_ind, model_type = 1L)
+        }
         
       } else {
         out <- ngssm_run_mcmc_is(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-          object$init_signal, seed, n_threads, end_adaptive_phase, adaptive_approx,
+          object$initial_mode, seed, n_threads, end_adaptive_phase, local_approx,
           pmatch(simulation_method, c("psi", "bsf", "spdk")), const_m,
           object$Z_ind, object$T_ind, object$R_ind, 
           sample(.Machine$integer.max, size = n_threads))
@@ -258,7 +269,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
       # if (method == "pm"){
       #   out <- ngssm_run_mcmc_summary(object, priors$prior_types, priors$params, n_iter,
       #     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-      #     init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
+      #     initial_mode, seed,  n_threads, end_adaptive_phase, local_approx,
       #     delayed_acceptance, pmatch(simulation_method, c("psi", "bsf", "spdk")),
       #     Z_ind, T_ind, R_ind)
       # } else {
@@ -267,7 +278,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
       #   }
       #   out <- ngssm_run_mcmc_summary_is(object, priors$prior_types, priors$params, n_iter,
       #     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-      #     init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
+      #     initial_mode, seed,  n_threads, end_adaptive_phase, local_approx,
       #     pmatch(simulation_method, c("psi", "bsf", "spdk")), const_m, Z_ind, T_ind, R_ind)
       # }
       # colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
@@ -276,14 +287,10 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
       # out
     })
   
-  if(method == "pm") {
-    out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
-    out$jump_chain <- FALSE
-  } else {
-    out$jump_chain <- TRUE
-    out$n_iter <- n_iter
-    out$n_burnin <- n_burnin
-  }
+  out$n_iter <- n_iter
+  out$n_burnin <- n_burnin
+  out$n_thin <- n_thin
+  
   out$call <- match.call()
   out$seed <- seed
   out$time <- proc.time() - a
@@ -299,7 +306,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   method = "pm", simulation_method = "psi", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  adaptive_approx  = TRUE, n_threads = 1,
+  local_approx  = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100, conv_tol = 1e-8, ...) {
   
   set.seed(seed) #needed for reproducible parallel thread seeding
@@ -331,18 +338,23 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   out <-  switch(type,
     full = {
       if (method == "pm"){
+        if (delayed_acceptance) {
+          out <- nongaussian_da_mcmc(object, priors$prior_types, priors$params, 
+            nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+            seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode, 
+            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")), model_type = 2L)
+        } else {
         out <- nongaussian_pm_mcmc(object, priors$prior_types, priors$params, 
           nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          seed, end_adaptive_phase, n_threads, adaptive_approx, object$init_signal, 
-          max_iter, conv_tol, delayed_acceptance, 
-          pmatch(simulation_method, c("psi", "bsf", "spdk")), model_type = 2L)
-      
+          seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode, 
+          max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")), model_type = 2L)
+        }
       } else {
-        out <- ng_bsm_run_mcmc_is(object, priors$prior_types, priors$params, n_iter,
-          nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-          object$init_signal, seed, n_threads, end_adaptive_phase, adaptive_approx,
-          pmatch(simulation_method, c("psi", "bsf", "spdk")), const_m, 
-          sample(.Machine$integer.max, size = n_threads))
+        out <- nongaussian_is_mcmc(object, priors$prior_types, priors$params, 
+          nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+          seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode, 
+          max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")), const_m, 
+          model_type = 2L)
       }
       
       colnames(out$alpha) <- names(object$a1)
@@ -352,13 +364,13 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
       if (method == "pm"){
         out <- ng_bsm_run_mcmc_summary(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-          object$init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
+          object$initial_mode, seed,  n_threads, end_adaptive_phase, local_approx,
           delayed_acceptance, pmatch(simulation_method, c("psi", "bsf", "spdk")))
       } else {
         
         out <- ng_bsm_run_mcmc_summary_is(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-          object$init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
+          object$initial_mode, seed,  n_threads, end_adaptive_phase, local_approx,
           pmatch(simulation_method, c("psi", "bsf", "spdk")), const_m, 
           sample(.Machine$integer.max, size = n_threads))
       }
@@ -374,12 +386,9 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
     c(c("sd_level", "sd_slope", "sd_seasonal", "sd_noise")[names_ind],
       colnames(object$xreg), 
       if (object$distribution == "negative binomial") "nb_dispersion")
-  if(method == "pm") {
-    out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
-  } else {
-    out$n_iter <- n_iter
-    out$n_burnin <- n_burnin
-  }
+  out$n_iter <- n_iter
+  out$n_burnin <- n_burnin
+  out$n_thin <- n_thin
   out$call <- match.call()
   out$seed <- seed
   out$time <- proc.time() - a
@@ -405,7 +414,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   method = "pm", simulation_method = "psi", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  adaptive_approx  = TRUE, n_threads = 1,
+  local_approx  = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), gkl_prior = FALSE, ...) {
   
   set.seed(seed) #needed for reproducible parallel thread seeding
@@ -447,13 +456,13 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
       if (method == "pm"){
         out <- svm_run_mcmc(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-          object$init_signal, seed, end_adaptive_phase, adaptive_approx,
+          object$initial_mode, seed, end_adaptive_phase, local_approx,
           delayed_acceptance, pmatch(simulation_method, c("psi", "bsf", "spdk")), gkl_prior)
         
       } else {
         out <- svm_run_mcmc_is(object, priors$prior_types, priors$params, n_iter,
           nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-          object$init_signal, seed, n_threads, end_adaptive_phase, adaptive_approx,
+          object$initial_mode, seed, n_threads, end_adaptive_phase, local_approx,
           pmatch(simulation_method, c("psi", "bsf", "spdk")), const_m, gkl_prior, 
           sample(.Machine$integer.max, size = n_threads))
       }
@@ -467,7 +476,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
       # if (method == "pm"){
       #   out <- svm_run_mcmc_summary(object, priors$prior_types, priors$params, n_iter,
       #     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-      #     object$init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
+      #     object$initial_mode, seed,  n_threads, end_adaptive_phase, local_approx,
       #     delayed_acceptance, pmatch(simulation_method, c("psi", "bsf", "spdk")))
       # } else {
       #   if(correction_method == "PF") {
@@ -475,7 +484,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
       #   }
       #   out <- svm_run_mcmc_summary_is(object, priors$prior_types, priors$params, n_iter,
       #     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-      #     object$init_signal, seed,  n_threads, end_adaptive_phase, adaptive_approx,
+      #     object$initial_mode, seed,  n_threads, end_adaptive_phase, local_approx,
       #     pmatch(simulation_method, c("psi", "bsf", "spdk")), const_m)
       # }
       # colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
@@ -491,14 +500,11 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   }
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-
     c(names(object$priors), names(object$coefs))
-  if(method == "pm") {
-    out$theta <- mcmc(out$theta, start = n_burnin + 1, thin = n_thin)
-    out$jump_chain <- FALSE
-  } else {
-    out$jump_chain <- TRUE
-    out$n_iter <- n_iter
-    out$n_burnin <- n_burnin
-  }
+
+  out$n_iter <- n_iter
+  out$n_burnin <- n_burnin
+  out$n_thin <- n_thin
+  
   out$call <- match.call()
   out$seed <- seed
   

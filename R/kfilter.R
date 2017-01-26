@@ -23,7 +23,7 @@ kfilter <- function(object, ...) {
 #' @export
 kfilter.gssm <- function(object, ...) {
   
-  out <- gssm_filter(object)
+  out <- gaussian_kfilter(object, model_type = 1L)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
   out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
@@ -34,49 +34,7 @@ kfilter.gssm <- function(object, ...) {
 #' @export
 kfilter.bsm <- function(object, ...) {
   
-  out <- bsm_filter(object)
-  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
-    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
-  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
-  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
-  out
-}
-
-#' @method kfilter ngssm
-#' @export
-kfilter.ngssm <- function(object, ...) {
-  
-  object$distribution <- pmatch(object$distribution,
-    c("poisson", "binomial", "negative binomial"))
-  
-  out <- ngssm_filter(object, object$init_signal)
-  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
-    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
-  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
-  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
-  out
-}
-
-#' @method kfilter ng_bsm
-#' @export
-kfilter.ng_bsm <- function(object, ...) {
-  
-  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  
-  out <- ng_bsm_filter(object, object$init_signal)
-  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
-    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
-  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
-  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
-  out
-}
-
-#' @method kfilter svm
-#' @export
-kfilter.svm <- function(object, ...) {
-  
-  out <- svm_filter(object, object$init_signal)
-  
+  out <- gaussian_kfilter(object, model_type = 2L)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
   out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))

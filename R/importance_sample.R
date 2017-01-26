@@ -17,7 +17,7 @@ importance_sample <- function(object, nsim, seed, ...) {
 importance_sample.ngssm <- function(object, nsim,  seed = sample(.Machine$integer.max, size = 1), ...) {
 
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  ngssm_importance_sample(object, object$init_signal, nsim, seed)
+  ngssm_importance_sample(object, object$initial_mode, nsim, seed)
 }
 #' @method importance_sample ng_bsm
 #' @rdname importance_sample
@@ -25,12 +25,12 @@ importance_sample.ngssm <- function(object, nsim,  seed = sample(.Machine$intege
 importance_sample.ng_bsm <- function(object, nsim, seed = sample(.Machine$integer.max, size = 1), ...) {
 
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  ng_bsm_importance_sample(object, object$init_signal, nsim, seed)
+  ng_bsm_importance_sample(object, object$initial_mode, nsim, seed)
 }
 #' @method importance_sample svm
 #' @rdname importance_sample
 #' @export
 importance_sample.svm <- function(object, nsim, seed = sample(.Machine$integer.max, size = 1), ...) {
 
-  svm_importance_sample(object, object$init_signal, nsim, seed)
+  svm_importance_sample(object, object$initial_mode, nsim, seed)
 }

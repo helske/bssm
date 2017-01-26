@@ -7,21 +7,22 @@
 \title{Bayesian inference of non-Gaussian or non-linear state space models using MCMC}
 \usage{
 \method{run_mcmc}{ngssm}(object, n_iter, nsim_states, type = "full",
-  method = "pm", simulation_method = "spdk", const_m = TRUE,
+  method = "pm", simulation_method = "psi", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{run_mcmc}{ng_bsm}(object, n_iter, nsim_states, type = "full",
-  method = "pm", simulation_method = "spdk", const_m = TRUE,
+  method = "pm", simulation_method = "psi", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx = TRUE, n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+  seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
+  conv_tol = 1e-08, ...)
 
 \method{run_mcmc}{svm}(object, n_iter, nsim_states, type = "full",
-  method = "pm", simulation_method = "spdk", const_m = TRUE,
+  method = "pm", simulation_method = "psi", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   adaptive_approx = TRUE, n_threads = 1,

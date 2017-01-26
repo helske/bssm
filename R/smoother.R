@@ -38,7 +38,7 @@ fast_smoother.ngssm <- function(object, ...) {
   object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
   
-  out <- ngssm_fast_smoother(object, object$init_signal)
+  out <- ngssm_fast_smoother(object, object$initial_mode)
   colnames(out) <- names(object$a1)
   ts(out, start = start(object$y), frequency = frequency(object$y))
 }
@@ -48,7 +48,7 @@ fast_smoother.ng_bsm <- function(object, ...) {
   
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
   
-  out <- ng_bsm_fast_smoother(object, object$init_signal)
+  out <- ng_bsm_fast_smoother(object, object$initial_mode)
   colnames(out) <- names(object$a1)
   ts(out, start = start(object$y), frequency = frequency(object$y))
 }
@@ -59,7 +59,7 @@ fast_smoother.svm <- function(object, ...) {
   object$distribution <- 0
   object$phi <- rep(object$sigma, length(object$y))
   
-  out <- svm_fast_smoother(object, object$init_signal)
+  out <- svm_fast_smoother(object, object$initial_mode)
   colnames(out) <- names(object$a1)
   ts(out, start = start(object$y), frequency = frequency(object$y))
 }
@@ -72,7 +72,7 @@ smoother <- function(object, ...) {
 #' @export
 smoother.gssm <- function(object, ...) {
   
-  out <- gssm_smoother(object)
+  out <-  gaussian_smoother(object, model_type = 1L)
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
   out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
   out
@@ -81,40 +81,7 @@ smoother.gssm <- function(object, ...) {
 #' @export
 smoother.bsm <- function(object, ...) {
   
-  out <- bsm_smoother(object)
-  colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
-  out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
-  out
-}
-#' @method smoother ngssm
-#' @export
-smoother.ngssm <- function(object, ...) {
-  
-  object$distribution <- pmatch(object$distribution,
-    c("poisson", "binomial", "negative binomial"))
-  
-  out <- ngssm_smoother(object, object$init_signal)
-  colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
-  out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
-  out
-}
-#' @method smoother ng_bsm
-#' @export
-smoother.ng_bsm <- function(object, ...) {
-  
-  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  
-  out <- ng_bsm_smoother(object, object$init_signal)
-  colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
-  out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
-  out
-}
-#' @method smoother svm
-#' @export
-smoother.svm <- function(object, ...) {
-  
-
-  out <- svm_smoother(object, object$init_signal)
+  out <- gaussian_smoother(object, model_type = 2L)
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
   out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
   out

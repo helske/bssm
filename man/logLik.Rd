@@ -7,7 +7,7 @@
 \usage{
 \method{logLik}{gssm}(object, ...)
 
-\method{logLik}{ngssm}(object, nsim_states, method = "spdk", seed = 1,
+\method{logLik}{ngssm}(object, nsim_states, method = "psi", seed = 1,
   max_iter = 100, conv_tol = 1e-08, ...)
 }
 \arguments{
@@ -21,7 +21,7 @@ See vignette for details.}
 \item{method}{Method for computing the log-likelihood of non-Gaussian/non-linear model. 
 Default \code{"spdk"} uses the importance sampling approach by 
 Shephard and Pitt (1997), and Durbin and Koopman (1997). \code{"psi"} uses psi-auxiliary filter and 
-\code{"bootstrap"} bootstrap filter.}
+\code{"bsf"} bootstrap filter.}
 
 \item{seed}{Seed for the random number generator. Compared to other functions of the package, the
 default seed is fixed (as 1) in order to work properly in numerical optimization algorithms.}
