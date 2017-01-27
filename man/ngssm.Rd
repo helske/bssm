@@ -2,7 +2,7 @@
 % Please edit documentation in R/models.R
 \name{ngssm}
 \alias{ngssm}
-\title{General non-Gaussian/non-linear state space models}
+\title{General univariate non-Gaussian/non-linear state space models}
 \usage{
 ngssm(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL, beta,
   state_names, Z_prior, T_prior, R_prior, state_intercept)

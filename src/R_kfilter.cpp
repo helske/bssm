@@ -2,7 +2,7 @@
 #include "ugg_bsm.h"
 
 // [[Rcpp::export]]
-Rcpp::List gaussian_kfilter(const Rcpp::List& model_, const unsigned int model_type) {
+Rcpp::List gaussian_kfilter(const Rcpp::List& model_, const int model_type) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;

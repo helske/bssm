@@ -14,14 +14,9 @@ public:
   virtual void set_theta(const arma::vec& theta) = 0;
   // get the current values of theta
   virtual arma::vec get_theta() const = 0;
-  // compute the log-likelihood of the model
-  virtual double log_likelihood(const unsigned int method, const unsigned int nsim_states) = 0;
-  
-  // compute y and H of the approximating Gaussian model
-  virtual void laplace_iter(const arma::mat& signal, arma::mat& approx_y, 
-    arma::cube& approx_H) const = 0;
+ 
   // find the approximating Gaussian model
-  virtual mgg_ssm approximate(arma::mat& signal, const unsigned int max_iter, 
+  virtual mgg_ssm approximate(arma::mat& mode_estimate, const unsigned int max_iter, 
     const double conv_tol) const = 0;
   
   // psi-particle filter
@@ -36,7 +31,7 @@ public:
   
   // compute unnormalized mode-based scaling terms
   // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
-  virtual arma::vec scaling_factors(const mgg_ssm& approx_model, const arma::vec& mode_estimate) const = 0;
+  virtual arma::vec scaling_factors(const mgg_ssm& approx_model, const arma::mat& mode_estimate) const = 0;
   
 };
 

@@ -9,7 +9,8 @@ Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
   unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin,
   double gamma, double target_acceptance, arma::mat S,
   unsigned int seed, bool end_ram, unsigned int n_threads, 
-  unsigned int model_type) {
+  int model_type, const arma::uvec& Z_ind, const arma::uvec& H_ind, 
+  const arma::uvec& T_ind, const arma::uvec& R_ind) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -28,7 +29,7 @@ Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
   
   switch (model_type) {
   case 1: {
-    ugg_ssm model(clone(model_), seed);
+    ugg_ssm model(clone(model_), seed, Z_ind, H_ind, T_ind, R_ind);
     mcmc_run.mcmc_gaussian(model, end_ram);
     if(sim_states) mcmc_run.state_posterior(model, n_threads);
   } break;
@@ -60,7 +61,8 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
   double gamma, double target_acceptance, arma::mat S,
   unsigned int seed, bool end_ram, unsigned int n_threads, bool local_approx,
   arma::vec initial_mode, unsigned int max_iter, double conv_tol,
-  unsigned int simulation_method, unsigned int model_type) {
+  unsigned int simulation_method, int model_type, const arma::uvec& Z_ind,
+  const arma::uvec& T_ind, const arma::uvec& R_ind) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -79,7 +81,7 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
   
   switch (model_type) {
   case 1: {
-    ung_ssm model(clone(model_), seed);
+    ung_ssm model(clone(model_), seed, Z_ind, T_ind, R_ind);
     switch (simulation_method) {
     case 1: 
       mcmc_run.pm_mcmc_psi(model, end_ram, nsim_states, local_approx, initial_mode, 
@@ -119,7 +121,8 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
   double gamma, double target_acceptance, arma::mat S,
   unsigned int seed, bool end_ram, unsigned int n_threads, bool local_approx,
   arma::vec initial_mode, unsigned int max_iter, double conv_tol,
-  unsigned int simulation_method, unsigned int model_type) {
+  unsigned int simulation_method, int model_type, const arma::uvec& Z_ind,
+  const arma::uvec& T_ind, const arma::uvec& R_ind) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -138,7 +141,7 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
   
   switch (model_type) {
   case 1: {
-    ung_ssm model(clone(model_), seed);
+    ung_ssm model(clone(model_), seed, Z_ind, T_ind, R_ind);
     switch (simulation_method) {
     case 1: 
       mcmc_run.da_mcmc_psi(model, end_ram, nsim_states, local_approx, initial_mode, 
@@ -181,7 +184,8 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
   double gamma, double target_acceptance, arma::mat S,
   unsigned int seed, bool end_ram, unsigned int n_threads, bool local_approx,
   arma::vec initial_mode, unsigned int max_iter, double conv_tol,
-  unsigned int simulation_method, bool const_sim, unsigned int model_type) {
+  unsigned int simulation_method, bool const_sim, int model_type, 
+  const arma::uvec& Z_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -200,7 +204,7 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
   
   switch (model_type) {
   case 1: {
-    ung_ssm model(clone(model_), seed);
+    ung_ssm model(clone(model_), seed, Z_ind, T_ind, R_ind);
     mcmc_run.approx_mcmc(model, end_ram, local_approx, initial_mode, 
       max_iter, conv_tol);
     switch (simulation_method) {

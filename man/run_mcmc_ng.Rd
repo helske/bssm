@@ -10,23 +10,22 @@
   method = "pm", simulation_method = "psi", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  adaptive_approx = TRUE, n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+  local_approx = TRUE, n_threads = 1, seed = sample(.Machine$integer.max,
+  size = 1), ...)
 
 \method{run_mcmc}{ng_bsm}(object, n_iter, nsim_states, type = "full",
   method = "pm", simulation_method = "psi", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  adaptive_approx = TRUE, n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
-  conv_tol = 1e-08, ...)
+  local_approx = TRUE, n_threads = 1, seed = sample(.Machine$integer.max,
+  size = 1), max_iter = 100, conv_tol = 1e-08, ...)
 
 \method{run_mcmc}{svm}(object, n_iter, nsim_states, type = "full",
   method = "pm", simulation_method = "psi", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  adaptive_approx = TRUE, n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), gkl_prior = FALSE, ...)
+  local_approx = TRUE, n_threads = 1, seed = sample(.Machine$integer.max,
+  size = 1), ...)
 }
 \arguments{
 \item{object}{Model object.}
@@ -69,7 +68,7 @@ distribution is \eqn{SS'}.}
 
 \item{end_adaptive_phase}{If \code{TRUE} (default), $S$ is held fixed after the burnin period.}
 
-\item{adaptive_approx}{If \code{TRUE} (default), Gaussian approximation needed for 
+\item{local_approx}{If \code{TRUE} (default), Gaussian approximation needed for 
 importance sampling is performed at each iteration. If false, approximation is updated only 
 once at the start of the MCMC.}
 
@@ -78,17 +77,8 @@ once at the start of the MCMC.}
 \item{seed}{Seed for the random number generator.}
 
 \item{...}{Ignored.}
-
-\item{gkl_prior}{If \code{gkl_prior} is \code{TRUE}, hard-coded priors based on 
-Grothe, Kleppe, and Liesenfeld (2016) are used in SV model. Only applicable to model defined using
-sigma in observation equation. See references for details.}
 }
 \description{
 Methods for posterior inference of states and parameters.
-}
-\references{
-Oliver Grothe, Tore Selland Kleppe, Roman Liesenfeld (2016). 
-"Bayesian Analysis in Non-linear Non-Gaussian State-Space Models using Particle Gibbs". 
-ArXiv:1601.01125.
 }
 

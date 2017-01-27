@@ -1,3 +1,4 @@
+#include "mgg_ssm.h"
 #include "ugg_ssm.h"
 #include "ung_ssm.h"
 #include "ugg_bsm.h"
@@ -5,10 +6,14 @@
 #include "ng_loglik.h"
 
 // [[Rcpp::export]]
-double gaussian_loglik(const Rcpp::List& model_, unsigned int model_type) {
+double gaussian_loglik(const Rcpp::List& model_, int model_type) {
   
   double loglik = 0;
   switch (model_type) {
+  case -1: {
+    mgg_ssm model(clone(model_), 1);
+    loglik = model.log_likelihood();
+  } break;
   case 1: {
     ugg_ssm model(clone(model_), 1);
     loglik = model.log_likelihood();

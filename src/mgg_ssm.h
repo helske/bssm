@@ -20,44 +20,43 @@ public:
   // constructor from armadillo objects
   mgg_ssm(const arma::mat& y, const arma::cube& Z, const arma::cube& H, 
     const arma::cube& T, const arma::cube& R, const arma::vec& a1, 
-    const arma::mat& P1, const arma::mat& xreg, const arma::vec& beta, 
-    const arma::mat& C, const arma::mat& D, const unsigned int seed = 1, 
-    const arma::uvec& Z_ind = arma::uvec(), 
-    const arma::uvec& H_ind = arma::uvec(), 
-    const arma::uvec& T_ind = arma::uvec(), 
-    const arma::uvec& R_ind = arma::uvec());
+    const arma::mat& P1, const arma::cube& xreg, const arma::mat& beta, 
+    const arma::mat& D, const arma::mat& C, const unsigned int seed, 
+    const arma::uvec& Z_ind, const arma::uvec& H_ind, const arma::uvec& T_ind, 
+    const arma::uvec& R_ind);
   
   // update model matrices
   void set_theta(const arma::vec& theta);
   // get current value of theta
   arma::vec get_theta() const;
   
-  // compute the log-likelihood using Kalman filter
-  double log_likelihood() const;
-  
-  arma::cube simulate_states(unsigned int nsim_states, bool use_antithetic = true);
-  
   // compute the covariance matrices
   void compute_RR();
   void compute_HH();
   // compute the regression part
-  void compute_xbeta() { xbeta = xreg * beta; }
+  void compute_xbeta();
   
-  // perform fast state smoothing
-  arma::mat fast_smoother() const;
-  // smoothing which also returns covariances cov(alpha_t, alpha_t-1)
-  void smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) const;
   
+  // compute the log-likelihood using Kalman filter
+  double log_likelihood() const;
+  
+  // arma::cube simulate_states(unsigned int nsim_states, bool use_antithetic = true);
+  // 
+  // 
+  // // perform fast state smoothing
+  // arma::mat fast_smoother() const;
+  // // smoothing which also returns covariances cov(alpha_t, alpha_t-1)
+  // void smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) const;
+  // 
   arma::mat y;
   arma::cube Z;
   arma::cube H;
   arma::cube T;
   arma::cube R;
-  arma::cube Q;
   arma::vec a1;
   arma::mat P1;
-  arma::mat xreg;
-  arma::vec beta;
+  arma::cube xreg;
+  arma::mat beta;
   arma::mat C;
   arma::mat D;
   
@@ -75,7 +74,7 @@ public:
   
   arma::cube HH;
   arma::cube RR;
-  arma::vec xbeta;
+  arma::mat xbeta;
   
   std::mt19937 engine;
   const double zero_tol;

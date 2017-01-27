@@ -14,8 +14,6 @@ public:
   virtual arma::vec get_theta() const = 0;
   // compute the log-likelihood
   virtual double log_likelihood() const = 0;
-  // simulate states
-  virtual arma::cube simulate_states(unsigned int nsim_states, bool use_antithetic) = 0;
 };
 
 

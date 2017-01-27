@@ -26,6 +26,11 @@ logLik.gssm <- function(object, ...) {
 logLik.bsm <- function(object, ...) {
   gaussian_loglik(object, model_type = 2L)
 }
+#' @method logLik mv_gssm
+#' @export
+logLik.mv_gssm <- function(object, ...) {
+  gaussian_loglik(object, model_type = -1L)
+}
 #' @method logLik ngssm
 #' @rdname logLik
 #' @export

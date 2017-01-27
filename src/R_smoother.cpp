@@ -2,7 +2,7 @@
 #include "ugg_bsm.h"
 
 // [[Rcpp::export]]
-Rcpp::List gaussian_smoother(const Rcpp::List& model_, const unsigned int model_type) {
+Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -39,7 +39,7 @@ Rcpp::List gaussian_smoother(const Rcpp::List& model_, const unsigned int model_
 
 
 // [[Rcpp::export]]
-arma::mat gaussian_fast_smoother(const Rcpp::List& model_, const unsigned int model_type) {
+arma::mat gaussian_fast_smoother(const Rcpp::List& model_, const int model_type) {
   
   switch (model_type) {
   case 1: {
@@ -58,7 +58,7 @@ arma::mat gaussian_fast_smoother(const Rcpp::List& model_, const unsigned int mo
 
 // [[Rcpp::export]]
 arma::cube gaussian_sim_smoother(const Rcpp::List& model_, const unsigned int nsim, 
-  bool use_antithetic, const unsigned int seed, const unsigned int model_type) {
+  bool use_antithetic, const unsigned int seed, const int model_type) {
   
   switch (model_type) {
   case 1: {

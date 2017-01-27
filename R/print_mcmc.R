@@ -32,7 +32,7 @@ print.mcmc_output <- function(x, jump_chain = TRUE,...) {
     se_theta <- sqrt(weighted_se(x$theta, w)^2 + x$acceptance_rate*spectrum0.ar(x$theta)$spec/nrow(x$theta))
     print(c(Mean = mean_theta, SD = sd_theta, "Asymptotic SE" = se_theta))
     cat("Effective sample sizes for theta:\n\n")
-    print(diag(weighted_var(x$theta, w)) / se_theta^2)
+    print((sd_theta/ se_theta)^2)
   } else {
     print(summary(x$theta)$stat)
     cat("\nEffective sample sizes for theta:\n\n")

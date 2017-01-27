@@ -62,7 +62,6 @@ public:
   arma::vec H;
   arma::cube T;
   arma::cube R;
-  arma::cube Q;
   arma::vec a1;
   arma::mat P1;
   arma::mat xreg;

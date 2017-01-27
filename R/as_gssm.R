@@ -1,6 +1,6 @@
 #' Convert SSModel Object to gssm or ngssm Object
 #'
-#' Converts univariate \code{SSModel} object of \code{KFAS} package to 
+#' Converts \code{SSModel} object of \code{KFAS} package to 
 #' \code{gssm} or \code{ngssm} object.
 #'
 #' @param model Object of class \code{SSModel}.
@@ -17,16 +17,11 @@ as_gssm <- function(model, kappa = 1e5, ...) {
     stop("This function depends on the KFAS package. ", call. = FALSE)
   }
   
-  if (attr(model, "p") > 1) {
-    stop("Only univariate time series are supported.")
-  }
-  
-  if (model$distribution != "gaussian") {
+  if (any(model$distribution != "gaussian")) {
     stop("SSModel object contains non-Gaussian series.")
   }
   
   model$P1[model$P1inf > 0] <- kappa
-  model$H <- sqrt(c(model$H))
   
   tvr <- dim(model$R)[3] > 1
   tvq <- dim(model$Q)[3] > 1
@@ -45,10 +40,18 @@ as_gssm <- function(model, kappa = 1e5, ...) {
     R <- model$R * sqrt(c(model$Q))
   }
   
-  Z <- aperm(model$Z, c(2, 3, 1))
-  dim(Z) <- dim(Z)[1:2]
-  gssm(y = model$y, Z = Z, H = model$H, T = model$T,
-    R = R, a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
+  if (attr(model, "p") == 1) {
+    model$H <- sqrt(c(model$H))
+    Z <- aperm(model$Z, c(2, 3, 1))
+    dim(Z) <- dim(Z)[1:2]
+    out <- gssm(y = model$y, Z = Z, H = model$H, T = model$T,
+      R = R, a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
+  } else {
+    out <- mv_gssm(y = model$y, Z = Z, H = model$H, T = model$T,
+      R = R, a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
+  }
+  
+  out
 }
 
 #' @rdname as_gssm

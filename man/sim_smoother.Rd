@@ -14,6 +14,8 @@ sim_smoother(object, nsim, seed, ...)
 \item{seed}{Seed for the random number generator.}
 
 \item{...}{Ignored.}
+
+\item{use_antithetic}{Use an antithetic variable for location. Default is \code{FALSE}.}
 }
 \value{
 An array containing the generated samples.
@@ -23,7 +25,8 @@ Function \code{sim_smoother} performs simulation smoothing i.e. simulates the st
 from the conditional distribution \eqn{p(\alpha | y, \theta)}.
 }
 \details{
-For non-Gaussian models, the simulation smoothing is based on the approximate Gaussian model.
+For non-Gaussian/non-linear models, the simulation is based on the approximating
+Gaussian model.
 }
 \examples{
 model <- bsm(rep(NA, 50), sd_level = uniform(1,0,5), sd_y = uniform(1,0,5))

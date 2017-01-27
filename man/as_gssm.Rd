@@ -23,7 +23,7 @@ used to replace exact diffuse elements of the original model.}
 Object of class \code{gssm} or \code{ngssm}.
 }
 \description{
-Converts univariate \code{SSModel} object of \code{KFAS} package to 
+Converts \code{SSModel} object of \code{KFAS} package to 
 \code{gssm} or \code{ngssm} object.
 }
 
