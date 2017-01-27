@@ -41,3 +41,21 @@ kfilter.bsm <- function(object, ...) {
   out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   out
 }
+
+#' @method kfilter ngssm
+#' @export
+kfilter.ngssm <- function(object, ...) {
+  gaussian_kfilter(gaussian_approx(object))
+}
+
+#' @method kfilter ng_bsm
+#' @export
+kfilter.ng_bsm <- function(object, ...) {
+  gaussian_kfilter(gaussian_approx(object))
+}
+
+#' @method kfilter svm
+#' @export
+kfilter.svm <- function(object, ...) {
+  gaussian_kfilter(gaussian_approx(object))
+}

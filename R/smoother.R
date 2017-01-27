@@ -19,7 +19,7 @@ fast_smoother <- function(object, ...) {
 #' @export
 fast_smoother.gssm <- function(object, ...) {
   
-  out <- gssm_fast_smoother(object$y)
+  out <- gaussian_fast_smoother(object, model_type = 1L)
   colnames(out) <- names(object$a1)
   ts(out, start = start(object$y), frequency = frequency(object$y))
 }
@@ -27,41 +27,24 @@ fast_smoother.gssm <- function(object, ...) {
 #' @export
 fast_smoother.bsm <- function(object, ...) {
   
-  out <- bsm_fast_smoother(object)
+  out <- gaussian_fast_smoother(object, model_type = 2L)
   colnames(out) <- names(object$a1)
   ts(out, start = start(object$y), frequency = frequency(object$y))
 }
 #' @method fast_smoother ngssm
 #' @export
 fast_smoother.ngssm <- function(object, ...) {
-  
-  object$distribution <- pmatch(object$distribution,
-    c("poisson", "binomial", "negative binomial"))
-  
-  out <- ngssm_fast_smoother(object, object$initial_mode)
-  colnames(out) <- names(object$a1)
-  ts(out, start = start(object$y), frequency = frequency(object$y))
+  fast_smoother(gaussian_approx(object))
 }
 #' @method fast_smoother ng_bsm
 #' @export
 fast_smoother.ng_bsm <- function(object, ...) {
-  
-  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  
-  out <- ng_bsm_fast_smoother(object, object$initial_mode)
-  colnames(out) <- names(object$a1)
-  ts(out, start = start(object$y), frequency = frequency(object$y))
+  fast_smoother(gaussian_approx(object))
 }
 #' @method fast_smoother svm
 #' @export
 fast_smoother.svm <- function(object, ...) {
-  
-  object$distribution <- 0
-  object$phi <- rep(object$sigma, length(object$y))
-  
-  out <- svm_fast_smoother(object, object$initial_mode)
-  colnames(out) <- names(object$a1)
-  ts(out, start = start(object$y), frequency = frequency(object$y))
+  fast_smoother(gaussian_approx(object))
 }
 #' @export
 #' @rdname smoother
@@ -85,4 +68,22 @@ smoother.bsm <- function(object, ...) {
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
   out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
   out
+}
+
+#' @method smoother ngssm
+#' @export
+smoother.ngssm <- function(object, ...) {
+  gaussian_smoother(gaussian_approx(object))
+}
+
+#' @method smoother ng_bsm
+#' @export
+smoother.ng_bsm <- function(object, ...) {
+  gaussian_smoother(gaussian_approx(object))
+}
+
+#' @method smoother svm
+#' @export
+smoother.svm <- function(object, ...) {
+  gaussian_smoother(gaussian_approx(object))
 }

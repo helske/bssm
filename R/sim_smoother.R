@@ -2,11 +2,13 @@
 #'
 #' Function \code{sim_smoother} performs simulation smoothing i.e. simulates the states
 #' from the conditional distribution \eqn{p(\alpha | y, \theta)}.
-#'
-#' For non-Gaussian models, the simulation smoothing is based on the approximate Gaussian model.
+#' 
+#' For non-Gaussian/non-linear models, the simulation is based on the approximating
+#' Gaussian model.
 #'
 #' @param object Model object.
 #' @param nsim Number of independent samples.
+#' @param use_antithetic Use an antithetic variable for location. Default is \code{FALSE}.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @return An array containing the generated samples.
@@ -21,47 +23,40 @@ sim_smoother <- function(object, nsim, seed, ...) {
 }
 #' @method sim_smoother gssm
 #' @export
-sim_smoother.gssm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
+sim_smoother.gssm <- function(object, nsim = 1, use_antithetic = FALSE, 
+  seed = sample(.Machine$integer.max, size = 1), ...) {
 
-  out <- gssm_sim_smoother(object, nsim, seed)
+  out <- gaussian_sim_smoother(object, nsim, use_antithetic, seed, model_type = 1L)
   rownames(out) <- names(object$a1)
   aperm(out, c(2, 1, 3))
 }
 #' @method sim_smoother bsm
 #' @export
-sim_smoother.bsm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
+sim_smoother.bsm <- function(object, nsim = 1, use_antithetic = FALSE, 
+  seed = sample(.Machine$integer.max, size = 1), ...) {
 
-  out <- bsm_sim_smoother(object, nsim, seed)
+  out <- gaussian_sim_smoother(object, nsim, use_antithetic, seed, model_type = 2L)
   rownames(out) <- names(object$a1)
   aperm(out, c(2, 1, 3))
 }
 #' @method sim_smoother ngssm
 #' @export
-sim_smoother.ngssm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
-
-  object$distribution <- pmatch(object$distribution,
-    c("poisson", "binomial", "negative binomial"))
-
-  out <- ngssm_sim_smoother(object, nsim, object$initial_mode, seed)
-  rownames(out) <- names(object$a1)
-  aperm(out, c(2, 1, 3))
+sim_smoother.ngssm <- function(object, nsim = 1, use_antithetic = FALSE, 
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  sim_smoother(gaussian_approx(object), nsim = nsim, 
+    use_antithetic = use_antithetic, seed = seed)
 }
 #' @method sim_smoother ng_bsm
 #' @export
-sim_smoother.ng_bsm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
-
-  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  out <- ng_bsm_sim_smoother(object, nsim, object$initial_mode, seed)
-
-  rownames(out) <- names(object$a1)
-  aperm(out, c(2, 1, 3))
+sim_smoother.ng_bsm <- function(object, nsim = 1, use_antithetic = FALSE, 
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  sim_smoother(gaussian_approx(object), nsim = nsim, 
+    use_antithetic = use_antithetic, seed = seed)
 }
 #' @method sim_smoother svm
 #' @export
-sim_smoother.svm <- function(object, nsim = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
-
-  out <- svm_sim_smoother(object, nsim, object$initial_mode, seed)
-
-  rownames(out) <- names(object$a1)
-  aperm(out, c(2, 1, 3))
+sim_smoother.svm <- function(object, nsim = 1, use_antithetic = FALSE, 
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  sim_smoother(gaussian_approx(object), nsim = nsim, 
+    use_antithetic = use_antithetic, seed = seed)
 }
