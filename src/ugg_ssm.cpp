@@ -138,7 +138,7 @@ double ugg_ssm::log_likelihood() const {
 }
 
 
-arma::cube ugg_ssm::simulate_states(unsigned int nsim, bool use_antithetic) {
+arma::cube ugg_ssm::simulate_states(const unsigned int nsim, const bool use_antithetic) {
 
   arma::vec y_tmp = y;
 

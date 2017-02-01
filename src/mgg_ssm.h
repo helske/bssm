@@ -22,8 +22,10 @@ public:
     const arma::cube& T, const arma::cube& R, const arma::vec& a1, 
     const arma::mat& P1, const arma::cube& xreg, const arma::mat& beta, 
     const arma::mat& D, const arma::mat& C, const unsigned int seed, 
-    const arma::uvec& Z_ind, const arma::uvec& H_ind, const arma::uvec& T_ind, 
-    const arma::uvec& R_ind);
+    const arma::uvec& Z_ind = arma::uvec(), 
+    const arma::uvec& H_ind = arma::uvec(), 
+    const arma::uvec& T_ind = arma::uvec(), 
+    const arma::uvec& R_ind = arma::uvec());
   
   // update model matrices
   void set_theta(const arma::vec& theta);
@@ -43,10 +45,10 @@ public:
   // arma::cube simulate_states(unsigned int nsim_states, bool use_antithetic = true);
   // 
   // 
-  // // perform fast state smoothing
-  // arma::mat fast_smoother() const;
-  // // smoothing which also returns covariances cov(alpha_t, alpha_t-1)
-  // void smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) const;
+  // perform fast state smoothing
+  arma::mat fast_smoother() const;
+  // smoothing which also returns covariances cov(alpha_t, alpha_t-1)
+  void smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) const;
   // 
   arma::mat y;
   arma::cube Z;

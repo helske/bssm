@@ -173,8 +173,8 @@ ugg_ssm ung_ssm::approximate(arma::vec& mode_estimate, const unsigned int max_it
 }
 
 //update previously obtained approximation
-void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate, const unsigned int max_iter, 
-  const double conv_tol) const {
+void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate, 
+  const unsigned int max_iter, const double conv_tol) const {
   
   //update model
   approx_model.Z = Z;
@@ -413,7 +413,8 @@ arma::vec ung_ssm::scaling_factors(const ugg_ssm& approx_model,
  * t:             Time point where the densities are computed
  * alpha:         Simulated particles
  */
-arma::vec ung_ssm::log_obs_density(const unsigned int t, const arma::cube& alpha) const {
+arma::vec ung_ssm::log_obs_density(const unsigned int t, 
+  const arma::cube& alpha) const {
   
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
   
@@ -452,7 +453,7 @@ arma::vec ung_ssm::log_obs_density(const unsigned int t, const arma::cube& alpha
   return weights;
 }
 
-double ung_ssm::bsf_filter(unsigned int nsim, arma::cube& alpha,
+double ung_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
   
   // arma::mat U(m, m);

@@ -1,7 +1,7 @@
 #include "ung_bsm.h"
 
 // from Rcpp::List
-ung_bsm::ung_bsm(const Rcpp::List& model, unsigned int seed) :
+ung_bsm::ung_bsm(const Rcpp::List& model, const unsigned int seed) :
   ung_ssm(model, seed), slope(Rcpp::as<bool>(model["slope"])),
   seasonal(Rcpp::as<bool>(model["seasonal"])),
   noise(Rcpp::as<bool>(model["noise"])),

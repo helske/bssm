@@ -12,9 +12,10 @@
 #include "filter_smoother.h"
 
 mcmc::mcmc(const arma::uvec& prior_distributions, const arma::mat& prior_parameters,
-  unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin,
-  unsigned int n, unsigned int m,
-  double target_acceptance, double gamma, arma::mat& S, bool store_states) :
+  const unsigned int n_iter, const unsigned int n_burnin, 
+  const unsigned int n_thin, const unsigned int n, const unsigned int m,
+  const double target_acceptance, const double gamma, const arma::mat& S, 
+  const bool store_states) :
   prior_distributions(prior_distributions), prior_parameters(prior_parameters),
   n_stored(0), n_iter(n_iter), n_burnin(n_burnin), n_thin(n_thin),
   n_samples(floor((n_iter - n_burnin) / n_thin)), 
@@ -111,11 +112,11 @@ double mcmc::log_prior_pdf(const arma::vec& theta) const {
 // run MCMC for linear-Gaussian state space model
 // target the marginal p(theta | y)
 // sample states separately given the posterior sample of theta
-template void mcmc::mcmc_gaussian(ugg_ssm model, bool end_ram);
-template void mcmc::mcmc_gaussian(ugg_bsm model, bool end_ram);
+template void mcmc::mcmc_gaussian(ugg_ssm model, const bool end_ram);
+template void mcmc::mcmc_gaussian(ugg_bsm model, const bool end_ram);
 
 template<class T>
-void mcmc::mcmc_gaussian(T model, bool end_ram) {
+void mcmc::mcmc_gaussian(T model, const bool end_ram) {
   
   arma::vec theta = model.get_theta();
   double logprior = log_prior_pdf(theta);
@@ -187,17 +188,17 @@ void mcmc::mcmc_gaussian(T model, bool end_ram) {
 
 // run pseudo-marginal MCMC for non-linear and/or non-Gaussian state space model
 // using psi-PF
-template void mcmc::pm_mcmc_psi(ung_ssm model, bool end_ram, 
-  unsigned int nsim_states, bool local_approx, arma::vec& initial_mode, 
-  unsigned int max_iter, double conv_tol);
-template void mcmc::pm_mcmc_psi(ung_bsm model, bool end_ram, 
-  unsigned int nsim_states, bool local_approx, arma::vec& initial_mode, 
-  unsigned int max_iter, double conv_tol);
+template void mcmc::pm_mcmc_psi(ung_ssm model, const bool end_ram, 
+  const unsigned int nsim_states, const bool local_approx, 
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
+template void mcmc::pm_mcmc_psi(ung_bsm model, const bool end_ram, 
+  const unsigned int nsim_states, const bool local_approx, 
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
 
 template<class T>
-void mcmc::pm_mcmc_psi(T model, bool end_ram, unsigned int nsim_states, 
-  bool local_approx, arma::vec& initial_mode, unsigned int max_iter, 
-  double conv_tol) {
+void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_states, 
+  const bool local_approx, const arma::vec& initial_mode, const unsigned int max_iter, 
+  const double conv_tol) {
   
   unsigned int m = model.m;
   unsigned n = model.n;
@@ -327,13 +328,13 @@ void mcmc::pm_mcmc_psi(T model, bool end_ram, unsigned int nsim_states,
 //run pseudo-marginal MCMC for non-linear and/or non-Gaussian state space model
 //using bsf-PF
 
-template void mcmc::pm_mcmc_bsf(ung_ssm model, bool end_ram,
-  unsigned int nsim_states);
-template void mcmc::pm_mcmc_bsf(ung_bsm model, bool end_ram,
-  unsigned int nsim_states);
+template void mcmc::pm_mcmc_bsf(ung_ssm model, const bool end_ram,
+  const unsigned int nsim_states);
+template void mcmc::pm_mcmc_bsf(ung_bsm model, const bool end_ram,
+  const unsigned int nsim_states);
 
 template<class T>
-void mcmc::pm_mcmc_bsf(T model, bool end_ram, unsigned int nsim_states) {
+void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_states) {
   
   unsigned int m = model.m;
   unsigned n = model.n;
@@ -430,17 +431,17 @@ void mcmc::pm_mcmc_bsf(T model, bool end_ram, unsigned int nsim_states) {
 // run delayed acceptance pseudo-marginal MCMC for 
 // non-linear and/or non-Gaussian state space model
 // using psi-PF
-template void mcmc::da_mcmc_psi(ung_ssm model, bool end_ram, 
-  unsigned int nsim_states, bool local_approx, arma::vec& initial_mode, 
-  unsigned int max_iter, double conv_tol);
-template void mcmc::da_mcmc_psi(ung_bsm model, bool end_ram, 
-  unsigned int nsim_states, bool local_approx, arma::vec& initial_mode, 
-  unsigned int max_iter, double conv_tol);
+template void mcmc::da_mcmc_psi(ung_ssm model, const bool end_ram, 
+  const unsigned int nsim_states, const bool local_approx, 
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
+template void mcmc::da_mcmc_psi(ung_bsm model, const bool end_ram, 
+  const unsigned int nsim_states, const bool local_approx, 
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
 
 template<class T>
-void mcmc::da_mcmc_psi(T model, bool end_ram, unsigned int nsim_states, 
-  bool local_approx, arma::vec& initial_mode, unsigned int max_iter, 
-  double conv_tol) {
+void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_states, 
+  const bool local_approx, const arma::vec& initial_mode, const unsigned int max_iter, 
+  const double conv_tol) {
   
   unsigned int m = model.m;
   unsigned n = model.n;
@@ -577,17 +578,17 @@ void mcmc::da_mcmc_psi(T model, bool end_ram, unsigned int nsim_states,
 // run delayed acceptance pseudo-marginal MCMC for 
 // non-linear and/or non-Gaussian state space model
 // using bootstrap filter
-template void mcmc::da_mcmc_bsf(ung_ssm model, bool end_ram, 
-  unsigned int nsim_states, bool local_approx, arma::vec& initial_mode, 
-  unsigned int max_iter, double conv_tol);
-template void mcmc::da_mcmc_bsf(ung_bsm model, bool end_ram, 
-  unsigned int nsim_states, bool local_approx, arma::vec& initial_mode, 
-  unsigned int max_iter, double conv_tol);
+template void mcmc::da_mcmc_bsf(ung_ssm model, const bool end_ram, 
+  const unsigned int nsim_states, const bool local_approx, 
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
+template void mcmc::da_mcmc_bsf(ung_bsm model, const bool end_ram, 
+  const unsigned int nsim_states, const bool local_approx, 
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
 
 template<class T>
-void mcmc::da_mcmc_bsf(T model, bool end_ram, unsigned int nsim_states, 
-  bool local_approx, arma::vec& initial_mode, unsigned int max_iter, 
-  double conv_tol) {
+void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_states, 
+  const bool local_approx, const arma::vec& initial_mode, const unsigned int max_iter, 
+  const double conv_tol) {
   
   unsigned int m = model.m;
   unsigned n = model.n;
@@ -723,16 +724,16 @@ void mcmc::da_mcmc_bsf(T model, bool end_ram, unsigned int nsim_states,
 // // run delayed acceptance pseudo-marginal MCMC for 
 // // non-linear and/or non-Gaussian state space model
 // // using psi-PF
-// template void mcmc::approx_mcmc(ung_ssm model, bool end_ram, 
-//   unsigned int nsim_states, bool local_approx, arma::vec& initial_mode, 
-//   unsigned int max_iter, double conv_tol);
-// template void mcmc::approx_mcmc(ung_bsm model, bool end_ram, 
-//   unsigned int nsim_states, bool local_approx, arma::vec& initial_mode, 
-//   unsigned int max_iter, double conv_tol);
+// template void mcmc::approx_mcmc(ung_ssm model, const bool end_ram, 
+//   const unsigned int nsim_states, const bool local_approx, arma::vec& initial_mode, 
+//   unsigned int max_iter, const double conv_tol);
+// template void mcmc::approx_mcmc(ung_bsm model, const bool end_ram, 
+//   const unsigned int nsim_states, const bool local_approx, arma::vec& initial_mode, 
+//   unsigned int max_iter, const double conv_tol);
 // 
 // template<class T>
-// void mcmc::approx_mcmc(T model, bool end_ram, bool local_approx, 
-//   arma::vec& initial_mode, unsigned int max_iter, double conv_tol) {
+// void mcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx, 
+//   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol) {
 //   
 //   unsigned int m = model.m;
 //   unsigned n = model.n;
@@ -838,13 +839,13 @@ void mcmc::da_mcmc_bsf(T model, bool end_ram, unsigned int nsim_states,
 // }
 // 
 // 
-// // template void mcmc::pm_mcmc_bsf(ung_ssm model, bool end_ram, 
+// // template void mcmc::pm_mcmc_bsf(ung_ssm model, const bool end_ram, 
 // //   unsigned int nsim_states);
-// // template void mcmc::pm_mcmc_bsf(ung_bsm model, bool end_ram, 
+// // template void mcmc::pm_mcmc_bsf(ung_bsm model, const bool end_ram, 
 // //   unsigned int nsim_states);
 // // 
 // // template<class T>
-// // void mcmc::pm_mcmc_bsf(T model, bool end_ram, unsigned int nsim_states) {
+// // void mcmc::pm_mcmc_bsf(T model, const bool end_ram, unsigned int nsim_states) {
 // //   
 // //   unsigned int m = model.m;
 // //   unsigned n = model.n;
@@ -954,7 +955,7 @@ void mcmc::da_mcmc_bsf(T model, bool end_ram, unsigned int nsim_states,
 // // }
 // // 
 // // // template<class T>
-// // // double mcmc::pm_mcmc_bsf(T model, bool end_ram, unsigned int nsim_states) {
+// // // double mcmc::pm_mcmc_bsf(T model, const bool end_ram, unsigned int nsim_states) {
 // // //   
 // // //   double acceptance_rate = 0.0;
 // // //   

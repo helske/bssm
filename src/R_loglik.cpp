@@ -6,7 +6,7 @@
 #include "ng_loglik.h"
 
 // [[Rcpp::export]]
-double gaussian_loglik(const Rcpp::List& model_, int model_type) {
+double gaussian_loglik(const Rcpp::List& model_, const int model_type) {
   
   double loglik = 0;
   switch (model_type) {
@@ -29,9 +29,10 @@ double gaussian_loglik(const Rcpp::List& model_, int model_type) {
 }
 
 // [[Rcpp::export]]
-double nongaussian_loglik(const Rcpp::List& model_, arma::vec mode_estimate,
-  unsigned int nsim_states, unsigned int simulation_method,
-  unsigned int seed, unsigned int max_iter, double conv_tol, unsigned int model_type) {
+double nongaussian_loglik(const Rcpp::List& model_, const arma::vec mode_estimate,
+  const unsigned int nsim_states, const unsigned int simulation_method,
+  const unsigned int seed, const unsigned int max_iter, const double conv_tol,
+  const int model_type) {
   
   double loglik;
   

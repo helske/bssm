@@ -35,7 +35,8 @@ public:
   // compute the log-likelihood
   double log_likelihood() const;
   
-  arma::cube simulate_states(unsigned int nsim_states, bool use_antithetic = true);
+  arma::cube simulate_states(const unsigned int nsim_states, 
+    const bool use_antithetic = true);
   
   // compute the covariance matrices
   void compute_RR();

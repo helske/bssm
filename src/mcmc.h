@@ -24,9 +24,10 @@ public:
   
   // constructor
   mcmc(const arma::uvec& prior_distributions, const arma::mat& prior_parameters,
-    unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin, unsigned int n, unsigned int m,
-    double target_acceptance, double gamma, arma::mat& S, 
-    bool store_states = true);
+    const unsigned int n_iter, const unsigned int n_burnin, 
+    const unsigned int n_thin, const unsigned int n, const unsigned int m,
+    const double target_acceptance, const double gamma, const arma::mat& S, 
+    const bool store_states = true);
   
   // compute the prior pdf
   virtual double log_prior_pdf(const arma::vec& theta) const;
@@ -37,32 +38,35 @@ public:
   // 
   // sample states given theta
   template <class T>
-  void state_posterior(T model, unsigned int n_threads);
+  void state_posterior(T model, const unsigned int n_threads);
   template <class T>
   void state_sampler(T model, const arma::mat& theta, arma::cube& alpha);
   
   // gaussian mcmc
   template<class T>
-  void mcmc_gaussian(T model, bool end_ram);
+  void mcmc_gaussian(T model, const bool end_ram);
   
   // pseudo-marginal mcmc
   template<class T>
-  void pm_mcmc_bsf(T model, bool end_ram, unsigned int nsim_states);
+  void pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_states);
   template<class T>
-  void pm_mcmc_spdk(T model, bool end_ram, unsigned int nsim_states);
+  void pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_states);
   template<class T>
-  void pm_mcmc_psi(T model, bool end_ram, unsigned int nsim_states, 
-    bool local_approx, arma::vec& initial_mode, unsigned int max_iter, double conv_tol);
+  void pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_states, 
+    const bool local_approx, const arma::vec& initial_mode, 
+    const unsigned int max_iter, const double conv_tol);
   
   // delayed acceptance mcmc
   template<class T>
-  void da_mcmc_bsf(T model, bool end_ram, unsigned int nsim_states, 
-    bool local_approx, arma::vec& initial_mode, unsigned int max_iter, double conv_tol);
+  void da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_states, 
+   const bool local_approx, const arma::vec& initial_mode, 
+   const unsigned int max_iter, const double conv_tol);
   template<class T>
-  void da_mcmc_spdk(T model, bool end_ram, unsigned int nsim_states);
+  void da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_states);
   template<class T>
-  void da_mcmc_psi(T model, bool end_ram, unsigned int nsim_states, 
-    bool local_approx, arma::vec& initial_mode, unsigned int max_iter, double conv_tol);
+  void da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_states, 
+   const bool local_approx, const arma::vec& initial_mode, 
+   const unsigned int max_iter, const double conv_tol);
   
   arma::vec posterior_storage;
   arma::mat theta_storage;

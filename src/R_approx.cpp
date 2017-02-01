@@ -4,8 +4,9 @@
 #include "ung_bsm.h"
 
 // [[Rcpp::export]]
-Rcpp::List gaussian_approx_model(const Rcpp::List& model_, arma::vec mode_estimate,
-  unsigned int max_iter, double conv_tol, int model_type) {
+Rcpp::List gaussian_approx_model(const Rcpp::List& model_, 
+  arma::vec mode_estimate, const unsigned int max_iter, 
+  const double conv_tol, const int model_type) {
   
   switch (model_type) {
   case 1: {

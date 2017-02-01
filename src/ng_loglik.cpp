@@ -2,8 +2,9 @@
 #include "distr_consts.h"
 
 template<class T>
-double compute_ung_loglik(T model, unsigned int simulation_method, unsigned int nsim_states,
-  arma::vec mode_estimate, unsigned int max_iter, double conv_tol) {
+double compute_ung_loglik(T model, const unsigned int simulation_method, 
+  const unsigned int nsim_states, arma::vec mode_estimate, 
+  const unsigned int max_iter, const double conv_tol) {
   
   double loglik = -1e300;
   

@@ -7,7 +7,7 @@ class ugg_bsm: public ugg_ssm {
 
 public:
 
-  ugg_bsm(const Rcpp::List& model, unsigned int seed);
+  ugg_bsm(const Rcpp::List& model, const unsigned int seed);
 
   // update model given the parameters theta
   void set_theta(const arma::vec& theta);

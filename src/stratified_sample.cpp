@@ -6,7 +6,7 @@
 // r are random number from U(0,1)
 // N is the number of samples
 
-arma::uvec stratified_sample(arma::vec p, arma::vec& r, unsigned int N) {
+arma::uvec stratified_sample(arma::vec& p, const arma::vec& r, const unsigned int N) {
 
   arma::uvec xp(N);
   p = arma::cumsum(p);

@@ -3,7 +3,7 @@
 #include "ugg_bsm.h"
 
 // Construct bsm model from Rcpp::List
-ugg_bsm::ugg_bsm(const Rcpp::List& model, unsigned int seed) :
+ugg_bsm::ugg_bsm(const Rcpp::List& model, const unsigned int seed) :
   ugg_ssm(model, seed),
   slope(Rcpp::as<bool>(model["slope"])),
   seasonal(Rcpp::as<bool>(model["seasonal"])),

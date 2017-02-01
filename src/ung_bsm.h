@@ -7,7 +7,7 @@ class ung_bsm: public ung_ssm {
 
 public:
 
-  ung_bsm(const Rcpp::List& model, unsigned int seed);
+  ung_bsm(const Rcpp::List& model, const unsigned int seed);
 
   // update model given the parameters theta
   void set_theta(const arma::vec& theta);

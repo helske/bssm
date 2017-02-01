@@ -5,12 +5,12 @@
 
 // [[Rcpp::export]]
 Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
-  arma::uvec prior_types, arma::mat prior_pars, bool sim_states,
-  unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin,
-  double gamma, double target_acceptance, arma::mat S,
-  unsigned int seed, bool end_ram, unsigned int n_threads, 
-  int model_type, const arma::uvec& Z_ind, const arma::uvec& H_ind, 
-  const arma::uvec& T_ind, const arma::uvec& R_ind) {
+  const arma::uvec prior_types, const arma::mat prior_pars, 
+  const bool sim_states, const unsigned int n_iter, const unsigned int n_burnin, 
+  const unsigned int n_thin, const double gamma, const double target_acceptance, 
+  const arma::mat S, const unsigned int seed, const bool end_ram, 
+  const unsigned int n_threads, const int model_type, const arma::uvec& Z_ind, 
+  const arma::uvec& H_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -56,13 +56,15 @@ Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
 
 // [[Rcpp::export]]
 Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
-  arma::uvec prior_types, arma::mat prior_pars, unsigned int nsim_states, 
-  unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin,
-  double gamma, double target_acceptance, arma::mat S,
-  unsigned int seed, bool end_ram, unsigned int n_threads, bool local_approx,
-  arma::vec initial_mode, unsigned int max_iter, double conv_tol,
-  unsigned int simulation_method, int model_type, const arma::uvec& Z_ind,
-  const arma::uvec& T_ind, const arma::uvec& R_ind) {
+  const arma::uvec prior_types, const arma::mat prior_pars, 
+  const unsigned int nsim_states, const unsigned int n_iter, 
+  const unsigned int n_burnin, const unsigned int n_thin,
+  const double gamma, const double target_acceptance, const arma::mat S,
+  const unsigned int seed, const bool end_ram, const unsigned int n_threads, 
+  const bool local_approx, const arma::vec initial_mode, 
+  const unsigned int max_iter, const double conv_tol, 
+  const unsigned int simulation_method, const int model_type, 
+  const arma::uvec& Z_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -116,13 +118,14 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
 
 // [[Rcpp::export]]
 Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
-  arma::uvec prior_types, arma::mat prior_pars, unsigned int nsim_states, 
-  unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin,
-  double gamma, double target_acceptance, arma::mat S,
-  unsigned int seed, bool end_ram, unsigned int n_threads, bool local_approx,
-  arma::vec initial_mode, unsigned int max_iter, double conv_tol,
-  unsigned int simulation_method, int model_type, const arma::uvec& Z_ind,
-  const arma::uvec& T_ind, const arma::uvec& R_ind) {
+  const arma::uvec prior_types, const arma::mat prior_pars, 
+  const unsigned int nsim_states, const unsigned int n_iter, 
+  const unsigned int n_burnin, const unsigned int n_thin, const double gamma, 
+  const double target_acceptance, const arma::mat S, const unsigned int seed, 
+  const bool end_ram, const unsigned int n_threads, const bool local_approx,
+  const arma::vec initial_mode, const unsigned int max_iter, const double conv_tol,
+  const unsigned int simulation_method, const int model_type, 
+  const arma::uvec& Z_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -179,12 +182,13 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
 
 // [[Rcpp::export]]
 Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
-  arma::uvec prior_types, arma::mat prior_pars, unsigned int nsim_states, 
-  unsigned int n_iter, unsigned int n_burnin, unsigned int n_thin,
-  double gamma, double target_acceptance, arma::mat S,
-  unsigned int seed, bool end_ram, unsigned int n_threads, bool local_approx,
-  arma::vec initial_mode, unsigned int max_iter, double conv_tol,
-  unsigned int simulation_method, bool const_sim, int model_type, 
+  const arma::uvec prior_types, const arma::mat prior_pars, 
+  const unsigned int nsim_states, const unsigned int n_iter, 
+  const unsigned int n_burnin, const unsigned int n_thin, const  double gamma, 
+  const double target_acceptance, const arma::mat S, const unsigned int seed, 
+  const bool end_ram, const unsigned int n_threads, const bool local_approx,
+  const arma::vec initial_mode, const unsigned int max_iter, const double conv_tol,
+  const unsigned int simulation_method, const bool const_sim, const int model_type, 
   const arma::uvec& Z_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);

@@ -34,6 +34,7 @@ public:
   // find the approximating Gaussian model
   ugg_ssm approximate(arma::vec& mode_estimate, const unsigned int max_iter, 
     const double conv_tol) const;
+  
   // update aproximating Gaussian model
   void approximate(ugg_ssm& approx_model, arma::vec& mode_estimate, 
     const unsigned int max_iter, const double conv_tol) const;
@@ -54,7 +55,7 @@ public:
   // compute logarithms of _unnormalized_ densities g(y_t | alpha_t)
   arma::vec log_obs_density(const unsigned int t, const arma::cube& alphasim) const;
   // bootstrap filter  
-  double bsf_filter(unsigned int nsim, arma::cube& alphasim, 
+  double bsf_filter(const unsigned int nsim, arma::cube& alphasim, 
       arma::mat& weights, arma::umat& indices);
   
   arma::vec y;
