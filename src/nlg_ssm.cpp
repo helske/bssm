@@ -3,65 +3,247 @@
 #include "sample.h"
 #include "dmvnorm.h"
 #include "conditional_dist.h"
+#include "function_pointers.h"
 
-nlg_ssm::nlg_ssm(const arma::mat& y, const arma::vec a1, const arma::mat& P1,
-  SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, 
-  SEXP Z_gn_, SEXP H_gn_, SEXP T_gn_, SEXP R_gn_, 
-  const arma::vec& theta, const unsigned int seed) :
-  y(y), a1(a1), P1(P1), n(y.n_cols), m(a1.n_elem), p(y.n_rows),
-  engine(seed), zero_tol(1e-8), seed(seed), theta(theta), 
-  Z_fn(nonlinear_fn(Z_fn_)), H_fn(nonlinear_fn(H_fn_)), 
-  T_fn(nonlinear_fn(T_fn_)), R_fn(nonlinear_fn(R_fn_)),
-  Z_gn(nonlinear_gn(Z_gn_)), H_gn(nonlinear_gn(H_gn_)), 
-  T_gn(nonlinear_gn(T_gn_)), R_gn(nonlinear_gn(R_gn_)) {
+nlg_ssm::nlg_ssm(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, 
+  SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_,
+  const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params,
+  const arma::mat& known_tv_params, const unsigned int m, const unsigned int k,
+  const arma::uvec& time_varying, const unsigned int seed) :
+  y(y), Z_fn(vec_fn(Z_fn_)), H_fn(mat_fn(H_fn_)), T_fn(vec_fn(T_fn_)), 
+  R_fn(mat_fn(R_fn_)), Z_gn(mat_fn(Z_gn_)), T_gn(mat_fn(T_gn_)),
+  a1_fn(vec_initfn(a1_fn_)), P1_fn(mat_initfn(P1_fn_)), theta(theta), 
+  log_prior_pdf(log_prior_pdf_), known_params(known_params), 
+  known_tv_params(known_tv_params), m(m), k(k), n(y.n_cols),  p(y.n_rows),
+  Zgtv(time_varying(0)), Tgtv(time_varying(1)), Htv(time_varying(2)),
+  Rtv(time_varying(3)), seed(seed), engine(seed), zero_tol(1e-8) {
 }
+// mgg_ssm nlg_ssm::approximate(arma::mat& mode_estimate, const unsigned int max_iter, 
+//   const double conv_tol) const {
+//   
+//   mode_estimate = ekf_smoother();
+//   
+//   unsigned int i = 0;
+//   double diff = conv_tol + 1; 
+//   while(i < max_iter && diff > conv_tol) {
+//     i++;
+//     // compute new guess of mode by EKF
+//     arma::mat mode_estimate_new = iekf_smoother(mode_estimate);
+//     diff = arma::accu(arma::square(mode_estimate_new - mode_estimate)) / (m * n);
+//     mode_estimate = mode_estimate_new;
+//   }
+// 
+//     arma::vec a1 = a1_fn.eval(theta, known_params);
+//     arma::mat P1 = P1_fn.eval(theta, known_params);
+//     arma::cube Z(p, m, (n - 1) * Zgtv + 1);
+//     for (unsigned int t = 0; t < Z.n_slices; t++) {
+//       Z.slice(t) = Z_gn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+//     }
+//     arma::cube H(p, p, (n - 1) * Htv + 1);
+//     for (unsigned int t = 0; t < H.n_slices; t++) {
+//       H.slice(t) = H_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+//     }
+//     arma::cube T(m, m, (n - 1) * Tgtv + 1);
+//     for (unsigned int t = 0; t < T.n_slices; t++) {
+//       T.slice(t) = T_gn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+//     }
+// 
+//     arma::cube R(m, k, (n - 1) * Rtv + 1);
+//     for (unsigned int t = 0; t < R.n_slices; t++) {
+//       R.slice(t) = R_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+//     }
+//     arma::mat D(p, n);
+//     arma::mat C(m, n);
+//     for (unsigned int t = 0; t < n; t++) {
+//       D.col(t) = Z_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
+//         Z.slice(t * Zgtv) * mode_estimate.col(t);
+//       C.col(t) =  T_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
+//         T.slice(t * Tgtv) * mode_estimate.col(t);
+//     }
+// 
+//     mgg_ssm approx_model(y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
+//       arma::mat(0,0), D, C, seed);
+//   return approx_model;
+// }
+// 
+// void nlg_ssm::approximate(mgg_ssm& approx_model, arma::mat& mode_estimate, 
+//   const unsigned int max_iter, const double conv_tol) const {
+//   
+//   mode_estimate = ekf_smoother();
+//   
+//   unsigned int i = 0;
+//   double diff = conv_tol + 1; 
+//   while(i < max_iter && diff > conv_tol) {
+//     i++;
+//     // compute new guess of mode by EKF
+//     arma::mat mode_estimate_new = iekf_smoother(mode_estimate);
+//     diff = arma::accu(arma::square(mode_estimate_new - mode_estimate)) / (m * n);
+//     mode_estimate = mode_estimate_new;
+//   }
+//   
+//   approx_model.a1 = a1_fn.eval(theta, known_params);
+//   approx_model.P1 = P1_fn.eval(theta, known_params);
+//   
+//   for (unsigned int t = 0; t < approx_model.Z.n_slices; t++) {
+//     approx_model.Z.slice(t) = Z_gn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+//   }
+//   for (unsigned int t = 0; t < approx_model.H.n_slices; t++) {
+//     approx_model.H.slice(t) = H_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+//   }
+//   for (unsigned int t = 0; t < approx_model.T.n_slices; t++) {
+//     approx_model.T.slice(t) = T_gn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+//   }
+//   for (unsigned int t = 0; t < approx_model.R.n_slices; t++) {
+//     approx_model.R.slice(t) = R_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+//   }
+//   for (unsigned int t = 0; t < n; t++) {
+//     approx_model.D.col(t) = Z_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params) - 
+//       approx_model.Z.slice(t * Zgtv) * mode_estimate.col(t);
+//     approx_model.C.col(t) =  T_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params) - 
+//       approx_model.T.slice(t * Tgtv) * mode_estimate.col(t);
+//   }
+//   approx_model.compute_HH();
+//   approx_model.compute_RR();
+// }
 
-mgg_ssm nlg_ssm::approximate(arma::mat& mode_estimate, const unsigned int max_iter, 
+mgg_ssm nlg_ssm::approximate(arma::mat& mode_estimate, const unsigned int max_iter,
   const double conv_tol) const {
+
+  mode_estimate = ekf_smoother();
   
-  arma::mat D(p, n);
-  arma::cube Z(p, m, n);
-  arma::cube H(p, p, n);
-  arma::mat C(m, n);
-  arma::cube T(m, m, n);
-  arma::cube R(m, m, n);
-  
-  for (unsigned int t = 0; t < n; t++) {
-    Z.slice(t) = Z_gn.eval(mode_estimate.col(t), theta);
-    D.col(t) = Z_fn.eval(mode_estimate.col(t), theta) - Z.slice(t) * mode_estimate.col(t);
-    H.slice(t) = H_gn.eval(mode_estimate.col(t), theta);
-    T.slice(t) = T_gn.eval(mode_estimate.col(t), theta);
-    C.col(t) =  T_fn.eval(mode_estimate.col(t), theta) - T.slice(t) * mode_estimate.col(t);
-    R.slice(t) = R_gn.eval(mode_estimate.col(t), theta);
+  arma::vec a1 = a1_fn.eval(theta, known_params);
+  arma::mat P1 = P1_fn.eval(theta, known_params);
+  arma::cube Z(p, m, (n - 1) * Zgtv + 1);
+  for (unsigned int t = 0; t < Z.n_slices; t++) {
+    Z.slice(t) = Z_gn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
   }
-  
-  mgg_ssm approx_model(y, Z, H, T, R, a1, P1, arma::cube(0,0,0), arma::mat(0,0), D, C, seed);
-  
+  arma::cube H(p, p, (n - 1) * Htv + 1);
+  for (unsigned int t = 0; t < H.n_slices; t++) {
+    H.slice(t) = H_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+  }
+  arma::cube T(m, m, (n - 1) * Tgtv + 1);
+  for (unsigned int t = 0; t < T.n_slices; t++) {
+    T.slice(t) = T_gn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+  }
+
+  arma::cube R(m, k, (n - 1) * Rtv + 1);
+  for (unsigned int t = 0; t < R.n_slices; t++) {
+    R.slice(t) = R_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+  }
+  arma::mat D(p, n);
+  arma::mat C(m, n);
+  for (unsigned int t = 0; t < n; t++) {
+    D.col(t) = Z_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
+      Z.slice(t * Zgtv) * mode_estimate.col(t);
+    C.col(t) =  T_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
+      T.slice(t * Tgtv) * mode_estimate.col(t);
+  }
+
+  mgg_ssm approx_model(y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
+    arma::mat(0,0), D, C, seed);
+
   unsigned int i = 0;
-  double diff = conv_tol + 1; 
-  
+  double diff = conv_tol + 1;
   while(i < max_iter && diff > conv_tol) {
     i++;
     // compute new guess of mode
     arma::mat mode_estimate_new = approx_model.fast_smoother();
     diff = arma::accu(arma::square(mode_estimate_new - mode_estimate)) / (m * n);
     mode_estimate = mode_estimate_new;
-    
-    for (unsigned int t = 0; t < n; t++) {
-      approx_model.Z.slice(t) = Z_gn.eval(mode_estimate.col(t), theta);
-      approx_model.D.col(t) = Z_fn.eval(mode_estimate.col(t), theta) - 
-        approx_model.Z.slice(t) * mode_estimate.col(t);
-      approx_model.H.slice(t) = H_gn.eval(mode_estimate.col(t), theta);
-      approx_model.T.slice(t) = T_gn.eval(mode_estimate.col(t), theta);
-      approx_model.C.col(t) =  T_fn.eval(mode_estimate.col(t), theta) - 
-        approx_model.T.slice(t) * mode_estimate.col(t);
-      approx_model.R.slice(t) = R_gn.eval(mode_estimate.col(t), theta);
-      approx_model.compute_HH();
-      approx_model.compute_RR();
+
+    for (unsigned int t = 0; t < approx_model.Z.n_slices; t++) {
+      approx_model.Z.slice(t) = Z_gn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
     }
+    for (unsigned int t = 0; t < approx_model.H.n_slices; t++) {
+      approx_model.H.slice(t) = H_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+    }
+    for (unsigned int t = 0; t < approx_model.T.n_slices; t++) {
+      approx_model.T.slice(t) = T_gn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+    }
+    for (unsigned int t = 0; t < approx_model.R.n_slices; t++) {
+      approx_model.R.slice(t) = R_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+    }
+    for (unsigned int t = 0; t < n; t++) {
+      approx_model.D.col(t) = Z_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
+        approx_model.Z.slice(t * Zgtv) * mode_estimate.col(t);
+      approx_model.C.col(t) =  T_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
+        approx_model.T.slice(t * Tgtv) * mode_estimate.col(t);
+    }
+
+    approx_model.compute_HH();
+    approx_model.compute_RR();
+
   }
-  
+
   return approx_model;
+}
+
+void nlg_ssm::approximate(mgg_ssm& approx_model, arma::mat& mode_estimate,
+  const unsigned int max_iter, const double conv_tol) const {
+
+  arma::vec a1 = a1_fn.eval(theta, known_params);
+  arma::mat P1 = P1_fn.eval(theta, known_params);
+
+  arma::cube Z(p, m, (n - 1) * Zgtv + 1);
+  for (unsigned int t = 0; t < Z.n_slices; t++) {
+    Z.slice(t) = Z_gn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+  }
+  arma::cube H(p, p, (n - 1) * Htv + 1);
+  for (unsigned int t = 0; t < H.n_slices; t++) {
+    H.slice(t) = H_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+  }
+  arma::cube T(m, m, (n - 1) * Tgtv + 1);
+  for (unsigned int t = 0; t < T.n_slices; t++) {
+    T.slice(t) = T_gn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+  }
+  arma::cube R(m, k, (n - 1) * Rtv + 1);
+  for (unsigned int t = 0; t < R.n_slices; t++) {
+    R.slice(t) = R_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+  }
+  arma::mat C(m, n);
+  arma::mat D(p, n);
+  for (unsigned int t = 0; t < n; t++) {
+    D.col(t) = Z_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
+      Z.slice(t * Zgtv) * mode_estimate.col(t);
+    C.col(t) =  T_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
+      T.slice(t * Tgtv) * mode_estimate.col(t);
+  }
+
+  approx_model.compute_HH();
+  approx_model.compute_RR();
+
+
+  unsigned int i = 0;
+  double diff = conv_tol + 1;
+
+  while(i < max_iter && diff > conv_tol) {
+    i++;
+    // compute new guess of mode
+    arma::mat mode_estimate_new = approx_model.fast_smoother();
+    diff = arma::accu(arma::square(mode_estimate_new - mode_estimate)) / (m * n);
+    mode_estimate = mode_estimate_new;
+
+    for (unsigned int t = 0; t < approx_model.Z.n_slices; t++) {
+      approx_model.Z.slice(t) = Z_gn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+    }
+    for (unsigned int t = 0; t < approx_model.H.n_slices; t++) {
+      approx_model.H.slice(t) = H_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+    }
+    for (unsigned int t = 0; t < approx_model.T.n_slices; t++) {
+      approx_model.T.slice(t) = T_gn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+    }
+    for (unsigned int t = 0; t < approx_model.R.n_slices; t++) {
+      approx_model.R.slice(t) = R_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+    }
+    for (unsigned int t = 0; t < n; t++) {
+      approx_model.D.col(t) = Z_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
+        approx_model.Z.slice(t * Zgtv) * mode_estimate.col(t);
+      approx_model.C.col(t) =  T_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
+        approx_model.T.slice(t * Tgtv) * mode_estimate.col(t);
+    }
+    approx_model.compute_HH();
+    approx_model.compute_RR();
+  }
 }
 
 // apart from using mgg_ssm, identical with ung_ssm::psi_filter
@@ -74,10 +256,10 @@ double nlg_ssm::psi_filter(const mgg_ssm& approx_model,
   arma::cube Vt(m, m, n);
   arma::cube Ct(m, m, n);
   approx_model.smoother_ccov(alphahat, Vt, Ct);
+  
+  
   conditional_cov(Vt, Ct);
-  
   std::normal_distribution<> normal(0.0, 1.0);
-  
   
   for (unsigned int i = 0; i < nsim; i++) {
     arma::vec um(m);
@@ -141,10 +323,11 @@ double nlg_ssm::psi_filter(const mgg_ssm& approx_model,
       normalized_weights.fill(1.0 / nsim);
     }
   }
+  
   return loglik;
 }
 
-// Logarithms of _unnormalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
+// Logarithms of _normalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
 /*
  * approx_model:  Gaussian approximation of the original model
  * t:             Time point where the weights are computed
@@ -155,36 +338,41 @@ arma::vec nlg_ssm::log_weights(const mgg_ssm& approx_model,
   
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
   
+  unsigned int Ztv = approx_model.Ztv;
+  unsigned int Htv = approx_model.Htv;
   if (arma::is_finite(y(t))) {
     for (unsigned int i = 0; i < alpha.n_slices; i++) {
       weights(i) = 
-        dmvnorm(y.col(t), Z_fn.eval(alpha.slice(i).col(t), theta), 
-          H_fn.eval(alpha.slice(i).col(t), theta), true, true) -
-            dmvnorm(y.col(t), approx_model.Z.slice(t) * alpha.slice(i).col(t),  
-              approx_model.H.slice(t), true, true);
+        dmvnorm(y.col(t), Z_fn.eval(t, alpha.slice(i).col(t), theta, known_params, known_tv_params), 
+          H_fn.eval(t, alpha.slice(i).col(t), theta, known_params, known_tv_params), true, true) -
+            dmvnorm(y.col(t), approx_model.Z.slice(t * Ztv) * alpha.slice(i).col(t),  
+              approx_model.H.slice(t * Htv), true, true);
     }
   }
   return weights;
 }
 
-// compute unnormalized mode-based scaling terms
+// compute _normalized_ mode-based scaling terms
 // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
 arma::vec nlg_ssm::scaling_factors(const mgg_ssm& approx_model,
   const arma::mat& mode_estimate) const {
   
   arma::vec weights(n, arma::fill::zeros);
+  unsigned int Ztv = approx_model.Ztv;
+  unsigned int Htv = approx_model.Htv;
+  
   for(unsigned int t = 0; t < n; t++) {
     if (arma::is_finite(y(t))) {
-      weights(t) =  dmvnorm(y.col(t), Z_fn.eval(mode_estimate.col(t), theta), 
-        H_fn.eval(mode_estimate.col(t), theta), true, true) -
-          dmvnorm(y.col(t), approx_model.Z.slice(t) * mode_estimate.col(t),  
-            approx_model.H.slice(t), true, true);
+      weights(t) =  dmvnorm(y.col(t), Z_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params), 
+        H_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params), true, true) -
+          dmvnorm(y.col(t), approx_model.Z.slice(t * Ztv) * mode_estimate.col(t),  
+            approx_model.H.slice(t * Htv), true, true);
     }
   }
   return weights;
 }
 
-// Logarithms of _unnormalized_ densities g(y_t | alpha_t)
+// Logarithms of _normalized_ densities g(y_t | alpha_t)
 /*
  * t:             Time point where the densities are computed
  * alpha:         Simulated particles
@@ -193,10 +381,11 @@ arma::vec nlg_ssm::log_obs_density(const unsigned int t,
   const arma::cube& alpha) const {
   
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
+  
   if (arma::is_finite(y(t))) {
     for (unsigned int i = 0; i < alpha.n_slices; i++) {
-      weights(i) = dmvnorm(y.col(t), Z_fn.eval(alpha.slice(i).col(t), theta), 
-        H_fn.eval(alpha.slice(i).col(t), theta), true, true);
+      weights(i) = dmvnorm(y.col(t), Z_fn.eval(t, alpha.slice(i).col(t), theta, known_params, known_tv_params), 
+        H_fn.eval(t, alpha.slice(i).col(t), theta, known_params, known_tv_params), true, true);
     }
   }
   return weights;
@@ -204,6 +393,9 @@ arma::vec nlg_ssm::log_obs_density(const unsigned int t,
 
 double nlg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
+  
+  arma::vec a1 = a1_fn.eval(theta, known_params);
+  arma::mat P1 = P1_fn.eval(theta, known_params);
   
   arma::uvec nonzero = arma::find(P1.diag() > 0);
   arma::mat L_P1(m, m, arma::fill::zeros);
@@ -255,12 +447,12 @@ double nlg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
     }
     
     for (unsigned int i = 0; i < nsim; i++) {
-      arma::vec um(m);
-      for(unsigned int j = 0; j < m; j++) {
-        um(j) = normal(engine);
+      arma::vec uk(k);
+      for(unsigned int j = 0; j < k; j++) {
+        uk(j) = normal(engine);
       }
-      alpha.slice(i).col(t + 1) = T_fn.eval(alphatmp.col(i), theta) + 
-        R_fn.eval(alphatmp.col(i), theta) * um;
+      alpha.slice(i).col(t + 1) = T_fn.eval(t, alphatmp.col(i), theta, known_params, known_tv_params) + 
+        R_fn.eval(t, alphatmp.col(i), theta, known_params, known_tv_params) * uk;
     }
     
     if(arma::is_finite(y(t + 1))) {
@@ -280,6 +472,434 @@ double nlg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
       normalized_weights.fill(1.0/nsim);
     }
   }
-  // constant part of the log-likelihood omitted.??..
   return loglik;
+}
+
+double nlg_ssm::ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, 
+  arma::cube& Ptt) const {
+  
+  at.col(0) = a1_fn.eval(theta, known_params);
+  Pt.slice(0) = P1_fn.eval(theta, known_params);
+ 
+ const double LOG2PI = std::log(2.0 * M_PI);
+ double logLik = 0.0;
+ 
+  for (unsigned int t = 0; t < n; t++) {
+    
+    arma::uvec na_y = arma::find_nonfinite(y.col(t));
+    
+    if (na_y.n_elem < p) {
+      arma::mat Zg = Z_gn.eval(t, at.col(t), theta, known_params, known_tv_params);
+      Zg.rows(na_y).zeros();
+      arma::mat HHt = H_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+      HHt = HHt * HHt.t();
+      HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+      
+      arma::mat Ft = Zg * Pt.slice(t) * Zg.t() + HHt;
+    
+      arma::mat cholF = arma::chol(Ft);
+    
+      arma::vec vt = y.col(t) - 
+        Z_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+      vt.rows(na_y).zeros();
+     
+      arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
+      arma::mat Kt = Pt.slice(t) * Zg.t() * inv_cholF * inv_cholF.t();
+
+      att.col(t) = at.col(t) + Kt * vt;
+      Ptt.slice(t) = Pt.slice(t) - Kt * Ft * Kt.t();
+      
+      arma::vec Fv = inv_cholF.t() * vt; 
+      logLik -= 0.5 * arma::as_scalar((p - na_y.n_elem) * LOG2PI + 
+        2.0 * arma::sum(log(arma::diagvec(cholF))) + Fv.t() * Fv);
+    } else {
+      att.col(t) = at.col(t);
+      Ptt.slice(t) = Pt.slice(t);
+    } 
+  
+    at.col(t + 1) = T_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+    arma::mat Tg = T_gn.eval(t, att.col(t), theta, known_params, known_tv_params);
+    arma::mat Rt = R_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+    Pt.slice(t + 1) = Tg * Ptt.slice(t) * Tg.t() + Rt * Rt.t();
+  }
+  return logLik;
+}
+
+double nlg_ssm::ekf_loglik() const {
+  
+  
+  arma::vec at = a1_fn.eval(theta, known_params);
+  arma::mat Pt = P1_fn.eval(theta, known_params);
+
+  const double LOG2PI = std::log(2.0 * M_PI);
+  double logLik = 0.0;
+  
+  for (unsigned int t = 0; t < n; t++) {
+ 
+    arma::uvec na_y = arma::find_nonfinite(y.col(t));
+    
+    arma::vec att = at;
+    arma::mat Ptt = Pt;
+    if (na_y.n_elem < p) {
+      arma::mat Zg = Z_gn.eval(t, at, theta, known_params, known_tv_params);
+      Zg.rows(na_y).zeros();
+      arma::mat HHt = H_fn.eval(t, at, theta, known_params, known_tv_params);
+      HHt = HHt * HHt.t();
+      HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+      
+      arma::mat Ft = Zg * Pt * Zg.t() + HHt;
+      arma::mat cholF = arma::chol(Ft);
+      
+      arma::vec vt = y.col(t) - 
+        Z_fn.eval(t, at, theta, known_params, known_tv_params);
+      vt.rows(na_y).zeros();
+      
+      arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
+      arma::mat Kt = Pt * Zg.t() * inv_cholF * inv_cholF.t();
+
+      att += Kt * vt;
+      Ptt -= Kt * Ft * Kt.t();
+
+      arma::vec Fv = inv_cholF.t() * vt; 
+      logLik -= 0.5 * arma::as_scalar((p - na_y.n_elem) * LOG2PI + 
+        2.0 * arma::sum(log(arma::diagvec(cholF))) + Fv.t() * Fv);
+    }
+    
+    at = T_fn.eval(t, att, theta, known_params, known_tv_params);
+    
+    arma::mat Tg = T_gn.eval(t, att, theta, known_params, known_tv_params);
+    arma::mat Rt = R_fn.eval(t, att, theta, known_params, known_tv_params);
+    Pt = Tg * Ptt * Tg.t() + Rt * Rt.t();
+ 
+  }
+  return logLik;
+}
+
+arma::mat nlg_ssm::ekf_smoother() const {
+  
+  arma::mat at(m, n);
+  at.col(0) = a1_fn.eval(theta, known_params);
+  
+  arma::mat Pt = P1_fn.eval(theta, known_params);
+ 
+  arma::mat vt(p, n);
+  arma::cube ZFinv(m, p, n);
+  arma::cube Kt(m, p, n);
+  
+  arma::uvec obs(n, arma::fill::ones);
+  
+  arma::mat att(m, n);
+  
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    
+    arma::uvec na_y = arma::find_nonfinite(y.col(t));
+    arma::mat Ptt = Pt;
+    
+    if (na_y.n_elem < p) {
+      
+      arma::mat Zg = Z_gn.eval(t, at.col(t), theta, known_params, known_tv_params);
+      Zg.rows(na_y).zeros();
+      arma::mat HHt = H_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+      HHt = HHt * HHt.t();
+      HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+      
+      arma::mat Ft = Zg * Pt * Zg.t() + HHt;
+      arma::mat cholF = arma::chol(Ft);
+      
+      vt.col(t) = y.col(t) - 
+        Z_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+      vt.rows(na_y).zeros();
+      
+      arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
+      ZFinv.slice(t) = Zg.t() * inv_cholF * inv_cholF.t();
+      Kt.slice(t) = Pt * ZFinv.slice(t);
+      
+      att.col(t) = at.col(t) + Kt.slice(t) * vt.col(t);
+      Ptt = Pt - Kt.slice(t) * Ft * Kt.slice(t).t();
+    } else {
+      att.col(t) = at.col(t);
+      obs(t) = 0;
+    }
+    at.col(t + 1) = T_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+    arma::mat Tg = T_gn.eval(t, att.col(t), theta, known_params, known_tv_params);
+    arma::mat Rt = R_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+    Pt = Tg * Ptt * Tg.t() + Rt * Rt.t();
+  }
+  
+  unsigned int t = n - 1;
+  arma::uvec na_y = arma::find_nonfinite(y.col(t));
+  
+  if (na_y.n_elem < p) {
+    arma::mat Zg = Z_gn.eval(t, at.col(t), theta, known_params, known_tv_params);
+    Zg.rows(na_y).zeros();
+    arma::mat HHt = H_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+    HHt = HHt * HHt.t();
+    HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+    
+    arma::mat Ft = Zg * Pt * Zg.t() + HHt;
+    arma::mat cholF = arma::chol(Ft);
+    vt.col(t) = y.col(t) - 
+      Z_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+    vt.rows(na_y).zeros();
+    
+    arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
+    ZFinv.slice(t) = Zg.t() * inv_cholF * inv_cholF.t();
+    Kt.slice(t) = Pt * ZFinv.slice(t);
+    att.col(t) = at.col(t) + Kt.slice(t) * vt.col(t);
+  } else {
+    att.col(t) = at.col(t);
+    obs(0) = 0;
+  }
+  
+  arma::mat rt(m, n);
+  rt.col(n - 1).zeros();
+  for (int t = (n - 1); t > 0; t--) {
+    arma::mat Tg = T_gn.eval(t, att.col(t), theta, known_params, known_tv_params);
+    if (obs(t)) {
+      arma::mat Zg = Z_gn.eval(t, at.col(t), theta, known_params, known_tv_params);
+      arma::mat L = Tg * (arma::eye(m, m) - Kt.slice(t) * Zg);
+      rt.col(t - 1) = ZFinv.slice(t) * vt.col(t) + L.t() * rt.col(t);
+    } else {
+      rt.col(t - 1) = Tg.t() * rt.col(t);
+    }
+  }
+  
+  arma::mat Tg = T_gn.eval(0, att.col(0), theta, known_params, known_tv_params);
+  arma::vec a1 = a1_fn.eval(theta, known_params);
+  arma::mat P1 = P1_fn.eval(theta, known_params);
+  
+  if (obs(0)){
+    arma::mat Zg = Z_gn.eval(0, at.col(0), theta, known_params, known_tv_params);
+    arma::mat L = Tg * (arma::eye(m, m) - Kt.slice(0) * Zg);
+    at.col(0) = a1 + P1 * (ZFinv.slice(0) * vt.col(0) + L.t() * rt.col(0));
+  } else {
+    at.col(0) = a1 + P1 * Tg.t() * rt.col(0);
+  }
+ 
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    arma::mat Tg = T_gn.eval(t, att.col(t), theta, known_params, known_tv_params);
+    arma::mat Rt = R_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+    at.col(t + 1) = T_fn.eval(t, att.col(t), theta, known_params, known_tv_params) +
+      Tg * (at.col(t) - att.col(t))+ Rt * Rt.t() * rt.col(t);
+  }
+  return at;
+}
+
+// arma::mat nlg_ssm::iekf_smoother(const arma::mat& alphahat) const {
+//   
+//   
+//   arma::mat at(m, n);
+//   at.col(0) = a1_fn.eval(theta, known_params);
+//   
+//   arma::mat Pt = P1_fn.eval(theta, known_params);
+//   
+//   arma::mat vt(p, n, arma::fill::zeros);
+//   arma::cube ZFinv(m, p, n, arma::fill::zeros);
+//   arma::cube Kt(m, p, n, arma::fill::zeros);
+//   
+//   arma::uvec obs(n, arma::fill::ones);
+//   
+//   arma::mat att(m, n);
+//   
+//   for (unsigned int t = 0; t < (n - 1); t++) {
+//     
+//     arma::uvec na_y = arma::find_nonfinite(y.col(t));
+//     
+//     arma::mat Ptt = Pt;
+//     
+//     if (na_y.n_elem < p) {
+//       
+//       arma::mat Zg = Z_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+//       Zg.rows(na_y).zeros();
+//       arma::mat HHt = H_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+//       HHt = HHt * HHt.t();
+//       HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+//       
+//       arma::mat Ft = Zg * Pt * Zg.t() + HHt;
+//       arma::mat cholF = arma::chol(Ft);
+//       
+//       vt.col(t) = y.col(t) - 
+//         Z_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+//       vt.rows(na_y).zeros();
+//       
+//       arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
+//       ZFinv.slice(t) = Zg.t() * inv_cholF * inv_cholF.t();
+//       Kt.slice(t) = Pt * ZFinv.slice(t);
+//       
+//       att.col(t) = at.col(t) + Kt.slice(t) * vt.col(t);
+//       Ptt = Pt - Kt.slice(t) * Ft * Kt.slice(t).t();
+//     } else {
+//       att.col(t) = at.col(t);
+//       obs(t) = 0;
+//     }
+//     
+//    
+//     at.col(t + 1) = T_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+//     arma::mat Tg = T_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+//     arma::mat Rt = R_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+//     Pt = Tg * Ptt * Tg.t() + Rt * Rt.t();
+//   }
+//   
+//   unsigned int t = n - 1;
+//   arma::uvec na_y = arma::find_nonfinite(y.col(t));
+//   
+//   if (na_y.n_elem < p) {
+//     arma::mat Zg = Z_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+//     Zg.rows(na_y).zeros();
+//     arma::mat HHt = H_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+//     HHt = HHt * HHt.t();
+//     HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+//     
+//     arma::mat Ft = Zg * Pt * Zg.t() + HHt;
+//     arma::mat cholF = arma::chol(Ft);
+//     vt.col(t) = y.col(t) - Z_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+//     vt.rows(na_y).zeros();
+//     
+//     arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
+//     ZFinv.slice(t) = Zg.t() * inv_cholF * inv_cholF.t();
+//     Kt.slice(t) = Pt * ZFinv.slice(t);
+//   } else {
+//     obs(0) = 0;
+//   }
+//   
+//   arma::mat rt(m, n);
+//   rt.col(n - 1).zeros();
+//   for (int t = (n - 1); t > 0; t--) {
+//     arma::mat Tg = T_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+//     if (obs(t)) {
+//       arma::mat Zg = Z_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+//       arma::mat L = Tg * (arma::eye(m, m) - Kt.slice(t) * Zg);
+//       rt.col(t - 1) = ZFinv.slice(t) * vt.col(t) + L.t() * rt.col(t);
+//     } else {
+//       rt.col(t - 1) = Tg.t() * rt.col(t);
+//     }
+//   }
+//   arma::mat Tg = T_gn.eval(0, alphahat.col(0), theta, known_params, known_tv_params);
+//   arma::vec a1 = a1_fn.eval(theta, known_params);
+//   arma::mat P1 = P1_fn.eval(theta, known_params);
+//   if (obs(0)){
+//     arma::mat Zg = Z_gn.eval(0, alphahat.col(0), theta, known_params, known_tv_params);
+//     arma::mat L = Tg * (arma::eye(m, m) - Kt.slice(0) * Zg);
+//     at.col(0) = a1 + P1 * (ZFinv.slice(0) * vt.col(0) + L.t() * rt.col(0));
+//   } else {
+//     at.col(0) = a1 + P1 * Tg.t() * rt.col(0);
+//   }
+//   for (unsigned int t = 0; t < (n - 1); t++) {
+//     arma::mat Tg = T_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+//     arma::mat Rt = R_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+//     at.col(t + 1) = T_fn.eval(t, at.col(t), theta, known_params, known_tv_params) +
+//       Tg * (at.col(t) - alphahat.col(t)) + Rt * Rt.t() * rt.col(t);
+//     //Tg * at.col(t) + Rt * Rt.t() * rt.col(t);
+//   }
+//   return at;
+// }
+// 
+arma::mat nlg_ssm::iekf_smoother(const arma::mat& alphahat) const {
+
+  arma::mat at(m, n);
+  at.col(0) = a1_fn.eval(theta, known_params);
+
+  arma::mat Pt = P1_fn.eval(theta, known_params);
+  arma::mat vt(p, n, arma::fill::zeros);
+  arma::cube ZFinv(m, p, n, arma::fill::zeros);
+  arma::cube Kt(m, p, n, arma::fill::zeros);
+
+  arma::uvec obs(n, arma::fill::ones);
+
+  arma::mat att(m, n);
+
+  for (unsigned int t = 0; t < (n - 1); t++) {
+
+    arma::uvec na_y = arma::find_nonfinite(y.col(t));
+
+    arma::mat Ptt = Pt;
+
+    if (na_y.n_elem < p) {
+
+      arma::mat Zg = Z_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+      Zg.rows(na_y).zeros();
+      arma::mat HHt = H_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+      HHt = HHt * HHt.t();
+      HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+      
+      arma::mat Ft = Zg * Pt * Zg.t() + HHt;
+      arma::mat cholF = arma::chol(Ft);
+      
+      vt.col(t) = y.col(t) - Zg * (at.col(t) - alphahat.col(t)) -
+        Z_fn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+      vt.rows(na_y).zeros();
+
+      arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
+      ZFinv.slice(t) = Zg.t() * inv_cholF * inv_cholF.t();
+      Kt.slice(t) = Pt * ZFinv.slice(t);
+
+      att.col(t) = at.col(t) + Kt.slice(t) * vt.col(t);
+      Ptt = Pt - Kt.slice(t) * Ft * Kt.slice(t).t();
+    } else {
+      att.col(t) = at.col(t);
+      obs(t) = 0;
+    }
+
+    arma::mat Tg = T_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+    at.col(t + 1) = T_fn.eval(t, alphahat.col(t), theta, known_params, known_tv_params) +
+      Tg * (att.col(t) - alphahat.col(t));
+    arma::mat Rt = R_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+    Pt = Tg * Ptt * Tg.t() + Rt * Rt.t();
+  }
+
+  unsigned int t = n - 1;
+  arma::uvec na_y = arma::find_nonfinite(y.col(t));
+
+  if (na_y.n_elem < p) {
+    arma::mat Zg = Z_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+    Zg.rows(na_y).zeros();
+    arma::mat HHt = H_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+    HHt = HHt * HHt.t();
+    HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+
+    arma::mat Ft = Zg * Pt * Zg.t() + HHt;
+    arma::mat cholF = arma::chol(Ft);
+    vt.col(t) = y.col(t) - Zg * (at.col(t) - alphahat.col(t)) -
+      Z_fn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+    vt.rows(na_y).zeros();
+
+    arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
+    ZFinv.slice(t) = Zg.t() * inv_cholF * inv_cholF.t();
+    Kt.slice(t) = Pt * ZFinv.slice(t);
+    att.col(t) = at.col(t) + Kt.slice(t) * vt.col(t);
+  } else {
+    att.col(t) = at.col(t);
+    obs(0) = 0;
+  }
+
+  arma::mat rt(m, n);
+  rt.col(n - 1).zeros();
+  for (int t = (n - 1); t > 0; t--) {
+    arma::mat Tg = T_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+    if (obs(t)) {
+      arma::mat Zg = Z_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+      arma::mat L = Tg * (arma::eye(m, m) - Kt.slice(t) * Zg);
+      rt.col(t - 1) = ZFinv.slice(t) * vt.col(t) + L.t() * rt.col(t);
+    } else {
+      rt.col(t - 1) = Tg.t() * rt.col(t);
+    }
+  }
+  arma::mat Tg = T_gn.eval(0, alphahat.col(0), theta, known_params, known_tv_params);
+  arma::vec a1 = a1_fn.eval(theta, known_params);
+  arma::mat P1 = P1_fn.eval(theta, known_params);
+  if (obs(0)){
+    arma::mat Zg = Z_gn.eval(0, alphahat.col(0), theta, known_params, known_tv_params);
+    arma::mat L = Tg * (arma::eye(m, m) - Kt.slice(0) * Zg);
+    at.col(0) = a1 + P1 * (ZFinv.slice(0) * vt.col(0) + L.t() * rt.col(0));
+  } else {
+    at.col(0) = a1 + P1 * Tg.t() * rt.col(0);
+  }
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    arma::mat Tg = T_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
+    arma::mat Rt = R_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+    at.col(t + 1) = T_fn.eval(t, alphahat.col(t), theta, known_params, known_tv_params) +
+      Tg * (at.col(t) - alphahat.col(t)) + Rt * Rt.t() * rt.col(t);
+    //Tg * at.col(t) + Rt * Rt.t() * rt.col(t);
+  }
+  return at;
 }

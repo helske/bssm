@@ -7,7 +7,7 @@
 #' @param object of class \code{bsm}, \code{ng_bsm} or \code{svm}.
 #' @param nsim Number of samples.
 #' @param seed Seed for RNG.
-#' @param filter_type Eiher \code{"bootstrap"} or \code{"psi"}.
+#' @param filter_type Eiher \code{"bsf"} or \code{"psi"}.
 #' @param ... Ignored.
 #' @return A list containing samples, weights from the last time point, and an
 #' estimate of log-likelihood.
@@ -42,14 +42,14 @@ particle_filter.bsm <- function(object, nsim,
 #' @method particle_filter ngssm
 #' @rdname particle_filter
 #' @export
-particle_filter.ngssm <- function(object, nsim, filter_type = "bootstrap",
+particle_filter.ngssm <- function(object, nsim, filter_type = "bsf",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  filter_type <- match.arg(filter_type, c("bootstrap", "psi"))
+  filter_type <- match.arg(filter_type, c("bsf", "psi"))
   
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
   
-  out <- ngssm_particle_filter(object, nsim, seed, filter_type == "bootstrap", object$initial_mode)
+  out <- ngssm_particle_filter(object, nsim, seed, filter_type == "bsf", object$initial_mode)
   
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
@@ -57,13 +57,13 @@ particle_filter.ngssm <- function(object, nsim, filter_type = "bootstrap",
 }
 #' @method particle_filter ng_bsm
 #' @export
-particle_filter.ng_bsm <- function(object, nsim, filter_type = "bootstrap",
+particle_filter.ng_bsm <- function(object, nsim, filter_type = "bsf",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  filter_type <- match.arg(filter_type, c("bootstrap", "psi"))
+  filter_type <- match.arg(filter_type, c("bsf", "psi"))
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
   
-  out <- ng_bsm_particle_filter(object, nsim, seed, filter_type == "bootstrap", object$initial_mode)
+  out <- ng_bsm_particle_filter(object, nsim, seed, filter_type == "bsf", object$initial_mode)
   
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
@@ -72,13 +72,31 @@ particle_filter.ng_bsm <- function(object, nsim, filter_type = "bootstrap",
 #' @method particle_filter svm
 #' @rdname particle_filter
 #' @export
-particle_filter.svm <- function(object, nsim, filter_type = "bootstrap",
+particle_filter.svm <- function(object, nsim, filter_type = "bsf",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  filter_type <- match.arg(filter_type, c("bootstrap", "psi"))
-  out <- svm_particle_filter(object, nsim, seed, filter_type == "bootstrap", object$initial_mode)
+  filter_type <- match.arg(filter_type, c("bsf", "psi"))
+  out <- svm_particle_filter(object, nsim, seed, filter_type == "bsf", object$initial_mode)
   
   rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
+}
+
+#' @method particle_filter nlg_ssm
+#' @rdname particle_filter
+#' @export
+particle_filter.nlg_ssm <- function(object, nsim, filter_type = "bsf",
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  filter_type <- match.arg(filter_type, c("bsf", "psi"))
+  if(filter_type == "bsf") {
+  out <- bootstrap_filter_nlg(t(object$y), object$Z, object$H, object$T, 
+    object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
+    object$theta, object$log_prior_pdf, object$known_params, 
+    object$known_tv_params, object$n_states, object$n_etas, 
+    as.integer(object$time_varying), nsim, seed)
+  }
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }

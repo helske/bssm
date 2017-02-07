@@ -3,6 +3,8 @@
 
 #include <RcppArmadillo.h>
 
+class nlg_ssm;
+
 class mcmc {
   
 protected:
@@ -67,6 +69,12 @@ public:
   void da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_states, 
    const bool local_approx, const arma::vec& initial_mode, 
    const unsigned int max_iter, const double conv_tol);
+  
+  void pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int nsim_states, 
+    const bool local_approx, const arma::mat& initial_mode, const unsigned int max_iter, 
+    const double conv_tol);
+    
+  void ekf_mcmc_nlg(nlg_ssm model, const bool end_ram);
   
   arma::vec posterior_storage;
   arma::mat theta_storage;

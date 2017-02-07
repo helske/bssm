@@ -7,6 +7,7 @@
 #include "ung_ssm.h"
 #include "ugg_bsm.h"
 #include "ung_bsm.h"
+#include "ung_svm.h"
 
 #include "distr_consts.h"
 #include "filter_smoother.h"
@@ -44,6 +45,9 @@ template void ung_amcmc::approx_mcmc(ung_ssm model, const bool end_ram,
   const bool local_approx, const arma::vec& initial_mode,
   const unsigned int max_iter, const double conv_tol);
 template void ung_amcmc::approx_mcmc(ung_bsm model, const bool end_ram,
+  const bool local_approx, const arma::vec& initial_mode,
+  const unsigned int max_iter, const double conv_tol);
+template void ung_amcmc::approx_mcmc(ung_svm model, const bool end_ram,
   const bool local_approx, const arma::vec& initial_mode,
   const unsigned int max_iter, const double conv_tol);
 
@@ -168,6 +172,8 @@ template void ung_amcmc::is_correction_psi(ung_ssm model, const unsigned int nsi
   const bool const_sim, const unsigned int n_threads);
 template void ung_amcmc::is_correction_psi(ung_bsm model, const unsigned int nsim_states, 
   const bool const_sim, const unsigned int n_threads);
+template void ung_amcmc::is_correction_psi(ung_svm model, const unsigned int nsim_states, 
+  const bool const_sim, const unsigned int n_threads);
 
 template <class T>
 void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states, 
@@ -233,6 +239,10 @@ template void ung_amcmc::state_sampler_psi_is2(ung_bsm model,
   const unsigned int nsim_states, const arma::mat& theta, arma::cube& alpha, 
   arma::vec& weights, const arma::mat& y, const arma::mat& H,
   const arma::mat& scales);
+template void ung_amcmc::state_sampler_psi_is2(ung_svm model, 
+  const unsigned int nsim_states, const arma::mat& theta, arma::cube& alpha, 
+  arma::vec& weights, const arma::mat& y, const arma::mat& H,
+  const arma::mat& scales);
 
 template <class T>
 void ung_amcmc::state_sampler_psi_is2(T model, const unsigned int nsim_states, 
@@ -271,6 +281,10 @@ template void ung_amcmc::state_sampler_psi_is1(ung_bsm model,
   const unsigned int nsim_states, const arma::mat& theta,
   arma::cube& alpha, arma::vec& weights, const arma::mat& y, const arma::mat& H,
   const arma::mat& scales, const arma::uvec& counts);
+template void ung_amcmc::state_sampler_psi_is1(ung_svm model, 
+  const unsigned int nsim_states, const arma::mat& theta,
+  arma::cube& alpha, arma::vec& weights, const arma::mat& y, const arma::mat& H,
+  const arma::mat& scales, const arma::uvec& counts);
 
 template <class T>
 void ung_amcmc::state_sampler_psi_is1(T model, const unsigned int nsim_states, 
@@ -306,6 +320,9 @@ template void ung_amcmc::is_correction_bsf(ung_ssm model,
   const unsigned int nsim_states, const bool const_sim, 
   const unsigned int n_threads);
 template void ung_amcmc::is_correction_bsf(ung_bsm model, 
+  const unsigned int nsim_states, const bool const_sim, 
+  const unsigned int n_threads);
+template void ung_amcmc::is_correction_bsf(ung_svm model, 
   const unsigned int nsim_states, const bool const_sim, 
   const unsigned int n_threads);
 
@@ -368,6 +385,9 @@ template void ung_amcmc::state_sampler_bsf_is2(ung_ssm model, unsigned int nsim_
 template void ung_amcmc::state_sampler_bsf_is2(ung_bsm model, unsigned int nsim_states, 
   const arma::vec& approx_loglik_storage, const arma::mat& theta,
   arma::cube& alpha, arma::vec& weights);
+template void ung_amcmc::state_sampler_bsf_is2(ung_svm model, unsigned int nsim_states, 
+  const arma::vec& approx_loglik_storage, const arma::mat& theta,
+  arma::cube& alpha, arma::vec& weights);
 
 template <class T>
 void ung_amcmc::state_sampler_bsf_is2(T model, const unsigned int nsim_states, 
@@ -399,6 +419,9 @@ template void ung_amcmc::state_sampler_bsf_is1(ung_ssm model, unsigned int nsim_
 template void ung_amcmc::state_sampler_bsf_is1(ung_bsm model, unsigned int nsim_states, 
   const arma::vec& approx_loglik_storage, const arma::mat& theta,
   arma::cube& alpha, arma::vec& weights, const arma::uvec& counts);
+template void ung_amcmc::state_sampler_bsf_is1(ung_svm model, unsigned int nsim_states, 
+  const arma::vec& approx_loglik_storage, const arma::mat& theta,
+  arma::cube& alpha, arma::vec& weights, const arma::uvec& counts);
 
 template <class T>
 void ung_amcmc::state_sampler_bsf_is1(T model, const unsigned int nsim_states, 
@@ -426,6 +449,8 @@ void ung_amcmc::state_sampler_bsf_is1(T model, const unsigned int nsim_states,
 template void ung_amcmc::is_correction_spdk(ung_ssm model, unsigned int nsim_states, 
   bool const_sim, unsigned int n_threads);
 template void ung_amcmc::is_correction_spdk(ung_bsm model, unsigned int nsim_states, 
+  bool const_sim, unsigned int n_threads);
+template void ung_amcmc::is_correction_spdk(ung_svm model, unsigned int nsim_states, 
   bool const_sim, unsigned int n_threads);
 
 template <class T>
@@ -484,11 +509,17 @@ void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim_states,
     log(weight_storage);
 }
 
-template void ung_amcmc::state_sampler_spdk_is2(ung_ssm model, unsigned int nsim_states, const arma::mat& theta,
-  arma::cube& alpha, arma::vec& weights, const arma::mat& y, const arma::mat& H,
+template void ung_amcmc::state_sampler_spdk_is2(ung_ssm model, 
+  unsigned int nsim_states, const arma::mat& theta, arma::cube& alpha, 
+  arma::vec& weights, const arma::mat& y, const arma::mat& H,
   const arma::vec& scales);
-template void ung_amcmc::state_sampler_spdk_is2(ung_bsm model,  unsigned int nsim_states, const arma::mat& theta,
-  arma::cube& alpha, arma::vec& weights, const arma::mat& y, const arma::mat& H,
+template void ung_amcmc::state_sampler_spdk_is2(ung_bsm model, 
+  unsigned int nsim_states, const arma::mat& theta, arma::cube& alpha, 
+  arma::vec& weights, const arma::mat& y, const arma::mat& H,
+  const arma::vec& scales);
+template void ung_amcmc::state_sampler_spdk_is2(ung_svm model, 
+  unsigned int nsim_states, const arma::mat& theta, arma::cube& alpha, 
+  arma::vec& weights, const arma::mat& y, const arma::mat& H,
   const arma::vec& scales);
 
 template <class T>
@@ -522,11 +553,17 @@ void ung_amcmc::state_sampler_spdk_is2(T model, const unsigned int nsim_states,
 
 
 
-template void ung_amcmc::state_sampler_spdk_is1(ung_ssm model, unsigned int nsim_states, const arma::mat& theta,
-  arma::cube& alpha, arma::vec& weights, const arma::mat& y, const arma::mat& H,
+template void ung_amcmc::state_sampler_spdk_is1(ung_ssm model,
+  unsigned int nsim_states, const arma::mat& theta, arma::cube& alpha, 
+  arma::vec& weights, const arma::mat& y, const arma::mat& H,
   const arma::vec& scales, const arma::uvec& counts);
-template void ung_amcmc::state_sampler_spdk_is1(ung_bsm model,  unsigned int nsim_states, const arma::mat& theta,
-  arma::cube& alpha, arma::vec& weights, const arma::mat& y, const arma::mat& H,
+template void ung_amcmc::state_sampler_spdk_is1(ung_bsm model, 
+  unsigned int nsim_states, const arma::mat& theta, arma::cube& alpha, 
+  arma::vec& weights, const arma::mat& y, const arma::mat& H,
+  const arma::vec& scales, const arma::uvec& counts);
+template void ung_amcmc::state_sampler_spdk_is1(ung_svm model, 
+  unsigned int nsim_states, const arma::mat& theta, arma::cube& alpha, 
+  arma::vec& weights, const arma::mat& y, const arma::mat& H,
   const arma::vec& scales, const arma::uvec& counts);
 
 template <class T>
@@ -559,3 +596,4 @@ void ung_amcmc::state_sampler_spdk_is1(T model, const unsigned int nsim_states,
     alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
   }
 }
+

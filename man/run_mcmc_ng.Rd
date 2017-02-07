@@ -3,6 +3,7 @@
 \name{run_mcmc.ngssm}
 \alias{run_mcmc.ng_bsm}
 \alias{run_mcmc.ngssm}
+\alias{run_mcmc.nlg_ssm}
 \alias{run_mcmc.svm}
 \title{Bayesian inference of non-Gaussian or non-linear state space models using MCMC}
 \usage{
@@ -25,7 +26,15 @@
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   local_approx = TRUE, n_threads = 1, seed = sample(.Machine$integer.max,
-  size = 1), ...)
+  size = 1), max_iter = 100, conv_tol = 1e-08, ...)
+
+\method{run_mcmc}{nlg_ssm}(object, n_iter, nsim_states, type = "full",
+  method = "pm", simulation_method = "psi", const_m = TRUE,
+  delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
+  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  local_approx = TRUE, n_threads = 1, initial_mode,
+  seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
+  conv_tol = 1e-08, ...)
 }
 \arguments{
 \item{object}{Model object.}

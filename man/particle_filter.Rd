@@ -3,15 +3,19 @@
 \name{particle_filter}
 \alias{particle_filter}
 \alias{particle_filter.ngssm}
+\alias{particle_filter.nlg_ssm}
 \alias{particle_filter.svm}
 \title{Particle Filtering}
 \usage{
 particle_filter(object, nsim, ...)
 
-\method{particle_filter}{ngssm}(object, nsim, filter_type = "bootstrap",
+\method{particle_filter}{ngssm}(object, nsim, filter_type = "bsf",
   seed = sample(.Machine$integer.max, size = 1), ...)
 
-\method{particle_filter}{svm}(object, nsim, filter_type = "bootstrap",
+\method{particle_filter}{svm}(object, nsim, filter_type = "bsf",
+  seed = sample(.Machine$integer.max, size = 1), ...)
+
+\method{particle_filter}{nlg_ssm}(object, nsim, filter_type = "bsf",
   seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
@@ -21,7 +25,7 @@ particle_filter(object, nsim, ...)
 
 \item{...}{Ignored.}
 
-\item{filter_type}{Eiher \code{"bootstrap"} or \code{"psi"}.}
+\item{filter_type}{Eiher \code{"bsf"} or \code{"psi"}.}
 
 \item{seed}{Seed for RNG.}
 }

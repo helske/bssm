@@ -323,7 +323,7 @@ arma::mat ugg_ssm::fast_smoother() const {
   }
   
   for (unsigned int t = 0; t < (n - 1); t++) {
-    at.col(t + 1) = C.col(t * Ctv)+ T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
+    at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
   }
   
   return at;

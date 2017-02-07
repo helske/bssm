@@ -59,3 +59,39 @@ kfilter.ng_bsm <- function(object, ...) {
 kfilter.svm <- function(object, ...) {
   gaussian_kfilter(gaussian_approx(object))
 }
+
+#' @export
+ekf <- function(object) {
+  
+  out <- ekf_nlg(t(object$y), object$Z, object$H, object$T, 
+  object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
+  object$theta, object$log_prior_pdf, object$known_params, 
+  object$known_tv_params, object$n_states, object$n_etas, 
+  as.integer(object$time_varying))
+  
+  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
+  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
+  out
+}
+
+#' @export
+ekf_smoother <- function(object) {
+  
+ ekf_smoother_nlg(t(object$y), object$Z, object$H, object$T, 
+    object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
+    object$theta, object$log_prior_pdf, object$known_params, 
+    object$known_tv_params, object$n_states, object$n_etas, 
+    as.integer(object$time_varying))
+  
+}
+
+#' @export
+iekf_smoother <- function(object, max_iter = 100, conv_tol = 1e-8) {
+  
+  iekf_smoother_nlg(t(object$y), object$Z, object$H, object$T, 
+    object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
+    object$theta, object$log_prior_pdf, object$known_params, 
+    object$known_tv_params, object$n_states, object$n_etas, 
+    as.integer(object$time_varying), max_iter, conv_tol)
+  
+}

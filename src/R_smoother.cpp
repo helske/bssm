@@ -1,5 +1,6 @@
 #include "ugg_ssm.h"
 #include "ugg_bsm.h"
+#include "mgg_ssm.h"
 
 // [[Rcpp::export]]
 Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
@@ -20,6 +21,11 @@ Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
   arma::cube Vt(m, m, n);
   
   switch (model_type) {
+  case -1: {
+    mgg_ssm model(clone(model_), 1);
+    Rcpp::Rcout<<"not yet"<<std::endl;
+   // model.smoother(alphahat, Vt);
+  } break;
   case 1: {
     ugg_ssm model(clone(model_), 1);
     model.smoother(alphahat, Vt);
@@ -42,6 +48,10 @@ Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
 arma::mat gaussian_fast_smoother(const Rcpp::List& model_, const int model_type) {
   
   switch (model_type) {
+  case -1: {
+  mgg_ssm model(clone(model_), 1);
+  return model.fast_smoother().t();
+} break;
   case 1: {
     ugg_ssm model(clone(model_), 1);
     return model.fast_smoother().t();

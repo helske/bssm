@@ -31,6 +31,14 @@ fast_smoother.bsm <- function(object, ...) {
   colnames(out) <- names(object$a1)
   ts(out, start = start(object$y), frequency = frequency(object$y))
 }
+#' @method fast_smoother mv_gssm
+#' @export
+fast_smoother.mv_gssm <- function(object, ...) {
+  
+  out <- gaussian_fast_smoother(object, model_type = -1L)
+  colnames(out) <- names(object$a1)
+  ts(out, start = start(object$y), frequency = frequency(object$y))
+}
 #' @method fast_smoother ngssm
 #' @export
 fast_smoother.ngssm <- function(object, ...) {

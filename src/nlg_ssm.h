@@ -5,21 +5,25 @@
 
 #include <RcppArmadillo.h>
 #include "mgg_ssm.h"
-#include "nl_func.h"
+#include "function_pointers.h"
+
 
 class nlg_ssm {
   
 public:
   
-  nlg_ssm(const arma::mat& y, const arma::vec a1, const arma::mat& P1,
-    SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, 
-    SEXP Z_gn_, SEXP H_gn_, SEXP T_gn_, SEXP R_gn_, 
-    const arma::vec& theta, const unsigned int seed);
+  nlg_ssm(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, 
+    SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_,
+    const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
+    const arma::mat& known_tv_params, const unsigned int m, const unsigned int k,
+    const arma::uvec& time_varying, const unsigned int seed);
   
   // find the approximating Gaussian model
   mgg_ssm approximate(arma::mat& mode_estimate, const unsigned int max_iter, 
     const double conv_tol) const;
-  
+  // update the approximating Gaussian model
+  void approximate(mgg_ssm& approx_model, arma::mat& mode_estimate, const unsigned int max_iter, 
+    const double conv_tol) const;
   // psi-particle filter
   double psi_filter(const mgg_ssm& approx_model,
     const double approx_loglik, const arma::vec& scales,
@@ -41,33 +45,52 @@ public:
   double bsf_filter(const unsigned int nsim, arma::cube& alphasim, 
     arma::mat& weights, arma::umat& indices);
   
+  double ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, 
+    arma::cube& Ptt) const;
+  
+  double ekf_loglik() const;
+  
+  arma::mat ekf_smoother() const;
+  arma::mat iekf_smoother(const arma::mat& alphahat) const;
   
   arma::mat y;
-  arma::vec a1;
-  arma::mat P1;
-  
-  const unsigned int n;
-  const unsigned int m;
-  const unsigned int p;
-
-  std::mt19937 engine;
-  const double zero_tol;
-  unsigned int seed;
-  
-  // Parameter vector used in _all_ nonlinear functions
-  arma::vec theta;
   // nonlinear functions of 
   // y_t = Z(alpha_t, theta_t) + H(alpha_t, theta_t)*eps_t, 
   // alpha_t+1 = T(alpha_t, theta_t) + R(alpha_t, theta_t)*eta_t
-  nonlinear_fn Z_fn;
-  nonlinear_fn H_fn;
-  nonlinear_fn T_fn;
-  nonlinear_fn R_fn;
+  
+  vec_fn Z_fn;
+  mat_fn H_fn;
+  vec_fn T_fn;
+  mat_fn R_fn;
   //and the derivatives
-  nonlinear_gn Z_gn;
-  nonlinear_gn H_gn;
-  nonlinear_gn T_gn;
-  nonlinear_gn R_gn;
+  mat_fn Z_gn;
+  mat_fn T_gn;
+  //initial value
+  vec_initfn a1_fn;
+  mat_initfn P1_fn;
+  
+  // Parameter vector used in _all_ nonlinear functions
+  arma::vec theta;
+  //prior log-pdf
+  double_fn log_prior_pdf;
+  // vector of known parameters
+  arma::vec known_params;
+  // matrix of known (time-varying) parameters
+  arma::mat known_tv_params;
+  
+  const unsigned int m;
+  const unsigned int k;
+  const unsigned int n;
+  const unsigned int p;
+  
+  const unsigned int Zgtv;
+  const unsigned int Tgtv;
+  const unsigned int Htv;
+  const unsigned int Rtv;
+  
+  unsigned int seed;
+  std::mt19937 engine;
+  const double zero_tol;
   
 };
 

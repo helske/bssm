@@ -7,6 +7,7 @@
 #include <RcppArmadillo.h>
 #include "ugg_ssm.h"
 #include "ung_ssm.h"
+#include "nlg_ssm.h"
 
 double norm_log_const(double sd);
 double poisson_log_const(double y, double u);

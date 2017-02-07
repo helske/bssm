@@ -7,6 +7,8 @@
 #include "ung_ssm.h"
 #include "ugg_bsm.h"
 #include "ung_bsm.h"
+#include "ung_svm.h"
+#include "nlg_ssm.h"
 
 #include "distr_consts.h"
 #include "filter_smoother.h"
@@ -194,6 +196,9 @@ template void mcmc::pm_mcmc_psi(ung_ssm model, const bool end_ram,
 template void mcmc::pm_mcmc_psi(ung_bsm model, const bool end_ram, 
   const unsigned int nsim_states, const bool local_approx, 
   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
+template void mcmc::pm_mcmc_psi(ung_svm model, const bool end_ram, 
+  const unsigned int nsim_states, const bool local_approx, 
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
 
 template<class T>
 void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_states, 
@@ -207,7 +212,7 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   arma::vec theta = model.get_theta();
   // compute the log[p(theta)]
   double logprior = log_prior_pdf(theta);
-  
+
   // construct the approximate Gaussian model
   arma::vec mode_estimate = initial_mode;
   ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
@@ -215,22 +220,23 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   // compute the log-likelihood of the approximate model
   double gaussian_loglik = approx_model.log_likelihood();
   
+
   // compute unnormalized mode-based correction terms 
   // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
   arma::vec scales = model.scaling_factors(approx_model, mode_estimate);
+
   double sum_scales = arma::accu(scales);
   // compute the constant term
   double const_term = compute_const_term(model, approx_model); 
   // log-likelihood approximation
-  double approx_loglik = gaussian_loglik + const_term + 
-    arma::accu(scales);
-  
+  double approx_loglik = gaussian_loglik + const_term + sum_scales;
+ 
   arma::cube alpha(m, n, nsim_states);
   arma::mat weights(nsim_states, n);
   arma::umat indices(nsim_states, n - 1);
   double loglik = model.psi_filter(approx_model, approx_loglik, scales, 
     nsim_states, alpha, weights, indices);
-  
+ 
   filter_smoother(alpha, indices);
   arma::vec w = weights.col(n - 1);
   std::discrete_distribution<> sample0(w.begin(), w.end());
@@ -277,7 +283,7 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
       // compute the log-likelihood of the approximate model
       gaussian_loglik = approx_model.log_likelihood();
       approx_loglik = gaussian_loglik + const_term + sum_scales;
-      
+  
       double loglik_prop = model.psi_filter(approx_model, approx_loglik, scales, 
         nsim_states, alpha, weights, indices);
       
@@ -287,6 +293,7 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
       
       acceptance_prob = std::min(1.0, exp(loglik_prop - loglik + 
         logprior_prop - logprior));
+     
       //accept
       if (unif(model.engine) < acceptance_prob) {
         if (i > n_burnin) acceptance_rate++;
@@ -331,6 +338,8 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
 template void mcmc::pm_mcmc_bsf(ung_ssm model, const bool end_ram,
   const unsigned int nsim_states);
 template void mcmc::pm_mcmc_bsf(ung_bsm model, const bool end_ram,
+  const unsigned int nsim_states);
+template void mcmc::pm_mcmc_bsf(ung_svm model, const bool end_ram,
   const unsigned int nsim_states);
 
 template<class T>
@@ -437,6 +446,9 @@ template void mcmc::da_mcmc_psi(ung_ssm model, const bool end_ram,
 template void mcmc::da_mcmc_psi(ung_bsm model, const bool end_ram, 
   const unsigned int nsim_states, const bool local_approx, 
   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
+template void mcmc::da_mcmc_psi(ung_svm model, const bool end_ram, 
+  const unsigned int nsim_states, const bool local_approx, 
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
 
 template<class T>
 void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_states, 
@@ -465,8 +477,7 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   // compute the constant term
   double const_term = compute_const_term(model, approx_model); 
   // log-likelihood approximation
-  double approx_loglik = gaussian_loglik + const_term + 
-    arma::accu(scales);
+  double approx_loglik = gaussian_loglik + const_term + sum_scales;
   
   arma::cube alpha(m, n, nsim_states);
   arma::mat weights(nsim_states, n);
@@ -584,6 +595,9 @@ template void mcmc::da_mcmc_bsf(ung_ssm model, const bool end_ram,
 template void mcmc::da_mcmc_bsf(ung_bsm model, const bool end_ram, 
   const unsigned int nsim_states, const bool local_approx, 
   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
+template void mcmc::da_mcmc_bsf(ung_svm model, const bool end_ram, 
+  const unsigned int nsim_states, const bool local_approx, 
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
 
 template<class T>
 void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_states, 
@@ -612,8 +626,7 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
   // compute the constant term
   double const_term = compute_const_term(model, approx_model); 
   // log-likelihood approximation
-  double approx_loglik = gaussian_loglik + const_term + 
-    arma::accu(scales);
+  double approx_loglik = gaussian_loglik + const_term + sum_scales;
   
   arma::cube alpha(m, n, nsim_states);
   arma::mat weights(nsim_states, n);
@@ -720,307 +733,209 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
   acceptance_rate /= (n_iter - n_burnin);
 }
 
-// 
-// // run delayed acceptance pseudo-marginal MCMC for 
-// // non-linear and/or non-Gaussian state space model
-// // using psi-PF
-// template void mcmc::approx_mcmc(ung_ssm model, const bool end_ram, 
-//   const unsigned int nsim_states, const bool local_approx, arma::vec& initial_mode, 
-//   unsigned int max_iter, const double conv_tol);
-// template void mcmc::approx_mcmc(ung_bsm model, const bool end_ram, 
-//   const unsigned int nsim_states, const bool local_approx, arma::vec& initial_mode, 
-//   unsigned int max_iter, const double conv_tol);
-// 
-// template<class T>
-// void mcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx, 
-//   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol) {
-//   
-//   unsigned int m = model.m;
-//   unsigned n = model.n;
-//   
-//   // get the current values of theta
-//   arma::vec theta = model.get_theta();
-//   // compute the log[p(theta)]
-//   double logprior = log_prior_pdf(theta);
-//   
-//   // construct the approximate Gaussian model
-//   arma::vec mode_estimate = initial_mode;
-//   ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
-//   
-//   // compute the log-likelihood of the approximate model
-//   double gaussian_loglik = approx_model.log_likelihood();
-//   
-//   // compute unnormalized mode-based correction terms 
-//   // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
-//   arma::vec scales = model.scaling_factors(approx_model, mode_estimate);
-//   double sum_scales = arma::accu(scales);
-//   // compute the constant term
-//   double const_term = compute_const_term(model, approx_model); 
-//   // log-likelihood approximation
-//   double approx_loglik = gaussian_loglik + const_term + 
-//     arma::accu(scales);
-//   
-//   double acceptance_prob = 0.0;
-//   std::normal_distribution<> normal(0.0, 1.0);
-//   std::uniform_real_distribution<> unif(0.0, 1.0);
-//   for (unsigned int i = 1; i <= n_iter; i++) {
-//     
-//     if (i % 16 == 0) {
-//       Rcpp::checkUserInterrupt();
-//     }
-//     
-//     // sample from standard normal distribution
-//     arma::vec u(n_par);
-//     for(unsigned int j = 0; j < n_par; j++) {
-//       u(j) = normal(model.engine);
-//     }
-//     
-//     // propose new theta
-//     arma::vec theta_prop = theta + S * u;
-//     // compute prior
-//     double logprior_prop = log_prior_pdf(theta_prop);
-//     
-//     if (logprior_prop > -arma::datum::inf) {
-//       // update parameters
-//       model.set_theta(theta_prop);
-//       
-//       if (local_approx) {
-//         // construct the approximate Gaussian model
-//         mode_estimate = initial_mode;
-//         model.approximate(approx_model, mode_estimate, max_iter, conv_tol);
-//         // compute unnormalized mode-based correction terms 
-//         // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
-//         scales = model.scaling_factors(approx_model, mode_estimate);
-//         sum_scales = arma::accu(scales);
-//         // compute the constant term
-//         const_term = compute_const_term(model, approx_model);
-//       } else {
-//         model.approximate(approx_model, mode_estimate, 0, conv_tol);
-//       }
-//       // compute the log-likelihood of the approximate model
-//       gaussian_loglik = approx_model.log_likelihood();
-//       double approx_loglik_prop = gaussian_loglik + const_term + sum_scales;
-//       
-//       acceptance_prob = std::min(1.0, exp(approx_loglik_prop - approx_loglik + 
-//         logprior_prop - logprior));
-//       
-//       if (unif(model.engine) < acceptance_prob) {
-//         
-//         approx_loglik = approx_loglik_prop;
-//         logprior = logprior_prop;
-//         theta = theta_prop;
-//         if (i > n_burnin) {
-//           acceptance_rate++;
-//           if ((i - 1) % n_thin == 0) {
-//             posterior_storage(n_stored) = logprior + approx_loglik;
-//             theta_storage.col(n_stored) = theta;
-//             n_stored++;
-//           }
-//         }
-//       }
-//     } else acceptance_prob = 0.0;
-//     
-//     if ((i > n_burnin) && ((i - 1) % n_thin == 0)) {
-//       if (n_stored == 0) {
-//         posterior_storage(0) = logprior + approx_loglik;
-//         theta_storage.col(0) = theta;
-//         n_stored++;
-//       }
-//       count_storage(n_stored - 1)++;
-//     }
-//     
-//     if (!end_ram || i <= n_burnin) {
-//       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
-//     }
-//   }
-//   
-//   trim_storage();
-//   acceptance_rate /= (n_iter - n_burnin);
-// }
-// 
-// 
-// // template void mcmc::pm_mcmc_bsf(ung_ssm model, const bool end_ram, 
-// //   unsigned int nsim_states);
-// // template void mcmc::pm_mcmc_bsf(ung_bsm model, const bool end_ram, 
-// //   unsigned int nsim_states);
-// // 
-// // template<class T>
-// // void mcmc::pm_mcmc_bsf(T model, const bool end_ram, unsigned int nsim_states) {
-// //   
-// //   unsigned int m = model.m;
-// //   unsigned n = model.n;
-// //   
-// //   // get the current values of theta
-// //   arma::vec theta = model.get_theta();
-// //   // compute the log[p(theta)]
-// //   double logprior = log_prior_pdf(theta);
-// //   
-// //   arma::cube alpha(m, n, nsim_states);
-// //   arma::mat weights(nsim_states, n);
-// //   arma::umat indices(nsim_states, n - 1);
-// //   double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
-// // 
-// //   double acceptance_prob = 0.0;
-// //   
-// //   filter_smoother(alpha, indices);
-// //   arma::vec w0 = weights.col(n - 1);
-// //   std::discrete_distribution<> sample0(w0.begin(), w0.end());
-// //   update_storage(0, alpha.slice(sample0(model.engine)), 
-// //     theta, logprior + loglik);
-// //   counts(0)++;
-// //   
-// //   std::normal_distribution<> normal(0.0, 1.0);
-// //   std::uniform_real_distribution<> unif(0.0, 1.0);
-// //   
-// //   for (unsigned int i = 0; i < n_iter; i++) {
-// //     
-// //     if (i % 16 == 0) {
-// //       Rcpp::checkUserInterrupt();
-// //     }
-// //     
-// //     // sample from standard normal distribution
-// //     arma::vec u(n_par);
-// //     for(unsigned int j = 0; j < n_par; j++) {
-// //       u(j) = normal(model.engine);
-// //     }
-// //     
-// //     // propose new theta
-// //     arma::vec theta_prop = theta + S * u;
-// //     // compute prior
-// //     double logprior_prop = log_prior_pdf(theta_prop);
-// //     
-// //     if (logprior_prop > -arma::datum::inf) {
-// //       // update parameters
-// //       model.set_theta(theta_prop);
-// //       // construct the approximate Gaussian model
-// //       mode_estimate = initial_mode;
-// //       ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
-// //       
-// //       // compute the log-likelihood of the approximate model
-// //       double gaussian_loglik = approx_model.log_likelihood();
-// //       // compute unnormalized mode-based correction terms 
-// //       // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
-// //       arma::vec scales = model.scaling_factors(approx_model, mode_estimate);
-// //       // compute the constant term
-// //       double const_term = compute_const_term(model, approx_model); 
-// //       double approx_loglik = gaussian_loglik + const_term + arma::accu(scales);
-// //       
-// //       arma::cube alpha_prop(m, n, nsim_states);
-// //       arma::mat weights_prop(nsim_states, n);
-// //       arma::umat indices_prop(nsim_states, n - 1);
-// //       double loglik_prop = model.psi_filter(approx_model, approx_loglik, scales, 
-// //         nsim_states, alpha_prop, weights_prop, indices_prop);
-// //       
-// //       //compute the acceptance probability
-// //       // use explicit min(...) as we need this value later
-// //       double q = proposal(theta, theta_prop);
-// //       acceptance_prob = std::min(1.0, exp(loglik_prop - loglik + 
-// //         logprior_prop - logprior + q));
-// //       //accept
-// //       if (unif(model.engine) < acceptance_prob) {
-// //         loglik = loglik_prop;
-// //         logprior = logprior_prop;
-// //         theta = theta_prop;
-// //         alpha = alpha_prop;
-// //         indices = indices_prop;
-// //         weights = weights_prop;
-// //         filter_smoother(alpha, indices);
-// //         arma::vec w = weights.col(n - 1);
-// //         std::discrete_distribution<> sample(w.begin(), w.end());
-// //         
-// //         if (i >= n_burnin) {
-// //           acceptance_rate++;
-// //           n_stored++;
-// //           update_storage(n_stored, alpha.slice(sample(model.engine)), 
-// //             theta, logprior + loglik);
-// //         } else {
-// //           update_storage(0, alpha.slice(sample(model.engine)), 
-// //             theta, logprior + loglik);
-// //           counts(0) = 0;
-// //         }
-// //       }
-// //     } acceptance_prob = 0.0;
-// //     
-// //     counts(n_stored)++;
-// //     
-// //     if (!end_ram || i < n_burnin) {
-// //       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i + 1, gamma);
-// //     }
-// //     
-// //   }
-// //   
-// //   trim_storage();
-// //   
-// //   acceptance_rate /= (n_iter - n_burnin);
-// // }
-// // 
-// // // template<class T>
-// // // double mcmc::pm_mcmc_bsf(T model, const bool end_ram, unsigned int nsim_states) {
-// // //   
-// // //   double acceptance_rate = 0.0;
-// // //   
-// // //   arma::vec theta = model.get_theta();
-// // //   double logprior = model.log_prior_pdf(theta, prior_distributions, prior_parameters);
-// // //   
-// // //   double loglik = model.bsf_filter(0, nsim_states, alpha, weights, indices);
-// // //   model.backtrack(alpha, indices);
-// // //   unsigned int n_stored = 0;
-// // //   double acceptance_prob = 0.0;
-// // //   
-// // //   std::normal_distribution<> normal(0.0, 1.0);
-// // //   std::uniform_real_distribution<> unif(0.0, 1.0);
-// // //   
-// // //   for (unsigned int i = 0; i < n_iter; i++) {
-// // //     
-// // //     if (i % 16 == 0) {
-// // //       Rcpp::checkUserInterrupt();
-// // //     }
-// // //     
-// // //     // sample from standard normal distribution
-// // //     arma::vec u(n_par);
-// // //     for(unsigned int j = 0; j < n_par; j++) {
-// // //       u(j) = normal(model.engine);
-// // //     }
-// // //     
-// // //     // propose new theta
-// // //     arma::vec theta_prop = theta + S * u;
-// // //     // compute prior
-// // //     double logprior_prop = 
-// // //       model.log_prior_pdf(theta_prop, prior_distributions, prior_parameters);
-// // //     
-// // //     if (logprior_prop > -arma::datum::inf) {
-// // //       // update parameters
-// // //       model.set_theta(theta_prop);
-// // //       // compute log-likelihood with proposed theta
-// // //       double loglik_prop = model.bsf_filter(0, nsim_states, alpha_prop, weights, indices);
-// // //       //compute the acceptance probability
-// // //       // use explicit min(...) as we need this value later
-// // //       double q = model.proposal(theta, theta_prop);
-// // //       acceptance_prob = std::min(1.0, exp(loglik_prop - loglik + logprior_prop - logprior + q));
-// // //       //accept
-// // //       if (unif(model.engine) < acceptance_prob) {
-// // //         if (i >= n_burnin) {
-// // //           acceptance_rate++;
-// // //         }
-// // //         loglik = loglik_prop;
-// // //         logprior = logprior_prop;
-// // //         theta = theta_prop;
-// // //       }
-// // //     } else acceptance_prob = 0.0;
-// // //     
-// // //     //store
-// // //     if ((i >= n_burnin) && ((i - 1) % n_thin == 0) && n_stored < n_samples) {
-// // //       update_storage(n_stored, theta, logprior + loglik);
-// // //       n_stored++;
-// // //     }
-// // //     
-// // //     if (!end_ram || i < n_burnin) {
-// // //       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i + 1, gamma);
-// // //     }
-// // //     
-// // //   }
-// // //   
-// // //   return acceptance_rate / (n_iter - n_burnin);
-// // //   
-// // // }
-// // // 
+// run pseudo-marginal MCMC for non-linear Gaussian state space model
+// using psi-PF
+void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int nsim_states, 
+  const bool local_approx, const arma::mat& initial_mode, const unsigned int max_iter, 
+  const double conv_tol) {
+  
+  unsigned int m = model.m;
+  unsigned n = model.n;
+  // compute the log[p(theta)]
+  double logprior = model.log_prior_pdf.eval(model.theta);
+  // construct the approximate Gaussian model
+  arma::mat mode_estimate = initial_mode;
+
+  mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
+ 
+  // compute the log-likelihood of the approximate model
+  double gaussian_loglik = approx_model.log_likelihood();
+  
+  // compute mode-based correction terms 
+  // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
+  arma::vec scales = model.scaling_factors(approx_model, mode_estimate);
+
+  double sum_scales = arma::accu(scales);
+  // log-likelihood approximation
+  double approx_loglik = gaussian_loglik + sum_scales;
+  arma::cube alpha(m, n, nsim_states);
+  arma::mat weights(nsim_states, n);
+  arma::umat indices(nsim_states, n - 1);
+ 
+  double loglik = model.psi_filter(approx_model, approx_loglik, scales, 
+    nsim_states, alpha, weights, indices);
+ 
+  filter_smoother(alpha, indices);
+  arma::vec w = weights.col(n - 1);
+  std::discrete_distribution<> sample0(w.begin(), w.end());
+  arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
+ 
+  double acceptance_prob = 0.0;
+  unsigned int counts = 0;
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+  arma::vec theta = model.theta;
+
+  for (unsigned int i = 1; i <= n_iter; i++) {
+    
+    if (i % 16 == 0) {
+      Rcpp::checkUserInterrupt();
+    }
+    
+    // sample from standard normal distribution
+    arma::vec u(n_par);
+    for(unsigned int j = 0; j < n_par; j++) {
+      u(j) = normal(model.engine);
+    }
+    
+    // propose new theta
+    arma::vec theta_prop = theta + S * u;
+    // compute prior
+   
+    double logprior_prop = model.log_prior_pdf.eval(theta_prop);
+   
+    if (logprior_prop > -arma::datum::inf) {
+      // update parameters
+      model.theta = theta_prop;
+
+      if (local_approx) {
+        // construct the approximate Gaussian model
+        mode_estimate = initial_mode;
+        model.approximate(approx_model, mode_estimate, max_iter, conv_tol);
+        // compute mode-based correction terms 
+        // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
+        scales = model.scaling_factors(approx_model, mode_estimate);
+        sum_scales = arma::accu(scales);
+      } else {
+        model.approximate(approx_model, mode_estimate, 0, conv_tol);
+      }
+      // compute the log-likelihood of the approximate model
+      gaussian_loglik = approx_model.log_likelihood();
+      approx_loglik = gaussian_loglik + sum_scales;
+      
+      double loglik_prop = model.psi_filter(approx_model, approx_loglik, scales, 
+        nsim_states, alpha, weights, indices);
+      
+      //compute the acceptance probability
+      // use explicit min(...) as we need this value later
+      // double q = proposal(theta, theta_prop);
+      
+      acceptance_prob = std::min(1.0, exp(loglik_prop - loglik + 
+        logprior_prop - logprior));
+    
+      //accept
+      if (unif(model.engine) < acceptance_prob) {
+        if (i > n_burnin) acceptance_rate++;
+        filter_smoother(alpha, indices);
+        w = weights.col(n - 1);
+        std::discrete_distribution<> sample(w.begin(), w.end());
+        sampled_alpha = alpha.slice(sample(model.engine));
+        loglik = loglik_prop;
+        logprior = logprior_prop;
+        theta = theta_prop;
+        counts = 0;
+      }
+    } else acceptance_prob = 0.0;
+    
+    if (i > n_burnin) {
+      counts++;
+      if ((i - n_burnin - 1) % n_thin == 0) {
+        if (counts <= n_thin) {
+          posterior_storage(n_stored) = logprior + loglik;
+          theta_storage.col(n_stored) = theta;
+          alpha_storage.slice(n_stored) = sampled_alpha.t();
+          count_storage(n_stored) = 1;
+          n_stored++;
+        } else {
+          count_storage(n_stored - 1)++;
+        }
+      }
+    }
+    
+    if (!end_ram || i <= n_burnin) {
+      ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
+    }
+  }
+  
+  trim_storage();
+  acceptance_rate /= (n_iter - n_burnin);
+}
+
+void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram) {
+  
+  unsigned int m = model.m;
+  unsigned n = model.n;
+  
+  double logprior = model.log_prior_pdf.eval(model.theta);
+  
+  double loglik = model.ekf_loglik();
+  
+  double acceptance_prob = 0.0;
+  unsigned int counts = 0;
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+  
+  arma::vec theta = model.theta;
+  
+  arma::mat alpha = model.ekf_smoother();
+  
+  for (unsigned int i = 1; i <= n_iter; i++) {
+    
+    if (i % 16 == 0) {
+      Rcpp::checkUserInterrupt();
+    }
+    
+    // sample from standard normal distribution
+    arma::vec u(n_par);
+    for(unsigned int j = 0; j < n_par; j++) {
+      u(j) = normal(model.engine);
+    }
+    
+    // propose new theta
+    arma::vec theta_prop = theta + S * u;
+    // compute prior
+    double logprior_prop = model.log_prior_pdf.eval(theta_prop);
+    
+    if (logprior_prop > -arma::datum::inf) {
+      // update parameters
+      model.theta = theta_prop;
+      
+      double loglik_prop = model.ekf_loglik();
+      acceptance_prob = std::min(1.0, exp(loglik_prop - loglik +
+        logprior_prop - logprior));
+      
+      if (unif(model.engine) < acceptance_prob) {
+        if (i > n_burnin) acceptance_rate++;
+        alpha = model.ekf_smoother();
+        loglik = loglik_prop;
+        logprior = logprior_prop;
+        theta = theta_prop;
+        counts = 0;
+      }
+    } else acceptance_prob = 0.0;
+    
+    if (i > n_burnin) {
+      counts++;
+      if ((i - n_burnin - 1) % n_thin == 0) {
+        if (counts <= n_thin) {
+          alpha_storage.slice(n_stored) = alpha.t();
+          posterior_storage(n_stored) = logprior + loglik;
+          theta_storage.col(n_stored) = theta;
+          count_storage(n_stored) = 1;
+          n_stored++;
+        } else {
+          count_storage(n_stored - 1)++;
+        }
+      }
+    }
+    
+    if (!end_ram || i <= n_burnin) {
+      ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
+    }
+  }
+  
+  trim_storage();
+  acceptance_rate /= (n_iter - n_burnin);
+}
+
+

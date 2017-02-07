@@ -137,8 +137,8 @@ double mgg_ssm::log_likelihood() const {
   const double LOG2PI = std::log(2.0 * M_PI);
   
   for (unsigned int t = 0; t < n; t++) {
-    
     arma::uvec obs_y = arma::find_finite(y_tmp.col(t));
+    
     if (obs_y.n_elem > 0) {
       arma::mat Zt = Z.slice(t * Ztv).rows(obs_y);
       arma::mat F = Zt * Pt * Zt.t() + HH.slice(t * Htv).submat(obs_y, obs_y);
@@ -148,11 +148,11 @@ double mgg_ssm::log_likelihood() const {
       if (chol_ok) {
         arma::vec tmp = y_tmp.col(t) - D.col(t * Dtv);
         arma::vec v = tmp.rows(obs_y) - Zt * at;
-        arma::mat inv_cholF = inv(trimatu(cholF));
+         arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
         arma::mat K = Pt * Zt.t() * inv_cholF.t() * inv_cholF;
         at = C.col(t * Ctv) + T.slice(t * Ttv) * (at + K * v);
         Pt = arma::symmatu(T.slice(t * Ttv) * 
-          (Pt - K * K.t() * F) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+          (Pt - K * F * K.t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
         arma::vec Fv = inv_cholF * v; 
         logLik -= 0.5 * arma::as_scalar(obs_y.n_elem * LOG2PI + 
           2.0 * arma::sum(log(arma::diagvec(cholF))) + Fv.t() * Fv);
@@ -173,7 +173,7 @@ double mgg_ssm::log_likelihood() const {
  * which are needed in simulation smoother and Laplace approximation
  */
 arma::mat mgg_ssm::fast_smoother() const {
-  
+
   arma::mat y_tmp = y;
   if(xreg.n_cols > 0) {
     y_tmp -= xbeta.t();
@@ -186,30 +186,36 @@ arma::mat mgg_ssm::fast_smoother() const {
   Pt = P1;
   
   arma::mat vt(p, n, arma::fill::zeros);
-  arma::cube ZFinv(p, p, n, arma::fill::zeros);
+  arma::cube ZFinv(m, p, n, arma::fill::zeros);
   arma::cube Kt(m, p, n, arma::fill::zeros);
   arma::uvec chol_ok(n, arma::fill::zeros);
   
   for (unsigned int t = 0; t < (n - 1); t++) {
+    
     arma::uvec na_y = arma::find_nonfinite(y_tmp.col(t));
+    
     if (na_y.n_elem < p) {
+      
       arma::mat Zt = Z.slice(t * Ztv);
       Zt.rows(na_y).zeros();
       arma::mat HHt = HH.slice(t * Htv);
       HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
       arma::mat Ft = Zt * Pt * Zt.t() + HHt;
+    
       arma::mat cholF(p, p);
       chol_ok(t) = arma::chol(cholF, Ft);
       
       if (chol_ok(t)) {
-        vt.col(t) = y_tmp.col(t) - D.col(t * Dtv) - Zt * at;
-        arma::mat inv_cholF = inv(trimatu(cholF));
+        vt.col(t) = y_tmp.col(t) - D.col(t * Dtv) - Zt * at.col(t);
+         arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
         ZFinv.slice(t) = Zt.t() * inv_cholF.t() * inv_cholF;
         Kt.slice(t) = Pt * ZFinv.slice(t);
-        at.col(t + 1) = C.col(t * Ctv) + 
+        
+        at.col(t + 1) = C.col(t * Ctv) +
           T.slice(t * Ttv) * (at.col(t) + Kt.slice(t) * vt.col(t));
+        
         Pt = arma::symmatu(T.slice(t * Ttv) * 
-          (Pt - Kt.slice(t) * Kt.slice(t).t() * Ft) * T.slice(t * Ttv).t() + 
+          (Pt - Kt.slice(t) * Ft * Kt.slice(t).t()) * T.slice(t * Ttv).t() + 
           RR.slice(t * Rtv));
       } else {
         at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) *  at.col(t);
@@ -232,8 +238,8 @@ arma::mat mgg_ssm::fast_smoother() const {
     arma::mat cholF(p, p);
     chol_ok(t) = arma::chol(cholF, Ft);
     if (chol_ok(t)) {
-      vt.col(t) = y_tmp.col(t) - D.col(t * Dtv) - Zt * at;
-      arma::mat inv_cholF = inv(trimatu(cholF));
+      vt.col(t) = y_tmp.col(t) - D.col(t * Dtv) - Zt * at.col(t);
+       arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
       ZFinv.slice(t) = Zt.t() * inv_cholF.t() * inv_cholF;
       Kt.slice(t) = Pt * ZFinv.slice(t);
     }
@@ -244,23 +250,21 @@ arma::mat mgg_ssm::fast_smoother() const {
   for (int t = (n - 1); t > 0; t--) {
     if (chol_ok(t)) {
       arma::mat L = T.slice(t * Ttv) * 
-        (arma::eye(m, m) - Kt.slice(t) * Z.slice(t * Ztv).t());
+        (arma::eye(m, m) - Kt.slice(t) * Z.slice(t * Ztv));
       rt.col(t - 1) = ZFinv.slice(t) * vt.col(t) + L.t() * rt.col(t);
     } else {
       rt.col(t - 1) = T.slice(t * Ttv).t() * rt.col(t);
     }
   }
   if (chol_ok(0)){
-    arma::mat L = T.slice(0) * (arma::eye(m, m) - Kt.slice(0) * Z.slice(0).t());
+    arma::mat L = T.slice(0) * (arma::eye(m, m) - Kt.slice(0) * Z.slice(0));
     at.col(0) = a1 + P1 * (ZFinv.slice(0) * vt.col(0) + L.t() * rt.col(0));
   } else {
     at.col(0) = a1 + P1 * T.slice(0).t() * rt.col(0);
   }
-  
   for (unsigned int t = 0; t < (n - 1); t++) {
     at.col(t + 1) = C.col(t * Ctv)+ T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
   }
-  
   return at;
 }
 // smoother which returns also cov(alpha_t, alpha_t-1)
@@ -276,10 +280,11 @@ void mgg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
   Pt.slice(0) = P1;
   
   arma::mat vt(p, n, arma::fill::zeros);
-  arma::cube ZFinv(p, p, n, arma::fill::zeros);
+  arma::cube ZFinv(m, p, n, arma::fill::zeros);
   arma::cube Kt(m, p, n, arma::fill::zeros);
   arma::uvec chol_ok(n, arma::fill::zeros);
   
+
   for (unsigned int t = 0; t < (n - 1); t++) {
     arma::uvec na_y = arma::find_nonfinite(y_tmp.col(t));
     if (na_y.n_elem < p) {
@@ -292,14 +297,14 @@ void mgg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
       chol_ok(t) = arma::chol(cholF, Ft);
       
       if (chol_ok(t)) {
-        vt.col(t) = y_tmp.col(t) - D.col(t * Dtv) - Zt * at;
-        arma::mat inv_cholF = inv(trimatu(cholF));
+        vt.col(t) = y_tmp.col(t) - D.col(t * Dtv) - Zt * at.col(t);
+         arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
         ZFinv.slice(t) = Zt.t() * inv_cholF.t() * inv_cholF;
         Kt.slice(t) = Pt.slice(t) * ZFinv.slice(t);
         at.col(t + 1) = C.col(t * Ctv) + 
           T.slice(t * Ttv) * (at.col(t) + Kt.slice(t) * vt.col(t));
         Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * 
-          (Pt.slice(t) - Kt.slice(t) * Kt.slice(t).t() * Ft) * T.slice(t * Ttv).t() + 
+          (Pt.slice(t) - Kt.slice(t) * Ft * Kt.slice(t).t()) * T.slice(t * Ttv).t() + 
           RR.slice(t * Rtv));
       } else {
         at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) *  at.col(t);
@@ -307,7 +312,7 @@ void mgg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
           Pt.slice(t) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
       }
     } else {
-      at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) *  at.col(t);
+      at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * 
         Pt.slice(t) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     }
@@ -325,12 +330,12 @@ void mgg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
     arma::mat cholF(p, p);
     chol_ok(t) = arma::chol(cholF, Ft);
     if (chol_ok(t)) {
-      vt.col(t) = y_tmp.col(t) - D.col(t * Dtv) - Zt * at;
-      arma::mat inv_cholF = inv(trimatu(cholF));
+      vt.col(t) = y_tmp.col(t) - D.col(t * Dtv) - Zt * at.col(t);
+       arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
       ZFinv.slice(t) = Zt.t() * inv_cholF.t() * inv_cholF;
       Kt.slice(t) = Pt.slice(t) * ZFinv.slice(t);
       ccov.slice(t) = arma::symmatu(T.slice(t * Ttv) * (Pt.slice(t) -
-        Kt.slice(t) * Kt.slice(t).t() * Ft) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+        Kt.slice(t) * Ft * Kt.slice(t).t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     } else {
       ccov.slice(t) = arma::symmatu(T.slice(t * Ttv) * 
         Pt.slice(t) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
@@ -346,11 +351,12 @@ void mgg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
   
   for (int t = (n - 1); t >= 0; t--) {
     if (chol_ok(t)){
-      arma::mat L = T.slice(t * Ttv) * (arma::eye(m, m) - Kt.slice(t) * Z.slice(t * Ztv));
+      arma::mat L = T.slice(t * Ttv) * (arma::eye(m, m) - 
+        Kt.slice(t) * Z.slice(t * Ztv));
       //P[t+1] stored to ccov_t
       ccov.slice(t) = Pt.slice(t) * L.t() * (arma::eye(m, m) - Nt * ccov.slice(t));
       rt = ZFinv.slice(t) * vt.col(t) + L.t() * rt;
-      Nt = arma::symmatu(Z.slice(t * Ztv).t() * ZFinv.slice(t) + L.t() * Nt * L);
+      Nt = arma::symmatu(ZFinv.slice(t) * Z.slice(t * Ztv) + L.t() * Nt * L);
     } else {
       ccov.slice(t) = Pt.slice(t) * T.slice(t * Ttv).t() * 
         (arma::eye(m, m) - Nt * ccov.slice(t));
