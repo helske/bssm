@@ -789,7 +789,7 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int
     }
     
     // propose new theta
-    arma::vec theta_prop = exp(log(theta) + S * u);
+    arma::vec theta_prop = theta + S * u;
     // compute prior
     
     double logprior_prop = model.log_prior_pdf.eval(theta_prop);
@@ -906,7 +906,7 @@ void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram,
     }
     
     // propose new theta
-    arma::vec theta_prop = exp(log(theta) + S * u);
+    arma::vec theta_prop = theta + S * u;
     // compute prior
     double logprior_prop = model.log_prior_pdf.eval(theta_prop);
     if (arma::is_finite(logprior_prop) && logprior_prop > -arma::datum::inf) {
