@@ -74,7 +74,8 @@ public:
     const bool local_approx, const arma::mat& initial_mode, const unsigned int max_iter, 
     const double conv_tol);
     
-  void ekf_mcmc_nlg(nlg_ssm model, const bool end_ram);
+  void ekf_mcmc_nlg(nlg_ssm model, const bool end_ram, const unsigned int max_iter, 
+  const double conv_tol);
   
   arma::vec posterior_storage;
   arma::mat theta_storage;

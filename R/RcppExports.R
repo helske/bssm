@@ -73,8 +73,8 @@ nonlinear_pm_mcmc <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn
     .Call('bssm_nonlinear_pm_mcmc', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method)
 }
 
-nonlinear_ekf_mcmc <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram) {
-    .Call('bssm_nonlinear_ekf_mcmc', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram)
+nonlinear_ekf_mcmc <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, max_iter, conv_tol) {
+    .Call('bssm_nonlinear_ekf_mcmc', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, max_iter, conv_tol)
 }
 
 gaussian_smoother <- function(model_, model_type) {

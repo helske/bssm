@@ -473,7 +473,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   }
   
   if (missing(S)) {
-    S <- diag(0.1 * pmax(0.1, abs(object$theta)), 
+    S <- diag(0.1 * pmax(0.1, abs(log(object$theta))), 
       length(object$theta))
   }
   
@@ -504,7 +504,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
             object$known_tv_params, as.integer(object$time_varying), 
             object$n_states, object$n_etas, seed, 
             nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            end_adaptive_phase)
+            end_adaptive_phase, max_iter, conv_tol)
         } else {
         out <- nongaussian_is_mcmc(object, priors$prior_types, priors$params, 
           nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,

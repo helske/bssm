@@ -50,8 +50,8 @@ public:
   
   double ekf_loglik() const;
   
-  arma::mat ekf_smoother() const;
-  arma::mat iekf_smoother(const arma::mat& alphahat) const;
+  double ekf_smoother(arma::mat& alphahat) const;
+  double iekf_smoother(const arma::mat& alphahat,arma::mat& alphahat_new) const;
   
   arma::mat y;
   // nonlinear functions of 

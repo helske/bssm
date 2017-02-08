@@ -212,7 +212,7 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   arma::vec theta = model.get_theta();
   // compute the log[p(theta)]
   double logprior = log_prior_pdf(theta);
-
+  
   // construct the approximate Gaussian model
   arma::vec mode_estimate = initial_mode;
   ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
@@ -220,23 +220,23 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   // compute the log-likelihood of the approximate model
   double gaussian_loglik = approx_model.log_likelihood();
   
-
+  
   // compute unnormalized mode-based correction terms 
   // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
   arma::vec scales = model.scaling_factors(approx_model, mode_estimate);
-
+  
   double sum_scales = arma::accu(scales);
   // compute the constant term
   double const_term = compute_const_term(model, approx_model); 
   // log-likelihood approximation
   double approx_loglik = gaussian_loglik + const_term + sum_scales;
- 
+  
   arma::cube alpha(m, n, nsim_states);
   arma::mat weights(nsim_states, n);
   arma::umat indices(nsim_states, n - 1);
   double loglik = model.psi_filter(approx_model, approx_loglik, scales, 
     nsim_states, alpha, weights, indices);
- 
+  
   filter_smoother(alpha, indices);
   arma::vec w = weights.col(n - 1);
   std::discrete_distribution<> sample0(w.begin(), w.end());
@@ -283,7 +283,7 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
       // compute the log-likelihood of the approximate model
       gaussian_loglik = approx_model.log_likelihood();
       approx_loglik = gaussian_loglik + const_term + sum_scales;
-  
+      
       double loglik_prop = model.psi_filter(approx_model, approx_loglik, scales, 
         nsim_states, alpha, weights, indices);
       
@@ -293,7 +293,7 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
       
       acceptance_prob = std::min(1.0, exp(loglik_prop - loglik + 
         logprior_prop - logprior));
-     
+      
       //accept
       if (unif(model.engine) < acceptance_prob) {
         if (i > n_burnin) acceptance_rate++;
@@ -745,37 +745,37 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int
   double logprior = model.log_prior_pdf.eval(model.theta);
   // construct the approximate Gaussian model
   arma::mat mode_estimate = initial_mode;
-
+  
   mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
- 
+  
   // compute the log-likelihood of the approximate model
   double gaussian_loglik = approx_model.log_likelihood();
   
   // compute mode-based correction terms 
   // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
   arma::vec scales = model.scaling_factors(approx_model, mode_estimate);
-
+  
   double sum_scales = arma::accu(scales);
   // log-likelihood approximation
   double approx_loglik = gaussian_loglik + sum_scales;
   arma::cube alpha(m, n, nsim_states);
   arma::mat weights(nsim_states, n);
   arma::umat indices(nsim_states, n - 1);
- 
+  
   double loglik = model.psi_filter(approx_model, approx_loglik, scales, 
     nsim_states, alpha, weights, indices);
- 
+  
   filter_smoother(alpha, indices);
   arma::vec w = weights.col(n - 1);
   std::discrete_distribution<> sample0(w.begin(), w.end());
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
- 
+  
   double acceptance_prob = 0.0;
   unsigned int counts = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec theta = model.theta;
-
+  
   for (unsigned int i = 1; i <= n_iter; i++) {
     
     if (i % 16 == 0) {
@@ -789,15 +789,15 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int
     }
     
     // propose new theta
-    arma::vec theta_prop = theta + S * u;
+    arma::vec theta_prop = exp(log(theta) + S * u);
     // compute prior
-   
+    
     double logprior_prop = model.log_prior_pdf.eval(theta_prop);
-   
-    if (logprior_prop > -arma::datum::inf) {
+    
+    if (arma::is_finite(logprior_prop) && logprior_prop > -arma::datum::inf) {
       // update parameters
       model.theta = theta_prop;
-
+      
       if (local_approx) {
         // construct the approximate Gaussian model
         mode_estimate = initial_mode;
@@ -819,10 +819,13 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int
       //compute the acceptance probability
       // use explicit min(...) as we need this value later
       // double q = proposal(theta, theta_prop);
-      
+      if(arma::is_finite(loglik_prop)) {
       acceptance_prob = std::min(1.0, exp(loglik_prop - loglik + 
         logprior_prop - logprior));
-    
+      } else {
+        acceptance_prob = 0.0;
+      }
+      
       //accept
       if (unif(model.engine) < acceptance_prob) {
         if (i > n_burnin) acceptance_rate++;
@@ -861,14 +864,28 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int
   acceptance_rate /= (n_iter - n_burnin);
 }
 
-void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram) {
+void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram, 
+  const unsigned int max_iter, const double conv_tol) {
   
   unsigned int m = model.m;
   unsigned n = model.n;
   
   double logprior = model.log_prior_pdf.eval(model.theta);
   
-  double loglik = model.ekf_loglik();
+  arma::mat alphahat(m, n);
+  double loglik = model.ekf_smoother(alphahat);
+  
+  unsigned int iekf_iter = 0;
+  double diff = conv_tol + 1.0; 
+  while(iekf_iter < max_iter && diff > conv_tol) {
+    iekf_iter++;
+    // compute new guess of mode by EKF
+    arma::mat alphahat_new(model.m, model.n);
+    double loglik_new  = model.iekf_smoother(alphahat, alphahat_new);
+    diff = std::abs(loglik_new - loglik) / (0.1 + loglik_new);
+    alphahat = alphahat_new;
+    loglik = loglik_new;
+  }
   
   double acceptance_prob = 0.0;
   unsigned int counts = 0;
@@ -877,10 +894,8 @@ void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram) {
   
   arma::vec theta = model.theta;
   
-  arma::mat alpha = model.ekf_smoother();
-  
   for (unsigned int i = 1; i <= n_iter; i++) {
-    
+    Rcpp::Rcout<<"iter "<<i<<std::endl;
     if (i % 16 == 0) {
       Rcpp::checkUserInterrupt();
     }
@@ -892,21 +907,39 @@ void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram) {
     }
     
     // propose new theta
-    arma::vec theta_prop = theta + S * u;
+    arma::vec theta_prop = exp(log(theta) + S * u);
     // compute prior
     double logprior_prop = model.log_prior_pdf.eval(theta_prop);
-    
-    if (logprior_prop > -arma::datum::inf) {
+    Rcpp::Rcout<<"theta_prop "<<theta_prop<<std::endl;
+    Rcpp::Rcout<<"logprior_prop "<<logprior_prop<<std::endl;
+    if (arma::is_finite(logprior_prop) && logprior_prop > -arma::datum::inf) {
       // update parameters
       model.theta = theta_prop;
       
-      double loglik_prop = model.ekf_loglik();
-      acceptance_prob = std::min(1.0, exp(loglik_prop - loglik +
-        logprior_prop - logprior));
+      arma::mat alphahat_prop(m, n);
+      double loglik_prop = model.ekf_smoother(alphahat_prop);
+      
+      iekf_iter = 0;
+      diff = conv_tol + 1.0; 
+      while(iekf_iter < max_iter && diff > conv_tol) {
+        iekf_iter++;
+        // compute new guess of mode by EKF
+        arma::mat alphahat_new(model.m, model.n);
+        double loglik_new  = model.iekf_smoother(alphahat_prop, alphahat_new);
+        diff = std::abs(loglik_new - loglik) / (0.1 + loglik_new);
+        alphahat_prop = alphahat_new;
+        loglik_prop = loglik_new;
+      }
+      if(arma::is_finite(loglik_prop)) {
+        acceptance_prob = std::min(1.0, exp(loglik_prop - loglik +
+          logprior_prop - logprior));
+      } else {
+        acceptance_prob = 0.0; 
+      }
       
       if (unif(model.engine) < acceptance_prob) {
         if (i > n_burnin) acceptance_rate++;
-        alpha = model.ekf_smoother();
+        alphahat = alphahat_prop;
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
@@ -918,7 +951,7 @@ void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram) {
       counts++;
       if ((i - n_burnin - 1) % n_thin == 0) {
         if (counts <= n_thin) {
-          alpha_storage.slice(n_stored) = alpha.t();
+          alpha_storage.slice(n_stored) = alphahat.t();
           posterior_storage(n_stored) = logprior + loglik;
           theta_storage.col(n_stored) = theta;
           count_storage(n_stored) = 1;

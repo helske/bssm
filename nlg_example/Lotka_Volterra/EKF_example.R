@@ -91,6 +91,7 @@ ts.plot(cbind(ext1$m, out$att),col=rep(1:2,each=2))
 all.equal(ts(ext1$m), out$att)
 ts.plot(cbind(smoothState$s, out_sm, out_iekf),col=rep(1:3,each=2))
 all.equal(smoothState$s, out_sm)
+
 #Dynamic model:
 #specifying 2 states, namely [amount of prey, amount of predators].
 #We will first use the dlm function from the dlm package for specifying the

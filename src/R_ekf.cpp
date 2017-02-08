@@ -40,7 +40,8 @@ arma::mat ekf_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
     time_varying, 1);
   
-  arma::mat alphahat = model.ekf_smoother();
+  arma::mat alphahat(model.m, model.n);
+  double loglik = model.ekf_smoother(alphahat);
   
   arma::inplace_trans(alphahat);
   
@@ -59,16 +60,20 @@ arma::mat iekf_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
     time_varying, 1);
   
-  arma::mat alphahat = model.ekf_smoother();
+  arma::mat alphahat(model.m, model.n);
+  
+  double loglik = model.ekf_smoother(alphahat);
  
   unsigned int i = 0;
   double diff = conv_tol + 1.0; 
   while(i < max_iter && diff > conv_tol) {
     i++;
     // compute new guess of mode by EKF
-    arma::mat alphahat_new = model.iekf_smoother(alphahat);
-    diff = arma::accu(arma::square(alphahat_new - alphahat)) / (model.m * model.n);
+    arma::mat alphahat_new(model.m, model.n);
+    double loglik_new  = model.iekf_smoother(alphahat, alphahat_new);
+    diff = std::abs(loglik_new - loglik) / (0.1 + loglik_new);
     alphahat = alphahat_new;
+    loglik = loglik_new;
   }
   arma::inplace_trans(alphahat);
   

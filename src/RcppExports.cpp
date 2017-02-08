@@ -421,8 +421,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // nonlinear_ekf_mcmc
-Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, const arma::mat& known_tv_params, const arma::uvec& time_varying, const unsigned int n_states, const unsigned int n_etas, const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter, const unsigned int n_burnin, const unsigned int n_thin, const double gamma, const double target_acceptance, const arma::mat S, const bool end_ram);
-RcppExport SEXP bssm_nonlinear_ekf_mcmc(SEXP ySEXP, SEXP Z_fn_SEXP, SEXP H_fn_SEXP, SEXP T_fn_SEXP, SEXP R_fn_SEXP, SEXP Z_gn_SEXP, SEXP T_gn_SEXP, SEXP a1_fn_SEXP, SEXP P1_fn_SEXP, SEXP thetaSEXP, SEXP log_prior_pdf_SEXP, SEXP known_paramsSEXP, SEXP known_tv_paramsSEXP, SEXP time_varyingSEXP, SEXP n_statesSEXP, SEXP n_etasSEXP, SEXP seedSEXP, SEXP nsim_statesSEXP, SEXP n_iterSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP end_ramSEXP) {
+Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, const arma::mat& known_tv_params, const arma::uvec& time_varying, const unsigned int n_states, const unsigned int n_etas, const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter, const unsigned int n_burnin, const unsigned int n_thin, const double gamma, const double target_acceptance, const arma::mat S, const bool end_ram, const unsigned int max_iter, const double conv_tol);
+RcppExport SEXP bssm_nonlinear_ekf_mcmc(SEXP ySEXP, SEXP Z_fn_SEXP, SEXP H_fn_SEXP, SEXP T_fn_SEXP, SEXP R_fn_SEXP, SEXP Z_gn_SEXP, SEXP T_gn_SEXP, SEXP a1_fn_SEXP, SEXP P1_fn_SEXP, SEXP thetaSEXP, SEXP log_prior_pdf_SEXP, SEXP known_paramsSEXP, SEXP known_tv_paramsSEXP, SEXP time_varyingSEXP, SEXP n_statesSEXP, SEXP n_etasSEXP, SEXP seedSEXP, SEXP nsim_statesSEXP, SEXP n_iterSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP end_ramSEXP, SEXP max_iterSEXP, SEXP conv_tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -451,7 +451,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type target_acceptance(target_acceptanceSEXP);
     Rcpp::traits::input_parameter< const arma::mat >::type S(SSEXP);
     Rcpp::traits::input_parameter< const bool >::type end_ram(end_ramSEXP);
-    rcpp_result_gen = Rcpp::wrap(nonlinear_ekf_mcmc(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram));
+    Rcpp::traits::input_parameter< const unsigned int >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< const double >::type conv_tol(conv_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(nonlinear_ekf_mcmc(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, max_iter, conv_tol));
     return rcpp_result_gen;
 END_RCPP
 }
