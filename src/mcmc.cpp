@@ -895,7 +895,6 @@ void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram,
   arma::vec theta = model.theta;
   
   for (unsigned int i = 1; i <= n_iter; i++) {
-    Rcpp::Rcout<<"iter "<<i<<std::endl;
     if (i % 16 == 0) {
       Rcpp::checkUserInterrupt();
     }
@@ -910,8 +909,6 @@ void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram,
     arma::vec theta_prop = exp(log(theta) + S * u);
     // compute prior
     double logprior_prop = model.log_prior_pdf.eval(theta_prop);
-    Rcpp::Rcout<<"theta_prop "<<theta_prop<<std::endl;
-    Rcpp::Rcout<<"logprior_prop "<<logprior_prop<<std::endl;
     if (arma::is_finite(logprior_prop) && logprior_prop > -arma::datum::inf) {
       // update parameters
       model.theta = theta_prop;
