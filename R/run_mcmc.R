@@ -466,7 +466,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   simulation_method <- match.arg(simulation_method, c("psi", "bsf", "spdk"))
   
   
-  if (nsim_states < 2) {
+  if (nsim_states < 2 && method != "ekf") {
     #approximate inference
     method <- "pm"
     simulation_method <- "spdk"
