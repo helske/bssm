@@ -97,11 +97,18 @@ arma::mat T_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
 double log_prior_pdf(const arma::vec& theta) {
   
   double log_pdf;
-  if(arma::any(theta <= 0)) {
-    log_pdf = -arma::datum::inf;
-  } else {
-    //just testing, U(0, 1000) for everything
-    log_pdf = -6.0 * log(1000);
+  if(arma::any(theta > 20)) {
+     log_pdf = -arma::datum::inf;
+   } else {
+     log_pdf = 0;
+    // some weakly informative priors. 
+    // Note that negative values are handled above
+    // log_pdf = R::dnorm(theta(0), 1, 0.01, 1);
+    // log_pdf += R::dnorm(theta(1), 0.00333, 0.001, 1);
+    // log_pdf += R::dnorm(theta(2), 0.005, 0.001, 1);
+    // log_pdf += R::dnorm(theta(3), 1, 0.01, 1);
+    // log_pdf += R::dnorm(theta(4), 5, 2, 1);
+    // log_pdf += R::dnorm(theta(5), 10, 2, 1);
   }
   return log_pdf;
 }

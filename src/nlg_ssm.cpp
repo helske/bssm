@@ -391,6 +391,11 @@ arma::vec nlg_ssm::log_obs_density(const unsigned int t,
     for (unsigned int i = 0; i < alpha.n_slices; i++) {
       weights(i) = dmvnorm(y.col(t), Z_fn.eval(t, alpha.slice(i).col(t), theta, known_params, known_tv_params), 
         H_fn.eval(t, alpha.slice(i).col(t), theta, known_params, known_tv_params), true, true);
+      if(t==0) {
+        
+      Rcpp::Rcout<<alpha.slice(i).col(t)<<std::endl;
+        Rcpp::Rcout<<weights(i)<<std::endl;
+      }
     }
   }
   return weights;
@@ -401,13 +406,14 @@ double nlg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   
   arma::vec a1 = a1_fn.eval(theta, known_params);
   arma::mat P1 = P1_fn.eval(theta, known_params);
-  
+  Rcpp::Rcout<<seed<<std::endl;
   arma::uvec nonzero = arma::find(P1.diag() > 0);
   arma::mat L_P1(m, m, arma::fill::zeros);
   if (nonzero.n_elem > 0) {
     L_P1.submat(nonzero, nonzero) =
       arma::chol(P1.submat(nonzero, nonzero), "lower");
   }
+  Rcpp::Rcout<<L_P1<<std::endl;
   std::normal_distribution<> normal(0.0, 1.0);
   for (unsigned int i = 0; i < nsim; i++) {
     arma::vec um(m);
@@ -415,6 +421,7 @@ double nlg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
       um(j) = normal(engine);
     }
     alpha.slice(i).col(0) = a1 + L_P1 * um;
+    
   }
   
   std::uniform_real_distribution<> unif(0.0, 1.0);
@@ -426,6 +433,7 @@ double nlg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
     double max_weight = weights.col(0).max();
     weights.col(0) = exp(weights.col(0) - max_weight);
     double sum_weights = arma::sum(weights.col(0));
+  
     if(sum_weights > 0.0){
       normalized_weights = weights.col(0) / sum_weights;
     } else {
@@ -477,6 +485,7 @@ double nlg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
       normalized_weights.fill(1.0/nsim);
     }
   }
+  Rcpp::Rcout<<loglik<<std::endl;
   return loglik;
 }
 
@@ -846,7 +855,7 @@ double nlg_ssm::iekf_smoother(const arma::mat& alphahat, arma::mat& at) const {
 
       arma::mat Zg = Z_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
       Zg.rows(na_y).zeros();
-      arma::mat HHt = H_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+      arma::mat HHt = H_fn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
       HHt = HHt * HHt.t();
       HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
       
@@ -877,8 +886,8 @@ double nlg_ssm::iekf_smoother(const arma::mat& alphahat, arma::mat& at) const {
 
     arma::mat Tg = T_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
     at.col(t + 1) = T_fn.eval(t, alphahat.col(t), theta, known_params, known_tv_params) +
-      Tg * (att.col(t) - alphahat.col(t));
-    arma::mat Rt = R_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+     Tg * (att.col(t) - alphahat.col(t));
+    arma::mat Rt = R_fn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
     Pt.slice(t) = Tg * Ptt * Tg.t() + Rt * Rt.t();
   }
 
@@ -888,7 +897,7 @@ double nlg_ssm::iekf_smoother(const arma::mat& alphahat, arma::mat& at) const {
   if (na_y.n_elem < p) {
     arma::mat Zg = Z_gn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
     Zg.rows(na_y).zeros();
-    arma::mat HHt = H_fn.eval(t, at.col(t), theta, known_params, known_tv_params);
+    arma::mat HHt = H_fn.eval(t, alphahat.col(t), theta, known_params, known_tv_params);
     HHt = HHt * HHt.t();
     HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
 

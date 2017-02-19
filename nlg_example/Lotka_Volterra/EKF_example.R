@@ -12,10 +12,11 @@ x[1,] <- c(400, 200) #respective amounts of prey and predators at t=0
 colnames(x) <- c("Prey", "Predators")
 
 #parameters in the Lotka-Volterra model
-alpha <- 1
-beta <- 1/300
-delta <- 1/200
-gamma <- 1
+true<-c(
+alpha <- 1,
+beta <- 1/300,
+delta <- 1/200,
+gamma <- 1)
 
 #simulate true states
 for (i in 2:ns) {
@@ -29,7 +30,7 @@ for (i in 2:ns) {
 plot(x[,1], x[,2], type="l", xlab="Prey", ylab="Predators")
 
 #Take measurements with a sample time of .01
-dT <- .01 #sample time for measurements
+dT <- .001 #sample time for measurements
 #you may change the value of dT and see how it influences
 #the behavior of the extended Kalman filter
 nm <- tt/dT #total number of measurements
@@ -99,7 +100,7 @@ all.equal(smoothState$s, out_sm)
 #of our specified matrices are correct, and if the specified covariance matrices
 #are positive semidefinite.
 library(dlm)
-ex1 <- dlm(m0=c(400, 200), #initial state estimates for prey and predators
+ex1 <- dlm(m0=c(350, 250), #initial state estimates for prey and predators
   #error covariances of the initial state estimates:
   #this matrix reflects the uncertainty in our initial state estimates
   C0=diag(rep(100,2)),
@@ -123,7 +124,7 @@ ex1 <- dlm(m0=c(400, 200), #initial state estimates for prey and predators
 #(i.e., 400 for prey and 200 for predators).
 #You may change these initial state estimates too and see how they
 #influence the behavior of the extended Kalman filter.
-ex1 <- list(m0=c(390, 220), #initial state estimates
+ex1 <- list(m0=c(350, 250), #initial state estimates
   #error covariances of the initial state estimates:
   #this matrix reflects the uncertainty in our initial state estimates
   #you may change the values in this matrix and see how they influence
@@ -181,6 +182,11 @@ ext1 <- dlmExtFilter(y=dataEx1, mod=ex1,
   GGfunction=GGfunction, FFfunction=FFfunction,
   GGjacobian=GGjacobian, FFjacobian=FFjacobian)
 
+initial_theta
+alpha<-2
+beta<-0.005
+delta<-0.0025
+gamma<-1.5
 ##
 #plot the filtered state estimates
 plot(x[,1], x[,2], type="l", lwd=2, xlab="Prey", ylab="Predators",
