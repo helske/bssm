@@ -1,5 +1,5 @@
 ---
-title: "Lotka-Volterra model with bssm"
+title: "Logistic growth model with bssm"
 author: "Jouni Helske"
 date: "13 February 2017"
 output: html_document
@@ -9,9 +9,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Lotka-Volterra model
+## Logistic growth model
 
-This vignette shows how to model general non-linear state space models with `bssm`. The example is taken from [Stefan Gelissen's blog post for Extended Kalman filter](http://blogs2.datall-analyse.nl/2016/02/11/rcode_extended_kalman_filter/). The general non-linear Gaussian model in `bssm` has following form:
+This vignette shows how to model general non-linear state space models with `bssm`. The general non-linear Gaussian model in `bssm` has following form:
 
 $$
 y_t = Z(t, \alpha_t, \theta, \psi, \psi_t) + H(t, \alpha_t, \theta, \psi, \psi_t)\epsilon_t,\\
@@ -20,68 +20,39 @@ y_t = Z(t, \alpha_t, \theta, \psi, \psi_t) + H(t, \alpha_t, \theta, \psi, \psi_t
 $$
 with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters, $\psi$ contains known time-invariant parameters, and $\psi_t$ consists of $n \times r$ matrix of time-varying parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions, which can sound intimidating at first, but is actually pretty simple, as this vignette hopefully illustrates.
 
-But let's first simulate some data:
+As an example, consider a logistic growth model
+
+Let's first simulate some data:
 ```{r data}
 set.seed(1)
 
-dt <- 1 / 5000 # time step for Euler integration
-tt <- 7 # upper bound of time window
-st <- seq(0, tt, by = dt) # lower time bounds of the integration intervals
-ns <- length(st) # number of Euler integrations
-x <- matrix(0, ns, 2) # specify matrix for states
-x[1,] <- c(400, 200) # respective amounts of prey and predators at t=0
-colnames(x) <- c("Prey", "Predators")
+#parameters
+K <- 100 # carrying capacity
+p0 <- 10 # population size at t = 0
+r <- .2 # growth rate
 
-# parameters in the Lotka-Volterra model
-alpha <- 1
-beta <- 1/300
-delta <- 1/200
-gamma <- 1
+#sample time
+dT <- .1
 
-# simulate true states
-for (i in 2:ns) {
-  # prey population
-  x[i,1] <- x[i-1,1] + (alpha * x[i-1,1] - beta * x[i-1,1] * x[i-1,2]) * dt
-  # predator population
-  x[i,2] <- x[i-1,2] + (delta * x[i-1,1] * x[i-1,2] - gamma * x[i-1,2]) * dt
-}
+#observation times
+t <- seq(0.1, 25, dT)
 
-# Take measurements with a sample time of .01
-dT <- .1 # sample time for measurements
+# simulate true population size (=p) at the observation times
+p <- K * p0 * exp(r * t) / (K + p0 * (exp(r * t) - 1))
 
-nm <- tt / dT # total number of measurements
-mt <- seq(dT, tt, dT) # measurement times
 
-#standard deviations for the measurement noise
-sigmaPrey <- 7 
-sigmaPred <- 10
-
-# measurements at specified measurement times
-yprey <- sapply(1:nm, function(i) x[i * ((ns - 1) / nm) + 1, 1] + 
-    rnorm(1, 0, sigmaPrey))
-ypred <- sapply(1:nm, function(i) x[i * ((ns - 1) / nm) + 1, 2] + 
-    rnorm(1, 0, sigmaPred))
-
-#store measurement data
-y <- cbind(yprey, ypred)
+# observations
+y <- p + rnorm(length(t), 0, 5)
 ```
 
 ## Model in bssm
 
 Let's make less than optimal initial guess for $theta$, and define the prior distribution for $\alpha_1$:
 ```{r theta}
-initial_theta <- c(
-  alpha = 1.2,
-  beta = 1/200,
-  delta = 1/40,
-  gamma = 1.1,
-  sdPrey = 5,
-  sdPred = 5,
-  1, 1
-)
+initial_theta <- c(5, 0.01, 0.01)
 
 # dT, a1 and the prior variance
-psi <- c(dT, 350, 250, 100);
+psi <- c(dT, 100, 0.3, 10, 10, 100);
 ```
 The functions determining the model functions are given in file `model_functions.cpp`. Here are few pieces from the file. The first one defines the 
 state transition function $T(\cdot)$:
@@ -92,12 +63,13 @@ arma::vec T_fn(const unsigned int t, const arma::vec& alpha,
   const arma::mat& known_tv_params) {
   
   double dT = known_params(0);
-  
-  double prey = alpha(0);
-  double pred = alpha(1);
+  double k = known_params(1);
+
   arma::vec alpha_new(2);
-  alpha_new(0) = prey + (theta(0) * prey - theta(1) * prey * pred) * dT;
-  alpha_new(1) = pred + (theta(2) * prey * pred - theta(3) * pred) * dT;
+  alpha_new(0) = alpha(0);
+  alpha_new(1) = k * alpha(1) * exp(alpha(0) * dT) / 
+    (k + alpha(1) * (exp(alpha(0) * dT) -1));
+  
   return alpha_new;
 }
 ```
@@ -107,7 +79,7 @@ The name of this function does not matter, but it should always return Armadillo
 After creating the file for `C++` functions, you need to compile the file using `Rcpp`:
 
 ```{r pointers}
-Rcpp::sourceCpp("vignettes/model_functions.cpp")
+Rcpp::sourceCpp("growth_model_functions.cpp")
 pntrs <- create_xptrs()
 ```
 
@@ -133,43 +105,32 @@ Let's first run Extended Kalman filter and smoother (note that currently we use 
 out_filter <- ekf(model)
 out_smoother <- ekf_smoother(model)
 
-ts.plot(cbind(y, out_filter$att, out_smoother),col=rep(1:3,each=2))
+ts.plot(cbind(y, out_filter$att[,2], out_smoother[,2]), col = 1:3)
+ts.plot(cbind(out_filter$att[,1], out_smoother[,1]), col = 1:2)
 ```
-Doesn't look good. Let's try again with known parameter values (initial state is still off though):
-```{r true_theta}
-true_model <- model
-true_model$theta <- c(
-  alpha = 1,
-  beta = 1/300,
-  delta = 1/200,
-  gamma = 1,
-  sdPrey = 7,
-  sdPredator = 10,
-  0, 0
-)
-out_filter2 <- ekf(true_model)
-out_smoother2 <- ekf_smoother(true_model)
-
-ts.plot(cbind(y, out_filter2$att, out_smoother2),col=rep(1:3,each=2))
-```
-Looks good.
 
 ## Markov chain Monte Carlo
 
 Instead of EKF-based analysis, we can perform full Bayesian inference on the Lotka-Volterra model. The MCMC algorithm is based on pseudo-marginal particle MCMC with bootstrap filter, but other algorithms are currently being implemented as well.
 
 ```{r mcmc}
-out<-particle_filter(model,nsim=10000,seed=1)
-out$log
-diagis::ess(out$we[,700])
-out <- run_mcmc(model, n_iter = 2000, nsim_states = 100, max_iter=0, method = "pm",
+out_bsf <- run_mcmc(model, n_iter = 1e4, nsim_states = 250, max_iter=0, method = "pm",
   simulation_method = "bsf",
   initial_mode = out_smoother, delayed_acceptance = FALSE)
-out$acceptance
+out_bsf$acceptance
+library(diagis)
+ts.plot(cbind(y, p, weighted_mean(t(out_bsf$alpha[,2,]), out_bsf$counts)), col = 1:3)
+
+out_ekf <- run_mcmc(model, n_iter = 1e4, nsim_states = 1, max_iter=0, method = "ekf",
+  initial_mode = out_smoother, delayed_acceptance = FALSE)
+out_ekf$acceptance
+ts.plot(cbind(y, p, weighted_mean(t(out_ekf$alpha[,2,]), out_ekf$counts)), col = 1:3)
+
 ```
+
 ## Appendix
 
-This is the full `model_functions.cpp` file:
+This is the full `growt_model_functions.cpp` file:
   
 ```{Rcpp, eval = FALSE}
 #include <RcppArmadillo.h>
@@ -181,8 +142,8 @@ This is the full `model_functions.cpp` file:
 arma::vec a1_fn(const arma::vec& theta, const arma::vec& known_params) {
  
   arma::vec a1(2);
-  a1(0) = known_params(1);
-  a1(1) = known_params(2);
+  a1(0) = known_params(2);
+  a1(1) = known_params(3);
   return a1;
 }
 // Function for the prior covariance matrix of alpha_1
@@ -190,17 +151,17 @@ arma::vec a1_fn(const arma::vec& theta, const arma::vec& known_params) {
 arma::mat P1_fn(const arma::vec& theta, const arma::vec& known_params) {
   
   arma::mat P1(2, 2, arma::fill::zeros);
-  P1.diag().fill(known_params(3));
+  P1(0,0) = known_params(4);
+  P1(1,1) = known_params(5);
   return P1;
 }
 
-// Function for the Cholesky of observational level covariance
+// Function for the observational level standard deviation
 // [[Rcpp::export]]
 arma::mat H_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
-  arma::mat H(2, 2,arma::fill::zeros);
-  H(0, 0) = theta(4);
-  H(1, 1) = theta(5);
+  arma::mat H(1,1);
+  H(0, 0) = theta(0);
   return H;
 }
 
@@ -209,6 +170,8 @@ arma::mat H_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
 arma::mat R_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
   arma::mat R(2, 2, arma::fill::zeros);
+  R(0, 0) = theta(1);
+  R(1, 1) = theta(2);
   return R;
 }
 
@@ -217,15 +180,17 @@ arma::mat R_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
 // [[Rcpp::export]]
 arma::vec Z_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
-  return alpha;
+  arma::vec tmp(1);
+  tmp(0) = alpha(1);
+  return tmp;
 }
 // Jacobian of Z function
 // [[Rcpp::export]]
 arma::mat Z_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
-  arma::mat Z_gn(2, 2, arma::fill::zeros);
-  Z_gn(0, 0) = 1.0;
-  Z_gn(1, 1) = 1.0;
+  arma::mat Z_gn(1, 2);
+  Z_gn(0, 0) = 0.0;
+  Z_gn(0, 1) = 1.0;
   return Z_gn;
 }
 
@@ -235,12 +200,13 @@ arma::vec T_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
   const arma::vec& known_params, const arma::mat& known_tv_params) {
   
   double dT = known_params(0);
-  
-  double prey = alpha(0);
-  double pred = alpha(1);
+  double k = known_params(1);
+
   arma::vec alpha_new(2);
-  alpha_new(0) = prey + (theta(0) * prey - theta(1) * prey * pred) * dT;
-  alpha_new(1) = pred + (theta(2) * prey * pred - theta(3) * pred) * dT;
+  alpha_new(0) = alpha(0);
+  alpha_new(1) = k * alpha(1) * exp(alpha(0) * dT) / 
+    (k + alpha(1) * (exp(alpha(0) * dT) -1));
+  
   return alpha_new;
 }
 
@@ -250,15 +216,16 @@ arma::mat T_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
   const arma::vec& known_params, const arma::mat& known_tv_params) {
   
   double dT = known_params(0);
+  double k = known_params(1);
   
-  double prey = alpha(0);
-  double pred = alpha(1);
+  double tmp = exp(alpha(0) * dT) / 
+    std::pow(k + alpha(1) * (exp(alpha(0) * dT) - 1), 2);
   
   arma::mat Tg(2, 2);
-  Tg(0, 0) = 1.0 + (theta(0) - theta(1) * pred) * dT;
-  Tg(0, 1) = - theta(1) * prey * dT;
-  Tg(1, 0) = theta(2) * pred * dT;
-  Tg(1, 1) = 1.0 + (theta(2) * prey - theta(3)) * dT;
+  Tg(0, 0) = 1.0;
+  Tg(0, 1) = 0;
+  Tg(1, 0) = k * alpha(1) * dT * (k - alpha(1)) * tmp;
+  Tg(1, 1) = k * k * tmp;
   
   
   return Tg;
@@ -271,11 +238,14 @@ arma::mat T_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
 double log_prior_pdf(const arma::vec& theta) {
   
   double log_pdf;
-  if(arma::any(theta <= 0)) {
-    log_pdf = -arma::datum::inf;
-  } else {
-    //just testing, U(0, 1000) for everything
-    log_pdf = -6.0 * log(1000);
+  if(arma::any(theta < 0)) {
+     log_pdf = -arma::datum::inf;
+   } else {
+    // some weakly informative priors. 
+    // Note that negative values are handled above
+    log_pdf = R::dnorm(theta(0), 0, 10, 1);
+    log_pdf += R::dnorm(theta(1), 0, 10, 1);
+    log_pdf += R::dnorm(theta(2), 0, 10, 1);
   }
   return log_pdf;
 }
@@ -309,6 +279,7 @@ Rcpp::List create_xptrs() {
     Rcpp::Named("log_prior_pdf") = 
       Rcpp::XPtr<double_fnPtr>(new double_fnPtr(&log_prior_pdf)));
 }
+
 
 ```
 

@@ -7,8 +7,8 @@
 arma::vec a1_fn(const arma::vec& theta, const arma::vec& known_params) {
  
   arma::vec a1(2);
-  a1(0) = known_params(1);
-  a1(1) = known_params(2);
+  a1(0) = known_params(2);
+  a1(1) = known_params(3);
   return a1;
 }
 // Function for the prior covariance matrix of alpha_1
@@ -16,17 +16,17 @@ arma::vec a1_fn(const arma::vec& theta, const arma::vec& known_params) {
 arma::mat P1_fn(const arma::vec& theta, const arma::vec& known_params) {
   
   arma::mat P1(2, 2, arma::fill::zeros);
-  P1.diag().fill(known_params(3));
+  P1(0,0) = known_params(4);
+  P1(1,1) = known_params(5);
   return P1;
 }
 
-// Function for the Cholesky of observational level covariance
+// Function for the observational level standard deviation
 // [[Rcpp::export]]
 arma::mat H_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
-  arma::mat H(2, 2,arma::fill::zeros);
-  H(0, 0) = theta(4);
-  H(1, 1) = theta(5);
+  arma::mat H(1,1);
+  H(0, 0) = theta(0);
   return H;
 }
 
@@ -35,8 +35,8 @@ arma::mat H_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
 arma::mat R_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
   arma::mat R(2, 2, arma::fill::zeros);
-  R(0, 0) = theta(6);
-  R(1, 1) = theta(7);
+  R(0, 0) = theta(1);
+  R(1, 1) = theta(2);
   return R;
 }
 
@@ -45,15 +45,17 @@ arma::mat R_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
 // [[Rcpp::export]]
 arma::vec Z_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
-  return alpha;
+  arma::vec tmp(1);
+  tmp(0) = alpha(1);
+  return tmp;
 }
 // Jacobian of Z function
 // [[Rcpp::export]]
 arma::mat Z_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
-  arma::mat Z_gn(2, 2, arma::fill::zeros);
-  Z_gn(0, 0) = 1.0;
-  Z_gn(1, 1) = 1.0;
+  arma::mat Z_gn(1, 2);
+  Z_gn(0, 0) = 0.0;
+  Z_gn(0, 1) = 1.0;
   return Z_gn;
 }
 
@@ -63,12 +65,13 @@ arma::vec T_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
   const arma::vec& known_params, const arma::mat& known_tv_params) {
   
   double dT = known_params(0);
-  
-  double prey = alpha(0);
-  double pred = alpha(1);
+  double k = known_params(1);
+
   arma::vec alpha_new(2);
-  alpha_new(0) = prey + (theta(0) * prey - theta(1) * prey * pred) * dT;
-  alpha_new(1) = pred + (theta(2) * prey * pred - theta(3) * pred) * dT;
+  alpha_new(0) = alpha(0);
+  alpha_new(1) = k * alpha(1) * exp(alpha(0) * dT) / 
+    (k + alpha(1) * (exp(alpha(0) * dT) -1));
+  
   return alpha_new;
 }
 
@@ -78,16 +81,16 @@ arma::mat T_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
   const arma::vec& known_params, const arma::mat& known_tv_params) {
   
   double dT = known_params(0);
+  double k = known_params(1);
   
-  double prey = alpha(0);
-  double pred = alpha(1);
+  double tmp = exp(alpha(0) * dT) / 
+    std::pow(k + alpha(1) * (exp(alpha(0) * dT) - 1), 2);
   
   arma::mat Tg(2, 2);
-  Tg(0, 0) = 1.0 + (theta(0) - theta(1) * pred) * dT;
-  Tg(0, 1) = - theta(1) * prey * dT;
-  Tg(1, 0) = theta(2) * pred * dT;
-  Tg(1, 1) = 1.0 + (theta(2) * prey - theta(3)) * dT;
-  
+  Tg(0, 0) = 1.0;
+  Tg(0, 1) = 0;
+  Tg(1, 0) = k * alpha(1) * dT * (k - alpha(1)) * tmp;
+  Tg(1, 1) = k * k * tmp;
   
   return Tg;
 }
@@ -99,18 +102,14 @@ arma::mat T_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
 double log_prior_pdf(const arma::vec& theta) {
   
   double log_pdf;
-  if(arma::any(theta > 20)) {
+  if(arma::any(theta < 0)) {
      log_pdf = -arma::datum::inf;
    } else {
-     log_pdf = 0;
     // some weakly informative priors. 
     // Note that negative values are handled above
-    // log_pdf = R::dnorm(theta(0), 1, 0.01, 1);
-    // log_pdf += R::dnorm(theta(1), 0.00333, 0.001, 1);
-    // log_pdf += R::dnorm(theta(2), 0.005, 0.001, 1);
-    // log_pdf += R::dnorm(theta(3), 1, 0.01, 1);
-    // log_pdf += R::dnorm(theta(4), 5, 2, 1);
-    // log_pdf += R::dnorm(theta(5), 10, 2, 1);
+    log_pdf = R::dnorm(theta(0), 0, 10, 1);
+    log_pdf += R::dnorm(theta(1), 0, 10, 1);
+    log_pdf += R::dnorm(theta(2), 0, 10, 1);
   }
   return log_pdf;
 }

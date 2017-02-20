@@ -1000,11 +1000,9 @@ void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram,
     }
     
     // propose new theta
-    arma::vec theta_prop = exp(log(theta) + S * u);
-    Rcpp::Rcout<<theta_prop<<std::endl;
+    arma::vec theta_prop = theta + S * u;
     // compute prior
     double logprior_prop = model.log_prior_pdf.eval(theta_prop);
-    Rcpp::Rcout<<logprior_prop<<std::endl;
     if (arma::is_finite(logprior_prop) && logprior_prop > -arma::datum::inf) {
       // update parameters
       model.theta = theta_prop;
