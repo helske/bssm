@@ -8,35 +8,34 @@
 #' @param x Output from \code{\link{run_mcmc}}.
 #' @param ... Ignored.
 #' @export
-print.mcmc_output <- function(x, jump_chain = TRUE,...) {
+print.mcmc_output <- function(x, ...) {
   
   cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"), 
     "\n", sep = "")
   
-  if (jump_chain){
-    cat("\n", "Iterations = ", x$burnin + 1, ":", x$n_iter, "\n", sep = "")
-    cat("Thinning interval = 1\n")
-  } else {
-    cat("\n", "Iterations = ", start(x$theta), ":", end(x$theta), "\n", sep = "")
-    cat("Thinning interval = ", thin(x$theta), "\n")
-  }
+  
+  cat("\n", "Iterations = ", x$n_burnin + 1, ":", x$n_iter, "\n", sep = "")
+  cat("Thinning interval = ",x$n_thin, "\n", sep = "")
   cat("\nAcceptance rate after the burn-in period: ", paste(x$acceptance_rate,"\n", sep = ""))
   
   cat("\nSummary for theta:\n\n")
-  if (jump_chain) {
-    if(!is.null(x$weights)) {
+  if (x$isc) {
     w <- x$weights * x$counts
-    } else w <- x$counts
     mean_theta <- weighted_mean(x$theta, w)
     sd_theta <- sqrt(diag(weighted_var(x$theta, w)))
-    se_theta <- sqrt(weighted_se(x$theta, w)^2 + x$acceptance_rate*spectrum0.ar(x$theta)$spec/nrow(x$theta))
-    print(c(Mean = mean_theta, SD = sd_theta, "Asymptotic SE" = se_theta))
-    cat("Effective sample sizes for theta:\n\n")
-    print((sd_theta/ se_theta)^2)
+    se_theta_obm <- apply(x$theta, 2, weighted_obm, w)
+    se_theta_is <- weighted_se(x$theta, w)
+    stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta_obm), ncol = 4, 
+      dimnames = list(colnames(x$theta), c("Mean", "SD", "Lower bound of SE", "Asymptotic SE")))
+    print(stats)
+    
+    cat("\n(experimental) Effective sample sizes for theta:\n\n")
+    print((sd_theta/ se_theta_obm)^2)
   } else {
-    print(summary(x$theta)$stat)
+    theta <- mcmc(apply(x$theta, 2, rep, times = x$counts))
+    print(summary(theta)$stat)
     cat("\nEffective sample sizes for theta:\n\n")
-    print(effectiveSize(x$theta))
+    print(effectiveSize(theta))
   }
   
   alpha <- mcmc(matrix(x$alpha[nrow(x$alpha),,], ncol = ncol(x$alpha), byrow = TRUE, 
@@ -44,9 +43,25 @@ print.mcmc_output <- function(x, jump_chain = TRUE,...) {
   
   cat(paste0("\nSummary for alpha_",nrow(x$alpha)), ":\n\n", sep="")
   
-  print(summary(alpha)$stat)
+  if (x$isc) {
+    w <- x$weights * x$counts
+    mean_alpha <- weighted_mean(alpha, w)
+    sd_alpha <- sqrt(diag(weighted_var(alpha, w)))
+    se_alpha <- apply(alpha, 2, weighted_obm, w)
+    se_alpha_obm <- apply(alpha, 2, weighted_obm, w)
+    se_alpha_is <- weighted_se(alpha, w)
+    stats <- matrix(c(mean_alpha, sd_alpha, se_alpha_is, se_alpha_obm), ncol = 4, 
+      dimnames = list(colnames(alpha), c("Mean", "SD", "Lower bound of SE", "Asymptotic SE")))
+    print(stats)
+    
+    cat(paste0("\n (experimental) Effective sample sizes for alpha_",nrow(x$alpha)), ":\n\n", sep="")
+    print((sd_alpha/ se_alpha_obm)^2)
+  } else {
+    alpha <- mcmc(apply(alpha, 2, rep, times = x$counts))
+    print(summary(alpha)$stat)
+    cat(paste0("\nEffective sample sizes for alpha_",nrow(x$alpha)), ":\n\n", sep="")
+    print(effectiveSize(alpha))
+  }
   
-  cat(paste0("\nEffective sample sizes for alpha_",nrow(x$alpha)), ":\n\n", sep="")
   
-  print(effectiveSize(alpha))
 }

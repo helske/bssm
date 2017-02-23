@@ -89,3 +89,7 @@ gaussian_sim_smoother <- function(model_, nsim, use_antithetic, seed, model_type
     .Call('bssm_gaussian_sim_smoother', PACKAGE = 'bssm', model_, nsim, use_antithetic, seed, model_type)
 }
 
+weighted_obm <- function(x, w) {
+    .Call('bssm_weighted_obm', PACKAGE = 'bssm', x, w)
+}
+

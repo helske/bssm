@@ -496,3 +496,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// weighted_obm
+double weighted_obm(const arma::vec& x, const arma::vec w);
+RcppExport SEXP bssm_weighted_obm(SEXP xSEXP, SEXP wSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::vec >::type w(wSEXP);
+    rcpp_result_gen = Rcpp::wrap(weighted_obm(x, w));
+    return rcpp_result_gen;
+END_RCPP
+}

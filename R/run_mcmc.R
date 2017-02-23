@@ -94,6 +94,7 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   out$n_iter <- n_iter
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
+  out$isc <- FALSE
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   out
@@ -151,6 +152,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   out$n_iter <- n_iter
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
+  out$isc <- FALSE
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   out
@@ -261,7 +263,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   out$n_iter <- n_iter
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
-  
+  out$isc <- method == "isc"
   out$call <- match.call()
   out$seed <- seed
   out$time <- proc.time() - a
@@ -361,6 +363,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   out$n_iter <- n_iter
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
+  out$isc <- method == "isc"
   out$call <- match.call()
   out$seed <- seed
   out$time <- proc.time() - a
@@ -437,6 +440,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   out$n_iter <- n_iter
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
+  out$isc <- method == "isc"
   
   out$call <- match.call()
   out$seed <- seed
@@ -540,6 +544,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   out$n_iter <- n_iter
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
+  out$isc <- method == "isc"
   out$call <- match.call()
   out$seed <- seed
   out$time <- proc.time() - a
