@@ -151,7 +151,7 @@ mcmc_out <- run_mcmc(model, n_iter = 2e5)
 mcmc_out
 
 library(bayesplot)
-theta <- bssm::expand_sample(mcmc_out, "theta")
+theta <- bssm:::expand_sample(mcmc_out, "theta")
 mcmc_areas(theta)
 
 # posterior mode estimates
