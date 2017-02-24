@@ -3,7 +3,7 @@ title: "bssm: Bayesian Inference of Non-linear/Non-Gaussian State Space Models i
 author: |
   | Jouni Helske and Matti Vihola
   | University of Jyväskylä, Department of Mathematics and Statistics, Finland
-date: "October 6, 2016"
+date: "February 24, 2017"
 link-citations: true
 output: 
   pdf_document:
@@ -16,7 +16,7 @@ vignette: |
   %\VignetteIndexEntry{Bayesian Inference of State Space Models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  %\VignetteDepends{ggplot2}
+  %\VignetteDepends{ggplot2, bayesplot}
 ---
   
 ```{r setup, include=FALSE}
@@ -29,16 +29,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The `R` [@r-core] package `bssm` is designed for Bayesian inference of general state space models with Gaussian state dynamics and non-Gaussian and/or non-linear observational distribution. The package aims to provide easy-to-use and efficient functions for fully Bayesian inference of common time series models such basic structural time series model (BSM) [@Harvey1989] with exogenous covariates, making it straighforward and efficient to make predictions and other inference in a Bayesian and non-Bayesian setting.
 
-The Bayesian framework of `bssm` is based on @vihola-helske-franks. The core methodology relies on Markov chain Monte Carlo (MCMC) approach with adaptive random walk Metropolis updating, using RAM algorithm by [@Vihola2012]. 
-
-Several efficient MCMC variants can be used, such as pseudo-marginal MCMC based on particle filtering, optionally with delayed acceptance, as well as the two-step procedure based on importance sampling type correction introduced in [@vihola-helske-franks].
+The motivation behind the `bssm` package is [@vihola-helske-franks] which suggests a new computationally efficient approach for Bayesian inference of state space models. The core methodology relies on Markov chain Monte Carlo (MCMC) approach with adaptive random walk Metropolis updating, using RAM algorithm by [@Vihola2012]. In addition to the two-step procedure based on importance sampling type correction introduced in [@vihola-helske-franks], pseudo-marginal MCMC based on particle filtering, optionally with delayed acceptance is also supported.
 
 In this vignette we will first introduce the basic state space modelling framework used in `bssm`, and the relevant algorithms. We then give several illustrations how to use `bssm` in practice, compare different algorithmic variations and finally compare the package to some other existing `R` packages.
 
 
 # State space models with Gaussian dynamics
 
-Denote a sequence of observations $(y_1,\ldots,y_T)$ as $y_{1:T}$, and sequence of latent state variables $(\alpha_1,\ldots, \alpha_T)$ as $\alpha_{1:T}$. Note that in general both the observations and the states can be multivariate. A general state space model consists of two parts: observation level densities $g_t(y_t | \alpha_t)$ and latent state transition densities $\mu_t(\alpha_{t+1} | \alpha_t)$. In context of `bssm`, we focus on univariate observations and small class of densities $g_t$ which we will describe shortly. In all our cases the state transitions are Gaussian:
+Denote a sequence of observations $(y_1,\ldots,y_T)$ as $y_{1:T}$, and sequence of latent state variables $(\alpha_1,\ldots, \alpha_T)$ as $\alpha_{1:T}$. Note that in general both the observations and the states can be multivariate. A general state space model consists of two parts: observation level densities $g_t(y_t | \alpha_t)$ and latent state transition densities $\mu_t(\alpha_{t+1} | \alpha_t)$. In context of `bssm`, we focus on small class of densities $g_t$ which we will describe shortly. In all our cases the state transitions are Gaussian:
 $$
 \alpha_{t+1} = T_t \alpha_t + R_t \eta_t,
 $$
@@ -76,6 +74,12 @@ $$
 p(\alpha_{1:T}, \theta | y_{1:T}) \propto p(\theta) p(\alpha_{1:T}, y_{1:T} | \theta) = p(\theta) p(y_{1:T} | \theta) p(\alpha_{1:T} | y_{1:T}, \theta),
 $$
 where $p(y_{1:T} | \theta)$ is the marginal likelihood, and $p(\alpha_{1:T} | y_{1:T}, \theta)$ is often referred as a smoothing distribution. For Gaussian models, the marginal likelihood and the smoothing distribution has analytical forms, so we are able to evaluate the posterior up to the normalizing constants. This is generally not true for non-Gaussian and non-linear models, so we must resort to more complex methods. We will introduce the basic concepts in a Gaussian case, and then extend the theory to non-Gaussian case.
+
+## Non-linear state dynamics
+
+`bssm` now also supports multivariate non-linear Gaussian models of form
+
+
 
 ## MCMC for Gaussian state space models
 
@@ -143,43 +147,46 @@ init_sd <- 0.1 * sd(log10(UKgas))
 prior <- halfnormal(init_sd, 1)
 model <- bsm(log10(UKgas), sd_y = prior, sd_level = prior,
   sd_slope = prior, sd_seasonal = prior)
-mcmc_out <- run_mcmc(model, n_iter = 6e4)
+mcmc_out <- run_mcmc(model, n_iter = 2e5)
 mcmc_out
 
-plot(mcmc_out$theta)
+library(bayesplot)
+theta <- bssm::expand_sample(mcmc_out, "theta")
+mcmc_areas(theta)
 
 # posterior mode estimates
 mcmc_out$theta[which.max(mcmc_out$posterior), ]
 
 # posterior covariance matrix:
-cov(mcmc_out$theta)
+cov(theta)
 
 # compare to shape of the proposal distribution:
-cor(mcmc_out$theta)
+cor(theta)
 cov2cor(mcmc_out$S %*% t(mcmc_out$S))
 ```
 
-Smoothed trend:
+<!-- Smoothed trend: -->
 
-```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component."}
-ts.plot(model$y, rowMeans(mcmc_out$alpha[, "level", ]), col = 1:2)
-```
+<!-- ```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component."} -->
+<!-- bssm::expand_sample(mcmc_out, "alpha") -->
+<!-- ts.plot(model$y, rowMeans(mcmc_out$alpha[, "level", ]), col = 1:2) -->
+<!-- ``` -->
 
-Prediction intervals:
+<!-- Prediction intervals: -->
 
-```{r predict, dev.args=list(pointsize = 10), fig.cap="Mean predictions and prediction intervals."}
-pred <- predict(model, n_iter = 1e4, n_ahead = 40,
-  probs = c(0.025, 0.1, 0.9, 0.975), S = mcmc_out$S)
-ts.plot(log10(UKgas), pred$mean, pred$intervals[,-3],
-  col = c(1, 2, c(3, 4, 4, 3)), lty = c(1, 1, rep(2, 4)))
-```
+<!-- ```{r predict, dev.args=list(pointsize = 10), fig.cap="Mean predictions and prediction intervals."} -->
+<!-- pred <- predict(model, n_iter = 1e4, n_ahead = 40, -->
+<!--   probs = c(0.025, 0.1, 0.9, 0.975), S = mcmc_out$S) -->
+<!-- ts.plot(log10(UKgas), pred$mean, pred$intervals[,-3], -->
+<!--   col = c(1, 2, c(3, 4, 4, 3)), lty = c(1, 1, rep(2, 4))) -->
+<!-- ``` -->
 
-With `ggplot2`:
+<!-- With `ggplot2`: -->
 
-```{r predict2, dev.args=list(pointsize = 10), fig.cap="Prediction plots with ggplot2."}
-require("ggplot2")
-autoplot(pred, interval_color = "red", alpha_fill = 0.2)
-```
+<!-- ```{r predict2, dev.args=list(pointsize = 10), fig.cap="Prediction plots with ggplot2."} -->
+<!-- require("ggplot2") -->
+<!-- autoplot(pred, interval_color = "red", alpha_fill = 0.2) -->
+<!-- ``` -->
 
 
 # References

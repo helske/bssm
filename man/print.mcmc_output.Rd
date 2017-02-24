@@ -4,7 +4,7 @@
 \alias{print.mcmc_output}
 \title{Print Results from MCMC Run}
 \usage{
-\method{print}{mcmc_output}(x, jump_chain = TRUE, ...)
+\method{print}{mcmc_output}(x, ...)
 }
 \arguments{
 \item{x}{Output from \code{\link{run_mcmc}}.}

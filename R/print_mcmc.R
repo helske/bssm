@@ -62,6 +62,18 @@ print.mcmc_output <- function(x, ...) {
     cat(paste0("\nEffective sample sizes for alpha_",nrow(x$alpha)), ":\n\n", sep="")
     print(effectiveSize(alpha))
   }
-  
-  
+}
+
+expand_sample <- function(x, variable = "theta", time_point = nrow(x$alpha)) {
+  if(variable == "theta") {
+    out <- apply(x$theta, 2, rep, times = x$counts)
+  } else {
+    out <- apply(t(x$alpha[time_point, , ]), 2, rep, times = x$counts)
+  }
+  mcmc(out)
+}
+
+resample_sample <- function(x, variable = "theta", time_point = nrow(x$alpha)) {
+  out <- expand_sample(x, variable, time_point)
+  mcmc(apply(out, 2, function(y) sample(y, replace=TRUE, prob = rep(x$weights, x$counts))))
 }
