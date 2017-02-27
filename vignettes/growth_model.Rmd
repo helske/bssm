@@ -1,0 +1,298 @@
+title: "Logistic growth model with bssm"
+author: |
+  | Jouni Helske
+  | University of Jyväskylä, Department of Mathematics and Statistics, Finland
+date: "13 February 2017"
+link-citations: true
+output: 
+  pdf_document:
+    fig_caption: yes
+    fig_crop: no
+    fig_height: 6
+    fig_width: 8
+bibliography: bssm.bib
+vignette: |
+  %\VignetteIndexEntry{Logistic growth model with bssm}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{ggplot2}
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Logistic growth model
+
+This vignette shows how to model general non-linear state space models with `bssm`. The general non-linear Gaussian model in `bssm` has following form:
+
+$$
+y_t = Z(t, \alpha_t, \theta, \psi, \psi_t) + H(t, \alpha_t, \theta, \psi, \psi_t)\epsilon_t,\\
+\alpha_{t+1} = T(t, \alpha_t, \theta, \psi, \psi_t) + R(t, \alpha_t, \theta, \psi, \psi_t)\eta_t,\\
+\alpha_1 \sim N(a_1(\theta, \psi), P_1(\theta, \psi)),
+$$
+with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters, $\psi$ contains known time-invariant parameters, and $\psi_t$ consists of $n \times r$ matrix of time-varying parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions, which can sound intimidating at first, but is actually pretty simple, as this vignette hopefully illustrates.
+
+As an example, consider a logistic growth model
+
+Let's first simulate some data:
+```{r data}
+set.seed(1)
+
+#parameters
+K <- 100 # carrying capacity
+p0 <- 10 # population size at t = 0
+r <- .2 # growth rate
+
+#sample time
+dT <- .1
+
+#observation times
+t <- seq(0.1, 25, dT)
+
+# simulate true population size (=p) at the observation times
+p <- K * p0 * exp(r * t) / (K + p0 * (exp(r * t) - 1))
+
+
+# observations
+y <- p + rnorm(length(t), 0, 5)
+```
+
+## Model in bssm
+
+Let's make less than optimal initial guess for $theta$, and define the prior distribution for $\alpha_1$:
+```{r theta}
+initial_theta <- c(5, 0.01, 0.01)
+
+# dT, a1 and the prior variance
+psi <- c(dT, 100, 0.3, 10, 10, 100);
+```
+The functions determining the model functions are given in file `model_functions.cpp`. Here are few pieces from the file. The first one defines the 
+state transition function $T(\cdot)$:
+
+```{Rcpp, eval = FALSE}
+arma::vec T_fn(const unsigned int t, const arma::vec& alpha, 
+  const arma::vec& theta, const arma::vec& known_params, 
+  const arma::mat& known_tv_params) {
+  
+  double dT = known_params(0);
+  double k = known_params(1);
+
+  arma::vec alpha_new(2);
+  alpha_new(0) = alpha(0);
+  alpha_new(1) = k * alpha(1) * exp(alpha(0) * dT) / 
+    (k + alpha(1) * (exp(alpha(0) * dT) -1));
+  
+  return alpha_new;
+}
+```
+
+The name of this function does not matter, but it should always return Armadillo vector (`arma::vec`), and have same signature (ie. the order and types of the function's parameters) should always be like above, even though some of the parameters were not used in the body of the function. For details of using Armadillo, see [Armadillo documentation](http://arma.sourceforge.net/docs.html). After defining the appropriate model functions, the `cpp` file should also contain a function for creating external pointers for the aforementioned functions. Why this is needed is more technical issue, but fortunately you can just copy the function from the example file without any modifications. 
+
+After creating the file for `C++` functions, you need to compile the file using `Rcpp`:
+
+```{r pointers}
+Rcpp::sourceCpp("growth_model_functions.cpp")
+pntrs <- create_xptrs()
+```
+
+This takes a few seconds. If you have used line `// [[Rcpp::export]]` before the model functions, you can now test that the functions work as intended:
+
+```{r test}
+T_fn(0, c(100, 200), initial_theta, psi, matrix(1))
+```
+
+Now the actual model:
+```{r model}
+library(bssm)
+model <- nlg_ssm(y = y, a1=pntrs$a1, P1 = pntrs$P1, 
+  Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
+  Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+  theta = initial_theta, log_prior_pdf = pntrs$log_prior_pdf,
+  known_params = psi, known_tv_params = matrix(1),
+  n_states = 2, n_etas = 2)
+```
+
+Let's first run Extended Kalman filter and smoother (note that currently we use fast state smoother which does not return smoothed covariances):
+```{r ekf}
+out_filter <- ekf(model)
+out_smoother <- ekf_smoother(model)
+
+ts.plot(cbind(y, out_filter$att[,2], out_smoother[,2]), col = 1:3)
+ts.plot(cbind(out_filter$att[,1], out_smoother[,1]), col = 1:2)
+```
+
+## Markov chain Monte Carlo
+
+Instead of EKF-based analysis, we can perform full Bayesian inference on the Lotka-Volterra model. The MCMC algorithm is based on pseudo-marginal particle MCMC with bootstrap filter, but other algorithms are currently being implemented as well.
+
+```{r mcmc}
+out_bsf <- run_mcmc(model, n_iter = 1e4, nsim_states = 250, max_iter=0, method = "pm",
+  simulation_method = "bsf",
+  initial_mode = out_smoother, delayed_acceptance = FALSE)
+out_bsf$acceptance
+library(diagis)
+ts.plot(cbind(y, p, weighted_mean(t(out_bsf$alpha[,2,]), out_bsf$counts)), col = 1:3)
+
+out_ekf <- run_mcmc(model, n_iter = 1e4, nsim_states = 1, max_iter=0, method = "ekf",
+  initial_mode = out_smoother, delayed_acceptance = FALSE)
+out_ekf$acceptance
+ts.plot(cbind(y, p, weighted_mean(t(out_ekf$alpha[,2,]), out_ekf$counts)), col = 1:3)
+
+```
+
+## Appendix
+
+This is the full `growt_model_functions.cpp` file:
+  
+```{Rcpp, eval = FALSE}
+#include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::interfaces(r, cpp)]]
+
+// Function for the prior mean of alpha_1
+// [[Rcpp::export]]
+arma::vec a1_fn(const arma::vec& theta, const arma::vec& known_params) {
+ 
+  arma::vec a1(2);
+  a1(0) = known_params(2);
+  a1(1) = known_params(3);
+  return a1;
+}
+// Function for the prior covariance matrix of alpha_1
+// [[Rcpp::export]]
+arma::mat P1_fn(const arma::vec& theta, const arma::vec& known_params) {
+  
+  arma::mat P1(2, 2, arma::fill::zeros);
+  P1(0,0) = known_params(4);
+  P1(1,1) = known_params(5);
+  return P1;
+}
+
+// Function for the observational level standard deviation
+// [[Rcpp::export]]
+arma::mat H_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
+  const arma::vec& known_params, const arma::mat& known_tv_params) {
+  arma::mat H(1,1);
+  H(0, 0) = theta(0);
+  return H;
+}
+
+// Function for the Cholesky of state level covariance
+// [[Rcpp::export]]
+arma::mat R_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
+  const arma::vec& known_params, const arma::mat& known_tv_params) {
+  arma::mat R(2, 2, arma::fill::zeros);
+  R(0, 0) = theta(1);
+  R(1, 1) = theta(2);
+  return R;
+}
+
+
+// Z function
+// [[Rcpp::export]]
+arma::vec Z_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
+  const arma::vec& known_params, const arma::mat& known_tv_params) {
+  arma::vec tmp(1);
+  tmp(0) = alpha(1);
+  return tmp;
+}
+// Jacobian of Z function
+// [[Rcpp::export]]
+arma::mat Z_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
+  const arma::vec& known_params, const arma::mat& known_tv_params) {
+  arma::mat Z_gn(1, 2);
+  Z_gn(0, 0) = 0.0;
+  Z_gn(0, 1) = 1.0;
+  return Z_gn;
+}
+
+// T function
+// [[Rcpp::export]]
+arma::vec T_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
+  const arma::vec& known_params, const arma::mat& known_tv_params) {
+  
+  double dT = known_params(0);
+  double k = known_params(1);
+
+  arma::vec alpha_new(2);
+  alpha_new(0) = alpha(0);
+  alpha_new(1) = k * alpha(1) * exp(alpha(0) * dT) / 
+    (k + alpha(1) * (exp(alpha(0) * dT) -1));
+  
+  return alpha_new;
+}
+
+// Jacobian of T function
+// [[Rcpp::export]]
+arma::mat T_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
+  const arma::vec& known_params, const arma::mat& known_tv_params) {
+  
+  double dT = known_params(0);
+  double k = known_params(1);
+  
+  double tmp = exp(alpha(0) * dT) / 
+    std::pow(k + alpha(1) * (exp(alpha(0) * dT) - 1), 2);
+  
+  arma::mat Tg(2, 2);
+  Tg(0, 0) = 1.0;
+  Tg(0, 1) = 0;
+  Tg(1, 0) = k * alpha(1) * dT * (k - alpha(1)) * tmp;
+  Tg(1, 1) = k * k * tmp;
+  
+  
+  return Tg;
+}
+
+
+
+// # log-prior pdf for theta
+// [[Rcpp::export]]
+double log_prior_pdf(const arma::vec& theta) {
+  
+  double log_pdf;
+  if(arma::any(theta < 0)) {
+     log_pdf = -arma::datum::inf;
+   } else {
+    // some weakly informative priors. 
+    // Note that negative values are handled above
+    log_pdf = R::dnorm(theta(0), 0, 10, 1);
+    log_pdf += R::dnorm(theta(1), 0, 10, 1);
+    log_pdf += R::dnorm(theta(2), 0, 10, 1);
+  }
+  return log_pdf;
+}
+
+// Create pointers, no need to touch this if
+// you don't alter the function names above
+// [[Rcpp::export]]
+Rcpp::List create_xptrs() {
+  // typedef for a pointer of nonlinear function of model equation returning vec
+  typedef arma::vec (*vec_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
+    const arma::vec& known_params, const arma::mat& known_tv_params);
+  // typedef for a pointer of nonlinear function of model equation returning mat
+  typedef arma::mat (*mat_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
+    const arma::vec& known_params, const arma::mat& known_tv_params);
+  // typedef for a pointer of nonlinear function of model equation returning vec
+  typedef arma::vec (*vec_initfnPtr)(const arma::vec& theta, const arma::vec& known_params);
+  // typedef for a pointer of nonlinear function of model equation returning mat
+  typedef arma::mat (*mat_initfnPtr)(const arma::vec& theta, const arma::vec& known_params);
+  // typedef for a pointer of log-prior function
+  typedef double (*double_fnPtr)(const arma::vec&);
+  
+  return Rcpp::List::create(
+    Rcpp::Named("a1_fn") = Rcpp::XPtr<vec_initfnPtr>(new vec_initfnPtr(&a1_fn)),
+    Rcpp::Named("P1_fn") = Rcpp::XPtr<mat_initfnPtr>(new mat_initfnPtr(&P1_fn)),
+    Rcpp::Named("Z_fn") = Rcpp::XPtr<vec_fnPtr>(new vec_fnPtr(&Z_fn)),
+    Rcpp::Named("H_fn") = Rcpp::XPtr<mat_fnPtr>(new mat_fnPtr(&H_fn)),
+    Rcpp::Named("T_fn") = Rcpp::XPtr<vec_fnPtr>(new vec_fnPtr(&T_fn)),
+    Rcpp::Named("R_fn") = Rcpp::XPtr<mat_fnPtr>(new mat_fnPtr(&R_fn)),
+    Rcpp::Named("Z_gn") = Rcpp::XPtr<mat_fnPtr>(new mat_fnPtr(&Z_gn)),
+    Rcpp::Named("T_gn") = Rcpp::XPtr<mat_fnPtr>(new mat_fnPtr(&T_gn)),
+    Rcpp::Named("log_prior_pdf") = 
+      Rcpp::XPtr<double_fnPtr>(new double_fnPtr(&log_prior_pdf)));
+}
+
+
+```
+
