@@ -10,7 +10,6 @@ output:
     fig_crop: no
     fig_height: 6
     fig_width: 8
-bibliography: bssm.bib
 vignette: |
   %\VignetteIndexEntry{Logistic growth model with bssm}
   %\VignetteEngine{knitr::rmarkdown}
@@ -127,12 +126,14 @@ ts.plot(cbind(out_filter$att[,1], out_smoother[,1]), col = 1:2)
 Instead of EKF-based analysis, we can perform full Bayesian inference on the Lotka-Volterra model. The MCMC algorithm is based on pseudo-marginal particle MCMC with bootstrap filter, but other algorithms are currently being implemented as well.
 
 ```{r mcmc}
-out_bsf <- run_mcmc(model, n_iter = 1e4, nsim_states = 250, max_iter=0, method = "pm",
-  simulation_method = "bsf",
-  initial_mode = out_smoother, delayed_acceptance = FALSE)
-out_bsf$acceptance
 library(diagis)
-ts.plot(cbind(y, p, weighted_mean(t(out_bsf$alpha[,2,]), out_bsf$counts)), col = 1:3)
+# 
+# out_bsf <- run_mcmc(model, n_iter = 1e4, nsim_states = 250, max_iter=0, method = "pm",
+#   simulation_method = "bsf",
+#   initial_mode = out_smoother, delayed_acceptance = FALSE)
+# out_bsf$acceptance
+# 
+# ts.plot(cbind(y, p, weighted_mean(t(out_bsf$alpha[,2,]), out_bsf$counts)), col = 1:3)
 
 out_ekf <- run_mcmc(model, n_iter = 1e4, nsim_states = 1, max_iter=0, method = "ekf",
   initial_mode = out_smoother, delayed_acceptance = FALSE)
@@ -143,7 +144,7 @@ ts.plot(cbind(y, p, weighted_mean(t(out_ekf$alpha[,2,]), out_ekf$counts)), col =
 
 ## Appendix
 
-This is the full `growt_model_functions.cpp` file:
+This is the full `growth_model_functions.cpp` file:
   
 ```{Rcpp, eval = FALSE}
 #include <RcppArmadillo.h>

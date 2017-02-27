@@ -45,19 +45,19 @@ kfilter.bsm <- function(object, ...) {
 #' @method kfilter ngssm
 #' @export
 kfilter.ngssm <- function(object, ...) {
-  gaussian_kfilter(gaussian_approx(object))
+  kfilter(gaussian_approx(object))
 }
 
 #' @method kfilter ng_bsm
 #' @export
 kfilter.ng_bsm <- function(object, ...) {
-  gaussian_kfilter(gaussian_approx(object))
+  kfilter(gaussian_approx(object))
 }
 
 #' @method kfilter svm
 #' @export
 kfilter.svm <- function(object, ...) {
-  gaussian_kfilter(gaussian_approx(object))
+  kfilter(gaussian_approx(object))
 }
 
 #' @export

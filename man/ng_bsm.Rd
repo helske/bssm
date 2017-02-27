@@ -65,11 +65,12 @@ model <- ng_bsm(Seatbelts[, "VanKilled"], distribution = "poisson",
 set.seed(123)
 mcmc_out <- run_mcmc(model, n_iter = 5000, nsim = 10)
 mcmc_out$acceptance_rate
-plot(mcmc_out$theta)
-summary(mcmc_out$theta)
+theta <- expand(mcmc_out, "theta")
+plot(theta)
+summary(theta)
 
 library("ggplot2")
-ggplot(as.data.frame(mcmc_out$theta[,1:2]), aes(x = sd_level, y = sd_seasonal)) +
+ggplot(as.data.frame(theta[,1:2]), aes(x = sd_level, y = sd_seasonal)) +
   geom_point() + stat_density2d(aes(fill = ..level.., alpha = ..level..),
   geom = "polygon") + scale_fill_continuous(low = "green",high = "blue") +
   guides(alpha = "none")

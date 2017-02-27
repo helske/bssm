@@ -110,20 +110,20 @@ predict.gssm <- function(object, n_iter, priors, newdata = NULL,
 #' @method predict bsm
 #' @rdname predict
 #' @export
-#' @examples
-#' require("graphics")
-#' y <- log10(JohnsonJohnson)
-#' prior <- uniform(0.01, 0, 1)
-#' model <- bsm(y, sd_y = prior, sd_level = prior,
-#'   sd_slope = prior, sd_seasonal = prior)
-#'
-#' pred1 <- predict(model, n_iter = 5000, n_ahead = 8)
-#' pred2 <- predict(StructTS(y, type = "BSM"), n.ahead = 8)
-#'
-#' ts.plot(pred1$mean, pred1$intervals[,-2], pred2$pred +
-#' cbind(0, -qnorm(0.95) * pred2$se, qnorm(0.95) * pred2$se),
-#'   col = c(1, 1, 1, 2, 2, 2))
-#'
+# @examples
+# require("graphics")
+# y <- log10(JohnsonJohnson)
+# prior <- uniform(0.01, 0, 1)
+# model <- bsm(y, sd_y = prior, sd_level = prior,
+#   sd_slope = prior, sd_seasonal = prior)
+# 
+# pred1 <- predict(model, n_iter = 5000, n_ahead = 8)
+# pred2 <- predict(StructTS(y, type = "BSM"), n.ahead = 8)
+# 
+# ts.plot(pred1$mean, pred1$intervals[,-2], pred2$pred +
+# cbind(0, -qnorm(0.95) * pred2$se, qnorm(0.95) * pred2$se),
+#   col = c(1, 1, 1, 2, 2, 2))
+
 predict.bsm <- function(object, n_iter, newdata = NULL,
   n_ahead = 1, interval = "response", probs = c(0.05, 0.95),
   method = "quantile", return_MCSE = TRUE,

@@ -4,7 +4,7 @@
 \alias{expand}
 \title{Expand the Jump Chain representation}
 \usage{
-expand(x, variable = "theta", times, states, list_by_states = TRUE)
+expand(x, variable = "theta", times, states, by_states = TRUE)
 }
 \arguments{
 \item{x}{Output from \code{\link{run_mcmc}}.}

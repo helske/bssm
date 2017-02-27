@@ -19,8 +19,6 @@ test_that("results for gaussian model are comparable to KFAS",{
   expect_equivalent(out_KFAS$V, out_bssm$Vt)
 })
 
-
-
 test_that("different smoothers give identical results",{
   model_bssm <- bsm(log10(AirPassengers), P1 = diag(1e2,13), sd_slope = 0,
     sd_y = uniform(0.005, 0, 10), sd_level = uniform(0.01, 0, 10), 
@@ -74,5 +72,3 @@ test_that("results for binomial model are comparable to KFAS", {
   expect_equivalent(out_KFAS$alphahat, out_bssm$alphahat)
   expect_equivalent(out_KFAS$V, out_bssm$Vt)
 })
-
-
