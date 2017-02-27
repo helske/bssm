@@ -137,7 +137,7 @@ For predicting future observations, one can extend the time series data with mis
 
 # Example
 
-Here is a short example:
+Here is a short example. First we build our model using `bsm` function:
 
 ```{r UKgas}
 library("bssm")
@@ -146,31 +146,36 @@ set.seed(123)
 init_sd <- 0.1 * sd(log10(UKgas))
 prior <- halfnormal(init_sd, 1)
 model <- bsm(log10(UKgas), sd_y = prior, sd_level = prior,
-  sd_slope = prior, sd_seasonal = prior)
-mcmc_out <- run_mcmc(model, n_iter = 2e5)
-mcmc_out
+  sd_slope = prior, sd_seasonal =  prior)
+```
 
-library(bayesplot)
-theta <- bssm:::expand_sample(mcmc_out, "theta")
-mcmc_areas(theta)
+And run MCMC and check some summary statistics:
+```{r mcmc}
+mcmc_out <- run_mcmc(model, n_iter = 1e5)
+mcmc_out
+```
+
+For plotting purposes, we'll use `bayesplot` package for the figures after expanding our jump chain representation. Note that the 
+API of the `expand` function is likely change in future. 
+
+```{r plot}
+theta <- expand(mcmc_out, "theta")
+library("bayesplot")
+mcmc_areas(theta, bw = 0.001)
+level <- expand(mcmc_out, "alpha",  times = 101:108, states = 1)
+mcmc_areas(level)
 
 # posterior mode estimates
 mcmc_out$theta[which.max(mcmc_out$posterior), ]
 
-# posterior covariance matrix:
-cov(theta)
-
-# compare to shape of the proposal distribution:
-cor(theta)
-cov2cor(mcmc_out$S %*% t(mcmc_out$S))
 ```
 
-<!-- Smoothed trend: -->
+Smoothed trend:
 
-<!-- ```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component."} -->
-<!-- bssm::expand_sample(mcmc_out, "alpha") -->
-<!-- ts.plot(model$y, rowMeans(mcmc_out$alpha[, "level", ]), col = 1:2) -->
-<!-- ``` -->
+```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component."}
+level <- expand(mcmc_out, "alpha", states = 1)
+ts.plot(model$y, colMeans(level[[1]]), col = 1:2)
+```
 
 <!-- Prediction intervals: -->
 

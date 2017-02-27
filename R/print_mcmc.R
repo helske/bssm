@@ -64,16 +64,46 @@ print.mcmc_output <- function(x, ...) {
   }
 }
 
-expand_sample <- function(x, variable = "theta", time_point = nrow(x$alpha)) {
+#' Expand the Jump Chain representation
+#'
+#' The MCMC algorithms of \code{bssm} use a jump chain representation where we 
+#' store the accepted values and the number of times we stayed in the current value.
+#' Although this safes bit memory and is especially convinient for IS-corrected 
+#' MCMC, often we want to have the usual sample path. Function \code{expand} 
+#' returns the expanded sample based on the counts.
+#' 
+#' @param x Output from \code{\link{run_mcmc}}.
+#' @param ... Ignored.
+#' @export
+expand <- function(x, variable = "theta", times, states, by_states = TRUE) {
   if(variable == "theta") {
     out <- apply(x$theta, 2, rep, times = x$counts)
   } else {
-    out <- apply(t(x$alpha[time_point, , ]), 2, rep, times = x$counts)
+    if(missing(times)) times <- 1:nrow(x$alpha)
+    if(missing(states)) states <- 1:ncol(x$alpha)
+    
+    if(by_states) {
+      out <- lapply(states, function(i) {
+        z <- apply(x$alpha[times, i, , drop = FALSE], 1, rep, x$counts)
+        colnames(z) <- times
+        z
+      })
+      names(out) <- colnames(x$alpha)[states]
+    } else {
+      out <- lapply(times, function(i) {
+        z <- apply(x$alpha[i, states, , drop = FALSE], 2, rep, x$counts)
+        colnames(z) <- colnames(x$alpha)[states]
+        z
+      })
+      names(out) <- times
+    }
   }
   mcmc(out)
 }
-
-resample_sample <- function(x, variable = "theta", time_point = nrow(x$alpha)) {
-  out <- expand_sample(x, variable, time_point)
-  mcmc(apply(out, 2, function(y) sample(y, replace=TRUE, prob = rep(x$weights, x$counts))))
-}
+# 
+# 
+# resample_sample <- function(x, variable = "theta", times, states) {
+#   
+#   out <- expand_sample(x, variable, times, states)
+#   mcmc(apply(out, 2, function(y) sample(y, replace=TRUE, prob = rep(x$weights, x$counts))))
+# }

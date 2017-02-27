@@ -33,11 +33,10 @@ public:
   
   // compute the prior pdf
   virtual double log_prior_pdf(const arma::vec& theta) const;
+  
   // compute the log-ratio of proposals
-  // double proposal(const arma::vec& theta, const arma::vec& theta_proposal) {
-  //   return 0.0;
-  // }
-  // 
+  // double proposal(const arma::vec& theta, const arma::vec& theta_proposal) const;
+
   // sample states given theta
   template <class T>
   void state_posterior(T model, const unsigned int n_threads);

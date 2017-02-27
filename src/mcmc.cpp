@@ -111,6 +111,9 @@ double mcmc::log_prior_pdf(const arma::vec& theta) const {
   return q;
 }
 
+// double mcmc::proposal(const arma::vec& theta, const arma::vec& theta_proposal) const {
+//   return arma::accu(theta_prop - theta);
+// }
 // run MCMC for linear-Gaussian state space model
 // target the marginal p(theta | y)
 // sample states separately given the posterior sample of theta
@@ -152,7 +155,7 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
       double loglik_prop = model.log_likelihood();
       //compute the acceptance probability
       // use explicit min(...) as we need this value later
-      // double q = proposal(theta, theta_prop);
+     // double q = proposal(theta, theta_prop);
       acceptance_prob = std::min(1.0, 
         exp(loglik_prop - loglik + logprior_prop - logprior));
       //accept
