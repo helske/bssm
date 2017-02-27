@@ -97,3 +97,15 @@ check_target <- function(target) {
     stop("Argument 'target' must be on interval (0, 1).")
   }
 }
+
+check_obs_intercept <- function(x, p, n) {
+  if (is.null(dim(x)) || nrow(x) != p || !(ncol(x) %in% c(1,n))) {
+    stop("'obs_intercept' must be p x 1 or p x n matrix, where p is the number of series.")
+  } 
+}
+
+check_state_intercept <- function(x, m, n) {
+  if (is.null(dim(x)) || nrow(x) != m || !(ncol(x) %in% c(1,n))) {
+    stop("'state_intercept' must be m x 1 or m x n matrix, where m is the number of states.")
+  } 
+}

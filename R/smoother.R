@@ -81,17 +81,17 @@ smoother.bsm <- function(object, ...) {
 #' @method smoother ngssm
 #' @export
 smoother.ngssm <- function(object, ...) {
-  gaussian_smoother(gaussian_approx(object))
+  smoother(gaussian_approx(object))
 }
 
 #' @method smoother ng_bsm
 #' @export
 smoother.ng_bsm <- function(object, ...) {
-  gaussian_smoother(gaussian_approx(object))
+  smoother(gaussian_approx(object))
 }
 
 #' @method smoother svm
 #' @export
 smoother.svm <- function(object, ...) {
-  gaussian_smoother(gaussian_approx(object))
+  smoother(gaussian_approx(object))
 }

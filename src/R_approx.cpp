@@ -2,6 +2,7 @@
 #include "ung_ssm.h"
 #include "ugg_bsm.h"
 #include "ung_bsm.h"
+#include "ung_svm.h"
 #include "mgg_ssm.h"
 #include "nlg_ssm.h"
 
@@ -24,7 +25,7 @@ Rcpp::List gaussian_approx_model(const Rcpp::List& model_,
       Rcpp::Named("H") = approx_model.H);
   } break;
   case 3: {
-    ung_bsm model(clone(model_), 1);
+    ung_svm model(clone(model_), 1);
     ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
     return Rcpp::List::create(Rcpp::Named("y") = approx_model.y,
       Rcpp::Named("H") = approx_model.H);

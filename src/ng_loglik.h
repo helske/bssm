@@ -4,6 +4,7 @@
 #include <RcppArmadillo.h>
 #include "ung_ssm.h"
 #include "ung_bsm.h"
+#include "ung_svm.h"
 
 template<class T>
 double compute_ung_loglik(T model, const unsigned int simulation_method, 

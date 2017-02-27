@@ -213,12 +213,12 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   priors <- priors[sapply(priors, is_prior)]
   
   if (!missing(obs_intercept)) {
-    check_obs_intercept(obs_intercept)
+    check_obs_intercept(obs_intercept, 1L, n)
   } else {
-    obs_intercept <- 0
+    obs_intercept <- matrix(0)
   }
   if (!missing(state_intercept)) {
-    check_state_intercept(state_intercept)
+    check_state_intercept(state_intercept, m, n)
   } else {
     state_intercept <- matrix(0, m, 1)
   }
@@ -502,10 +502,10 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     phi <- phi$init
   }
   
-  obs_intercept <- 0
+  obs_intercept <- matrix(0)
   
   if (!missing(state_intercept)) {
-    check_state_intercept(state_intercept)
+    check_state_intercept(state_intercept, m, n)
   } else {
     state_intercept <- matrix(0, m, 1)
   }
@@ -623,7 +623,7 @@ svm <- function(y, rho, sd_ar, sigma, mu, beta, xreg = NULL) {
     c("rho", "sd_ar", if(svm_type==0) "sigma" else "mu", names(coefs))
   
   state_intercept <- if (svm_type) matrix(mu$init * (1 - T[1])) else matrix(0)
-  obs_intercept <- 0
+  obs_intercept <- matrix(0)
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, phi = if (svm_type == 0) sigma$init else 1, xreg = xreg, coefs = coefs,
@@ -809,12 +809,12 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   priors <- priors[sapply(priors, is_prior)]
   
   if (!missing(obs_intercept)) {
-    check_obs_intercept(obs_intercept)
+    check_obs_intercept(obs_intercept, 1L, n)
   } else {
-    obs_intercept <- 0
+    obs_intercept <- matrix(0)
   }
   if (!missing(state_intercept)) {
-    check_state_intercept(state_intercept)
+    check_state_intercept(state_intercept, m, n)
   } else {
     state_intercept <- matrix(0, m, 1)
   }
@@ -1025,10 +1025,10 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     phi <- phi$init
   }
   
-  obs_intercept <- 0
+  obs_intercept <- matrix(0)
   
   if (!missing(state_intercept)) {
-    check_state_intercept(state_intercept)
+    check_state_intercept(state_intercept, m, n)
   } else {
     state_intercept <- matrix(0, m, 1)
   }
@@ -1214,12 +1214,12 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   priors <- priors[sapply(priors, is_prior)]
   
   if (!missing(obs_intercept)) {
-   # check_obs_intercept(obs_intercept)
+    check_obs_intercept(obs_intercept, p, n)
   } else {
     obs_intercept <- matrix(0, p, 1)
   }
   if (!missing(state_intercept)) {
-   # check_state_intercept(state_intercept)
+   check_state_intercept(state_intercept, m, n)
   } else {
     state_intercept <- matrix(0, m, 1)
   }

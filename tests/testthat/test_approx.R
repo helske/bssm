@@ -10,24 +10,24 @@ test_that("Gaussian approximation results of bssm and KFAS coincide",{
   approx_KFAS <- approxSSM(model_KFAS)
   expect_error(approx_bssm <- gaussian_approx(model_bssm, conv_tol = 1e-8), NA)
   
-  expect_equivalent(unclass(approx_KFAS$thetahat), approx_bssm$signal)
+  expect_error(alphahat <- fast_smoother(approx_bssm), NA)
+  expect_equivalent(KFS(approx_KFAS)$alphahat, alphahat)
+  expect_equivalent(logLik(approx_KFAS), logLik(approx_bssm))
 })
 
 
 test_that("Gaussian approximation works for SV model",{
   set.seed(123)
-  expect_error(model_bssm <- svm(rnorm(5), sigma =uniform(1,0,10), rho = uniform(0.950, 0, 1), 
+  expect_error(model_bssm <- svm(rnorm(5), sigma = uniform(1,0,10), rho = uniform(0.950, 0, 1), 
     sd_ar = uniform(0.1,0,1)), NA)
   expect_error(approx_bssm <- gaussian_approx(model_bssm, max_iter = 2, conv_tol = 1e-8), NA)
-  testvalues <- structure(list(y = structure(c(-1.47548927809174, -11.2190916117862, 
-    0.263154138901814, -121.519769682058, -36.0386937004332), .Dim = c(5L, 
-      1L)), H = structure(c(2.01061310553144, 4.84658294043645, 0.712674409714633, 
-        15.6217737012134, 8.54936618861792), .Dim = c(5L, 1L)), scaling_factor = 47.5618888408062, 
-    signal = structure(c(-0.0999179077423753, -0.101594935319188, 
-      -0.0985572218431492, -0.103275329248674, -0.103028083292436
-    ), .Dim = c(5L, 1L))), .Names = c("y", "H", "scaling_factor", 
-      "signal"))
-  expect_equivalent(testvalues, approx_bssm)
+
+  expect_equivalent(c(-1.47548927809174, -11.2190916117862, 
+    0.263154138901814, -121.519769682058, -36.0386937004332), approx_bssm$y[1:5])
+  expect_equivalent(c(2.01061310553144, 4.84658294043645, 0.712674409714633, 
+    15.6217737012134, 8.54936618861792), approx_bssm$H[1:5])
+  expect_equivalent(c(-0.0999179077423753, -0.101594935319188, 
+    -0.0985572218431492, -0.103275329248674, -0.103028083292436), fast_smoother(approx_bssm)[1:5])
 })
 
 test_that("results for poisson GLM are equal to glm function",{
@@ -39,8 +39,6 @@ test_that("results for poisson GLM are equal to glm function",{
   expect_error(sm <- smoother(model_poisson), NA)
   expect_equal(sm$alphahat[1,], coef(glm_poisson))
   expect_equal(sm$V[,,1], vcov(glm_poisson))
-  
-  expect_equivalent(c(gaussian_approx(model_poisson)$signal), glm_poisson$linear.predictors)
   
   xreg <- model.matrix(~ outcome + treatment, data = d)[, -1]
   expect_error(model_poisson <- ng_bsm(d$counts, sd_level = 0, xreg = xreg, P1=matrix(1e7),
@@ -75,8 +73,8 @@ test_that("results for negative binomial GLM are equal to glm function",{
     P1 = matrix(1e7), phi = glm_nb$theta,
     distribution = 'negative binomial'), NA)
   
-  
-  expect_error(sm <- smoother(model_nb), NA)
-  expect_equivalent(sm$alphahat[1], coef(glm_nb)[1])
+  approx_model <- gaussian_approx(model_nb, conv_tol = 1e-12)
+  expect_error(sm <- smoother(approx_model), NA)
+  expect_equivalent(sm$alphahat[1], unname(coef(glm_nb)[1]))
   expect_equal(sm$V[, , 1], vcov(glm_nb)[1])
 })

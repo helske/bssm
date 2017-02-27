@@ -3,6 +3,7 @@
 #include "ung_ssm.h"
 #include "ugg_bsm.h"
 #include "ung_bsm.h"
+#include "ung_svm.h"
 #include "ng_loglik.h"
 
 // [[Rcpp::export]]
@@ -44,6 +45,11 @@ double nongaussian_loglik(const Rcpp::List& model_, const arma::vec mode_estimat
   } break;
   case 2: {
     ung_bsm model(clone(model_), seed);
+    loglik = compute_ung_loglik(model, simulation_method, nsim_states,
+      mode_estimate, max_iter, conv_tol);
+  } break;
+  case 3: {
+    ung_svm model(clone(model_), seed);
     loglik = compute_ung_loglik(model, simulation_method, nsim_states,
       mode_estimate, max_iter, conv_tol);
   } break;

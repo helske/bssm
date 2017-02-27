@@ -1,6 +1,13 @@
 #include "ng_loglik.h"
 #include "distr_consts.h"
 
+template double compute_ung_loglik(ung_ssm model, unsigned int simulation_method, unsigned int nsim_states,
+  arma::vec mode_estimate, unsigned int max_iter, double conv_tol);
+template double compute_ung_loglik(ung_bsm model, unsigned int simulation_method, unsigned int nsim_states,
+  arma::vec mode_estimate, unsigned int max_iter, double conv_tol);
+template double compute_ung_loglik(ung_svm model, unsigned int simulation_method, unsigned int nsim_states,
+  arma::vec mode_estimate, unsigned int max_iter, double conv_tol);
+
 template<class T>
 double compute_ung_loglik(T model, const unsigned int simulation_method, 
   const unsigned int nsim_states, arma::vec mode_estimate, 
@@ -54,7 +61,3 @@ double compute_ung_loglik(T model, const unsigned int simulation_method,
   return loglik;
 }
 
-template double compute_ung_loglik(ung_ssm model, unsigned int simulation_method, unsigned int nsim_states,
-  arma::vec mode_estimate, unsigned int max_iter, double conv_tol);
-template double compute_ung_loglik(ung_bsm model, unsigned int simulation_method, unsigned int nsim_states,
-  arma::vec mode_estimate, unsigned int max_iter, double conv_tol);
