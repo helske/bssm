@@ -70,6 +70,50 @@ void mcmc::state_posterior(T model, unsigned int n_threads) {
   }
 }
 
+
+// should parallelize at some point
+template void mcmc::state_summary(ugg_ssm model, arma::mat& alphahat, 
+  arma::cube& Vt);
+template void mcmc::state_summary(ugg_bsm model, arma::mat& alphahat, 
+  arma::cube& Vt);
+
+template <class T>
+void mcmc::state_summary(T model, arma::mat& alphahat, arma::cube& Vt) {
+  
+  state_sampler(model, theta_storage, alpha_storage);
+  arma::cube Valpha(model.m, model.m, model.n, arma::fill::zeros);
+  
+  arma::vec theta = theta_storage.col(0);
+  model.set_theta(theta);
+  model.smoother(alphahat, Vt);
+  
+  double sum_w = count_storage(0);
+  arma::mat alphahat_i = alphahat;
+  arma::cube Vt_i = Vt;
+  
+  for (unsigned int i = 1; i < n_stored; i++) {
+    arma::vec theta = theta_storage.col(i);
+    model.set_theta(theta);
+    model.smoother(alphahat_i, Vt_i);
+    
+    arma::mat diff = alphahat_i - alphahat;
+    double tmp = count_storage(i) + sum_w;
+    alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+    
+    for (unsigned int t = 0; t < model.n; t++) {
+      Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+    }
+    Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
+    sum_w = tmp;
+  }
+  Rcpp::Rcout<<Valpha.slice(0)<<std::endl;
+  Rcpp::Rcout<<Vt.slice(0)<<std::endl;
+  Vt += Valpha / n_samples; // Var[E(alpha)] + E[Var(alpha)]
+  
+  
+}
+
+
 template void mcmc::state_sampler(ugg_ssm model, const arma::mat& theta, arma::cube& alpha);
 template void mcmc::state_sampler(ugg_bsm model, const arma::mat& theta, arma::cube& alpha);
 
@@ -155,7 +199,7 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
       double loglik_prop = model.log_likelihood();
       //compute the acceptance probability
       // use explicit min(...) as we need this value later
-     // double q = proposal(theta, theta_prop);
+      // double q = proposal(theta, theta_prop);
       acceptance_prob = std::min(1.0, 
         exp(loglik_prop - loglik + logprior_prop - logprior));
       //accept
@@ -190,6 +234,7 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
   trim_storage();
   acceptance_rate /= (n_iter - n_burnin);
 }
+
 
 // run pseudo-marginal MCMC for non-linear and/or non-Gaussian state space model
 // using psi-PF
@@ -823,8 +868,8 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int
       // use explicit min(...) as we need this value later
       // double q = proposal(theta, theta_prop);
       if(arma::is_finite(loglik_prop)) {
-      acceptance_prob = std::min(1.0, exp(loglik_prop - loglik + 
-        logprior_prop - logprior));
+        acceptance_prob = std::min(1.0, exp(loglik_prop - loglik + 
+          logprior_prop - logprior));
       } else {
         acceptance_prob = 0.0;
       }
@@ -874,17 +919,17 @@ void mcmc::pm_mcmc_nlg_bsf(nlg_ssm model, const bool end_ram,
   unsigned n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf.eval(model.theta);
- 
- 
- arma::cube alpha(m, n, nsim_states);
- arma::mat weights(nsim_states, n);
- arma::umat indices(nsim_states, n - 1);
- double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
- 
- filter_smoother(alpha, indices);
- arma::vec w = weights.col(n - 1);
- std::discrete_distribution<> sample0(w.begin(), w.end());
- arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
+  
+  
+  arma::cube alpha(m, n, nsim_states);
+  arma::mat weights(nsim_states, n);
+  arma::umat indices(nsim_states, n - 1);
+  double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+  
+  filter_smoother(alpha, indices);
+  arma::vec w = weights.col(n - 1);
+  std::discrete_distribution<> sample0(w.begin(), w.end());
+  arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
   double acceptance_prob = 0.0;
   unsigned int counts = 0;

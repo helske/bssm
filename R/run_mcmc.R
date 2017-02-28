@@ -79,8 +79,9 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
       out
     },
     summary = {
-      out <- gssm_run_mcmc_summary(object, priors$prior_types, priors$params, n_iter,
-        n_burnin, n_thin, gamma, target_acceptance, S, seed, end_adaptive_phase, 
+      out <- gaussian_mcmc_summary(object, priors$prior_type, priors$params,
+        n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, 
+        end_adaptive_phase, n_threads, model_type = 1L,
         object$Z_ind, object$H_ind, object$T_ind, object$R_ind)
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
         names(object$a1)
@@ -132,13 +133,13 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
       out
     },
     summary = {
-      out <- bsm_run_mcmc_summary(object, priors$prior_type, priors$params, 
-        n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed,
-        end_adaptive_phase)
-      
-      colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
+      out <- gaussian_mcmc_summary(object, priors$prior_type, priors$params,
+        n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, 
+        end_adaptive_phase, n_threads, model_type = 2L, 0, 0, 0, 0)
+      colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
+        names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y),
-        frequency = object$period)
+        frequency = frequency(object$y))
       out
     })
   

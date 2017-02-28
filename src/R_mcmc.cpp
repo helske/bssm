@@ -55,7 +55,52 @@ Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
       Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
   }
 }
-
+// [[Rcpp::export]]
+Rcpp::List gaussian_mcmc_summary(const Rcpp::List& model_,
+  const arma::uvec prior_types, const arma::mat prior_pars, 
+  const unsigned int n_iter, const unsigned int n_burnin, 
+  const unsigned int n_thin, const double gamma, const double target_acceptance, 
+  const arma::mat S, const unsigned int seed, const bool end_ram, 
+  const unsigned int n_threads, const int model_type, const arma::uvec& Z_ind, 
+  const arma::uvec& H_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) {
+  
+  arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
+  unsigned int m = a1.n_elem;
+  unsigned int n;
+  
+  if(model_type > 0) {
+    arma::vec y = Rcpp::as<arma::vec>(model_["y"]);
+    n = y.n_elem;
+  } else {
+    arma::vec y = Rcpp::as<arma::mat>(model_["y"]);
+    n = y.n_rows;
+  }
+  
+  mcmc mcmc_run(prior_types, prior_pars, n_iter, n_burnin, n_thin, n, m,
+    target_acceptance, gamma, S, false);
+  
+  arma::mat alphahat(m, n);
+  arma::cube Vt(m, m, n);
+  
+  switch (model_type) {
+  case 1: {
+    ugg_ssm model(clone(model_), seed, Z_ind, H_ind, T_ind, R_ind);
+    mcmc_run.mcmc_gaussian(model, end_ram);
+    mcmc_run.state_summary(model, alphahat, Vt);
+  } break;
+  case 2: {
+    ugg_bsm model(clone(model_), seed);
+    mcmc_run.mcmc_gaussian(model, end_ram);
+    mcmc_run.state_summary(model, alphahat, Vt);
+  } break;
+  }
+  
+  return Rcpp::List::create(Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+    Rcpp::Named("alphahat") = alphahat.t(), Rcpp::Named("Vt") = Vt,
+    Rcpp::Named("counts") = mcmc_run.count_storage,
+    Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+    Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+}
 // [[Rcpp::export]]
 Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
   const arma::uvec prior_types, const arma::mat prior_pars, 
@@ -322,7 +367,7 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     mcmc_run.pm_mcmc_nlg_bsf(model, end_ram, nsim_states);
     break;
   }
- 
+  
   
   return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
     Rcpp::Named("theta") = mcmc_run.theta_storage.t(),

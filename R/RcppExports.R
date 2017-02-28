@@ -41,6 +41,10 @@ iekf_smoother_nlg <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn
     .Call('bssm_iekf_smoother_nlg', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, time_varying, max_iter, conv_tol)
 }
 
+importance_sample_ung <- function(model_, nsim_states, use_antithetic, mode_estimate, max_iter, conv_tol, seed, model_type) {
+    .Call('bssm_importance_sample_ung', PACKAGE = 'bssm', model_, nsim_states, use_antithetic, mode_estimate, max_iter, conv_tol, seed, model_type)
+}
+
 gaussian_kfilter <- function(model_, model_type) {
     .Call('bssm_gaussian_kfilter', PACKAGE = 'bssm', model_, model_type)
 }
@@ -55,6 +59,10 @@ nongaussian_loglik <- function(model_, mode_estimate, nsim_states, simulation_me
 
 gaussian_mcmc <- function(model_, prior_types, prior_pars, sim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, Z_ind, H_ind, T_ind, R_ind) {
     .Call('bssm_gaussian_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, sim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, Z_ind, H_ind, T_ind, R_ind)
+}
+
+gaussian_mcmc_summary <- function(model_, prior_types, prior_pars, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, Z_ind, H_ind, T_ind, R_ind) {
+    .Call('bssm_gaussian_mcmc_summary', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, Z_ind, H_ind, T_ind, R_ind)
 }
 
 nongaussian_pm_mcmc <- function(model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, model_type, Z_ind, T_ind, R_ind) {
