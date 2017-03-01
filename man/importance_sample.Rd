@@ -9,14 +9,17 @@
 \usage{
 importance_sample(object, nsim, seed, ...)
 
-\method{importance_sample}{ngssm}(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+\method{importance_sample}{ngssm}(object, nsim, use_antithetic = TRUE,
+  max_iter = 100, conv_tol = 1e-08, seed = sample(.Machine$integer.max,
+  size = 1), ...)
 
-\method{importance_sample}{ng_bsm}(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+\method{importance_sample}{ng_bsm}(object, nsim, use_antithetic = TRUE,
+  max_iter = 100, conv_tol = 1e-08, seed = sample(.Machine$integer.max,
+  size = 1), ...)
 
-\method{importance_sample}{svm}(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+\method{importance_sample}{svm}(object, nsim, use_antithetic = TRUE,
+  max_iter = 100, conv_tol = 1e-08, seed = sample(.Machine$integer.max,
+  size = 1), ...)
 }
 \arguments{
 \item{object}{of class \code{ng_bsm}, \code{svm} or \code{ngssm}.}

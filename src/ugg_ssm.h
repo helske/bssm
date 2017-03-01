@@ -57,6 +57,8 @@ public:
   double filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
     arma::cube& Ptt) const;
   void smoother(arma::mat& at, arma::cube& Pt) const;
+  Rcpp::List predict(const arma::vec& probs, const arma::mat& theta,
+    const arma::mat& alpha, const arma::uvec& counts, const bool pred_obs);
   
   arma::vec y;
   arma::mat Z;

@@ -106,8 +106,6 @@ void mcmc::state_summary(T model, arma::mat& alphahat, arma::cube& Vt) {
     Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
     sum_w = tmp;
   }
-  Rcpp::Rcout<<Valpha.slice(0)<<std::endl;
-  Rcpp::Rcout<<Vt.slice(0)<<std::endl;
   Vt += Valpha / n_samples; // Var[E(alpha)] + E[Var(alpha)]
   
   

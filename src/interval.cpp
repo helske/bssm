@@ -4,7 +4,8 @@
 #include <RcppArmadillo.h>
 
 struct objective_gaussian {
-  objective_gaussian(const arma::vec& means, const arma::vec& sds, double prob) : means(means), sds(sds), prob(prob) {}
+  objective_gaussian(const arma::vec& means, const arma::vec& sds, double prob) : 
+  means(means), sds(sds), prob(prob) {}
 
   double operator()(double b) const {
     return Rcpp::sum(Rcpp::pnorm(Rcpp::as<Rcpp::NumericVector>(Rcpp::wrap((b - means)/sds))))/means.n_elem - prob;

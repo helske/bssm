@@ -98,6 +98,7 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   out$isc <- FALSE
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
+  attr(out, "model_type") <- "gssm"
   out
 }  
 
@@ -156,6 +157,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   out$isc <- FALSE
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
+  attr(out, "model_type") <- "bsm"
   out
 }
 
@@ -269,6 +271,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   out$seed <- seed
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
+  attr(out, "model_type") <- "ngssm"
   out
 }
 
@@ -369,6 +372,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   out$seed <- seed
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
+  attr(out, "model_type") <- "ng_bsm"
   out
 }
 
@@ -448,6 +452,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
+  attr(out, "model_type") <- "svm"
   out
 }
 
@@ -550,5 +555,6 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   out$seed <- seed
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
+  attr(out, "model_type") <- "nlg_ssm"
   out
 }

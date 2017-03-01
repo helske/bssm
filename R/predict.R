@@ -1,5 +1,3 @@
-
-
 #' Predictions for Gaussian State Space Models
 #'
 #' Posterior intervals of future observations or their means
@@ -24,85 +22,66 @@
 #' @param newu Vector of length \code{n_ahead} defining the future values of \eqn{u}.
 #' Defaults to 1.
 #' @param ... Ignored.
-#' @inheritParams run_mcmc.gssm
 #' @return List containing the mean predictions, quantiles and Monte Carlo
 #' standard errors .
-#' @method predict gssm
+#' @method predict mcmc_output
 #' @rdname predict
 #' @export
-predict.gssm <- function(object, n_iter, priors, newdata = NULL,
-  n_ahead = 1, interval = "response",
-  probs = c(0.05, 0.95), method = "quantile", return_MCSE = TRUE,
-  n_burnin = floor(n_iter / 2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
+predict.mcmc_output <- function(object, future_model,
+  interval = "response",
+  probs = c(0.05, 0.95), method = "quantile", return_MCSE = TRUE, ...) {
   
-  interval <- pmatch(interval, c("mean", "response"))
+  interval <- match.arg(interval, c("mean", "response"))
   method <- match.arg(method, c("parametric", "quantile"))
   
-  inits <- sapply(priors, "[[", "init")
-  
-  if (missing(S)) {
-    S <- diag(0.1 * pmax(0.1, abs(inits)), length(inits))
-  }
-  priors <- combine_priors(priors)
-  
-  endtime <- end(object$y) + c(0, n_ahead)
-  y_orig <- object$y
-  object$y <- c(object$y, rep(NA, n_ahead))
-  
-  if (length(object$coefs) > 0) {
-    if (is.null(newdata) || nrow(newdata) != n_ahead ||
-        ncol(newdata) != length(object$coefs)) {
-      stop("Model contains regression part but newdata is missing or its dimensions do not match with n_ahead and length of beta. ")
-    }
-    object$xreg <- rbind(object$xreg, newdata)
-  }
-  
-  if (any(c(dim(object$Z)[3], dim(object$H)[3], dim(object$T)[3], dim(object$R)[3]) > 1)) {
-    stop("Time-varying system matrices in prediction are not yet supported.")
-  }
   probs <- sort(unique(c(probs, 0.5)))
-  if (method == "parametric") {
-    
-    out <- gssm_predict(object, priors$prior_types, priors$param, n_iter,
-      n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-      object$Z_ind, object$H_ind, object$T_ind, object$R_ind, probs, seed)
-    
-    if (return_MCSE) {
-      ses <- matrix(0, n_ahead, length(probs))
+  n_ahead <- length(future_model$y)
+  start_ts <- start(future_model$y)
+  end_ts <- end(future_model$y)
+  freq <- frequency(future_model$y)
+  
+  if (attr(object, "model_type") %in% c("gssm", "bsm")) {
+    if (method == "parametric") {
       
-      nsim <- nrow(out$y_mean)
+      out <- gaussian_predict(future_model, probs, interval == "response",
+        t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
+        pmatch(attr(object, "model_type"), c("gssm", "bsm")))
       
-      for (i in 1:n_ahead) {
-        for (j in 1:length(probs)) {
-          pnorms <- pnorm(q = out$intervals[i, j], out$y_mean[, i], out$y_sd[, i])
-          eff_n <-  effectiveSize(pnorms)
-          ses[i, j] <- sqrt((sum((probs[j] - pnorms) ^ 2) / nsim) / eff_n) /
-            sum(dnorm(x = out$intervals[i, j], out$y_mean[, i], out$y_sd[, i]) / nsim)
+      if (return_MCSE) {
+        ses <- matrix(0, n_ahead, length(probs))
+        
+        nsim <- nrow(out$mean_pred)
+        
+        for (i in 1:n_ahead) {
+          for (j in 1:length(probs)) {
+            pnorms <- pnorm(q = out$intervals[i, j], out$mean_pred[, i], out$sd_pred[, i])
+            eff_n <-  effectiveSize(pnorms)
+            ses[i, j] <- sqrt((sum((probs[j] - pnorms) ^ 2) / nsim) / eff_n) /
+              sum(dnorm(x = out$intervals[i, j], out$mean_pred[, i], out$sd_pred[, i]) / nsim)
+          }
         }
+        
+        pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
+          intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
+            names = paste0(100*probs, "%")),
+          MCSE = ts(ses, start = start_ts, end = end_ts, frequency = freq,
+            names = paste0(100*probs, "%")))
+      } else {
+        pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
+          intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
+            names = paste0(100 * probs, "%")))
       }
-      
-      pred <- list(y = object$y, mean = ts(colMeans(out$y_mean), end = endtime, frequency = frequency(object$y)),
-        intervals = ts(out$intervals, end = endtime, frequency = frequency(object$y),
-          names = paste0(100*probs, "%")),
-        MCSE = ts(ses, end = endtime, frequency = frequency(object$y),
-          names = paste0(100*probs, "%")))
     } else {
-      pred <- list(y = object$y, mean = ts(colMeans(out$y_mean), end = endtime, frequency = frequency(object$y)),
-        intervals = ts(out$intervals, end = endtime, frequency = frequency(object$y),
+      
+      out <- gssm_predict2(object, priors$prior_types, priors$param, n_iter,
+        n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
+        object$Z_ind, object$H_ind, object$T_ind, object$R_ind, seed)
+      
+      pred <- list(y = y_orig, mean = ts(rowMeans(out), end = endtime, frequency = frequency(object$y)),
+        intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = frequency(object$y),
           names = paste0(100 * probs, "%")))
+      
     }
-  } else {
-    
-    out <- gssm_predict2(object, priors$prior_types, priors$param, n_iter,
-      n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-      object$Z_ind, object$H_ind, object$T_ind, object$R_ind, seed)
-    
-    pred <- list(y = y_orig, mean = ts(rowMeans(out), end = endtime, frequency = frequency(object$y)),
-      intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = frequency(object$y),
-        names = paste0(100 * probs, "%")))
-    
   }
   class(pred) <- "predict_bssm"
   pred

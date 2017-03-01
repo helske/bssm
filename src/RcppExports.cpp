@@ -502,6 +502,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// gaussian_predict
+Rcpp::List gaussian_predict(const Rcpp::List& model_, const arma::vec& probs, const bool pred_obs, const arma::mat theta, const arma::mat alpha, const arma::uvec& counts, const unsigned int model_type);
+RcppExport SEXP bssm_gaussian_predict(SEXP model_SEXP, SEXP probsSEXP, SEXP pred_obsSEXP, SEXP thetaSEXP, SEXP alphaSEXP, SEXP countsSEXP, SEXP model_typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type model_(model_SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
+    Rcpp::traits::input_parameter< const bool >::type pred_obs(pred_obsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type counts(countsSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type model_type(model_typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(gaussian_predict(model_, probs, pred_obs, theta, alpha, counts, model_type));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gaussian_smoother
 Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type);
 RcppExport SEXP bssm_gaussian_smoother(SEXP model_SEXP, SEXP model_typeSEXP) {
