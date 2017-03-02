@@ -216,6 +216,7 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
     }
   } break;
   case 2: {
+    
     ung_bsm model(clone(model_), seed);
     switch (simulation_method) {
     case 1: 

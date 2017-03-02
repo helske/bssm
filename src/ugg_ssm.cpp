@@ -599,12 +599,13 @@ void ugg_ssm::smoother(arma::mat& at, arma::cube& Pt) const {
   }
 }
 
-Rcpp::List ugg_ssm::predict(const arma::vec& probs, const arma::mat& theta,
-  const arma::mat& alpha, const arma::uvec& counts, const bool pred_obs) {
+Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& theta,
+  const arma::mat& alpha, const arma::uvec& counts, const bool predict_obs) {
+  
   arma::vec theta_i = theta.col(0);
   set_theta(theta_i);
-  a1 = T(0) * alpha.col(0);
-  P1 = RR.slice(0);
+  a1 = alpha.col(0);
+  P1.zeros();
   arma::mat at(m, n + 1);
   arma::mat att(m, n);
   arma::cube Pt(m, m, n + 1);
@@ -619,17 +620,16 @@ Rcpp::List ugg_ssm::predict(const arma::vec& probs, const arma::mat& theta,
       Z.col(Ztv * t).t() * at.col(t));
     var_pred(t, 0) = arma::as_scalar(Z.col(Ztv * t).t() * Pt.slice(t) * Z.col(Ztv * t));
   }
-  if (pred_obs) {
+  if (predict_obs) {
     for(unsigned int t = 0; t < n; t++) {
       var_pred(t, 0) += HH(Htv * t);
     }
   }
-  Rcpp::Rcout<<Pt<<std::endl;
   for (unsigned int i = 1; i < n_samples; i++) {
     arma::vec theta_i = theta.col(i);
     set_theta(theta_i);
-    a1 = T(0) * alpha.col(i);
-    P1 = RR.slice(0);
+    a1 = alpha.col(i);
+    P1.zeros();
     filter(at, att, Pt, Ptt);
     
     for(unsigned int t = 0; t < n; t++) {
@@ -637,7 +637,7 @@ Rcpp::List ugg_ssm::predict(const arma::vec& probs, const arma::mat& theta,
         Z.col(Ztv * t).t() * at.col(t));
       var_pred(t, i) = arma::as_scalar(Z.col(Ztv * t).t() * Pt.slice(t) * Z.col(Ztv * t));
     }
-    if (pred_obs) {
+    if (predict_obs) {
       for(unsigned int t = 0; t < n; t++) {
         var_pred(t, i) += HH(Htv * t);
       }
@@ -654,6 +654,58 @@ Rcpp::List ugg_ssm::predict(const arma::vec& probs, const arma::mat& theta,
   return Rcpp::List::create(Rcpp::Named("intervals") = intv, 
     Rcpp::Named("mean_pred") = expanded_mean,
     Rcpp::Named("sd_pred") = expanded_sd);
+}
+
+arma::cube ugg_ssm::predict_sample(const arma::mat& theta,
+  const arma::mat& alpha, const arma::uvec& counts, const bool predict_obs) {
+  
+  unsigned int d = 1;
+  if (!predict_obs) d = m;
+  
+  unsigned int n_samples = theta.n_cols;
+  arma::cube sample(d, n, n_samples);
+  
+  arma::vec theta_i = theta.col(0);
+  set_theta(theta_i);
+  a1 = alpha.col(0);
+  sample.slice(0) = sample_model(predict_obs);
+  
+  for (unsigned int i = 1; i < n_samples; i++) {
+    arma::vec theta_i = theta.col(i);
+    set_theta(theta_i);
+    a1 = alpha.col(i);
+    sample.slice(i) = sample_model(predict_obs);
+  }
+  
+  return rep_cube(sample, counts);
+}
+
+
+arma::mat ugg_ssm::sample_model(const bool simulate_obs) {
+  
+  arma::mat alpha(m, n);
+  alpha.col(0) = a1;
+  std::normal_distribution<> normal(0.0, 1.0);
+  
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    arma::vec uk(k);
+    for(unsigned int j = 0; j < k; j++) {
+      uk(j) = normal(engine);
+    }
+    alpha.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * alpha.col(t) + R.slice(t * Rtv) * uk;
+  }
+  
+  if (simulate_obs) {
+    arma::mat y(1, n);
+    for (unsigned int t = 0; t < n; t++) {
+      y(0, t) = xbeta(t) + D(t * Dtv) + 
+        arma::as_scalar(Z.col(t * Ztv).t() * alpha.col(t)) + 
+        H(t * Htv) * normal(engine);
+    }
+    return y;
+  } else {
+    return alpha;
+  }
 }
 
 // // 

@@ -27,12 +27,10 @@
 #' @method predict mcmc_output
 #' @rdname predict
 #' @export
-predict.mcmc_output <- function(object, future_model,
-  interval = "response",
-  probs = c(0.05, 0.95), method = "quantile", return_MCSE = TRUE, ...) {
+predict.mcmc_output <- function(object, future_model, type = "response",
+  intervals = TRUE, probs = c(0.05, 0.95), return_MCSE = TRUE, ...) {
   
-  interval <- match.arg(interval, c("mean", "response"))
-  method <- match.arg(method, c("parametric", "quantile"))
+  type <- match.arg(type, c("mean", "response"))
   
   probs <- sort(unique(c(probs, 0.5)))
   n_ahead <- length(future_model$y)
@@ -41,13 +39,15 @@ predict.mcmc_output <- function(object, future_model,
   freq <- frequency(future_model$y)
   
   if (attr(object, "model_type") %in% c("gssm", "bsm")) {
-    if (method == "parametric") {
+    
+    out <- gaussian_predict(future_model, probs,
+      t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
+      type == "response", intervals,
+      pmatch(attr(object, "model_type"), c("gssm", "bsm")))
+    
+    if (intervals) {
       
-      out <- gaussian_predict(future_model, probs, interval == "response",
-        t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
-        pmatch(attr(object, "model_type"), c("gssm", "bsm")))
-      
-      if (return_MCSE) {
+      if(return_MCSE) {
         ses <- matrix(0, n_ahead, length(probs))
         
         nsim <- nrow(out$mean_pred)
@@ -72,16 +72,17 @@ predict.mcmc_output <- function(object, future_model,
             names = paste0(100 * probs, "%")))
       }
     } else {
-      
-      out <- gssm_predict2(object, priors$prior_types, priors$param, n_iter,
-        n_burnin, n_thin, gamma, target_acceptance, S, n_ahead, interval,
-        object$Z_ind, object$H_ind, object$T_ind, object$R_ind, seed)
-      
-      pred <- list(y = y_orig, mean = ts(rowMeans(out), end = endtime, frequency = frequency(object$y)),
-        intervals = ts(t(apply(out, 1, quantile, probs, type = 8)), end = endtime, frequency = frequency(object$y),
-          names = paste0(100 * probs, "%")))
-      
+      pred <- out[[1]]
     }
+  } else {
+    if(attr(object, "model_type") %in% c("ngssm", "ng_bsm", "svm")) {
+      future_model$distribution <- pmatch(future_model$distribution, 
+        c("poisson", "binomial", "negative binomial"))
+      pred <- nongaussian_predict(future_model, probs,
+        t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
+        type == "response", pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm")))[[1]]
+    }
+    
   }
   class(pred) <- "predict_bssm"
   pred

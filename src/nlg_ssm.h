@@ -53,6 +53,8 @@ public:
   double ekf_smoother(arma::mat& alphahat) const;
   double iekf_smoother(const arma::mat& alphahat,arma::mat& alphahat_new) const;
   
+  arma::mat sample_model(const arma::vec& a1_sim, const bool simulate_obs);
+  
   arma::mat y;
   // nonlinear functions of 
   // y_t = Z(alpha_t, theta_t) + H(alpha_t, theta_t)*eps_t, 

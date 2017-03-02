@@ -3,6 +3,7 @@
 #include "conditional_dist.h"
 #include "distr_consts.h"
 #include "sample.h"
+#include "rep_mat.h"
 
 // General constructor of ung_ssm object from Rcpp::List
 // with parameter indices
@@ -556,6 +557,90 @@ double ung_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   } break;
   }
   return loglik;
+}
+
+arma::cube ung_ssm::predict_sample(const arma::mat& theta,
+  const arma::mat& alpha, const arma::uvec& counts, const bool predict_obs) {
+  
+  unsigned int d = 1;
+  if (!predict_obs) d = m;
+  
+  unsigned int n_samples = theta.n_cols;
+  arma::cube sample(d, n, n_samples);
+  
+  arma::vec theta_i = theta.col(0);
+  set_theta(theta_i);
+  a1 = alpha.col(0);
+  sample.slice(0) = sample_model(predict_obs);
+  
+  for (unsigned int i = 1; i < n_samples; i++) {
+    arma::vec theta_i = theta.col(i);
+    set_theta(theta_i);
+    a1 = alpha.col(i);
+    sample.slice(i) = sample_model(predict_obs);
+  }
+  
+  return rep_cube(sample, counts);
+}
+
+
+arma::mat ung_ssm::sample_model(const bool simulate_obs) {
+  
+  arma::mat alpha(m, n);
+  alpha.col(0) = a1;
+  std::normal_distribution<> normal(0.0, 1.0);
+  
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    arma::vec uk(k);
+    for(unsigned int j = 0; j < k; j++) {
+      uk(j) = normal(engine);
+    }
+    alpha.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * alpha.col(t) + 
+      R.slice(t * Rtv) * uk;
+  }
+  
+  if (simulate_obs) {
+    arma::mat y(1, n);
+    
+    switch(distribution) {
+    case 0: {
+      y.zeros();
+      for (unsigned int t = 0; t < n; t++) {
+        y(0, t) = phi * exp(0.5 * alpha(t)) * normal(engine);
+      }
+    } break;
+    case 1: {
+      for (unsigned int t = 0; t < n; t++) {
+      double lambda = u(t) * exp(xbeta(t) + D(t * Dtv) + 
+        arma::as_scalar(Z.col(t * Ztv).t() * alpha.col(t)));
+      std::poisson_distribution<> poisson(lambda);
+      y(0, t) = poisson(engine);
+    } 
+    } break;
+    case 2: {
+      for (unsigned int t = 0; t < n; t++) {
+      double tmp = exp(xbeta(t) + D(t * Dtv) + 
+        arma::as_scalar(Z.col(t * Ztv).t() * alpha.col(t)));
+      double pi = tmp / (1.0 + tmp);
+      
+      std::binomial_distribution<> binomial(u(t), pi);
+      y(0, t) = binomial(engine);
+    }
+    } break;
+    case 3: {
+      for (unsigned int t = 0; t < n; t++) {
+      double mu = u(t) * exp(xbeta(t) + D(t * Dtv) + 
+        arma::as_scalar(Z.col(t * Ztv).t() * alpha.col(t)));
+      
+      std::negative_binomial_distribution<> negative_binomial(phi, phi / (phi + mu));
+      y(0, t) = negative_binomial(engine);
+    }
+    } break;
+    }
+    return y;
+  } else {
+    return alpha;
+  }
 }
 
 //
