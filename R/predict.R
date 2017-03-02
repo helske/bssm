@@ -119,7 +119,6 @@ predict.mcmc_output <- function(object, future_model, type = "response",
 # ts.plot(pred1$mean, pred1$intervals[,-2], pred2$pred +
 # cbind(0, -qnorm(0.95) * pred2$se, qnorm(0.95) * pred2$se),
 #   col = c(1, 1, 1, 2, 2, 2))
-
 predict.bsm <- function(object, n_iter, newdata = NULL,
   n_ahead = 1, interval = "response", probs = c(0.05, 0.95),
   method = "quantile", return_MCSE = TRUE,
@@ -258,15 +257,14 @@ predict.ngssm <- function(object, n_iter, nsim_states,
 #' @method predict ng_bsm
 #' @rdname predict
 #' @export
-#' @examples
-#' data("poisson_series")
-#' model <- ng_bsm(poisson_series, sd_level = halfnormal(0.1, 1),
-#'   sd_slope=halfnormal(0.01, 0.1), distribution = "poisson")
-#' pred <- predict(model, n_iter = 1e4, nsim = 10, n_ahead = 10,
-#'   probs = seq(0.05,0.95, by = 0.05))
-#' library("ggplot2")
-#' autoplot(pred, median_color = "blue", mean_color = "red")
-#'
+# @examples
+# data("poisson_series")
+# model <- ng_bsm(poisson_series, sd_level = halfnormal(0.1, 1),
+#   sd_slope=halfnormal(0.01, 0.1), distribution = "poisson")
+# pred <- predict(model, n_iter = 1e4, nsim = 10, n_ahead = 10,
+#   probs = seq(0.05,0.95, by = 0.05))
+# library("ggplot2")
+# autoplot(pred, median_color = "blue", mean_color = "red")
 predict.ng_bsm <- function(object, n_iter, nsim_states,
   newdata = NULL, n_ahead = 1, interval = "mean",
   probs = c(0.05, 0.95),

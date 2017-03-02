@@ -283,10 +283,10 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'   geom = "polygon") + scale_fill_continuous(low = "green",high = "blue") +
 #'   guides(alpha = "none")
 #'
-#' pred <- predict(model, n_iter = 5000, nsim_states = 10, n_ahead = 36,
-#'   probs = seq(0.05, 0.95, by = 0.05), newdata = matrix(1, 36, 1),
-#'   newphi = rep(1, 36))
-#' autoplot(pred)
+# pred <- predict(model, n_iter = 5000, nsim_states = 10, n_ahead = 36,
+#   probs = seq(0.05, 0.95, by = 0.05), newdata = matrix(1, 36, 1),
+#   newphi = rep(1, 36))
+# autoplot(pred)
 #' }
 ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), a1, P1, 
