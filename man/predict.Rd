@@ -7,8 +7,9 @@
 \alias{predict.ngssm}
 \title{Predictions for Gaussian State Space Models}
 \usage{
-\method{predict}{mcmc_output}(object, future_model, interval = "response",
-  probs = c(0.05, 0.95), method = "quantile", return_MCSE = TRUE, ...)
+\method{predict}{mcmc_output}(object, future_model, type = "response",
+  intervals = TRUE, probs = c(0.05, 0.95), return_MCSE = TRUE,
+  seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{predict}{bsm}(object, n_iter, newdata = NULL, n_ahead = 1,
   interval = "response", probs = c(0.05, 0.95), method = "quantile",
@@ -31,13 +32,7 @@
 \arguments{
 \item{object}{Model object.}
 
-\item{interval}{Compute predictions on \code{"mean"} ("confidence interval") or
-\code{"response"} ("prediction interval"). Defaults to \code{"response"}.}
-
 \item{probs}{Desired quantiles. Defaults to \code{c(0.05, 0.95)}. Always includes median 0.5.}
-
-\item{method}{Either \code{"parametric"} (default) or \code{"quantile"}.
-Only used for linear-Gaussian case.}
 
 \item{return_MCSE}{For method \code{"parametric"}, if \code{TRUE}, the Monte Carlo
 standard errors are also returned.}
@@ -48,6 +43,12 @@ standard errors are also returned.}
 points. Defaults to zero matrix of appropriate size.}
 
 \item{n_ahead}{Number of steps ahead at which to predict.}
+
+\item{interval}{Compute predictions on \code{"mean"} ("confidence interval") or
+\code{"response"} ("prediction interval"). Defaults to \code{"response"}.}
+
+\item{method}{Either \code{"parametric"} (default) or \code{"quantile"}.
+Only used for linear-Gaussian case.}
 
 \item{nsim_states}{Number of samples used in importance sampling.}
 
@@ -66,15 +67,5 @@ Posterior intervals of future observations or their means
 computed using either the quantile method where the intervals are computed
 as empirical quantiles the posterior sample, or parametric method by
 Helske (2016).
-}
-\examples{
-data("poisson_series")
-model <- ng_bsm(poisson_series, sd_level = halfnormal(0.1, 1),
-  sd_slope=halfnormal(0.01, 0.1), distribution = "poisson")
-pred <- predict(model, n_iter = 1e4, nsim = 10, n_ahead = 10,
-  probs = seq(0.05,0.95, by = 0.05))
-library("ggplot2")
-autoplot(pred, median_color = "blue", mean_color = "red")
-
 }
 
