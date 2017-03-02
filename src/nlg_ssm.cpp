@@ -4,6 +4,7 @@
 #include "dmvnorm.h"
 #include "conditional_dist.h"
 #include "function_pointers.h"
+#include "rep_mat.h"
 
 nlg_ssm::nlg_ssm(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, 
   SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_,
@@ -942,6 +943,26 @@ double nlg_ssm::iekf_smoother(const arma::mat& alphahat, arma::mat& at) const {
   return logLik;
 }
 
+
+arma::cube nlg_ssm::predict_sample(const arma::mat& thetasim, 
+  const arma::mat& alpha, const arma::uvec& counts, const bool predict_obs) {
+
+  unsigned int d = 1;
+  if (!predict_obs) d = m;
+  
+  unsigned int n_samples = thetasim.n_cols;
+  arma::cube sample(d, n, n_samples);
+  
+  theta = thetasim.col(0);
+  sample.slice(0) = sample_model(alpha.col(0), predict_obs);
+  
+  for (unsigned int i = 1; i < n_samples; i++) {
+    theta = thetasim.col(i);
+    sample.slice(i) = sample_model(alpha.col(i), predict_obs);
+  }
+  
+  return rep_cube(sample, counts);
+}
 
 arma::mat nlg_ssm::sample_model(const arma::vec& a1_sim, const bool simulate_obs) {
   

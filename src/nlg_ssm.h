@@ -53,6 +53,8 @@ public:
   double ekf_smoother(arma::mat& alphahat) const;
   double iekf_smoother(const arma::mat& alphahat,arma::mat& alphahat_new) const;
   
+  arma::cube predict_sample(const arma::mat& thetasim, const arma::mat& alpha, 
+    const arma::uvec& counts, const bool predict_obs);
   arma::mat sample_model(const arma::vec& a1_sim, const bool simulate_obs);
   
   arma::mat y;

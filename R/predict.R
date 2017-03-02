@@ -28,7 +28,8 @@
 #' @rdname predict
 #' @export
 predict.mcmc_output <- function(object, future_model, type = "response",
-  intervals = TRUE, probs = c(0.05, 0.95), return_MCSE = TRUE, ...) {
+  intervals = TRUE, probs = c(0.05, 0.95), return_MCSE = TRUE, 
+  seed = sample(.Machine$integer.max, size = 1), ...) {
   
   type <- match.arg(type, c("mean", "response"))
   
@@ -42,7 +43,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
     
     out <- gaussian_predict(future_model, probs,
       t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
-      type == "response", intervals,
+      type == "response", intervals, seed, 
       pmatch(attr(object, "model_type"), c("gssm", "bsm")))
     
     if (intervals) {
@@ -80,7 +81,19 @@ predict.mcmc_output <- function(object, future_model, type = "response",
         c("poisson", "binomial", "negative binomial"))
       pred <- nongaussian_predict(future_model, probs,
         t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
-        type == "response", pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm")))[[1]]
+        type == "response", seed, 
+        pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm")))
+    } else {
+      pred <- nonlinear_predict(t(future_model$y), future_model$Z, 
+        future_model$H, future_model$T, future_model$R, future_model$Z_gn, 
+        future_model$T_gn, future_model$a1, future_model$P1, 
+        future_model$log_prior_pdf, future_model$known_params, 
+        future_model$known_tv_params, as.integer(future_model$time_varying), 
+        future_model$n_states, future_model$n_etas, probs,
+        t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
+        type == "response", seed)
+      
+  
     }
     
   }
@@ -97,7 +110,10 @@ predict.mcmc_output <- function(object, future_model, type = "response",
 # model <- bsm(y, sd_y = prior, sd_level = prior,
 #   sd_slope = prior, sd_seasonal = prior)
 # 
-# pred1 <- predict(model, n_iter = 5000, n_ahead = 8)
+# mcmc_results <- run_mcmc(model, n_iter = 5000)
+# future_model <- model
+# future_model$y <- ts(rep(8, NA), start = end(y), frequency = frequency(y))
+# pred1 <- predict(mcmc_results, future_model)
 # pred2 <- predict(StructTS(y, type = "BSM"), n.ahead = 8)
 # 
 # ts.plot(pred1$mean, pred1$intervals[,-2], pred2$pred +

@@ -35,8 +35,6 @@ arma::mat H_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
 arma::mat R_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
   arma::mat R(2, 2, arma::fill::zeros);
-  R(0, 0) = theta(1);
-  R(1, 1) = theta(2);
   return R;
 }
 
@@ -105,11 +103,9 @@ double log_prior_pdf(const arma::vec& theta) {
   if(arma::any(theta < 0)) {
      log_pdf = -arma::datum::inf;
    } else {
-    // some weakly informative priors. 
+    // weakly informative priors. 
     // Note that negative values are handled above
     log_pdf = R::dnorm(theta(0), 0, 10, 1);
-    log_pdf += R::dnorm(theta(1), 0, 10, 1);
-    log_pdf += R::dnorm(theta(2), 0, 10, 1);
   }
   return log_pdf;
 }
