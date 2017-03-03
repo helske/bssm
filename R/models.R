@@ -30,7 +30,7 @@
 #'   sd_slope =  prior, sd_seasonal =  prior)
 #'
 #' mcmc_out <- run_mcmc(model, n_iter = 5000)
-#' summary(expand(mcmc_out, "theta"))$stat
+#' summary(expand_sample(mcmc_out, "theta"))$stat
 #' mcmc_out$theta[which.max(mcmc_out$posterior), ]
 #' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
 #'
@@ -273,7 +273,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' set.seed(123)
 #' mcmc_out <- run_mcmc(model, n_iter = 5000, nsim = 10)
 #' mcmc_out$acceptance_rate
-#' theta <- expand(mcmc_out, "theta")
+#' theta <- expand_sample(mcmc_out, "theta")
 #' plot(theta)
 #' summary(theta)
 #'

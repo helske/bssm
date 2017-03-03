@@ -75,7 +75,7 @@ print.mcmc_output <- function(x, ...) {
 #' @param x Output from \code{\link{run_mcmc}}.
 #' @param ... Ignored.
 #' @export
-expand <- function(x, variable = "theta", times, states, by_states = TRUE) {
+expand_sample <- function(x, variable = "theta", times, states, by_states = TRUE) {
   if(variable == "theta") {
     out <- apply(x$theta, 2, rep, times = x$counts)
   } else {
@@ -98,7 +98,7 @@ expand <- function(x, variable = "theta", times, states, by_states = TRUE) {
       names(out) <- times
     }
   }
-  mcmc(out)
+  mcmc(out, start = x$n_burnin + 1, thin = x$n_thin)
 }
 # 
 # 
