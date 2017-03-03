@@ -42,7 +42,7 @@ test_that("results for poisson model are comparable to KFAS",{
     sd_level = 0.01, u = 2:11, distribution = "poisson")
   
   expect_equal(logLik(model_KFAS), logLik(model_bssm, 0))
-  out_KFAS <- KFS(model_KFAS, filtering = "state", convtol = 1e-12)
+  out_KFAS <- KFS(model_KFAS, filtering = "state")
   expect_error(out_bssm <- kfilter(model_bssm), NA)
   expect_equivalent(out_KFAS$a, out_bssm$at)
   expect_equivalent(out_KFAS$P, out_bssm$Pt)
@@ -64,7 +64,7 @@ test_that("results for binomial model are comparable to KFAS", {
     sd_level = 0.01, u = 2:11, distribution = "binomial")
   
   expect_equal(logLik(model_KFAS), logLik(model_bssm, 0))
-  out_KFAS <- KFS(model_KFAS, filtering = "state", convtol = 1e-12)
+  out_KFAS <- KFS(model_KFAS, filtering = "state")
   expect_error(out_bssm <- kfilter(model_bssm), NA)
   expect_equivalent(out_KFAS$a, out_bssm$at)
   expect_equivalent(out_KFAS$P, out_bssm$Pt)
