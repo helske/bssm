@@ -17,13 +17,15 @@ Rcpp::List importance_sample_ung(const Rcpp::List& model_,
     ung_ssm model(clone(model_), seed);
     ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
     arma::cube alpha = approx_model.simulate_states(nsim_states, use_antithetic);
-    
+   
     arma::vec scales = model.scaling_factors(approx_model, mode_estimate);
     arma::vec weights(nsim_states, arma::fill::zeros);
     for (unsigned int t = 0; t < model.n; t++) {
       weights += model.log_weights(approx_model, t, alpha);
     }
-    weights = exp(weights - scales);
+    
+    weights = exp(weights - arma::accu(scales));
+    
     return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
       Rcpp::Named("weights") = weights);
   } break;
@@ -37,7 +39,7 @@ Rcpp::List importance_sample_ung(const Rcpp::List& model_,
     for (unsigned int t = 0; t < model.n; t++) {
       weights += model.log_weights(approx_model, t, alpha);
     }
-    weights = exp(weights - scales);
+    weights = exp(weights - arma::accu(scales));
     return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
       Rcpp::Named("weights") = weights);
   } break;
@@ -51,7 +53,7 @@ Rcpp::List importance_sample_ung(const Rcpp::List& model_,
     for (unsigned int t = 0; t < model.n; t++) {
       weights += model.log_weights(approx_model, t, alpha);
     }
-    weights = exp(weights - scales);
+    weights = exp(weights - arma::accu(scales));
     return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
       Rcpp::Named("weights") = weights);
   } break;

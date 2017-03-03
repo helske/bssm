@@ -77,8 +77,7 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
   // compute the constant term
   double const_term = compute_const_term(model, approx_model);
   // log-likelihood approximation
-  double approx_loglik = gaussian_loglik + const_term +
-    arma::accu(scales);
+  double approx_loglik = gaussian_loglik + const_term + sum_scales;
   
   double acceptance_prob = 0.0;
   unsigned int counts = 0;
@@ -544,7 +543,7 @@ void ung_amcmc::state_sampler_spdk_is2(T model, const unsigned int nsim_states,
     for (unsigned int t = 0; t < model.n; t++) {
       weights_i += model.log_weights(approx_model, t, alpha_i);
     }
-    weights_i = exp(weights_i - scales);
+    weights_i = exp(weights_i - scales(i));
     weights(i) = arma::mean(weights_i);
     std::discrete_distribution<> sample(weights_i.begin(), weights_i.end());
     alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
@@ -590,7 +589,7 @@ void ung_amcmc::state_sampler_spdk_is1(T model, const unsigned int nsim_states,
     for (unsigned int t = 0; t < model.n; t++) {
       weights_i += model.log_weights(approx_model, t, alpha_i);
     }
-    weights_i = exp(weights_i - scales);
+    weights_i = exp(weights_i - scales(i));
     weights(i) = arma::mean(weights_i);
     std::discrete_distribution<> sample(weights_i.begin(), weights_i.end());
     alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();

@@ -20,8 +20,9 @@ importance_sample.ngssm <- function(object, nsim, use_antithetic = TRUE,
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
   out <- importance_sample_ung(object, nsim, use_antithetic, object$initial_mode, 
     max_iter, conv_tol, seed, 1L)
-  rownames(out) <- names(object$a1)
-  aperm(out, c(2, 1, 3))
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
 }
 #' @method importance_sample ng_bsm
 #' @rdname importance_sample
@@ -32,8 +33,9 @@ importance_sample.ng_bsm <- function(object, nsim, use_antithetic = TRUE,
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
   out <- importance_sample_ung(object, nsim, use_antithetic, object$initial_mode, 
     max_iter, conv_tol, seed, 2L)
-  rownames(out) <- names(object$a1)
-  aperm(out, c(2, 1, 3))
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
 }
 #' @method importance_sample svm
 #' @rdname importance_sample
@@ -44,6 +46,7 @@ importance_sample.svm <- function(object, nsim, use_antithetic = TRUE,
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
   out <- importance_sample_ung(object, nsim, use_antithetic, object$initial_mode, 
     max_iter, conv_tol, seed, 3L)
-  rownames(out) <- names(object$a1)
-  aperm(out, c(2, 1, 3))
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
 }
