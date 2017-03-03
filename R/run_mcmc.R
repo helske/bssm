@@ -490,11 +490,14 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
     full = {
       if (method == "pm"){
         if (delayed_acceptance) {
-          # out <- nonlinear_pm_mcmc(object, priors$prior_types, priors$params, 
-          #   nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          #   seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode, 
-          #   max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")), 
-          #   model_type = 2L, 0, 0, 0)
+          out <- nonlinear_da_mcmc(t(object$y), object$Z, object$H, object$T, 
+            object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
+            object$theta, object$log_prior_pdf, object$known_params, 
+            object$known_tv_params, as.integer(object$time_varying), 
+            object$n_states, object$n_etas, seed, 
+            nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+            end_adaptive_phase, n_threads, local_approx, t(initial_mode), 
+            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")))
         } else {
           out <- nonlinear_pm_mcmc(t(object$y), object$Z, object$H, object$T, 
             object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
@@ -546,6 +549,8 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
       out$muhat <- ts(out$muhat, start = start(object$y), frequency = frequency(object$y))
       out
     })
+  
+  colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
   
   out$n_iter <- n_iter
   out$n_burnin <- n_burnin

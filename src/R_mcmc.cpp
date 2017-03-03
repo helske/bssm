@@ -376,6 +376,45 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
     Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
 }
+// [[Rcpp::export]]
+Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 
+  SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, 
+  const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
+  const arma::mat& known_tv_params, const arma::uvec& time_varying, 
+  const unsigned int n_states, const unsigned int n_etas,
+  const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter, 
+  const unsigned int n_burnin, const unsigned int n_thin,
+  const double gamma, const double target_acceptance, const arma::mat S,
+  const bool end_ram, const unsigned int n_threads, 
+  const bool local_approx, const arma::mat initial_mode, 
+  const unsigned int max_iter, const double conv_tol, 
+  const unsigned int simulation_method) {
+  
+  nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
+    theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
+    time_varying, seed);
+  
+  mcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n, 
+    model.m, target_acceptance, gamma, S, true);
+  
+  Rcpp::stop("not yet implemented.");
+  // switch (simulation_method) {
+  // case 1: 
+  //   mcmc_run.da_mcmc_psi_nlg(model, end_ram, nsim_states, local_approx, initial_mode, 
+  //     max_iter, conv_tol);
+  //   break;
+  // case 2:
+  //   mcmc_run.da_mcmc_nlg_bsf(model, end_ram, nsim_states);
+  //   break;
+  // }
+  
+  
+  return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+    Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+    Rcpp::Named("counts") = mcmc_run.count_storage,
+    Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+    Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+}
 
 // [[Rcpp::export]]
 Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 
