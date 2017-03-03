@@ -50,7 +50,7 @@ model <- bsm(log10(UKgas), sd_y = prior, sd_level =  prior,
   sd_slope =  prior, sd_seasonal =  prior)
 
 mcmc_out <- run_mcmc(model, n_iter = 5000)
-summary(expand(mcmc_out, "theta"))$stat
+summary(expand_sample(mcmc_out, "theta"))$stat
 mcmc_out$theta[which.max(mcmc_out$posterior), ]
 sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
 

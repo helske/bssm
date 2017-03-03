@@ -65,7 +65,7 @@ model <- ng_bsm(Seatbelts[, "VanKilled"], distribution = "poisson",
 set.seed(123)
 mcmc_out <- run_mcmc(model, n_iter = 5000, nsim = 10)
 mcmc_out$acceptance_rate
-theta <- expand(mcmc_out, "theta")
+theta <- expand_sample(mcmc_out, "theta")
 plot(theta)
 summary(theta)
 

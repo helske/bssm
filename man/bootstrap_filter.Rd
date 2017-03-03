@@ -26,8 +26,6 @@ bootstrap_filter(object, nsim, ...)
 \item{...}{Ignored.}
 
 \item{seed}{Seed for RNG.}
-
-\item{filter_type}{Eiher \code{"bsf"} or \code{"psi"}.}
 }
 \value{
 A list containing samples, weights from the last time point, and an
