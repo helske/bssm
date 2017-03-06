@@ -146,7 +146,7 @@ Let's make some predictions based on our MCMC run:
 future_model <- model
 future_model$y <- ts(rep(NA, 100), start = end(model$y))
 out_pred <- predict(out_psi, future_model, type = "mean")
-
+library("ggplot2")
 autoplot(out_pred, y = model$y, plot_median = FALSE)
 
 ```
