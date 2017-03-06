@@ -945,26 +945,27 @@ double nlg_ssm::iekf_smoother(const arma::mat& alphahat, arma::mat& at) const {
 
 
 arma::cube nlg_ssm::predict_sample(const arma::mat& thetasim, 
-  const arma::mat& alpha, const arma::uvec& counts, const bool predict_obs) {
-
+  const arma::mat& alpha, const arma::uvec& counts, 
+  const unsigned int predict_type) {
+  
   unsigned int d = 1;
-  if (!predict_obs) d = m;
+  if (predict_type == 3) d = m;
   
   unsigned int n_samples = thetasim.n_cols;
   arma::cube sample(d, n, n_samples);
   
   theta = thetasim.col(0);
-  sample.slice(0) = sample_model(alpha.col(0), predict_obs);
+  sample.slice(0) = sample_model(alpha.col(0), predict_type);
   
   for (unsigned int i = 1; i < n_samples; i++) {
     theta = thetasim.col(i);
-    sample.slice(i) = sample_model(alpha.col(i), predict_obs);
+    sample.slice(i) = sample_model(alpha.col(i), predict_type);
   }
-  
   return rep_cube(sample, counts);
 }
 
-arma::mat nlg_ssm::sample_model(const arma::vec& a1_sim, const bool simulate_obs) {
+arma::mat nlg_ssm::sample_model(const arma::vec& a1_sim,
+  const unsigned int predict_type) {
   
   arma::mat alpha(m, n);
   alpha.col(0) = a1_sim;
@@ -979,14 +980,22 @@ arma::mat nlg_ssm::sample_model(const arma::vec& a1_sim, const bool simulate_obs
       R_fn.eval(t, alpha.col(t), theta, known_params, known_tv_params) * uk;
   }
   
-  if (simulate_obs) {
+  if (predict_type < 3) {
     arma::mat y(p, n);
     for (unsigned int t = 0; t < n; t++) {
-      y.col(t) = Z_fn.eval(t, alpha.col(t), theta, known_params, known_tv_params) +
-        H_fn.eval(t, alpha.col(t), theta, known_params, known_tv_params) * normal(engine);
+      y.col(t) = Z_fn.eval(t, alpha.col(t), theta, known_params, known_tv_params);
+    } 
+    if(predict_type == 1) {
+      for (unsigned int t = 0; t < n; t++) {
+        arma::vec up(p);
+        for (unsigned int i = 0; i < p; i++) {
+          up(i) = normal(engine);
+        }
+        y.col(t) += H_fn.eval(t, alpha.col(t), theta, known_params, known_tv_params) * up;
+      }
     }
     return y;
-  } else {
-    return alpha;
   }
+  return alpha;
+  
 }

@@ -60,9 +60,9 @@ public:
   double bsf_filter(const unsigned int nsim, arma::cube& alpha,
     arma::mat& weights, arma::umat& indices);
   Rcpp::List predict_interval(const arma::vec& probs, const arma::mat& theta,
-    const arma::mat& alpha, const arma::uvec& counts, const bool predict_obs);
+    const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type);
   arma::cube predict_sample(const arma::mat& theta,
-    const arma::mat& alpha, const arma::uvec& counts, const bool predict_obs);
+    const arma::mat& alpha, const arma::uvec& counts, const bool simulate_obs);
   arma::mat sample_model(const bool simulate_obs);
   
   arma::vec y;

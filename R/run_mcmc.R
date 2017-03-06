@@ -526,7 +526,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
         }
       }
       
-     # colnames(out$alpha) <- names(object$a1)
+      colnames(out$alpha) <- object$state_names
       out
     },
     summary = {

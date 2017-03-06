@@ -560,10 +560,11 @@ double ung_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
 }
 
 arma::cube ung_ssm::predict_sample(const arma::mat& theta,
-  const arma::mat& alpha, const arma::uvec& counts, const bool predict_obs) {
+  const arma::mat& alpha, const arma::uvec& counts, 
+  const unsigned int predict_type) {
   
   unsigned int d = 1;
-  if (!predict_obs) d = m;
+  if (predict_type == 3) d = m;
   
   unsigned int n_samples = theta.n_cols;
   arma::cube sample(d, n, n_samples);
@@ -571,20 +572,20 @@ arma::cube ung_ssm::predict_sample(const arma::mat& theta,
   arma::vec theta_i = theta.col(0);
   set_theta(theta_i);
   a1 = alpha.col(0);
-  sample.slice(0) = sample_model(predict_obs);
+  sample.slice(0) = sample_model(predict_type);
   
   for (unsigned int i = 1; i < n_samples; i++) {
     arma::vec theta_i = theta.col(i);
     set_theta(theta_i);
     a1 = alpha.col(i);
-    sample.slice(i) = sample_model(predict_obs);
+    sample.slice(i) = sample_model(predict_type);
   }
   
   return rep_cube(sample, counts);
 }
 
 
-arma::mat ung_ssm::sample_model(const bool simulate_obs) {
+arma::mat ung_ssm::sample_model(const unsigned int predict_type) {
   
   arma::mat alpha(m, n);
   alpha.col(0) = a1;
@@ -599,48 +600,64 @@ arma::mat ung_ssm::sample_model(const bool simulate_obs) {
       R.slice(t * Rtv) * uk;
   }
   
-  if (simulate_obs) {
+  if (predict_type < 3) {
+    
     arma::mat y(1, n);
     
     switch(distribution) {
-    case 0: {
-      y.zeros();
+    case 0: 
+      y.zeros(); 
+      break;
+    case 1: 
       for (unsigned int t = 0; t < n; t++) {
-        y(0, t) = phi * exp(0.5 * alpha(t)) * normal(engine);
+        y(0, t) = exp(xbeta(t) + D(t * Dtv) + 
+          arma::as_scalar(Z.col(t * Ztv).t() * alpha.col(t)));
       }
-    } break;
-    case 1: {
+      break;
+    case 2: 
       for (unsigned int t = 0; t < n; t++) {
-      double lambda = u(t) * exp(xbeta(t) + D(t * Dtv) + 
-        arma::as_scalar(Z.col(t * Ztv).t() * alpha.col(t)));
-      std::poisson_distribution<> poisson(lambda);
-      y(0, t) = poisson(engine);
+        double tmp = exp(xbeta(t) + D(t * Dtv) + 
+          arma::as_scalar(Z.col(t * Ztv).t() * alpha.col(t)));
+        y(0, t) = tmp / (1.0 + tmp);
+      }
+      break;
+    case 3:
+      for (unsigned int t = 0; t < n; t++) {
+        y(0, t) = exp(xbeta(t) + D(t * Dtv) + 
+          arma::as_scalar(Z.col(t * Ztv).t() * alpha.col(t)));
+      }
+      break;
+    }
+    
+    if (predict_type == 1) {
+      
+      switch(distribution) {
+      case 0:
+        break;
+      case 1:
+        for (unsigned int t = 0; t < n; t++) {
+          std::poisson_distribution<> poisson(u(t) * y(0, t));
+          y(0, t) = poisson(engine);
+        } 
+        break;
+      case 2: 
+        for (unsigned int t = 0; t < n; t++) {
+          std::binomial_distribution<> binomial(u(t), y(0, t));
+          y(0, t) = binomial(engine);
+        }
+        break;
+      case 3: 
+        for (unsigned int t = 0; t < n; t++) {
+          std::negative_binomial_distribution<> 
+          negative_binomial(phi, phi / (phi + u(t) * y(0, t)));
+          y(0, t) = negative_binomial(engine);
+        }
+        break;
+      }
     } 
-    } break;
-    case 2: {
-      for (unsigned int t = 0; t < n; t++) {
-      double tmp = exp(xbeta(t) + D(t * Dtv) + 
-        arma::as_scalar(Z.col(t * Ztv).t() * alpha.col(t)));
-      double pi = tmp / (1.0 + tmp);
-      
-      std::binomial_distribution<> binomial(u(t), pi);
-      y(0, t) = binomial(engine);
-    }
-    } break;
-    case 3: {
-      for (unsigned int t = 0; t < n; t++) {
-      double mu = u(t) * exp(xbeta(t) + D(t * Dtv) + 
-        arma::as_scalar(Z.col(t * Ztv).t() * alpha.col(t)));
-      
-      std::negative_binomial_distribution<> negative_binomial(phi, phi / (phi + mu));
-      y(0, t) = negative_binomial(engine);
-    }
-    } break;
-    }
     return y;
-  } else {
-    return alpha;
   }
+  return alpha;
 }
 
 //

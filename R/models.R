@@ -1262,7 +1262,8 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 #' @export
 nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta, 
   known_params = NA, known_tv_params = NA, n_states, n_etas, 
-  log_prior_pdf, time_varying = rep(TRUE, 4)) {
+  log_prior_pdf, time_varying = rep(TRUE, 4), 
+  state_names = paste0("state",1:n_states)) {
 
   if (is.null(dim(y))) {
     dim(y) <- c(length(y), 1)
@@ -1276,5 +1277,5 @@ nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
     log_prior_pdf = log_prior_pdf, known_params = known_params, 
     known_tv_params = known_tv_params,
     n_states = n_states, n_etas = n_etas, 
-    time_varying = time_varying), class = "nlg_ssm")
+    time_varying = time_varying, state_names = state_names), class = "nlg_ssm")
 }
