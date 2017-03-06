@@ -568,7 +568,7 @@ arma::cube ung_ssm::predict_sample(const arma::mat& theta,
   
   unsigned int n_samples = theta.n_cols;
   arma::cube sample(d, n, n_samples);
-  
+ 
   arma::vec theta_i = theta.col(0);
   set_theta(theta_i);
   a1 = alpha.col(0);
@@ -637,7 +637,11 @@ arma::mat ung_ssm::sample_model(const unsigned int predict_type) {
       case 1:
         for (unsigned int t = 0; t < n; t++) {
           std::poisson_distribution<> poisson(u(t) * y(0, t));
-          y(0, t) = poisson(engine);
+          if ((u(t) * y(0, t)) < poisson.max()) {
+            y(0, t) = poisson(engine);
+          } else {
+            y(0, t) = arma::datum::nan;
+          }
         } 
         break;
       case 2: 

@@ -6,8 +6,8 @@
 \usage{
 \method{autoplot}{predict_bssm}(object, plot_mean = TRUE,
   plot_median = TRUE, y, fit, obs_color = "black", mean_color = "red",
-  median_color = "blue", fit_color = "red", interval_color = "#000000",
-  alpha_fill = 0.25, ...)
+  median_color = "blue", fit_color = mean_color,
+  interval_color = "#000000", alpha_fill = 0.25, ...)
 }
 \arguments{
 \item{object}{Object of class \code{predict_bssm}.}

@@ -6,7 +6,7 @@
 \usage{
 nlg_ssm(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta, known_params = NA,
   known_tv_params = NA, n_states, n_etas, log_prior_pdf,
-  time_varying = rep(TRUE, 4))
+  time_varying = rep(TRUE, 4), state_names = paste0("state", 1:n_states))
 }
 \arguments{
 \item{y}{Observations as multivariate time series (or matrix) of length \eqn{n}.}
@@ -20,13 +20,13 @@ define the gradients of the corresponding model functions.}
 
 \item{theta}{Parameter vector passed to all model functions.}
 
+\item{state_names}{Names for the states.}
+
 \item{Z_fn, H_fn, T_fn, R_fn}{An external pointers for the C++ functions which 
 define the corresponding model functions.}
 
 \item{prior_pdf}{An external pointers for the C++ function which 
 computes the log-prior density given theta.}
-
-\item{state_names}{Names for the states.}
 }
 \value{
 Object of class \code{gssm}.

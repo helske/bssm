@@ -128,7 +128,7 @@ Instead of EKF-based analysis, we can perform full Bayesian inference on the Lot
 ```{r mcmc}
 library(diagis)
 
-out_psi <- run_mcmc(model, n_iter = 2e4, nsim_states = 10, max_iter=0, method = "pm",
+out_psi <- run_mcmc(model, n_iter = 1e4, nsim_states = 10, max_iter=0, method = "pm",
   simulation_method = "psi", initial_mode = out_smoother, delayed_acceptance = FALSE)
 out_psi$acceptance
 
@@ -145,10 +145,10 @@ Let's make some predictions based on our MCMC run:
 ```{r pred}
 future_model <- model
 future_model$y <- ts(rep(NA, 100), start = end(model$y))
-out_pred <- predict(out_psi, future_model)
-ts.plot(model$y, ts(cbind(rowMeans(out_pred[1,,]), 
-  t(apply(out_pred[1,,], 1, quantile, prob = c(0.05, 0.95)))), 
-  start = end(model$y)), col = c(1, 2, 3,3))
+out_pred <- predict(out_psi, future_model, type = "mean")
+
+autoplot(out_pred, y = model$y, plot_median = FALSE)
+
 ```
 ## Appendix
 
