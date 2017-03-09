@@ -5,6 +5,7 @@
 #include "conditional_dist.h"
 #include "function_pointers.h"
 #include "rep_mat.h"
+#include "psd_chol.h"
 
 nlg_ssm::nlg_ssm(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, 
   SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_,
@@ -1026,3 +1027,207 @@ arma::mat nlg_ssm::sample_model(const arma::vec& a1_sim,
   return alpha;
   
 }
+
+// Unscented Kalman filter, Särkkä (2013) p.107 (UKF) and
+// Note that the initial distribution is given for alpha_1
+// so we first do update instead of prediction
+double nlg_ssm::ukf(arma::mat& at, arma::mat& att, arma::cube& Pt, 
+  arma::cube& Ptt, const double alpha, const double beta, const double kappa) const {
+
+  // // Parameters of UKF, currently fixed for simplicity
+  // double alpha = 1.0;
+  // double beta = 0.0;
+  // double kappa = 4.0;
+  
+  const double LOG2PI = std::log(2.0 * M_PI);
+  double logLik = 0.0;
+  
+  double lambda = alpha * alpha * (m + kappa) - m;
+  
+  unsigned int n_sigma = 2 * m + 1;
+  arma::vec wm(n_sigma);
+  wm(0) = lambda / (lambda + m);
+  wm.subvec(1, n_sigma - 1).fill(1.0 / (2.0 * (lambda + m)));
+  arma::vec wc = wm;
+  wc(0) +=  1.0 - alpha * alpha + beta;
+  
+  
+  double sqrt_m_lambda = sqrt(m + lambda);
+
+  at.col(0) = a1_fn.eval(theta, known_params);
+  Pt.slice(0) = P1_fn.eval(theta, known_params);
+  
+  for (unsigned int t = 0; t < n; t++) {
+    // update step
+    
+    // compute cholesky of Pt
+    arma::mat cholP(m, m);
+    cholP = psd_chol(Pt.slice(t));
+    
+    // form the sigma points
+    arma::mat sigma(m, n_sigma);
+    sigma.col(0) = at.col(t);
+    for (unsigned int i = 1; i <= m; i++) {
+      sigma.col(i) = at.col(t) + sqrt_m_lambda * cholP.col(i - 1);
+      sigma.col(i + m) = at.col(t) - sqrt_m_lambda * cholP.col(i - 1);
+    }
+    
+    arma::uvec obs_y = arma::find_finite(y.col(t));
+    
+    if (obs_y.n_elem > 0) {
+      
+      // propagate sigma points
+      arma::mat sigma_y(obs_y.n_elem, n_sigma);
+      for (unsigned int i = 0; i < n_sigma; i++) {
+        sigma_y.col(i) = Z_fn.eval(t, sigma.col(i), theta, known_params, known_tv_params).rows(obs_y);
+      }
+      arma::vec pred_mean = sigma_y * wm;
+      arma::mat pred_var = H_fn.eval(t, at.col(t), theta, known_params, known_tv_params).submat(obs_y, obs_y);
+      arma::mat pred_cov(m, obs_y.n_elem, arma::fill::zeros);
+      for (unsigned int i = 0; i < n_sigma; i++) {
+        arma::vec tmp = sigma_y.col(i) - pred_mean;
+        pred_var += wc(i) * tmp * tmp.t();
+        pred_cov += wc(i) * (sigma.col(i) - at.col(t)) * tmp.t();
+      }
+      // filtered estimates
+      arma::vec v = arma::mat(y.rows(obs_y)).col(t) - pred_mean;
+      arma::mat K = arma::solve(pred_var, pred_cov.t()).t();
+      att.col(t) = at.col(t) + K * v;
+      Ptt.slice(t) = Pt.slice(t) - K * pred_var * K.t();
+    
+      arma::mat cholF = arma::chol(pred_var);
+      arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
+      arma::vec Fv = inv_cholF * v; 
+      logLik -= 0.5 * arma::as_scalar(obs_y.n_elem * LOG2PI + 
+        2.0 * arma::sum(log(arma::diagvec(cholF))) + Fv.t() * Fv);
+    } else {
+      att.col(t) = at.col(t);
+      Ptt.slice(t) = Pt.slice(t);
+    }
+    
+    // prediction
+    // compute cholesky of Ptt
+    arma::mat cholPtt = psd_chol(Ptt.slice(t));
+    
+    // form the sigma points and propagate
+    sigma.col(0) = T_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+    for (unsigned int i = 1; i <= m; i++) {
+      sigma.col(i) = T_fn.eval(t, att.col(t) + sqrt_m_lambda * cholPtt.col(i - 1), 
+        theta, known_params, known_tv_params);
+      sigma.col(i + m) = T_fn.eval(t, att.col(t) - sqrt_m_lambda * cholPtt.col(i - 1), 
+        theta, known_params, known_tv_params);
+    }
+    
+    at.col(t + 1) = sigma * wm;
+    
+    arma::mat Rt = R_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+    Pt.slice(t + 1) = Rt * Rt.t();
+    for (unsigned int i = 0; i < n_sigma; i++) {
+      arma::vec tmp = sigma.col(i) - at.col(t + 1);
+      Pt.slice(t + 1) += wc(i) * tmp * tmp.t();
+    }
+  }
+  return logLik;
+}
+
+// 
+// // Unscented Kalman smoother, Särkkä (2013) p.107 (UKF) and
+// // Note that the initial distribution is given for alpha_1
+// // so we first do update instead of prediction
+// double nlg_ssm::ukf_smoother(arma::mat& at, arma::cube& Pt) const {
+//   
+//   // Parameters of UKF, currently fixed for simplicity
+//   double alpha = 1.0;
+//   double beta = 0.0;
+//   double kappa = 2.0;
+//   
+//   const double LOG2PI = std::log(2.0 * M_PI);
+//   double logLik = 0.0;
+//   
+//   double lambda = alpha * alpha * (m + kappa) - m;
+//   
+//   unsigned int n_sigma = 2 * m + 1;
+//   arma::vec wm(n_sigma);
+//   wm(0) = lambda / (lambda + m);
+//   wm.subvec(1, n_sigma - 1).fill(1.0 / (2.0 * (lambda + m)));
+//   arma::vec wc = wm;
+//   wc(0) +=  1.0 - alpha * alpha + beta;
+//   
+//   
+//   double sqrt_m_lambda = sqrt(m + lambda);
+//   arma::cube cholP(m, m, n);
+//   
+//   at.col(0) = a1_fn.eval(theta, known_params);
+//   Pt.slice(0) = P1_fn.eval(theta, known_params);
+//   
+//   for (unsigned int t = 0; t < n; t++) {
+//     // update step
+//     
+//     // compute cholesky of Pt
+//     cholP.slice(t) = psd_chol(Pt.slice(t));
+//     
+//     // form the sigma points
+//     arma::mat sigma(m, n_sigma);
+//     sigma.col(0) = at.col(t);
+//     for (unsigned int i = 1; i <= m; i++) {
+//       sigma.col(i) = at.col(t) + sqrt_m_lambda * cholP.slice(t).col(i - 1);
+//       sigma.col(i + m) = at.col(t) - sqrt_m_lambda * cholP.slice(t).col(i - 1);
+//     }
+//     
+//     arma::uvec obs_y = arma::find_finite(y.col(t));
+//     
+//     if (obs_y.n_elem > 0) {
+//       
+//       // propagate sigma points
+//       arma::mat sigma_y(obs_y.n_elem, n_sigma);
+//       for (unsigned int i = 0; i < n_sigma; i++) {
+//         sigma_y.col(i) = Z_fn.eval(t, sigma.col(i), theta, known_params, known_tv_params).rows(obs_y);
+//       }
+//       arma::vec pred_mean = sigma_y * wm;
+//       arma::mat pred_var = H_fn.eval(t, at.col(t), theta, known_params, known_tv_params).submat(obs_y, obs_y);
+//       arma::mat pred_cov(m, obs_y.n_elem, arma::fill::zeros);
+//       for (unsigned int i = 0; i < n_sigma; i++) {
+//         arma::vec tmp = sigma_y.col(i) - pred_mean;
+//         pred_var += wc(i) * tmp * tmp.t();
+//         pred_cov += wc(i) * (sigma.col(i) - at.col(t)) * tmp.t();
+//       }
+//       // filtered estimates
+//       arma::vec v = arma::mat(y.rows(obs_y)).col(t) - pred_mean;
+//       arma::mat K = arma::solve(pred_var, pred_cov.t()).t();
+//       att.col(t) = at.col(t) + K * v;
+//       Ptt.slice(t) = Pt.slice(t) - K * pred_var * K.t();
+//       
+//       arma::mat cholF = arma::chol(pred_var);
+//       arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
+//       arma::vec Fv = inv_cholF * v; 
+//       logLik -= 0.5 * arma::as_scalar(obs_y.n_elem * LOG2PI + 
+//         2.0 * arma::sum(log(arma::diagvec(cholF))) + Fv.t() * Fv);
+//     } else {
+//       att.col(t) = at.col(t);
+//       Ptt.slice(t) = Pt.slice(t);
+//     }
+//     
+//     // prediction
+//     // compute cholesky of Ptt
+//     arma::mat cholPtt = psd_chol(Ptt.slice(t));
+//     
+//     // form the sigma points and propagate
+//     sigma.col(0) = T_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+//     for (unsigned int i = 1; i <= m; i++) {
+//       sigma.col(i) = T_fn.eval(t, att.col(t) + sqrt_m_lambda * cholPtt.col(i - 1), 
+//         theta, known_params, known_tv_params);
+//       sigma.col(i + m) = T_fn.eval(t, att.col(t) - sqrt_m_lambda * cholPtt.col(i - 1), 
+//         theta, known_params, known_tv_params);
+//     }
+//     
+//     at.col(t + 1) = sigma * wm;
+//     
+//     arma::mat Rt = R_fn.eval(t, att.col(t), theta, known_params, known_tv_params);
+//     Pt.slice(t + 1) = Rt * Rt.t();
+//     for (unsigned int i = 0; i < n_sigma; i++) {
+//       arma::vec tmp = sigma.col(i) - at.col(t + 1);
+//       Pt.slice(t + 1) += wc(i) * tmp * tmp.t();
+//     }
+//   }
+//   return logLik;
+// }

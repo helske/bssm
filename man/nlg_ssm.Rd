@@ -5,8 +5,9 @@
 \title{General multivariate nonlinear Gaussian state space models}
 \usage{
 nlg_ssm(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta, known_params = NA,
-  known_tv_params = NA, n_states, n_etas, log_prior_pdf,
-  time_varying = rep(TRUE, 4), state_names = paste0("state", 1:n_states))
+  known_tv_params = matrix(NA), n_states, n_etas, log_prior_pdf,
+  time_varying = rep(TRUE, 4), state_varying = rep(TRUE, 2),
+  state_names = paste0("state", 1:n_states))
 }
 \arguments{
 \item{y}{Observations as multivariate time series (or matrix) of length \eqn{n}.}

@@ -58,6 +58,9 @@ public:
     const arma::uvec& counts, const unsigned int predict_type);
   arma::mat sample_model(const arma::vec& a1_sim, const unsigned int predict_type);
   
+  double ukf(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& Ptt, 
+    const double alpha = 1.0, const double beta = 0.0, const double kappa = 2.0) const;
+  
   arma::mat y;
   // nonlinear functions of 
   // y_t = Z(alpha_t, theta_t) + H(alpha_t, theta_t)*eps_t, 

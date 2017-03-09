@@ -7,13 +7,14 @@
 using namespace Rcpp;
 
 // conditional_cov
-void conditional_cov(arma::cube& Vt, arma::cube& Ct);
-RcppExport SEXP bssm_conditional_cov(SEXP VtSEXP, SEXP CtSEXP) {
+void conditional_cov(arma::cube& Vt, arma::cube& Ct, const bool use_svd);
+RcppExport SEXP bssm_conditional_cov(SEXP VtSEXP, SEXP CtSEXP, SEXP use_svdSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::cube& >::type Vt(VtSEXP);
     Rcpp::traits::input_parameter< arma::cube& >::type Ct(CtSEXP);
-    conditional_cov(Vt, Ct);
+    Rcpp::traits::input_parameter< const bool >::type use_svd(use_svdSEXP);
+    conditional_cov(Vt, Ct, use_svd);
     return R_NilValue;
 END_RCPP
 }
@@ -57,6 +58,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::uvec& >::type nonzero(nonzeroSEXP);
     Rcpp::traits::input_parameter< const double >::type constant(constantSEXP);
     rcpp_result_gen = Rcpp::wrap(fast_dmvnorm(x, mean, Linv, nonzero, constant));
+    return rcpp_result_gen;
+END_RCPP
+}
+// psd_chol
+arma::mat psd_chol(const arma::mat& x);
+RcppExport SEXP bssm_psd_chol(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(psd_chol(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -697,6 +709,36 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< const int >::type model_type(model_typeSEXP);
     rcpp_result_gen = Rcpp::wrap(gaussian_sim_smoother(model_, nsim, use_antithetic, seed, model_type));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ukf_nlg
+Rcpp::List ukf_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, const arma::mat& known_tv_params, const unsigned int n_states, const unsigned int n_etas, const arma::uvec& time_varying, const arma::uvec& state_varying, const double alpha, const double beta, const double kappa);
+RcppExport SEXP bssm_ukf_nlg(SEXP ySEXP, SEXP Z_fn_SEXP, SEXP H_fn_SEXP, SEXP T_fn_SEXP, SEXP R_fn_SEXP, SEXP Z_gn_SEXP, SEXP T_gn_SEXP, SEXP a1_fn_SEXP, SEXP P1_fn_SEXP, SEXP thetaSEXP, SEXP log_prior_pdf_SEXP, SEXP known_paramsSEXP, SEXP known_tv_paramsSEXP, SEXP n_statesSEXP, SEXP n_etasSEXP, SEXP time_varyingSEXP, SEXP state_varyingSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP kappaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< SEXP >::type Z_fn_(Z_fn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type H_fn_(H_fn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type T_fn_(T_fn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type R_fn_(R_fn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type Z_gn_(Z_gn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type T_gn_(T_gn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type a1_fn_(a1_fn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type P1_fn_(P1_fn_SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type log_prior_pdf_(log_prior_pdf_SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type known_params(known_paramsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type known_tv_params(known_tv_paramsSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type n_states(n_statesSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type n_etas(n_etasSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type time_varying(time_varyingSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type state_varying(state_varyingSEXP);
+    Rcpp::traits::input_parameter< const double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const double >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type kappa(kappaSEXP);
+    rcpp_result_gen = Rcpp::wrap(ukf_nlg(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, time_varying, state_varying, alpha, beta, kappa));
     return rcpp_result_gen;
 END_RCPP
 }
