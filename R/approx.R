@@ -69,7 +69,8 @@ gaussian_approx.nlg_ssm <- function(object, max_iter = 100, conv_tol = 1e-8, ...
     object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
     object$theta, object$log_prior_pdf, object$known_params, 
     object$known_tv_params, object$n_states, object$n_etas,
-    as.integer(object$time_varying), t(object$initial_mode), max_iter, conv_tol)
+    as.integer(object$time_varying), as.integer(object$state_varying), 
+    t(object$initial_mode), max_iter, conv_tol)
   
   mv_gssm(y = t(out$y), Z = out$Z, H = out$H, T = out$T, R = out$R, a1 = c(out$a1), 
     P1 = out$P1, obs_intercept = out$D, state_intercept = out$C)

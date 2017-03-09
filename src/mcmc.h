@@ -1,7 +1,7 @@
 #ifndef MCMC_H
 #define MCMC_H
 
-#include <RcppArmadillo.h>
+#include "bssm.h"
 
 class nlg_ssm;
 

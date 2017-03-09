@@ -4,7 +4,7 @@
 #ifndef MNN_ABC_H
 #define MNN_ABC_H
 
-#include <RcppArmadillo.h>
+#include "bssm.h"
 #include "mgg_ssm.h"
 
 class mnn_abc {

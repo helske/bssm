@@ -1,4 +1,4 @@
-#include <RcppArmadillo.h>
+#include "bssm.h">
 
 arma::mat rep_mat(const arma::mat& x, const arma::uvec& counts) {
   arma::mat new_mat(x.n_rows, sum(counts));

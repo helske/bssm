@@ -8,7 +8,7 @@
 
 // [[Rcpp::export]]
 double gaussian_loglik(const Rcpp::List& model_, const int model_type) {
-  
+
   double loglik = 0;
   switch (model_type) {
   case -1: {

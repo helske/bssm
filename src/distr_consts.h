@@ -4,7 +4,7 @@
 #ifndef CONST_H
 #define CONST_H
 
-#include <RcppArmadillo.h>
+#include "bssm.h"
 #include "ugg_ssm.h"
 #include "ung_ssm.h"
 #include "nlg_ssm.h"

@@ -1,7 +1,7 @@
 #include <boost/function.hpp>
 #include <boost/math/distributions/normal.hpp>
 #include <boost/math/tools/roots.hpp>
-#include <RcppArmadillo.h>
+#include "bssm.h"
 
 struct objective_gaussian {
   objective_gaussian(const arma::vec& means, const arma::vec& sds, double prob) : 

@@ -2,7 +2,7 @@
 #ifndef UGG_SSM_H
 #define UGG_SSM_H
 
-#include <RcppArmadillo.h>
+#include "bssm.h"
 #include "gg_abc.h"
 
 class ugg_ssm : public gg_abc {

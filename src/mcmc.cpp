@@ -784,7 +784,7 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
 void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int nsim_states, 
   const bool local_approx, const arma::mat& initial_mode, const unsigned int max_iter, 
   const double conv_tol) {
-  
+
   unsigned int m = model.m;
   unsigned n = model.n;
   // compute the log[p(theta)]

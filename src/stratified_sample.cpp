@@ -1,6 +1,6 @@
 // stratified sampling of indices from 0 to length(p)
 // modified to armadillo compatible from C code by Matti Vihola
-#include <RcppArmadillo.h>
+#include "bssm.h"
 
 // p is the target distribution
 // r are random number from U(0,1)

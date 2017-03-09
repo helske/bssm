@@ -45,6 +45,50 @@ Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
 
 
 // [[Rcpp::export]]
+Rcpp::List gaussian_ccov_smoother(const Rcpp::List& model_, const int model_type) {
+  
+  arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
+  unsigned int m = a1.n_elem;
+  unsigned int n;
+  
+  if(model_type > 0) {
+    arma::vec y = Rcpp::as<arma::vec>(model_["y"]);
+    n = y.n_elem;
+  } else {
+    arma::vec y = Rcpp::as<arma::mat>(model_["y"]);
+    n = y.n_rows;
+  }
+  
+  arma::mat alphahat(m, n);
+  arma::cube Vt(m, m, n);
+  arma::cube Ct(m, m, n);
+  switch (model_type) {
+  case -1: {
+    mgg_ssm model(clone(model_), 1);
+    Rcpp::Rcout<<"not yet"<<std::endl;
+    // model.smoother(alphahat, Vt);
+  } break;
+  case 1: {
+    ugg_ssm model(clone(model_), 1);
+    model.smoother_ccov(alphahat, Vt, Ct);
+  } break;
+  case 2: {
+    ugg_bsm model(clone(model_), 1);
+    model.smoother_ccov(alphahat, Vt, Ct);
+  } break;
+  }
+  
+  arma::inplace_trans(alphahat);
+  
+  return Rcpp::List::create(
+    Rcpp::Named("alphahat") = alphahat,
+    Rcpp::Named("Vt") = Vt,
+    Rcpp::Named("Ct") = Ct);
+}
+
+
+
+// [[Rcpp::export]]
 arma::mat gaussian_fast_smoother(const Rcpp::List& model_, const int model_type) {
   
   switch (model_type) {

@@ -3,7 +3,7 @@
 #ifndef NLG_SSM_H
 #define NLG_SSM_H
 
-#include <RcppArmadillo.h>
+#include "bssm.h"
 #include "mgg_ssm.h"
 #include "function_pointers.h"
 
@@ -16,7 +16,8 @@ public:
     SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_,
     const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
     const arma::mat& known_tv_params, const unsigned int m, const unsigned int k,
-    const arma::uvec& time_varying, const unsigned int seed);
+    const arma::uvec& time_varying, const arma::uvec& state_varying, 
+    const unsigned int seed);
   
   // find the approximating Gaussian model
   mgg_ssm approximate(arma::mat& mode_estimate, const unsigned int max_iter, 
@@ -91,6 +92,8 @@ public:
   const unsigned int Tgtv;
   const unsigned int Htv;
   const unsigned int Rtv;
+  const unsigned int Hsv;
+  const unsigned int Rsv;
   
   unsigned int seed;
   std::mt19937 engine;

@@ -4,7 +4,7 @@
 #ifndef UNN_ABC_H
 #define UNN_ABC_H
 
-#include <RcppArmadillo.h>
+#include "bssm.h"
 #include "ugg_ssm.h"
 
 class unn_abc {

@@ -1,7 +1,7 @@
 #ifndef UNG_AMCMC_H
 #define UNG_AMCMC_H
 
-#include <RcppArmadillo.h>
+#include "bssm.h"
 #include "mcmc.h"
 
 class ung_amcmc: public mcmc {

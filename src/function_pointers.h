@@ -1,7 +1,7 @@
 #ifndef FN_PNTR_H
 #define FN_PNTR_H
 
-#include <RcppArmadillo.h>
+#include "bssm.h"
 
 // typedef for a pointer of nonlinear function of model equation returning vec
 typedef arma::vec (*vec_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 

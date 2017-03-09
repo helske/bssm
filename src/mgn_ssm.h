@@ -5,7 +5,7 @@
 #define MGN_SSM_H
 
 #include "mnn_abc.h"
-#include <RcppArmadillo.h>
+#include "bssm.h"
 
 class mgg_ssm;
 

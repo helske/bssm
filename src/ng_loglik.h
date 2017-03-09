@@ -1,7 +1,7 @@
 #ifndef NG_LOGLIK_H
 #define NG_LOGLIK_H
 
-#include <RcppArmadillo.h>
+#include "bssm.h"
 #include "ung_ssm.h"
 #include "ung_bsm.h"
 #include "ung_svm.h"

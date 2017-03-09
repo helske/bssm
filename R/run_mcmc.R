@@ -464,7 +464,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   method = "pm", simulation_method = "psi", const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  local_approx  = TRUE, n_threads = 1, initial_mode,
+  local_approx  = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100, 
   conv_tol = 1e-8, ...) {
   
@@ -485,7 +485,9 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
   }
-  
+  if (method != "ekf") {
+    initial_mode <-  ekf_smoother(object)
+  }
   out <-  switch(type,
     full = {
       if (method == "pm"){
@@ -494,6 +496,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
             object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
             object$theta, object$log_prior_pdf, object$known_params, 
             object$known_tv_params, as.integer(object$time_varying), 
+            as.integer(object$state_varying),
             object$n_states, object$n_etas, seed, 
             nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
             end_adaptive_phase, n_threads, local_approx, t(initial_mode), 
@@ -503,7 +506,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
             object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
             object$theta, object$log_prior_pdf, object$known_params, 
             object$known_tv_params, as.integer(object$time_varying), 
-            object$n_states, object$n_etas, seed, 
+            as.integer(object$state_varying), object$n_states, object$n_etas, seed, 
             nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
             end_adaptive_phase, n_threads, local_approx, t(initial_mode), 
             max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")))
@@ -514,7 +517,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
             object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
             object$theta, object$log_prior_pdf, object$known_params, 
             object$known_tv_params, as.integer(object$time_varying), 
-            object$n_states, object$n_etas, seed, 
+            as.integer(object$state_varying), object$n_states, object$n_etas, seed, 
             nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
             end_adaptive_phase, max_iter, conv_tol)
         } else {

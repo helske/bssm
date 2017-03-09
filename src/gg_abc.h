@@ -2,7 +2,7 @@
 #ifndef GG_ABC_H
 #define GG_ABC_H
 
-#include <RcppArmadillo.h>
+#include "bssm.h"
 
 class gg_abc {
   

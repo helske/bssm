@@ -5,7 +5,7 @@
 #define UNG_SSM_H
 
 #include "unn_abc.h"
-#include <RcppArmadillo.h>
+#include "bssm.h"
 
 class ugg_ssm;
 

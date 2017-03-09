@@ -1,7 +1,7 @@
 // constants (independent of states) parts of distributions
 // use same notation as in bssm models expect norm/svm
 
-#include <RcppArmadillo.h>
+#include "bssm.h"
 #include "distr_consts.h"
 
 double norm_log_const(double sd) {

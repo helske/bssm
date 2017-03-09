@@ -2,7 +2,7 @@
 #ifndef MGG_H
 #define MGG_H
 
-#include <RcppArmadillo.h>
+#include "bssm.h"
 #include "gg_abc.h"
 
 class mgg_ssm : public gg_abc {

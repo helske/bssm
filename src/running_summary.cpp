@@ -1,4 +1,4 @@
-#include <RcppArmadillo.h>
+#include "bssm.h"
 
 void running_summary(const arma::mat& x, arma::mat& mean_x, arma::cube& cov_x,
   unsigned int n) {
