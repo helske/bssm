@@ -530,8 +530,6 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' @param mu Prior for mu parameter of transition equation. 
 #' Ignored if \code{sigma} is provided.
 #' @param sd_ar Prior for the standard deviation of noise of the AR-process.
-#' @param beta Prior for the regression coefficients.
-#' @param xreg Matrix containing covariates.
 #' @return Object of class \code{svm} or \code{svm2}.
 #' @export
 #' @rdname svm
@@ -550,45 +548,18 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' model <- svm(exchange, rho = uniform(pars[1],-0.999,0.999), 
 #'   sd_ar = halfnormal(pars[2],sd=5), 
 #'   sigma = halfnormal(pars[3],sd=2))
-svm <- function(y, rho, sd_ar, sigma, mu, beta, xreg = NULL) {
+svm <- function(y, rho, sd_ar, sigma, mu) {
   
   if(!missing(sigma) && !missing(mu)) {
     stop("Define either sigma or mu, but not both.")
   }
   
   check_y(y)
-  n <- length(y)
   
-  if (is.null(xreg)) {
-    xreg <- matrix(0, 0, 0)
-    coefs <- numeric(0)
-    beta <- NULL
-  } else {
-    
-    if (missing(beta)) {
-      stop("No prior defined for beta. ")
-    }
-    if(!is_prior(beta) && !is_prior_list(beta)) {
-      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
-    }
-    
-    if (is.null(dim(xreg)) && length(xreg) == n) {
-      xreg <- matrix(xreg, n, 1)
-    }
-    
-    check_xreg(xreg, n)
-    if((nx <- ncol(xreg)) > 1) {
-      coefs <- sapply(beta, "[[", "init")
-    } else {
-      coefs <- beta$init
-    }
-    check_beta(coefs, nx)
-    if (is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
-    }
-    names(coefs) <- colnames(xreg)
-    
-  }
+  xreg <- matrix(0, 0, 0)
+  coefs <- numeric(0)
+  beta <- NULL
+  
   
   check_rho(rho$init)
   check_sd(sd_ar$init, "rho")
@@ -1219,7 +1190,7 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
     obs_intercept <- matrix(0, p, 1)
   }
   if (!missing(state_intercept)) {
-   check_state_intercept(state_intercept, m, n)
+    check_state_intercept(state_intercept, m, n)
   } else {
     state_intercept <- matrix(0, m, 1)
   }
@@ -1255,7 +1226,7 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param theta Parameter vector passed to all model functions.
-#' @param prior_pdf An external pointers for the C++ function which 
+#' @param prior_pdf An external pointer for the C++ function which 
 #' computes the log-prior density given theta.
 #' @param state_names Names for the states.
 #' @return Object of class \code{gssm}.
@@ -1264,11 +1235,11 @@ nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
   known_params = NA, known_tv_params = matrix(NA), n_states, n_etas, 
   log_prior_pdf, time_varying = rep(TRUE, 4), state_varying = rep(TRUE, 2),
   state_names = paste0("state",1:n_states)) {
-
+  
   if (is.null(dim(y))) {
     dim(y) <- c(length(y), 1)
   }
- 
+  
   if(missing(n_etas)) {
     n_etas <- n_states
   }
