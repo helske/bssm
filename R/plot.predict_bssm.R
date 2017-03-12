@@ -38,7 +38,8 @@ autoplot.predict_bssm <- function(object, plot_mean = TRUE,
   p <- ggplot(tail(d, n_mean), aes(time, mean)) +
     # geom_line(colour = mean_color) +
     scale_x_continuous(limits = range(times)) +
-    scale_y_continuous(limits = range(d[,-1], na.rm = TRUE))
+    scale_y_continuous()
+    #scale_y_continuous(limits = range(d[,-1], na.rm = TRUE))
   intv <- names(d)[-(1:(1 + plot_y + plot_fit + plot_mean))]
   
   n_intvs <- floor(length(intv)/2)
