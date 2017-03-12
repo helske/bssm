@@ -11,7 +11,7 @@ Rcpp::List ekf_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
     time_varying, state_varying, 1);
-
+  
   arma::mat at(model.m, model.n + 1);
   arma::mat att(model.m, model.n);
   arma::cube Pt(model.m, model.m, model.n + 1);
@@ -31,7 +31,7 @@ Rcpp::List ekf_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
 }
 
 // [[Rcpp::export]]
-arma::mat ekf_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 
+Rcpp::List ekf_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 
   SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, 
   const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
   const arma::mat& known_tv_params, const unsigned int n_states, 
@@ -43,13 +43,34 @@ arma::mat ekf_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     time_varying, state_varying, 1);
   
   arma::mat alphahat(model.m, model.n);
-  double loglik = model.ekf_smoother(alphahat);
-  
+  arma::cube Vt(model.m, model.m, model.n);
+  double loglik = model.ekf_smoother(alphahat, Vt);
   arma::inplace_trans(alphahat);
   
-  return alphahat;
+  return Rcpp::List::create(Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") = Vt,
+    Rcpp::Named("logLik") = loglik);
 }
 
+
+// [[Rcpp::export]]
+Rcpp::List ekf_fast_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 
+  SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, 
+  const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
+  const arma::mat& known_tv_params, const unsigned int n_states, 
+  const unsigned int n_etas,  const arma::uvec& time_varying, 
+  const arma::uvec& state_varying) {
+  
+  nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
+    theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
+    time_varying, state_varying, 1);
+  
+  arma::mat alphahat(model.m, model.n);
+  double loglik = model.ekf_fast_smoother(alphahat);
+  arma::inplace_trans(alphahat);
+  
+  return Rcpp::List::create(Rcpp::Named("alphahat") = alphahat,
+    Rcpp::Named("logLik") = loglik);
+}
 // [[Rcpp::export]]
 arma::mat iekf_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 
   SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, 
@@ -63,9 +84,9 @@ arma::mat iekf_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     time_varying, state_varying, 1);
   
   arma::mat alphahat(model.m, model.n);
+  arma::cube Vt(model.m, model.m, model.n);
+  double loglik = model.ekf_smoother(alphahat, Vt);
   
-  double loglik = model.ekf_smoother(alphahat);
- 
   unsigned int i = 0;
   double diff = conv_tol + 1.0; 
   while(i < max_iter && diff > conv_tol) {
@@ -81,6 +102,3 @@ arma::mat iekf_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   
   return alphahat;
 }
-
-
-

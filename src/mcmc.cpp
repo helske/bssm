@@ -784,7 +784,7 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
 void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int nsim_states, 
   const bool local_approx, const arma::mat& initial_mode, const unsigned int max_iter, 
   const double conv_tol) {
-
+  
   unsigned int m = model.m;
   unsigned n = model.n;
   // compute the log[p(theta)]
@@ -1145,14 +1145,14 @@ void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram,
   double logprior = model.log_prior_pdf.eval(model.theta);
   
   arma::mat alphahat(m, n);
-  double loglik = model.ekf_smoother(alphahat);
+  double loglik = model.ekf_fast_smoother(alphahat);
   
   unsigned int iekf_iter = 0;
   double diff = conv_tol + 1.0; 
   while(iekf_iter < max_iter && diff > conv_tol) {
     iekf_iter++;
     // compute new guess of mode by EKF
-    arma::mat alphahat_new(model.m, model.n);
+    arma::mat alphahat_new(m, n);
     double loglik_new  = model.iekf_smoother(alphahat, alphahat_new);
     diff = std::abs(loglik_new - loglik) / (0.1 + loglik_new);
     alphahat = alphahat_new;
@@ -1186,7 +1186,7 @@ void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram,
       model.theta = theta_prop;
       
       arma::mat alphahat_prop(m, n);
-      double loglik_prop = model.ekf_smoother(alphahat_prop);
+      double loglik_prop = model.ekf_fast_smoother(alphahat_prop);
       
       iekf_iter = 0;
       diff = conv_tol + 1.0; 
@@ -1239,5 +1239,3 @@ void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram,
   trim_storage();
   acceptance_rate /= (n_iter - n_burnin);
 }
-
-

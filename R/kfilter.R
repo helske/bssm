@@ -100,6 +100,19 @@ ekf_smoother <- function(object) {
   
 }
 
+
+#' @export
+ekf_fast_smoother <- function(object) {
+  
+  ekf_fast_smoother_nlg(t(object$y), object$Z, object$H, object$T, 
+    object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
+    object$theta, object$log_prior_pdf, object$known_params, 
+    object$known_tv_params, object$n_states, object$n_etas, 
+    as.integer(object$time_varying), as.integer(object$state_varying))
+  
+}
+
+
 #' @export
 iekf_smoother <- function(object, max_iter = 100, conv_tol = 1e-8) {
   

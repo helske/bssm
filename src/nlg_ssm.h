@@ -51,7 +51,9 @@ public:
   
   double ekf_loglik() const;
   
-  double ekf_smoother(arma::mat& alphahat) const;
+  //double ekf_smoother(arma::mat& alphahat) const;
+  double ekf_smoother(arma::mat& att, arma::cube& Ptt) const;
+  double ekf_fast_smoother(arma::mat& at) const;
   double iekf_smoother(const arma::mat& alphahat,arma::mat& alphahat_new) const;
   
   arma::cube predict_sample(const arma::mat& thetasim, const arma::mat& alpha, 
