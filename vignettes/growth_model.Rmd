@@ -117,8 +117,8 @@ Let's first run Extended Kalman filter and smoother (note that currently we use 
 out_filter <- ekf(model)
 out_smoother <- ekf_smoother(model)
 
-ts.plot(cbind(y, out_filter$att[,2], out_smoother[,2]), col = 1:3)
-ts.plot(cbind(out_filter$att[,1], out_smoother[,1]), col = 1:2)
+ts.plot(cbind(y, out_filter$att[,2], out_smoother$alphahat[,2]), col = 1:3)
+ts.plot(cbind(out_filter$att[,1], out_smoother$alphahat[,1]), col = 1:2)
 ```
 
 ## Markov chain Monte Carlo
@@ -129,7 +129,7 @@ Instead of EKF-based analysis, we can perform full Bayesian inference on the Lot
 library(diagis)
 
 out_psi <- run_mcmc(model, n_iter = 1e4, nsim_states = 10, max_iter=0, method = "pm",
-  simulation_method = "psi", initial_mode = out_smoother, delayed_acceptance = FALSE)
+  simulation_method = "psi", delayed_acceptance = FALSE)
 out_psi$acceptance
 
 ts.plot(cbind(y, p, weighted_mean(t(out_psi$alpha[,2,]), out_psi$counts)), col = 1:3)
