@@ -148,7 +148,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-
     c(c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind],
       colnames(object$xreg))
-
+  
   out$call <- match.call()
   out$seed <- seed
   out$n_iter <- n_iter
@@ -320,11 +320,11 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
             max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")), 
             model_type = 2L, 0, 0, 0)
         } else {
-        out <- nongaussian_pm_mcmc(object, priors$prior_types, priors$params, 
-          nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode, 
-          max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")), 
-          model_type = 2L, 0, 0, 0)
+          out <- nongaussian_pm_mcmc(object, priors$prior_types, priors$params, 
+            nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+            seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode, 
+            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")), 
+            model_type = 2L, 0, 0, 0)
         }
       } else {
         out <- nongaussian_is_mcmc(object, priors$prior_types, priors$params, 
@@ -441,7 +441,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <-
     c(names(object$priors), names(object$coefs))
-
+  
   out$n_iter <- n_iter
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
@@ -486,7 +486,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
     S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
   }
   if (method != "ekf") {
-    initial_mode <-  ekf_smoother(object)
+    initial_mode <-  ekf_smoother(object)$alphahat
   }
   out <-  switch(type,
     full = {
@@ -521,11 +521,11 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
             nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
             end_adaptive_phase, max_iter, conv_tol)
         } else {
-        out <- nongaussian_is_mcmc(object, priors$prior_types, priors$params, 
-          nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode, 
-          max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")), const_m, 
-          model_type = 2L, 0, 0, 0)
+          out <- nongaussian_is_mcmc(object, priors$prior_types, priors$params, 
+            nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+            seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode, 
+            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")), const_m, 
+            model_type = 2L, 0, 0, 0)
         }
       }
       

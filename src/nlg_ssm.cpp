@@ -75,7 +75,7 @@ mgg_ssm nlg_ssm::approximate(arma::mat& mode_estimate, const unsigned int max_it
 void nlg_ssm::approximate(mgg_ssm& approx_model, arma::mat& mode_estimate,
   const unsigned int max_iter, const double conv_tol) const {
   
-  double loglik = ekf_smoother(mode_estimate);
+  double loglik = ekf_fast_smoother(mode_estimate);
   
   unsigned int iekf_iter = 0;
   double diff = conv_tol + 1.0; 
