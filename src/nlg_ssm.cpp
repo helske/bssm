@@ -264,7 +264,9 @@ double nlg_ssm::psi_filter(const mgg_ssm& approx_model,
   arma::cube Vt(m, m, n);
   arma::cube Ct(m, m, n);
   approx_model.smoother_ccov(alphahat, Vt, Ct);
-  
+  if (!Vt.is_finite() || !Ct.is_finite()) {
+    return -arma::datum::inf;
+  }
   conditional_cov(Vt, Ct);
   std::normal_distribution<> normal(0.0, 1.0);
   
@@ -336,10 +338,10 @@ double nlg_ssm::psi_filter(const mgg_ssm& approx_model,
 
 // Logarithms of _normalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
 /*
-* approx_model:  Gaussian approximation of the original model
-* t:             Time point where the weights are computed
-* alpha:         Simulated particles
-*/
+ * approx_model:  Gaussian approximation of the original model
+ * t:             Time point where the weights are computed
+ * alpha:         Simulated particles
+ */
 arma::vec nlg_ssm::log_weights(const mgg_ssm& approx_model, 
   const unsigned int t, const arma::cube& alpha) const {
   
@@ -407,9 +409,9 @@ arma::vec nlg_ssm::scaling_factors(const mgg_ssm& approx_model,
 
 // Logarithms of _normalized_ densities g(y_t | alpha_t)
 /*
-* t:             Time point where the densities are computed
-* alpha:         Simulated particles
-*/
+ * t:             Time point where the densities are computed
+ * alpha:         Simulated particles
+ */
 arma::vec nlg_ssm::log_obs_density(const unsigned int t, 
   const arma::cube& alpha) const {
   
