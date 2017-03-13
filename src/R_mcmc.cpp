@@ -399,16 +399,17 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   mcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n, 
     model.m, target_acceptance, gamma, S, true);
   
-  Rcpp::stop("not yet implemented.");
-  // switch (simulation_method) {
-  // case 1: 
-  //   mcmc_run.da_mcmc_psi_nlg(model, end_ram, nsim_states, local_approx, initial_mode, 
-  //     max_iter, conv_tol);
-  //   break;
-  // case 2:
-  //   mcmc_run.da_mcmc_nlg_bsf(model, end_ram, nsim_states);
-  //   break;
-  // }
+
+  switch (simulation_method) {
+  case 1:
+    mcmc_run.da_mcmc_psi_nlg(model, end_ram, nsim_states, local_approx, initial_mode,
+      max_iter, conv_tol);
+    break;
+  case 2:
+    mcmc_run.da_mcmc_bsf_nlg(model, end_ram, nsim_states, local_approx, initial_mode,
+      max_iter, conv_tol);
+    break;
+  }
   
   
   return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
