@@ -21,10 +21,10 @@ particle_smoother <- function(object, nsim, ...) {
 #' @export
 particle_smoother.gssm <- function(object, nsim, smoothing_method = "fs",
   seed = sample(.Machine$integer.max, size = 1), ...) {
-
+  
   smoothing_method <- match.arg(smoothing_method, c("fs", "fbs"))
   out <- gssm_particle_smoother(object, nsim, seed, smoothing_method == "fs")
-
+  
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -34,10 +34,10 @@ particle_smoother.gssm <- function(object, nsim, smoothing_method = "fs",
 #' @export
 particle_smoother.bsm <- function(object, nsim, smoothing_method = "fs",
   seed = sample(.Machine$integer.max, size = 1), ...) {
-
+  
   smoothing_method <- match.arg(smoothing_method, c("fs", "fbs"))
   out <- bsm_particle_smoother(object, nsim, seed, smoothing_method == "fs")
-
+  
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -54,7 +54,7 @@ particle_smoother.ngssm <- function(object, nsim, smoothing_method = "fs",
     stop("FBS with psi-filter is not yet implemented.")
   }
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
- 
+  
   out <- ngssm_particle_smoother(object, nsim, seed, smoothing_method == "fs", 
     filter_type == "bootstrap", object$initial_mode)
   
@@ -92,8 +92,21 @@ particle_smoother.svm <- function(object, nsim, smoothing_method = "fs",
   }
   out <- svm_particle_smoother(object, nsim, seed, smoothing_method == "fs", 
     filter_type == "bootstrap", object$initial_mode)
-
+  
   rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
+}
+
+#' @export
+bsf_smoother.nlg_ssm <- function(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  out <- bsf_smoother_nlg(t(object$y), object$Z, object$H, object$T, 
+    object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
+    object$theta, object$log_prior_pdf, object$known_params, 
+    object$known_tv_params, object$n_states, object$n_etas, 
+    as.integer(object$time_varying), as.integer(object$state_varying), nsim, seed)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }

@@ -26,7 +26,7 @@ define the gradients of the corresponding model functions.}
 \item{Z_fn, H_fn, T_fn, R_fn}{An external pointers for the C++ functions which 
 define the corresponding model functions.}
 
-\item{prior_pdf}{An external pointers for the C++ function which 
+\item{prior_pdf}{An external pointer for the C++ function which 
 computes the log-prior density given theta.}
 }
 \value{

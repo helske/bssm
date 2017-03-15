@@ -41,6 +41,10 @@ bsf_nlg <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_,
     .Call('bssm_bsf_nlg', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, time_varying, state_varying, nsim_states, seed)
 }
 
+bsf_smoother_nlg <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, time_varying, state_varying, nsim_states, seed) {
+    .Call('bssm_bsf_smoother_nlg', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, time_varying, state_varying, nsim_states, seed)
+}
+
 ekf_nlg <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, time_varying, state_varying) {
     .Call('bssm_ekf_nlg', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, time_varying, state_varying)
 }
@@ -115,6 +119,10 @@ nongaussian_predict <- function(model_, probs, theta, alpha, counts, predict_typ
 
 nonlinear_predict <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, log_prior_pdf_, known_params, known_tv_params, time_varying, state_varying, n_states, n_etas, probs, theta, alpha, counts, predict_type, seed) {
     .Call('bssm_nonlinear_predict', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, log_prior_pdf_, known_params, known_tv_params, time_varying, state_varying, n_states, n_etas, probs, theta, alpha, counts, predict_type, seed)
+}
+
+psi_filter_nlg <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, time_varying, state_varying, nsim_states, seed, initial_mode, max_iter, conv_tol) {
+    .Call('bssm_psi_filter_nlg', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, time_varying, state_varying, nsim_states, seed, initial_mode, max_iter, conv_tol)
 }
 
 gaussian_smoother <- function(model_, model_type) {

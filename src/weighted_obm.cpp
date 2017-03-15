@@ -17,6 +17,6 @@ double weighted_obm(const arma::vec& x, const arma::vec w) {
   }
   double wsum_all = arma::sum(w);
   double mu = arma::sum(x % w) / wsum_all;
-  return n * sqrt(arma::sum(arma::square(wsum / arma::sum(wsum))) / wsum_all * 
-    arma::sum(wsum % arma::square(y - mu)) / (a - 1.0) / a);
+  return sqrt(n * arma::sum(arma::square(wsum / arma::sum(wsum))) / wsum_all * 
+    arma::sum(wsum % arma::square(y - mu)) / (a - 1.0));
 }

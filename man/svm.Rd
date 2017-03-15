@@ -4,7 +4,7 @@
 \alias{svm}
 \title{Stochastic Volatility Model}
 \usage{
-svm(y, rho, sd_ar, sigma, mu, beta, xreg = NULL)
+svm(y, rho, sd_ar, sigma, mu)
 }
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
@@ -17,10 +17,6 @@ svm(y, rho, sd_ar, sigma, mu, beta, xreg = NULL)
 
 \item{mu}{Prior for mu parameter of transition equation. 
 Ignored if \code{sigma} is provided.}
-
-\item{beta}{Prior for the regression coefficients.}
-
-\item{xreg}{Matrix containing covariates.}
 }
 \value{
 Object of class \code{svm} or \code{svm2}.
