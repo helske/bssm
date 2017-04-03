@@ -366,7 +366,7 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
       max_iter, conv_tol);
     break;
   case 2:
-    mcmc_run.pm_mcmc_nlg_bsf(model, end_ram, nsim_states);
+    mcmc_run.pm_mcmc_bsf_nlg(model, end_ram, nsim_states);
     break;
   }
   

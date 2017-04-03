@@ -277,7 +277,6 @@ double nlg_ssm::psi_filter(const mgg_ssm& approx_model,
     }
     alpha.slice(i).col(0) = alphahat.col(0) + Vt.slice(0) * um;
   }
-  
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec normalized_weights(nsim);
   double loglik = 0.0;
@@ -318,6 +317,7 @@ double nlg_ssm::psi_filter(const mgg_ssm& approx_model,
     }
     
     if(arma::is_finite(y(t + 1))) {
+     
       weights.col(t + 1) = 
         exp(log_weights(approx_model, t + 1, alpha) - scales(t + 1));
       
@@ -370,7 +370,7 @@ arma::vec nlg_ssm::log_weights(const mgg_ssm& approx_model,
     unsigned int Htv = approx_model.Htv;
     if(Htv == 1) {
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
-        weights(i) -= dmvnorm(y.col(t), approx_model.Z.slice(t * Ztv) * alpha.slice(i).col(t),  
+        weights(i) -= dmvnorm(y.col(t), approx_model.D.col(t) + approx_model.Z.slice(t * Ztv) * alpha.slice(i).col(t),  
           approx_model.H.slice(t * Htv), true, true);
       }
     } else {
@@ -379,32 +379,34 @@ arma::vec nlg_ssm::log_weights(const mgg_ssm& approx_model,
       arma::mat Linv(nonzero.n_elem, nonzero.n_elem);
       double constant = precompute_dmvnorm(H, Linv, nonzero);
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
-        weights(i) -= fast_dmvnorm(y.col(t), approx_model.Z.slice(t * Ztv) * alpha.slice(i).col(t),  
+        weights(i) -= fast_dmvnorm(y.col(t), approx_model.D.col(t) + approx_model.Z.slice(t * Ztv) * alpha.slice(i).col(t),  
           Linv, nonzero, constant);
       }
     }
   }
   if(t > 0) {
-    
-    
+  
     unsigned int Ttv = approx_model.Ttv;
     unsigned int Rtv = approx_model.Rtv;
     for (unsigned int i = 0; i < alpha.n_slices; i++) {
-      arma::vec tmp = T_fn.eval(t, alpha.slice(i).col(t-1), theta, known_params, known_tv_params);
-      arma::mat tmp2 = R_fn.eval(t, alpha.slice(i).col(t-1), theta, known_params, known_tv_params);
-      tmp2 = tmp2 * tmp2.t();
+      arma::vec mean = T_fn.eval(t-1, alpha.slice(i).col(t-1), theta, known_params, known_tv_params);
+      arma::mat cov = R_fn.eval(t-1, alpha.slice(i).col(t-1), theta, known_params, known_tv_params);
+      cov = cov * cov.t();
+      arma::vec approx_mean = approx_model.C.col(t-1) + 
+        approx_model.T.slice((t-1) * Ttv) * alpha.slice(i).col(t-1);
       weights(i) += 
-        dmvnorm(alpha.slice(i).col(t), tmp, tmp2, false, true) - 
-        dmvnorm(alpha.slice(i).col(t), approx_model.T.slice((t-1) * Ttv) * alpha.slice(i).col(t-1), 
+        dmvnorm(alpha.slice(i).col(t), mean, cov, false, true) - 
+        dmvnorm(alpha.slice(i).col(t), approx_mean, 
           approx_model.RR.slice((t-1) * Rtv), false, true);
     }
   }
-
+ 
   return weights;
 }
 
 // compute _normalized_ mode-based scaling terms
-// log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
+// log[g(y_t | ^alpha_t) f(^alpha_t | ^alpha_t-1) / 
+// ~g(y_t | ^alpha_t)] ~f(^alpha_t | ^alpha_t-1)
 arma::vec nlg_ssm::scaling_factors(const mgg_ssm& approx_model,
   const arma::mat& mode_estimate) const {
   
@@ -416,10 +418,25 @@ arma::vec nlg_ssm::scaling_factors(const mgg_ssm& approx_model,
     if (arma::is_finite(y(t))) {
       weights(t) =  dmvnorm(y.col(t), Z_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params), 
         H_fn.eval(t, mode_estimate.col(t), theta, known_params, known_tv_params), true, true) -
-          dmvnorm(y.col(t), approx_model.Z.slice(t * Ztv) * mode_estimate.col(t),  
+          dmvnorm(y.col(t), approx_model.D.col(t) + approx_model.Z.slice(t * Ztv) * mode_estimate.col(t),  
             approx_model.H.slice(t * Htv), true, true);
     }
   }
+
+  unsigned int Ttv = approx_model.Ttv;
+  unsigned int Rtv = approx_model.Rtv;
+  for (unsigned int t = 1; t < n; t++) {
+    arma::vec mean = T_fn.eval(t-1,mode_estimate.col(t - 1), theta, known_params, known_tv_params);
+    arma::mat cov = R_fn.eval(t-1, mode_estimate.col(t-1), theta, known_params, known_tv_params);
+    cov = cov * cov.t();
+    arma::vec approx_mean = approx_model.C.col(t-1) + 
+      approx_model.T.slice((t-1) * Ttv) * mode_estimate.col(t-1);
+   
+    weights(t) += dmvnorm(mode_estimate.col(t), mean, cov, false, true) - 
+      dmvnorm(mode_estimate.col(t), approx_mean, approx_model.RR.slice((t-1) * Rtv), false, true);
+    
+  }
+
   return weights;
 }
 

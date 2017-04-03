@@ -64,17 +64,19 @@ particle_smoother.ngssm <- function(object, nsim, smoothing_method = "fs",
 }
 #' @method particle_smoother ng_bsm
 #' @export
-particle_smoother.ng_bsm <- function(object, nsim, smoothing_method = "fs", 
-  filter_type = "bootstrap", seed = sample(.Machine$integer.max, size = 1), ...) {
+particle_smoother.ng_bsm <- function(object, nsim, filter_type = "bsf", 
+  smoothing_method = "fs", seed = sample(.Machine$integer.max, size = 1), ...) {
   
   smoothing_method <- match.arg(smoothing_method, c("fs", "fbs"))
-  filter_type <- match.arg(filter_type, c("bootstrap", "psi"))
+  filter_type <- match.arg(filter_type, c("psi", "bsf"))
   if (smoothing_method == "fbs" && filter_type == "psi") {
     stop("FBS with psi-filter is not yet implemented.")
   }
+  if(filter_type == "psi") stop("Not currently available.")
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  out <- ng_bsm_particle_smoother(object, nsim, seed, smoothing_method == "fs", 
-    filter_type == "bootstrap", object$initial_mode)
+  out <- bsf_smoother(object, nsim, seed, 2L)
+  # out <- ng_bsm_particle_smoother(object, nsim, seed, smoothing_method == "fs", 
+  #   filter_type == "bootstrap", object$initial_mode)
   
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
@@ -97,6 +99,7 @@ particle_smoother.svm <- function(object, nsim, smoothing_method = "fs",
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
+
 
 #' @export
 bsf_smoother.nlg_ssm <- function(object, nsim,

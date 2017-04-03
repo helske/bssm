@@ -483,7 +483,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   }
   
   if (missing(S)) {
-    S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
+    S <- diag(pmax(0.1, abs(object$theta)), length(object$theta))
   }
   if (method != "ekf") {
     initial_mode <-  ekf_smoother(object)$alphahat

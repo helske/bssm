@@ -355,7 +355,6 @@ void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states,
   }
   alpha_storage.slices(start, end) = alpha_piece;
   weight_storage.subvec(start, end) = weights_piece;
-  approx_loglik_storage.subvec(start, end) = approx_loglik_piece;
 }
 #else
     if (const_sim) {

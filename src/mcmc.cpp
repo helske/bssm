@@ -911,7 +911,7 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int
 }
 
 // using BSF
-void mcmc::pm_mcmc_nlg_bsf(nlg_ssm model, const bool end_ram, 
+void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, 
   const unsigned int nsim_states) {
   
   unsigned int m = model.m;

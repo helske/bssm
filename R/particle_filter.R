@@ -94,7 +94,7 @@ bootstrap_filter.nlg_ssm <- function(object, nsim,
 }
 
 #' @export
-psi_filter.nlg_ssm <- function(object, nsim, max_iter = 100, 
+psi_filter.nlg_ssm <- function(object, nsim, max_iter = 0, 
   conv_tol = 1e-8, seed = sample(.Machine$integer.max, size = 1), ...) {
   
   out <- psi_filter_nlg(t(object$y), object$Z, object$H, object$T, 

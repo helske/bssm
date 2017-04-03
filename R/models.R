@@ -673,7 +673,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
     m <- 1
   } else {
     if (!(dim(Z)[2] %in% c(1, NA, n)))
-      stop("Argument Z must be a vector of length m, or  (m x 1) or (m x n) matrix,
+      stop("Argument Z must be a (m x 1) or (m x n) matrix,
         where m is the number of states and n is the length of the series. ")
     m <- dim(Z)[1]
     dim(Z) <- c(m, (n - 1) * (max(dim(Z)[2], 0, na.rm = TRUE) > 1) + 1)
