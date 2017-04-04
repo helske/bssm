@@ -12,8 +12,7 @@ particle_smoother(object, nsim, ...)
   seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{particle_smoother}{ngssm}(object, nsim, smoothing_method = "fs",
-  filter_type = "bootstrap", seed = sample(.Machine$integer.max, size = 1),
-  ...)
+  filter_type = "bsf", seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
 \item{object}{Model.}
@@ -27,8 +26,8 @@ particle_smoother(object, nsim, ...)
 
 \item{seed}{Seed for RNG.}
 
-\item{filter_type}{Either \code{"bootstrap"} for bootstrap filter, or \code{"psi"}
-for psi-auxiliary filter. Latter is only applicable for non-Gaussian/non-linear models.}
+\item{filter_type}{Either \code{"bsf"} for bootstrap filter, or \code{"psi"}
+for psi-auxiliary filter. Latter is only applicable for non-Gaussian models.}
 }
 \description{
 Function \code{particle_smoother} performs filter-smoother or forward-backward smoother,

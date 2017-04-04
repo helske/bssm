@@ -1,8 +1,7 @@
-#' Particle Filtering
+#' Bootstrap Filtering
 #'
 #' Function \code{bootstrap_filter} performs a bootstrap filtering with stratification
-#' resampling. For non-Gaussian models, psi-auxiliary particle filter based on 
-#' the Gaussian approximating model is also available.
+#' resampling.
 #'
 #' @param object of class \code{bsm}, \code{ng_bsm} or \code{svm}.
 #' @param nsim Number of samples.
@@ -93,16 +92,3 @@ bootstrap_filter.nlg_ssm <- function(object, nsim,
   out
 }
 
-#' @export
-psi_filter.nlg_ssm <- function(object, nsim, max_iter = 0, 
-  conv_tol = 1e-8, seed = sample(.Machine$integer.max, size = 1), ...) {
-  
-  out <- psi_filter_nlg(t(object$y), object$Z, object$H, object$T, 
-    object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
-    object$theta, object$log_prior_pdf, object$known_params, 
-    object$known_tv_params, object$n_states, object$n_etas, 
-    as.integer(object$time_varying), as.integer(object$state_varying), nsim, seed,
-    t(ekf_smoother(object)$alphahat), max_iter, conv_tol)
-  out$alpha <- aperm(out$alpha, c(2, 1, 3))
-  out
-}

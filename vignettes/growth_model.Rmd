@@ -130,29 +130,29 @@ ts.plot(cbind(out_filter$att[, 1], out_smoother$alphahat[, 1]), col = 1:2)
 For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, but currently the best option for models with non-linearities in state equation is boostrap-filter based pseudo-marginal MCMC.
 
 ```{r mcmc}
-out_bsf <- run_mcmc(model, n_iter = 1e4, nsim_states = 500, method = "pm", 
-  simulation_method = "bsf", delayed_acceptance = TRUE)
-out_bsf$acceptance_rate
-out_bsf$posterior
+# out_bsf <- run_mcmc(model, n_iter = 1e4, nsim_states = 500, method = "pm", 
+#   simulation_method = "bsf", delayed_acceptance = FALSE)
+# out_bsf$acceptance_rate
+# out_bsf$posterior
+# 
+# library(diagis)
+# p_bsf <- weighted_mean(t(out_bsf$alpha[,2,]), out_psi$counts)
 
-library(diagis)
-p_bsf <- weighted_mean(t(out_bsf$alpha[,2,]), out_psi$counts)
-
-ts.plot(cbind(y, p, p_bsf), col = 1:3)
+#ts.plot(cbind(y, p, p_bsf), col = 1:3)
 
 out_ekf <- run_mcmc(model, n_iter = 1e4, nsim_states = 1, method = "ekf",
   delayed_acceptance = FALSE)
 out_ekf$acceptance
 p_ekf <- weighted_mean(t(out_ekf$alpha[,2,]), out_ekf$counts)
 ts.plot(cbind(y, p, p_ekf), col = 1:3)
-ts.plot(cbind(p_bsf, p_ekf), col = 1:3)
+#ts.plot(cbind(p_bsf, p_ekf), col = 1:3)
 ```
 
 Let's make some predictions based on our MCMC run:
 ```{r pred}
 future_model <- model
 future_model$y <- ts(rep(NA, 100), start = end(model$y))
-out_pred <- predict(out_psi, future_model, type = "mean")
+out_pred <- predict(out_ekf, future_model, type = "mean")
 library("ggplot2")
 autoplot(out_pred, y = model$y, plot_median = FALSE)
 

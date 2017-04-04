@@ -60,6 +60,20 @@ kfilter.svm <- function(object, ...) {
   kfilter(gaussian_approx(object))
 }
 
+#' Extended Kalman Filtering
+#'
+#' Function \code{ekf} runs the extended Kalman filter for the given 
+#' non-linear Gaussian model of class \code{nlg_ssm}, 
+#' and returns the filtered estimates and one-step-ahead predictions of the 
+#' states \eqn{\alpha_t} given the data up to time \eqn{t}.
+#'
+#' @param object Model object
+#' @return List containing the log-likelihood,
+#' one-step-ahead predictions \code{at} and filtered
+#' estimates \code{att} of states, and the corresponding variances \code{Pt} and
+#'  \code{Ptt}.
+#' @export
+#' @rdname ekf
 #' @export
 ekf <- function(object) {
   
@@ -73,7 +87,21 @@ ekf <- function(object) {
   out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   out
 }
-
+#' Unscented Kalman Filtering
+#'
+#' Function \code{ukf} runs the unscented Kalman filter for the given 
+#' non-linear Gaussian model of class \code{nlg_ssm}, 
+#' and returns the filtered estimates and one-step-ahead predictions of the 
+#' states \eqn{\alpha_t} given the data up to time \eqn{t}.
+#'
+#' @param object Model object
+#' @return List containing the log-likelihood,
+#' one-step-ahead predictions \code{at} and filtered
+#' estimates \code{att} of states, and the corresponding variances \code{Pt} and
+#'  \code{Ptt}.
+#' @export
+#' @rdname ukf
+#' @export
 #' @export
 ukf <- function(object, alpha = 1, beta = 0, kappa = 2) {
   
@@ -88,7 +116,20 @@ ukf <- function(object, alpha = 1, beta = 0, kappa = 2) {
   out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   out
 }
-
+#' Extended Kalman Smoothing
+#'
+#' Function \code{ekf_smoother} runs the extended Kalman smoother for the given 
+#' non-linear Gaussian model of class \code{nlg_ssm}, 
+#' and returns the filtered estimates and one-step-ahead predictions of the 
+#' states \eqn{\alpha_t} given the data up to time \eqn{t}.
+#'
+#' @param object Model object
+#' @return List containing the log-likelihood,
+#' smoothed state estimates \code{alphahat}, and the corresponding variances \code{Vt} and
+#'  \code{Ptt}.
+#' @export
+#' @rdname ekf_smoother
+#' @export
 #' @export
 ekf_smoother <- function(object) {
   
@@ -100,8 +141,6 @@ ekf_smoother <- function(object) {
   
 }
 
-
-#' @export
 ekf_fast_smoother <- function(object) {
   
   ekf_fast_smoother_nlg(t(object$y), object$Z, object$H, object$T, 
@@ -112,8 +151,6 @@ ekf_fast_smoother <- function(object) {
   
 }
 
-
-#' @export
 iekf_smoother <- function(object, max_iter = 100, conv_tol = 1e-8) {
   
   iekf_smoother_nlg(t(object$y), object$Z, object$H, object$T, 

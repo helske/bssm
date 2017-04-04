@@ -5,6 +5,7 @@
 #include "ung_bsm.h"
 #include "ung_svm.h"
 #include "ng_loglik.h"
+#include "nlg_ssm.h"
 
 // [[Rcpp::export]]
 double gaussian_loglik(const Rcpp::List& model_, const int model_type) {
