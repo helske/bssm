@@ -36,7 +36,12 @@ gaussian_approx.ng_bsm <- function(object, max_iter = 100, conv_tol = 1e-8, ...)
   
   if(ncol(object$xreg) > 0) {
     beta <- object$priors[(length(object$priors) - ncol(object$xreg) + 1):length(object$priors)]
-    class(beta) <- "bssm_prior_list"
+    if (ncol(object$xreg)==1) {
+      beta <- beta[[1]]
+      class(beta) <- "bssm_prior"
+    } else {
+      class(beta) <- "bssm_prior_list"
+    }
   } else beta <- NULL
   
   gssm(y = out$y, Z = object$Z, H = out$H, T = object$T, R = object$R, a1 = object$a1, P1 = object$P1,
@@ -72,7 +77,7 @@ gaussian_approx.nlg_ssm <- function(object, max_iter = 0, conv_tol = 1e-8,
     object$known_tv_params, object$n_states, object$n_etas,
     as.integer(object$time_varying), as.integer(object$state_varying), 
     t(initial_mode), max_iter, conv_tol)
-
+  
   mv_gssm(y = t(out$y), Z = out$Z, H = out$H, T = out$T, R = out$R, a1 = c(out$a1), 
     P1 = out$P1, obs_intercept = out$D, state_intercept = out$C)
 }
