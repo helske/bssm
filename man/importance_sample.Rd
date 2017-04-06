@@ -7,7 +7,7 @@
 \alias{importance_sample.svm}
 \title{Importance Sampling from non-Gaussian State Space Model}
 \usage{
-importance_sample(object, nsim, seed, ...)
+importance_sample(object, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
 
 \method{importance_sample}{ngssm}(object, nsim, use_antithetic = TRUE,
   max_iter = 100, conv_tol = 1e-08, seed = sample(.Machine$integer.max,
@@ -25,6 +25,15 @@ importance_sample(object, nsim, seed, ...)
 \item{object}{of class \code{ng_bsm}, \code{svm} or \code{ngssm}.}
 
 \item{nsim}{Number of samples.}
+
+\item{use_antithetic}{Logical. If \code{TRUE} (defualt), use antithetic 
+variable for location in simulation smoothing.}
+
+\item{max_iter}{Maximum number of iterations used for the approximation.}
+
+\item{conv_tol}{Convergence treshold for the approximation. Approximation is 
+claimed to be converged when the mean squared difference of the modes is 
+less than \code{conv_tol}.}
 
 \item{seed}{Seed for the random number generator.}
 
