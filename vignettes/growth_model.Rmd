@@ -130,10 +130,10 @@ ts.plot(cbind(out_filter$att[, 1], out_smoother$alphahat[, 1]), col = 1:2)
 For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, but currently the best option for models with non-linearities in state equation is boostrap-filter based pseudo-marginal MCMC.
 
 ```{r mcmc}
-# out_bsf <- run_mcmc(model, n_iter = 1e4, nsim_states = 500, method = "pm", 
-#   simulation_method = "bsf", delayed_acceptance = FALSE)
-# out_bsf$acceptance_rate
-# out_bsf$posterior
+out_bsf <- run_mcmc(model, n_iter = 1e4, nsim_states = 250, method = "isc",
+  simulation_method = "bsf")
+out_bsf$acceptance_rate
+out_bsf$posterior
 # 
 # library(diagis)
 # p_bsf <- weighted_mean(t(out_bsf$alpha[,2,]), out_psi$counts)

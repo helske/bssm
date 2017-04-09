@@ -109,11 +109,11 @@ void ung_ssm::laplace_iter(const arma::vec& signal, arma::vec& approx_y,
   
   switch(distribution) {
   case 0: {
-  arma::vec tmp = y;
-  // avoid dividing by zero
-  tmp(arma::find(abs(tmp) < 1e-4)).fill(1e-4);
-  approx_H = 2.0 * exp(signal) / pow(tmp/phi, 2);
-  approx_y = signal + 1.0 - 0.5 * approx_H;
+    arma::vec tmp = y;
+    // avoid dividing by zero
+    tmp(arma::find(abs(tmp) < 1e-4)).fill(1e-4);
+    approx_H = 2.0 * exp(signal) / pow(tmp/phi, 2);
+    approx_y = signal + 1.0 - 0.5 * approx_H;
 } break;
   case 1: {
     arma::vec tmp = signal + xbeta;

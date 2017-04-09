@@ -21,6 +21,8 @@
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
 #' Default is diagonal matrix with 1000 on the diagonal.
+#' @param obs_intercept,state_intercept Intercept terms for observation and 
+#' state equations, given as a length n vector and m times n matrix respectively.
 #' @return Object of class \code{bsm}.
 #' @export
 #' @examples
@@ -261,6 +263,8 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
 #' Default is diagonal matrix with 1e5 on the diagonal.
+#' @param state_intercept Intercept terms for state equation, given as a 
+#'  m times n matrix.
 #' @return Object of class \code{ng_bsm}.
 #' @export
 #' @examples
@@ -631,6 +635,8 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
 #' value in MCMC. Defaults to vector of zeros.
 #' @param state_names Names for the states.
 #' @param H_prior,Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
+#' @param obs_intercept,state_intercept Intercept terms for observation and 
+#' state equations, given as a length n vector and m times n matrix respectively.
 #' @return Object of class \code{gssm}.
 #' @export
 gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
@@ -828,6 +834,8 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 #' value in MCMC. Defaults to vector of zeros.
 #' @param state_names Names for the states.
 #' @param Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
+#' @param state_intercept Intercept terms for state equation, given as a 
+#'  m times n matrix.
 #' @return Object of class \code{bgssm}.
 #' @export
 ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL, 
@@ -1038,8 +1046,9 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
 #' value in MCMC. Defaults to matrix of zeros.
 #' @param state_names Names for the states.
 #' @param H_prior,Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
+#' @param obs_intercept,state_intercept Intercept terms for observation and 
+#' state equations, given as a p times n and m times n matrices.
 #' @return Object of class \code{gssm}.
-#' @export
 mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   H_prior, Z_prior, T_prior, R_prior, obs_intercept, state_intercept) {
   

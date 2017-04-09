@@ -41,6 +41,9 @@ value in MCMC. Defaults to vector of zeros.}
 \item{state_names}{Names for the states.}
 
 \item{Z_prior, T_prior, R_prior}{Priors for the NA values in system matrices.}
+
+\item{state_intercept}{Intercept terms for state equation, given as a 
+m times n matrix.}
 }
 \value{
 Object of class \code{bgssm}.

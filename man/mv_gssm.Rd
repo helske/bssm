@@ -33,6 +33,9 @@ value in MCMC. Defaults to matrix of zeros.}
 \item{state_names}{Names for the states.}
 
 \item{H_prior, Z_prior, T_prior, R_prior}{Priors for the NA values in system matrices.}
+
+\item{obs_intercept, state_intercept}{Intercept terms for observation and 
+state equations, given as a p times n and m times n matrices.}
 }
 \value{
 Object of class \code{gssm}.

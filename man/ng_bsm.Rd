@@ -46,6 +46,9 @@ Defaults to vector of zeros.}
 
 \item{P1}{Prior covariance for the initial states (level, slope, seasonals).
 Default is diagonal matrix with 1e5 on the diagonal.}
+
+\item{state_intercept}{Intercept terms for state equation, given as a 
+m times n matrix.}
 }
 \value{
 Object of class \code{ng_bsm}.

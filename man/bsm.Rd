@@ -35,6 +35,9 @@ Defaults to vector of zeros.}
 
 \item{P1}{Prior covariance for the initial states (level, slope, seasonals).
 Default is diagonal matrix with 1000 on the diagonal.}
+
+\item{obs_intercept, state_intercept}{Intercept terms for observation and 
+state equations, given as a length n vector and m times n matrix respectively.}
 }
 \value{
 Object of class \code{bsm}.

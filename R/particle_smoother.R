@@ -108,26 +108,18 @@ particle_smoother.nlg_ssm <- function(object, nsim, smoothing_method = "fs",
   
   smoothing_method <- match.arg(smoothing_method, c("fs", "fbs"))
   filter_type <- match.arg(filter_type, c("bsf", "psi"))
-  if (smoothing_method == "fbs" && filter_type == "psi") {
-    stop("FBS with psi-filter is not yet implemented.")
+  if (smoothing_method == "fbs") {
+    stop("FBS is not yet implemented.")
   }
-  out <- svm_particle_smoother(object, nsim, seed, smoothing_method == "fs", 
-    filter_type == "bsf", object$initial_mode)
-  
-  rownames(out$alpha) <- names(object$a1)
-  out$alpha <- aperm(out$alpha, c(2, 1, 3))
-  out
-}
-
-#' @export
-bsf_smoother.nlg_ssm <- function(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
-  
+  if(filter_type == "psi") {
+    stop("psi-filter for nlg_ssm is not supported.")
+  }
   out <- bsf_smoother_nlg(t(object$y), object$Z, object$H, object$T, 
     object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
     object$theta, object$log_prior_pdf, object$known_params, 
     object$known_tv_params, object$n_states, object$n_etas, 
     as.integer(object$time_varying), as.integer(object$state_varying), nsim, seed)
+  rownames(out$alpha) <- names(object$state_names)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }

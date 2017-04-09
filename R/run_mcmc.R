@@ -296,8 +296,8 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   
   if (nsim_states < 2) {
     #approximate inference
-    method <- "pm"
-    simulation_method <- "spdk"
+    method <- "isc"
+    nsim_states <- 0
   }
   
   if (missing(S)) {
@@ -521,7 +521,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
             nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
             end_adaptive_phase, max_iter, conv_tol)
         } else {
-          out <- nongaussian_is_mcmc(object, priors$prior_types, priors$params, 
+          out <- nonlinear_is_mcmc(object, priors$prior_types, priors$params, 
             nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
             seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode, 
             max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")), const_m, 

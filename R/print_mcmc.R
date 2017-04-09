@@ -22,7 +22,7 @@ print.mcmc_output <- function(x, ...) {
   if (x$isc) {
     theta <- mcmc(apply(x$theta, 2, rep, times = x$counts))
     w <- rep(x$weights, x$counts)
-    print(summary(theta * w)$stat / mean(x$weights))
+    print(summary(theta * w)$stat / mean(w))
     cat("\nEffective sample sizes for theta:\n\n")
     print(effectiveSize(theta*w)*sum(w)/length(w))
   } else {

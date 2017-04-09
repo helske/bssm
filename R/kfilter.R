@@ -12,7 +12,7 @@
 #' one-step-ahead predictions \code{at} and filtered
 #' estimates \code{att} of states, and the corresponding variances \code{Pt} and
 #'  \code{Ptt}.
-#' @seealso \code{\link{particle_filter}}
+#' @seealso \code{\link{bootstrap_filter}}
 #' @export
 #' @rdname kfilter
 kfilter <- function(object, ...) {
