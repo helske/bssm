@@ -269,7 +269,7 @@ Rcpp::List bsf_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   
   //  if (smoothing_type == 1) {
   filter_smoother(alpha, indices);
-  running_weighted_summary(alpha, alphahat, Vt, weights);
+  running_weighted_summary(alpha, alphahat, Vt, weights.col(n - 1));
   /*} else {
    Rcpp::stop("Forward-backward smoothing with psi-filter is not yet implemented.");
   }*/
