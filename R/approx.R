@@ -78,6 +78,7 @@ gaussian_approx.nlg_ssm <- function(object, max_iter = 0, conv_tol = 1e-8,
     as.integer(object$time_varying), as.integer(object$state_varying), 
     t(initial_mode), max_iter, conv_tol)
   
-  mv_gssm(y = t(out$y), Z = out$Z, H = out$H, T = out$T, R = out$R, a1 = c(out$a1), 
+  gssm(y = c(out$y), Z = matrix(out$Z, nrow=length(out$a1)), 
+    H = c(out$H), T = out$T, R = out$R, a1 = c(out$a1), 
     P1 = out$P1, obs_intercept = out$D, state_intercept = out$C)
 }
