@@ -25,9 +25,19 @@ Rcpp::List bsf(const Rcpp::List& model_,
       arma::umat indices(nsim_states, n - 1);
       double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
       
-      return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
+      arma::mat at(m, n);
+      arma::mat att(m, n);
+      arma::cube Pt(m, m, n);
+      arma::cube Ptt(m, m, n);
+      filter_summary(alpha, at, att, Pt, Ptt, weights);
+      
+      arma::inplace_trans(at);
+      arma::inplace_trans(att);
+      return Rcpp::List::create(
+        Rcpp::Named("at") = at, Rcpp::Named("att") = att, 
+        Rcpp::Named("Pt") = Pt, Rcpp::Named("Ptt") = Ptt, 
         Rcpp::Named("weights") = weights,
-        Rcpp::Named("indices") = indices, Rcpp::Named("logLik") = loglik);
+        Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
     } break;
     case 2: {
         ugg_bsm model(clone(model_), seed);
@@ -39,10 +49,19 @@ Rcpp::List bsf(const Rcpp::List& model_,
         arma::umat indices(nsim_states, n - 1);
         double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
         
-        return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
+        arma::mat at(m, n);
+        arma::mat att(m, n);
+        arma::cube Pt(m, m, n);
+        arma::cube Ptt(m, m, n);
+        filter_summary(alpha, at, att, Pt, Ptt, weights);
+          
+        arma::inplace_trans(at);
+        arma::inplace_trans(att);
+        return Rcpp::List::create(
+          Rcpp::Named("at") = at, Rcpp::Named("att") = att, 
+          Rcpp::Named("Pt") = Pt, Rcpp::Named("Ptt") = Ptt, 
           Rcpp::Named("weights") = weights,
-          Rcpp::Named("indices") = indices, Rcpp::Named("logLik") = loglik);
-        
+          Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
       } break;
     }
   } else {
@@ -57,9 +76,19 @@ Rcpp::List bsf(const Rcpp::List& model_,
     arma::umat indices(nsim_states, n - 1);
     double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
     
-    return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
+    arma::mat at(m, n);
+    arma::mat att(m, n);
+    arma::cube Pt(m, m, n);
+    arma::cube Ptt(m, m, n);
+    filter_summary(alpha, at, att, Pt, Ptt, weights);
+    
+    arma::inplace_trans(at);
+    arma::inplace_trans(att);
+    return Rcpp::List::create(
+      Rcpp::Named("at") = at, Rcpp::Named("att") = att, 
+      Rcpp::Named("Pt") = Pt, Rcpp::Named("Ptt") = Ptt, 
       Rcpp::Named("weights") = weights,
-      Rcpp::Named("indices") = indices, Rcpp::Named("logLik") = loglik);
+      Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
   } break;
     case 2: {
       ung_bsm model(clone(model_), seed);
@@ -70,9 +99,19 @@ Rcpp::List bsf(const Rcpp::List& model_,
       arma::mat weights(nsim_states, n);
       arma::umat indices(nsim_states, n - 1);
       double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
-      return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
+      arma::mat at(m, n);
+      arma::mat att(m, n);
+      arma::cube Pt(m, m, n);
+      arma::cube Ptt(m, m, n);
+      filter_summary(alpha, at, att, Pt, Ptt, weights);
+      
+      arma::inplace_trans(at);
+      arma::inplace_trans(att);
+      return Rcpp::List::create(
+        Rcpp::Named("at") = at, Rcpp::Named("att") = att, 
+        Rcpp::Named("Pt") = Pt, Rcpp::Named("Ptt") = Ptt, 
         Rcpp::Named("weights") = weights,
-        Rcpp::Named("indices") = indices, Rcpp::Named("logLik") = loglik);
+        Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
       
     } break;
     case 3: {
@@ -84,9 +123,19 @@ Rcpp::List bsf(const Rcpp::List& model_,
       arma::mat weights(nsim_states, n);
       arma::umat indices(nsim_states, n - 1);
       double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
-      return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
+      arma::mat at(m, n);
+      arma::mat att(m, n);
+      arma::cube Pt(m, m, n);
+      arma::cube Ptt(m, m, n);
+      filter_summary(alpha, at, att, Pt, Ptt, weights);
+      
+      arma::inplace_trans(at);
+      arma::inplace_trans(att);
+      return Rcpp::List::create(
+        Rcpp::Named("at") = at, Rcpp::Named("att") = att, 
+        Rcpp::Named("Pt") = Pt, Rcpp::Named("Ptt") = Ptt, 
         Rcpp::Named("weights") = weights,
-        Rcpp::Named("indices") = indices, Rcpp::Named("logLik") = loglik);
+        Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
       
     } break;
     }
@@ -179,9 +228,19 @@ Rcpp::List bsf_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   arma::umat indices(nsim_states, n - 1);
   double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
   
-  return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
+  arma::mat at(m, n);
+  arma::mat att(m, n);
+  arma::cube Pt(m, m, n);
+  arma::cube Ptt(m, m, n);
+  filter_summary(alpha, at, att, Pt, Ptt, weights);
+  
+  arma::inplace_trans(at);
+  arma::inplace_trans(att);
+  return Rcpp::List::create(
+    Rcpp::Named("at") = at, Rcpp::Named("att") = att, 
+    Rcpp::Named("Pt") = Pt, Rcpp::Named("Ptt") = Ptt, 
     Rcpp::Named("weights") = weights,
-    Rcpp::Named("indices") = indices, Rcpp::Named("logLik") = loglik);
+    Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
 }
 // [[Rcpp::export]]
 Rcpp::List bsf_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 
@@ -204,9 +263,20 @@ Rcpp::List bsf_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   arma::mat weights(nsim_states, n);
   arma::umat indices(nsim_states, n - 1);
   double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
-  filter_smoother(alpha, indices);
   
-  return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
+  arma::mat alphahat(model.m, model.n);
+  arma::cube Vt(model.m, model.m, model.n);
+  
+  //  if (smoothing_type == 1) {
+  filter_smoother(alpha, indices);
+  running_weighted_summary(alpha, alphahat, Vt, weights);
+  /*} else {
+   Rcpp::stop("Forward-backward smoothing with psi-filter is not yet implemented.");
+  }*/
+  arma::inplace_trans(alphahat);
+  
+  return Rcpp::List::create(
+    Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") = Vt, 
     Rcpp::Named("weights") = weights,
-    Rcpp::Named("indices") = indices, Rcpp::Named("logLik") = loglik);
+    Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
 }
