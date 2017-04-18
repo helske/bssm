@@ -31,7 +31,7 @@ Rcpp::List psi_smoother(const Rcpp::List& model_, const arma::vec mode_estimate,
   
   if (smoothing_type == 1) {
     filter_smoother(alpha, indices);
-    running_weighted_summary(alpha, alphahat, Vt, weights);
+    running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n - 1));
   } else {
     Rcpp::stop("Forward-backward smoothing with psi-filter is not yet implemented.");
   }
@@ -55,7 +55,7 @@ Rcpp::List psi_smoother(const Rcpp::List& model_, const arma::vec mode_estimate,
     
     if (smoothing_type == 1) {
       filter_smoother(alpha, indices);
-      running_weighted_summary(alpha, alphahat, Vt, weights);
+      running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n - 1));
     } else {
       Rcpp::stop("Forward-backward smoothing with psi-filter is not yet implemented.");
     }
@@ -79,7 +79,7 @@ Rcpp::List psi_smoother(const Rcpp::List& model_, const arma::vec mode_estimate,
     
     if (smoothing_type == 1) {
       filter_smoother(alpha, indices);
-      running_weighted_summary(alpha, alphahat, Vt, weights);
+      running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n - 1));
     } else {
       Rcpp::stop("Forward-backward smoothing with psi-filter is not yet implemented.");
     }
