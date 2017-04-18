@@ -20,7 +20,10 @@ bootstrap_filter.gssm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   out <- bsf(object, nsim, seed, TRUE, 1L)
-  
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
+  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
+  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -31,7 +34,10 @@ bootstrap_filter.bsm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   out <- bsf(object, nsim, seed, TRUE, 2L)
-  
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
+  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
+  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -46,7 +52,10 @@ bootstrap_filter.ngssm <- function(object, nsim,
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
   
   out <- bsf(object, nsim, seed, FALSE, 1L)
-  
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
+  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
+  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -59,7 +68,10 @@ bootstrap_filter.ng_bsm <- function(object, nsim,
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
   
   out <- bsf(object, nsim, seed, FALSE, 2L)
-  
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
+  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
+  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -71,7 +83,10 @@ bootstrap_filter.svm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   out <- bsf(object, nsim, seed, FALSE, 3L)
-  
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
+  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
+  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -88,6 +103,11 @@ bootstrap_filter.nlg_ssm <- function(object, nsim,
     object$theta, object$log_prior_pdf, object$known_params, 
     object$known_tv_params, object$n_states, object$n_etas, 
     as.integer(object$time_varying), as.integer(object$state_varying), nsim, seed)
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- 
+    rownames(out$alpha) <- object$state_names
+  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
+  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
