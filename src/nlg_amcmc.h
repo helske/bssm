@@ -14,7 +14,8 @@ public:
     const unsigned int n, const unsigned int m, const double target_acceptance, 
     const double gamma, const arma::mat& S);
   
-  void approx_mcmc(nlg_ssm model, const bool end_ram);
+  void approx_mcmc(nlg_ssm model, const unsigned int max_iter, 
+    const double conv_tol, const bool end_ram);
   
   void is_correction_bsf(nlg_ssm model, const unsigned int nsim_states, 
     const bool const_sim, const unsigned int n_threads);
@@ -34,6 +35,7 @@ private:
   
   void trim_storage();
   arma::vec approx_loglik_storage;
+  arma::vec scales_storage;
   arma::vec prior_storage;
 };
 

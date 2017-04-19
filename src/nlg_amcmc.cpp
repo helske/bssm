@@ -14,6 +14,7 @@ nlg_amcmc::nlg_amcmc(const arma::uvec& prior_distributions,
   const arma::mat& S) :
   mcmc(prior_distributions, prior_parameters, n_iter, n_burnin, n_thin, n, m,
     target_acceptance, gamma, S, true),
+    scales_storage(arma::vec(n_samples)),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
     approx_loglik_storage(arma::vec(n_samples)),
     prior_storage(arma::vec(n_samples)) {
@@ -24,6 +25,7 @@ void nlg_amcmc::trim_storage() {
   posterior_storage.resize(n_stored);
   count_storage.resize(n_stored);
   alpha_storage.resize(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
+  scales_storage.resize(n_stored);
   weight_storage.resize(n_stored);
   approx_loglik_storage.resize(n_stored);
   prior_storage.resize(n_stored);
@@ -32,14 +34,19 @@ void nlg_amcmc::trim_storage() {
 // run approximate MCMC for
 // non-linear Gaussian state space model
 
-void nlg_amcmc::approx_mcmc(nlg_ssm model, const bool end_ram) {
+void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter, 
+  const double conv_tol, const bool end_ram) {
   
   unsigned int m = model.m;
   unsigned n = model.n;
   
   double logprior = model.log_prior_pdf.eval(model.theta);
   
-  double loglik = model.ekf_loglik();
+  arma::mat mode_estimate(m, n);
+  mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol);
+  double sum_scales = arma::accu(model.scaling_factors(approx_model0, mode_estimate));
+  // compute the log-likelihood of the approximate model
+  double loglik = approx_model0.log_likelihood() + sum_scales;
   
   double acceptance_prob = 0.0;
   unsigned int counts = 0;
@@ -67,8 +74,10 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const bool end_ram) {
       // update parameters
       model.theta = theta_prop;
       
-      arma::mat alphahat_prop(m, n);
-      double loglik_prop = model.ekf_loglik();
+      mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
+      double sum_scales_prop = arma::accu(model.scaling_factors(approx_model, mode_estimate));
+  // compute the log-likelihood of the approximate model
+  double loglik_prop = approx_model.log_likelihood() + sum_scales_prop;
       
       if(arma::is_finite(loglik_prop)) {
         acceptance_prob = std::min(1.0, exp(loglik_prop - loglik +
@@ -82,6 +91,7 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const bool end_ram) {
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
+        sum_scales = sum_scales_prop;
         counts = 0;
       }
     } else acceptance_prob = 0.0;
@@ -93,6 +103,7 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const bool end_ram) {
           approx_loglik_storage(n_stored) = loglik;
           prior_storage(n_stored) = logprior;
           theta_storage.col(n_stored) = theta;
+          scales_storage(n_stored) = sum_scales;
           count_storage(n_stored) = 1;
           n_stored++;
         } else {

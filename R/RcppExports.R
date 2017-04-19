@@ -109,8 +109,8 @@ nonlinear_ekf_mcmc <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_f
     .Call('bssm_nonlinear_ekf_mcmc', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, state_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, max_iter, conv_tol)
 }
 
-nonlinear_is_mcmc <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, state_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, const_sim, simulation_method) {
-    .Call('bssm_nonlinear_is_mcmc', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, state_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, const_sim, simulation_method)
+nonlinear_is_mcmc <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, state_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, const_sim, simulation_method, max_iter, conv_tol) {
+    .Call('bssm_nonlinear_is_mcmc', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, state_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, const_sim, simulation_method, max_iter, conv_tol)
 }
 
 gaussian_predict <- function(model_, probs, theta, alpha, counts, predict_type, intervals, seed, model_type) {

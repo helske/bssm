@@ -142,9 +142,12 @@ For parameter inference, we can perform full Bayesian inference with \texttt{bss
 out_mcmc <- run_mcmc(model, n_iter = 2e4, nsim_states = 10, method = "pm", 
   simulation_method = "psi")
 out_mcmc$acceptance_rate
-out_mcmc2 <- run_mcmc(model, n_iter = 2e4, nsim_states = 250, method = "pm", 
+out_mcmc2 <- run_mcmc(model, n_iter = 2e4, nsim_states = 250, method = "isc", 
   simulation_method = "bsf")
 out_mcmc2$acceptance_rate
+out_mcmc2b <- run_mcmc(model, n_iter = 2e4, nsim_states = 750, method = "isc", 
+  simulation_method = "bsf")
+out_mcmc2b$acceptance_rate
 # 
 # library(diagis)
 # p_bsf <- weighted_mean(t(out_bsf$alpha[,2,]), out_psi$counts)

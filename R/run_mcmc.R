@@ -526,7 +526,8 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
             object$known_tv_params, as.integer(object$time_varying), 
             as.integer(object$state_varying), object$n_states, object$n_etas, seed, 
             nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            end_adaptive_phase, n_threads, const_m)
+            end_adaptive_phase, n_threads, const_m, 
+            pmatch(simulation_method, c("psi", "bsf", "spdk")), max_iter, conv_tol)
         }
       }
       

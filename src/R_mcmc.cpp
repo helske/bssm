@@ -454,7 +454,7 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const unsigned int n_burnin, const unsigned int n_thin,
   const double gamma, const double target_acceptance, const arma::mat S,
   const bool end_ram, const unsigned int n_threads, const bool const_sim, 
-  const unsigned int simulation_method) {
+  const unsigned int simulation_method, const unsigned int max_iter, const double conv_tol) {
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
@@ -463,8 +463,8 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   nlg_amcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n, 
     model.m, target_acceptance, gamma, S);
   
-  mcmc_run.approx_mcmc(model, end_ram);
-  if (simulation_method == 1) {
+  mcmc_run.approx_mcmc(model, max_iter, conv_tol, end_ram);
+  if (simulation_method == 2) {
   mcmc_run.is_correction_bsf(model, nsim_states, const_sim, n_threads);
   } else {
     //mcmc_run.is_correction_psi(model, nsim_states, const_sim, n_threads);
