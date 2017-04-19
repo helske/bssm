@@ -10,6 +10,7 @@
 #' @export
 print.mcmc_output <- function(x, ...) {
   
+  print("Warning!!! The summary for IS-corrected method are currently incorrect!!.")
   cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"), 
     "\n", sep = "")
   
@@ -46,14 +47,15 @@ print.mcmc_output <- function(x, ...) {
     cat(paste0("\nEffective sample sizes for alpha_",nrow(x$alpha)), ":\n\n", sep="")
     print(effectiveSize(alpha))
   }
+  print("Warning!!! The summary for IS-corrected method are currently incorrect!!.")
 }
 
 #' Expand the Jump Chain representation
 #'
 #' The MCMC algorithms of \code{bssm} use a jump chain representation where we 
 #' store the accepted values and the number of times we stayed in the current value.
-#' Although this safes bit memory and is especially convinient for IS-corrected 
-#' MCMC, often we want to have the usual sample path. Function \code{expand} 
+#' Although this saves bit memory and is especially convinient for IS-corrected 
+#' MCMC, sometimes we want to have the usual sample path. Function \code{expand} 
 #' returns the expanded sample based on the counts.
 #' 
 #' @param x Output from \code{\link{run_mcmc}}.

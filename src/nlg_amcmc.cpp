@@ -52,11 +52,12 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
   double loglik = approx_model0.log_likelihood() + sum_scales;
   
   double acceptance_prob = 0.0;
-  unsigned int counts = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   
   arma::vec theta = model.theta;
+  bool new_value = true;
+  unsigned int n_values = 0;
   
   for (unsigned int i = 1; i <= n_iter; i++) {
     if (i % 16 == 0) {
@@ -91,32 +92,33 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
       }
       
       if (unif(model.engine) < acceptance_prob) {
-        if (i > n_burnin) acceptance_rate++;
+        if (i > n_burnin) {
+          acceptance_rate++;
+          n_values++;
+        }
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
         sum_scales = sum_scales_prop;
         mode_estimate = mode_estimate_prop;
-        counts = 0;
+        new_value = true;
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin) {
-      counts++;
-      if ((i - n_burnin - 1) % n_thin == 0) {
-        if (counts <= n_thin) {
-          approx_loglik_storage(n_stored) = loglik;
-          prior_storage(n_stored) = logprior;
-          theta_storage.col(n_stored) = theta;
-          scales_storage(n_stored) = sum_scales;
-          if(store_modes) {
-            mode_storage.slice(n_stored) = mode_estimate;
-          }
-          count_storage(n_stored) = 1;
-          n_stored++;
-        } else {
-          count_storage(n_stored - 1)++;
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        approx_loglik_storage(n_stored) = loglik;
+        prior_storage(n_stored) = logprior;
+        theta_storage.col(n_stored) = theta;
+        scales_storage(n_stored) = sum_scales;
+        if(store_modes) {
+          mode_storage.slice(n_stored) = mode_estimate;
         }
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
       }
     }
     

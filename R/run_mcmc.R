@@ -37,8 +37,10 @@ run_mcmc <- function(object, n_iter, ...) {
 #' \eqn{\theta}. Optional for \code{bsm} objects.
 #' @param n_burnin Length of the burn-in period which is disregarded from the
 #' results. Defaults to \code{n_iter / 2}.
-#' @param n_thin Thinning rate. Defaults to 1. Increase for large models in
-#' order to save memory.
+#' @param n_thin Thinning rate. All MCMC algoritms in \code{bssm} use the jump chain 
+#' representation, and the thinning is applied to these blocks. 
+#' This defaults to 1, but for IS-corrected method (\code{method="isc"}), larger 
+#' value is often more effective.
 #' @param gamma Tuning parameter for the adaptation of RAM algorithm. Must be
 #' between 0 and 1 (not checked).
 #' @param target_acceptance Target acceptance ratio for RAM. Defaults to 0.234.
@@ -486,7 +488,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   }
   
   if (missing(S)) {
-    S <- diag(pmax(0.1, abs(object$theta)), length(object$theta))
+    S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
   }
 
   out <-  switch(type,

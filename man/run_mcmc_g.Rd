@@ -36,8 +36,10 @@ more accurate than calculations based on simulation smoother.
 \item{n_burnin}{Length of the burn-in period which is disregarded from the
 results. Defaults to \code{n_iter / 2}.}
 
-\item{n_thin}{Thinning rate. Defaults to 1. Increase for large models in
-order to save memory.}
+\item{n_thin}{Thinning rate. All MCMC algoritms in \code{bssm} use the jump chain 
+representation, and the thinning is applied to these blocks. 
+This defaults to 1, but for IS-corrected method (\code{method="isc"}), larger 
+value is often more effective.}
 
 \item{gamma}{Tuning parameter for the adaptation of RAM algorithm. Must be
 between 0 and 1 (not checked).}

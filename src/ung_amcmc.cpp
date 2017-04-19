@@ -80,12 +80,15 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
   double approx_loglik = gaussian_loglik + const_term + sum_scales;
   
   double acceptance_prob = 0.0;
-  unsigned int counts = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec scales_prop = scales;
   arma::vec approx_y = approx_model.y;
   arma::vec approx_H = approx_model.H;
+  
+  bool new_value = true;
+  unsigned int n_values = 0;
+  
   for (unsigned int i = 1; i <= n_iter; i++) {
     
     if (i % 16 == 0) {
@@ -128,34 +131,36 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
         logprior_prop - logprior));
       
       if (unif(model.engine) < acceptance_prob) {
-        if (i > n_burnin) acceptance_rate++;
+        if (i > n_burnin) {
+          acceptance_rate++;
+          n_values++;
+        }
         approx_loglik = approx_loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
         scales = scales_prop;
         approx_y = approx_model.y;
         approx_H = approx_model.H;
-        counts = 0;
+        new_value = true;
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin) {
-      counts++;
-      if ((i - n_burnin - 1) % n_thin == 0) {
-        if (counts <= n_thin) {
-          approx_loglik_storage(n_stored) = approx_loglik;
-          theta_storage.col(n_stored) = theta;
-          y_storage.col(n_stored) = approx_y;
-          H_storage.col(n_stored) = approx_H;
-          prior_storage(n_stored) = logprior;
-          scales_storage.col(n_stored) = scales;
-          count_storage(n_stored) = 1;
-          n_stored++;
-        } else {
-          count_storage(n_stored - 1)++;
-        }
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        approx_loglik_storage(n_stored) = approx_loglik;
+        theta_storage.col(n_stored) = theta;
+        y_storage.col(n_stored) = approx_y;
+        H_storage.col(n_stored) = approx_H;
+        prior_storage(n_stored) = logprior;
+        scales_storage.col(n_stored) = scales;
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
       }
     }
+    
     
     if (!end_ram || i <= n_burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);

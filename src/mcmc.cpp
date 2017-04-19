@@ -173,7 +173,8 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
   std::uniform_real_distribution<> unif(0.0, 1.0);
   
   double acceptance_prob = 0.0;
-  unsigned int counts = 0;
+  bool new_value = true;
+  unsigned int n_values = 0;
   for (unsigned int i = 1; i <= n_iter; i++) {
     
     if (i % 16 == 0) {
@@ -202,25 +203,28 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
         exp(loglik_prop - loglik + logprior_prop - logprior));
       //accept
       if (unif(model.engine) < acceptance_prob) {
-        if (i > n_burnin) acceptance_rate++;
+        if (i > n_burnin) {
+          acceptance_rate++;
+          n_values++;
+        }
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
-        counts = 0;
+        new_value = true;
+        
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin) {
-      counts++;
-      if ((i - n_burnin - 1) % n_thin == 0) {
-        if (counts <= n_thin) {
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
           posterior_storage(n_stored) = logprior + loglik;
           theta_storage.col(n_stored) = theta;
           count_storage(n_stored) = 1;
           n_stored++;
-        } else {
-          count_storage(n_stored - 1)++;
-        }
+          new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
       }
     }
     if (!end_ram || i <= n_burnin) {
@@ -289,7 +293,8 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
   double acceptance_prob = 0.0;
-  unsigned int counts = 0;
+  bool new_value = true;
+  unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   for (unsigned int i = 1; i <= n_iter; i++) {
@@ -342,7 +347,10 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
       
       //accept
       if (unif(model.engine) < acceptance_prob) {
-        if (i > n_burnin) acceptance_rate++;
+        if (i > n_burnin) {
+          acceptance_rate++;
+          n_values++;
+        }
         filter_smoother(alpha, indices);
         w = weights.col(n - 1);
         std::discrete_distribution<> sample(w.begin(), w.end());
@@ -350,22 +358,21 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
-        counts = 0;
+       
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin) {
-      counts++;
-      if ((i - n_burnin - 1) % n_thin == 0) {
-        if (counts <= n_thin) {
-          posterior_storage(n_stored) = logprior + loglik;
-          theta_storage.col(n_stored) = theta;
-          alpha_storage.slice(n_stored) = sampled_alpha.t();
-          count_storage(n_stored) = 1;
-          n_stored++;
-        } else {
-          count_storage(n_stored - 1)++;
-        }
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        posterior_storage(n_stored) = logprior + loglik;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        alpha_storage.slice(n_stored) = sampled_alpha.t();
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
       }
     }
     
@@ -411,7 +418,8 @@ void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
   double acceptance_prob = 0.0;
-  unsigned int counts = 0;
+  bool new_value = true;
+  unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   
@@ -447,7 +455,10 @@ void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
       //accept
       
       if (unif(model.engine) < acceptance_prob) {
-        if (i > n_burnin) acceptance_rate++;
+        if (i > n_burnin) {
+          acceptance_rate++;
+          n_values++;
+        }
         filter_smoother(alpha, indices);
         w = weights.col(n - 1);
         std::discrete_distribution<> sample(w.begin(), w.end());
@@ -455,22 +466,21 @@ void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
-        counts = 0;
+         new_value = true;
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin) {
-      counts++;
-      if ((i - n_burnin - 1) % n_thin == 0) {
-        if (counts <= n_thin) {
-          posterior_storage(n_stored) = logprior + loglik;
-          theta_storage.col(n_stored) = theta;
-          alpha_storage.slice(n_stored) = sampled_alpha.t();
-          count_storage(n_stored) = 1;
-          n_stored++;
-        } else {
-          count_storage(n_stored - 1)++;
-        }
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        posterior_storage(n_stored) = logprior + loglik;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        alpha_storage.slice(n_stored) = sampled_alpha.t();
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
       }
     }
     
@@ -537,7 +547,8 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
   double acceptance_prob = 0.0;
-  unsigned int counts = 0;
+  bool new_value = true;
+  unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   for (unsigned int i = 1; i <= n_iter; i++) {
@@ -594,7 +605,10 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
           double acceptance_prob2 = loglik_prop + approx_loglik - loglik - approx_loglik_prop;
           if (std::log(unif(model.engine)) < acceptance_prob2) {
             
-            if (i > n_burnin) acceptance_rate++;
+            if (i > n_burnin) {
+              acceptance_rate++;
+              n_values++;
+            }
             filter_smoother(alpha, indices);
             w = weights.col(n - 1);
             std::discrete_distribution<> sample(w.begin(), w.end());
@@ -603,24 +617,23 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
             loglik = loglik_prop;
             logprior = logprior_prop;
             theta = theta_prop;
-            counts = 0;
+             new_value = true;
           }
         }
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin) {
-      counts++;
-      if ((i - n_burnin - 1) % n_thin == 0) {
-        if (counts <= n_thin) {
-          posterior_storage(n_stored) = logprior + loglik;
-          theta_storage.col(n_stored) = theta;
-          alpha_storage.slice(n_stored) = sampled_alpha.t();
-          count_storage(n_stored) = 1;
-          n_stored++;
-        } else {
-          count_storage(n_stored - 1)++;
-        }
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        posterior_storage(n_stored) = logprior + loglik;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        alpha_storage.slice(n_stored) = sampled_alpha.t();
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
       }
     }
     
@@ -685,7 +698,8 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
   double acceptance_prob = 0.0;
-  unsigned int counts = 0;
+  bool new_value = true;
+  unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   for (unsigned int i = 1; i <= n_iter; i++) {
@@ -740,7 +754,10 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
           // delayed acceptance ratio, in log-scale
           double acceptance_prob2 = loglik_prop + approx_loglik - loglik - approx_loglik_prop;
           if (std::log(unif(model.engine)) < acceptance_prob2) {
-            if (i > n_burnin) acceptance_rate++;
+            if (i > n_burnin) {
+              acceptance_rate++;
+              n_values++;
+            }
             filter_smoother(alpha, indices);
             w = weights.col(n - 1);
             std::discrete_distribution<> sample(w.begin(), w.end());
@@ -749,24 +766,23 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
             loglik = loglik_prop;
             logprior = logprior_prop;
             theta = theta_prop;
-            counts = 0;
+             new_value = true;
           }
         }
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin) {
-      counts++;
-      if ((i - n_burnin - 1) % n_thin == 0) {
-        if (counts <= n_thin) {
-          posterior_storage(n_stored) = logprior + loglik;
-          theta_storage.col(n_stored) = theta;
-          alpha_storage.slice(n_stored) = sampled_alpha.t();
-          count_storage(n_stored) = 1;
-          n_stored++;
-        } else {
-          count_storage(n_stored - 1)++;
-        }
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        posterior_storage(n_stored) = logprior + loglik;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        alpha_storage.slice(n_stored) = sampled_alpha.t();
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
       }
     }
     
@@ -808,7 +824,8 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
   double acceptance_prob = 0.0;
-  unsigned int counts = 0;
+  bool new_value = true;
+  unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec theta = model.theta;
@@ -854,7 +871,10 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
       
       //accept
       if (unif(model.engine) < acceptance_prob) {
-        if (i > n_burnin) acceptance_rate++;
+        if (i > n_burnin) {
+          acceptance_rate++;
+          n_values++;
+        }
         filter_smoother(alpha, indices);
         w = weights.col(n - 1);
         std::discrete_distribution<> sample(w.begin(), w.end());
@@ -862,22 +882,21 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
-        counts = 0;
+         new_value = true;
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin) {
-      counts++;
-      if ((i - n_burnin - 1) % n_thin == 0) {
-        if (counts <= n_thin) {
-          posterior_storage(n_stored) = logprior + loglik;
-          theta_storage.col(n_stored) = theta;
-          alpha_storage.slice(n_stored) = sampled_alpha.t();
-          count_storage(n_stored) = 1;
-          n_stored++;
-        } else {
-          count_storage(n_stored - 1)++;
-        }
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        posterior_storage(n_stored) = logprior + loglik;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        alpha_storage.slice(n_stored) = sampled_alpha.t();
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
       }
     }
     
@@ -911,7 +930,8 @@ void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram,
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
   double acceptance_prob = 0.0;
-  unsigned int counts = 0;
+  bool new_value = true;
+  unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec theta = model.theta;
@@ -949,7 +969,10 @@ void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram,
       //accept
       
       if (unif(model.engine) < acceptance_prob) {
-        if (i > n_burnin) acceptance_rate++;
+        if (i > n_burnin) {
+          acceptance_rate++;
+          n_values++;
+        }
         filter_smoother(alpha, indices);
         w = weights.col(n - 1);
         std::discrete_distribution<> sample(w.begin(), w.end());
@@ -957,22 +980,21 @@ void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram,
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
-        counts = 0;
+         new_value = true;
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin) {
-      counts++;
-      if ((i - n_burnin - 1) % n_thin == 0) {
-        if (counts <= n_thin) {
-          posterior_storage(n_stored) = logprior + loglik;
-          theta_storage.col(n_stored) = theta;
-          alpha_storage.slice(n_stored) = sampled_alpha.t();
-          count_storage(n_stored) = 1;
-          n_stored++;
-        } else {
-          count_storage(n_stored - 1)++;
-        }
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        posterior_storage(n_stored) = logprior + loglik;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        alpha_storage.slice(n_stored) = sampled_alpha.t();
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
       }
     }
     
@@ -1014,7 +1036,8 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
   double acceptance_prob = 0.0;
-  unsigned int counts = 0;
+  bool new_value = true;
+  unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec theta = model.theta;
@@ -1061,7 +1084,10 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
           
           if (std::log(unif(model.engine)) < acceptance_prob2) {
             
-            if (i > n_burnin) acceptance_rate++;
+            if (i > n_burnin) {
+              acceptance_rate++;
+              n_values++;
+            }
             filter_smoother(alpha, indices);
             w = weights.col(n - 1);
             std::discrete_distribution<> sample(w.begin(), w.end());
@@ -1070,24 +1096,23 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
             loglik = loglik_prop;
             logprior = logprior_prop;
             theta = theta_prop;
-            counts = 0;
+             new_value = true;
           }
         }
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin) {
-      counts++;
-      if ((i - n_burnin - 1) % n_thin == 0) {
-        if (counts <= n_thin) {
-          posterior_storage(n_stored) = logprior + loglik;
-          theta_storage.col(n_stored) = theta;
-          alpha_storage.slice(n_stored) = sampled_alpha.t();
-          count_storage(n_stored) = 1;
-          n_stored++;
-        } else {
-          count_storage(n_stored - 1)++;
-        }
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        posterior_storage(n_stored) = logprior + loglik;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        alpha_storage.slice(n_stored) = sampled_alpha.t();
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
       }
     }
     
@@ -1128,7 +1153,8 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
   double acceptance_prob = 0.0;
-  unsigned int counts = 0;
+  bool new_value = true;
+  unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec theta = model.theta;
@@ -1178,7 +1204,10 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
           double acceptance_prob2 = loglik_prop + approx_loglik - loglik - approx_loglik_prop;
           if (std::log(unif(model.engine)) < acceptance_prob2) {
             
-            if (i > n_burnin) acceptance_rate++;
+            if (i > n_burnin) {
+              acceptance_rate++;
+              n_values++;
+            }
             filter_smoother(alpha, indices);
             w = weights.col(n - 1);
             std::discrete_distribution<> sample(w.begin(), w.end());
@@ -1187,24 +1216,23 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
             loglik = loglik_prop;
             logprior = logprior_prop;
             theta = theta_prop;
-            counts = 0;
+             new_value = true;
           }
         }
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin) {
-      counts++;
-      if ((i - n_burnin - 1) % n_thin == 0) {
-        if (counts <= n_thin) {
-          posterior_storage(n_stored) = logprior + loglik;
-          theta_storage.col(n_stored) = theta;
-          alpha_storage.slice(n_stored) = sampled_alpha.t();
-          count_storage(n_stored) = 1;
-          n_stored++;
-        } else {
-          count_storage(n_stored - 1)++;
-        }
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        posterior_storage(n_stored) = logprior + loglik;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        alpha_storage.slice(n_stored) = sampled_alpha.t();
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
       }
     }
     
@@ -1241,7 +1269,8 @@ void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram,
   }
   
   double acceptance_prob = 0.0;
-  unsigned int counts = 0;
+  bool new_value = true;
+  unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   
@@ -1288,27 +1317,29 @@ void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram,
       }
       
       if (unif(model.engine) < acceptance_prob) {
-        if (i > n_burnin) acceptance_rate++;
+        if (i > n_burnin) {
+          acceptance_rate++;
+          n_values++;
+        }
         alphahat = alphahat_prop;
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
-        counts = 0;
+        new_value = true;
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin) {
-      counts++;
-      if ((i - n_burnin - 1) % n_thin == 0) {
-        if (counts <= n_thin) {
-          alpha_storage.slice(n_stored) = alphahat.t();
-          posterior_storage(n_stored) = logprior + loglik;
-          theta_storage.col(n_stored) = theta;
-          count_storage(n_stored) = 1;
-          n_stored++;
-        } else {
-          count_storage(n_stored - 1)++;
-        }
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        posterior_storage(n_stored) = logprior + loglik;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        alpha_storage.slice(n_stored) = alphahat.t();
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
       }
     }
     
