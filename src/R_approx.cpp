@@ -36,24 +36,25 @@ Rcpp::List gaussian_approx_model(const Rcpp::List& model_,
 }
 
 // [[Rcpp::export]]
-Rcpp::List gaussian_approx_model_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 
-  SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, 
-  const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
-  const arma::mat& known_tv_params, const unsigned int n_states, 
-  const unsigned int n_etas,  const arma::uvec& time_varying, 
-  const arma::uvec& state_varying, arma::mat mode_estimate, 
+Rcpp::List gaussian_approx_model_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
+  SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_,
+  const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params,
+  const arma::mat& known_tv_params, const unsigned int n_states,
+  const unsigned int n_etas,  const arma::uvec& time_varying,
+  const arma::uvec& state_varying,
   const unsigned int max_iter, const double conv_tol) {
-  
-  nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
+
+  nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_,
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
     time_varying, state_varying, 1);
-  
+
+  arma::mat mode_estimate(model.m, model.n);
   mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
-  
+
   return Rcpp::List::create(Rcpp::Named("y") = approx_model.y,
     Rcpp::Named("D") = approx_model.D,
     Rcpp::Named("Z") = approx_model.Z, Rcpp::Named("H") = approx_model.H,
-    Rcpp::Named("C") = approx_model.C, Rcpp::Named("T") = approx_model.T, 
-    Rcpp::Named("R") = approx_model.R, Rcpp::Named("a1") = approx_model.a1, 
+    Rcpp::Named("C") = approx_model.C, Rcpp::Named("T") = approx_model.T,
+    Rcpp::Named("R") = approx_model.R, Rcpp::Named("a1") = approx_model.a1,
     Rcpp::Named("P1") = approx_model.P1);
 }

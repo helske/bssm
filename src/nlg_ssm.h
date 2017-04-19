@@ -20,20 +20,20 @@ public:
     const unsigned int seed);
   
   // find the approximating Gaussian model
-  mgg_ssm approximate(arma::mat& mode_estimate, const unsigned int max_iter, 
-    const double conv_tol) const;
+  mgg_ssm approximate(arma::mat& mode_estimate, 
+    const unsigned int max_iter, const double conv_tol) const;
   // update the approximating Gaussian model
-  void approximate(mgg_ssm& approx_model, arma::mat& mode_estimate, const unsigned int max_iter, 
+  arma::mat approximate(mgg_ssm& approx_model, const unsigned int max_iter, 
     const double conv_tol) const;
   // psi-particle filter
   double psi_filter(const mgg_ssm& approx_model,
-    const double approx_loglik, const arma::vec& scales,
+    const double approx_loglik,
     const unsigned int nsim, arma::cube& alpha, arma::mat& weights,
     arma::umat& indices);
   
   // compute logarithms of _unnormalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
   arma::vec log_weights(const mgg_ssm& approx_model, 
-    const unsigned int t, const arma::cube& alphasim) const;
+    const unsigned int t, const arma::cube& alphasim, const arma::mat& alpha_prev) const;
   
   // compute unnormalized mode-based scaling terms
   // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]

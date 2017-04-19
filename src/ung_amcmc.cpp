@@ -166,6 +166,7 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
   acceptance_rate /= (n_iter - n_burnin);
 }
 
+// approximate MCMC using EKF
 
 template void ung_amcmc::is_correction_psi(ung_ssm model, const unsigned int nsim_states, 
   const bool const_sim, const unsigned int n_threads);

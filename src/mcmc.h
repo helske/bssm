@@ -71,20 +71,17 @@ public:
    const bool local_approx, const arma::vec& initial_mode, 
    const unsigned int max_iter, const double conv_tol);
   
+  // using non-linear models
   void pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int nsim_states, 
-    const bool local_approx, const arma::mat& initial_mode, const unsigned int max_iter, 
-    const double conv_tol);
-  // using BSF
+    const unsigned int max_iter, const double conv_tol);
   void pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, 
     const unsigned int nsim_states);
   void ekf_mcmc_nlg(nlg_ssm model, const bool end_ram, const unsigned int max_iter, 
   const double conv_tol);
   void da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int nsim_states,
-    const bool local_approx, const arma::mat& initial_mode, const unsigned int max_iter,
-    const double conv_tol);
+    const unsigned int max_iter, const double conv_tol);
   void da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int nsim_states,
-    const bool local_approx, const arma::mat& initial_mode, const unsigned int max_iter,
-    const double conv_tol);
+    const unsigned int max_iter, const double conv_tol);
   
   arma::vec posterior_storage;
   arma::mat theta_storage;
