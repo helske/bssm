@@ -476,7 +476,9 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   if(simulation_method == "spdk") {
     stop("SPDK is currently not supported for non-linear non-Gaussian models.")
   }
-  
+  if(method == "ekf") {
+    nsim_states <- 1
+  }
   if (nsim_states < 2 && method != "ekf") {
     #approximate inference
     method <- "pm"

@@ -397,7 +397,7 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   mcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n, 
     model.m, target_acceptance, gamma, S, true);
   
-
+  
   switch (simulation_method) {
   case 1:
     mcmc_run.da_mcmc_psi_nlg(model, end_ram, nsim_states, max_iter, conv_tol);
@@ -461,13 +461,13 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     time_varying, state_varying, seed);
   
   nlg_amcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n, 
-    model.m, target_acceptance, gamma, S);
+    model.m, target_acceptance, gamma, S, simulation_method == 1);
   
   mcmc_run.approx_mcmc(model, max_iter, conv_tol, end_ram);
-  if (simulation_method == 2) {
-  mcmc_run.is_correction_bsf(model, nsim_states, const_sim, n_threads);
+  if (simulation_method == 1) {
+    mcmc_run.is_correction_psi(model, nsim_states, const_sim, n_threads);
   } else {
-    //mcmc_run.is_correction_psi(model, nsim_states, const_sim, n_threads);
+    mcmc_run.is_correction_bsf(model, nsim_states, const_sim, n_threads);
   }
   return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
     Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
