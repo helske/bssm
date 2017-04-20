@@ -10,44 +10,55 @@
 #' @export
 print.mcmc_output <- function(x, ...) {
   
-  print("Warning!!! The summary for IS-corrected method are currently incorrect!!.")
+  theta <- mcmc(x$theta)
+  alpha <- mcmc(matrix(x$alpha[nrow(x$alpha),,], ncol = ncol(x$alpha), byrow = TRUE, 
+    dimnames = list(NULL, colnames(x$alpha))))
+  w <- x$counts * if (x$isc) x$weights else 1
+  
+  
   cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"), 
     "\n", sep = "")
-  
   
   cat("\n", "Iterations = ", x$n_burnin + 1, ":", x$n_iter, "\n", sep = "")
   cat("Thinning interval = ",x$n_thin, "\n", sep = "")
   cat("\nAcceptance rate after the burn-in period: ", paste(x$acceptance_rate,"\n", sep = ""))
   
   cat("\nSummary for theta:\n\n")
-  if (x$isc) {
-    theta <- mcmc(apply(x$theta, 2, rep, times = x$counts))
-    w <- rep(x$weights, x$counts)
-    print(summary(theta * w)$stat / mean(w))
-    cat("\nEffective sample sizes for theta:\n\n")
-    print(effectiveSize(theta*w)*sum(w)/length(w))
-  } else {
-    theta <- mcmc(apply(x$theta, 2, rep, times = x$counts))
-    print(summary(theta)$stat)
-    cat("\nEffective sample sizes for theta:\n\n")
-    print(effectiveSize(theta))
-  }
+  mean_theta <- weighted_mean(theta, w)
+  sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
+  se_theta_is <- weighted_se(theta, w)
+  spec <- sapply(1:ncol(theta), function(i) spectrum0.ar((theta[, i] - mean_theta[i]) * w)$spec)
+  se_theta_ar <- sqrt(spec / length(w)) / mean(w)
+  stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta_ar), ncol = 4, 
+    dimnames = list(colnames(x$theta), c("Mean", "SD", "IS-SE", "AR-SE")))
+  print(stats)
   
-  alpha <- mcmc(apply(matrix(x$alpha[nrow(x$alpha),,], ncol = ncol(x$alpha), byrow = TRUE, 
-    dimnames = list(NULL, colnames(x$alpha))), 2, rep, times = x$counts))
+  cat("\nEffective sample sizes for theta:\n\n")
+  ess_theta_is <- apply(theta, 2, function(z) ess(w, identity, z))
+  ess_theta_ar <- (sd_theta / se_theta_ar)^2
+  esss <- matrix(c(ess_theta_is, ess_theta_ar), ncol = 2, 
+    dimnames = list(colnames(x$theta), c("ESS-IS", "ESS-AR")))
+  print(esss)
+  
+  
+  
   cat(paste0("\nSummary for alpha_",nrow(x$alpha)), ":\n\n", sep="")
+  mean_alpha <- weighted_mean(alpha, w)
+  sd_alpha <- sqrt(diag(weighted_var(alpha, w, method = "moment")))
+  se_alpha_is <- weighted_se(alpha, w)
+  spec <- sapply(1:ncol(alpha), function(i) spectrum0.ar((alpha[, i] - mean_alpha[i]) * w)$spec)
+  se_alpha_ar <- sqrt(spec / length(w)) / mean(w)
+  stats <- matrix(c(mean_alpha, sd_alpha, se_alpha_is, se_alpha_ar), ncol = 4, 
+    dimnames = list(colnames(x$alpha), c("Mean", "SD", "IS-SE", "AR-SE")))
+  print(stats)
   
-  if (x$isc) {
-    w <- rep(x$weights, x$counts)
-    print(summary(alpha * w)$stat / mean(x$weights))
-    cat(paste0("\nEffective sample sizes for alpha_",nrow(x$alpha)), ":\n\n", sep="")
-    print(effectiveSize(alpha * w) * sum(w) / length(w))
-  } else {
-    print(summary(alpha)$stat)
-    cat(paste0("\nEffective sample sizes for alpha_",nrow(x$alpha)), ":\n\n", sep="")
-    print(effectiveSize(alpha))
-  }
-  print("Warning!!! The summary for IS-corrected method are currently incorrect!!.")
+  cat("\nEffective sample sizes for alpha:\n\n")
+  ess_alpha_is <- apply(alpha, 2, function(z) ess(w, identity, z))
+  ess_alpha_ar <- (sd_alpha / se_alpha_ar)^2
+  esss <- matrix(c(ess_alpha_is, ess_alpha_ar), ncol = 2, 
+    dimnames = list(colnames(x$alpha), c("ESS-IS", "ESS-AR")))
+  print(esss)
+  
 }
 
 #' Expand the Jump Chain representation
@@ -55,7 +66,7 @@ print.mcmc_output <- function(x, ...) {
 #' The MCMC algorithms of \code{bssm} use a jump chain representation where we 
 #' store the accepted values and the number of times we stayed in the current value.
 #' Although this saves bit memory and is especially convinient for IS-corrected 
-#' MCMC, sometimes we want to have the usual sample path. Function \code{expand} 
+#' MCMC, sometimes we want to have the usual sample paths. Function \code{expand} 
 #' returns the expanded sample based on the counts.
 #' 
 #' @param x Output from \code{\link{run_mcmc}}.
