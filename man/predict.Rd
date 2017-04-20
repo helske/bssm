@@ -2,39 +2,32 @@
 % Please edit documentation in R/predict.R
 \name{predict.mcmc_output}
 \alias{predict.mcmc_output}
-\title{Predictions for Gaussian State Space Models}
+\title{Predictions for State Space Models}
 \usage{
 \method{predict}{mcmc_output}(object, future_model, type = "response",
   intervals = TRUE, probs = c(0.05, 0.95), return_MCSE = TRUE,
   seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
-\item{object}{Model object.}
+\item{object}{mcmc_output object obtained from \code{\link{run_mcmc}}}
+
+\item{future_model}{Model for future observations. Should have same structure
+as the original model which was used in MCMC, in order to plug the posterior 
+samples of the model parameters to right place.}
+
+\item{type}{Compute predictions on \code{"mean"} ("confidence interval"),
+\code{"response"} ("prediction interval"), or \code{"state"} level. 
+Defaults to \code{"response"}.}
+
+\item{intervals}{If \code{TRUE}, intervals are returned. Otherwise samples 
+from the posterior predictive distribution are returned.}
 
 \item{probs}{Desired quantiles. Defaults to \code{c(0.05, 0.95)}. Always includes median 0.5.}
 
-\item{return_MCSE}{For method \code{"parametric"}, if \code{TRUE}, the Monte Carlo
-standard errors are also returned.}
+\item{return_MCSE}{For Gaussian models, if \code{TRUE}, the Monte Carlo
+standard errors of the intervals are also returned.}
 
 \item{...}{Ignored.}
-
-\item{priors}{Priors for the unknown parameters.}
-
-\item{n_ahead}{Number of steps ahead at which to predict.}
-
-\item{interval}{Compute predictions on \code{"mean"} ("confidence interval") or
-\code{"response"} ("prediction interval"). Defaults to \code{"response"}.}
-
-\item{newdata}{Matrix containing the covariate values for the future time
-points. Defaults to zero matrix of appropriate size.}
-
-\item{method}{Either \code{"parametric"} (default) or \code{"quantile"}.
-Only used for linear-Gaussian case.}
-
-\item{nsim_states}{Number of samples used in importance sampling.}
-
-\item{newu}{Vector of length \code{n_ahead} defining the future values of \eqn{u}.
-Defaults to 1.}
 }
 \value{
 List containing the mean predictions, quantiles and Monte Carlo

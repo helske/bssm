@@ -1,4 +1,4 @@
-#' Predictions for Gaussian State Space Models
+#' Predictions for State Space Models
 #'
 #' Posterior intervals of future observations or their means
 #' (success probabilities in binomial case) for Gaussian models. These are
@@ -6,21 +6,18 @@
 #' as empirical quantiles the posterior sample, or parametric method by
 #' Helske (2016).
 #'
-#' @param object Model object.
-#' @param priors Priors for the unknown parameters.
-#' @param n_ahead Number of steps ahead at which to predict.
-#' @param interval Compute predictions on \code{"mean"} ("confidence interval") or
-#' \code{"response"} ("prediction interval"). Defaults to \code{"response"}.
+#' @param object mcmc_output object obtained from \code{\link{run_mcmc}}
+#' @param intervals If \code{TRUE}, intervals are returned. Otherwise samples 
+#' from the posterior predictive distribution are returned.
+#' @param type Compute predictions on \code{"mean"} ("confidence interval"),
+#' \code{"response"} ("prediction interval"), or \code{"state"} level. 
+#' Defaults to \code{"response"}.
 #' @param probs Desired quantiles. Defaults to \code{c(0.05, 0.95)}. Always includes median 0.5.
-#' @param newdata Matrix containing the covariate values for the future time
-#' points. Defaults to zero matrix of appropriate size.
-#' @param method Either \code{"parametric"} (default) or \code{"quantile"}.
-#' Only used for linear-Gaussian case.
-#' @param return_MCSE For method \code{"parametric"}, if \code{TRUE}, the Monte Carlo
-#' standard errors are also returned.
-#' @param nsim_states Number of samples used in importance sampling.
-#' @param newu Vector of length \code{n_ahead} defining the future values of \eqn{u}.
-#' Defaults to 1.
+#' @param future_model Model for future observations. Should have same structure
+#' as the original model which was used in MCMC, in order to plug the posterior 
+#' samples of the model parameters to right place.
+#' @param return_MCSE For Gaussian models, if \code{TRUE}, the Monte Carlo
+#' standard errors of the intervals are also returned.
 #' @param ... Ignored.
 #' @return List containing the mean predictions, quantiles and Monte Carlo
 #' standard errors .
