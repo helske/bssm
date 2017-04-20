@@ -12,8 +12,8 @@
 #' \eqn{w} contains the weights. See vignette for details.
 #' 
 #' @method print mcmc_output
-#' @importFrom diagis weighted_mean weighted_var weighted_se
-#' @importFrom coda spectrum0.ar
+#' @importFrom diagis weighted_mean weighted_var weighted_se ess
+#' @importFrom coda mcmc spectrum0.ar
 #' @param x Output from \code{\link{run_mcmc}}.
 #' @param ... Ignored.
 #' @export
@@ -68,7 +68,8 @@ print.mcmc_output <- function(x, ...) {
     dimnames = list(colnames(x$alpha), c("ESS-IS", "ESS-AR")))
   print(esss)
   
-  cat("\nRun time: ", x$time)
+  cat("\nRun time:\n")
+  print(x$time)
 }
 
 #' Expand the Jump Chain representation
