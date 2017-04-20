@@ -134,7 +134,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
             intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
               names = paste0(100 * probs, "%"))) 
         } else {
-          intv <- lapply(1:m, function(i) ts(out$intervals[,,i], 
+          intv <- lapply(1:length(future_model$a1), function(i) ts(out$intervals[,,i], 
             start = start_ts, end = end_ts, frequency = freq,
             names = paste0(100*probs, "%")))
           names(intv) <- names(future_model$a1)
