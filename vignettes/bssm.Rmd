@@ -159,7 +159,7 @@ For plotting purposes, we'll use `bayesplot` package for the figures after expan
 API of the `expand_sample` function is likely change in future. 
 
 ```{r plot}
-theta <- expand_sample(mcmc_out, "theta")
+theta <- as.matrix(expand_sample(mcmc_out, "theta")) ## until bayesplot is updated
 library("bayesplot")
 mcmc_areas(theta, bw = 0.001)
 level <- expand_sample(mcmc_out, "alpha",  times = 101:108, states = 1)
