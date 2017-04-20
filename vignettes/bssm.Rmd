@@ -197,5 +197,12 @@ level_fit <- ts(colMeans(expand_sample(mcmc_out, "alpha")$level), start = start(
 autoplot(pred, y = model$y, fit = level_fit, interval_color = "red", alpha_fill = 0.2)
 ```
 
+We can also obtain prediction in terms of individual components of the state vector:
+```{r predict3, dev.args=list(pointsize = 10), fig.cap="State prediction."}
+pred_state <- predict(mcmc_out, future_model, probs = c(0.025, 0.1, 0.9, 0.975), 
+  return_MCSE = FALSE, type = "state")
+ts.plot(log10(UKgas), level_fit, pred_state$mean[,"level"], pred_state$intervals$level[, -3],
+  col = c(1, 2, 2, c(3, 4, 4, 3)), lty = c(1, 1, 1, rep(2, 4)))
+```
 
 # References
