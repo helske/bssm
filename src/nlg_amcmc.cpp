@@ -112,6 +112,7 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
         prior_storage(n_stored) = logprior;
         theta_storage.col(n_stored) = theta;
         scales_storage(n_stored) = sum_scales;
+        count_storage(n_stored) = 1;
         if(store_modes) {
           mode_storage.slice(n_stored) = mode_estimate;
         }

@@ -154,6 +154,7 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
         H_storage.col(n_stored) = approx_H;
         prior_storage(n_stored) = logprior;
         scales_storage.col(n_stored) = scales;
+        count_storage(n_stored) = 1;
         n_stored++;
         new_value = false;
       } else {
