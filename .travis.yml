@@ -10,6 +10,7 @@ r:
 r_github_packages:
   - hadley/devtools
   - helske/ramcmc
+  - helske/diagis
 r_packages:
   - covr
 addons:
