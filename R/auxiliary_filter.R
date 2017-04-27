@@ -39,7 +39,7 @@ auxiliary_filter.nlg_ssm <- function(object, nsim,
 }
 #' @method auxiliary_filter gssm
 #' @export
-aux_filter.bsm <- function(object, nsim,
+auxiliary_filter.gssm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), optimal = TRUE, ...) {
   
   out <- aux(object, nsim, seed, TRUE, 1L, optimal)
@@ -54,7 +54,7 @@ aux_filter.bsm <- function(object, nsim,
 
 #' @method auxiliary_filter bsm
 #' @export
-aux_filter.bsm <- function(object, nsim,
+auxiliary_filter.bsm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), optimal = TRUE, ...) {
   
   out <- aux(object, nsim, seed, TRUE, 2L, optimal)
