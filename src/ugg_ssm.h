@@ -59,6 +59,13 @@ public:
   void smoother(arma::mat& at, arma::cube& Pt) const;
   double bsf_filter(const unsigned int nsim, arma::cube& alpha,
     arma::mat& weights, arma::umat& indices);
+  double aux_filter(const unsigned int nsim, arma::cube& alpha,
+    arma::mat& weights, arma::umat& indices);
+  double oaux_filter(const unsigned int nsim, arma::cube& alpha,
+    arma::mat& weights, arma::umat& indices);
+  void aux_update_step(const unsigned int t, const double y, 
+    const arma::vec& at, const arma::mat& Pt, arma::vec& att, arma::mat& Ptt) const;
+  
   Rcpp::List predict_interval(const arma::vec& probs, const arma::mat& theta,
     const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type);
   arma::cube predict_sample(const arma::mat& theta,

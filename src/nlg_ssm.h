@@ -41,11 +41,23 @@ public:
   
   // compute logarithms of _unnormalized_ densities g(y_t | alpha_t)
   arma::vec log_obs_density(const unsigned int t, const arma::cube& alphasim) const;
+  // compute logarithms of _unnormalized_ densities g(y_t | alpha_t)
+  double log_obs_density(const unsigned int t, const arma::vec& alphasim) const;
   
   // bootstrap filter  
   double bsf_filter(const unsigned int nsim, arma::cube& alphasim, 
     arma::mat& weights, arma::umat& indices);
   
+  // auxiliary particle filter  
+  double aux_filter(const unsigned int nsim, arma::cube& alphasim, 
+    arma::mat& weights, arma::umat& indices);
+  
+  
+  double ekf_aux_filter(const unsigned int nsim, arma::cube& alpha,
+    arma::mat& weights, arma::umat& indices);
+  void ekf_aux_update_step(const unsigned int t, const arma::vec y, 
+    const arma::vec& at, const arma::mat& Pt, arma::vec& att, arma::mat& Ptt) const;
+    
   double ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, 
     arma::cube& Ptt) const;
   

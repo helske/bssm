@@ -111,4 +111,3 @@ bootstrap_filter.nlg_ssm <- function(object, nsim,
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
-
