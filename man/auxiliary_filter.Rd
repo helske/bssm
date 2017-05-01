@@ -2,23 +2,35 @@
 % Please edit documentation in R/auxiliary_filter.R
 \name{auxiliary_filter}
 \alias{auxiliary_filter}
+\alias{auxiliary_filter.bsm}
+\alias{auxiliary_filter.gssm}
+\alias{auxiliary_filter.nlg_ssm}
 \title{Auxiliary Particle Filtering}
 \usage{
 auxiliary_filter(object, nsim, ...)
+
+\method{auxiliary_filter}{nlg_ssm}(object, nsim, use_ekf = TRUE,
+  seed = sample(.Machine$integer.max, size = 1), ...)
+
+\method{auxiliary_filter}{gssm}(object, nsim, optimal = TRUE,
+  seed = sample(.Machine$integer.max, size = 1), ...)
+
+\method{auxiliary_filter}{bsm}(object, nsim, optimal = TRUE,
+  seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
 \item{object}{of class \code{gssm}, \code{bsm}, or \code{nlg_ssm}.}
 
 \item{nsim}{Number of samples.}
 
-\item{...}{Ignored.}
-
-\item{optimal}{For Gaussian models, use optimal proposals? Default is \code{TRUE}.}
-
-\item{seed}{Seed for RNG.}
+\item{...}{Ignored}
 
 \item{use_ekf}{For non-linear Gaussian models, use extended Kalman filter for proposals? 
 Default is \code{TRUE}.}
+
+\item{seed}{Seed for RNG.}
+
+\item{optimal}{For Gaussian models, use optimal proposals? Default is \code{TRUE}.}
 }
 \value{
 A list containing samples, filtered estimates and the corresponding covariances,

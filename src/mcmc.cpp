@@ -799,7 +799,7 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
 // using psi-PF
 void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, 
   const unsigned int nsim_states, const unsigned int max_iter, 
-  const double conv_tol) {
+  const double conv_tol, const unsigned int iekf_iter) {
   
   unsigned int m = model.m;
   unsigned n = model.n;
@@ -807,7 +807,7 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   double logprior = model.log_prior_pdf.eval(model.theta);
   // construct the approximate Gaussian model
   arma::mat mode_estimate(m, n);
-  mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol);
+  mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
   // compute the log-likelihood of the gaussian model
   double gaussian_loglik = approx_model0.log_likelihood();
   
@@ -852,7 +852,7 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
       model.theta = theta_prop;
       
       // construct the approximate Gaussian model
-      mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
+      mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
       // compute the log-likelihood of the approximate model
       gaussian_loglik = approx_model.log_likelihood();
       
@@ -1011,7 +1011,7 @@ void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram,
 // using psi-PF
 void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, 
   const unsigned int nsim_states, const unsigned int max_iter,
-  const double conv_tol) {
+  const double conv_tol, const unsigned int iekf_iter) {
   
   unsigned int m = model.m;
   unsigned n = model.n;
@@ -1020,7 +1020,7 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   
   // construct the approximate Gaussian model
   arma::mat mode_estimate(m, n);
-  mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol);
+  mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
   // compute the log-likelihood of the approximate model
   double approx_loglik = approx_model0.log_likelihood();
   
@@ -1063,7 +1063,7 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
       // update parameters
       model.theta = theta_prop;
       // construct the approximate Gaussian model
-      mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
+      mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
       double sum_scales = arma::accu(model.scaling_factors(approx_model, mode_estimate));
       // compute the log-likelihood of the approximate model
       double approx_loglik_prop = approx_model.log_likelihood() + sum_scales;
@@ -1128,7 +1128,7 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
 // run delayed acceptance MCMC for non-linear Gaussian state space model
 // using BSF
 void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int nsim_states,
-  const unsigned int max_iter, const double conv_tol) {
+  const unsigned int max_iter, const double conv_tol, const unsigned int iekf_iter) {
   
   unsigned int m = model.m;
   unsigned n = model.n;
@@ -1137,7 +1137,7 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
   
   // construct the approximate Gaussian model
   arma::mat mode_estimate(m, n);
-  mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol);
+  mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
   // compute the log-likelihood of the approximate model
   double sum_scales = arma::accu(model.scaling_factors(approx_model0, mode_estimate));
   double approx_loglik = approx_model0.log_likelihood() + sum_scales;
@@ -1181,7 +1181,7 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
       model.theta = theta_prop;
       
       // construct the approximate Gaussian model
-      mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
+      mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
       // compute the log-likelihood of the approximate model
       sum_scales = arma::accu(model.scaling_factors(approx_model, mode_estimate));
       
@@ -1229,113 +1229,6 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
         theta_storage.col(n_stored) = theta;
         count_storage(n_stored) = 1;
         alpha_storage.slice(n_stored) = sampled_alpha.t();
-        n_stored++;
-        new_value = false;
-      } else {
-        count_storage(n_stored - 1)++;
-      }
-    }
-    
-    if (!end_ram || i <= n_burnin) {
-      ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
-    }
-  }
-  
-  trim_storage();
-  acceptance_rate /= (n_iter - n_burnin);
-}
-
-void mcmc::ekf_mcmc_nlg(nlg_ssm model, const bool end_ram, 
-  const unsigned int max_iter, const double conv_tol) {
-  
-  unsigned int m = model.m;
-  unsigned n = model.n;
-  
-  double logprior = model.log_prior_pdf.eval(model.theta);
-  
-  arma::mat alphahat(m, n);
-  double loglik = model.ekf_fast_smoother(alphahat);
-  
-  unsigned int iekf_iter = 0;
-  double diff = conv_tol + 1.0; 
-  while(iekf_iter < max_iter && diff > conv_tol) {
-    iekf_iter++;
-    // compute new guess of mode by EKF
-    arma::mat alphahat_new(m, n);
-    double loglik_new  = model.iekf_smoother(alphahat, alphahat_new);
-    diff = std::abs(loglik_new - loglik) / (0.1 + loglik_new);
-    alphahat = alphahat_new;
-    loglik = loglik_new;
-  }
-  
-  double acceptance_prob = 0.0;
-  bool new_value = true;
-  unsigned int n_values = 0;
-  std::normal_distribution<> normal(0.0, 1.0);
-  std::uniform_real_distribution<> unif(0.0, 1.0);
-  
-  arma::vec theta = model.theta;
-  
-  for (unsigned int i = 1; i <= n_iter; i++) {
-    if (i % 16 == 0) {
-      Rcpp::checkUserInterrupt();
-    }
-    
-    // sample from standard normal distribution
-    arma::vec u(n_par);
-    for(unsigned int j = 0; j < n_par; j++) {
-      u(j) = normal(model.engine);
-    }
-    
-    // propose new theta
-    arma::vec theta_prop = theta + S * u;
-    // compute prior
-    double logprior_prop = model.log_prior_pdf.eval(theta_prop);
-    if (arma::is_finite(logprior_prop) && logprior_prop > -arma::datum::inf) {
-      // update parameters
-      model.theta = theta_prop;
-      
-      arma::mat alphahat_prop(m, n);
-      double loglik_prop = model.ekf_fast_smoother(alphahat_prop);
-      
-      iekf_iter = 0;
-      diff = conv_tol + 1.0; 
-      while(iekf_iter < max_iter && diff > conv_tol) {
-        iekf_iter++;
-        // compute new guess of mode by EKF
-        arma::mat alphahat_new(model.m, model.n);
-        double loglik_new  = model.iekf_smoother(alphahat_prop, alphahat_new);
-        diff = std::abs(loglik_new - loglik) / (0.1 + loglik_new);
-        alphahat_prop = alphahat_new;
-        loglik_prop = loglik_new;
-      }
-      if(arma::is_finite(loglik_prop)) {
-        acceptance_prob = std::min(1.0, exp(loglik_prop - loglik +
-          logprior_prop - logprior));
-      } else {
-        acceptance_prob = 0.0; 
-      }
-      
-      if (unif(model.engine) < acceptance_prob) {
-        if (i > n_burnin) {
-          acceptance_rate++;
-          n_values++;
-        }
-        alphahat = alphahat_prop;
-        loglik = loglik_prop;
-        logprior = logprior_prop;
-        theta = theta_prop;
-        new_value = true;
-      }
-    } else acceptance_prob = 0.0;
-    
-    if (i > n_burnin && n_values % n_thin == 0) {
-      //new block
-      if (new_value) {
-        posterior_storage(n_stored) = logprior + loglik;
-        theta_storage.col(n_stored) = theta;
-        count_storage(n_stored) = 1;
-        alpha_storage.slice(n_stored) = alphahat.t();
         n_stored++;
         new_value = false;
       } else {

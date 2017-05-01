@@ -99,7 +99,8 @@ Rcpp::List psi_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const arma::mat& known_tv_params, const unsigned int n_states, 
   const unsigned int n_etas,  const arma::uvec& time_varying,
   const arma::uvec& state_varying, const unsigned int nsim_states, 
-  const unsigned int seed, const unsigned int max_iter, const double conv_tol) {
+  const unsigned int seed, const unsigned int max_iter, 
+  const double conv_tol, const unsigned int iekf_iter) {
   
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
@@ -110,7 +111,8 @@ Rcpp::List psi_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   unsigned n = model.n;
   
   arma::mat mode_estimate(m, n);
-  mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
+  mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, 
+    iekf_iter);
 
   double approx_loglik = approx_model.log_likelihood();
 

@@ -73,15 +73,15 @@ public:
   
   // using non-linear models
   void pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int nsim_states, 
-    const unsigned int max_iter, const double conv_tol);
+    const unsigned int max_iter, const double conv_tol, const unsigned int iekf_iter);
   void pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, 
     const unsigned int nsim_states);
   void ekf_mcmc_nlg(nlg_ssm model, const bool end_ram, const unsigned int max_iter, 
-  const double conv_tol);
+  const double conv_tol, const unsigned int iekf_iter);
   void da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram, const unsigned int nsim_states,
-    const unsigned int max_iter, const double conv_tol);
+    const unsigned int max_iter, const double conv_tol, const unsigned int iekf_iter);
   void da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int nsim_states,
-    const unsigned int max_iter, const double conv_tol);
+    const unsigned int max_iter, const double conv_tol, const unsigned int iekf_iter);
   
   arma::vec posterior_storage;
   arma::mat theta_storage;

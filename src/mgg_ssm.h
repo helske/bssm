@@ -42,7 +42,7 @@ public:
   // compute the log-likelihood using Kalman filter
   double log_likelihood() const;
   
-  // arma::cube simulate_states(unsigned int nsim_states, bool use_antithetic = true);
+  arma::cube simulate_states();
   // 
   // 
   // perform fast state smoothing

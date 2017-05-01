@@ -26,8 +26,12 @@ particle_smoother(object, nsim, ...)
 
 \item{seed}{Seed for RNG.}
 
-\item{filter_type}{Either \code{"bsf"} for bootstrap filter, or \code{"psi"}
-for psi-auxiliary filter. Latter is only applicable for non-Gaussian models.}
+\item{filter_type}{Either \code{"bsf"} for bootstrap filter, \code{"psi"}
+for psi-auxiliary filter (for non-Gaussian models), 
+or \code{"aux"} for auxiliary particle filter (for non-linear models).}
+
+\item{use_ekf}{If \code{TRUE} (default), use EKF based proposals for 
+auxiliary particle filter.}
 }
 \description{
 Function \code{particle_smoother} performs filter-smoother or forward-backward smoother,

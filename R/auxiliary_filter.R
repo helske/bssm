@@ -7,9 +7,9 @@
 #' @param object of class \code{gssm}, \code{bsm}, or \code{nlg_ssm}.
 #' @param nsim Number of samples.
 #' @param optimal For Gaussian models, use optimal proposals? Default is \code{TRUE}.
-#' @param seed Seed for RNG.
 #' @param use_ekf For non-linear Gaussian models, use extended Kalman filter for proposals? 
 #' Default is \code{TRUE}.
+#' @param seed Seed for RNG.
 #' @param ... Ignored.
 #' @return A list containing samples, filtered estimates and the corresponding covariances,
 #' weights from the last time point, and an estimate of log-likelihood.
@@ -20,8 +20,9 @@ auxiliary_filter <- function(object, nsim, ...) {
 }
 #' @method auxiliary_filter nlg_ssm
 #' @export
-auxiliary_filter.nlg_ssm <- function(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), use_ekf = TRUE, ...) {
+#' @rdname auxiliary_filter
+auxiliary_filter.nlg_ssm <- function(object, nsim, use_ekf = TRUE,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
   
   out <- aux_nlg(t(object$y), object$Z, object$H, object$T, 
     object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
@@ -37,10 +38,11 @@ auxiliary_filter.nlg_ssm <- function(object, nsim,
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
-#' @method auxiliary_filter gssm
+#' @method auxiliary_filter gssm 
 #' @export
-auxiliary_filter.gssm <- function(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), optimal = TRUE, ...) {
+#' @rdname auxiliary_filter
+auxiliary_filter.gssm <- function(object, nsim, optimal = TRUE,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
   
   out <- aux(object, nsim, seed, TRUE, 1L, optimal)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
@@ -54,8 +56,9 @@ auxiliary_filter.gssm <- function(object, nsim,
 
 #' @method auxiliary_filter bsm
 #' @export
-auxiliary_filter.bsm <- function(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), optimal = TRUE, ...) {
+#' @rdname auxiliary_filter
+auxiliary_filter.bsm <- function(object, nsim, optimal = TRUE, 
+  seed = sample(.Machine$integer.max, size = 1), ...) {
   
   out <- aux(object, nsim, seed, TRUE, 2L, optimal)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-

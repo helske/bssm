@@ -38,7 +38,7 @@ void nlg_amcmc::trim_storage() {
 // non-linear Gaussian state space model
 
 void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter, 
-  const double conv_tol, const bool end_ram) {
+  const double conv_tol, const bool end_ram, const unsigned int iekf_iter) {
   
   unsigned int m = model.m;
   unsigned n = model.n;
@@ -46,7 +46,7 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
   double logprior = model.log_prior_pdf.eval(model.theta);
   
   arma::mat mode_estimate(m, n);
-  mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol);
+  mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
   double sum_scales = arma::accu(model.scaling_factors(approx_model0, mode_estimate));
   // compute the log-likelihood of the approximate model
   double loglik = approx_model0.log_likelihood() + sum_scales;
@@ -78,7 +78,8 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
       // update parameters
       model.theta = theta_prop;
       arma::mat mode_estimate_prop(m, n);
-      mgg_ssm approx_model = model.approximate(mode_estimate_prop, max_iter, conv_tol);
+      mgg_ssm approx_model = model.approximate(mode_estimate_prop, max_iter, 
+        conv_tol, iekf_iter);
       double sum_scales_prop = 
         arma::accu(model.scaling_factors(approx_model, mode_estimate_prop));
       // compute the log-likelihood of the approximate model
@@ -291,7 +292,7 @@ void nlg_amcmc::is_correction_psi(nlg_ssm model, const unsigned int nsim_states,
 
 void nlg_amcmc::state_sampler_psi_is2(nlg_ssm model, const unsigned int nsim_states, 
   const arma::mat& theta, const arma::cube& mode, arma::cube& alpha, arma::vec& weights) {
-
+  
   unsigned int p = model.p;
   unsigned int n = model.n;
   unsigned int m = model.m;
@@ -399,4 +400,85 @@ void nlg_amcmc::state_sampler_psi_is1(nlg_ssm model, const unsigned int nsim_sta
   }
 }
 
+
+void nlg_amcmc::gaussian_sampling(nlg_ssm model, const unsigned int n_threads) {
+  
+  if(n_threads > 1) {
+#ifdef _OPENMP
+#pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
+{
+  model.engine = std::mt19937(omp_get_thread_num() + 1);
+  unsigned thread_size = floor(n_stored / n_threads);
+  unsigned int start = omp_get_thread_num() * thread_size;
+  unsigned int end = (omp_get_thread_num() + 1) * thread_size - 1;
+  if(omp_get_thread_num() == (n_threads - 1)) {
+    end = n_stored - 1;
+  }
+  
+  arma::mat theta_piece = theta_storage(arma::span::all, arma::span(start, end));
+  arma::cube alpha_piece(model.n, model.m, thread_size);
+  arma::cube mode_piece = 
+    mode_storage(arma::span::all, arma::span::all, arma::span(start, end));
+  gaussian_state_sampler(model, theta_piece, mode_piece, alpha_piece);
+  alpha_storage.slices(start, end) = alpha_piece;
+}
+#else
+    
+    gaussian_state_sampler(model, theta_storage, mode_storage,
+      alpha_storage);
+#endif
+  } else {
+    gaussian_state_sampler(model, theta_storage, mode_storage,
+      alpha_storage);
+  }
+  posterior_storage = prior_storage + approx_loglik_storage - scales_storage + 
+    log(weight_storage);
+}
+
+void nlg_amcmc::gaussian_state_sampler(nlg_ssm model,
+  const arma::mat& theta, const arma::cube& mode, arma::cube& alpha) {
+  
+  unsigned int p = model.p;
+  unsigned int n = model.n;
+  unsigned int m = model.m;
+  unsigned int k = model.k;
+  
+  arma::vec a1(m);
+  arma::mat P1(m, m);
+  arma::cube Z(p, m, n);
+  arma::cube H(p, p, (n - 1) * model.Htv + 1);
+  arma::cube T(m, m, n);
+  arma::cube R(m, k, (n - 1) * model.Rtv + 1);
+  arma::mat D(p, n);
+  arma::mat C(m, n);
+  
+  mgg_ssm approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
+    arma::mat(0,0), D, C, model.seed);
+  
+  for (unsigned int i = 0; i < theta.n_cols; i++) {
+    
+    model.theta = theta.col(i);
+    
+    approx_model.a1 = model.a1_fn.eval(model.theta, model.known_params);
+    approx_model.P1 = model.P1_fn.eval(model.theta, model.known_params);
+    for (unsigned int t = 0; t < Z.n_slices; t++) {
+      approx_model.Z.slice(t) = model.Z_gn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.T.slice(t) = model.T_gn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.D.col(t) = model.Z_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+        approx_model.Z.slice(t) * mode.slice(i).col(t);
+      approx_model.C.col(t) =  model.T_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+        approx_model.T.slice(t) * mode.slice(i).col(t);
+    }
+    for (unsigned int t = 0; t < H.n_slices; t++) {
+      approx_model.H.slice(t) = model.H_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+    }
+    for (unsigned int t = 0; t < R.n_slices; t++) {
+      approx_model.R.slice(t) = model.R_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+    }
+    approx_model.compute_HH();
+    approx_model.compute_RR();
+    
+    alpha.slice(i) = approx_model.simulate_states();
+  }
+}
 

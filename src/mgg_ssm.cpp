@@ -452,209 +452,54 @@ void mgg_ssm::filter(arma::mat& at, arma::mat& att,
     Ptt.slice(t) = Pt.slice(t);
   }
 }
-// 
-// /* Fast state smoothing which returns also Ft, Kt and Lt which can be used
-//  * in subsequent calls of smoother in simulation smoother.
-//  */
-// 
-// 
-// /* Fast state smoothing which uses precomputed Ft, Kt and Lt.
-//  */
-// arma::mat mgg_ssm::fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
-//   const arma::cube& Lt) const {
-//   
-//   arma::mat at(m, n);
-//   arma::mat Pt(m, m);
-//   
-//   arma::vec vt(n);
-//   
-//   at.col(0) = a1;
-//   Pt = P1;
-//   
-//   arma::vec y_tmp = y;
-//   if (xreg.n_cols > 0) {
-//     y_tmp -= xbeta;
-//   }
-//   
-//   for (unsigned int t = 0; t < (n - 1); t++) {
-//     if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol) {
-//       vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
-//       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
-//     } else {
-//       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
-//     }
-//   }
-//   unsigned int t = n - 1;
-//   if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol) {
-//     vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
-//   }
-//   arma::mat rt(m, n);
-//   rt.col(n - 1).zeros();
-//   
-//   for (int t = (n - 1); t > 0; t--) {
-//     if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol){
-//       rt.col(t - 1) = Z.col(t * Ztv) / Ft(t) * vt(t) + Lt.slice(t).t() * rt.col(t);
-//     } else {
-//       rt.col(t - 1) = T.slice(t * Ttv).t() * rt.col(t);
-//     }
-//   }
-//   if (arma::is_finite(y(0)) && Ft(0) > zero_tol){
-//     arma::mat L = T.slice(0) * (arma::eye(m, m) - Kt.col(0) * Z.col(0).t());
-//     at.col(0) = a1 + P1 * (Z.col(0) / Ft(0) * vt(0) + L.t() * rt.col(0));
-//   } else {
-//     at.col(0) = a1 + P1 * T.slice(0).t() * rt.col(0);
-//   }
-//   
-//   for (unsigned int t = 0; t < (n - 1); t++) {
-//     at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
-//   }
-//   
-//   
-//   return at;
-// }
-// 
-// arma::mat mgg_ssm::fast_precomputing_smoother(arma::vec& Ft, arma::mat& Kt, 
-//   arma::cube& Lt) const {
-//   
-//   arma::mat at(m, n);
-//   arma::mat Pt(m, m);
-//   arma::vec vt(n);
-//   
-//   at.col(0) = a1;
-//   Pt = P1;
-//   
-//   arma::vec y_tmp = y;
-//   if (xreg.n_cols > 0) {
-//     y_tmp -= xbeta;
-//   }
-//   for (unsigned int t = 0; t < (n - 1); t++) {
-//     Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt * Z.col(t * Ztv) + HH(t * Htv));
-//     if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol) {
-//       Kt.col(t) = Pt * Z.col(t * Ztv) / Ft(t);
-//       vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
-//       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
-//       Pt = arma::symmatu(T.slice(t * Ttv) * (Pt - Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
-//     } else {
-//       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
-//       Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
-//     }
-//   }
-//   unsigned int t = n - 1;
-//   Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt * Z.col(t * Ztv) + HH(t * Htv));
-//   if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol) {
-//     vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
-//     Kt.col(t) = Pt * Z.col(t * Ztv) / Ft(t);
-//   }
-//   arma::mat rt(m, n);
-//   rt.col(n - 1).zeros();
-//   
-//   for (int t = (n - 1); t > 0; t--) {
-//     if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol){
-//       Lt.slice(t) = T.slice(t * Ttv) * (arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t());
-//       rt.col(t - 1) = Z.col(t * Ztv) / Ft(t) * vt(t) + Lt.slice(t).t() * rt.col(t);
-//     } else {
-//       rt.col(t - 1) = T.slice(t * Ttv).t() * rt.col(t);
-//     }
-//   }
-//   if (arma::is_finite(y_tmp(0)) && Ft(0) > zero_tol){
-//     arma::mat L = T.slice(0) * (arma::eye(m, m) - Kt.col(0) * Z.col(0).t());
-//     at.col(0) = a1 + P1 * (Z.col(0) / Ft(0) * vt(0) + L.t() * rt.col(0));
-//   } else {
-//     at.col(0) = a1 + P1 * T.slice(0).t() * rt.col(0);
-//   }
-//   for (unsigned int t = 0; t < (n - 1); t++) {
-//     at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t) + RR.slice(t * Rtv) * rt.col(t);
-//   }
-//   
-//   return at;
-// }
-// 
 
-// double mgg_ssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
-//   arma::cube& Ptt) const {
-//   
-//   double logLik = 0;
-//   
-//   at.col(0) = a1;
-//   Pt.slice(0) = P1;
-//   
-//   arma::vec y_tmp = y;
-//   if(xreg.n_cols > 0) {
-//     y_tmp -= xbeta;
-//   }
-//   const double LOG2PI = std::log(2.0 * M_PI);
-//   
-//   for (unsigned int t = 0; t < n; t++) {
-//     double F = arma::as_scalar(Z.col(t * Ztv).t() * Pt.slice(t) * Z.col(t * Ztv) + HH(t * Htv));
-//     if (arma::is_finite(y_tmp(t)) && F > zero_tol) {
-//       double v = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
-//       arma::vec K = Pt.slice(t) * Z.col(t * Ztv) / F;
-//       att.col(t) = at.col(t) + K * v;
-//       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (att.col(t));
-//       Ptt.slice(t) = Pt.slice(t) - K * K.t() * F;
-//       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * Ptt.slice(t) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
-//       logLik -= 0.5 * (LOG2PI + log(F) + v * v/F);
-//     } else {
-//       att.col(t) = at.col(t);
-//       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * att.col(t);
-//       Ptt.slice(t) = Pt.slice(t);
-//       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * Ptt.slice(t) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
-//     }
-//   }
-//   
-//   return logLik;
-// }
-// void mgg_ssm::smoother(arma::mat& at, arma::cube& Pt) const {
-//   
-//   at.col(0) = a1;
-//   Pt.slice(0) = P1;
-//   arma::vec vt(n);
-//   arma::vec Ft(n);
-//   arma::mat Kt(m, n);
-//   
-//   arma::vec y_tmp = y;
-//   if (xreg.n_cols > 0) {
-//     y_tmp -= xbeta;
-//   }
-//   
-//   for (unsigned int t = 0; t < (n - 1); t++) {
-//     Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt.slice(t) * Z.col(t * Ztv) +
-//       HH(t * Htv));
-//     if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol) {
-//       Kt.col(t) = Pt.slice(t) * Z.col(t * Ztv) / Ft(t);
-//       vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
-//       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
-//       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (Pt.slice(t) -
-//         Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
-//     } else {
-//       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
-//       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * Pt.slice(t) * T.slice(t * Ttv).t() +
-//         RR.slice(t * Rtv));
-//     }
-//   }
-//   unsigned int t = n - 1;
-//   Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt.slice(t) * Z.col(t * Ztv) +
-//     HH(t * Htv));
-//   if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol) {
-//     vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
-//     Kt.col(t) = Pt.slice(t) * Z.col(t * Ztv) / Ft(t);
-//   }
-//   
-//   
-//   arma::vec rt(m, arma::fill::zeros);
-//   arma::mat Nt(m, m, arma::fill::zeros);
-//   
-//   for (int t = (n - 1); t >= 0; t--) {
-//     if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol){
-//       arma::mat L = T.slice(t * Ttv) * (arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t());
-//       rt = Z.col(t * Ztv) / Ft(t) * vt(t) + L.t() * rt;
-//       Nt = arma::symmatu(Z.col(t * Ztv) * Z.col(t * Ztv).t() / Ft(t) + L.t() * Nt * L);
-//     } else {
-//       rt = T.slice(t * Ttv).t() * rt;
-//       Nt = arma::symmatu(T.slice(t * Ttv).t() * Nt * T.slice(t * Ttv));
-//     }
-//     at.col(t) += Pt.slice(t) * rt;
-//     Pt.slice(t) -= arma::symmatu(Pt.slice(t) * Nt * Pt.slice(t));
-//   }
-// }
-// 
+
+arma::cube mgg_ssm::simulate_states() {
+  
+  arma::uvec nonzero = arma::find(P1.diag() > 0);
+  arma::mat L_P1(m, m, arma::fill::zeros);
+  if (nonzero.n_elem > 0) {
+    L_P1.submat(nonzero, nonzero) =
+      arma::chol(P1.submat(nonzero, nonzero), "lower");
+  }
+  
+  arma::cube asim(m, n, 1);
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  
+  arma::vec um(m);
+  for(unsigned int j = 0; j < m; j++) {
+    um(j) = normal(engine);
+  }
+  asim.slice(0).col(0) = L_P1 * um;
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    arma::uvec na_y = arma::find_nonfinite(y.col(t));
+    if (na_y.n_elem < p) {
+      arma::vec up(p);
+      for(unsigned int j = 0; j < p; j++) {
+        up(j) = normal(engine);
+      }
+      y.col(t) -= Z.slice(t * Ztv) * asim.slice(0).col(t) +
+        H(t * Htv) * up;
+    }
+    arma::vec uk(k);
+    for(unsigned int j = 0; j < k; j++) {
+      uk(j) = normal(engine);
+    }
+    asim.slice(0).col(t + 1) = T.slice(t * Ttv) * asim.slice(0).col(t) +
+      R.slice(t * Rtv) * uk;
+  }
+  arma::uvec na_y = arma::find_nonfinite(y.col(n - 1));
+  if (na_y.n_elem < p) {
+    arma::vec up(p);
+    for(unsigned int j = 0; j < p; j++) {
+      up(j) = normal(engine);
+    }
+    y.col(n - 1) -= Z.slice((n - 1) * Ztv) * asim.slice(0).col(n - 1) +
+      H((n - 1) * Htv) * up;
+  }
+  
+  asim.slice(0) += fast_smoother();
+  
+  return asim;
+}

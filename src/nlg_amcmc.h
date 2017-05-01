@@ -15,7 +15,7 @@ public:
     const double gamma, const arma::mat& S, const bool store_modes);
   
   void approx_mcmc(nlg_ssm model, const unsigned int max_iter, 
-    const double conv_tol, const bool end_ram);
+    const double conv_tol, const bool end_ram, const unsigned int iekf_iter);
   
   void is_correction_bsf(nlg_ssm model, const unsigned int nsim_states, 
     const bool const_sim, const unsigned int n_threads);
@@ -38,6 +38,11 @@ public:
     const arma::mat& theta, const arma::cube& mode,
     arma::cube& alpha, arma::vec& weights, const arma::uvec& counts);
   arma::vec weight_storage;
+  
+  void gaussian_sampling(nlg_ssm model, const unsigned int n_threads);
+  
+  void gaussian_state_sampler(nlg_ssm model, 
+    const arma::mat& theta, const arma::cube& mode, arma::cube& alpha);
   
 private:
   

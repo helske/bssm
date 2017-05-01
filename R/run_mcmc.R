@@ -467,7 +467,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   n_threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100, 
-  conv_tol = 1e-8, ...) {
+  conv_tol = 1e-8, iekf_iter = 0, ...) {
   
   a <- proc.time()
   check_target(target_acceptance)
@@ -483,8 +483,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   }
   if (nsim_states < 2 && method != "ekf") {
     #approximate inference
-    method <- "pm"
-    simulation_method <- "ekf"
+    method <- "ekf"
   }
   
   if (missing(S)) {
@@ -503,7 +502,8 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
             object$n_states, object$n_etas, seed, 
             nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
             end_adaptive_phase, n_threads,
-            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")))
+            max_iter, conv_tol, 
+            pmatch(simulation_method, c("psi", "bsf", "spdk")), iekf_iter)
         } else {
           out <- nonlinear_pm_mcmc(t(object$y), object$Z, object$H, object$T, 
             object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
@@ -512,7 +512,8 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
             as.integer(object$state_varying), object$n_states, object$n_etas, seed, 
             nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
             end_adaptive_phase, n_threads,
-            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")))
+            max_iter, conv_tol, 
+            pmatch(simulation_method, c("psi", "bsf", "spdk")), iekf_iter)
         }
       } else {
         if(method == "ekf") {
@@ -522,7 +523,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
             object$known_tv_params, as.integer(object$time_varying), 
             as.integer(object$state_varying), object$n_states, object$n_etas, seed, 
             nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            end_adaptive_phase, max_iter, conv_tol)
+            end_adaptive_phase, max_iter, conv_tol, n_threads, iekf_iter)
         } else {
           out <- nonlinear_is_mcmc(t(object$y), object$Z, object$H, object$T, 
             object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
@@ -531,7 +532,8 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
             as.integer(object$state_varying), object$n_states, object$n_etas, seed, 
             nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
             end_adaptive_phase, n_threads, const_m, 
-            pmatch(simulation_method, c("psi", "bsf", "spdk")), max_iter, conv_tol)
+            pmatch(simulation_method, c("psi", "bsf", "spdk")), 
+            max_iter, conv_tol, iekf_iter)
         }
       }
       

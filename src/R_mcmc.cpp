@@ -351,7 +351,7 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const double gamma, const double target_acceptance, const arma::mat S,
   const bool end_ram, const unsigned int n_threads,
   const unsigned int max_iter, const double conv_tol, 
-  const unsigned int simulation_method) {
+  const unsigned int simulation_method, const unsigned int iekf_iter) {
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
@@ -362,7 +362,7 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   
   switch (simulation_method) {
   case 1: 
-    mcmc_run.pm_mcmc_psi_nlg(model, end_ram, nsim_states, max_iter, conv_tol);
+    mcmc_run.pm_mcmc_psi_nlg(model, end_ram, nsim_states, max_iter, conv_tol, iekf_iter);
     break;
   case 2:
     mcmc_run.pm_mcmc_bsf_nlg(model, end_ram, nsim_states);
@@ -388,7 +388,7 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const double gamma, const double target_acceptance, const arma::mat S,
   const bool end_ram, const unsigned int n_threads,
   const unsigned int max_iter, const double conv_tol, 
-  const unsigned int simulation_method) {
+  const unsigned int simulation_method, const unsigned int iekf_iter) {
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
@@ -400,10 +400,10 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   
   switch (simulation_method) {
   case 1:
-    mcmc_run.da_mcmc_psi_nlg(model, end_ram, nsim_states, max_iter, conv_tol);
+    mcmc_run.da_mcmc_psi_nlg(model, end_ram, nsim_states, max_iter, conv_tol, iekf_iter);
     break;
   case 2:
-    mcmc_run.da_mcmc_bsf_nlg(model, end_ram, nsim_states, max_iter, conv_tol);
+    mcmc_run.da_mcmc_bsf_nlg(model, end_ram, nsim_states, max_iter, conv_tol, iekf_iter);
     break;
   }
   
@@ -425,17 +425,19 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin,
   const double gamma, const double target_acceptance, const arma::mat S,
-  const bool end_ram, const unsigned int max_iter, const double conv_tol) {
+  const bool end_ram, const unsigned int max_iter, const double conv_tol
+  , const unsigned int n_threads, const unsigned int iekf_iter) {
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
     time_varying, state_varying, seed);
   
-  mcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n, 
-    model.m, target_acceptance, gamma, S, true);
+  nlg_amcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n, 
+    model.m, target_acceptance, gamma, S, 1);
   
-  mcmc_run.ekf_mcmc_nlg(model, end_ram, max_iter, conv_tol);
+  mcmc_run.approx_mcmc(model, max_iter, conv_tol, end_ram, iekf_iter);
   
+  mcmc_run.gaussian_sampling(model, n_threads);
   return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
     Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
     Rcpp::Named("counts") = mcmc_run.count_storage,
@@ -454,7 +456,8 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const unsigned int n_burnin, const unsigned int n_thin,
   const double gamma, const double target_acceptance, const arma::mat S,
   const bool end_ram, const unsigned int n_threads, const bool const_sim, 
-  const unsigned int simulation_method, const unsigned int max_iter, const double conv_tol) {
+  const unsigned int simulation_method, const unsigned int max_iter, 
+  const double conv_tol, const unsigned int iekf_iter) {
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
@@ -463,7 +466,7 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   nlg_amcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n, 
     model.m, target_acceptance, gamma, S, simulation_method == 1);
   
-  mcmc_run.approx_mcmc(model, max_iter, conv_tol, end_ram);
+  mcmc_run.approx_mcmc(model, max_iter, conv_tol, end_ram, iekf_iter);
   if (simulation_method == 1) {
     mcmc_run.is_correction_psi(model, nsim_states, const_sim, n_threads);
   } else {

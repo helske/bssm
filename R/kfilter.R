@@ -75,13 +75,13 @@ kfilter.svm <- function(object, ...) {
 #' @export
 #' @rdname ekf
 #' @export
-ekf <- function(object) {
+ekf <- function(object, iekf_iter = 0) {
   
   out <- ekf_nlg(t(object$y), object$Z, object$H, object$T, 
   object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
   object$theta, object$log_prior_pdf, object$known_params, 
   object$known_tv_params, object$n_states, object$n_etas, 
-  as.integer(object$time_varying), as.integer(object$state_varying))
+  as.integer(object$time_varying), as.integer(object$state_varying), iekf_iter)
   
   out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
   out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))

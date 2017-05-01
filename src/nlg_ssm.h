@@ -21,7 +21,8 @@ public:
   
   // find the approximating Gaussian model
   mgg_ssm approximate(arma::mat& mode_estimate, 
-    const unsigned int max_iter, const double conv_tol) const;
+    const unsigned int max_iter, const double conv_tol, 
+    const unsigned int iekf_iter) const;
   // update the approximating Gaussian model
   arma::mat approximate(mgg_ssm& approx_model, const unsigned int max_iter, 
     const double conv_tol) const;
@@ -33,6 +34,9 @@ public:
   
   // compute logarithms of _unnormalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
   arma::vec log_weights(const mgg_ssm& approx_model, 
+    const unsigned int t, const arma::cube& alphasim, const arma::mat& alpha_prev) const;
+  // compute logarithms of _unnormalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
+  arma::vec log_weights_dis(const mgg_ssm& approx_model, 
     const unsigned int t, const arma::cube& alphasim, const arma::mat& alpha_prev) const;
   
   // compute unnormalized mode-based scaling terms
@@ -59,14 +63,12 @@ public:
     const arma::vec& at, const arma::mat& Pt, arma::vec& att, arma::mat& Ptt) const;
     
   double ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, 
-    arma::cube& Ptt) const;
+    arma::cube& Ptt, const unsigned int iekf_iter) const;
   
-  double ekf_loglik() const;
+  double ekf_loglik(const unsigned int iekf_iter) const;
   
-  //double ekf_smoother(arma::mat& alphahat) const;
-  double ekf_smoother(arma::mat& att, arma::cube& Ptt) const;
-  double ekf_fast_smoother(arma::mat& at) const;
-  double iekf_smoother(const arma::mat& alphahat,arma::mat& alphahat_new) const;
+  double ekf_smoother(arma::mat& att, arma::cube& Ptt, const unsigned int iekf_iter) const;
+  double ekf_fast_smoother(arma::mat& at, const unsigned int iekf_iter) const;
   
   arma::cube predict_sample(const arma::mat& thetasim, const arma::mat& alpha, 
     const arma::uvec& counts, const unsigned int predict_type);
@@ -74,6 +76,7 @@ public:
   
   double ukf(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& Ptt, 
     const double alpha = 1.0, const double beta = 0.0, const double kappa = 2.0) const;
+  double log_signal_pdf(const arma::mat& alpha) const;
   
   arma::mat y;
   // nonlinear functions of 

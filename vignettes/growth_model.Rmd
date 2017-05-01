@@ -83,7 +83,7 @@ Let's make less than optimal initial guess for $\theta$, the standard deviation 
 initial_theta <- c(3, 0.5, 0.5)
 
 # dT, K, a1 and the prior variances
-psi <- c(dT, 100, 0.3, 5, 4, 10);
+psi <- c(dT, 100, 0.3, 5, 4, 10)
 ```
 
 The name of this function does not matter, but it should always return Armadillo vector (`arma::vec`), and have same signature (ie. the order and types of the function's parameters) should always be like above, even though some of the parameters were not used in the body of the function. For details of using Armadillo, see [Armadillo documentation](http://arma.sourceforge.net/docs.html). After defining the appropriate model functions, the `cpp` file should also contain a function for creating external pointers for the aforementioned functions. Why this is needed is more technical issue, but fortunately you can just copy the function from the example file without any modifications. 
