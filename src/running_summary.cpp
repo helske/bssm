@@ -21,13 +21,15 @@ void running_weighted_summary(const arma::cube& x, arma::mat& mean_x, arma::cube
   mean_x.zeros();
   double cumsumw = 0;
   for(unsigned int i = 0; i < x.n_slices; i++) {
-    double tmp = weights(i) + cumsumw;
-    arma::mat diff = x.slice(i) - mean_x;
-    mean_x += diff * weights(i) / tmp;
-    for (unsigned int t = 0; t < x.n_cols; t++) {
-      cov_x.slice(t) +=  weights(i) * diff.col(t) * (x.slice(i).col(t) - mean_x.col(t)).t();
+    if(weights(i) > 0) {
+      double tmp = weights(i) + cumsumw;
+      arma::mat diff = x.slice(i) - mean_x;
+      mean_x += diff * weights(i) / tmp;
+      for (unsigned int t = 0; t < x.n_cols; t++) {
+        cov_x.slice(t) +=  weights(i) * diff.col(t) * (x.slice(i).col(t) - mean_x.col(t)).t();
+      }
+      cumsumw = tmp;
     }
-    cumsumw = tmp;
   }
   cov_x = cov_x / cumsumw;
   
