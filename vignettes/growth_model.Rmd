@@ -132,7 +132,6 @@ out_bsf_smoother <- particle_smoother(model, filter_type = "bsf", nsim = 1000)
 ts.plot(out_filter$att[, 2], out_bsf_filter$att[, 2], col = 1:2)
 ts.plot(out_smoother$alphahat[, 2], out_bsf_smoother$alphahat[, 2], col = 1:2)
 
-ts.plot(out_smoother$alphahat[,1], out_psi_smoother$alphahat[, 1], out_bsf_smoother$alphahat[, 1], col = 1:3)
 ```
 
 
