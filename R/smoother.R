@@ -110,7 +110,6 @@ smoother.svm <- function(object, ...) {
 #' @export
 #' @rdname ekf_smoother
 #' @export
-#' @export
 ekf_smoother <- function(object, iekf_iter = 0) {
   
   out <- ekf_smoother_nlg(t(object$y), object$Z, object$H, object$T, 

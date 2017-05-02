@@ -26,12 +26,11 @@ particle_smoother(object, nsim, ...)
 
 \item{seed}{Seed for RNG.}
 
-\item{filter_type}{Either \code{"bsf"} for bootstrap filter, \code{"psi"}
-for psi-auxiliary filter (for non-Gaussian models), 
-or \code{"aux"} for auxiliary particle filter (for non-linear models).}
-
-\item{use_ekf}{If \code{TRUE} (default), use EKF based proposals for 
-auxiliary particle filter.}
+\item{filter_type}{For Gaussian models, \code{"bsf"} for bootstrap 
+filter. Also for non-Gaussian or non-linear models, \code{"psi"} uses 
+psi-particle filter, and for non-linear models options \code{"ekf"} 
+(extended Kalman particle filter) and \code{"apf"} (auxiliary particle filter)
+are available.}
 }
 \description{
 Function \code{particle_smoother} performs filter-smoother or forward-backward smoother,

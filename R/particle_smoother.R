@@ -7,12 +7,12 @@
 #' @param nsim Number of samples.
 #' @param smoothing_method Either \code{"fs"} (filter-smoother), or \code{"fbs"} 
 #' (forward-backward smoother).
-#' @param filter_type Either \code{"bsf"} for bootstrap filter, \code{"psi"}
-#' for psi-auxiliary filter (for non-Gaussian models), 
-#' or \code{"aux"} for auxiliary particle filter (for non-linear models).
+#' @param filter_type For Gaussian models, \code{"bsf"} for bootstrap 
+#' filter. Also for non-Gaussian or non-linear models, \code{"psi"} uses 
+#' psi-particle filter, and for non-linear models options \code{"ekf"} 
+#' (extended Kalman particle filter) and \code{"apf"} (auxiliary particle filter)
+#' are available.
 #' @param seed Seed for RNG.
-#' @param use_ekf If \code{TRUE} (default), use EKF based proposals for 
-#' auxiliary particle filter. 
 #' @param ... Ignored.
 #' @export
 #' @rdname particle_smoother
@@ -121,39 +121,45 @@ particle_smoother.svm <- function(object, nsim, smoothing_method = "fs",
 #' @method particle_smoother nlg_ssm
 #' @export
 particle_smoother.nlg_ssm <- function(object, nsim, smoothing_method = "fs", 
-  filter_type = "psi", seed = sample(.Machine$integer.max, size = 1), use_ekf = TRUE,
+  filter_type = "psi", seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0, ...) {
   
   smoothing_method <- match.arg(smoothing_method, c("fs", "fbs"))
-  filter_type <- match.arg(filter_type, c("bsf", "psi", "aux"))
+  filter_type <- match.arg(filter_type, c("bsf", "psi", "apf", "ekf", "psi_df"))
   if (smoothing_method == "fbs") {
     stop("FBS is not yet implemented.")
   }
-  if(filter_type == "psi") {
-    
-    out <- psi_smoother_nlg(t(object$y), object$Z, object$H, object$T, 
+  out <- switch(filter_type,
+    psi = psi_smoother_nlg(t(object$y), object$Z, object$H, object$T, 
       object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
       object$theta, object$log_prior_pdf, object$known_params, 
       object$known_tv_params, object$n_states, object$n_etas, 
       as.integer(object$time_varying), as.integer(object$state_varying), nsim, seed,
-      max_iter, conv_tol, iekf_iter)
-    # stop("psi-filter for nlg_ssm is not supported.")
-  } else {
-    if(filter_type == "bsf") {
-      out <- bsf_smoother_nlg(t(object$y), object$Z, object$H, object$T, 
-        object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
-        object$theta, object$log_prior_pdf, object$known_params, 
-        object$known_tv_params, object$n_states, object$n_etas, 
-        as.integer(object$time_varying), as.integer(object$state_varying), nsim, seed)
-    } else {
-      out <- aux_smoother_nlg(t(object$y), object$Z, object$H, object$T, 
-        object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
-        object$theta, object$log_prior_pdf, object$known_params, 
-        object$known_tv_params, object$n_states, object$n_etas, 
-        as.integer(object$time_varying), as.integer(object$state_varying), nsim, 
-        seed, use_ekf)
-    }
-  }
+      max_iter, conv_tol, iekf_iter),
+    bsf = bsf_smoother_nlg(t(object$y), object$Z, object$H, object$T, 
+      object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
+      object$theta, object$log_prior_pdf, object$known_params, 
+      object$known_tv_params, object$n_states, object$n_etas, 
+      as.integer(object$time_varying), as.integer(object$state_varying), nsim, seed),
+    apf = aux_smoother_nlg(t(object$y), object$Z, object$H, object$T, 
+      object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
+      object$theta, object$log_prior_pdf, object$known_params, 
+      object$known_tv_params, object$n_states, object$n_etas, 
+      as.integer(object$time_varying), as.integer(object$state_varying), nsim, 
+      seed),
+    ekf = ekpf_smoother(t(object$y), object$Z, object$H, object$T, 
+      object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
+      object$theta, object$log_prior_pdf, object$known_params, 
+      object$known_tv_params, object$n_states, object$n_etas, 
+      as.integer(object$time_varying), as.integer(object$state_varying), nsim, 
+      seed),
+    psi_df = df_psi_smoother(t(object$y), object$Z, object$H, object$T, 
+      object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
+      object$theta, object$log_prior_pdf, object$known_params, 
+      object$known_tv_params, object$n_states, object$n_etas, 
+      as.integer(object$time_varying), as.integer(object$state_varying), nsim, 
+      seed)
+  )
   colnames(out$alphahat) <- colnames(out$Vt) <-
     colnames(out$Vt) <- object$state_names
   out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))

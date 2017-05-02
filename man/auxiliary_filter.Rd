@@ -9,7 +9,7 @@
 \usage{
 auxiliary_filter(object, nsim, ...)
 
-\method{auxiliary_filter}{nlg_ssm}(object, nsim, use_ekf = TRUE,
+\method{auxiliary_filter}{nlg_ssm}(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{auxiliary_filter}{gssm}(object, nsim, optimal = TRUE,
@@ -23,10 +23,7 @@ auxiliary_filter(object, nsim, ...)
 
 \item{nsim}{Number of samples.}
 
-\item{...}{Ignored}
-
-\item{use_ekf}{For non-linear Gaussian models, use extended Kalman filter for proposals? 
-Default is \code{TRUE}.}
+\item{...}{Ignored.}
 
 \item{seed}{Seed for RNG.}
 

@@ -26,9 +26,42 @@ public:
   // update the approximating Gaussian model
   arma::mat approximate(mgg_ssm& approx_model, const unsigned int max_iter, 
     const double conv_tol) const;
+  
+  
+  arma::cube predict_sample(const arma::mat& thetasim, const arma::mat& alpha, 
+    const arma::uvec& counts, const unsigned int predict_type);
+  arma::mat sample_model(const arma::vec& a1_sim, const unsigned int predict_type);
+  
+  double ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, 
+    arma::cube& Ptt, const unsigned int iekf_iter) const;
+  
+  double ekf_loglik(const unsigned int iekf_iter) const;
+  
+  double ekf_smoother(arma::mat& att, arma::cube& Ptt, const unsigned int iekf_iter) const;
+  double ekf_fast_smoother(arma::mat& at, const unsigned int iekf_iter) const;
+  
+  double ukf(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& Ptt, 
+    const double alpha = 1.0, const double beta = 0.0, const double kappa = 2.0) const;
+  
+    // bootstrap filter  
+  double bsf_filter(const unsigned int nsim, arma::cube& alphasim, 
+    arma::mat& weights, arma::umat& indices);
+  
+  // auxiliary particle filter  
+  double aux_filter(const unsigned int nsim, arma::cube& alphasim, 
+    arma::mat& weights, arma::umat& indices);
+  
   // psi-particle filter
-  double psi_filter(const mgg_ssm& approx_model,
-    const double approx_loglik,
+  double psi_filter(const mgg_ssm& approx_model, const double approx_loglik,
+    const unsigned int nsim, arma::cube& alpha, arma::mat& weights,
+    arma::umat& indices);
+  
+  // extended Kalman particle filter
+  double ekf_filter(const unsigned int nsim, arma::cube& alpha,
+    arma::mat& weights, arma::umat& indices);
+  
+  // defensive psi-particle filter
+  double df_psi_filter(const mgg_ssm& approx_model, const double approx_loglik,
     const unsigned int nsim, arma::cube& alpha, arma::mat& weights,
     arma::umat& indices);
   
@@ -36,7 +69,7 @@ public:
   arma::vec log_weights(const mgg_ssm& approx_model, 
     const unsigned int t, const arma::cube& alphasim, const arma::mat& alpha_prev) const;
   // compute logarithms of _unnormalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
-  arma::vec log_weights_dis(const mgg_ssm& approx_model, 
+  arma::vec log_weights_df(const mgg_ssm& approx_model, 
     const unsigned int t, const arma::cube& alphasim, const arma::mat& alpha_prev) const;
   
   // compute unnormalized mode-based scaling terms
@@ -48,34 +81,9 @@ public:
   // compute logarithms of _unnormalized_ densities g(y_t | alpha_t)
   double log_obs_density(const unsigned int t, const arma::vec& alphasim) const;
   
-  // bootstrap filter  
-  double bsf_filter(const unsigned int nsim, arma::cube& alphasim, 
-    arma::mat& weights, arma::umat& indices);
-  
-  // auxiliary particle filter  
-  double aux_filter(const unsigned int nsim, arma::cube& alphasim, 
-    arma::mat& weights, arma::umat& indices);
-  
-  
-  double ekf_aux_filter(const unsigned int nsim, arma::cube& alpha,
-    arma::mat& weights, arma::umat& indices);
-  void ekf_aux_update_step(const unsigned int t, const arma::vec y, 
+  void ekf_update_step(const unsigned int t, const arma::vec y, 
     const arma::vec& at, const arma::mat& Pt, arma::vec& att, arma::mat& Ptt) const;
     
-  double ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, 
-    arma::cube& Ptt, const unsigned int iekf_iter) const;
-  
-  double ekf_loglik(const unsigned int iekf_iter) const;
-  
-  double ekf_smoother(arma::mat& att, arma::cube& Ptt, const unsigned int iekf_iter) const;
-  double ekf_fast_smoother(arma::mat& at, const unsigned int iekf_iter) const;
-  
-  arma::cube predict_sample(const arma::mat& thetasim, const arma::mat& alpha, 
-    const arma::uvec& counts, const unsigned int predict_type);
-  arma::mat sample_model(const arma::vec& a1_sim, const unsigned int predict_type);
-  
-  double ukf(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& Ptt, 
-    const double alpha = 1.0, const double beta = 0.0, const double kappa = 2.0) const;
   double log_signal_pdf(const arma::mat& alpha) const;
   
   arma::mat y;

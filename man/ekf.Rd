@@ -4,7 +4,7 @@
 \alias{ekf}
 \title{Extended Kalman Filtering}
 \usage{
-ekf(object)
+ekf(object, iekf_iter = 0)
 }
 \arguments{
 \item{object}{Model object}

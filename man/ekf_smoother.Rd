@@ -4,7 +4,7 @@
 \alias{ekf_smoother}
 \title{Extended Kalman Smoothing}
 \usage{
-ekf_smoother(object)
+ekf_smoother(object, iekf_iter = 0)
 }
 \arguments{
 \item{object}{Model object}

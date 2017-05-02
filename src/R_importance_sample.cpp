@@ -3,8 +3,6 @@
 #include "ugg_bsm.h"
 #include "ung_bsm.h"
 #include "ung_svm.h"
-#include "mgg_ssm.h"
-#include "nlg_ssm.h"
 
 // [[Rcpp::export]]
 Rcpp::List importance_sample_ung(const Rcpp::List& model_, 
