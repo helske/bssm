@@ -47,11 +47,12 @@ Rcpp::List gaussian_approx_model_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_,
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
     time_varying, state_varying, 1);
-
   arma::mat mode_estimate(model.m, model.n);
   mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, 
     conv_tol, iekf_iter);
-
+  if(!arma::is_finite(mode_estimate)) {
+    Rcpp::warning("Approximation did not converge. ");
+  }
   return Rcpp::List::create(Rcpp::Named("y") = approx_model.y,
     Rcpp::Named("D") = approx_model.D,
     Rcpp::Named("Z") = approx_model.Z, Rcpp::Named("H") = approx_model.H,

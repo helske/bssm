@@ -1,5 +1,6 @@
 #include "psd_chol.h"
-
+// Compute the Cholesky factor of positive semidefinite matrix where the 
+// semidefiniteness is due to zeros on diagonal
 // [[Rcpp::export]]
 arma::mat psd_chol(const arma::mat& x) {
   

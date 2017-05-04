@@ -41,12 +41,16 @@ aux <- function(model_, nsim_states, seed, gaussian, model_type, optimal) {
     .Call('bssm_aux', PACKAGE = 'bssm', model_, nsim_states, seed, gaussian, model_type, optimal)
 }
 
+aux_smoother <- function(model_, nsim_states, seed, gaussian, model_type, optimal) {
+    .Call('bssm_aux_smoother', PACKAGE = 'bssm', model_, nsim_states, seed, gaussian, model_type, optimal)
+}
+
 bsf <- function(model_, nsim_states, seed, gaussian, model_type) {
     .Call('bssm_bsf', PACKAGE = 'bssm', model_, nsim_states, seed, gaussian, model_type)
 }
 
-bsf_smoother <- function(model_, nsim_states, seed, model_type) {
-    .Call('bssm_bsf_smoother', PACKAGE = 'bssm', model_, nsim_states, seed, model_type)
+bsf_smoother <- function(model_, nsim_states, seed, gaussian, model_type) {
+    .Call('bssm_bsf_smoother', PACKAGE = 'bssm', model_, nsim_states, seed, gaussian, model_type)
 }
 
 bsf_nlg <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, time_varying, state_varying, nsim_states, seed) {

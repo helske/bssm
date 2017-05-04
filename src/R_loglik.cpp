@@ -89,7 +89,9 @@ double nonlinear_loglik(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     arma::mat mode_estimate(m, n);
     mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, 
       iekf_iter);
-    
+    if(!arma::is_finite(mode_estimate)) {
+      Rcpp::stop("Approximation did not converge. ");
+    }
     double approx_loglik = approx_model.log_likelihood();
     loglik = model.psi_filter(approx_model, approx_loglik,
       nsim_states, alpha, weights, indices);
@@ -108,7 +110,9 @@ double nonlinear_loglik(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     arma::mat mode_estimate(m, n);
     mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, 
       iekf_iter);
-    
+    if(!arma::is_finite(mode_estimate)) {
+      Rcpp::stop("Approximation did not converge. ");
+    }
     double approx_loglik = approx_model.log_likelihood();
     loglik = model.df_psi_filter(approx_model, approx_loglik,
       nsim_states, alpha, weights, indices);

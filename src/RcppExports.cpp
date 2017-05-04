@@ -191,6 +191,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// aux_smoother
+Rcpp::List aux_smoother(const Rcpp::List& model_, const unsigned int nsim_states, const unsigned int seed, bool gaussian, const int model_type, bool optimal);
+RcppExport SEXP bssm_aux_smoother(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP seedSEXP, SEXP gaussianSEXP, SEXP model_typeSEXP, SEXP optimalSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type model_(model_SEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< bool >::type gaussian(gaussianSEXP);
+    Rcpp::traits::input_parameter< const int >::type model_type(model_typeSEXP);
+    Rcpp::traits::input_parameter< bool >::type optimal(optimalSEXP);
+    rcpp_result_gen = Rcpp::wrap(aux_smoother(model_, nsim_states, seed, gaussian, model_type, optimal));
+    return rcpp_result_gen;
+END_RCPP
+}
 // bsf
 Rcpp::List bsf(const Rcpp::List& model_, const unsigned int nsim_states, const unsigned int seed, bool gaussian, const int model_type);
 RcppExport SEXP bssm_bsf(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP seedSEXP, SEXP gaussianSEXP, SEXP model_typeSEXP) {
@@ -207,16 +223,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // bsf_smoother
-Rcpp::List bsf_smoother(const Rcpp::List& model_, const unsigned int nsim_states, const unsigned int seed, const int model_type);
-RcppExport SEXP bssm_bsf_smoother(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP seedSEXP, SEXP model_typeSEXP) {
+Rcpp::List bsf_smoother(const Rcpp::List& model_, const unsigned int nsim_states, const unsigned int seed, bool gaussian, const int model_type);
+RcppExport SEXP bssm_bsf_smoother(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP seedSEXP, SEXP gaussianSEXP, SEXP model_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Rcpp::List& >::type model_(model_SEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type nsim_states(nsim_statesSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< bool >::type gaussian(gaussianSEXP);
     Rcpp::traits::input_parameter< const int >::type model_type(model_typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(bsf_smoother(model_, nsim_states, seed, model_type));
+    rcpp_result_gen = Rcpp::wrap(bsf_smoother(model_, nsim_states, seed, gaussian, model_type));
     return rcpp_result_gen;
 END_RCPP
 }

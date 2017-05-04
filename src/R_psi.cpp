@@ -114,7 +114,9 @@ Rcpp::List psi_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   arma::mat mode_estimate(m, n);
   mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, 
     iekf_iter);
-
+  if(!arma::is_finite(mode_estimate)) {
+    Rcpp::stop("Approximation did not converge. ");
+  }
   double approx_loglik = approx_model.log_likelihood();
   
   arma::cube alpha(m, n, nsim_states);
@@ -159,7 +161,9 @@ Rcpp::List df_psi_smoother_nlg(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   arma::mat mode_estimate(m, n);
   mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, 
     iekf_iter);
-  
+  if(!arma::is_finite(mode_estimate)) {
+    Rcpp::stop("Approximation did not converge. ");
+  }
   double approx_loglik = approx_model.log_likelihood();
   
   arma::cube alpha(m, n, nsim_states);

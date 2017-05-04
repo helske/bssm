@@ -603,97 +603,6 @@ void ugg_ssm::smoother(arma::mat& at, arma::cube& Pt) const {
   }
 }
 
-double ugg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
-  arma::mat& weights, arma::umat& indices) {
-  
-  arma::uvec nonzero = arma::find(P1.diag() > 0);
-  arma::mat L_P1(m, m, arma::fill::zeros);
-  if (nonzero.n_elem > 0) {
-    L_P1.submat(nonzero, nonzero) =
-      arma::chol(P1.submat(nonzero, nonzero), "lower");
-  }
-  std::normal_distribution<> normal(0.0, 1.0);
-  for (unsigned int i = 0; i < nsim; i++) {
-    arma::vec um(m);
-    for(unsigned int j = 0; j < m; j++) {
-      um(j) = normal(engine);
-    }
-    alpha.slice(i).col(0) = a1 + L_P1 * um;
-  }
-  
-  std::uniform_real_distribution<> unif(0.0, 1.0);
-  arma::vec normalized_weights(nsim);
-  double loglik = 0.0;
-  
-  if(arma::is_finite(y(0))) {
-    
-    for (unsigned int i = 0; i < nsim; i++) {
-      double mu = arma::as_scalar(D(0) + Z.col(0).t() * 
-        alpha.slice(i).col(0));
-      weights(i, 0) = -0.5 * std::pow(y(0) - mu, 2) / HH(0);
-    }
-    double max_weight = weights.col(0).max();
-    weights.col(0) = exp(weights.col(0) - max_weight);
-    double sum_weights = arma::sum(weights.col(0));
-    if(sum_weights > 0.0){
-      normalized_weights = weights.col(0) / sum_weights;
-    } else {
-      return -arma::datum::inf;
-    }
-    loglik = max_weight + log(sum_weights / nsim) + norm_log_const(H(0));
-  } else {
-    weights.col(0).ones();
-    normalized_weights.fill(1.0 / nsim);
-  }
-  for (unsigned int t = 0; t < (n - 1); t++) {
-    
-    arma::vec r(nsim);
-    for (unsigned int i = 0; i < nsim; i++) {
-      r(i) = unif(engine);
-    }
-    
-    indices.col(t) = stratified_sample(normalized_weights, r, nsim);
-    
-    arma::mat alphatmp(m, nsim);
-    
-    for (unsigned int i = 0; i < nsim; i++) {
-      alphatmp.col(i) = alpha.slice(indices(i, t)).col(t);
-    }
-    
-    for (unsigned int i = 0; i < nsim; i++) {
-      arma::vec uk(k);
-      for(unsigned int j = 0; j < k; j++) {
-        uk(j) = normal(engine);
-      }
-      alpha.slice(i).col(t + 1) = C.col(t * Ctv) + 
-        T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
-    }
-    
-    if(arma::is_finite(y(t + 1))) {
-      for (unsigned int i = 0; i < nsim; i++) {
-        double mu = arma::as_scalar(D((t + 1) * Dtv) + Z.col(Ztv * (t + 1)).t() * 
-          alpha.slice(i).col(t + 1));
-        weights(i, t + 1) = -0.5 * std::pow(y(t + 1) - mu, 2) / HH(Htv * (t + 1));
-      }
-      
-      double max_weight = weights.col(t + 1).max();
-      weights.col(t + 1) = exp(weights.col(t + 1) - max_weight);
-      double sum_weights = arma::sum(weights.col(t + 1));
-      if(sum_weights > 0.0){
-        normalized_weights = weights.col(t + 1) / sum_weights;
-      } else {
-        return -arma::datum::inf;
-      }
-      loglik += max_weight + log(sum_weights / nsim) +
-        norm_log_const(H(Htv * (t + 1)));
-    } else {
-      weights.col(t + 1).ones();
-      normalized_weights.fill(1.0/nsim);
-    }
-  }
-  
-  return loglik;
-}
 Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& theta,
   const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type) {
   
@@ -847,6 +756,99 @@ arma::mat ugg_ssm::sample_model(const bool simulate_obs) {
   }
 }
 
+
+double ugg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
+  arma::mat& weights, arma::umat& indices) {
+  
+  arma::uvec nonzero = arma::find(P1.diag() > 0);
+  arma::mat L_P1(m, m, arma::fill::zeros);
+  if (nonzero.n_elem > 0) {
+    L_P1.submat(nonzero, nonzero) =
+      arma::chol(P1.submat(nonzero, nonzero), "lower");
+  }
+  std::normal_distribution<> normal(0.0, 1.0);
+  for (unsigned int i = 0; i < nsim; i++) {
+    arma::vec um(m);
+    for(unsigned int j = 0; j < m; j++) {
+      um(j) = normal(engine);
+    }
+    alpha.slice(i).col(0) = a1 + L_P1 * um;
+  }
+  
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+  arma::vec normalized_weights(nsim);
+  double loglik = 0.0;
+  
+  if(arma::is_finite(y(0))) {
+    
+    for (unsigned int i = 0; i < nsim; i++) {
+      double mu = arma::as_scalar(D(0) + Z.col(0).t() * 
+        alpha.slice(i).col(0));
+      weights(i, 0) = -0.5 * std::pow(y(0) - mu, 2) / HH(0);
+    }
+    double max_weight = weights.col(0).max();
+    weights.col(0) = exp(weights.col(0) - max_weight);
+    double sum_weights = arma::sum(weights.col(0));
+    if(sum_weights > 0.0){
+      normalized_weights = weights.col(0) / sum_weights;
+    } else {
+      return -arma::datum::inf;
+    }
+    loglik = max_weight + log(sum_weights / nsim) + norm_log_const(H(0));
+  } else {
+    weights.col(0).ones();
+    normalized_weights.fill(1.0 / nsim);
+  }
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    
+    arma::vec r(nsim);
+    for (unsigned int i = 0; i < nsim; i++) {
+      r(i) = unif(engine);
+    }
+    
+    indices.col(t) = stratified_sample(normalized_weights, r, nsim);
+    
+    arma::mat alphatmp(m, nsim);
+    
+    for (unsigned int i = 0; i < nsim; i++) {
+      alphatmp.col(i) = alpha.slice(indices(i, t)).col(t);
+    }
+    
+    for (unsigned int i = 0; i < nsim; i++) {
+      arma::vec uk(k);
+      for(unsigned int j = 0; j < k; j++) {
+        uk(j) = normal(engine);
+      }
+      alpha.slice(i).col(t + 1) = C.col(t * Ctv) + 
+        T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
+    }
+    
+    if(arma::is_finite(y(t + 1))) {
+      for (unsigned int i = 0; i < nsim; i++) {
+        double mu = arma::as_scalar(D((t + 1) * Dtv) + Z.col(Ztv * (t + 1)).t() * 
+          alpha.slice(i).col(t + 1));
+        weights(i, t + 1) = -0.5 * std::pow(y(t + 1) - mu, 2) / HH(Htv * (t + 1));
+      }
+      
+      double max_weight = weights.col(t + 1).max();
+      weights.col(t + 1) = exp(weights.col(t + 1) - max_weight);
+      double sum_weights = arma::sum(weights.col(t + 1));
+      if(sum_weights > 0.0){
+        normalized_weights = weights.col(t + 1) / sum_weights;
+      } else {
+        return -arma::datum::inf;
+      }
+      loglik += max_weight + log(sum_weights / nsim) +
+        norm_log_const(H(Htv * (t + 1)));
+    } else {
+      weights.col(t + 1).ones();
+      normalized_weights.fill(1.0/nsim);
+    }
+  }
+  
+  return loglik;
+}
+
 double ugg_ssm::aux_filter(const unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
   
@@ -922,6 +924,7 @@ double ugg_ssm::aux_filter(const unsigned int nsim, arma::cube& alpha,
     for (unsigned int i = 0; i < nsim; i++) {
       alphatmp.col(i) = alphatmp_init.col(indices(i, t));
       sampled_weights(i) = aux_weights(indices(i, t));
+      indices(i, t) = indices_init(indices(i, t));
     }
     
     for (unsigned int i = 0; i < nsim; i++) {
@@ -1042,13 +1045,14 @@ double ugg_ssm::oaux_filter(const unsigned int nsim, arma::cube& alpha,
     for (unsigned int i = 0; i < nsim; i++) {
       r(i) = unif(engine);
     }
-    indices.col(t) = stratified_sample(normalized_aux_weights, r, nsim);
+    arma::uvec indices_second = stratified_sample(normalized_aux_weights, r, nsim);
     
     arma::mat alphatmp(m, nsim);
     arma::vec sampled_weights(nsim);
     for (unsigned int i = 0; i < nsim; i++) {
-      alphatmp.col(i) = alphatmp_init.col(indices(i, t));
-      sampled_weights(i) = aux_weights(indices(i, t));
+      alphatmp.col(i) = alphatmp_init.col(indices_second(i));
+      sampled_weights(i) = aux_weights(indices_second(i));
+      indices(i, t) = indices_init(indices_second(i));
     }
     
     for (unsigned int i = 0; i < nsim; i++) {
@@ -1056,8 +1060,8 @@ double ugg_ssm::oaux_filter(const unsigned int nsim, arma::cube& alpha,
       for(unsigned int j = 0; j < m; j++) {
         um(j) = normal(engine);
       }
-      alpha.slice(i).col(t + 1) = att.col(indices(i, t)) +
-        Ptt.slice(indices(i, t)) * um;
+      alpha.slice(i).col(t + 1) = att.col(indices_second(i)) +
+        Ptt.slice(indices_second(i)) * um;
     }
     if(arma::is_finite(y(t + 1))) {
       for (unsigned int i = 0; i < nsim; i++) {
@@ -1069,7 +1073,7 @@ double ugg_ssm::oaux_filter(const unsigned int nsim, arma::cube& alpha,
             C.col(t * Ctv) + T.slice(t * Ttv) * alphatmp.col(i), 
             RR.slice(Rtv * t), false, true) -
           dmvnorm(alpha.slice(i).col(t + 1),
-            att.col(indices(i, t)), Ptt.slice(indices(i, t)), true, true);
+            att.col(indices_second(i)), Ptt.slice(indices_second(i)), true, true);
       }
       double max_weight = weights.col(t + 1).max();
       weights.col(t + 1) = exp(weights.col(t + 1) - max_weight);

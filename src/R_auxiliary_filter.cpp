@@ -159,4 +159,74 @@ Rcpp::List aux(const Rcpp::List& model_,
   return Rcpp::List::create(Rcpp::Named("error") = 0);
 }
 
+// [[Rcpp::export]]
+Rcpp::List aux_smoother(const Rcpp::List& model_,
+  const unsigned int nsim_states, const unsigned int seed, 
+  bool gaussian, const int model_type, bool optimal) {
+  
+  if (gaussian) {
+    switch (model_type) {
+    case 1: {
+  ugg_ssm model(clone(model_), seed);
+  unsigned int m = model.m;
+  unsigned n = model.n;
+  
+  arma::cube alpha(m, n, nsim_states);
+  arma::mat weights(nsim_states, n);
+  arma::umat indices(nsim_states, n - 1);
+  double loglik;
+  if (optimal) {
+    loglik = model.oaux_filter(nsim_states, alpha, weights, indices);
+  } else {
+    loglik = model.aux_filter(nsim_states, alpha, weights, indices);
+  }
+  arma::mat alphahat(model.m, model.n);
+  arma::cube Vt(model.m, model.m, model.n);
+  
+  filter_smoother(alpha, indices);
+  running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n - 1));
+  
+  arma::inplace_trans(alphahat);
+  
+  return Rcpp::List::create(
+    Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") = Vt, 
+    Rcpp::Named("weights") = weights,
+    Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
+  
+} break;
+    case 2: {
+      ugg_bsm model(clone(model_), seed);
+      unsigned int m = model.m;
+      unsigned n = model.n;
+      
+      arma::cube alpha(m, n, nsim_states);
+      arma::mat weights(nsim_states, n);
+      arma::umat indices(nsim_states, n - 1);
+      double loglik;
+      if (optimal) {
+        loglik = model.oaux_filter(nsim_states, alpha, weights, indices);
+        
+      } else {
+        loglik = model.aux_filter(nsim_states, alpha, weights, indices);
+      }
+      
+      arma::mat alphahat(model.m, model.n);
+      arma::cube Vt(model.m, model.m, model.n);
+      
+      filter_smoother(alpha, indices);
+      running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n - 1));
+      
+      arma::inplace_trans(alphahat);
+      
+      return Rcpp::List::create(
+        Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") = Vt, 
+        Rcpp::Named("weights") = weights,
+        Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
+    } break;
+    }
+  } 
+  return Rcpp::List::create(Rcpp::Named("error") = 0);
+}
+
+
 

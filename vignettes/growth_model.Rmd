@@ -125,45 +125,6 @@ ts.plot(cbind(y, out_filter$att[, 2], out_smoother$alphahat[, 2]), col = 1:3)
 ts.plot(cbind(out_filter$att[, 1], out_smoother$alphahat[, 1]), col = 1:2)
 ```
 
-Compare the results with bootstrap filter:
-```{r bsf}
-out_bsf_filter <- bootstrap_filter(model, nsim = 1000)
-out_bsf_smoother <- particle_smoother(model, filter_type = "bsf", nsim = 1000)
-ts.plot(out_filter$att[, 2], out_bsf_filter$att[, 2], col = 1:2)
-ts.plot(out_smoother$alphahat[, 2], out_bsf_smoother$alphahat[, 2], col = 1:2)
-
-```
-
-```{r}
-out_bsf_filter <- bootstrap_filter(model, nsim = 10000)
-out_apf_filter <- auxiliary_filter(model, nsim = 10000)
-out_ekf_filter <- ekpf_filter(model, nsim = 10000)
-ts.plot(out_bsf_filter$att[, 1],
-  out_apf_filter$att[, 1], 
-  out_ekf_filter$att[, 1], 
-   col = 1:3)
-ts.plot(apply(out_bsf_filter$weights, 2, ess), ylim = c(0, 10000))
-ts.plot(apply(out_apf_filter$weights, 2, ess), ylim = c(0, 10000))
-ts.plot(apply(out_ekf_filter$weights, 2, ess), ylim = c(0, 10000))
-
-
-out_bsf_smoother <- particle_smoother(model, filter_type = "bsf", nsim = 10000)
-out_apf_smoother <- particle_smoother(model, filter_type = "apf", nsim = 10000)
-out_ekf_smoother <- particle_smoother(model, filter_type = "ekf", nsim = 10000)
-out_psi_smoother <- particle_smoother(model, filter_type = "psi", nsim = 10000)
-ts.plot(out_bsf_smoother$alphahat[, 1],
-  out_apf_smoother$alphahat[, 1], 
-  out_ekf_smoother$alphahat[, 1], 
-  out_psi_smoother$alphahat[, 1], 
-   col = 1:4)
-ts.plot(apply(out_bsf_smoother$weights, 2, ess), ylim = c(0, 10000))
-ts.plot(apply(out_apf_smoother$weights, 2, ess), ylim = c(0, 10000))
-ts.plot(apply(out_ekf_smoother$weights, 2, ess), ylim = c(0, 10000))
-ts.plot(apply(out_psi_smoother$weights, 2, ess), ylim = c(0, 10000))
-
-ts.plot(out_smoother$alphahat[, 2], out_bsf_smoother$alphahat[, 2], col = 1:2)
-
-```
 ## Markov chain Monte Carlo
 
 For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use $\psi$-PF based pseudo-marginal MCMC with delayed acceptance. Let us compare this approach with EKF-based approximate MCMC:

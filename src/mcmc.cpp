@@ -218,11 +218,11 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
     if (i > n_burnin && n_values % n_thin == 0) {
       //new block
       if (new_value) {
-          posterior_storage(n_stored) = logprior + loglik;
-          theta_storage.col(n_stored) = theta;
-          count_storage(n_stored) = 1;
-          n_stored++;
-          new_value = false;
+        posterior_storage(n_stored) = logprior + loglik;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        n_stored++;
+        new_value = false;
       } else {
         count_storage(n_stored - 1)++;
       }
@@ -358,7 +358,7 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
-       
+        
       }
     } else acceptance_prob = 0.0;
     
@@ -466,7 +466,7 @@ void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
-         new_value = true;
+        new_value = true;
       }
     } else acceptance_prob = 0.0;
     
@@ -617,7 +617,7 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
             loglik = loglik_prop;
             logprior = logprior_prop;
             theta = theta_prop;
-             new_value = true;
+            new_value = true;
           }
         }
       }
@@ -766,7 +766,7 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
             loglik = loglik_prop;
             logprior = logprior_prop;
             theta = theta_prop;
-             new_value = true;
+            new_value = true;
           }
         }
       }
@@ -808,6 +808,9 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   // construct the approximate Gaussian model
   arma::mat mode_estimate(m, n);
   mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
+  if(!arma::is_finite(mode_estimate)) {
+    Rcpp::stop("Approximation did not converge. ");
+  }
   // compute the log-likelihood of the gaussian model
   double gaussian_loglik = approx_model0.log_likelihood();
   
@@ -851,14 +854,19 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
       // update parameters
       model.theta = theta_prop;
       
+      
+      double loglik_prop;
       // construct the approximate Gaussian model
       mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
-      // compute the log-likelihood of the approximate model
-      gaussian_loglik = approx_model.log_likelihood();
-      
-      double loglik_prop = model.psi_filter(approx_model, gaussian_loglik, 
-        nsim_states, alpha, weights, indices);
-      
+      if(!arma::is_finite(mode_estimate)) {
+        gaussian_loglik = -arma::datum::inf;
+        loglik_prop = -arma::datum::inf;
+      } else {
+        // compute the log-likelihood of the approximate model
+        gaussian_loglik = approx_model.log_likelihood();
+        loglik_prop = model.psi_filter(approx_model, gaussian_loglik, 
+          nsim_states, alpha, weights, indices);
+      }
       //compute the acceptance probability
       // use explicit min(...) as we need this value later
       // double q = proposal(theta, theta_prop);
@@ -882,7 +890,7 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
-         new_value = true;
+        new_value = true;
       }
     } else acceptance_prob = 0.0;
     
@@ -980,7 +988,7 @@ void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram,
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
-         new_value = true;
+        new_value = true;
       }
     } else acceptance_prob = 0.0;
     
@@ -1021,6 +1029,9 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   // construct the approximate Gaussian model
   arma::mat mode_estimate(m, n);
   mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
+  if(!arma::is_finite(mode_estimate)) {
+    Rcpp::stop("Approximation did not converge.");
+  }
   // compute the log-likelihood of the approximate model
   double approx_loglik = approx_model0.log_likelihood();
   
@@ -1063,14 +1074,19 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
       // update parameters
       model.theta = theta_prop;
       // construct the approximate Gaussian model
+      double sum_scales;
+      double approx_loglik_prop;
       mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
-      double sum_scales = arma::accu(model.scaling_factors(approx_model, mode_estimate));
-      // compute the log-likelihood of the approximate model
-      double approx_loglik_prop = approx_model.log_likelihood() + sum_scales;
-      // stage 1 acceptance probability, used in RAM as well
-      acceptance_prob = std::min(1.0, exp(approx_loglik_prop - approx_loglik + 
-        logprior_prop - logprior));
-      
+      if(!arma::is_finite(mode_estimate)) {
+        acceptance_prob = 0;
+      } else {
+        sum_scales = arma::accu(model.scaling_factors(approx_model, mode_estimate));
+        // compute the log-likelihood of the approximate model
+        approx_loglik_prop = approx_model.log_likelihood() + sum_scales;
+        // stage 1 acceptance probability, used in RAM as well
+        acceptance_prob = std::min(1.0, exp(approx_loglik_prop - approx_loglik + 
+          logprior_prop - logprior));
+      }
       // initial acceptance
       if (unif(model.engine) < acceptance_prob) {
         
@@ -1096,7 +1112,7 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
             loglik = loglik_prop;
             logprior = logprior_prop;
             theta = theta_prop;
-             new_value = true;
+            new_value = true;
           }
         }
       }
@@ -1138,6 +1154,9 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
   // construct the approximate Gaussian model
   arma::mat mode_estimate(m, n);
   mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
+  if(!arma::is_finite(mode_estimate)) {
+    Rcpp::stop("Approximation did not converge. ");
+  }
   // compute the log-likelihood of the approximate model
   double sum_scales = arma::accu(model.scaling_factors(approx_model0, mode_estimate));
   double approx_loglik = approx_model0.log_likelihood() + sum_scales;
@@ -1182,12 +1201,18 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
       
       // construct the approximate Gaussian model
       mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
-      // compute the log-likelihood of the approximate model
-      sum_scales = arma::accu(model.scaling_factors(approx_model, mode_estimate));
-      
-      // compute the log-likelihood of the approximate model
-      double approx_loglik_prop = approx_model.log_likelihood() + sum_scales;
-      
+      double sum_scales;
+      double approx_loglik_prop;
+      if(!arma::is_finite(mode_estimate)) {
+        acceptance_prob = 0;
+      } else {
+        
+        // compute the log-likelihood of the approximate model
+        sum_scales = arma::accu(model.scaling_factors(approx_model, mode_estimate));
+        
+        // compute the log-likelihood of the approximate model
+        approx_loglik_prop = approx_model.log_likelihood() + sum_scales;
+      }
       // stage 1 acceptance probability, used in RAM as well
       acceptance_prob = std::min(1.0, exp(approx_loglik_prop - approx_loglik + 
         logprior_prop - logprior));
@@ -1216,7 +1241,7 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
             loglik = loglik_prop;
             logprior = logprior_prop;
             theta = theta_prop;
-             new_value = true;
+            new_value = true;
           }
         }
       }

@@ -54,6 +54,14 @@ auxiliary_filter.gssm <- function(object, nsim, optimal = TRUE,
 #' @method auxiliary_filter bsm
 #' @export
 #' @rdname auxiliary_filter
+#' @examples 
+#' model <- bsm(Nile, sd_level = sqrt(1500), sd_y = sqrt(15000), a1 = 1000)
+#' out_apf <- auxiliary_filter(model, nsim = 1000, seed = 1, optimal = FALSE)
+#' out_oapf <- auxiliary_filter(model, nsim = 1000, seed = 1, optimal = TRUE)
+#' ts.plot(out_apf$att, out_oapf$att, kfilter(model)$att, col = 1:3)
+#' library("diagis")
+#' ts.plot(cbind(apply(out_apf$weights, 2, ess), 
+#' apply(out_oapf$weights, 2, ess)), ylim = c(0, 1000), col = 1:2)
 auxiliary_filter.bsm <- function(object, nsim, optimal = TRUE, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
   

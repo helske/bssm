@@ -73,7 +73,7 @@ logLik.svm <- function(object, nsim_states, method = "psi", seed = 1,
 logLik.nlg_ssm <- function(object, nsim_states, method = "bsf", seed = 1, 
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0, ...) {
   
-  method <- match.arg(method,  c("psi", "bsf", "aux", "ekf", "psi_df"))
+  method <- match.arg(method,  c("psi", "bsf", "apf", "ekf", "psi_df"))
   if (method != "ekf" & nsim_states == 0) 
     stop("'nsim_states' must be positive for particle filter based log-likelihood estimation.")
   nonlinear_loglik(t(object$y), object$Z, object$H, object$T, 
@@ -81,5 +81,5 @@ logLik.nlg_ssm <- function(object, nsim_states, method = "bsf", seed = 1,
     object$theta, object$log_prior_pdf, object$known_params, 
     object$known_tv_params, object$n_states, object$n_etas, 
     as.integer(object$time_varying), as.integer(object$state_varying), nsim, seed,
-    max_iter, conv_tol, iekf_iter, pmatch(method, c("psi", "bsf", "aux", "ekf", "psi_df")))
+    max_iter, conv_tol, iekf_iter, pmatch(method, c("psi", "bsf", "apf", "ekf", "psi_df")))
 }
