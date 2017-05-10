@@ -118,7 +118,6 @@ model <- nlg_ssm(y = y, a1=pntrs$a1, P1 = pntrs$P1,
 
 Let's first run Extended Kalman filter and smoother using our initial guess for $\theta$:
 ```{r ekf}
-library(diagis)
 out_filter <- ekf(model)
 out_smoother <- ekf_smoother(model)
 ts.plot(cbind(y, out_filter$att[, 2], out_smoother$alphahat[, 2]), col = 1:3)
@@ -127,12 +126,13 @@ ts.plot(cbind(out_filter$att[, 1], out_smoother$alphahat[, 1]), col = 1:2)
 
 ## Markov chain Monte Carlo
 
-For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use $\psi$-PF based pseudo-marginal MCMC with delayed acceptance. Let us compare this approach with EKF-based approximate MCMC:
+For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use $\psi$-PF based pseudo-marginal MCMC with delayed acceptance. Let us compare this approach with EKF-based approximate MCMC (note that the number of MCMC iterations is rather small):
 
 ```{r mcmc}
-out_mcmc_pm <- run_mcmc(model, n_iter = 1e4, nsim_states = 10, method = "pm", 
+out_mcmc_pm <- run_mcmc(model, n_iter = 5000, nsim_states = 10, method = "pm", 
   simulation_method = "psi")
-out_mcmc_ekf <- run_mcmc(model, n_iter = 1e4, method = "ekf")
+out_mcmc_ekf <- run_mcmc(model, n_iter = 5000, method = "ekf")
+library("diagis")
 alpha_ekf <- weighted_mean(out_mcmc_ekf$alpha, out_mcmc_ekf$counts)
 alpha_pm <- weighted_mean(out_mcmc_pm$alpha, out_mcmc_pm$counts)
 ts.plot(cbind(y, alpha_pm[, 2], alpha_ekf[, 2]), col = 1:3)

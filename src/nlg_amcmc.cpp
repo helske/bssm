@@ -431,8 +431,7 @@ void nlg_amcmc::gaussian_sampling(nlg_ssm model, const unsigned int n_threads) {
     gaussian_state_sampler(model, theta_storage, mode_storage,
       alpha_storage);
   }
-  posterior_storage = prior_storage + approx_loglik_storage - scales_storage + 
-    log(weight_storage);
+  posterior_storage = prior_storage + approx_loglik_storage;
 }
 
 void nlg_amcmc::gaussian_state_sampler(nlg_ssm model,
@@ -477,8 +476,7 @@ void nlg_amcmc::gaussian_state_sampler(nlg_ssm model,
     }
     approx_model.compute_HH();
     approx_model.compute_RR();
-    
-    alpha.slice(i) = approx_model.simulate_states();
+    alpha.slice(i) = approx_model.simulate_states().slice(0).t();
   }
 }
 
