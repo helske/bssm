@@ -2,12 +2,15 @@
 % Please edit documentation in R/kfilter.R
 \name{ekf}
 \alias{ekf}
-\title{Extended Kalman Filtering}
+\title{(Iterated) Extended Kalman Filtering}
 \usage{
 ekf(object, iekf_iter = 0)
 }
 \arguments{
 \item{object}{Model object}
+
+\item{iekf_iter}{If \code{iekf_iter > 0}, iterated extended Kalman filter 
+is used with \code{iekf_iter} iterations.}
 }
 \value{
 List containing the log-likelihood,
@@ -16,7 +19,7 @@ estimates \code{att} of states, and the corresponding variances \code{Pt} and
  \code{Ptt}.
 }
 \description{
-Function \code{ekf} runs the extended Kalman filter for the given 
+Function \code{ekf} runs the (iterated) extended Kalman filter for the given 
 non-linear Gaussian model of class \code{nlg_ssm}, 
 and returns the filtered estimates and one-step-ahead predictions of the 
 states \eqn{\alpha_t} given the data up to time \eqn{t}.

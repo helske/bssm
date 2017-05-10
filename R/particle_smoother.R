@@ -5,13 +5,22 @@
 #'
 #' @param object Model.
 #' @param nsim Number of samples.
+#' @param filter Choice of particle filter algorithm. For Gaussian models, 
+#' possible choices are \code{"bsf"} (bootstrap particle filter) and 
+#' \code{"apf"} (auxiliary particle filter). In addition, for non-Gaussian or 
+#' non-linear models, \code{"psi"} uses psi-particle filter, and 
+#' for non-linear models options \code{"ekf"} (extended Kalman particle filter) 
+#' is also available.
 #' @param smoothing_method Either \code{"fs"} (filter-smoother), or \code{"fbs"} 
 #' (forward-backward smoother).
-#' @param filter_type For Gaussian models, \code{"bsf"} for bootstrap 
-#' filter. Also for non-Gaussian or non-linear models, \code{"psi"} uses 
-#' psi-particle filter, and for non-linear models options \code{"ekf"} 
-#' (extended Kalman particle filter) and \code{"apf"} (auxiliary particle filter)
-#' are available.
+#' @param max_iter Maximum number of iterations used in Gaussian approximation. Used psi-PF.
+#' @param conv_tol Tolerance parameter used in Gaussian approximation. Used psi-PF.
+#' @param iekf_iter If zero (default), first approximation for non-linear 
+#' Gaussian models is obtained from extended Kalman filter. If 
+#' \code{iekf_iter > 0}, iterated extended Kalman filter is used with 
+#' \code{iekf_iter} iterations.
+#' @param optimal For Gaussian models, use optimal auxiliary particle filter? 
+#' Default is \code{TRUE}.
 #' @param seed Seed for RNG.
 #' @param ... Ignored.
 #' @export
@@ -22,8 +31,9 @@ particle_smoother <- function(object, nsim, ...) {
 #' @method particle_smoother gssm
 #' @rdname particle_smoother
 #' @export
-particle_smoother.gssm <- function(object, nsim, smoothing_method = "fs",
-  filter_type = "bsf", seed = sample(.Machine$integer.max, size = 1), 
+particle_smoother.gssm <- function(object, nsim,
+  filter_type = "bsf",  smoothing_method = "fs", 
+  seed = sample(.Machine$integer.max, size = 1), 
   optimal = TRUE, ...) {
   
   filter_type <- match.arg(filter_type, c("bsf", "apf"))
@@ -32,7 +42,7 @@ particle_smoother.gssm <- function(object, nsim, smoothing_method = "fs",
   }
   smoothing_method <- match.arg(smoothing_method, c("fs", "fbs"))
   if(filter_type == "bsf") {
-    bsf_smoother(model, nsim, seed, TRUE, 1L)
+    bsf_smoother(object, nsim, seed, TRUE, 1L)
   } else {
     out <- aux_smoother(object, nsim, seed, TRUE, 1L, optimal)
   }
@@ -47,8 +57,9 @@ particle_smoother.gssm <- function(object, nsim, smoothing_method = "fs",
 
 #' @method particle_smoother bsm
 #' @export
-particle_smoother.bsm <- function(object, nsim, smoothing_method = "fs",
-  filter_type = "bsf", seed = sample(.Machine$integer.max, size = 1), 
+particle_smoother.bsm <- function(object, nsim, 
+  filter_type = "bsf", smoothing_method = "fs", 
+  seed = sample(.Machine$integer.max, size = 1), 
   optimal = TRUE, ...) {
   
   filter_type <- match.arg(filter_type, c("bsf", "apf"))
@@ -72,8 +83,9 @@ particle_smoother.bsm <- function(object, nsim, smoothing_method = "fs",
 #' @rdname particle_smoother
 #' @method particle_smoother ngssm
 #' @export
-particle_smoother.ngssm <- function(object, nsim, smoothing_method = "fs", 
-  filter_type = "bsf", seed = sample(.Machine$integer.max, size = 1), 
+particle_smoother.ngssm <- function(object, nsim, 
+  filter_type = "bsf", smoothing_method = "fs", 
+  seed = sample(.Machine$integer.max, size = 1), 
   max_iter = 100, conv_tol = 1e-8, ...) {
   
   smoothing_method <- match.arg(smoothing_method, c("fs", "fbs"))
@@ -124,8 +136,9 @@ particle_smoother.ng_bsm <- function(object, nsim, filter_type = "psi",
 }
 #' @method particle_smoother svm
 #' @export
-particle_smoother.svm <- function(object, nsim, smoothing_method = "fs", 
-  filter_type = "psi", seed = sample(.Machine$integer.max, size = 1), 
+particle_smoother.svm <- function(object, nsim,
+  filter_type = "psi",  smoothing_method = "fs", 
+  seed = sample(.Machine$integer.max, size = 1), 
   max_iter = 100, conv_tol = 1e-8, ...) {
   
   smoothing_method <- match.arg(smoothing_method, c("fs", "fbs"))
@@ -150,8 +163,10 @@ particle_smoother.svm <- function(object, nsim, smoothing_method = "fs",
 
 #' @method particle_smoother nlg_ssm
 #' @export
-particle_smoother.nlg_ssm <- function(object, nsim, smoothing_method = "fs", 
-  filter_type = "psi", seed = sample(.Machine$integer.max, size = 1),
+particle_smoother.nlg_ssm <- function(object, nsim, 
+  filter_type = "psi", 
+  smoothing_method = "fs", 
+  seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0, ...) {
   
   smoothing_method <- match.arg(smoothing_method, c("fs", "fbs"))

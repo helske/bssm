@@ -1228,15 +1228,24 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 #' the user, as you must provide the several small C++ snippets which define the 
 #' model structure. See examples in ZZZ.
 #' @param y Observations as multivariate time series (or matrix) of length \eqn{n}.
-#' @param Z_fn,H_fn,T_fn,R_fn  An external pointers for the C++ functions which 
+#' @param Z,H,T,R  An external pointers for the C++ functions which 
 #' define the corresponding model functions. 
 #' @param Z_gn,T_gn An external pointers for the C++ functions which 
 #' define the gradients of the corresponding model functions. 
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param theta Parameter vector passed to all model functions.
-#' @param prior_pdf An external pointer for the C++ function which 
+#' @param known_params Vector of known parameters passed to all model functions.
+#' @param known_tv_params Matrix of known parameters passed to all model functions.
+#' @param n_states Number of states in the model.
+#' @param n_etas Dimension of the noise term of the transition equation.
+#' @param log_prior_pdf An external pointer for the C++ function which 
 #' computes the log-prior density given theta.
+#' @param time_varying Optional logical vector of length 4, denoting whether the values of 
+#' Z, H, T, and R vary with respect to time variable (given identical states). 
+#' If used, can speed up some computations.
+#' @param state_varying Optional logical vector of length 2. 
+#' Do H and T vary (linearly) with respect to states?
 #' @param state_names Names for the states.
 #' @return Object of class \code{gssm}.
 #' @export

@@ -60,14 +60,16 @@ kfilter.svm <- function(object, ...) {
   kfilter(gaussian_approx(object))
 }
 
-#' Extended Kalman Filtering
+#' (Iterated) Extended Kalman Filtering
 #'
-#' Function \code{ekf} runs the extended Kalman filter for the given 
+#' Function \code{ekf} runs the (iterated) extended Kalman filter for the given 
 #' non-linear Gaussian model of class \code{nlg_ssm}, 
 #' and returns the filtered estimates and one-step-ahead predictions of the 
 #' states \eqn{\alpha_t} given the data up to time \eqn{t}.
 #'
 #' @param object Model object
+#' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter 
+#' is used with \code{iekf_iter} iterations.
 #' @return List containing the log-likelihood,
 #' one-step-ahead predictions \code{at} and filtered
 #' estimates \code{att} of states, and the corresponding variances \code{Pt} and
@@ -95,6 +97,7 @@ ekf <- function(object, iekf_iter = 0) {
 #' states \eqn{\alpha_t} given the data up to time \eqn{t}.
 #'
 #' @param object Model object
+#' @param alpha,beta,kappa Tuning parameters for the UKF.
 #' @return List containing the log-likelihood,
 #' one-step-ahead predictions \code{at} and filtered
 #' estimates \code{att} of states, and the corresponding variances \code{Pt} and

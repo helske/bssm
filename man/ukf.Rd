@@ -8,6 +8,8 @@ ukf(object, alpha = 1, beta = 0, kappa = 2)
 }
 \arguments{
 \item{object}{Model object}
+
+\item{alpha, beta, kappa}{Tuning parameters for the UKF.}
 }
 \value{
 List containing the log-likelihood,

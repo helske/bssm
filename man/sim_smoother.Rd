@@ -4,7 +4,7 @@
 \alias{sim_smoother}
 \title{Simulation Smoothing}
 \usage{
-sim_smoother(object, nsim, seed, ...)
+sim_smoother(object, nsim, seed, use_antithetic = FALSE, ...)
 }
 \arguments{
 \item{object}{Model object.}
@@ -13,9 +13,9 @@ sim_smoother(object, nsim, seed, ...)
 
 \item{seed}{Seed for the random number generator.}
 
-\item{...}{Ignored.}
-
 \item{use_antithetic}{Use an antithetic variable for location. Default is \code{FALSE}.}
+
+\item{...}{Ignored.}
 }
 \value{
 An array containing the generated samples.

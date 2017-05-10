@@ -18,7 +18,7 @@
 #' model <- bsm(rep(NA, 50), sd_level = uniform(1,0,5), sd_y = uniform(1,0,5))
 #' sim <- sim_smoother(model, 12)
 #' ts.plot(sim[, 1, ])
-sim_smoother <- function(object, nsim, seed, ...) {
+sim_smoother <- function(object, nsim, seed, use_antithetic = FALSE, ...) {
   UseMethod("sim_smoother", object)
 }
 #' @method sim_smoother gssm

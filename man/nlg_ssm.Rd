@@ -12,6 +12,9 @@ nlg_ssm(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta, known_params = NA,
 \arguments{
 \item{y}{Observations as multivariate time series (or matrix) of length \eqn{n}.}
 
+\item{Z, H, T, R}{An external pointers for the C++ functions which 
+define the corresponding model functions.}
+
 \item{Z_gn, T_gn}{An external pointers for the C++ functions which 
 define the gradients of the corresponding model functions.}
 
@@ -21,13 +24,25 @@ define the gradients of the corresponding model functions.}
 
 \item{theta}{Parameter vector passed to all model functions.}
 
-\item{state_names}{Names for the states.}
+\item{known_params}{Vector of known parameters passed to all model functions.}
 
-\item{Z_fn, H_fn, T_fn, R_fn}{An external pointers for the C++ functions which 
-define the corresponding model functions.}
+\item{known_tv_params}{Matrix of known parameters passed to all model functions.}
 
-\item{prior_pdf}{An external pointer for the C++ function which 
+\item{n_states}{Number of states in the model.}
+
+\item{n_etas}{Dimension of the noise term of the transition equation.}
+
+\item{log_prior_pdf}{An external pointer for the C++ function which 
 computes the log-prior density given theta.}
+
+\item{time_varying}{Optional logical vector of length 4, denoting whether the values of 
+Z, H, T, and R vary with respect to time variable (given identical states). 
+If used, can speed up some computations.}
+
+\item{state_varying}{Optional logical vector of length 2. 
+Do H and T vary (linearly) with respect to states?}
+
+\item{state_names}{Names for the states.}
 }
 \value{
 Object of class \code{gssm}.

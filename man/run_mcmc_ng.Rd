@@ -78,13 +78,22 @@ distribution is \eqn{SS'}.}
 
 \item{local_approx}{If \code{TRUE} (default), Gaussian approximation needed for 
 importance sampling is performed at each iteration. If false, approximation is updated only 
-once at the start of the MCMC.}
+once at the start of the MCMC. Not used for non-linear models.}
 
 \item{n_threads}{Number of threads for state simulation.}
 
 \item{seed}{Seed for the random number generator.}
 
 \item{...}{Ignored.}
+
+\item{max_iter}{Maximum number of iterations used in Gaussian approximation. Used psi-PF.}
+
+\item{conv_tol}{Tolerance parameter used in Gaussian approximation. Used psi-PF.}
+
+\item{iekf_iter}{If zero (default), first approximation for non-linear 
+Gaussian models is obtained from extended Kalman filter. If 
+\code{iekf_iter > 0}, iterated extended Kalman filter is used with 
+\code{iekf_iter} iterations.}
 }
 \description{
 Methods for posterior inference of states and parameters.

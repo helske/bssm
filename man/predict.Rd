@@ -27,6 +27,8 @@ from the posterior predictive distribution are returned.}
 \item{return_MCSE}{For Gaussian models, if \code{TRUE}, the Monte Carlo
 standard errors of the intervals are also returned.}
 
+\item{seed}{Seed for RNG.}
+
 \item{...}{Ignored.}
 }
 \value{

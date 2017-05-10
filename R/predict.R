@@ -18,6 +18,7 @@
 #' samples of the model parameters to right place.
 #' @param return_MCSE For Gaussian models, if \code{TRUE}, the Monte Carlo
 #' standard errors of the intervals are also returned.
+#' @param seed Seed for RNG.
 #' @param ... Ignored.
 #' @return List containing the mean predictions, quantiles and Monte Carlo
 #' standard errors .

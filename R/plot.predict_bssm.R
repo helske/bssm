@@ -1,6 +1,7 @@
 #' Plot predictions based on bssm package
 #'
 #' @importFrom ggplot2 autoplot ggplot geom_line geom_ribbon
+#' @importFrom utils head tail
 #' @method autoplot predict_bssm
 #' @param object Object of class \code{predict_bssm}.
 #' @param plot_mean Draw mean predictions. Default is \code{TRUE}.

@@ -8,6 +8,9 @@ ekf_smoother(object, iekf_iter = 0)
 }
 \arguments{
 \item{object}{Model object}
+
+\item{iekf_iter}{If \code{iekf_iter > 0}, iterated extended Kalman filter is 
+used with \code{iekf_iter} iterations.}
 }
 \value{
 List containing the log-likelihood,
@@ -15,8 +18,8 @@ smoothed state estimates \code{alphahat}, and the corresponding variances \code{
  \code{Ptt}.
 }
 \description{
-Function \code{ekf_smoother} runs the extended Kalman smoother for the given 
-non-linear Gaussian model of class \code{nlg_ssm}, 
+Function \code{ekf_smoother} runs the (iterated) extended Kalman smoother for 
+the given non-linear Gaussian model of class \code{nlg_ssm}, 
 and returns the filtered estimates and one-step-ahead predictions of the 
 states \eqn{\alpha_t} given the data up to time \eqn{t}.
 }

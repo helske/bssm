@@ -9,6 +9,14 @@ expand_sample(x, variable = "theta", times, states, by_states = TRUE)
 \arguments{
 \item{x}{Output from \code{\link{run_mcmc}}.}
 
+\item{variable}{Expand parameters \code{"theta"} or states \code{"state"}.}
+
+\item{times}{Vector of indices. In case of states, what time points to expand? Default is all.}
+
+\item{states}{Vector of indices. In case of states, what states to expand? Default is all.}
+
+\item{by_states}{If \code{TRUE} (default), return list by states. Otherwise by time.}
+
 \item{...}{Ignored.}
 }
 \description{

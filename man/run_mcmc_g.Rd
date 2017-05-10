@@ -7,7 +7,7 @@
 \usage{
 \method{run_mcmc}{gssm}(object, n_iter, sim_states = TRUE, type = "full",
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{run_mcmc}{bsm}(object, n_iter, sim_states = TRUE, type = "full",
@@ -51,6 +51,8 @@ algorithm, so that the covariance matrix of the Gaussian proposal
 distribution is \eqn{SS'}.}
 
 \item{end_adaptive_phase}{If \code{TRUE} (default), $S$ is held fixed after the burnin period.}
+
+\item{n_threads}{Number of threads for state simulation.}
 
 \item{seed}{Seed for the random number generator.}
 
