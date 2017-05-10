@@ -5,7 +5,7 @@
 #'
 #' @param object Model.
 #' @param nsim Number of samples.
-#' @param filter Choice of particle filter algorithm. For Gaussian models, 
+#' @param filter_type Choice of particle filter algorithm. For Gaussian models, 
 #' possible choices are \code{"bsf"} (bootstrap particle filter) and 
 #' \code{"apf"} (auxiliary particle filter). In addition, for non-Gaussian or 
 #' non-linear models, \code{"psi"} uses psi-particle filter, and 
@@ -160,7 +160,7 @@ particle_smoother.svm <- function(object, nsim,
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
-
+#' @rdname particle_smoother
 #' @method particle_smoother nlg_ssm
 #' @export
 particle_smoother.nlg_ssm <- function(object, nsim, 

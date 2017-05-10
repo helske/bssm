@@ -12,7 +12,7 @@
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   local_approx = TRUE, n_threads = 1, seed = sample(.Machine$integer.max,
-  size = 1), ...)
+  size = 1), max_iter = 100, conv_tol = 1e-08, ...)
 
 \method{run_mcmc}{ng_bsm}(object, n_iter, nsim_states, type = "full",
   method = "pm", simulation_method = "psi", const_m = TRUE,
@@ -33,7 +33,7 @@
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   n_threads = 1, seed = sample(.Machine$integer.max, size = 1),
-  max_iter = 100, conv_tol = 1e-08, iekf_iter = 0, ...)
+  max_iter = 100, conv_tol = 1e-04, iekf_iter = 0, ...)
 }
 \arguments{
 \item{object}{Model object.}
@@ -84,11 +84,11 @@ once at the start of the MCMC. Not used for non-linear models.}
 
 \item{seed}{Seed for the random number generator.}
 
-\item{...}{Ignored.}
-
 \item{max_iter}{Maximum number of iterations used in Gaussian approximation. Used psi-PF.}
 
 \item{conv_tol}{Tolerance parameter used in Gaussian approximation. Used psi-PF.}
+
+\item{...}{Ignored.}
 
 \item{iekf_iter}{If zero (default), first approximation for non-linear 
 Gaussian models is obtained from extended Kalman filter. If 

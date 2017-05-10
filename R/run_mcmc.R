@@ -216,7 +216,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   local_approx  = TRUE, n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
+  seed = sample(.Machine$integer.max, size = 1), max_iter = 100, conv_tol = 1e-8, ...) {
   
   a <- proc.time()
   check_target(target_acceptance)
@@ -474,7 +474,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   n_threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100, 
-  conv_tol = 1e-8, iekf_iter = 0, ...) {
+  conv_tol = 1e-4, iekf_iter = 0, ...) {
   
   a <- proc.time()
   check_target(target_acceptance)

@@ -4,6 +4,7 @@
 \alias{particle_smoother}
 \alias{particle_smoother.gssm}
 \alias{particle_smoother.ngssm}
+\alias{particle_smoother.nlg_ssm}
 \title{Particle Smoothing}
 \usage{
 particle_smoother(object, nsim, ...)
@@ -15,6 +16,10 @@ particle_smoother(object, nsim, ...)
 \method{particle_smoother}{ngssm}(object, nsim, filter_type = "bsf",
   smoothing_method = "fs", seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100, conv_tol = 1e-08, ...)
+
+\method{particle_smoother}{nlg_ssm}(object, nsim, filter_type = "psi",
+  smoothing_method = "fs", seed = sample(.Machine$integer.max, size = 1),
+  max_iter = 100, conv_tol = 1e-08, iekf_iter = 0, ...)
 }
 \arguments{
 \item{object}{Model.}
@@ -22,6 +27,13 @@ particle_smoother(object, nsim, ...)
 \item{nsim}{Number of samples.}
 
 \item{...}{Ignored.}
+
+\item{filter_type}{Choice of particle filter algorithm. For Gaussian models, 
+possible choices are \code{"bsf"} (bootstrap particle filter) and 
+\code{"apf"} (auxiliary particle filter). In addition, for non-Gaussian or 
+non-linear models, \code{"psi"} uses psi-particle filter, and 
+for non-linear models options \code{"ekf"} (extended Kalman particle filter) 
+is also available.}
 
 \item{smoothing_method}{Either \code{"fs"} (filter-smoother), or \code{"fbs"} 
 (forward-backward smoother).}
@@ -34,13 +46,6 @@ Default is \code{TRUE}.}
 \item{max_iter}{Maximum number of iterations used in Gaussian approximation. Used psi-PF.}
 
 \item{conv_tol}{Tolerance parameter used in Gaussian approximation. Used psi-PF.}
-
-\item{filter}{Choice of particle filter algorithm. For Gaussian models, 
-possible choices are \code{"bsf"} (bootstrap particle filter) and 
-\code{"apf"} (auxiliary particle filter). In addition, for non-Gaussian or 
-non-linear models, \code{"psi"} uses psi-particle filter, and 
-for non-linear models options \code{"ekf"} (extended Kalman particle filter) 
-is also available.}
 
 \item{iekf_iter}{If zero (default), first approximation for non-linear 
 Gaussian models is obtained from extended Kalman filter. If 
