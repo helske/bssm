@@ -4,10 +4,8 @@
 
 void filter_smoother(arma::cube& alpha, const arma::umat& indices) {
   
-  arma::uvec b(alpha.n_slices);
-  for(unsigned int i = 0; i < b.n_elem; i++) {
-    b(i) = i;
-  }
+  arma::uvec b(alpha.n_slices) = arma::regspace<arma::uvec>(0, alpha.n_slices - 1);
+  
   for (int t = alpha.n_cols - 2; t >= 0; t--) {
     arma::mat alphatmp = alpha.tube(arma::span::all, arma::span(t));
     for (unsigned int i = 0; i < alpha.n_slices; i++) {
