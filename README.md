@@ -1,5 +1,8 @@
 [![Build Status](https://travis-ci.org/helske/bssm.png?branch=master)](https://travis-ci.org/helske/bssm)
 [![codecov.io](http://codecov.io/github/helske/bssm/coverage.svg?branch=master)](http://codecov.io/github/helske/bssm?branch=master)
+[![DOI](https://zenodo.org/badge/53692028.svg)](https://zenodo.org/badge/latestdoi/53692028)
+
+
 
 bssm: an R package for Bayesian inference of exponential family and stochastic volatility state space models
 ==========================================================================
