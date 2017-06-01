@@ -148,6 +148,7 @@ library("ggplot2")
 autoplot(out_pred, y = model$y, plot_median = FALSE)
 
 ```
+
 ## Appendix
 
 This is the full `growth_model_functions.cpp` file:
@@ -249,6 +250,8 @@ arma::mat T_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
   
   return Tg;
 }
+
+
 
 // # log-prior pdf for theta
 // [[Rcpp::export]]

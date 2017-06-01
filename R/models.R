@@ -48,7 +48,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     beta <- NULL
   } else {
     
-    if (missing(beta)) {
+    if (missing(beta) || is.null(beta)) {
       stop("No prior defined for beta. ")
     }
     if(!is_prior(beta) && !is_prior_list(beta)) {
@@ -75,7 +75,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   notfixed <- c("y" = 1, "level" = 1, "slope" = 1, "seasonal" = 1)
   
   
-  if (missing(sd_y)) {
+  if (missing(sd_y) || is.null(sd_y)) {
     stop("Provide either prior or fixed value for sd_y.")
   } else {
     if (is_prior(sd_y)) {
@@ -88,7 +88,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     }
   }
   
-  if (missing(sd_level)) {
+  if (missing(sd_level) || is.null(sd_level)) {
     stop("Provide either prior or fixed value for sd_level.")
   } else {
     if (is_prior(sd_level)) {
@@ -99,21 +99,21 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     }
   }
   
-  if (missing(sd_slope)) {
+  if (missing(sd_slope) || is.null(sd_slope)) {
     notfixed["slope"] <- 0
     slope <- FALSE
     sd_slope <- NULL
   } else {
     if (is_prior(sd_slope)) {
-      check_sd(sd_slope$init, "sd_slope")
+      check_sd(sd_slope$init, "slope")
     } else {
       notfixed["slope"] <- 0
-      check_sd(sd_slope, "sd_slope")
+      check_sd(sd_slope, "slope")
     }
     slope <- TRUE
   }
   
-  if (missing(sd_seasonal)) {
+  if (missing(sd_seasonal) || is.null(sd_seasonal)) {
     notfixed["seasonal"] <- 0
     seasonal_names <- NULL
     seasonal <- FALSE
@@ -123,10 +123,10 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
       stop("Period of seasonal component must be larger than 1. ")
     }
     if (is_prior(sd_seasonal)) {
-      check_sd(sd_seasonal$init, "sd_seasonal")
+      check_sd(sd_seasonal$init, "seasonal")
     } else {
       notfixed["seasonal"] <- 0
-      check_sd(sd_seasonal, "sd_seasonal")
+      check_sd(sd_seasonal, "seasonal")
     }
     seasonal <- TRUE
     seasonal_names <- paste0("seasonal_", 1:(period - 1))
@@ -306,7 +306,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     beta <- NULL
   } else {
     
-    if (missing(beta)) {
+    if (missing(beta) || is.null(beta)) {
       stop("No prior defined for beta. ")
     }
     if(!is_prior(beta) && !is_prior_list(beta)) {
@@ -334,7 +334,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   
   notfixed <- c("level" = 1, "slope" = 1, "seasonal" = 1)
   
-  if (missing(sd_level)) {
+  if (missing(sd_level) || missing(sd_level)) {
     stop("Provide either prior or fixed value for sd_level.")
   } else {
     if (is_prior(sd_level)) {
@@ -344,21 +344,21 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
       check_sd(sd_level, "level")
     }
   }
-  if (missing(sd_slope)) {
+  if (missing(sd_slope) || is.null(sd_slope)) {
     notfixed["slope"] <- 0
     slope <- FALSE
     sd_slope <- NULL
   } else {
     if (is_prior(sd_slope)) {
-      check_sd(sd_slope$init, "sd_slope")
+      check_sd(sd_slope$init, "slope")
     } else {
       notfixed["slope"] <- 0
-      check_sd(sd_slope, "sd_slope")
+      check_sd(sd_slope, "slope")
     }
     slope <- TRUE
   }
   
-  if (missing(sd_seasonal)) {
+  if (missing(sd_seasonal) || is.null(sd_seasonal)) {
     notfixed["seasonal"] <- 0
     seasonal_names <- NULL
     seasonal <- FALSE
@@ -368,16 +368,16 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
       stop("Period of seasonal component must be larger than 1. ")
     }
     if (is_prior(sd_seasonal)) {
-      check_sd(sd_seasonal$init, "sd_seasonal")
+      check_sd(sd_seasonal$init, "seasonal")
     } else {
       notfixed["seasonal"] <- 0
-      check_sd(sd_seasonal, "sd_seasonal")
+      check_sd(sd_seasonal, "seasonal")
     }
     seasonal <- TRUE
     seasonal_names <- paste0("seasonal_", 1:(period - 1))
   }
   
-  if (missing(sd_noise)) {
+  if (missing(sd_noise) || is.null(sd_noise)) {
     noise <- FALSE
     sd_noise <- NULL
   } else {
@@ -650,7 +650,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
     coefs <- numeric(0)
     beta <- NULL
   } else {
-    if (missing(beta)) {
+    if (missing(beta) || is.null(beta)) {
       stop("No prior defined for beta. ")
     }
     if(!is_prior(beta) && !is_prior_list(beta)) {
@@ -850,7 +850,7 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     beta <- NULL
   } else {
     
-    if (missing(beta)) {
+    if (missing(beta) || is.null(beta)) {
       stop("No prior defined for beta. ")
     }
     if(!is_prior(beta) && !is_prior_list(beta)) {
@@ -1061,7 +1061,7 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
     coefs <- matrix(0, 1, p)
     beta <- NULL
   } else {
-    if (missing(beta)) {
+    if (missing(beta) || is.null(beta)) {
       stop("No prior defined for beta. ")
     }
     if(!is_prior(beta) && !is_prior_list(beta)) {

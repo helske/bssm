@@ -149,8 +149,8 @@ void nlg_amcmc::is_correction_bsf(nlg_ssm model, const unsigned int nsim_states,
   }
   
   arma::mat theta_piece = theta_storage(arma::span::all, arma::span(start, end));
-  arma::cube alpha_piece(model.n, model.m, thread_size);
-  arma::vec weights_piece(thread_size);
+  arma::cube alpha_piece(model.n, model.m, end - start + 1);
+  arma::vec weights_piece(end - start + 1);
   arma::vec approx_loglik_piece = approx_loglik_storage.subvec(start, end);
   if (const_sim) {
     state_sampler_bsf_is2(model, nsim_states, theta_piece, approx_loglik_piece, 

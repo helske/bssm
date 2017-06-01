@@ -1090,3 +1090,58 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+
+static const R_CallMethodDef CallEntries[] = {
+    {"bssm_conditional_cov", (DL_FUNC) &bssm_conditional_cov, 3},
+    {"bssm_dmvnorm", (DL_FUNC) &bssm_dmvnorm, 5},
+    {"bssm_precompute_dmvnorm", (DL_FUNC) &bssm_precompute_dmvnorm, 3},
+    {"bssm_fast_dmvnorm", (DL_FUNC) &bssm_fast_dmvnorm, 5},
+    {"bssm_psd_chol", (DL_FUNC) &bssm_psd_chol, 1},
+    {"bssm_gaussian_approx_model", (DL_FUNC) &bssm_gaussian_approx_model, 5},
+    {"bssm_gaussian_approx_model_nlg", (DL_FUNC) &bssm_gaussian_approx_model_nlg, 20},
+    {"bssm_aux_nlg", (DL_FUNC) &bssm_aux_nlg, 19},
+    {"bssm_aux_smoother_nlg", (DL_FUNC) &bssm_aux_smoother_nlg, 19},
+    {"bssm_aux", (DL_FUNC) &bssm_aux, 6},
+    {"bssm_aux_smoother", (DL_FUNC) &bssm_aux_smoother, 6},
+    {"bssm_bsf", (DL_FUNC) &bssm_bsf, 5},
+    {"bssm_bsf_smoother", (DL_FUNC) &bssm_bsf_smoother, 5},
+    {"bssm_bsf_nlg", (DL_FUNC) &bssm_bsf_nlg, 19},
+    {"bssm_bsf_smoother_nlg", (DL_FUNC) &bssm_bsf_smoother_nlg, 19},
+    {"bssm_ekf_nlg", (DL_FUNC) &bssm_ekf_nlg, 18},
+    {"bssm_ekf_smoother_nlg", (DL_FUNC) &bssm_ekf_smoother_nlg, 18},
+    {"bssm_ekf_fast_smoother_nlg", (DL_FUNC) &bssm_ekf_fast_smoother_nlg, 18},
+    {"bssm_ekpf", (DL_FUNC) &bssm_ekpf, 19},
+    {"bssm_ekpf_smoother", (DL_FUNC) &bssm_ekpf_smoother, 19},
+    {"bssm_importance_sample_ung", (DL_FUNC) &bssm_importance_sample_ung, 8},
+    {"bssm_gaussian_kfilter", (DL_FUNC) &bssm_gaussian_kfilter, 2},
+    {"bssm_gaussian_loglik", (DL_FUNC) &bssm_gaussian_loglik, 2},
+    {"bssm_nongaussian_loglik", (DL_FUNC) &bssm_nongaussian_loglik, 8},
+    {"bssm_nonlinear_loglik", (DL_FUNC) &bssm_nonlinear_loglik, 23},
+    {"bssm_gaussian_mcmc", (DL_FUNC) &bssm_gaussian_mcmc, 18},
+    {"bssm_gaussian_mcmc_summary", (DL_FUNC) &bssm_gaussian_mcmc_summary, 17},
+    {"bssm_nongaussian_pm_mcmc", (DL_FUNC) &bssm_nongaussian_pm_mcmc, 22},
+    {"bssm_nongaussian_da_mcmc", (DL_FUNC) &bssm_nongaussian_da_mcmc, 22},
+    {"bssm_nongaussian_is_mcmc", (DL_FUNC) &bssm_nongaussian_is_mcmc, 23},
+    {"bssm_nonlinear_pm_mcmc", (DL_FUNC) &bssm_nonlinear_pm_mcmc, 31},
+    {"bssm_nonlinear_da_mcmc", (DL_FUNC) &bssm_nonlinear_da_mcmc, 31},
+    {"bssm_nonlinear_ekf_mcmc", (DL_FUNC) &bssm_nonlinear_ekf_mcmc, 30},
+    {"bssm_nonlinear_is_mcmc", (DL_FUNC) &bssm_nonlinear_is_mcmc, 32},
+    {"bssm_gaussian_predict", (DL_FUNC) &bssm_gaussian_predict, 9},
+    {"bssm_nongaussian_predict", (DL_FUNC) &bssm_nongaussian_predict, 8},
+    {"bssm_nonlinear_predict", (DL_FUNC) &bssm_nonlinear_predict, 22},
+    {"bssm_psi_smoother", (DL_FUNC) &bssm_psi_smoother, 8},
+    {"bssm_psi_smoother_nlg", (DL_FUNC) &bssm_psi_smoother_nlg, 22},
+    {"bssm_df_psi_smoother_nlg", (DL_FUNC) &bssm_df_psi_smoother_nlg, 22},
+    {"bssm_gaussian_smoother", (DL_FUNC) &bssm_gaussian_smoother, 2},
+    {"bssm_gaussian_ccov_smoother", (DL_FUNC) &bssm_gaussian_ccov_smoother, 2},
+    {"bssm_gaussian_fast_smoother", (DL_FUNC) &bssm_gaussian_fast_smoother, 2},
+    {"bssm_gaussian_sim_smoother", (DL_FUNC) &bssm_gaussian_sim_smoother, 5},
+    {"bssm_ukf_nlg", (DL_FUNC) &bssm_ukf_nlg, 20},
+    {"bssm_weighted_obm", (DL_FUNC) &bssm_weighted_obm, 2},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_bssm(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}
