@@ -19,14 +19,14 @@ mcmc::mcmc(const arma::uvec& prior_distributions, const arma::mat& prior_paramet
   const double target_acceptance, const double gamma, const arma::mat& S, 
   const bool store_states) :
   prior_distributions(prior_distributions), prior_parameters(prior_parameters),
-  n_stored(0), n_iter(n_iter), n_burnin(n_burnin), n_thin(n_thin),
+  n_iter(n_iter), n_burnin(n_burnin), n_thin(n_thin),
   n_samples(floor((n_iter - n_burnin) / n_thin)), 
   n_par(prior_distributions.n_elem),
-  target_acceptance(target_acceptance), gamma(gamma), S(S),
-  alpha_storage(arma::cube(n, m, store_states * n_samples)), 
-  theta_storage(arma::mat(n_par, n_samples)),
+  target_acceptance(target_acceptance), gamma(gamma), n_stored(0),
   posterior_storage(arma::vec(n_samples)), 
+  theta_storage(arma::mat(n_par, n_samples)),
   count_storage(arma::uvec(n_samples, arma::fill::zeros)),
+  alpha_storage(arma::cube(n, m, store_states * n_samples)), S(S),
   acceptance_rate(0.0) {
 }
 
@@ -358,6 +358,7 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
         loglik = loglik_prop;
         logprior = logprior_prop;
         theta = theta_prop;
+        new_value = true;
         
       }
     } else acceptance_prob = 0.0;

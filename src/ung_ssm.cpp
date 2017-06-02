@@ -142,7 +142,6 @@ void ung_ssm::laplace_iter(const arma::vec& signal, arma::vec& approx_y,
 // in case of potential divergence etc...
 ugg_ssm ung_ssm::approximate(arma::vec& mode_estimate, const unsigned int max_iter, 
   const double conv_tol) const {
-  
   //Construct y and H for the Gaussian model
   arma::vec approx_y(n);
   arma::vec approx_H(n);
@@ -150,7 +149,6 @@ ugg_ssm ung_ssm::approximate(arma::vec& mode_estimate, const unsigned int max_it
   
   unsigned int i = 0;
   double diff = conv_tol + 1; 
-  
   while(i < max_iter && diff > conv_tol) {
     i++;
     //Construct y and H for the Gaussian model
@@ -169,14 +167,14 @@ ugg_ssm ung_ssm::approximate(arma::vec& mode_estimate, const unsigned int max_it
     diff = arma::mean(arma::square(mode_estimate_new - mode_estimate));
     mode_estimate = mode_estimate_new;
   }
-  
+
   return approx_model;
 }
 
 //update previously obtained approximation
 void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate, 
   const unsigned int max_iter, const double conv_tol) const {
-  
+
   //update model
   approx_model.Z = Z;
   approx_model.T = T;
@@ -209,6 +207,7 @@ void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate,
     diff = arma::mean(arma::square(mode_estimate_new - mode_estimate));
     mode_estimate = mode_estimate_new;
   }
+ 
 }
 
 

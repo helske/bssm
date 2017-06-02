@@ -39,7 +39,6 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
 //[[Rcpp::export]]
 double precompute_dmvnorm(const arma::mat& sigma, arma::mat& Linv, const arma::uvec& nonzero) { 
   
-  unsigned int p = sigma.n_cols;
   Linv = arma::inv(arma::trimatl(sigma(nonzero, nonzero)));
   double constant = -0.5 * nonzero.n_elem * std::log(2.0 * M_PI) + 
     arma::sum(log(Linv.diag()));

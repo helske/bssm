@@ -91,11 +91,7 @@ The name of this function does not matter, but it should always return Armadillo
 After creating the file for `C++` functions, you need to compile the file using `Rcpp`:
 
 ```{r pointers}
-if (interactive()) {
-  Rcpp::sourceCpp("vignettes/growth_model_functions.cpp")
-} else {
-  Rcpp::sourceCpp("growth_model_functions.cpp")
-}
+Rcpp::sourceCpp("growth_model_functions.cpp")
 pntrs <- create_xptrs()
 ```
 

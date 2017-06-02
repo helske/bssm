@@ -85,8 +85,8 @@ public:
   
   arma::vec posterior_storage;
   arma::mat theta_storage;
-  arma::cube alpha_storage;
   arma::uvec count_storage;
+  arma::cube alpha_storage;
   arma::mat S;
   double acceptance_rate;
   
