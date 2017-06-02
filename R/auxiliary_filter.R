@@ -33,7 +33,7 @@ auxiliary_filter.nlg_ssm <- function(object, nsim,
     object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
     object$theta, object$log_prior_pdf, object$known_params, 
     object$known_tv_params, object$n_states, object$n_etas, 
-    as.integer(object$time_varying), as.integer(object$state_varying), nsim, 
+    as.integer(object$time_varying), nsim, 
     seed)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- 

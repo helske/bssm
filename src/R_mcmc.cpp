@@ -344,7 +344,6 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, 
   const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
   const arma::mat& known_tv_params, const arma::uvec& time_varying, 
-  const arma::uvec& state_varying,
   const unsigned int n_states, const unsigned int n_etas,
   const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin,
@@ -355,7 +354,7 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
-    time_varying, state_varying, seed);
+    time_varying, seed);
   
   mcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n, 
     model.m, target_acceptance, gamma, S, true);
@@ -381,7 +380,6 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, 
   const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
   const arma::mat& known_tv_params, const arma::uvec& time_varying, 
-  const arma::uvec& state_varying,
   const unsigned int n_states, const unsigned int n_etas,
   const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin,
@@ -392,7 +390,7 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
-    time_varying, state_varying, seed);
+    time_varying, seed);
   
   mcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n, 
     model.m, target_acceptance, gamma, S, true);
@@ -420,7 +418,6 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, 
   const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
   const arma::mat& known_tv_params, const arma::uvec& time_varying, 
-  const arma::uvec& state_varying, 
   const unsigned int n_states, const unsigned int n_etas,
   const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin,
@@ -430,7 +427,7 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
-    time_varying, state_varying, seed);
+    time_varying, seed);
   
   nlg_amcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n, 
     model.m, target_acceptance, gamma, S, 1);
@@ -450,7 +447,6 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, 
   const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
   const arma::mat& known_tv_params, const arma::uvec& time_varying, 
-  const arma::uvec& state_varying, 
   const unsigned int n_states, const unsigned int n_etas,
   const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin,
@@ -461,7 +457,7 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
-    time_varying, state_varying, seed);
+    time_varying, seed);
   
   nlg_amcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n, 
     model.m, target_acceptance, gamma, S, simulation_method == 1);

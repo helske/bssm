@@ -23,7 +23,7 @@ arma::mat P1_fn(const arma::vec& theta, const arma::vec& known_params) {
 
 // Function for the observational level standard deviation
 // [[Rcpp::export]]
-arma::mat H_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
+arma::mat H_fn(const unsigned int t, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
   arma::mat H(1,1);
   H(0, 0) = theta(0);
@@ -32,7 +32,7 @@ arma::mat H_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
 
 // Function for the Cholesky of state level covariance
 // [[Rcpp::export]]
-arma::mat R_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
+arma::mat R_fn(const unsigned int t, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
   arma::mat R(2, 2, arma::fill::zeros);
   R(0, 0) = theta(1);
@@ -117,15 +117,18 @@ double log_prior_pdf(const arma::vec& theta) {
 // you don't alter the function names above
 // [[Rcpp::export]]
 Rcpp::List create_xptrs() {
-  // typedef for a pointer of nonlinear function of model equation returning vec
+  // typedef for a pointer of nonlinear function of model equation returning vec (T, Z)
   typedef arma::vec (*vec_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
     const arma::vec& known_params, const arma::mat& known_tv_params);
-  // typedef for a pointer of nonlinear function of model equation returning mat
+  // typedef for a pointer of nonlinear function of model equation returning mat (Tg, Zg)
   typedef arma::mat (*mat_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
     const arma::vec& known_params, const arma::mat& known_tv_params);
-  // typedef for a pointer of nonlinear function of model equation returning vec
+  // typedef for a pointer of nonlinear function of model equation returning mat (R, H)
+  typedef arma::mat (*mat_varfnPtr)(const unsigned int t, const arma::vec& theta, 
+    const arma::vec& known_params, const arma::mat& known_tv_params);
+  // typedef for a pointer of nonlinear function of model equation returning vec (a1)
   typedef arma::vec (*vec_initfnPtr)(const arma::vec& theta, const arma::vec& known_params);
-  // typedef for a pointer of nonlinear function of model equation returning mat
+  // typedef for a pointer of nonlinear function of model equation returning mat (P1)
   typedef arma::mat (*mat_initfnPtr)(const arma::vec& theta, const arma::vec& known_params);
   // typedef for a pointer of log-prior function
   typedef double (*double_fnPtr)(const arma::vec&);
@@ -134,9 +137,9 @@ Rcpp::List create_xptrs() {
     Rcpp::Named("a1_fn") = Rcpp::XPtr<vec_initfnPtr>(new vec_initfnPtr(&a1_fn)),
     Rcpp::Named("P1_fn") = Rcpp::XPtr<mat_initfnPtr>(new mat_initfnPtr(&P1_fn)),
     Rcpp::Named("Z_fn") = Rcpp::XPtr<vec_fnPtr>(new vec_fnPtr(&Z_fn)),
-    Rcpp::Named("H_fn") = Rcpp::XPtr<mat_fnPtr>(new mat_fnPtr(&H_fn)),
+    Rcpp::Named("H_fn") = Rcpp::XPtr<mat_varfnPtr>(new mat_varfnPtr(&H_fn)),
     Rcpp::Named("T_fn") = Rcpp::XPtr<vec_fnPtr>(new vec_fnPtr(&T_fn)),
-    Rcpp::Named("R_fn") = Rcpp::XPtr<mat_fnPtr>(new mat_fnPtr(&R_fn)),
+    Rcpp::Named("R_fn") = Rcpp::XPtr<mat_varfnPtr>(new mat_varfnPtr(&R_fn)),
     Rcpp::Named("Z_gn") = Rcpp::XPtr<mat_fnPtr>(new mat_fnPtr(&Z_gn)),
     Rcpp::Named("T_gn") = Rcpp::XPtr<mat_fnPtr>(new mat_fnPtr(&T_gn)),
     Rcpp::Named("log_prior_pdf") = 

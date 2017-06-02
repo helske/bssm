@@ -16,8 +16,7 @@ public:
     SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_,
     const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
     const arma::mat& known_tv_params, const unsigned int m, const unsigned int k,
-    const arma::uvec& time_varying, const arma::uvec& state_varying, 
-    const unsigned int seed);
+    const arma::uvec& time_varying, const unsigned int seed);
   
   // find the approximating Gaussian model
   mgg_ssm approximate(arma::mat& mode_estimate, 
@@ -88,13 +87,13 @@ public:
   
   arma::mat y;
   // nonlinear functions of 
-  // y_t = Z(alpha_t, theta_t) + H(alpha_t, theta_t)*eps_t, 
-  // alpha_t+1 = T(alpha_t, theta_t) + R(alpha_t, theta_t)*eta_t
+  // y_t = Z(alpha_t, theta,t) + H(theta,t)*eps_t, 
+  // alpha_t+1 = T(alpha_t, theta,t) + R(theta, t)*eta_t
   
   vec_fn Z_fn;
-  mat_fn H_fn;
+  mat_varfn H_fn;
   vec_fn T_fn;
-  mat_fn R_fn;
+  mat_varfn R_fn;
   //and the derivatives
   mat_fn Z_gn;
   mat_fn T_gn;
@@ -120,8 +119,6 @@ public:
   const unsigned int Tgtv;
   const unsigned int Htv;
   const unsigned int Rtv;
-  const unsigned int Hsv;
-  const unsigned int Rsv;
   
   unsigned int seed;
   std::mt19937 engine;

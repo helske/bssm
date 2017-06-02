@@ -9,12 +9,12 @@ Rcpp::List ekpf(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
   const arma::mat& known_tv_params, const unsigned int n_states, 
   const unsigned int n_etas,  const arma::uvec& time_varying,
-  const arma::uvec& state_varying, const unsigned int nsim_states, 
+  const unsigned int nsim_states, 
   const unsigned int seed) {
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
-    time_varying, state_varying, seed);
+    time_varying, seed);
   
   unsigned int m = model.m;
   unsigned n = model.n;
@@ -47,13 +47,13 @@ Rcpp::List ekpf_smoother(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
   const arma::mat& known_tv_params, const unsigned int n_states, 
   const unsigned int n_etas,  const arma::uvec& time_varying,
-  const arma::uvec& state_varying, const unsigned int nsim_states, 
+  const unsigned int nsim_states, 
   const unsigned int seed) {
   
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
-    time_varying, state_varying, seed);
+    time_varying, seed);
   
   unsigned int m = model.m;
   unsigned n = model.n;

@@ -325,10 +325,10 @@ void nlg_amcmc::state_sampler_psi_is2(nlg_ssm model, const unsigned int nsim_sta
         approx_model.T.slice(t) * mode.slice(i).col(t);
     }
     for (unsigned int t = 0; t < H.n_slices; t++) {
-      approx_model.H.slice(t) = model.H_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
     }
     for (unsigned int t = 0; t < R.n_slices; t++) {
-      approx_model.R.slice(t) = model.R_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.R.slice(t) = model.R_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
     }
     approx_model.compute_HH();
     approx_model.compute_RR();
@@ -382,10 +382,10 @@ void nlg_amcmc::state_sampler_psi_is1(nlg_ssm model, const unsigned int nsim_sta
         approx_model.T.slice(t) * mode.slice(i).col(t);
     }
     for (unsigned int t = 0; t < H.n_slices; t++) {
-      approx_model.H.slice(t) = model.H_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
     }
     for (unsigned int t = 0; t < R.n_slices; t++) {
-      approx_model.R.slice(t) = model.R_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.R.slice(t) = model.R_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
     }
     unsigned int m_sim = nsim_states * counts(i);
     arma::cube alpha_i(model.m, model.n, m_sim);
@@ -469,10 +469,10 @@ void nlg_amcmc::gaussian_state_sampler(nlg_ssm model,
         approx_model.T.slice(t) * mode.slice(i).col(t);
     }
     for (unsigned int t = 0; t < H.n_slices; t++) {
-      approx_model.H.slice(t) = model.H_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
     }
     for (unsigned int t = 0; t < R.n_slices; t++) {
-      approx_model.R.slice(t) = model.R_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.R.slice(t) = model.R_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
     }
     approx_model.compute_HH();
     approx_model.compute_RR();

@@ -3,15 +3,18 @@
 
 #include "bssm.h"
 
-// typedef for a pointer of nonlinear function of model equation returning vec
+// typedef for a pointer of nonlinear function of model equation returning vec (T, Z)
 typedef arma::vec (*vec_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params);
-// typedef for a pointer of nonlinear function of model equation returning mat
+// typedef for a pointer of nonlinear function of model equation returning mat (Tg, Zg)
 typedef arma::mat (*mat_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params);
-// typedef for a pointer of nonlinear function of model equation returning vec
+// typedef for a pointer of nonlinear function of model equation returning mat (R, H)
+typedef arma::mat (*mat_varfnPtr)(const unsigned int t, const arma::vec& theta, 
+  const arma::vec& known_params, const arma::mat& known_tv_params);
+// typedef for a pointer of nonlinear function of model equation returning vec (a1)
 typedef arma::vec (*vec_initfnPtr)(const arma::vec& theta, const arma::vec& known_params);
-// typedef for a pointer of nonlinear function of model equation returning mat
+// typedef for a pointer of nonlinear function of model equation returning mat (P1)
 typedef arma::mat (*mat_initfnPtr)(const arma::vec& theta, const arma::vec& known_params);
 // typedef for a pointer of log-prior function
 typedef double (*double_fnPtr)(const arma::vec&);
@@ -64,6 +67,22 @@ public:
   
 private:
   mat_fnPtr funptr;
+};
+
+class mat_varfn {
+  
+public:
+  mat_varfn(SEXP xps) {
+    Rcpp::XPtr<mat_varfnPtr> xptr(xps);
+    funptr = *(xptr);
+  }
+  arma::mat eval(unsigned int t, const arma::vec& theta, 
+    const arma::vec& known_params, const arma::mat& known_tv_params) const {
+    return funptr(t, theta, known_params, known_tv_params);
+  }
+  
+private:
+  mat_varfnPtr funptr;
 };
 
 class vec_initfn {

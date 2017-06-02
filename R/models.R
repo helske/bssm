@@ -1217,8 +1217,8 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 #' Constructs an object of class \code{nlg_ssm} by defining the corresponding terms
 #' of the observation and state equation:
 #'
-#' \deqn{y_t = Z(\alpha_t) + H(\alpha_t) \epsilon_t, (\textrm{observation equation})}
-#' \deqn{\alpha_{t+1} = T(\alpha_t) + R(\alpha_t)\eta_t, (\textrm{transition equation})}
+#' \deqn{y_t = Z(t, \alpha_t, \theta) + H(t, \theta) \epsilon_t, (\textrm{observation equation})}
+#' \deqn{\alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \theta)\eta_t, (\textrm{transition equation})}
 #'
 #' where \eqn{\epsilon_t \sim N(0, I_p)}, \eqn{\eta_t \sim N(0, I_m)} and
 #' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and functions
@@ -1244,15 +1244,12 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 #' @param time_varying Optional logical vector of length 4, denoting whether the values of 
 #' Z, H, T, and R vary with respect to time variable (given identical states). 
 #' If used, can speed up some computations.
-#' @param state_varying Optional logical vector of length 2. 
-#' Do H and T vary (linearly) with respect to states?
 #' @param state_names Names for the states.
 #' @return Object of class \code{gssm}.
 #' @export
 nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta, 
   known_params = NA, known_tv_params = matrix(NA), n_states, n_etas, 
-  log_prior_pdf, time_varying = rep(TRUE, 4), state_varying = rep(TRUE, 2),
-  state_names = paste0("state",1:n_states)) {
+  log_prior_pdf, time_varying = rep(TRUE, 4), state_names = paste0("state",1:n_states)) {
   
   if (is.null(dim(y))) {
     dim(y) <- c(length(y), 1)
@@ -1266,6 +1263,6 @@ nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
     log_prior_pdf = log_prior_pdf, known_params = known_params, 
     known_tv_params = known_tv_params,
     n_states = n_states, n_etas = n_etas, 
-    time_varying = time_varying, state_varying = state_varying, 
+    time_varying = time_varying,
     state_names = state_names), class = "nlg_ssm")
 }
