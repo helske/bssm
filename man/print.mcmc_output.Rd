@@ -24,4 +24,3 @@ standard error. The SE-AR (ESS-AR) estimates are based on the spectral density
 of \eqn{(x-hatx) * w} where \eqn{hatx} is the weighted mean of \eqn{x} and 
 \eqn{w} contains the weights. See vignette for details.
 }
-

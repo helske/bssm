@@ -26,4 +26,3 @@ Although this saves bit memory and is especially convinient for IS-corrected
 MCMC, sometimes we want to have the usual sample paths. Function \code{expand} 
 returns the expanded sample based on the counts.
 }
-

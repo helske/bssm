@@ -14,4 +14,3 @@ yearly average summer temperatures (June to August) and
 corresponding population sizes (in hundreds of thousands).
 }
 \keyword{datasets}
-

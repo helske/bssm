@@ -16,4 +16,3 @@ James Durbin, Siem Jan Koopman (2012). "Time Series Analysis by State Space Meth
 Oxford University Press.
 }
 \keyword{datasets}
-

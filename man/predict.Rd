@@ -80,4 +80,3 @@ library("ggplot2")
 fit <- ts(colMeans(exp(expand_sample(mcmc_poisson, "alpha")$level)))
 autoplot(pred, y = model$y, fit = fit)
 }
-

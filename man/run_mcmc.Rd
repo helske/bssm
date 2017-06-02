@@ -26,4 +26,3 @@ Matti Vihola, Jouni Helske, Jordan Franks (2016). "Importance sampling type
 correction of Markov chain Monte Carlo and exact approximations."
 ArXiv:1609.02541.
 }
-

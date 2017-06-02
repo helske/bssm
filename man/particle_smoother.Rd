@@ -56,4 +56,3 @@ Gaussian models is obtained from extended Kalman filter. If
 Function \code{particle_smoother} performs filter-smoother or forward-backward smoother,
 using a either bootstrap filtering or psi-auxiliary filter with stratification resampling.
 }
-

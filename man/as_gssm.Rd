@@ -26,4 +26,3 @@ Object of class \code{gssm} or \code{ngssm}.
 Converts \code{SSModel} object of \code{KFAS} package to 
 \code{gssm} or \code{ngssm} object.
 }
-

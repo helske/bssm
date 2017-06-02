@@ -28,4 +28,3 @@ For non-Gaussian models, the Kalman filtering is based on the approximate Gaussi
 \seealso{
 \code{\link{bootstrap_filter}}
 }
-

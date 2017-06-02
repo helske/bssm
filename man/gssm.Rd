@@ -52,4 +52,3 @@ of the observation and state equation:
 where \eqn{\epsilon_t \sim N(0, 1)}, \eqn{\eta_t \sim N(0, I_k)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
 }
-

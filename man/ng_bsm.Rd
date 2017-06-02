@@ -80,4 +80,3 @@ ggplot(as.data.frame(theta[,1:2]), aes(x = sd_level, y = sd_seasonal)) +
 
 }
 }
-

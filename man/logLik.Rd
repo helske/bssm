@@ -33,4 +33,3 @@ default seed is fixed (as 1) in order to work properly in numerical optimization
 \description{
 Computes the log-likelihood of the state space model of \code{bssm} package.
 }
-

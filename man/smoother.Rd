@@ -26,4 +26,3 @@ computes only smoothed estimates of the states, and function
 \details{
 For non-Gaussian models, the smoothing is based on the approximate Gaussian model.
 }
-

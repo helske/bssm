@@ -3,8 +3,8 @@
 \name{bootstrap_filter}
 \alias{bootstrap_filter}
 \alias{bootstrap_filter.ngssm}
-\alias{bootstrap_filter.nlg_ssm}
 \alias{bootstrap_filter.svm}
+\alias{bootstrap_filter.nlg_ssm}
 \title{Bootstrap Filtering}
 \usage{
 bootstrap_filter(object, nsim, ...)
@@ -35,4 +35,3 @@ estimate of log-likelihood.
 Function \code{bootstrap_filter} performs a bootstrap filtering with stratification
 resampling.
 }
-

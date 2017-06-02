@@ -29,4 +29,3 @@
 \description{
 Plot predictions based on bssm package
 }
-

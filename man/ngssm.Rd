@@ -60,4 +60,3 @@ where \eqn{\eta_t \sim N(0, I_k)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and \eqn{p(y_t | .)}
 is either Poisson, binomial or negative binomial distribution.
 }
-

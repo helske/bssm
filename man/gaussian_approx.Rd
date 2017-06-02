@@ -22,4 +22,3 @@ gaussian_approx(object, max_iter, conv_tol, ...)
 \description{
 Returns the approximating Gaussian model.
 }
-

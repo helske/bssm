@@ -27,4 +27,3 @@ weights from the last time point, and an estimate of log-likelihood.
 Function \code{ekpf_filter} performs a extended Kalman particle filtering with stratification
 resampling.
 }
-

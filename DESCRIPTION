@@ -25,5 +25,5 @@ Imports:
     Rcpp (>= 0.12.3)
 LinkingTo: BH, Rcpp, RcppArmadillo, ramcmc
 SystemRequirements: C++11
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 VignetteBuilder: knitr

@@ -2,8 +2,8 @@
 % Please edit documentation in R/importance_sample.R
 \name{importance_sample}
 \alias{importance_sample}
-\alias{importance_sample.ng_bsm}
 \alias{importance_sample.ngssm}
+\alias{importance_sample.ng_bsm}
 \alias{importance_sample.svm}
 \title{Importance Sampling from non-Gaussian State Space Model}
 \usage{
@@ -43,4 +43,3 @@ less than \code{conv_tol}.}
 Returns \code{nsim} samples from the approximating Gaussian model with corresponding
 (scaled) importance weights.
 }
-

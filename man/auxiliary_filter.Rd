@@ -2,9 +2,9 @@
 % Please edit documentation in R/auxiliary_filter.R
 \name{auxiliary_filter}
 \alias{auxiliary_filter}
-\alias{auxiliary_filter.bsm}
-\alias{auxiliary_filter.gssm}
 \alias{auxiliary_filter.nlg_ssm}
+\alias{auxiliary_filter.gssm}
+\alias{auxiliary_filter.bsm}
 \title{Auxiliary Particle Filtering}
 \usage{
 auxiliary_filter(object, nsim, ...)
@@ -46,4 +46,3 @@ library("diagis")
 ts.plot(cbind(apply(out_apf$weights, 2, ess), 
 apply(out_oapf$weights, 2, ess)), ylim = c(0, 1000), col = 1:2)
 }
-

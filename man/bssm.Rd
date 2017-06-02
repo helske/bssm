@@ -13,4 +13,3 @@ binomial, negative binomial or Gamma density. For formal definition of the
 currently supported models and methods, as well as theory, see the package vignette 
 and arXiv paper: \url{http://arxiv.org/abs/1609.02541}.
 }
-

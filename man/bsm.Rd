@@ -58,4 +58,3 @@ mcmc_out$theta[which.max(mcmc_out$posterior), ]
 sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
 
 }
-

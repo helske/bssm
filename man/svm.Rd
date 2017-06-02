@@ -41,4 +41,3 @@ model <- svm(exchange, rho = uniform(pars[1],-0.999,0.999),
   sd_ar = halfnormal(pars[2],sd=5), 
   sigma = halfnormal(pars[3],sd=2))
 }
-

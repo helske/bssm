@@ -15,4 +15,3 @@ slope <- cumsum(c(0, rnorm(99, sd = 0.01)))
 y <- rpois(100, exp(cumsum(slope + c(0, rnorm(99, sd = 0.1)))))
 }
 \keyword{datasets}
-

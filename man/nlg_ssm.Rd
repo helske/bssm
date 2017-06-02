@@ -6,8 +6,7 @@
 \usage{
 nlg_ssm(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta, known_params = NA,
   known_tv_params = matrix(NA), n_states, n_etas, log_prior_pdf,
-  time_varying = rep(TRUE, 4), state_varying = rep(TRUE, 2),
-  state_names = paste0("state", 1:n_states))
+  time_varying = rep(TRUE, 4), state_names = paste0("state", 1:n_states))
 }
 \arguments{
 \item{y}{Observations as multivariate time series (or matrix) of length \eqn{n}.}
@@ -39,9 +38,6 @@ computes the log-prior density given theta.}
 Z, H, T, and R vary with respect to time variable (given identical states). 
 If used, can speed up some computations.}
 
-\item{state_varying}{Optional logical vector of length 2. 
-Do H and T vary (linearly) with respect to states?}
-
 \item{state_names}{Names for the states.}
 }
 \value{
@@ -52,8 +48,8 @@ Constructs an object of class \code{nlg_ssm} by defining the corresponding terms
 of the observation and state equation:
 }
 \details{
-\deqn{y_t = Z(\alpha_t) + H(\alpha_t) \epsilon_t, (\textrm{observation equation})}
-\deqn{\alpha_{t+1} = T(\alpha_t) + R(\alpha_t)\eta_t, (\textrm{transition equation})}
+\deqn{y_t = Z(t, \alpha_t, \theta) + H(t, \theta) \epsilon_t, (\textrm{observation equation})}
+\deqn{\alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \theta)\eta_t, (\textrm{transition equation})}
 
 where \eqn{\epsilon_t \sim N(0, I_p)}, \eqn{\eta_t \sim N(0, I_m)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and functions
@@ -63,4 +59,3 @@ Compared to other models, these general models need a bit more effort from
 the user, as you must provide the several small C++ snippets which define the 
 model structure. See examples in ZZZ.
 }
-

@@ -23,4 +23,3 @@ the given non-linear Gaussian model of class \code{nlg_ssm},
 and returns the filtered estimates and one-step-ahead predictions of the 
 states \eqn{\alpha_t} given the data up to time \eqn{t}.
 }
-
