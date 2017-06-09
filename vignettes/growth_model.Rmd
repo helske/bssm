@@ -1,3 +1,4 @@
+---
 title: "Logistic growth model with bssm"
 author: |
 | Jouni Helske
