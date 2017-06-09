@@ -71,7 +71,6 @@ private:
   arma::mat scales_storage;
   arma::vec approx_loglik_storage;
   arma::vec prior_storage;
-
 };
 
 

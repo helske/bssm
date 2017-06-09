@@ -19,9 +19,10 @@ ung_ssm::ung_ssm(const Rcpp::List& model, const unsigned int seed,
   Ctv(C.n_cols > 1),
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), RR(arma::cube(m, m, Rtv * (n - 1) + 1)), 
   xbeta(arma::vec(n, arma::fill::zeros)), engine(seed), zero_tol(1e-8),
-  Z_ind(Z_ind), T_ind(T_ind), R_ind(R_ind), phi(model["phi"]), 
+  phi(model["phi"]), 
   u(Rcpp::as<arma::vec>(model["u"])), distribution(model["distribution"]), 
   phi_est(Rcpp::as<bool>(model["phi_est"])), max_iter(100), conv_tol(1.0e-8), 
+  Z_ind(Z_ind), T_ind(T_ind), R_ind(R_ind),
   seed(seed) {
   
   if(xreg.n_cols > 0) {

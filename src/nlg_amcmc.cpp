@@ -14,11 +14,11 @@ nlg_amcmc::nlg_amcmc(const arma::uvec& prior_distributions,
   const arma::mat& S, const bool store_modes) :
   mcmc(prior_distributions, prior_parameters, n_iter, n_burnin, n_thin, n, m,
     target_acceptance, gamma, S, true),
-    store_modes(store_modes),
-    scales_storage(arma::vec(n_samples)),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
     approx_loglik_storage(arma::vec(n_samples)),
+    scales_storage(arma::vec(n_samples)),
     prior_storage(arma::vec(n_samples)),
+    store_modes(store_modes),
     mode_storage(arma::cube(m, n, n_samples * store_modes)){
 }
 

@@ -59,15 +59,16 @@ public:
   arma::mat P1;
   arma::cube xreg;
   arma::mat beta;
-  arma::mat C;
   arma::mat D;
+  arma::mat C;
+
   
   const unsigned int Ztv;
   const unsigned int Htv;
   const unsigned int Ttv;
   const unsigned int Rtv;
-  const unsigned int Ctv;
   const unsigned int Dtv;
+  const unsigned int Ctv;
   
   const unsigned int n;
   const unsigned int m;

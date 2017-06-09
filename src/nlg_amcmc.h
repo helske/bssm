@@ -50,8 +50,8 @@ private:
   arma::vec approx_loglik_storage;
   arma::vec scales_storage;
   arma::vec prior_storage;
-  arma::cube mode_storage;
   const bool store_modes;
+  arma::cube mode_storage;
 };
 
 

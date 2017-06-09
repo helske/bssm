@@ -12,15 +12,11 @@ Rcpp::List gaussian_predict(const Rcpp::List& model_,
   const bool intervals, const unsigned int seed, const int model_type) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
-  unsigned int m = a1.n_elem;
-  unsigned int n;
   
   if(model_type > 0) {
     arma::vec y = Rcpp::as<arma::vec>(model_["y"]);
-    n = y.n_elem;
   } else {
     arma::vec y = Rcpp::as<arma::mat>(model_["y"]);
-    n = y.n_rows;
   }
   
   switch (model_type) {
@@ -53,15 +49,12 @@ arma::cube nongaussian_predict(const Rcpp::List& model_,
   const unsigned int seed, const int model_type) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
-  unsigned int m = a1.n_elem;
-  unsigned int n;
+
   
   if(model_type > 0) {
     arma::vec y = Rcpp::as<arma::vec>(model_["y"]);
-    n = y.n_elem;
   } else {
     arma::vec y = Rcpp::as<arma::mat>(model_["y"]);
-    n = y.n_rows;
   }
   
   switch (model_type) {

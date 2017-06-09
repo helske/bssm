@@ -20,8 +20,8 @@ ung_amcmc::ung_amcmc(const arma::uvec& prior_distributions,
   mcmc(prior_distributions, prior_parameters, n_iter, n_burnin, n_thin, n, m,
     target_acceptance, gamma, S, store_states),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
-    scales_storage(arma::mat(n, n_samples)),
     y_storage(arma::mat(n, n_samples)), H_storage(arma::mat(n, n_samples)),
+    scales_storage(arma::mat(n, n_samples)),
     approx_loglik_storage(arma::vec(n_samples)), 
     prior_storage(arma::vec(n_samples)){
 }
@@ -55,8 +55,6 @@ template<class T>
 void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx,
   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol) {
   
-  unsigned int m = model.m;
-  unsigned n = model.n;
   
   // get the current values of theta
   arma::vec theta = model.get_theta();
