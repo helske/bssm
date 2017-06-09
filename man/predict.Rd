@@ -62,7 +62,7 @@ head(pred_gaussian$intervals)
 head(pred_gaussian$MCSE)
 
 # Non-gaussian models
-
+\dontrun{
 data("poisson_series")
 
 model <- ng_bsm(poisson_series, sd_level = halfnormal(0.1, 1),
@@ -79,4 +79,5 @@ pred <- predict(mcmc_poisson, future_model,
 library("ggplot2")
 fit <- ts(colMeans(exp(expand_sample(mcmc_poisson, "alpha")$level)))
 autoplot(pred, y = model$y, fit = fit)
+}
 }
