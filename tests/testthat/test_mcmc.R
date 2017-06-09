@@ -41,15 +41,15 @@ test_that("MCMC results for Poisson model are correct",{
   
   testvalues <- structure(c(-37.3203997981812, -36.1959001349018, -36.7410542226913
   ), .Dim = c(3L, 1L))
-  expect_equivalent(testvalues, out$posterior)
+  expect_equal(testvalues, out$posterior, tol = 1e-10)
   
   testvalues <- structure(c(1.499445222853, 1.16262771422103, 1.29967414191533
   ), .Dim = c(3L, 1L), .Dimnames = list(NULL, "sd_level"))
-  expect_equivalent(testvalues, out$theta)
+  expect_equal(testvalues, out$theta, tol = 1e-10)
   
   testvalues <- c(0.43846059142326, -0.299120896882187, -0.14501280250231, 
     0.432926525017934, 0.482396611722603, 0.136167017762909)
-  expect_equivalent(testvalues, out$alpha[c(1,10,20,25, 31, 60)])
+  expect_equal(testvalues, out$alpha[c(1,10,20,25, 31, 60)], tol = 1e-10)
 })
 
 
