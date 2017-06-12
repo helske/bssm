@@ -40,7 +40,7 @@ print.mcmc_output <- function(x, ...) {
   spec <- sapply(1:ncol(theta), function(i) spectrum0.ar((theta[, i] - mean_theta[i]) * w)$spec)
   se_theta_ar <- sqrt(spec / length(w)) / mean(w)
   stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta_ar), ncol = 4, 
-    dimnames = list(colnames(x$theta), c("Mean", "SD", "IS-SE", "AR-SE")))
+    dimnames = list(colnames(x$theta), c("Mean", "SD", "SE-IS", "SE-AR")))
   print(stats)
   
   cat("\nEffective sample sizes for theta:\n\n")
@@ -59,7 +59,7 @@ print.mcmc_output <- function(x, ...) {
   spec <- sapply(1:ncol(alpha), function(i) spectrum0.ar((alpha[, i] - mean_alpha[i]) * w)$spec)
   se_alpha_ar <- sqrt(spec / length(w)) / mean(w)
   stats <- matrix(c(mean_alpha, sd_alpha, se_alpha_is, se_alpha_ar), ncol = 4, 
-    dimnames = list(colnames(x$alpha), c("Mean", "SD", "IS-SE", "AR-SE")))
+    dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE-IS", "SE-AR")))
   print(stats)
   
   cat("\nEffective sample sizes for alpha:\n\n")
