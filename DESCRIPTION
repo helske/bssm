@@ -4,7 +4,7 @@ Title: Bayesian Inference of State Space Models
 Version: 0.0.76
 Date: 2017-06-02
 Author: Jouni Helske, Matti Vihola
-Maintainer: Jouni Helske <jouni.helske@jyu.fi>
+Maintainer: Jouni Helske <jouni.helske@iki.fi>
 Description: Efficient methods for Bayesian inference of state space models via 
     particle Markov chain Monte Carlo and importance sampling type corrected 
     Markov chain Monte Carlo. Currently supports models with Gaussian, Poisson, 
