@@ -1,6 +1,5 @@
 context("Test MCMC")
 
-
 test_that("MCMC results for Gaussian model are correct",{
   set.seed(123)
   model_bssm <- bsm(rnorm(10,3), P1 = diag(2,2), sd_slope = 0,
@@ -9,8 +8,8 @@ test_that("MCMC results for Gaussian model are correct",{
   
   expect_error(out <- run_mcmc(model_bssm, n_iter = 5), NA)
   
-  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, seed = 1)[-8], 
-    run_mcmc(model_bssm, n_iter = 10, seed = 1)[-8]), NA)
+  expect_equal(run_mcmc(model_bssm, n_iter = 10, seed = 1)[-13], 
+    run_mcmc(model_bssm, n_iter = 10, seed = 1)[-13])
   
   testvalues <- structure(c(-23.1536983852141, -23.3159378063579, -24.2220816776382
   ), .Dim = c(3L, 1L))
@@ -36,8 +35,8 @@ test_that("MCMC results for Poisson model are correct",{
     sd_level = uniform(2, 0, 10), u = 2:11, distribution = "poisson")
   
   expect_error(out <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), NA)
-  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8], 
-    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8]), NA)
+  expect_equal(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13], 
+    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13])
   
   testvalues <- structure(c(-37.3203997981812, -36.1959001349018, -36.7410542226913
   ), .Dim = c(3L, 1L))
@@ -59,8 +58,8 @@ test_that("MCMC results for binomial model are correct",{
     sd_level = uniform(2, 0, 10), u = 22:31, distribution = "binomial")
   
   expect_error(out <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), NA)
-  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8], 
-    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8]), NA)
+  expect_equal(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13], 
+    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13])
   
   testvalues <- structure(c(-37.1851360231237, -34.2325393384421, 
     -32.0504836724325), .Dim = c(3L, 1L))
@@ -84,8 +83,8 @@ test_that("MCMC results for negative binomial model are correct",{
     distribution = 'negative binomial'), NA)
   
   expect_error(out <- run_mcmc(model_bssm, n_iter = 20, n_burnin = 15, nsim_states = 5), NA)
-  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8], 
-    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8]), NA)
+  expect_equal(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13], 
+    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13])
   
   testvalues <- structure(c(-258.904526353877, -258.901913842426, 
     -259.066975182541, -259.128475267148), .Dim = c(4L, 1L))
@@ -106,8 +105,8 @@ test_that("MCMC results for SV model are correct",{
     sd_ar = halfnormal(1, 5), sigma = halfnormal(1, 2)), NA)
   
   expect_error(out <- run_mcmc(model_bssm, n_iter = 20, n_burnin = 15, nsim_states = 5), NA)
-  expect_error(identical(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8], 
-    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5)[-8]), NA)
+  expect_equal(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13], 
+    run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13])
   
   testvalues <- structure(c(-18.2523512011732, -18.1912052301928), .Dim = c(2L, 
     1L))
@@ -131,17 +130,20 @@ test_that("MCMC results for SV model using IS-correction are correct",{
   
   expect_error(out <- run_mcmc(model_bssm, n_iter = 20, n_burnin = 15, nsim_states = 5,
     method = "isc"), NA)
-  expect_error(identical(run_mcmc(model_bssm, n_iter = 100, nsim_states = 10,
-    method = "isc")[-8], 
-    run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, method = "isc")[-8]), NA)
-  expect_error(identical(run_mcmc(model_bssm, n_iter = 100, nsim_states = 10,
-    method = "isc", simulation_method = "psi")[-8], 
-    run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, method = "isc",
-      simulation_method = "psi")[-8]), NA)
-  expect_error(identical(run_mcmc(model_bssm, n_iter = 100, nsim_states = 10,
-    method = "isc", simulation_method = "psi")[-8], 
-    run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, method = "isc", 
-      simulation_method = "psi")[-8]), NA)
+  
+  expect_equal(run_mcmc(model_bssm, n_iter = 100, nsim_states = 10,
+    method = "isc", seed = 1)[-14], 
+    run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, method = "isc", seed = 1)[-14])
+  
+  expect_equal(run_mcmc(model_bssm, n_iter = 100, nsim_states = 10,
+    method = "isc", seed = 1, simulation_method = "psi")[-14], 
+    run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, 
+      method = "isc", seed = 1, simulation_method = "psi")[-14])
+  
+  expect_equal(run_mcmc(model_bssm, n_iter = 100, nsim_states = 10,
+    method = "isc", seed = 1, simulation_method = "bsf")[-14], 
+    run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, 
+      method = "isc", seed = 1, simulation_method = "bsf")[-14])
   
   testvalues <- structure(c(-19.5893006950704, -18.7083804690955, -18.6355215102079, 
     -17.5386138120297), .Dim = c(4L, 1L))

@@ -31,11 +31,19 @@ y_t = Z(t, \alpha_t, \theta) + H(t, \theta)\epsilon_t,\\
 \alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \theta)\eta_t,\\
 \alpha_1 \sim N(a_1(\theta), P_1(\theta)),
 $$
-with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters, $\psi$ contains known time-invariant parameters, and $\psi_t$ consists of $n \times r$ matrix of time-varying parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions, which can sound intimidating at first, but is actually pretty simple, as this vignette hopefully illustrates.
+with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions, which can sound intimidating at first, but is actually pretty simple, as this vignette hopefully illustrates. All of these functions can also depend on some known parameters, defined as `known_params` (vector) and `known_tv_params` (matrix) arguments to `nlg_ssm` functions.
 
-As an example, consider a logistic growth model
+As an example, consider a noisy logistic growth model
+$$
+\begin{aligned}
+y_t &= p_t +  \sigma_y\epsilon, &\quad \epsilon_t \sim N(0, 1),\\
+r_{t+1} &= r_t + \sigma_r\eta, &\quad \eta_t \sim N(0, 1),\\
+p_{t+1} &= K p_0 \exp(t r_t) / (K + p_0 (\exp(t r_t) - 1)) + \sigma_p\xi, &\quad \xi_t \sim N(0, 1),
+\end{aligned}
+$$
 
-Let's first simulate some data:
+Let's first simulate some data, with $\sigma_r=\sigma_p=0$:
+
 ```{r data}
 set.seed(1)
 
@@ -55,12 +63,13 @@ p <- K * p0 * exp(r * t) / (K + p0 * (exp(r * t) - 1))
 
 # observations
 y <- p + rnorm(length(t), 0, 5)
+
 ```
+
 
 ## Model in bssm
 
-The functions determining the model functions are given in file `model_functions.cpp`. Here are few pieces from the file. The first one defines the 
-state transition function $T(\cdot)$:
+The functions determining the model functions are given in file `model_functions.cpp`. Here are few pieces from the file. The first one defines the state transition function $T(\cdot)$:
 
 ```{Rcpp, eval = FALSE}
 arma::vec T_fn(const unsigned int t, const arma::vec& alpha, 
