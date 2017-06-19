@@ -2,38 +2,29 @@ language: r
 sudo: false
 cache: packages
 
-os:
-  - linux
-  - osx
-  
-compiler:
-  - gcc
-  - clang
-  
-before_install:
-- if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - gcc-4.8
-    - g++-4.8
-r:
- - oldrel
- - release
- - devel
+warnings_are_errors: true
 
-r_packages:
-  - covr
+matrix:
+  include:
+    - os: linux
+      language: r
+      compiler: gcc
+      r_binary_packages:
+        covr
+      after_success:
+        - Rscript -e 'library(covr);codecov()'
+      env: TRAVIS_LANG=R     
+    
+    - os: linux
+      language: r
+      compiler: clang
+      r_binary_packages:
+        covr
+      after_success:
+        - Rscript -e 'library(covr);codecov()'
+      env: TRAVIS_LANG=R     
+ 
+ 
+r_check_args: "--as-cran"
 
-warnings_are_errors: false
-
-after_success:
-  - Rscript -e 'covr::codecov()'
-
-after_failure:
-- ./travis-tool.sh dump_logs
-
-r_check_args: "--as-cran --run-dontrun"
