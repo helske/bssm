@@ -38,17 +38,18 @@ test_that("MCMC results for Poisson model are correct",{
   expect_equal(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13], 
     run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13])
   
+  ## lower tolerance than before as these seem to fail on 32bit machines otherwise
   testvalues <- structure(c(-37.3203997981812, -36.1959001349018, -36.7410542226913
   ), .Dim = c(3L, 1L))
-  expect_equal(testvalues, out$posterior, tol = 1e-10)
+  expect_equal(testvalues, out$posterior, tol = 1e-8)
   
   testvalues <- structure(c(1.499445222853, 1.16262771422103, 1.29967414191533
   ), .Dim = c(3L, 1L), .Dimnames = list(NULL, "sd_level"))
-  expect_equal(testvalues, out$theta, tol = 1e-10)
+  expect_equal(testvalues, out$theta, tol = 1e-8)
   
   testvalues <- c(0.43846059142326, -0.299120896882187, -0.14501280250231, 
     0.432926525017934, 0.482396611722603, 0.136167017762909)
-  expect_equal(testvalues, out$alpha[c(1,10,20,25, 31, 60)], tol = 1e-10)
+  expect_equal(testvalues, out$alpha[c(1,10,20,25, 31, 60)], tol = 1e-18)
 })
 
 
@@ -63,15 +64,15 @@ test_that("MCMC results for binomial model are correct",{
   
   testvalues <- structure(c(-37.1851360231237, -34.2325393384421, 
     -32.0504836724325), .Dim = c(3L, 1L))
-  expect_equivalent(testvalues, out$posterior)
+  expect_equal(testvalues, out$posterior, tol = 1e-8)
   
   testvalues <- structure(c(1.71544296643094, 0.975301410431891, 0.434759249400714
   ), .Dim = c(3L, 1L), .Dimnames = list(NULL, "sd_level"))
-  expect_equivalent(testvalues, out$theta)
+  expect_equal(testvalues, out$theta, tol = 1e-8)
   
   testvalues <- c(-1.39229506071483, -0.58130522651829, 0.0872358641475177, 
     0.227643509439814, 0.999071279612387, 0.118797362004142)
-  expect_equivalent(testvalues, out$alpha[c(1,10,20,25, 31, 60)])
+  expect_equal(testvalues, out$alpha[c(1,10,20,25, 31, 60)], tol = 1e-8)
 })
 
 
@@ -88,13 +89,13 @@ test_that("MCMC results for negative binomial model are correct",{
   
   testvalues <- structure(c(-258.904526353877, -258.901913842426, 
     -259.066975182541, -259.128475267148), .Dim = c(4L, 1L))
-  expect_equivalent(testvalues, out$posterior)
+  expect_equal(testvalues, out$posterior, tol = 1e-8)
   
   testvalues <- structure(c(2.1382365032609, 2.15793909737042, 2.49144057609899, 
     2.53825657504107), .Dim = c(4L, 1L), .Dimnames = list(NULL, NULL))
-  expect_equivalent(testvalues, out$theta)
+  expect_equal(testvalues, out$theta, tol = 1e-8)
   
-  expect_equivalent(1.37982138985796, out$alpha[1])
+  expect_equal(1.37982138985796, out$alpha[1], tol = 1e-8)
   expect_equivalent(matrix(c(2, 1, 1, 1)), out$counts)
 })
 
