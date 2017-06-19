@@ -51,9 +51,11 @@ public:
   
   // pseudo-marginal mcmc
   template<class T>
-  void pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_states);
+  void pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_states, 
+    const bool local_approx, const arma::vec& initial_mode, const unsigned int max_iter, 
+    const double conv_tol);
   template<class T>
-  void pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_states);
+  void pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_states);
   template<class T>
   void pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_states, 
     const bool local_approx, const arma::vec& initial_mode, 
@@ -65,9 +67,11 @@ public:
    const bool local_approx, const arma::vec& initial_mode, 
    const unsigned int max_iter, const double conv_tol);
   template<class T>
-  void da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_states);
-  template<class T>
   void da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_states, 
+    const bool local_approx, const arma::vec& initial_mode, 
+    const unsigned int max_iter, const double conv_tol);
+  template<class T>
+  void da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_states, 
    const bool local_approx, const arma::vec& initial_mode, 
    const unsigned int max_iter, const double conv_tol);
   

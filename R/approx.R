@@ -14,17 +14,20 @@ gaussian_approx <- function(object, max_iter, conv_tol, ...) {
 #' @export
 gaussian_approx.ngssm<- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
   
-  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  out <- gaussian_approx_model(object, object$initial_mode, max_iter, conv_tol, model_type = 1L)
+  object$distribution <- 
+    pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
+  out <- 
+    gaussian_approx_model(object, object$initial_mode, max_iter, conv_tol, model_type = 1L)
   if(ncol(object$xreg) > 0) {
-    beta <- object$priors[(length(object$priors) - ncol(object$xreg) + 1):length(object$priors)]
+    beta <- 
+      object$priors[(length(object$priors) - ncol(object$xreg) + 1):length(object$priors)]
     class(beta) <- "bssm_prior_list"
   } else beta <- NULL
   
-  gssm(y = out$y, Z = object$Z, H = out$H, T = object$T, R = object$R, a1 = object$a1, P1 = object$P1,
-    xreg = if(ncol(object$xreg) > 0) object$xreg, beta = beta,
-    obs_intercept = object$obs_intercept, state_intercept = object$state_intercept, 
-    state_names = names(object$a1))
+  gssm(y = out$y, Z = object$Z, H = out$H, T = object$T, R = object$R, 
+    a1 = object$a1, P1 = object$P1, xreg = if(ncol(object$xreg) > 0) object$xreg, 
+    beta = beta, obs_intercept = object$obs_intercept, 
+    state_intercept = object$state_intercept, state_names = names(object$a1))
 }
 #' @method gaussian_approx ng_bsm
 #' @rdname gaussian_approx

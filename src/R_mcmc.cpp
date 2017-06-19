@@ -140,6 +140,10 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
     case 2:
       mcmc_run.pm_mcmc_bsf(model, end_ram, nsim_states);
       break;
+    case 3: 
+      mcmc_run.pm_mcmc_spdk(model, end_ram, nsim_states, local_approx, initial_mode, 
+        max_iter, conv_tol);
+      break;
     }
   } break;
   case 2: {
@@ -152,6 +156,10 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
     case 2:
       mcmc_run.pm_mcmc_bsf(model, end_ram, nsim_states);
       break;
+    case 3: 
+      mcmc_run.pm_mcmc_spdk(model, end_ram, nsim_states, local_approx, initial_mode, 
+        max_iter, conv_tol);
+      break;
     }
   } break;
   case 3: {
@@ -163,6 +171,10 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
       break;
     case 2:
       mcmc_run.pm_mcmc_bsf(model, end_ram, nsim_states);
+      break;
+    case 3: 
+      mcmc_run.pm_mcmc_spdk(model, end_ram, nsim_states, local_approx, initial_mode, 
+        max_iter, conv_tol);
       break;
     }
   } break;
@@ -214,6 +226,10 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
       mcmc_run.da_mcmc_bsf(model, end_ram, nsim_states, local_approx, initial_mode, 
         max_iter, conv_tol);
       break;
+    case 3: 
+      mcmc_run.da_mcmc_spdk(model, end_ram, nsim_states, local_approx, initial_mode, 
+        max_iter, conv_tol);
+      break;
     }
   } break;
   case 2: {
@@ -228,6 +244,10 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
       mcmc_run.da_mcmc_bsf(model, end_ram, nsim_states, local_approx, initial_mode, 
         max_iter, conv_tol);
       break;
+    case 3: 
+      mcmc_run.da_mcmc_spdk(model, end_ram, nsim_states, local_approx, initial_mode, 
+        max_iter, conv_tol);
+      break;
     }
   } break;
   case 3: {
@@ -239,6 +259,10 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
       break;
     case 2:
       mcmc_run.da_mcmc_bsf(model, end_ram, nsim_states, local_approx, initial_mode, 
+        max_iter, conv_tol);
+      break;
+    case 3: 
+      mcmc_run.da_mcmc_spdk(model, end_ram, nsim_states, local_approx, initial_mode, 
         max_iter, conv_tol);
       break;
     }
@@ -285,6 +309,7 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
     ung_ssm model(clone(model_), seed, Z_ind, T_ind, R_ind);
     mcmc_run.approx_mcmc(model, end_ram, local_approx, initial_mode, 
       max_iter, conv_tol);
+    if(nsim_states > 1) {
     switch (simulation_method) {
     case 1: 
       mcmc_run.is_correction_psi(model, nsim_states, const_sim, n_threads);
@@ -293,13 +318,18 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
       mcmc_run.is_correction_bsf(model, nsim_states, const_sim, n_threads);
       break;
     case 3:
+      mcmc_run.is_correction_spdk(model, nsim_states, const_sim, n_threads);
       break;
+    }
+    } else {
+      if(nsim_states == 1) mcmc_run.approx_state_posterior(model, n_threads);
     }
   } break;
   case 2: {
     ung_bsm model(clone(model_), seed);
     mcmc_run.approx_mcmc(model, end_ram, local_approx, initial_mode, 
       max_iter, conv_tol);
+    if(nsim_states > 1) {
     switch (simulation_method) {
     case 1: 
       mcmc_run.is_correction_psi(model, nsim_states, const_sim, n_threads);
@@ -311,11 +341,15 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
       mcmc_run.is_correction_spdk(model, nsim_states, const_sim, n_threads);
       break;
     }
+    } else {
+      if(nsim_states == 1) mcmc_run.approx_state_posterior(model, n_threads);
+    }
   } break;
   case 3: {
     ung_svm model(clone(model_), seed);
     mcmc_run.approx_mcmc(model, end_ram, local_approx, initial_mode, 
       max_iter, conv_tol);
+    if(nsim_states > 1) {
     switch (simulation_method) {
     case 1: 
       mcmc_run.is_correction_psi(model, nsim_states, const_sim, n_threads);
@@ -326,6 +360,9 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
     case 3:
       mcmc_run.is_correction_spdk(model, nsim_states, const_sim, n_threads);
       break;
+    }
+    } else {
+      if(nsim_states == 1) mcmc_run.approx_state_posterior(model, n_threads);
     }
   } break;
   }

@@ -44,11 +44,11 @@ as_gssm <- function(model, kappa = 1e5, ...) {
     model$H <- sqrt(c(model$H))
     Z <- aperm(model$Z, c(2, 3, 1))
     dim(Z) <- dim(Z)[1:2]
-    out <- gssm(y = model$y, Z = Z, H = model$H, T = model$T,
-      R = R, a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
+    out <- gssm(y = model$y, Z = Z, H = model$H, T = model$T, R = R, 
+      a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
   } else {
-    out <- mv_gssm(y = model$y, Z = Z, H = model$H, T = model$T,
-      R = R, a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
+    out <- mv_gssm(y = model$y, Z = Z, H = model$H, T = model$T, R = R, 
+      a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
   }
   
   out
@@ -113,7 +113,8 @@ as_ngssm <- function(model, kappa = 1e5, phi_prior, ...) {
       u <- rep(1, length(model$u))
     })
   if(!missing(phi_prior)) phi <- phi_prior
-  ngssm(y = model$y, Z = Z, T = model$T, R = R, a1 = c(model$a1), P1 = model$P1, 
-    phi = phi, u = u, distribution = model$distribution, 
-    state_names = rownames(model$a1), ...)
+  ngssm(y = model$y, Z = Z, T = model$T, R = R, a1 = c(model$a1), 
+    P1 = model$P1, phi = phi, u = u, 
+    distribution = model$distribution, state_names = rownames(model$a1), 
+    ...)
 }

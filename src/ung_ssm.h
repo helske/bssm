@@ -44,6 +44,11 @@ public:
     const unsigned int nsim, arma::cube& alpha, arma::mat& weights,
     arma::umat& indices);
   
+  
+  // compute log-weights over all time points (see below)
+  arma::vec importance_weights(const ugg_ssm& approx_model, 
+    const arma::cube& alpha) const;
+    
   // compute logarithms of _unnormalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
   arma::vec log_weights(const ugg_ssm& approx_model, 
     const unsigned int t, const arma::cube& alphasim) const;

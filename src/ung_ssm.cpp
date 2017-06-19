@@ -306,6 +306,14 @@ double ung_ssm::psi_filter(const ugg_ssm& approx_model,
   return loglik;
 }
 
+arma::vec ung_ssm::importance_weights(const ugg_ssm& approx_model, 
+  const arma::cube& alpha) const {
+  arma::vec weights(alpha.n_slices, arma::fill::zeros);
+  for(unsigned int t = 0; t < n; t++) {
+    weights += log_weights(approx_model, t, alpha);
+  }
+  return weights;
+}
 // Logarithms of _unnormalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
 /*
  * approx_model:  Gaussian approximation of the original model

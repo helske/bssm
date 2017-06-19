@@ -183,7 +183,7 @@ template <class T>
 void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states, 
   const bool const_sim, const unsigned int n_threads) {
   
-   if(n_threads > 1) {
+  if(n_threads > 1) {
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
@@ -194,7 +194,7 @@ void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states,
   if(omp_get_thread_num() == (n_threads - 1)) {
     end = n_stored - 1;
   }
-
+  
   arma::mat theta_piece = theta_storage(arma::span::all, arma::span(start, end));
   arma::cube alpha_piece(model.n, model.m, end - start + 1);
   arma::vec weights_piece(end - start + 1);
@@ -553,10 +553,8 @@ void ung_amcmc::state_sampler_spdk_is2(T model, const unsigned int nsim_states,
     
     arma::cube alpha_i = approx_model.simulate_states(nsim_states, true);
     
-    arma::vec weights_i(nsim_states, arma::fill::zeros);
-    for (unsigned int t = 0; t < model.n; t++) {
-      weights_i += model.log_weights(approx_model, t, alpha_i);
-    }
+    arma::vec weights_i = model.importance_weights(approx_model, alpha_i);
+    
     weights_i = exp(weights_i - scales(i));
     weights(i) = arma::mean(weights_i);
     std::discrete_distribution<> sample(weights_i.begin(), weights_i.end());
@@ -599,13 +597,70 @@ void ung_amcmc::state_sampler_spdk_is1(T model, const unsigned int nsim_states,
     unsigned int m = nsim_states * counts(i);
     arma::cube alpha_i = approx_model.simulate_states(m, true);
     
-    arma::vec weights_i(m, arma::fill::zeros);
-    for (unsigned int t = 0; t < model.n; t++) {
-      weights_i += model.log_weights(approx_model, t, alpha_i);
-    }
+    arma::vec weights_i = model.importance_weights(approx_model, alpha_i);
     weights_i = exp(weights_i - scales(i));
     weights(i) = arma::mean(weights_i);
     std::discrete_distribution<> sample(weights_i.begin(), weights_i.end());
     alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
+  }
+}
+
+template void ung_amcmc::approx_state_posterior(ung_ssm model, unsigned int n_threads);
+template void ung_amcmc::approx_state_posterior(ung_bsm model, unsigned int n_threads);
+template void ung_amcmc::approx_state_posterior(ung_svm model, unsigned int n_threads);
+
+template <class T>
+void ung_amcmc::approx_state_posterior(T model, unsigned int n_threads) {
+  
+  if(n_threads > 1) {
+#ifdef _OPENMP
+#pragma omp parallel num_threads(n_threads) default(none) \
+    shared(n_threads) firstprivate(model)
+    {
+      model.engine = std::mt19937(omp_get_thread_num() + 1);
+      unsigned thread_size = floor(n_stored / n_threads);
+      unsigned int start = omp_get_thread_num() * thread_size;
+      unsigned int end = (omp_get_thread_num() + 1) * thread_size - 1;
+      if(omp_get_thread_num() == (n_threads - 1)) {
+        end = n_stored - 1;
+      }
+      
+      arma::mat theta_piece = theta_storage(arma::span::all, arma::span(start, end));
+      arma::cube alpha_piece = alpha_storage.slices(start, end);
+      arma::mat y_piece = y_storage(arma::span::all, arma::span(start, end));
+      arma::mat H_piece = H_storage(arma::span::all, arma::span(start, end));
+      approx_state_sampler(model, theta_piece, alpha_piece, y_piece, H_piece);
+      alpha_storage.slices(start, end) = alpha_piece;
+    }
+#else
+    approx_state_sampler(model, theta_storage, alpha_storage, y_storage, H_storage);
+#endif
+  } else {
+    approx_state_sampler(model, theta_storage, alpha_storage, y_storage, H_storage);
+  }
+}
+
+template void ung_amcmc::approx_state_sampler(ung_ssm model,
+  const arma::mat& theta, arma::cube& alpha, const arma::mat& y, const arma::mat& H);
+template void ung_amcmc::approx_state_sampler(ung_bsm model, 
+  const arma::mat& theta, arma::cube& alpha, const arma::mat& y, const arma::mat& H);
+template void ung_amcmc::approx_state_sampler(ung_svm model, 
+  const arma::mat& theta, arma::cube& alpha, const arma::mat& y, const arma::mat& H);
+
+template <class T>
+void ung_amcmc::approx_state_sampler(T model, 
+  const arma::mat& theta, arma::cube& alpha, const arma::mat& y, const arma::mat& H) {
+  
+  arma::vec tmp(1);
+  ugg_ssm approx_model = model.approximate(tmp, 0, 0);
+  for (unsigned int i = 0; i < theta.n_cols; i++) {
+    
+    arma::vec theta_i = theta.col(i);
+    model.set_theta(theta_i);
+    model.approximate(approx_model, tmp, 0, 0);
+    approx_model.y = y.col(i);
+    approx_model.H = H.col(i);
+    approx_model.compute_HH();
+    alpha.slice(i) = approx_model.simulate_states(1).slice(0).t();
   }
 }

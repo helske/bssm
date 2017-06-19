@@ -40,7 +40,8 @@
 
 \item{n_iter}{Number of MCMC iterations.}
 
-\item{nsim_states}{Number of state samples per MCMC iteration.}
+\item{nsim_states}{Number of state samples per MCMC iteration. 
+If <2, approximate inference based on Gaussian approximation is performed.}
 
 \item{type}{Either \code{"full"} (default), or \code{"summary"}. The
 former produces samples of states whereas the latter gives the mean and

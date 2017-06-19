@@ -39,7 +39,8 @@ auxiliary_filter.nlg_ssm <- function(object, nsim,
     colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- 
     rownames(out$alpha) <- object$state_names
   out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
-  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
+  out$att <- 
+    ts(out$att, start = start(object$y), frequency = frequency(object$y))
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
@@ -51,7 +52,8 @@ auxiliary_filter.gssm <- function(object, nsim, optimal = TRUE,
   
   out <- aux(object, nsim, seed, TRUE, 1L, optimal)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
-    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- 
+    names(object$a1)
   out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
   out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   rownames(out$alpha) <- names(object$a1)

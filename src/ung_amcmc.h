@@ -61,6 +61,11 @@ public:
     const arma::mat& y, const arma::mat& H, const arma::vec& scales,
     const arma::uvec& counts);
   
+  template <class T>
+  void approx_state_posterior(T model, unsigned int n_threads);
+  template <class T>
+  void approx_state_sampler(T model, 
+    const arma::mat& theta, arma::cube& alpha, const arma::mat& y, const arma::mat& H);
   arma::vec weight_storage;
   arma::mat y_storage;
   arma::mat H_storage;

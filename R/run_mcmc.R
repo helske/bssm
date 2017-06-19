@@ -174,7 +174,8 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
 #' @rdname run_mcmc_ng
 #' @param object Model object.
 #' @param n_iter Number of MCMC iterations.
-#' @param nsim_states Number of state samples per MCMC iteration.
+#' @param nsim_states Number of state samples per MCMC iteration. 
+#' If <2, approximate inference based on Gaussian approximation is performed.
 #' @param type Either \code{"full"} (default), or \code{"summary"}. The
 #' former produces samples of states whereas the latter gives the mean and
 #' variance estimates of the states.
@@ -227,8 +228,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   
   if (nsim_states < 2) {
     #approximate inference
-    method <- "pm"
-    simulation_method <- "spdk"
+    method <- "isc"
   }
   
   inits <- sapply(object$priors, "[[", "init")
@@ -275,7 +275,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   out$n_iter <- n_iter
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
-  out$isc <- method == "isc"
+  out$isc <- method == "isc" && nsim_states > 1
   out$call <- match.call()
   out$seed <- seed
   out$time <- proc.time() - a
@@ -306,7 +306,6 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   if (nsim_states < 2) {
     #approximate inference
     method <- "isc"
-    nsim_states <- 0
   }
   
   if (missing(S)) {
@@ -376,7 +375,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   out$n_iter <- n_iter
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
-  out$isc <- method == "isc"
+  out$isc <- method == "isc" && nsim_states > 1
   out$call <- match.call()
   out$seed <- seed
   out$time <- proc.time() - a
@@ -406,8 +405,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   
   if (nsim_states < 2) {
     #approximate inference
-    method <- "pm"
-    simulation_method <- "spdk"
+    method <- "isc"
   }
   
   if (missing(S)) {
@@ -454,7 +452,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   out$n_iter <- n_iter
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
-  out$isc <- method == "isc"
+  out$isc <- method == "isc" && nsim_states > 1
   
   out$call <- match.call()
   out$seed <- seed
