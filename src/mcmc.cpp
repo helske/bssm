@@ -254,9 +254,6 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
   const bool local_approx, const arma::vec& initial_mode, const unsigned int max_iter, 
   const double conv_tol) {
   
-  unsigned int m = model.m;
-  unsigned n = model.n;
-  
   // get the current values of theta
   arma::vec theta = model.get_theta();
   // compute the log[p(theta)]
@@ -318,15 +315,15 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
         // construct the approximate Gaussian model
         mode_estimate = initial_mode;
         model.approximate(approx_model, mode_estimate, max_iter, conv_tol);
-        // compute unnormalized mode-based correction terms 
-        // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
-        scales = model.scaling_factors(approx_model, mode_estimate);
-        sum_scales = arma::accu(scales);
-        // compute the constant term
-        const_term = compute_const_term(model, approx_model);
       } else {
         model.approximate(approx_model, mode_estimate, 0, conv_tol);
       }
+      // compute unnormalized mode-based correction terms 
+      // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
+      scales = model.scaling_factors(approx_model, mode_estimate);
+      sum_scales = arma::accu(scales);
+      // compute the constant term
+      const_term = compute_const_term(model, approx_model);
       
       alpha = approx_model.simulate_states(nsim_states, true);
       weights = exp(model.importance_weights(approx_model, alpha) - sum_scales);
@@ -466,15 +463,15 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
         // construct the approximate Gaussian model
         mode_estimate = initial_mode;
         model.approximate(approx_model, mode_estimate, max_iter, conv_tol);
-        // compute unnormalized mode-based correction terms 
-        // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
-        scales = model.scaling_factors(approx_model, mode_estimate);
-        sum_scales = arma::accu(scales);
-        // compute the constant term
-        const_term = compute_const_term(model, approx_model);
       } else {
         model.approximate(approx_model, mode_estimate, 0, conv_tol);
       }
+      // compute unnormalized mode-based correction terms 
+      // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
+      scales = model.scaling_factors(approx_model, mode_estimate);
+      sum_scales = arma::accu(scales);
+      // compute the constant term
+      const_term = compute_const_term(model, approx_model);
       // compute the log-likelihood of the approximate model
       gaussian_loglik = approx_model.log_likelihood();
       approx_loglik = gaussian_loglik + const_term + sum_scales;
@@ -656,8 +653,6 @@ void mcmc::da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
   const bool local_approx, const arma::vec& initial_mode, const unsigned int max_iter, 
   const double conv_tol) {
   
-  unsigned int m = model.m;
-  unsigned n = model.n;
   
   // get the current values of theta
   arma::vec theta = model.get_theta();
@@ -721,15 +716,15 @@ void mcmc::da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
         // construct the approximate Gaussian model
         mode_estimate = initial_mode;
         model.approximate(approx_model, mode_estimate, max_iter, conv_tol);
-        // compute unnormalized mode-based correction terms 
-        // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
-        scales = model.scaling_factors(approx_model, mode_estimate);
-        sum_scales = arma::accu(scales);
-        // compute the constant term
-        const_term = compute_const_term(model, approx_model);
       } else {
         model.approximate(approx_model, mode_estimate, 0, conv_tol);
       }
+      // compute unnormalized mode-based correction terms 
+      // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
+      scales = model.scaling_factors(approx_model, mode_estimate);
+      sum_scales = arma::accu(scales);
+      // compute the constant term
+      const_term = compute_const_term(model, approx_model);
       // compute the log-likelihood of the approximate model
       gaussian_loglik = approx_model.log_likelihood();
       double approx_loglik_prop = gaussian_loglik + const_term + sum_scales;
@@ -874,15 +869,15 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
         // construct the approximate Gaussian model
         mode_estimate = initial_mode;
         model.approximate(approx_model, mode_estimate, max_iter, conv_tol);
-        // compute unnormalized mode-based correction terms 
-        // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
-        scales = model.scaling_factors(approx_model, mode_estimate);
-        sum_scales = arma::accu(scales);
-        // compute the constant term
-        const_term = compute_const_term(model, approx_model);
       } else {
         model.approximate(approx_model, mode_estimate, 0, conv_tol);
       }
+      // compute unnormalized mode-based correction terms 
+      // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
+      scales = model.scaling_factors(approx_model, mode_estimate);
+      sum_scales = arma::accu(scales);
+      // compute the constant term
+      const_term = compute_const_term(model, approx_model);
       // compute the log-likelihood of the approximate model
       gaussian_loglik = approx_model.log_likelihood();
       double approx_loglik_prop = gaussian_loglik + const_term + sum_scales;
@@ -1025,15 +1020,15 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
         // construct the approximate Gaussian model
         mode_estimate = initial_mode;
         model.approximate(approx_model, mode_estimate, max_iter, conv_tol);
-        // compute unnormalized mode-based correction terms 
-        // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
-        scales = model.scaling_factors(approx_model, mode_estimate);
-        sum_scales = arma::accu(scales);
-        // compute the constant term
-        const_term = compute_const_term(model, approx_model);
       } else {
         model.approximate(approx_model, mode_estimate, 0, conv_tol);
       }
+      // compute unnormalized mode-based correction terms 
+      // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
+      scales = model.scaling_factors(approx_model, mode_estimate);
+      sum_scales = arma::accu(scales);
+      // compute the constant term
+      const_term = compute_const_term(model, approx_model);
       // compute the log-likelihood of the approximate model
       gaussian_loglik = approx_model.log_likelihood();
       double approx_loglik_prop = gaussian_loglik + const_term + sum_scales;

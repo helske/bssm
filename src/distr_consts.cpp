@@ -49,6 +49,7 @@ double negbin_log_const(const arma::vec&  y, const arma::vec& u, double phi) {
   return res;
 }
 
+// THESE ARE NOT REALLY CONSTANT IN ALL CASES SUCH AS SVM
 double compute_const_term(const ung_ssm& model, const ugg_ssm& approx_model) {
   
   double const_term = 0.0;

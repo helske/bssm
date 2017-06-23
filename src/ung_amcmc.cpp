@@ -112,16 +112,19 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
         // construct the approximate Gaussian model
         mode_estimate = initial_mode;
         model.approximate(approx_model, mode_estimate, max_iter, conv_tol);
-        // compute unnormalized mode-based correction terms
-        // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
-        scales_prop = model.scaling_factors(approx_model, mode_estimate);
-        sum_scales = arma::accu(scales_prop);
-        // compute the constant term
-        const_term = compute_const_term(model, approx_model);
+      
       } else {
         model.approximate(approx_model, mode_estimate, 0, conv_tol);
+       
       }
+      // compute unnormalized mode-based correction terms
+      // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
+      scales_prop = model.scaling_factors(approx_model, mode_estimate);
+      sum_scales = arma::accu(scales_prop);
+      // compute the constant term (not really a constant in all cases, bad name!)
+      const_term = compute_const_term(model, approx_model);
       // compute the log-likelihood of the approximate model
+      // we could (should) extract this from fast_smoother used in approximation
       gaussian_loglik = approx_model.log_likelihood();
       double approx_loglik_prop = gaussian_loglik + const_term + sum_scales;
       

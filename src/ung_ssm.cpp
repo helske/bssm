@@ -188,6 +188,16 @@ void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate,
   approx_model.RR = RR;
   approx_model.xbeta = xbeta;
   
+  if(max_iter == 0 && mode_estimate.n_elem == n) {
+    if (distribution == 0) {
+      mode_estimate = arma::vectorise(approx_model.fast_smoother());
+    } else {
+      arma::mat alpha = approx_model.fast_smoother();
+      for (unsigned int t = 0; t < n; t++) {
+        mode_estimate(t) = arma::as_scalar(Z.col(Ztv * t).t() * alpha.col(t));
+      }
+    }
+  }
   unsigned int i = 0;
   double diff = conv_tol + 1; 
   while(i < max_iter && diff > conv_tol) {
@@ -208,7 +218,7 @@ void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate,
     diff = arma::mean(arma::square(mode_estimate_new - mode_estimate));
     mode_estimate = mode_estimate_new;
   }
- 
+  
 }
 
 
