@@ -35,21 +35,21 @@ test_that("MCMC results for Poisson model are correct",{
   model_bssm <- ng_bsm(rpois(10, exp(0.2) * (2:11)), P1 = diag(2, 2), sd_slope = 0,
     sd_level = uniform(2, 0, 10), u = 2:11, distribution = "poisson")
   
-  expect_error(out <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), NA)
+  expect_error(out <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 42), NA)
   expect_equal(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13], 
     run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13])
   
   ## lower tolerance than before as these seem to fail on 32bit machines otherwise
-  testvalues <- structure(c(-37.3203997981812, -36.1959001349018, -36.7410542226913
+  testvalues <- structure(c(-37.1916219593991, -34.3884800621823, -34.4569966723966
   ), .Dim = c(3L, 1L))
   expect_equal(testvalues, out$posterior, tolerance = tol)
   
-  testvalues <- structure(c(1.499445222853, 1.16262771422103, 1.29967414191533
+  testvalues <- structure(c(1.36480598636033, 0.802248611740615, 0.783876742906569
   ), .Dim = c(3L, 1L), .Dimnames = list(NULL, "sd_level"))
   expect_equal(testvalues, out$theta, tolerance = tol)
   
-  testvalues <- c(0.43846059142326, -0.299120896882187, -0.14501280250231, 
-    0.432926525017934, 0.482396611722603, 0.136167017762909)
+  testvalues <- c(-0.36879129723526, 0.540567854295048, -0.322593368222411, 0.314582269219201, 
+    -0.0677285948132962, 0.399315701997899)
   expect_equal(testvalues, out$alpha[c(1,10,20,25, 31, 60)], tolerance = tol)
 })
 
@@ -59,20 +59,20 @@ test_that("MCMC results for binomial model are correct",{
   model_bssm <- ng_bsm(rbinom(10, 22:31, 0.5), P1 = diag(2, 2), sd_slope = 0,
     sd_level = uniform(2, 0, 10), u = 22:31, distribution = "binomial")
   
-  expect_error(out <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5), NA)
+  expect_error(out <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 42), NA)
   expect_equal(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13], 
     run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13])
   
-  testvalues <- structure(c(-37.1851360231237, -34.2325393384421, 
-    -32.0504836724325), .Dim = c(3L, 1L))
+  testvalues <- structure(c(-35.903993655402, -33.5204419202732, -33.3939642090055
+  ), .Dim = c(3L, 1L))
   expect_equal(testvalues, out$posterior, tolerance = tol)
   
-  testvalues <- structure(c(1.71544296643094, 0.975301410431891, 0.434759249400714
+  testvalues <- structure(c(1.3664113451787, 0.805100548854013, 0.786769390486065
   ), .Dim = c(3L, 1L), .Dimnames = list(NULL, "sd_level"))
   expect_equal(testvalues, out$theta, tolerance = tol)
   
-  testvalues <- c(-1.39229506071483, -0.58130522651829, 0.0872358641475177, 
-    0.227643509439814, 0.999071279612387, 0.118797362004142)
+  testvalues <- c(-0.45560633322144, 0.429132433111863, -0.108713074970145, 0.0798226576090603, 
+    -0.0959137817902862, 0.311598947690494)
   expect_equal(testvalues, out$alpha[c(1,10,20,25, 31, 60)], tolerance = tol)
 })
 
