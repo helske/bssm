@@ -28,7 +28,9 @@ test_that("MCMC results for Gaussian model are correct",{
   
 })
 
-tol <- if(.Machine$sizeof.pointer == 8) 1e-8 else 1e-4
+tol <- 1e-10
+## results differ on 32bit machines
+if(.Machine$sizeof.pointer == 8) {
 
 test_that("MCMC results for Poisson model are correct",{
   set.seed(123)
@@ -76,7 +78,7 @@ test_that("MCMC results for binomial model are correct",{
   expect_equal(testvalues, out$alpha[c(1,10,20,25, 31, 60)], tolerance = tol)
 })
 
-
+}
 test_that("MCMC results for negative binomial model are correct",{
   set.seed(123)
   y <- rnbinom(100, mu = 5, size = 2)
