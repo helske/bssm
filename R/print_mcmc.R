@@ -72,6 +72,61 @@ print.mcmc_output <- function(x, ...) {
   cat("\nRun time:\n")
   print(x$time)
 }
+#' Summary of MCMC object
+#' 
+#' This functions returns a list containing mean, standard deviations, standard errors, and 
+#' effective sample size estimates for parameters and states.
+#' 
+#' @param x output from \code{run_mcmc}
+#' @param only_theta If \code{TRUE}, summaries are computed only for hyperparameters theta. 
+#' @param ... Ignored.
+#' @export
+summary.mcmc_output <- function(x, only_theta = FALSE, ...) {
+  
+  if (only_theta) {
+    summaries <- list(theta = NULL)
+  } else {
+    summaries <- list(theta = NULL, alpha_mean = NULL, alpha_sd = NULL, alpha_se_is = NULL, 
+      alpha_se_ar = NULL, alpha_ess_is = NULL, alpha_ess_ar = NULL)
+  }
+  theta <- mcmc(x$theta)
+  w <- x$counts * if (x$isc) x$weights else 1
+  
+  mean_theta <- weighted_mean(theta, w)
+  sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
+  se_theta_is <- weighted_se(theta, w)
+  spec <- sapply(1:ncol(theta), function(i) spectrum0.ar((theta[, i] - mean_theta[i]) * w)$spec)
+  se_theta_ar <- sqrt(spec / length(w)) / mean(w)
+  stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta_ar), ncol = 4, 
+    dimnames = list(colnames(x$theta), c("Mean", "SD", "SE-IS", "SE-AR")))
+  
+  
+  ess_theta_is <- apply(theta, 2, function(z) ess(w, identity, z))
+  ess_theta_ar <- (sd_theta / se_theta_ar)^2
+  esss <- matrix(c(ess_theta_is, ess_theta_ar), ncol = 2, 
+    dimnames = list(colnames(x$theta), c("ESS-IS", "ESS-AR")))
+  
+  summaries$theta <- cbind(stats, esss)
+  if (!only_theta) {
+    mean_alpha <- weighted_mean(x$alpha, w)
+    sd_alpha <- apply(weighted_var(x$alpha, w, method = "moment"), 3, diag)
+    se_alpha_is <- t(apply(x$alpha, 2, function(x) weighted_se(t(x), w)))
+    spec <- matrix(NA, ncol(x$alpha), nrow(x$alpha))
+    for(j in 1:nrow(x$alpha)) {
+      spec[, j] <- sapply(1:ncol(x$alpha), function(i) spectrum0.ar((x$alpha[j, i, ] - mean_alpha[j, i]) * w)$spec)
+    }
+    se_alpha_ar <- sqrt(t(spec) / length(w)) / mean(w)
+    
+    summaries$alpha_mean <- mean_alpha
+    summaries$alpha_sd <- sd_alpha
+    summaries$alpha_se_is <- se_alpha_is
+    summaries$alpha_se_ar <- se_alpha_ar
+    
+    summaries$alpha_ess_is <- apply(x$alpha, 2, function(x) apply(t(x), 2, function(z) ess(w, identity, z)))
+    summaries$alpha_ess_ar <- (sd_alpha / se_alpha_ar)^2
+  }
+  summaries
+}
 
 #' Expand the Jump Chain representation
 #'
