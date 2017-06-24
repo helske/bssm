@@ -88,14 +88,6 @@ arma::vec T_fn(const unsigned int t, const arma::vec& alpha,
 }
 ```
 
-Let's make less than optimal initial guess for $\theta$, the standard deviation of observational level noise, the standard deviations of the process noises (which are zero but let's pretend that we are not certain about the underlying model), and define the prior distribution for $\alpha_1$:
-```{r theta}
-initial_theta <- c(3, 0.5, 0.5)
-
-# dT, K, a1 and the prior variances
-psi <- c(dT, 100, 0.3, 5, 4, 10)
-```
-
 The name of this function does not matter, but it should always return Armadillo vector (`arma::vec`), and have same signature (ie. the order and types of the function's parameters) should always be like above, even though some of the parameters were not used in the body of the function. For details of using Armadillo, see [Armadillo documentation](http://arma.sourceforge.net/docs.html). After defining the appropriate model functions, the `cpp` file should also contain a function for creating external pointers for the aforementioned functions. Why this is needed is more technical issue, but fortunately you can just copy the function from the example file without any modifications. 
 
 After creating the file for `C++` functions, you need to compile the file using `Rcpp`:
@@ -105,13 +97,23 @@ Rcpp::sourceCpp("growth_model_functions.cpp")
 pntrs <- create_xptrs()
 ```
 
-This takes a few seconds. If you have used line `// [[Rcpp::export]]` before the model functions, you can now test that the functions work as intended:
+This takes a few seconds. et's make less than optimal initial guess for $\theta$, the standard deviation of observational level noise, the standard deviations of the process noises (which were zero but let's pretend that we do not know that), and define the prior distribution for $\alpha_1$:
+
+```{r theta}
+initial_theta <- c(3, 0.5, 0.5)
+
+# dT, K, a1 and the prior variances
+psi <- c(dT, 100, 0.3, 5, 4, 10)
+```
+
+If you have used line `// [[Rcpp::export]]` before the model functions, you can now test that the functions work as intended:
 
 ```{r test}
 T_fn(0, c(100, 200), initial_theta, psi, matrix(1))
 ```
 
-Now the actual model:
+Now the actual model object using `nlg_ssm`:
+
 ```{r model}
 library("bssm")
 model <- nlg_ssm(y = y, a1=pntrs$a1, P1 = pntrs$P1, 
@@ -132,7 +134,7 @@ ts.plot(cbind(out_filter$att[, 1], out_smoother$alphahat[, 1]), col = 1:2)
 
 ## Markov chain Monte Carlo
 
-For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use $\psi$-PF based pseudo-marginal MCMC with delayed acceptance. Let us compare this approach with EKF-based approximate MCMC (note that the number of MCMC iterations is rather small):
+For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use $\psi$-PF based pseudo-marginal MCMC with delayed acceptance (note that in case of multimodal state density, it is typically better to use bootstrap filter). Let us compare this approach with EKF-based approximate MCMC (note that the number of MCMC iterations is rather small):
 
 ```{r mcmc}
 out_mcmc_pm <- run_mcmc(model, n_iter = 5000, nsim_states = 10, method = "pm", 
