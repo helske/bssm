@@ -4,10 +4,10 @@
 \alias{summary.mcmc_output}
 \title{Summary of MCMC object}
 \usage{
-\method{summary}{mcmc_output}(x, only_theta = FALSE, ...)
+\method{summary}{mcmc_output}(object, only_theta = FALSE, ...)
 }
 \arguments{
-\item{x}{output from \code{run_mcmc}}
+\item{object}{Output from \code{run_mcmc}}
 
 \item{only_theta}{If \code{TRUE}, summaries are computed only for hyperparameters theta.}
 

@@ -80,11 +80,11 @@ print.mcmc_output <- function(x, ...) {
 #' Note that computing the state summaries can be slow for large models due to repeated 
 #' calls to \code{\link[coda]{spectrum0.ar}}.
 #' 
-#' @param x output from \code{run_mcmc}
+#' @param object Output from \code{run_mcmc}
 #' @param only_theta If \code{TRUE}, summaries are computed only for hyperparameters theta. 
 #' @param ... Ignored.
 #' @export
-summary.mcmc_output <- function(x, only_theta = FALSE, ...) {
+summary.mcmc_output <- function(object, only_theta = FALSE, ...) {
   
   if (only_theta) {
     summaries <- list(theta = NULL)
@@ -92,8 +92,8 @@ summary.mcmc_output <- function(x, only_theta = FALSE, ...) {
     summaries <- list(theta = NULL, alpha_mean = NULL, alpha_sd = NULL, alpha_se_is = NULL, 
       alpha_se_ar = NULL, alpha_ess_is = NULL, alpha_ess_ar = NULL)
   }
-  theta <- mcmc(x$theta)
-  w <- x$counts * if (x$isc) x$weights else 1
+  theta <- mcmc(object$theta)
+  w <- object$counts * if (object$isc) object$weights else 1
   
   mean_theta <- weighted_mean(theta, w)
   sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
@@ -101,24 +101,24 @@ summary.mcmc_output <- function(x, only_theta = FALSE, ...) {
   spec <- sapply(1:ncol(theta), function(i) spectrum0.ar((theta[, i] - mean_theta[i]) * w)$spec)
   se_theta_ar <- sqrt(spec / length(w)) / mean(w)
   stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta_ar), ncol = 4, 
-    dimnames = list(colnames(x$theta), c("Mean", "SD", "SE-IS", "SE-AR")))
+    dimnames = list(colnames(object$theta), c("Mean", "SD", "SE-IS", "SE-AR")))
   
   
   ess_theta_is <- apply(theta, 2, function(z) ess(w, identity, z))
   ess_theta_ar <- (sd_theta / se_theta_ar)^2
   esss <- matrix(c(ess_theta_is, ess_theta_ar), ncol = 2, 
-    dimnames = list(colnames(x$theta), c("ESS-IS", "ESS-AR")))
+    dimnames = list(colnames(object$theta), c("ESS-IS", "ESS-AR")))
   
   summaries$theta <- cbind(stats, esss)
   if (!only_theta) {
-    m <- ncol(x$alpha)
-    mean_alpha <- weighted_mean(x$alpha, w)
-    sd_alpha <- weighted_var(x$alpha, w, method = "moment")
+    m <- ncol(object$alpha)
+    mean_alpha <- weighted_mean(object$alpha, w)
+    sd_alpha <- weighted_var(object$alpha, w, method = "moment")
     sd_alpha <- if(m > 1) sqrt(t(apply(sd_alpha, 3, diag))) else matrix(sqrt(sd_alpha), ncol = 1)
-    se_alpha_is <- apply(x$alpha, 2, function(x) weighted_se(t(x), w))
-    spec <- matrix(NA, ncol(x$alpha), nrow(x$alpha))
-    for(j in 1:nrow(x$alpha)) {
-      spec[, j] <- sapply(1:ncol(x$alpha), function(i) spectrum0.ar((x$alpha[j, i, ] - mean_alpha[j, i]) * w)$spec)
+    se_alpha_is <- apply(object$alpha, 2, function(x) weighted_se(t(x), w))
+    spec <- matrix(NA, ncol(object$alpha), nrow(object$alpha))
+    for(j in 1:nrow(object$alpha)) {
+      spec[, j] <- sapply(1:ncol(object$alpha), function(i) spectrum0.ar((object$alpha[j, i, ] - mean_alpha[j, i]) * w)$spec)
     }
     se_alpha_ar <- sqrt(t(spec) / length(w)) / mean(w)
     
@@ -127,7 +127,7 @@ summary.mcmc_output <- function(x, only_theta = FALSE, ...) {
     summaries$alpha_se_is <- se_alpha_is
     summaries$alpha_se_ar <- se_alpha_ar
     
-    summaries$alpha_ess_is <- apply(x$alpha, 2, function(x) apply(t(x), 2, function(z) ess(w, identity, z)))
+    summaries$alpha_ess_is <- apply(object$alpha, 2, function(x) apply(t(x), 2, function(z) ess(w, identity, z)))
     summaries$alpha_ess_ar <- (sd_alpha / se_alpha_ar)^2
   }
   summaries
