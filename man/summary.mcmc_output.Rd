@@ -17,3 +17,7 @@
 This functions returns a list containing mean, standard deviations, standard errors, and 
 effective sample size estimates for parameters and states.
 }
+\details{
+Note that computing the state summaries can be slow for large models due to repeated 
+calls to \code{\link[coda]{spectrum0.ar}}.
+}
