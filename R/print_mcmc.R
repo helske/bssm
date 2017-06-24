@@ -77,6 +77,9 @@ print.mcmc_output <- function(x, ...) {
 #' This functions returns a list containing mean, standard deviations, standard errors, and 
 #' effective sample size estimates for parameters and states.
 #' 
+#' Note that computing the state summaries can be slow for large models due to repeated 
+#' calls to \code{\link[coda]{spectrum0.ar}}.
+#' 
 #' @param x output from \code{run_mcmc}
 #' @param only_theta If \code{TRUE}, summaries are computed only for hyperparameters theta. 
 #' @param ... Ignored.
@@ -108,9 +111,11 @@ summary.mcmc_output <- function(x, only_theta = FALSE, ...) {
   
   summaries$theta <- cbind(stats, esss)
   if (!only_theta) {
+    m <- ncol(x$alpha)
     mean_alpha <- weighted_mean(x$alpha, w)
-    sd_alpha <- apply(weighted_var(x$alpha, w, method = "moment"), 3, diag)
-    se_alpha_is <- t(apply(x$alpha, 2, function(x) weighted_se(t(x), w)))
+    sd_alpha <- weighted_var(x$alpha, w, method = "moment")
+    sd_alpha <- if(m > 1) sqrt(t(apply(sd_alpha, 3, diag))) else matrix(sqrt(sd_alpha), ncol = 1)
+    se_alpha_is <- apply(x$alpha, 2, function(x) weighted_se(t(x), w))
     spec <- matrix(NA, ncol(x$alpha), nrow(x$alpha))
     for(j in 1:nrow(x$alpha)) {
       spec[, j] <- sapply(1:ncol(x$alpha), function(i) spectrum0.ar((x$alpha[j, i, ] - mean_alpha[j, i]) * w)$spec)

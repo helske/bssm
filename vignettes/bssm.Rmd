@@ -30,7 +30,7 @@ The `R` [@r-core] package `bssm` is designed for Bayesian inference of general s
 
 The motivation behind the `bssm` package is [@vihola-helske-franks] which suggests a new computationally efficient approach for Bayesian inference of state space models. The core methodology relies on Markov chain Monte Carlo (MCMC) approach with adaptive random walk Metropolis updating, using RAM algorithm [@Vihola2012]. In addition to the two-step procedure based on importance sampling type correction introduced in [@vihola-helske-franks], pseudo-marginal MCMC based on particle filtering, optionally with delayed acceptance, is also supported, as well as Kalman filter based inference of linear-Gaussian models.
 
-In this vignette we will first introduce the basic state space modelling framework used in `bssm`, and the relevant algorithms. We then give several illustrations how to use `bssm` in practice.
+In this vignette we will first introduce the basic state space modelling framework used in `bssm`, and the relevant algorithms. We then give illustrations how to use `bssm` in practice.
 
 
 # State space models with linear-Gaussian dynamics
@@ -39,7 +39,7 @@ Denote a sequence of observations $(y_1,\ldots,y_T)$ as $y_{1:T}$, and sequence 
 $$
 \alpha_{t+1} = c_t + T_t \alpha_t + R_t \eta_t,
 $$
-where $c_t$ is known input vector, $T_t$ and $R_t$ are a system matrices which can depend on unknown parameters. Also, $\eta_t \sim N(0, I_k)$ and $\alpha_1 \sim N(a_1, P_1)$ independently of each other. For non-linear transition equations, see vignette `growth_model`. For observation level density $g_t$, the `bssm` package currently supports basic stochastic volatility model and general exponential family state space models. 
+where $c_t$ is known input vector (typically omitted), and $T_t$ and $R_t$ are a system matrices which can depend on unknown parameters. Also, $\eta_t \sim N(0, I_k)$ and $\alpha_1 \sim N(a_1, P_1)$ independently of each other. For non-linear transition equations, see vignette `growth_model`. For observation level density $g_t$, the `bssm` package currently supports basic stochastic volatility model and general exponential family state space models. 
 
 For exponential family models, the observation equation has a general form
 
@@ -79,9 +79,9 @@ $$
 
 where $p(y_{1:T} | \theta)$ is the marginal likelihood, and $p(\alpha_{1:T} | y_{1:T}, \theta)$ is often referred as a smoothing distribution. However, instead of targeting this joint posterior, it is more efficient to target the marginal posterior $p(\theta | y)$, and then given the sample $\{\theta^{i}\}^n_{i=1}$ from this marginal posterior, simulate states $\alpha^i_{1:T}$ from the smoothing distribution $p(\alpha_{1:T} | y_{1:T}, \theta^i)$ for $i=1\ldots,n$.
 
-For Gaussian models given the parameters $\theta$, the marginal likelihood $p(y_{1:T} | \theta)$ can be computed using the well known Kalman filter recursions, and there are several algorithms for simulating the states $\alpha_{1:T}$ from the smoothing distribution $p(\alpha_{1:T} | y_{1:T})$ (see for example @DK2012). Therefore we can straightforwardly (at least in principle) apply standard MCMC algoritms. In `bssm`, we use an adaptive random walk metropolis algorithm based on RAM [@Vihola2012] where we fix the target acceptance rate beforehand. The complete adaptive MCMC algorithm of `bssm` for Gaussian models is as follows.
+For Gaussian models given the parameters $\theta$, the marginal likelihood $p(y_{1:T} | \theta)$ can be computed using the well known Kalman filter recursions, and there are several algorithms for simulating the states $\alpha_{1:T}$ from the smoothing distribution $p(\alpha_{1:T} | y_{1:T})$ (see for example @DK2012). Therefore we can straightforwardly (at least in principle) apply standard MCMC algoritms. In `bssm`, we use an adaptive random walk Metropolis algorithm based on RAM [@Vihola2012] where we fix the target acceptance rate beforehand. The complete adaptive MCMC algorithm of `bssm` for Gaussian models is as follows.
 
-Given the target acceptance rate $a^{\ast}$ (e.g. 0.234) and $\gamma \in (0,1]$, at iteration $i$:
+Given the target acceptance rate $a^{\ast}$ (e.g. 0.234) and $\gamma \in (0,1]$ (the default 2/3 works well in practice), at iteration $i$:
 
 1. Compute the proposal $\theta' = \theta^{i-1} + S_{i-1} u^i$, where $u_i$ is simulated from the standard $d$-dimensional Gaussian distribution and $S_{i-1}$ is a lower diagonal matrix with positive diagonal elements. 
 2. Accept the proposal with probability $a^i := \min\{1, \frac{p(\theta')p(y_{1:T} | \theta')}{p(\theta^{i-1}) p(y_{1:T} | \theta^{i-1})\}}$.
@@ -95,7 +95,7 @@ If the interest is in the posterior means and variances of the states, we can re
 
 # Non-Gaussian models
 
-For non-linear/non-Gaussian models, the marginal likelihood $p(y_{1:T} | \theta)$ is typically not available in closed form. Thus we need to resort to simulation methods, which leads to pseudo-marginal MCMC algorithm [@andrieu-roberts]. The observational densities of our non-linear/non-Gaussian models are all twice differentiable, so we can straightforwardly use the Laplace approximation based on [@DK2000]. This gives us an approximating Gaussian model which has the same mode of $p(\alpha_{1:T} | y_{1:T}, \theta)$ as the original model. Often this approximating Gaussian model works well as such, and thus we can use it in MCMC scheme directly, which results in an approximate Bayesian inference. We can also use the approximating model together with importance sampling or particle filtering, which produces exact Bayesian inference on $p(\alpha_{1:T}, \theta | y_{1:T})$. 
+For non-linear/non-Gaussian models, the marginal likelihood $p(y_{1:T} | \theta)$ is typically not available in closed form. Thus we need to resort to simulation methods, which leads to pseudo-marginal MCMC algorithm [@lin-liu-sloan, @beaumont, @andrieu-roberts]. The observational densities of our non-linear/non-Gaussian models are all twice differentiable, so we can straightforwardly use the Laplace approximation based on [@DK2000]. This gives us an approximating Gaussian model which has the same mode of $p(\alpha_{1:T} | y_{1:T}, \theta)$ as the original model. Often this approximating Gaussian model works well as such, and thus we can use it in MCMC scheme directly, which results in an approximate Bayesian inference. We can also use the approximating model together with importance sampling or particle filtering, which produces exact Bayesian inference on $p(\alpha_{1:T}, \theta | y_{1:T})$. 
 
 We will illustrate our approach using simple importance sampling. We can factor the likelihood of the non-Gaussian model as [@DK2012]
 $$
@@ -114,18 +114,22 @@ $$
 \end{aligned}
 $$
 where $\hat \alpha_{1:T}$ is the conditional mode estimate obtained from the approximating Gaussian model. For approximating inference, we simply omit the term $\log \frac{1}{N}\sum_{j=1}^N w_j^{\ast}$.
-In principle, when using the exact Bayesian inference we should simulate multiple realizations of the states $\alpha_{1:T}$ in each iteration of MCMC in order to compute $\log \frac{1}{N}\sum_{j=1}^N w_j^{\ast}$. Fortunately, we can use so called delayed acceptance (DA) approach [@Christen2005; @Banterle2015] which speeds up the computation considerably:
+
+In principle, when using the exact Bayesian inference we should simulate multiple realizations of the states $\alpha_{1:T}$ in each iteration of MCMC in order to compute $\log \frac{1}{N}\sum_{j=1}^N w_j^{\ast}$. Fortunately, we can use so called delayed acceptance (DA) approach [@Christen2005; @Banterle2015] which speeds up the computation considerably. Instead of single acceptance step we use two-stage approach as follows.
 
 1. Make initial acceptance of the given proposal $\theta'$ with probability 
 $\min\left\{1, \frac{p(y_{1:T} | \theta') \hat w' }{p(y_{1:T} | \theta^{i-1}) \hat w^{i-1}}\right\}$.
 2. If accepted, perform the importance sampling of the states $\alpha_{1:T}$ and make the delayed acceptance with probability $\min\{1, \sum_{j=1}^N w_{j}^{\ast,'} / \sum_{j=1}^N w_j^{\ast, i-1}\}$.
 3. If the delayed acceptance is successful, set $\theta^i = \theta'$ and sample one (or multiple) realization of the previously simulated states with weights $w^i_j, j = 1, \ldots, N$ (with replacement in case of multiple samples are stored). Otherwise, set $\theta^i = \theta^{i-1}$ and similarly for the states.
 
-If our approximation is good, then most of the times when we accept in the first stage we also accept in seconds stage, and thus we often need to simulate the states only for each accepted state. Compared to standard pseudo-marginal approach where we need to simulate the states for each proposal, DA provides substantial computational benefits.
+If our approximation is good, then most of the times when we accept in the first stage we also accept in seconds stage, and thus we often need to simulate the states only for each accepted state. Compared to standard pseudo-marginal approach where we need to simulate the states for each proposal, DA can provide substantial computational benefits.
 
-However, the simple importance approach does not scale well with the data, leading to large variance in importance weights. Thus it is more efficient to use particle filtering based simulation methods for the marginal likelihood estimation and state simulation. Although `bssm` supports standard bootstrap particle filter [@gordon-salmond-smith], we recommend using more efficient $\psi$-particle filter [@vihola-helske-franks] which makes use of our approximating Gaussian model. 
+However, the simple importance approach does not scale well with the data, leading to large variance in importance weights. Thus it is more efficient to use particle filtering based simulation methods for the marginal likelihood estimation and state simulation. Although `bssm` supports standard bootstrap particle filter [@gordon-salmond-smith], we recommend using more efficient $\psi$-particle filter [@vihola-helske-franks] which makes use of our approximating Gaussian model. With $\psi$-PF, we typically need only a very few particles (say 10) for relatively accurate likelihood estimate, which again speeds up the computations.
 
-In addition to standard pseudo-marginal MCMC or its DA variant, `bssm` also supports the importance-sampling type correction method presented in @vihola-helske-franks. Here the MCMC algorithm targets the approximating posterior (based on the Gaussian model), and the correction to actual target posterior is made in offline fashion. This gives additional computational benefits over DA we do not need to simulate states at all during the burnin period, and the weight computations are straightforwardly parallelisable.
+In addition to standard pseudo-marginal MCMC or its DA variant, `bssm` also supports the importance sampling type correction method presented in @vihola-helske-franks. Here the MCMC algorithm targets the approximating posterior (based on the Gaussian model), and the correction to actual target posterior is made in offline fashion. This gives some additional computational benefits over DA we need to run the particle filter only for each accepted value of the Markov chain (after burnin), and the weight computations are straightforwardly parallelisable. For details, see @vihola-helske-franks.
+
+For all MCMC algorithms, `bssm` uses so-called jump chain representation of the Markov chain $X_1,\ldots,X_n$, where we only store each accepted $X_k$ and the number of steps we stayed on the same state. So for example if $X_{1:n} = (1,2,2,1,1,1)$, we present such chain as $\tilde X = (1,2,1)$, $N=(1,2,3)$. This approach reduces the storage space, and makes it more efficient to use importance sampling type correction algorithms. One drawback of this approach is that the results from the MCMC runs correspond to weighted samples from the target posterior, so some of the typical postprocessing tools need to be adjusted. Of course in case of other methods than IS-correction, the simplest option is to just expand the samples using the stored counts $N$ instead.
+
 
 # Example
 
@@ -141,14 +145,13 @@ model <- bsm(log10(UKgas), sd_y = prior, sd_level = prior,
   sd_slope = prior, sd_seasonal =  prior)
 ```
 
-And run MCMC and check some summary statistics:
+And run MCMC and print some summary statistics (there is also a `summary` method with similar output):
 ```{r mcmc}
 mcmc_out <- run_mcmc(model, n_iter = 1e5)
 mcmc_out
 ```
 
-For plotting purposes, we'll use `bayesplot` package for the figures after expanding our jump chain representation. Note that the 
-API of the `expand_sample` function is likely change in future. 
+For plotting purposes, we'll use `bayesplot` package for the figures after expanding our jump chain representation. Note that the API of the `expand_sample` function is likely change in future. 
 
 ```{r plot}
 theta <- as.matrix(expand_sample(mcmc_out, "theta")) ## until bayesplot is updated
@@ -167,7 +170,14 @@ Smoothed trend:
 ```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component."}
 level <- expand_sample(mcmc_out, "alpha", states = 1)
 ts.plot(model$y, colMeans(level[[1]]), col = 1:2)
+# or using summary method:
+sumr <- summary(mcmc_out)
+level <- sumr$alpha_mean[, 1]
+lwr <- level - 1.96 * sumr$alpha_sd[, 1]
+upr <- level + 1.96 * sumr$alpha_sd[, 1]
+ts.plot(model$y, cbind(level, lwr, upr), col = c(1, 2, 2, 2), lty = c(1, 1, 2, 2))
 ```
+
 
 For prediction intervals, we first build a model for the future time points, and 
 then use the previously obtained posterior samples for the prediction:
@@ -197,5 +207,6 @@ pred_state <- predict(mcmc_out, future_model, probs = c(0.025, 0.1, 0.9, 0.975),
 ts.plot(log10(UKgas), level_fit, pred_state$mean[,"level"], pred_state$intervals$level[, -3],
   col = c(1, 2, 2, c(3, 4, 4, 3)), lty = c(1, 1, 1, rep(2, 4)))
 ```
+
 
 # References
