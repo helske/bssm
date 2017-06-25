@@ -572,7 +572,7 @@ mgg_ssm nlg_ssm::approximate(arma::mat& mode_estimate,
   arma::mat att(m, n);
   arma::cube Pt(m, m, n+1);
   arma::cube Ptt(m, m, n);
-  double loglik = ekf(at, att, Pt, Ptt, iekf_iter);
+  ekf(at, att, Pt, Ptt, iekf_iter);
   
   arma::vec a1 = a1_fn.eval(theta, known_params);
   arma::mat P1 = P1_fn.eval(theta, known_params);
