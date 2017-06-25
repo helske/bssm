@@ -167,9 +167,8 @@ mcmc_out$theta[which.max(mcmc_out$posterior), ]
 
 Smoothed trend:
 
-```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component."}
+```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component with 95% intervals."}
 level <- expand_sample(mcmc_out, "alpha", states = 1)
-ts.plot(model$y, colMeans(level[[1]]), col = 1:2)
 # or using summary method:
 sumr <- summary(mcmc_out)
 level <- sumr$alpha_mean[, 1]
