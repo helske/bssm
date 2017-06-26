@@ -199,7 +199,7 @@ void nlg_amcmc::state_sampler_bsf_is2(nlg_ssm& model, const unsigned int nsim_st
     double loglik = model.bsf_filter(nsim_states, alpha_i, weights_i, indices);
     if(arma::is_finite(loglik)) {
       weights(i) = std::exp(loglik - approx_loglik_storage(i));
-     
+      
       filter_smoother(alpha_i, indices);
       arma::vec w = weights_i.col(model.n - 1);
       std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
@@ -403,7 +403,7 @@ void nlg_amcmc::state_sampler_psi_is1(nlg_ssm& model, const unsigned int nsim_st
 }
 
 
-void nlg_amcmc::gaussian_sampling(nlg_ssm& model, const unsigned int n_threads) {
+void nlg_amcmc::gaussian_sampling(nlg_ssm model, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
