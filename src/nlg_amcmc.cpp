@@ -134,7 +134,7 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
   acceptance_rate /= (n_iter - n_burnin);
 }
 
-void nlg_amcmc::is_correction_bsf(nlg_ssm& model, const unsigned int nsim_states, 
+void nlg_amcmc::is_correction_bsf(nlg_ssm model, const unsigned int nsim_states, 
   const bool const_sim, const unsigned int n_threads) {
   
   if(n_threads > 1) {
@@ -239,7 +239,7 @@ void nlg_amcmc::state_sampler_bsf_is1(nlg_ssm& model, const unsigned int nsim_st
 }
 
 
-void nlg_amcmc::is_correction_psi(nlg_ssm& model, const unsigned int nsim_states, 
+void nlg_amcmc::is_correction_psi(nlg_ssm model, const unsigned int nsim_states, 
   const bool const_sim, const unsigned int n_threads) {
   
   if(n_threads > 1) {

@@ -17,7 +17,7 @@ public:
   void approx_mcmc(nlg_ssm model, const unsigned int max_iter, 
     const double conv_tol, const bool end_ram, const unsigned int iekf_iter);
   
-  void is_correction_bsf(nlg_ssm& model, const unsigned int nsim_states, 
+  void is_correction_bsf(nlg_ssm model, const unsigned int nsim_states, 
     const bool const_sim, const unsigned int n_threads);
   
   void state_sampler_bsf_is2(nlg_ssm& model, const unsigned int nsim_states, 
@@ -28,7 +28,7 @@ public:
     const arma::vec& approx_loglik_storage, const arma::mat& theta,
     arma::cube& alpha, arma::vec& weights, const arma::uvec& counts);
   
-  void is_correction_psi(nlg_ssm& model, const unsigned int nsim_states, 
+  void is_correction_psi(nlg_ssm model, const unsigned int nsim_states, 
     const bool const_sim, const unsigned int n_threads);
   
   void state_sampler_psi_is2(nlg_ssm& model, const unsigned int nsim_states, 
