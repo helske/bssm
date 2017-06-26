@@ -1,0 +1,9 @@
+bssm 0.1.1 (Release date: 2017-06-27)
+==============
+  
+  * Fixed some portability issues in C++ codes.
+
+bssm 0.1.0 (Release date: 2017-06-24)
+==============
+
+* Initial release
