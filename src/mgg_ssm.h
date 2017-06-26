@@ -2,6 +2,8 @@
 #ifndef MGG_H
 #define MGG_H
 
+#include <sitmo.h>
+
 #include "bssm.h"
 #include "gg_abc.h"
 
@@ -79,7 +81,7 @@ public:
   arma::cube RR;
   arma::mat xbeta;
   
-  std::mt19937 engine;
+  sitmo::prng_engine engine;
   const double zero_tol;
   
 private:

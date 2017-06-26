@@ -21,7 +21,7 @@ public:
   
   
   template <class T>
-  void is_correction_psi(T& model, const unsigned int nsim_states, 
+  void is_correction_psi(T model, const unsigned int nsim_states, 
     const bool const_sim, const unsigned int n_threads);
     
   template <class T>
@@ -36,7 +36,7 @@ public:
   
   
   template <class T>
-  void is_correction_bsf(T& model, const unsigned int nsim_states, 
+  void is_correction_bsf(T model, const unsigned int nsim_states, 
     const bool const_sim, const unsigned int n_threads);
   template <class T>
   void state_sampler_bsf_is2(T& model, const unsigned int nsim_states, 
@@ -48,7 +48,7 @@ public:
     arma::cube& alpha, arma::vec& weights, const arma::uvec& counts);
   
   template <class T>
-  void is_correction_spdk(T& model, const unsigned int nsim_states, 
+  void is_correction_spdk(T model, const unsigned int nsim_states, 
     const bool const_sim, const unsigned int n_threads);
   
   template <class T>
@@ -62,7 +62,7 @@ public:
     const arma::uvec& counts);
   
   template <class T>
-  void approx_state_posterior(T& model, unsigned int n_threads);
+  void approx_state_posterior(T model, const unsigned int n_threads);
   template <class T>
   void approx_state_sampler(T& model, 
     const arma::mat& theta, arma::cube& alpha, const arma::mat& y, const arma::mat& H);

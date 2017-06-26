@@ -1,6 +1,7 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+#include <sitmo.h>
 #include <ramcmc.h>
 #include "nlg_amcmc.h"
 #include "nlg_ssm.h"
@@ -140,7 +141,7 @@ void nlg_amcmc::is_correction_bsf(nlg_ssm& model, const unsigned int nsim_states
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
-  model.engine = std::mt19937(omp_get_thread_num() + 1);
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
   unsigned thread_size = std::floor(static_cast <double> (n_stored) / n_threads);
   unsigned int start = omp_get_thread_num() * thread_size;
   unsigned int end = (omp_get_thread_num() + 1) * thread_size - 1;
@@ -245,7 +246,7 @@ void nlg_amcmc::is_correction_psi(nlg_ssm& model, const unsigned int nsim_states
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
-  model.engine = std::mt19937(omp_get_thread_num() + 1);
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
   unsigned thread_size = std::floor(static_cast <double> (n_stored) / n_threads);
   unsigned int start = omp_get_thread_num() * thread_size;
   unsigned int end = (omp_get_thread_num() + 1) * thread_size - 1;
@@ -408,7 +409,7 @@ void nlg_amcmc::gaussian_sampling(nlg_ssm& model, const unsigned int n_threads) 
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
-  model.engine = std::mt19937(omp_get_thread_num() + 1);
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
   unsigned thread_size = std::floor(static_cast <double> (n_stored) / n_threads);
   unsigned int start = omp_get_thread_num() * thread_size;
   unsigned int end = (omp_get_thread_num() + 1) * thread_size - 1;

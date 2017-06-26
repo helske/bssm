@@ -175,22 +175,22 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
 
 // approximate MCMC using EKF
 
-template void ung_amcmc::is_correction_psi(ung_ssm& model, const unsigned int nsim_states, 
+template void ung_amcmc::is_correction_psi(ung_ssm model, const unsigned int nsim_states, 
   const bool const_sim, const unsigned int n_threads);
-template void ung_amcmc::is_correction_psi(ung_bsm& model, const unsigned int nsim_states, 
+template void ung_amcmc::is_correction_psi(ung_bsm model, const unsigned int nsim_states, 
   const bool const_sim, const unsigned int n_threads);
-template void ung_amcmc::is_correction_psi(ung_svm& model, const unsigned int nsim_states, 
+template void ung_amcmc::is_correction_psi(ung_svm model, const unsigned int nsim_states, 
   const bool const_sim, const unsigned int n_threads);
 
 template <class T>
-void ung_amcmc::is_correction_psi(T& model, const unsigned int nsim_states, 
+void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states, 
   const bool const_sim, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
-  model.engine = std::mt19937(omp_get_thread_num() + 1);
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
   unsigned thread_size = 
     static_cast <unsigned int>(std::floor(static_cast <double> (n_stored) / n_threads));
   unsigned int start = omp_get_thread_num() * thread_size;
@@ -324,25 +324,25 @@ void ung_amcmc::state_sampler_psi_is1(T& model, const unsigned int nsim_states,
 }
 
 
-template void ung_amcmc::is_correction_bsf(ung_ssm& model, 
+template void ung_amcmc::is_correction_bsf(ung_ssm model, 
   const unsigned int nsim_states, const bool const_sim, 
   const unsigned int n_threads);
-template void ung_amcmc::is_correction_bsf(ung_bsm& model, 
+template void ung_amcmc::is_correction_bsf(ung_bsm model, 
   const unsigned int nsim_states, const bool const_sim, 
   const unsigned int n_threads);
-template void ung_amcmc::is_correction_bsf(ung_svm& model, 
+template void ung_amcmc::is_correction_bsf(ung_svm model, 
   const unsigned int nsim_states, const bool const_sim, 
   const unsigned int n_threads);
 
 template <class T>
-void ung_amcmc::is_correction_bsf(T& model, const unsigned int nsim_states, 
+void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states, 
   const bool const_sim, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
-  model.engine = std::mt19937(omp_get_thread_num() + 1);
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
   unsigned thread_size = 
     static_cast <unsigned int>(std::floor(static_cast <double> (n_stored) / n_threads));
   unsigned int start = omp_get_thread_num() * thread_size;
@@ -464,22 +464,22 @@ void ung_amcmc::state_sampler_bsf_is1(T& model, const unsigned int nsim_states,
   }
 }
 
-template void ung_amcmc::is_correction_spdk(ung_ssm& model, unsigned int nsim_states, 
+template void ung_amcmc::is_correction_spdk(ung_ssm model, unsigned int nsim_states, 
   bool const_sim, unsigned int n_threads);
-template void ung_amcmc::is_correction_spdk(ung_bsm& model, unsigned int nsim_states, 
+template void ung_amcmc::is_correction_spdk(ung_bsm model, unsigned int nsim_states, 
   bool const_sim, unsigned int n_threads);
-template void ung_amcmc::is_correction_spdk(ung_svm& model, unsigned int nsim_states, 
+template void ung_amcmc::is_correction_spdk(ung_svm model, unsigned int nsim_states, 
   bool const_sim, unsigned int n_threads);
 
 template <class T>
-void ung_amcmc::is_correction_spdk(T& model, const unsigned int nsim_states, 
+void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim_states, 
   const bool const_sim, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
-  model.engine = std::mt19937(omp_get_thread_num() + 1);
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
   unsigned thread_size = 
     static_cast <unsigned int>(std::floor(static_cast <double> (n_stored) / n_threads));
   unsigned int start = omp_get_thread_num() * thread_size;
@@ -611,19 +611,18 @@ void ung_amcmc::state_sampler_spdk_is1(T& model, const unsigned int nsim_states,
   }
 }
 
-template void ung_amcmc::approx_state_posterior(ung_ssm& model, unsigned int n_threads);
-template void ung_amcmc::approx_state_posterior(ung_bsm& model, unsigned int n_threads);
-template void ung_amcmc::approx_state_posterior(ung_svm& model, unsigned int n_threads);
+template void ung_amcmc::approx_state_posterior(ung_ssm model, unsigned int n_threads);
+template void ung_amcmc::approx_state_posterior(ung_bsm model, unsigned int n_threads);
+template void ung_amcmc::approx_state_posterior(ung_svm model, const unsigned int n_threads);
 
 template <class T>
-void ung_amcmc::approx_state_posterior(T& model, unsigned int n_threads) {
+void ung_amcmc::approx_state_posterior(T model, unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
-#pragma omp parallel num_threads(n_threads) default(none) \
-    shared(n_threads) firstprivate(model)
+#pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
     {
-      model.engine = std::mt19937(omp_get_thread_num() + 1);
+      model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
       unsigned thread_size = 
         static_cast <unsigned int>(std::floor(static_cast <double> (n_stored) / n_threads));
       unsigned int start = omp_get_thread_num() * thread_size;

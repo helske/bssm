@@ -3,6 +3,7 @@
 #ifndef NLG_SSM_H
 #define NLG_SSM_H
 
+#include <sitmo.h>
 #include "bssm.h"
 #include "mgg_ssm.h"
 #include "function_pointers.h"
@@ -121,7 +122,7 @@ public:
   const unsigned int Rtv;
   
   unsigned int seed;
-  std::mt19937 engine;
+  sitmo::prng_engine engine;
   const double zero_tol;
   
 };

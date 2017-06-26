@@ -4,6 +4,7 @@
 #ifndef UNG_SSM_H
 #define UNG_SSM_H
 
+#include <sitmo.h>
 #include "unn_abc.h"
 #include "bssm.h"
 
@@ -93,7 +94,7 @@ public:
   arma::cube RR;
   arma::vec xbeta;
   
-  std::mt19937 engine;
+  sitmo::prng_engine engine;
   const double zero_tol;
   
   double phi;

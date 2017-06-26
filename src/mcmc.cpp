@@ -38,18 +38,17 @@ void mcmc::trim_storage() {
 }
 
 
-template void mcmc::state_posterior(ugg_ssm& model, unsigned int n_threads);
-template void mcmc::state_posterior(ugg_bsm& model, unsigned int n_threads);
+template void mcmc::state_posterior(ugg_ssm model, const unsigned int n_threads);
+template void mcmc::state_posterior(ugg_bsm model, const unsigned int n_threads);
 
 template <class T>
-void mcmc::state_posterior(T& model, unsigned int n_threads) {
+void mcmc::state_posterior(T model, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
-#pragma omp parallel num_threads(n_threads) default(none) \
-    shared(n_threads) firstprivate(model)
+#pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
     {
-      model.engine = std::mt19937(omp_get_thread_num() + 1);
+      model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
       unsigned thread_size = 
         static_cast <unsigned int>(std::floor(static_cast <double> (n_stored) / n_threads));
       unsigned int start = omp_get_thread_num() * thread_size;
@@ -73,13 +72,13 @@ void mcmc::state_posterior(T& model, unsigned int n_threads) {
 
 
 // should parallelize at some point
-template void mcmc::state_summary(ugg_ssm& model, arma::mat& alphahat, 
+template void mcmc::state_summary(ugg_ssm model, arma::mat& alphahat, 
   arma::cube& Vt);
-template void mcmc::state_summary(ugg_bsm& model, arma::mat& alphahat, 
+template void mcmc::state_summary(ugg_bsm model, arma::mat& alphahat, 
   arma::cube& Vt);
 
 template <class T>
-void mcmc::state_summary(T& model, arma::mat& alphahat, arma::cube& Vt) {
+void mcmc::state_summary(T model, arma::mat& alphahat, arma::cube& Vt) {
   
   state_sampler(model, theta_storage, alpha_storage);
   arma::cube Valpha(model.m, model.m, model.n, arma::fill::zeros);

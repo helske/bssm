@@ -85,7 +85,7 @@ public:
   arma::cube RR;
   arma::vec xbeta;
   
-  std::mt19937 engine;
+  sitmo::prng_engine engine;
   const double zero_tol;
   
   unsigned int max_iter;
