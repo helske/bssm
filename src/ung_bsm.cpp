@@ -11,7 +11,7 @@ ung_bsm::ung_bsm(const Rcpp::List& model, const unsigned int seed) :
 
 void ung_bsm::set_theta(const arma::vec& theta) {
 
-  if (sum(fixed) < 3 || noise || phi_est) {
+  if (arma::accu(fixed) < 3 || noise || phi_est) {
 
     // sd_level
     if (level_est) {
@@ -29,7 +29,7 @@ void ung_bsm::set_theta(const arma::vec& theta) {
     if(noise) {
       R(m - 1, 1 + slope + seasonal, 0) =
         theta(level_est + slope_est + seasonal_est);
-      P1(m - 1, m - 1) = std::pow(theta(level_est + slope_est + seasonal_est), 2);
+      P1(m - 1, m - 1) = std::pow(theta(level_est + slope_est + seasonal_est), 2.0);
     }
     compute_RR();
   }
@@ -50,7 +50,7 @@ arma::vec ung_bsm::get_theta(void) const {
 
   arma::vec theta(npar);
 
-  if (sum(fixed) < 3 || noise) {
+  if (arma::accu(fixed) < 3 || noise) {
     // sd_level
     if (level_est) {
       theta(0) = R(0, 0, 0);

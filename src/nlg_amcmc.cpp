@@ -86,7 +86,7 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
       double loglik_prop = approx_model.log_likelihood() + sum_scales_prop;
       
       if(arma::is_finite(loglik_prop)) {
-        acceptance_prob = std::min(1.0, exp(loglik_prop - loglik +
+        acceptance_prob = std::min(1.0, std::exp(loglik_prop - loglik +
           logprior_prop - logprior));
       } else {
         acceptance_prob = 0.0; 
@@ -133,7 +133,7 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
   acceptance_rate /= (n_iter - n_burnin);
 }
 
-void nlg_amcmc::is_correction_bsf(nlg_ssm model, const unsigned int nsim_states, 
+void nlg_amcmc::is_correction_bsf(nlg_ssm& model, const unsigned int nsim_states, 
   const bool const_sim, const unsigned int n_threads) {
   
   if(n_threads > 1) {
@@ -141,10 +141,10 @@ void nlg_amcmc::is_correction_bsf(nlg_ssm model, const unsigned int nsim_states,
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
   model.engine = std::mt19937(omp_get_thread_num() + 1);
-  unsigned thread_size = floor(n_stored / n_threads);
+  unsigned thread_size = std::floor(static_cast <double> (n_stored) / n_threads);
   unsigned int start = omp_get_thread_num() * thread_size;
   unsigned int end = (omp_get_thread_num() + 1) * thread_size - 1;
-  if(omp_get_thread_num() == (n_threads - 1)) {
+  if(omp_get_thread_num() == static_cast<int>(n_threads - 1)) {
     end = n_stored - 1;
   }
   
@@ -181,10 +181,10 @@ void nlg_amcmc::is_correction_bsf(nlg_ssm model, const unsigned int nsim_states,
         alpha_storage, weight_storage, count_storage);
     }
   }
-  posterior_storage = prior_storage + log(weight_storage);
+  posterior_storage = prior_storage + arma::log(weight_storage);
 }
 
-void nlg_amcmc::state_sampler_bsf_is2(nlg_ssm model, const unsigned int nsim_states, 
+void nlg_amcmc::state_sampler_bsf_is2(nlg_ssm& model, const unsigned int nsim_states, 
   const arma::vec& approx_loglik_storage, const arma::mat& theta,
   arma::cube& alpha, arma::vec& weights) {
   
@@ -197,10 +197,11 @@ void nlg_amcmc::state_sampler_bsf_is2(nlg_ssm model, const unsigned int nsim_sta
     arma::umat indices(nsim_states, model.n - 1);
     double loglik = model.bsf_filter(nsim_states, alpha_i, weights_i, indices);
     if(arma::is_finite(loglik)) {
-      weights(i) = exp(loglik - approx_loglik_storage(i));
+      weights(i) = std::exp(loglik - approx_loglik_storage(i));
+     
       filter_smoother(alpha_i, indices);
       arma::vec w = weights_i.col(model.n - 1);
-      std::discrete_distribution<> sample(w.begin(), w.end());
+      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
       alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
     } else {
       weights(i) = 0.0;
@@ -210,7 +211,7 @@ void nlg_amcmc::state_sampler_bsf_is2(nlg_ssm model, const unsigned int nsim_sta
 }
 
 
-void nlg_amcmc::state_sampler_bsf_is1(nlg_ssm model, const unsigned int nsim_states, 
+void nlg_amcmc::state_sampler_bsf_is1(nlg_ssm& model, const unsigned int nsim_states, 
   const arma::vec& approx_loglik_storage, const arma::mat& theta,
   arma::cube& alpha, arma::vec& weights, const arma::uvec& counts) {
   
@@ -224,10 +225,10 @@ void nlg_amcmc::state_sampler_bsf_is1(nlg_ssm model, const unsigned int nsim_sta
     arma::umat indices(m, model.n - 1);
     double loglik = model.bsf_filter(m, alpha_i, weights_i, indices);
     if(arma::is_finite(loglik)) {
-      weights(i) = exp(loglik - approx_loglik_storage(i));
+      weights(i) = std::exp(loglik - approx_loglik_storage(i));
       filter_smoother(alpha_i, indices);
       arma::vec w = weights_i.col(model.n - 1);
-      std::discrete_distribution<> sample(w.begin(), w.end());
+      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
       alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
     } else {
       weights(i) = 0.0;
@@ -237,7 +238,7 @@ void nlg_amcmc::state_sampler_bsf_is1(nlg_ssm model, const unsigned int nsim_sta
 }
 
 
-void nlg_amcmc::is_correction_psi(nlg_ssm model, const unsigned int nsim_states, 
+void nlg_amcmc::is_correction_psi(nlg_ssm& model, const unsigned int nsim_states, 
   const bool const_sim, const unsigned int n_threads) {
   
   if(n_threads > 1) {
@@ -245,10 +246,10 @@ void nlg_amcmc::is_correction_psi(nlg_ssm model, const unsigned int nsim_states,
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
   model.engine = std::mt19937(omp_get_thread_num() + 1);
-  unsigned thread_size = floor(n_stored / n_threads);
+  unsigned thread_size = std::floor(static_cast <double> (n_stored) / n_threads);
   unsigned int start = omp_get_thread_num() * thread_size;
   unsigned int end = (omp_get_thread_num() + 1) * thread_size - 1;
-  if(omp_get_thread_num() == (n_threads - 1)) {
+  if(omp_get_thread_num() == static_cast<int>(n_threads - 1)) {
     end = n_stored - 1;
   }
   
@@ -287,10 +288,10 @@ void nlg_amcmc::is_correction_psi(nlg_ssm model, const unsigned int nsim_states,
     }
   }
   posterior_storage = prior_storage + approx_loglik_storage - scales_storage + 
-    log(weight_storage);
+    arma::log(weight_storage);
 }
 
-void nlg_amcmc::state_sampler_psi_is2(nlg_ssm model, const unsigned int nsim_states, 
+void nlg_amcmc::state_sampler_psi_is2(nlg_ssm& model, const unsigned int nsim_states, 
   const arma::mat& theta, const arma::cube& mode, arma::cube& alpha, arma::vec& weights) {
   
   unsigned int p = model.p;
@@ -336,17 +337,17 @@ void nlg_amcmc::state_sampler_psi_is2(nlg_ssm model, const unsigned int nsim_sta
     arma::cube alpha_i(model.m, model.n, nsim_states);
     arma::mat weights_i(nsim_states, model.n);
     arma::umat indices(nsim_states, model.n - 1);
-    weights(i) = exp(model.psi_filter(approx_model, 0.0,nsim_states, alpha_i, weights_i, indices));
+    weights(i) = std::exp(model.psi_filter(approx_model, 0.0,nsim_states, alpha_i, weights_i, indices));
     
     filter_smoother(alpha_i, indices);
     arma::vec w = weights_i.col(model.n - 1);
-    std::discrete_distribution<> sample(w.begin(), w.end());
+    std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
     alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
   }
 }
 
 
-void nlg_amcmc::state_sampler_psi_is1(nlg_ssm model, const unsigned int nsim_states, 
+void nlg_amcmc::state_sampler_psi_is1(nlg_ssm& model, const unsigned int nsim_states, 
   const arma::mat& theta, const arma::cube& mode,
   arma::cube& alpha, arma::vec& weights, const arma::uvec& counts) {
   
@@ -391,27 +392,27 @@ void nlg_amcmc::state_sampler_psi_is1(nlg_ssm model, const unsigned int nsim_sta
     arma::cube alpha_i(model.m, model.n, m_sim);
     arma::mat weights_i(m_sim, model.n);
     arma::umat indices(m_sim, model.n - 1);
-    weights(i) = exp(model.psi_filter(approx_model, 0.0,m_sim, alpha_i, weights_i, indices));
+    weights(i) = std::exp(model.psi_filter(approx_model, 0.0,m_sim, alpha_i, weights_i, indices));
     
     filter_smoother(alpha_i, indices);
     arma::vec w = weights_i.col(model.n - 1);
-    std::discrete_distribution<> sample(w.begin(), w.end());
+    std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
     alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
   }
 }
 
 
-void nlg_amcmc::gaussian_sampling(nlg_ssm model, const unsigned int n_threads) {
+void nlg_amcmc::gaussian_sampling(nlg_ssm& model, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
   model.engine = std::mt19937(omp_get_thread_num() + 1);
-  unsigned thread_size = floor(n_stored / n_threads);
+  unsigned thread_size = std::floor(static_cast <double> (n_stored) / n_threads);
   unsigned int start = omp_get_thread_num() * thread_size;
   unsigned int end = (omp_get_thread_num() + 1) * thread_size - 1;
-  if(omp_get_thread_num() == (n_threads - 1)) {
+  if(omp_get_thread_num() == static_cast<int>(n_threads - 1)) {
     end = n_stored - 1;
   }
   
@@ -434,7 +435,7 @@ void nlg_amcmc::gaussian_sampling(nlg_ssm model, const unsigned int n_threads) {
   posterior_storage = prior_storage + approx_loglik_storage;
 }
 
-void nlg_amcmc::gaussian_state_sampler(nlg_ssm model,
+void nlg_amcmc::gaussian_state_sampler(nlg_ssm& model,
   const arma::mat& theta, const arma::cube& mode, arma::cube& alpha) {
   
   unsigned int p = model.p;

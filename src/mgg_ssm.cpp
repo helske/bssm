@@ -155,7 +155,7 @@ double mgg_ssm::log_likelihood() const {
           (Pt - K * F * K.t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
         arma::vec Fv = inv_cholF * v; 
         logLik -= 0.5 * arma::as_scalar(obs_y.n_elem * LOG2PI + 
-          2.0 * arma::sum(log(arma::diagvec(cholF))) + Fv.t() * Fv);
+          2.0 * arma::accu(arma::log(arma::diagvec(cholF))) + Fv.t() * Fv);
       } else {
         at = C.col(t * Ctv) + T.slice(t * Ttv) * at;
         Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));

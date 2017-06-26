@@ -51,8 +51,8 @@ double compute_ung_loglik(T model, const unsigned int simulation_method,
         }
         weights -= arma::accu(scales);
         double maxw = weights.max();
-        weights = exp(weights - maxw);
-        loglik = approx_loglik + log(arma::mean(weights)) + maxw;
+        weights = arma::exp(weights - maxw);
+        loglik = approx_loglik + std::log(arma::mean(weights)) + maxw;
       }
     } else {
       loglik = approx_loglik;

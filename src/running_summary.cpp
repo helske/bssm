@@ -43,7 +43,7 @@ void filter_summary(const arma::cube& alpha, arma::mat& at, arma::mat& att,
   att.zeros();
   
   for (unsigned int t = 0; t < alpha.n_cols; t++) {
-    weights.col(t) /= arma::sum(weights.col(t));
+    weights.col(t) /= arma::accu(weights.col(t));
     for (unsigned int i = 0; i < alpha.n_slices; i++) {
       att.col(t) += alpha.slice(i).col(t) * weights(i, t);
       at.col(t) += alpha.slice(i).col(t);

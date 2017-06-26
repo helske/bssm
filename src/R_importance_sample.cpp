@@ -22,7 +22,7 @@ Rcpp::List importance_sample_ung(const Rcpp::List& model_,
       weights += model.log_weights(approx_model, t, alpha);
     }
     
-    weights = exp(weights - arma::accu(scales));
+    weights = arma::exp(weights - arma::accu(scales));
     
     return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
       Rcpp::Named("weights") = weights);
@@ -37,7 +37,7 @@ Rcpp::List importance_sample_ung(const Rcpp::List& model_,
     for (unsigned int t = 0; t < model.n; t++) {
       weights += model.log_weights(approx_model, t, alpha);
     }
-    weights = exp(weights - arma::accu(scales));
+    weights = arma::exp(weights - arma::accu(scales));
     return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
       Rcpp::Named("weights") = weights);
   } break;
@@ -51,7 +51,7 @@ Rcpp::List importance_sample_ung(const Rcpp::List& model_,
     for (unsigned int t = 0; t < model.n; t++) {
       weights += model.log_weights(approx_model, t, alpha);
     }
-    weights = exp(weights - arma::accu(scales));
+    weights = arma::exp(weights - arma::accu(scales));
     return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
       Rcpp::Named("weights") = weights);
   } break;

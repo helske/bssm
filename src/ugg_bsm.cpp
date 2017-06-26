@@ -18,10 +18,10 @@ ugg_bsm::ugg_bsm(const Rcpp::List& model, const unsigned int seed) :
 // update the model given theta
 void ugg_bsm::set_theta(const arma::vec& theta) {
 
-  if (sum(fixed) < 4) {
+  if (arma::accu(fixed) < 4) {
     if (y_est) {
       H(0) = theta(0);
-      HH(0) = pow(theta(0), 2);
+      HH(0) = std::pow(theta(0), 2.0);
     }
     // sd_level
     if (level_est) {
@@ -52,7 +52,7 @@ arma::vec ugg_bsm::get_theta() const {
 
   arma::vec theta(npar);
 
-  if (sum(fixed) < 4) {
+  if (arma::accu(fixed) < 4) {
     if(y_est) {
       theta(0) = H(0);
     }

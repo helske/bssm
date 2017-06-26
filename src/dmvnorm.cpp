@@ -13,7 +13,7 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
     arma::mat S = inv(trimatl(sigma(nonzero, nonzero)));
     arma::vec tmp = S * (x.rows(nonzero) - mean.rows(nonzero));
     out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + 
-      2.0 * sum(log(arma::diagvec(sigma.submat(nonzero, nonzero)))) + 
+      2.0 * arma::accu(arma::log(arma::diagvec(sigma.submat(nonzero, nonzero)))) + 
       arma::as_scalar(tmp.t() * tmp));
   } else {
     arma::mat U(p, p);
@@ -24,13 +24,13 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
     if (success) {
       arma::uvec nonzero = arma::find(s > (arma::datum::eps * p * s(0)));
       arma::vec tmp = U.cols(nonzero).t() * (x - mean);
-      out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + sum(log(s(nonzero))) + 
+      out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + arma::accu(arma::log(s(nonzero))) + 
         arma::as_scalar(tmp.t() * arma::diagmat(1.0 / s(nonzero)) * tmp));
     }
   }
   
   if (!logd) {
-    out = exp(out);
+    out = std::exp(out);
   }
   
   return(out);
@@ -41,7 +41,7 @@ double precompute_dmvnorm(const arma::mat& sigma, arma::mat& Linv, const arma::u
   
   Linv = arma::inv(arma::trimatl(sigma(nonzero, nonzero)));
   double constant = -0.5 * nonzero.n_elem * std::log(2.0 * M_PI) + 
-    arma::sum(log(Linv.diag()));
+    arma::accu(arma::log(Linv.diag()));
   return constant;
 }
 //[[Rcpp::export]]

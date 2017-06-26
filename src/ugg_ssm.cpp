@@ -133,7 +133,7 @@ double ugg_ssm::log_likelihood() const {
       arma::vec K = Pt * Z.col(t * Ztv) / F;
       at = C.col(t * Ctv) + T.slice(t * Ttv) * (at + K * v);
       Pt = arma::symmatu(T.slice(t * Ttv) * (Pt - K * K.t() * F) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
-      logLik -= 0.5 * (LOG2PI + log(F) + v * v/F);
+      logLik -= 0.5 * (LOG2PI + std::log(F) + v * v/F);
     } else {
       at = C.col(t * Ctv) + T.slice(t * Ttv) * at;
       Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
@@ -538,7 +538,7 @@ double ugg_ssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (att.col(t));
       Ptt.slice(t) = Pt.slice(t) - K * K.t() * F;
       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * Ptt.slice(t) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
-      logLik -= 0.5 * (LOG2PI + log(F) + v * v/F);
+      logLik -= 0.5 * (LOG2PI + std::log(F) + v * v/F);
     } else {
       att.col(t) = at.col(t);
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * att.col(t);
@@ -655,7 +655,7 @@ Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
       
     }
     
-    arma::mat expanded_sd = rep_mat(sqrt(var_pred), counts);
+    arma::mat expanded_sd = rep_mat(arma::sqrt(var_pred), counts);
     arma::inplace_trans(expanded_sd);
     arma::mat expanded_mean = rep_mat(mean_pred, counts);
     arma::inplace_trans(expanded_mean);
@@ -687,10 +687,10 @@ Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
     }
     
     arma::cube intv(n, probs.n_elem, m);
-    arma::cube expanded_sd(sum(counts), n, m);
-    arma::cube expanded_mean(sum(counts), n, m);
+    arma::cube expanded_sd(arma::accu(counts), n, m);
+    arma::cube expanded_mean(arma::accu(counts), n, m);
     for (unsigned int i = 0; i < m; i++) {
-      arma::mat tmp1 = rep_mat(sqrt(var_pred.slice(i)), counts);
+      arma::mat tmp1 = rep_mat(arma::sqrt(var_pred.slice(i)), counts);
       expanded_sd.slice(i) = tmp1.t();
       arma::mat tmp2 = rep_mat(mean_pred.slice(i), counts);
       expanded_mean.slice(i) = tmp2.t();
@@ -784,17 +784,17 @@ double ugg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
     for (unsigned int i = 0; i < nsim; i++) {
       double mu = arma::as_scalar(D(0) + Z.col(0).t() * 
         alpha.slice(i).col(0));
-      weights(i, 0) = -0.5 * std::pow(y(0) - mu, 2) / HH(0);
+      weights(i, 0) = -0.5 * std::pow(y(0) - mu, 2.0) / HH(0);
     }
     double max_weight = weights.col(0).max();
-    weights.col(0) = exp(weights.col(0) - max_weight);
-    double sum_weights = arma::sum(weights.col(0));
+    weights.col(0) = arma::exp(weights.col(0) - max_weight);
+    double sum_weights = arma::accu(weights.col(0));
     if(sum_weights > 0.0){
       normalized_weights = weights.col(0) / sum_weights;
     } else {
       return -arma::datum::inf;
     }
-    loglik = max_weight + log(sum_weights / nsim) + norm_log_const(H(0));
+    loglik = max_weight + std::log(sum_weights / nsim) + norm_log_const(H(0));
   } else {
     weights.col(0).ones();
     normalized_weights.fill(1.0 / nsim);
@@ -827,18 +827,18 @@ double ugg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
       for (unsigned int i = 0; i < nsim; i++) {
         double mu = arma::as_scalar(D((t + 1) * Dtv) + Z.col(Ztv * (t + 1)).t() * 
           alpha.slice(i).col(t + 1));
-        weights(i, t + 1) = -0.5 * std::pow(y(t + 1) - mu, 2) / HH(Htv * (t + 1));
+        weights(i, t + 1) = -0.5 * std::pow(y(t + 1) - mu, 2.0) / HH(Htv * (t + 1));
       }
       
       double max_weight = weights.col(t + 1).max();
-      weights.col(t + 1) = exp(weights.col(t + 1) - max_weight);
-      double sum_weights = arma::sum(weights.col(t + 1));
+      weights.col(t + 1) = arma::exp(weights.col(t + 1) - max_weight);
+      double sum_weights = arma::accu(weights.col(t + 1));
       if(sum_weights > 0.0){
         normalized_weights = weights.col(t + 1) / sum_weights;
       } else {
         return -arma::datum::inf;
       }
-      loglik += max_weight + log(sum_weights / nsim) +
+      loglik += max_weight + std::log(sum_weights / nsim) +
         norm_log_const(H(Htv * (t + 1)));
     } else {
       weights.col(t + 1).ones();
@@ -875,18 +875,18 @@ double ugg_ssm::aux_filter(const unsigned int nsim, arma::cube& alpha,
   if(arma::is_finite(y(0))) {
     for (unsigned int i = 0; i < nsim; i++) {
       double mu = arma::as_scalar(D(0) + Z.col(0).t() * alpha.slice(i).col(0));
-      weights(i, 0) = -0.5 * std::pow(y(0) - mu, 2) / HH(0);
+      weights(i, 0) = -0.5 * std::pow(y(0) - mu, 2.0) / HH(0);
     }
     double max_weight = weights.col(0).max();
-    weights.col(0) = exp(weights.col(0) - max_weight);
-    double sum_weights = arma::sum(weights.col(0));
+    weights.col(0) = arma::exp(weights.col(0) - max_weight);
+    double sum_weights = arma::accu(weights.col(0));
     
     if(sum_weights > 0.0){
       normalized_weights = weights.col(0) / sum_weights;
     } else {
       return -arma::datum::inf;
     }
-    loglik = max_weight + log(sum_weights / nsim) + norm_log_const(H(0));
+    loglik = max_weight + std::log(sum_weights / nsim) + norm_log_const(H(0));
   } else {
     weights.col(0).ones();
     normalized_weights.fill(1.0 / nsim);
@@ -907,12 +907,12 @@ double ugg_ssm::aux_filter(const unsigned int nsim, arma::cube& alpha,
       alphatmp_init.col(i) = alpha.slice(indices_init(i)).col(t);
       double mu = arma::as_scalar(D((t + 1) * Dtv) + Z.col(Ztv * (t + 1)).t() * 
         (C.col(t * Ctv) + T.slice(Ttv * t) * alphatmp_init.col(i)));
-      aux_weights(i) = -0.5 * std::pow(y(t + 1) - mu, 2) / HH(Htv * (t + 1));
+      aux_weights(i) = -0.5 * std::pow(y(t + 1) - mu, 2.0) / HH(Htv * (t + 1));
     }
     
     double max_aux_weight = aux_weights.max();
-    arma::vec normalized_aux_weights = exp(aux_weights-max_aux_weight);
-    double sum_aux_weights = sum(normalized_aux_weights);
+    arma::vec normalized_aux_weights = arma::exp(aux_weights-max_aux_weight);
+    double sum_aux_weights = arma::accu(normalized_aux_weights);
     normalized_aux_weights /= sum_aux_weights;
     for (unsigned int i = 0; i < nsim; i++) {
       r(i) = unif(engine);
@@ -940,19 +940,19 @@ double ugg_ssm::aux_filter(const unsigned int nsim, arma::cube& alpha,
       for (unsigned int i = 0; i < nsim; i++) {
         double mu = arma::as_scalar(D((t + 1) * Dtv) + Z.col(Ztv * (t + 1)).t() * 
           alpha.slice(i).col(t + 1));
-        weights(i, t + 1) = -0.5 * std::pow(y(t + 1) - mu, 2) / HH(Htv * (t + 1)) -
+        weights(i, t + 1) = -0.5 * std::pow(y(t + 1) - mu, 2.0) / HH(Htv * (t + 1)) -
           sampled_weights(i);
       }
       double max_weight = weights.col(t + 1).max();
-      weights.col(t + 1) = exp(weights.col(t + 1) - max_weight);
-      double sum_weights = arma::sum(weights.col(t + 1));
+      weights.col(t + 1) = arma::exp(weights.col(t + 1) - max_weight);
+      double sum_weights = arma::accu(weights.col(t + 1));
       if(sum_weights > 0.0){
         normalized_weights = weights.col(t + 1) / sum_weights;
       } else {
         return -arma::datum::inf;
       }
       
-      loglik += max_weight + log(sum_weights / nsim) + log(sum_aux_weights / nsim) +
+      loglik += max_weight + std::log(sum_weights / nsim) + std::log(sum_aux_weights / nsim) +
         max_aux_weight + norm_log_const(H(Htv * (t + 1)));
     } else {
       weights.col(t + 1).ones();
@@ -993,20 +993,20 @@ double ugg_ssm::oaux_filter(const unsigned int nsim, arma::cube& alpha,
   if(arma::is_finite(y(0))) {
     for (unsigned int i = 0; i < nsim; i++) {
       double mu = arma::as_scalar(D(0) + Z.col(0).t() * alpha.slice(i).col(0));
-      weights(i, 0) = -0.5 * std::pow(y(0) - mu, 2) / HH(0) +
+      weights(i, 0) = -0.5 * std::pow(y(0) - mu, 2.0) / HH(0) +
       dmvnorm(alpha.slice(i).col(0), a1, P1, false, true) -
       dmvnorm(alpha.slice(i).col(0), att1, L, true, true);
     }
     double max_weight = weights.col(0).max();
-    weights.col(0) = exp(weights.col(0) - max_weight);
-    double sum_weights = arma::sum(weights.col(0));
+    weights.col(0) = arma::exp(weights.col(0) - max_weight);
+    double sum_weights = arma::accu(weights.col(0));
 
     if(sum_weights > 0.0){
       normalized_weights = weights.col(0) / sum_weights;
     } else {
       return -arma::datum::inf;
     }
-    loglik = max_weight + log(sum_weights / nsim) + norm_log_const(H(0));
+    loglik = max_weight + std::log(sum_weights / nsim) + norm_log_const(H(0));
   } else {
     weights.col(0).ones();
     normalized_weights.fill(1.0 / nsim);
@@ -1034,13 +1034,13 @@ double ugg_ssm::oaux_filter(const unsigned int nsim, arma::cube& alpha,
       att.col(i) = tmp;
       Ptt.slice(i) = psd_chol(Ptt.slice(i));
       double mu = arma::as_scalar(D((t + 1) * Dtv) + Z.col(Ztv * (t + 1)).t() * tmp);
-      aux_weights(i) = -0.5 * std::pow(y(t + 1) - mu, 2) / HH(Htv * (t + 1));
+      aux_weights(i) = -0.5 * std::pow(y(t + 1) - mu, 2.0) / HH(Htv * (t + 1));
       
     }
     
     double max_aux_weight = aux_weights.max();
-    arma::vec normalized_aux_weights = exp(aux_weights-max_aux_weight);
-    double sum_aux_weights = sum(normalized_aux_weights);
+    arma::vec normalized_aux_weights = arma::exp(aux_weights-max_aux_weight);
+    double sum_aux_weights = arma::accu(normalized_aux_weights);
     normalized_aux_weights /= sum_aux_weights;
     for (unsigned int i = 0; i < nsim; i++) {
       r(i) = unif(engine);
@@ -1067,7 +1067,7 @@ double ugg_ssm::oaux_filter(const unsigned int nsim, arma::cube& alpha,
       for (unsigned int i = 0; i < nsim; i++) {
         double mu = arma::as_scalar(D((t + 1) * Dtv) + Z.col(Ztv * (t + 1)).t() *
           alpha.slice(i).col(t + 1));
-        weights(i, t + 1) = -0.5 * std::pow(y(t + 1) - mu, 2) / HH(Htv * (t + 1)) -
+        weights(i, t + 1) = -0.5 * std::pow(y(t + 1) - mu, 2.0) / HH(Htv * (t + 1)) -
           sampled_weights(i) +
           dmvnorm(alpha.slice(i).col(t + 1), 
             C.col(t * Ctv) + T.slice(t * Ttv) * alphatmp.col(i), 
@@ -1076,15 +1076,15 @@ double ugg_ssm::oaux_filter(const unsigned int nsim, arma::cube& alpha,
             att.col(indices_second(i)), Ptt.slice(indices_second(i)), true, true);
       }
       double max_weight = weights.col(t + 1).max();
-      weights.col(t + 1) = exp(weights.col(t + 1) - max_weight);
-      double sum_weights = arma::sum(weights.col(t + 1));
+      weights.col(t + 1) = arma::exp(weights.col(t + 1) - max_weight);
+      double sum_weights = arma::accu(weights.col(t + 1));
       if(sum_weights > 0.0){
         normalized_weights = weights.col(t + 1) / sum_weights;
       } else {
         return -arma::datum::inf;
       }
 
-      loglik += max_weight + log(sum_weights / nsim) + log(sum_aux_weights / nsim) +
+      loglik += max_weight + std::log(sum_weights / nsim) + std::log(sum_aux_weights / nsim) +
         max_aux_weight + norm_log_const(H(Htv * (t + 1)));
     } else {
       weights.col(t + 1).ones();
