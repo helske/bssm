@@ -465,11 +465,11 @@ void ung_amcmc::state_sampler_bsf_is1(T& model, const unsigned int nsim_states,
 }
 
 template void ung_amcmc::is_correction_spdk(ung_ssm model, unsigned int nsim_states, 
-  bool const_sim, unsigned int n_threads);
+  bool const_sim, const unsigned int n_threads);
 template void ung_amcmc::is_correction_spdk(ung_bsm model, unsigned int nsim_states, 
-  bool const_sim, unsigned int n_threads);
+  bool const_sim, const unsigned int n_threads);
 template void ung_amcmc::is_correction_spdk(ung_svm model, unsigned int nsim_states, 
-  bool const_sim, unsigned int n_threads);
+  bool const_sim, const unsigned int n_threads);
 
 template <class T>
 void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim_states, 
@@ -611,12 +611,12 @@ void ung_amcmc::state_sampler_spdk_is1(T& model, const unsigned int nsim_states,
   }
 }
 
-template void ung_amcmc::approx_state_posterior(ung_ssm model, unsigned int n_threads);
-template void ung_amcmc::approx_state_posterior(ung_bsm model, unsigned int n_threads);
+template void ung_amcmc::approx_state_posterior(ung_ssm model, const unsigned int n_threads);
+template void ung_amcmc::approx_state_posterior(ung_bsm model, const unsigned int n_threads);
 template void ung_amcmc::approx_state_posterior(ung_svm model, const unsigned int n_threads);
 
 template <class T>
-void ung_amcmc::approx_state_posterior(T model, unsigned int n_threads) {
+void ung_amcmc::approx_state_posterior(T model, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
