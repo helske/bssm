@@ -13,13 +13,14 @@ test_that("Test that poisson ng_bsm give identical results with ngssm",{
   expect_equal(sim_ng_bsm, sim_ngssm)
 })
 
-skip_on_cran()
 test_that("Test that svm still works",{
   data("exchange")
   model <- svm(exchange, rho = uniform(0.98,-0.999,0.999), 
     sd_ar = halfnormal(0.2, 5), sigma = halfnormal(1, 2))
   
   expect_error(sim <- importance_sample(model, 4, seed = 2), NA)
+  
+  skip_on_cran()
   testvalues <- structure(c(2.08604083835474, 0.245724972898813, 0.0860932717666039, 
     0.591816325453726), .Dim = c(4L, 1L))
   expect_equal(sim$weights, testvalues)

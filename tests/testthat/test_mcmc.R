@@ -1,7 +1,5 @@
 context("Test MCMC")
 
-skip_on_cran()
-
 tol <- 1e-8
 test_that("MCMC results for Gaussian model are correct",{
   set.seed(123)
@@ -13,6 +11,8 @@ test_that("MCMC results for Gaussian model are correct",{
   
   expect_equal(run_mcmc(model_bssm, n_iter = 10, seed = 1)[-13], 
     run_mcmc(model_bssm, n_iter = 10, seed = 1)[-13])
+  
+  skip_on_cran()
   mcmc_bsm_ref <- readRDS("mcmc_reference/mcmc_bsm_ref.rda")
   expect_equal(mcmc_bsm[-13], mcmc_bsm_ref[-13], tolerance = tol)
 })
@@ -26,6 +26,8 @@ test_that("MCMC results for Poisson model are correct",{
   expect_error(mcmc_poisson <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 42), NA)
   expect_equal(run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13], 
     run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 1)[-13])
+  
+  skip_on_cran()
   mcmc_poisson_ref <- readRDS("mcmc_reference/mcmc_poisson_ref.rda")
   expect_equal(mcmc_poisson[-13], mcmc_poisson_ref[-13], tolerance = tol)
 })
@@ -53,6 +55,7 @@ test_that("MCMC results for SV model using IS-correction are correct",{
     run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, 
       method = "isc", seed = 1, simulation_method = "bsf")[-14])
   
+  skip_on_cran()
   mcmc_svm_ref <- readRDS("mcmc_reference/mcmc_svm_ref.rda")
   expect_equal(mcmc_svm[-14], mcmc_svm_ref[-14], tolerance = tol)
 })
