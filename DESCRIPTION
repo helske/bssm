@@ -27,3 +27,4 @@ LinkingTo: BH, Rcpp, RcppArmadillo, ramcmc, sitmo
 SystemRequirements: C++11
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr
+ByteCompile: true

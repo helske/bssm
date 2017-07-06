@@ -1,5 +1,7 @@
 context("Test MCMC")
 
+skip_on_cran()
+
 tol <- 1e-8
 test_that("MCMC results for Gaussian model are correct",{
   set.seed(123)

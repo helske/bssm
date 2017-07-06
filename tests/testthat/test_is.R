@@ -11,11 +11,9 @@ test_that("Test that poisson ng_bsm give identical results with ngssm",{
     distribution = "poisson"), NA)
   expect_error(sim_ng_bsm <- importance_sample(model_ng_bsm, 4, seed = 2), NA)
   expect_equal(sim_ng_bsm, sim_ngssm)
-  testvalues <- structure(c(0.111093900417338, 0.440469859987445, 3.04702921656647, 
-    1.65453321843038), .Dim = c(4L, 1L))
-  expect_equal(sim_ng_bsm$weights, testvalues)
 })
 
+skip_on_cran()
 test_that("Test that svm still works",{
   data("exchange")
   model <- svm(exchange, rho = uniform(0.98,-0.999,0.999), 
