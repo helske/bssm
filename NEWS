@@ -1,3 +1,8 @@
+bssm 0.1.1-1 (Release date: 2017-06-27)
+==============
+  * Use byte compiler.
+  * Skip tests relying in certain numerical precision on CRAN.
+  
 bssm 0.1.1 (Release date: 2017-06-27)
 ==============
   
@@ -7,4 +12,4 @@ bssm 0.1.1 (Release date: 2017-06-27)
 bssm 0.1.0 (Release date: 2017-06-24)
 ==============
 
-  * Initial release
+  * Initial release.

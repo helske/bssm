@@ -1,8 +1,8 @@
 Package: bssm
 Type: Package
 Title: Bayesian Inference of State Space Models
-Version: 0.1.1
-Date: 2017-06-27
+Version: 0.1.1-1
+Date: 2017-07-06
 Author: Jouni Helske, Matti Vihola
 Maintainer: Jouni Helske <jouni.helske@iki.fi>
 Description: Efficient methods for Bayesian inference of state space models 
