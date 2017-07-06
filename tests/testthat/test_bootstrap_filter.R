@@ -9,6 +9,7 @@ test_that("Test that bsm gives identical results with gssm",{
   expect_error(bsf_gssm <- bootstrap_filter(model_gssm, 10, seed = 1), NA)
   expect_error(model_bsm <- bsm(1:10, sd_level = 2, sd_slope = 2, sd_y = 2, 
     P1 = diag(2, 2)), NA)
+  expect_error(bsf_bsm <- bootstrap_filter(model_bsm, 10, seed = 1), NA)
   expect_equal(bsf_bsm, bsf_gssm, tolerance = 1e-8)
 })
 
