@@ -39,8 +39,9 @@ print.mcmc_output <- function(x, ...) {
   se_theta_is <- weighted_se(theta, w)
   spec <- sapply(1:ncol(theta), function(i) spectrum0.ar((theta[, i] - mean_theta[i]) * w)$spec)
   se_theta_ar <- sqrt(spec / length(w)) / mean(w)
-  stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta_ar), ncol = 4, 
-    dimnames = list(colnames(x$theta), c("Mean", "SD", "SE-IS", "SE-AR")))
+  se_theta_total <- sqrt(se_theta_is^2 + se_theta_ar^2)
+  stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta_ar, se_theta_total), ncol = 5, 
+    dimnames = list(colnames(x$theta), c("Mean", "SD", "SE-IS", "SE-AR", "SE")))
   print(stats)
   
   cat("\nEffective sample sizes for theta:\n\n")
@@ -58,8 +59,9 @@ print.mcmc_output <- function(x, ...) {
   se_alpha_is <- weighted_se(alpha, w)
   spec <- sapply(1:ncol(alpha), function(i) spectrum0.ar((alpha[, i] - mean_alpha[i]) * w)$spec)
   se_alpha_ar <- sqrt(spec / length(w)) / mean(w)
-  stats <- matrix(c(mean_alpha, sd_alpha, se_alpha_is, se_alpha_ar), ncol = 4, 
-    dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE-IS", "SE-AR")))
+  se_alpha_total <- sqrt(se_alpha_is^2 + se_alpha_ar^2)
+  stats <- matrix(c(mean_alpha, sd_alpha, se_alpha_is, se_alpha_ar, se_alpha_total), ncol = 5, 
+    dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE-IS", "SE-AR", "SE")))
   print(stats)
   
   cat("\nEffective sample sizes for alpha:\n\n")
@@ -100,8 +102,9 @@ summary.mcmc_output <- function(object, only_theta = FALSE, ...) {
   se_theta_is <- weighted_se(theta, w)
   spec <- sapply(1:ncol(theta), function(i) spectrum0.ar((theta[, i] - mean_theta[i]) * w)$spec)
   se_theta_ar <- sqrt(spec / length(w)) / mean(w)
-  stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta_ar), ncol = 4, 
-    dimnames = list(colnames(object$theta), c("Mean", "SD", "SE-IS", "SE-AR")))
+  se_theta_total <- sqrt(se_theta_is^2 + se_theta_ar^2)
+  stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta_ar, se_theta_total), ncol = 5, 
+    dimnames = list(colnames(object$theta), c("Mean", "SD", "SE-IS", "SE-AR", "SE")))
   
   
   ess_theta_is <- apply(theta, 2, function(z) ess(w, identity, z))
@@ -126,6 +129,7 @@ summary.mcmc_output <- function(object, only_theta = FALSE, ...) {
     summaries$alpha_sd <- sd_alpha
     summaries$alpha_se_is <- se_alpha_is
     summaries$alpha_se_ar <- se_alpha_ar
+    summaries$alpha_se_total <- sqrt(se_alpha_is^2 + se_alpha_ar^2)
     
     summaries$alpha_ess_is <- apply(object$alpha, 2, function(x) apply(t(x), 2, function(z) ess(w, identity, z)))
     summaries$alpha_ess_ar <- (sd_alpha / se_alpha_ar)^2
