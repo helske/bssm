@@ -44,11 +44,11 @@ public:
     const double alpha = 1.0, const double beta = 0.0, const double kappa = 2.0) const;
   
     // bootstrap filter  
-  double bsf_filter(const unsigned int nsim, arma::cube& alphasim, 
+  double bsf_filter(const unsigned int nsim, arma::cube& alpha, 
     arma::mat& weights, arma::umat& indices);
   
   // auxiliary particle filter  
-  double aux_filter(const unsigned int nsim, arma::cube& alphasim, 
+  double aux_filter(const unsigned int nsim, arma::cube& alpha, 
     arma::mat& weights, arma::umat& indices);
   
   // psi-particle filter
@@ -67,19 +67,19 @@ public:
   
   // compute logarithms of _unnormalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
   arma::vec log_weights(const mgg_ssm& approx_model, 
-    const unsigned int t, const arma::cube& alphasim, const arma::mat& alpha_prev) const;
+    const unsigned int t, const arma::cube& alpha, const arma::mat& alpha_prev) const;
   // compute logarithms of _unnormalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
   arma::vec log_weights_df(const mgg_ssm& approx_model, 
-    const unsigned int t, const arma::cube& alphasim, const arma::mat& alpha_prev) const;
+    const unsigned int t, const arma::cube& alpha, const arma::mat& alpha_prev) const;
   
   // compute unnormalized mode-based scaling terms
   // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
   arma::vec scaling_factors(const mgg_ssm& approx_model, const arma::mat& mode_estimate) const;
   
   // compute logarithms of _unnormalized_ densities g(y_t | alpha_t)
-  arma::vec log_obs_density(const unsigned int t, const arma::cube& alphasim) const;
+  arma::vec log_obs_density(const unsigned int t, const arma::cube& alpha) const;
   // compute logarithms of _unnormalized_ densities g(y_t | alpha_t)
-  double log_obs_density(const unsigned int t, const arma::vec& alphasim) const;
+  double log_obs_density(const unsigned int t, const arma::vec& alpha) const;
   
   void ekf_update_step(const unsigned int t, const arma::vec y, 
     const arma::vec& at, const arma::mat& Pt, arma::vec& att, arma::mat& Ptt) const;
