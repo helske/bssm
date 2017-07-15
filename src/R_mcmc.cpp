@@ -410,7 +410,8 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
     Rcpp::Named("counts") = mcmc_run.count_storage,
     Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-    Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+    Rcpp::Named("S") = mcmc_run.S, 
+    Rcpp::Named("posterior") = mcmc_run.posterior_storage);
 }
 // [[Rcpp::export]]
 Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 

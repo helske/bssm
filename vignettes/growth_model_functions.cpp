@@ -107,8 +107,8 @@ double log_prior_pdf(const arma::vec& theta) {
    } else {
     // weakly informative priors. 
     // Note that negative values are handled above
-    log_pdf = 2.0 * (R::dnorm(theta(0), 0, 10, 1) + R::dnorm(theta(1), 0, 10, 1) + 
-      R::dnorm(theta(2), 0, 10, 1));
+    log_pdf = R::dnorm(theta(0), 0, 10, 1) + R::dnorm(theta(1), 0, 10, 1) + 
+      R::dnorm(theta(2), 0, 10, 1);
   }
   return log_pdf;
 }
