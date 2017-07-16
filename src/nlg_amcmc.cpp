@@ -154,11 +154,11 @@ void nlg_amcmc::is_correction_bsf(nlg_ssm model, const unsigned int nsim_states,
   arma::vec weights_piece(end - start + 1);
   arma::vec approx_loglik_piece = approx_loglik_storage.subvec(start, end);
   if (const_sim) {
-    state_sampler_bsf_is2(model, nsim_states, theta_piece, approx_loglik_piece, 
+    state_sampler_bsf_is2(model, nsim_states, approx_loglik_piece, theta_piece,
       alpha_piece, weights_piece);
   } else {
     arma::uvec count_piece = count_storage(arma::span(start, end));
-    state_sampler_bsf_is1(model, nsim_states, theta_piece, approx_loglik_piece, 
+    state_sampler_bsf_is1(model, nsim_states, approx_loglik_piece, theta_piece, 
       alpha_piece, weights_piece, count_piece);
   }
   alpha_storage.slices(start, end) = alpha_piece;
