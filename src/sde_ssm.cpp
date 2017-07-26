@@ -79,7 +79,7 @@ double sde_ssm::coupled_bsf_filter(const unsigned int nsim,
   const unsigned int L_c, const unsigned int L_f, 
   arma::cube& alpha, arma::mat& weights, arma::umat& indices) {
   
-  coarse_engine.seed(seed);
+  //coarse_engine.seed(seed);
   // alpha is  n x 1 x nsim
   for (unsigned int i = 0; i < nsim; i++) {
     alpha(0, 0, i) = milstein_joint(x0, L_c, L_f, 1, theta, 

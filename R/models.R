@@ -838,7 +838,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 #' @param Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
 #' @param state_intercept Intercept terms for state equation, given as a 
 #'  m times n matrix.
-#' @return Object of class \code{bgssm}.
+#' @return Object of class \code{ngssm}.
 #' @export
 ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL, 
   beta, state_names, Z_prior, T_prior, R_prior, state_intercept) {
@@ -1050,7 +1050,7 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
 #' @param H_prior,Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
 #' @param obs_intercept,state_intercept Intercept terms for observation and 
 #' state equations, given as a p times n and m times n matrices.
-#' @return Object of class \code{gssm}.
+#' @return Object of class \code{mv_gssm}.
 mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   H_prior, Z_prior, T_prior, R_prior, obs_intercept, state_intercept) {
   
@@ -1247,7 +1247,7 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 #' Z, H, T, and R vary with respect to time variable (given identical states). 
 #' If used, can speed up some computations.
 #' @param state_names Names for the states.
-#' @return Object of class \code{gssm}.
+#' @return Object of class \code{nlg_ssm}.
 #' @export
 nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta, 
   known_params = NA, known_tv_params = matrix(NA), n_states, n_etas, 
@@ -1267,4 +1267,44 @@ nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
     n_states = n_states, n_etas = n_etas, 
     time_varying = time_varying,
     state_names = state_names), class = "nlg_ssm")
+}
+
+
+
+#'
+#' Univariate state space model with continuous SDE dynamics
+#' 
+#' Constructs an object of class \code{sde_ssm} by defining the functions for 
+#' the drift, diffusion and derivative of diffusion terms of univariate SDE, 
+#' as well as the log-density of observation equation. We assume that the 
+#' observations are measured at integer times (missing values are allowed).
+#' 
+#' As in case of \code{nlg_ssm} models, these general models need a bit more effort from 
+#' the user, as you must provide the several small C++ snippets which define the 
+#' model structure. See SDE vignette for an example.
+#' 
+#' @param y Observations as univariate time series (or vector) of length \eqn{n}.
+#' @param drift,diffusion,ddiffusion An external pointers for the C++ functions which 
+#' define the drift, diffusion and derivative of diffusion functions of SDE.
+#' @param obs_pdf An external pointer for the C++ function which 
+#' computes the observational log-density given the the states and parameter vector theta.
+#' @param prior_pdf An external pointer for the C++ function which 
+#' computes the prior log-density given the parameter vector theta.
+#' @param theta Parameter vector passed to all model functions.
+#' @param x0 Fixed initial value for SDE at time 0.
+#' @param positive If \code{TRUE}, positive constraint is 
+#'   forced by \code{abs} in Millstein scheme.
+#' @return Object of class \code{sde_ssm}.
+#' @export
+sde_ssm <- function(y, drift, diffusion, ddiffusion, obs_pdf, 
+  prior_pdf, theta, x0, positive) {
+  
+  check_y(y)
+  n <- length(y)
+  
+  structure(list(y = as.ts(y), drift = drift, 
+    diffusion = diffusion, 
+    ddiffusion = ddiffusion, obs_pdf = obs_pdf, 
+    prior_pdf = prior_pdf, theta = theta, x0 = x0, 
+    positive = positive, state_names = "x"), class = "sde_ssm")
 }

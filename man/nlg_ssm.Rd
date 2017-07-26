@@ -41,7 +41,7 @@ If used, can speed up some computations.}
 \item{state_names}{Names for the states.}
 }
 \value{
-Object of class \code{gssm}.
+Object of class \code{nlg_ssm}.
 }
 \description{
 Constructs an object of class \code{nlg_ssm} by defining the corresponding terms

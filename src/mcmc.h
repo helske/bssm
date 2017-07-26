@@ -92,11 +92,7 @@ public:
   void pm_mcmc_bsf_sde(sde_ssm model, const bool end_ram, const unsigned int nsim_states,
     const unsigned int L);
   void da_mcmc_bsf_sde(sde_ssm model, const bool end_ram, const unsigned int nsim_states,
-    const unsigned int L_c, const unsigned int L_f);
-  // void pm_mcmc_cbsf_sde(sde_ssm model, const bool end_ram, const unsigned int nsim_states,
-  //   const unsigned int L_c, const unsigned int L_f);
-  // void da_mcmc_cbsf_sde(sde_ssm model, const bool end_ram, const unsigned int nsim_states,
-  //   const unsigned int L_c, const unsigned int L_f);
+    const unsigned int L_c, const unsigned int L_f, const bool coupled, const bool target_full = false);
   
   arma::vec posterior_storage;
   arma::mat theta_storage;

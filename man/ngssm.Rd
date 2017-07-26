@@ -46,7 +46,7 @@ value in MCMC. Defaults to vector of zeros.}
 m times n matrix.}
 }
 \value{
-Object of class \code{bgssm}.
+Object of class \code{ngssm}.
 }
 \description{
 Construct an object of class \code{ngssm} by defining the corresponding terms

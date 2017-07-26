@@ -37,12 +37,13 @@ public:
   void state_sampler_psi_is1(nlg_ssm& model, const unsigned int nsim_states, 
     const arma::mat& theta, const arma::cube& mode,
     arma::cube& alpha, arma::vec& weights, const arma::uvec& counts);
-  arma::vec weight_storage;
   
   void gaussian_sampling(nlg_ssm model, const unsigned int n_threads);
   
   void gaussian_state_sampler(nlg_ssm& model, 
     const arma::mat& theta, const arma::cube& mode, arma::cube& alpha);
+  
+  arma::vec weight_storage;
   
 private:
   

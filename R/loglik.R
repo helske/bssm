@@ -83,3 +83,14 @@ logLik.nlg_ssm <- function(object, nsim_states, method = "bsf", seed = 1,
     as.integer(object$time_varying), nsim_states, seed,
     max_iter, conv_tol, iekf_iter, pmatch(method, c("psi", "bsf", "apf", "ekf", "psi_df")))
 }
+
+
+#' @method logLik sde_ssm
+#' @export
+logLik.sde_ssm <- function(object, nsim_states, L, seed = 1, ...) {
+  if(L <= 0) stop("Discretization level L must be larger than 0.")
+  loglik_sde(object$y, object$x0, object$positive, 
+    object$drift, object$diffusion, object$ddiffusion, 
+    object$prior_pdf, object$obs_pdf, object$theta, 
+    nsim_states, L, seed)
+}

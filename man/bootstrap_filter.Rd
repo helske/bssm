@@ -5,6 +5,7 @@
 \alias{bootstrap_filter.ngssm}
 \alias{bootstrap_filter.svm}
 \alias{bootstrap_filter.nlg_ssm}
+\alias{bootstrap_filter.sde_ssm}
 \title{Bootstrap Filtering}
 \usage{
 bootstrap_filter(object, nsim, ...)
@@ -16,6 +17,9 @@ bootstrap_filter(object, nsim, ...)
   seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{bootstrap_filter}{nlg_ssm}(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...)
+
+\method{bootstrap_filter}{sde_ssm}(object, nsim, L,
   seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{

@@ -38,7 +38,7 @@ value in MCMC. Defaults to matrix of zeros.}
 state equations, given as a p times n and m times n matrices.}
 }
 \value{
-Object of class \code{gssm}.
+Object of class \code{mv_gssm}.
 }
 \description{
 Construct an object of class \code{gssm} by defining the corresponding terms

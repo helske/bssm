@@ -5,6 +5,7 @@
 \alias{particle_smoother.gssm}
 \alias{particle_smoother.ngssm}
 \alias{particle_smoother.nlg_ssm}
+\alias{particle_smoother.sde_ssm}
 \title{Particle Smoothing}
 \usage{
 particle_smoother(object, nsim, ...)
@@ -20,6 +21,9 @@ particle_smoother(object, nsim, ...)
 \method{particle_smoother}{nlg_ssm}(object, nsim, filter_type = "psi",
   smoothing_method = "fs", seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100, conv_tol = 1e-08, iekf_iter = 0, ...)
+
+\method{particle_smoother}{sde_ssm}(object, nsim, L,
+  seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
 \item{object}{Model.}

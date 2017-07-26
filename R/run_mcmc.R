@@ -562,3 +562,79 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   attr(out, "model_type") <- "nlg_ssm"
   out
 }
+
+#' @method run_mcmc sde_ssm
+#' @rdname run_mcmc_ng
+#' @export
+run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
+  method = "pm", L_c, L_f, coupled = TRUE, const_m = TRUE,
+  delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
+  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  n_threads = 1, seed = sample(.Machine$integer.max, size = 1),  ...) {
+  
+  a <- proc.time()
+  check_target(target_acceptance)
+  
+  
+  type <- match.arg(type, c("full", "summary"))
+  method <- match.arg(method, c("pm", "isc"))
+
+  if (missing(S)) {
+    S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
+  }
+  
+  out <-  switch(type,
+    full = {
+      if (method == "pm"){
+        if (delayed_acceptance) {
+          if (L_f <= L_c) stop("L_f should be larger than L_c.")
+          if(L_c <= 0) stop("L_c should be positive.")
+          out <- sde_da_mcmc(object$y, object$x0, object$positive, 
+            object$drift, object$diffusion, object$ddiffusion, 
+            object$prior_pdf, object$obs_pdf, object$theta, 
+            nsim_states, L_c, L_f, coupled, seed,
+            n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+            end_adaptive_phase)
+        } else {
+          if (missing(L_c)) L_c <- 0
+          if (missing(L_f)) L_f <- 0
+          L <- max(L_c, L_f)
+          if(L <= 0) stop("L should be positive.")
+          out <- sde_pm_mcmc(object$y, object$x0, object$positive, 
+            object$drift, object$diffusion, object$ddiffusion, 
+            object$prior_pdf, object$obs_pdf, object$theta, 
+            nsim_states, L, seed,
+            n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+            end_adaptive_phase)
+        }
+      } else {
+        if (L_f <= L_c) stop("L_f should be larger than L_c.")
+        if(L_c <= 0) stop("L_c should be positive.")
+        out <- sde_is_mcmc(object$y, object$x0, object$positive, 
+          object$drift, object$diffusion, object$ddiffusion, 
+          object$prior_pdf, object$obs_pdf, object$theta, 
+          nsim_states, L_c, L_f, coupled, seed,
+          n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+          end_adaptive_phase, const_m, n_threads)
+      }
+      
+      colnames(out$alpha) <- object$state_names
+      out
+    },
+    summary = {
+      stop("summary MCMC not implemented for SDE models.")
+    })
+  
+  colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
+  
+  out$n_iter <- n_iter
+  out$n_burnin <- n_burnin
+  out$n_thin <- n_thin
+  out$isc <- method == "isc"
+  out$call <- match.call()
+  out$seed <- seed
+  out$time <- proc.time() - a
+  class(out) <- "mcmc_output"
+  attr(out, "model_type") <- "sde_ssm"
+  out
+}
