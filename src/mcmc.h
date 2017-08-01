@@ -4,6 +4,7 @@
 #include "bssm.h"
 
 class nlg_ssm;
+class lgg_ssm;
 class sde_ssm;
 
 class mcmc {

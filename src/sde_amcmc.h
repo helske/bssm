@@ -40,11 +40,11 @@ public:
   
   arma::vec weight_storage;
   
+  arma::vec approx_loglik_storage;
+  arma::vec prior_storage;
 private:
   
   void trim_storage();
-  arma::vec approx_loglik_storage;
-  arma::vec prior_storage;
   arma::uvec iter_storage;
 };
 

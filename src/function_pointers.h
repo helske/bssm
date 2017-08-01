@@ -3,6 +3,10 @@
 
 #include "bssm.h"
 
+// typedef for a pointer of linear function of lgg-model equation returning vec (T, Z)
+typedef arma::mat (*mat_fnPtr2)(const unsigned int t, const arma::vec& theta, 
+  const arma::vec& known_params, const arma::mat& known_tv_params);
+
 // typedef for a pointer of nonlinear function of model equation returning vec (T, Z)
 typedef arma::vec (*vec_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params);
@@ -22,9 +26,7 @@ typedef double (*double_fnPtr)(const arma::vec&);
 class double_fn {
   
 public:
-  // eval(Rcpp::XPtr<funcPtr> xptr) {
-  //   funptr = *(xptr);
-  // }
+
   double_fn(SEXP xps) {
     Rcpp::XPtr<double_fnPtr> xptr(xps);
     funptr = *(xptr);
@@ -69,6 +71,22 @@ private:
   mat_fnPtr funptr;
 };
 
+class mat_fn2 {
+  
+public:
+  mat_fn2(SEXP xps) {
+    Rcpp::XPtr<mat_fnPtr2> xptr(xps);
+    funptr = *(xptr);
+  }
+  arma::mat eval(unsigned int t, const arma::vec& theta, 
+    const arma::vec& known_params, const arma::mat& known_tv_params) const {
+    return funptr(t, theta, known_params, known_tv_params);
+  }
+  
+private:
+  mat_fnPtr2 funptr;
+};
+
 class mat_varfn {
   
 public:
@@ -88,9 +106,7 @@ private:
 class vec_initfn {
   
 public:
-  // eval(Rcpp::XPtr<funcPtr> xptr) {
-  //   funptr = *(xptr);
-  // }
+  
   vec_initfn(SEXP xps) {
     Rcpp::XPtr<vec_initfnPtr> xptr(xps);
     funptr = *(xptr);

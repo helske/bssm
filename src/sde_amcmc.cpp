@@ -123,12 +123,15 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
   const unsigned int L_c, const unsigned int L_f, const bool coupled,
   const bool const_sim, const unsigned int n_threads) {
   
+  if(coupled) {
+    model.coarse_engine = sitmo::prng_engine(model.seed);
+  }
   if(n_threads > 1) {
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-  model.coarse_engine = sitmo::prng_engine(model.seed);
+  
   unsigned thread_size = std::floor(static_cast <double> (n_stored) / n_threads);
   unsigned int start = omp_get_thread_num() * thread_size;
   unsigned int end = (omp_get_thread_num() + 1) * thread_size - 1;
@@ -204,7 +207,7 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
       }
     }
   }
-  posterior_storage = prior_storage + arma::log(weight_storage);
+  posterior_storage = prior_storage + approx_loglik_storage + arma::log(weight_storage);
 }
 
 void sde_amcmc::state_sampler_bsf_is2(sde_ssm& model, 
@@ -267,9 +270,9 @@ void sde_amcmc::state_sampler_cbsf_is2(sde_ssm& model,
   const arma::vec& approx_loglik_storage, const arma::mat& theta,
   arma::cube& alpha, arma::vec& weights, const arma::uvec& iter) {
   
-  arma::uvec iter_diff(theta.n_cols);
-  iter_diff(0) = 0;
   
+  arma::uvec iter_diff(theta.n_cols);
+  iter_diff(0) = iter(0) - 1;
   iter_diff.subvec(1, iter_diff.n_elem - 1) = arma::diff(iter) - 1;
   int d = model.n * nsim_states * std::pow(2, L_c);
   for (unsigned int i = 0; i < theta.n_cols; i++) {
@@ -279,8 +282,8 @@ void sde_amcmc::state_sampler_cbsf_is2(sde_ssm& model,
     arma::mat weights_i(nsim_states, model.n);
     arma::umat indices(nsim_states, model.n - 1);
     model.coarse_engine.discard(iter_diff(i) * d);
-    
     double loglik = model.coupled_bsf_filter(nsim_states, L_c, L_f, alpha_i, weights_i, indices);
+    
     if(arma::is_finite(loglik)) {
       weights(i) = std::exp(loglik - approx_loglik_storage(i));
       filter_smoother(alpha_i, indices);
@@ -301,8 +304,9 @@ void sde_amcmc::state_sampler_cbsf_is1(sde_ssm& model,
   arma::cube& alpha, arma::vec& weights, const arma::uvec& counts, const arma::uvec& iter) {
   
   arma::uvec iter_diff(theta.n_cols);
-  iter_diff(0) = 0;
+  iter_diff(0) = iter(0) - 1;
   iter_diff.subvec(1, iter_diff.n_elem - 1) = arma::diff(iter) - 1;
+  
   int d = model.n * std::pow(2, L_c);
   
   for (unsigned int i = 0; i < theta.n_cols; i++) {

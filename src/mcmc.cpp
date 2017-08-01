@@ -10,6 +10,8 @@
 #include "ung_svm.h"
 #include "nlg_ssm.h"
 #include "sde_ssm.h"
+#include "mgg_ssm.h"
+#include "lgg_ssm.h"
 
 #include "distr_consts.h"
 #include "filter_smoother.h"
@@ -41,6 +43,7 @@ void mcmc::trim_storage() {
 
 template void mcmc::state_posterior(ugg_ssm model, const unsigned int n_threads);
 template void mcmc::state_posterior(ugg_bsm model, const unsigned int n_threads);
+template void mcmc::state_posterior(lgg_ssm model, const unsigned int n_threads);
 
 template <class T>
 void mcmc::state_posterior(T model, const unsigned int n_threads) {
@@ -112,10 +115,6 @@ void mcmc::state_summary(T model, arma::mat& alphahat, arma::cube& Vt) {
 
 }
 
-
-template void mcmc::state_sampler(ugg_ssm& model, const arma::mat& theta, arma::cube& alpha);
-template void mcmc::state_sampler(ugg_bsm& model, const arma::mat& theta, arma::cube& alpha);
-
 template <class T>
 void mcmc::state_sampler(T& model, const arma::mat& theta, arma::cube& alpha) {
   for (unsigned int i = 0; i < theta.n_cols; i++) {
@@ -124,6 +123,17 @@ void mcmc::state_sampler(T& model, const arma::mat& theta, arma::cube& alpha) {
     alpha.slice(i) = model.simulate_states(1).slice(0).t();
   }
 }
+template <>
+void mcmc::state_sampler<lgg_ssm>(lgg_ssm& model, const arma::mat& theta, arma::cube& alpha) {
+  for (unsigned int i = 0; i < theta.n_cols; i++) {
+    arma::vec theta_i = theta.col(i);
+    model.theta = theta.col(i);
+    mgg_ssm mgg_model = model.build_mgg();
+    alpha.slice(i) = mgg_model.simulate_states().slice(0).t();
+  }
+}
+
+
 
 ///// TODO: Change to enums later!!!!
 //log-prior_pdf
@@ -237,6 +247,81 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
   trim_storage();
   acceptance_rate /= (n_iter - n_burnin);
 }
+template <>
+void mcmc::mcmc_gaussian<lgg_ssm>(lgg_ssm model, const bool end_ram) {
+  
+  mgg_ssm mgg_model0 = model.build_mgg();
+  arma::vec theta = model.theta;
+  double logprior = model.log_prior_pdf.eval(model.theta);
+  double loglik = mgg_model0.log_likelihood();
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+  
+  double acceptance_prob = 0.0;
+  bool new_value = true;
+  unsigned int n_values = 0;
+  for (unsigned int i = 1; i <= n_iter; i++) {
+    
+    if (i % 16 == 0) {
+      Rcpp::checkUserInterrupt();
+    }
+    
+    // sample from standard normal distribution
+    arma::vec u(n_par);
+    for(unsigned int j = 0; j < n_par; j++) {
+      u(j) = normal(model.engine);
+    }
+    // propose new theta
+    arma::vec theta_prop = theta + S * u;
+    // compute prior
+    model.theta = theta_prop;
+    double logprior_prop = model.log_prior_pdf.eval(model.theta);
+    mgg_ssm mgg_model = model.build_mgg();
+    if (logprior_prop > -arma::datum::inf) {
+ 
+      // compute log-likelihood with proposed theta
+      double loglik_prop = mgg_model.log_likelihood();
+      //compute the acceptance probability
+      // use explicit min(...) as we need this value later
+      // double q = proposal(theta, theta_prop);
+      acceptance_prob = std::min(1.0,
+        std::exp(loglik_prop - loglik + logprior_prop - logprior));
+      //accept
+      if (unif(model.engine) < acceptance_prob) {
+        if (i > n_burnin) {
+          acceptance_rate++;
+          n_values++;
+        }
+        loglik = loglik_prop;
+        logprior = logprior_prop;
+        theta = theta_prop;
+        new_value = true;
+        
+      }
+    } else acceptance_prob = 0.0;
+    
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        posterior_storage(n_stored) = logprior + loglik;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
+      }
+    }
+    if (!end_ram || i <= n_burnin) {
+      ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
+    }
+    
+  }
+  trim_storage();
+  acceptance_rate /= (n_iter - n_burnin);
+}
+
 
 // run pseudo-marginal MCMC for non-linear and/or non-Gaussian state space model
 // using psi-PF

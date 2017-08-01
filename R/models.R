@@ -1212,6 +1212,55 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
     state_intercept = state_intercept), class = "mv_gssm")
 }
 
+#'
+#' General multivariate nonlinear Gaussian state space models
+#' 
+#' Constructs an object of class \code{nlg_ssm} by defining the corresponding terms
+#' of the observation and state equation:
+#'
+#' \deqn{y_t = Z(t, \alpha_t, \theta) + H(t, \theta) \epsilon_t, (\textrm{observation equation})}
+#' \deqn{\alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \theta)\eta_t, (\textrm{transition equation})}
+#'
+#' where \eqn{\epsilon_t \sim N(0, I_p)}, \eqn{\eta_t \sim N(0, I_m)} and
+#' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and functions
+#' \eqn{Z, H, T, R} can depend on \eqn{\alpha_t} and parameter vector \eqn{\theta}.
+#'
+#' Compared to other models, these general models need a bit more effort from 
+#' the user, as you must provide the several small C++ snippets which define the 
+#' model structure. See examples in ZZZ.
+#' @param y Observations as multivariate time series (or matrix) of length \eqn{n}.
+#' @param Z,H,T,R  An external pointers for the C++ functions which 
+#' define the corresponding model functions. 
+#' @param a1 Prior mean for the initial state as a vector of length m.
+#' @param P1 Prior covariance matrix for the initial state as m x m matrix.
+#' @param theta Parameter vector passed to all model functions.
+#' @param known_params Vector of known parameters passed to all model functions.
+#' @param known_tv_params Matrix of known parameters passed to all model functions.
+#' @param n_states Number of states in the model.
+#' @param n_etas Dimension of the noise term of the transition equation.
+#' @param log_prior_pdf An external pointer for the C++ function which 
+#' computes the log-prior density given theta.
+#' @param state_names Names for the states.
+#' @return Object of class \code{nlg_ssm}.
+#' @export
+lgg_ssm <- function(y, Z, H, T, R, a1, P1, theta, 
+  known_params = NA, known_tv_params = matrix(NA), n_states, n_etas, 
+  log_prior_pdf, state_names = paste0("state",1:n_states)) {
+  
+  if (is.null(dim(y))) {
+    dim(y) <- c(length(y), 1)
+  }
+  
+  if(missing(n_etas)) {
+    n_etas <- n_states
+  }
+  structure(list(y = as.ts(y), Z = Z, H = H, T = T, 
+    R = R, a1 = a1, P1 = P1, theta = theta,
+    log_prior_pdf = log_prior_pdf, known_params = known_params, 
+    known_tv_params = known_tv_params,
+    n_states = n_states, n_etas = n_etas, 
+    state_names = state_names), class = "lgg_ssm")
+}
 
 #'
 #' General multivariate nonlinear Gaussian state space models

@@ -23,7 +23,7 @@ public:
   mgg_ssm(const arma::mat& y, const arma::cube& Z, const arma::cube& H, 
     const arma::cube& T, const arma::cube& R, const arma::vec& a1, 
     const arma::mat& P1, const arma::cube& xreg, const arma::mat& beta, 
-    const arma::mat& D, const arma::mat& C, const unsigned int seed, 
+    const arma::mat& D, const arma::mat& C, const unsigned int seed = 1, 
     const arma::uvec& Z_ind = arma::uvec(), 
     const arma::uvec& H_ind = arma::uvec(), 
     const arma::uvec& T_ind = arma::uvec(), 
@@ -46,7 +46,7 @@ public:
   
   arma::cube simulate_states();
   // 
-  // 
+  void smoother(arma::mat& at, arma::cube& Pt) const; 
   // perform fast state smoothing
   arma::mat fast_smoother() const;
   // smoothing which also returns covariances cov(alpha_t, alpha_t-1)
