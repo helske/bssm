@@ -11,11 +11,12 @@ bssm: an R package for Bayesian inference of state space models
 
 Efficient methods for Bayesian inference of state space models where the observation density is Gaussian, Poisson, binomial or negative binomial, and where the state dynamics are Gaussian.
 
-For details, see [package vignette](https://github.com/helske/bssm/blob/master/bssm.pdf) and paper [Importance sampling type correction of Markov chain Monte Carlo and exact approximations](http://arxiv.org/abs/1609.02541).
+For details, see [package vignette](https://github.com/helske/bssm/blob/master/bssm.pdf) and paper [Importance sampling type correction of Markov chain Monte Carlo and exact approximations](http://arxiv.org/abs/1609.02541). There is also a separate [vignette for nonlinear Gaussian models](https://github.com/helske/bssm/blob/master/growth_model.pdf)
 
 Current Status
 ==========================================================================
-Now on CRAN. Still under development, pull requests very welcome especially related to post-processing and visualization. 
+Now on CRAN. Still under development, pull requests very welcome especially related to post-processing, visualization, and C++ modularization.
+
 You can install the latest development version by using the devtools package:
 
 ```R
