@@ -3,6 +3,7 @@
 \name{run_mcmc.gssm}
 \alias{run_mcmc.gssm}
 \alias{run_mcmc.bsm}
+\alias{run_mcmc.lgg_ssm}
 \title{Bayesian Inference of Linear-Gaussian State Space Models}
 \usage{
 \method{run_mcmc}{gssm}(object, n_iter, sim_states = TRUE, type = "full",
@@ -11,6 +12,11 @@
   seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{run_mcmc}{bsm}(object, n_iter, sim_states = TRUE, type = "full",
+  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE, n_threads = 1,
+  seed = sample(.Machine$integer.max, size = 1), ...)
+
+\method{run_mcmc}{lgg_ssm}(object, n_iter, sim_states = TRUE, type = "full",
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...)

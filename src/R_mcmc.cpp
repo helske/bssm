@@ -5,6 +5,7 @@
 #include "ung_bsm.h"
 #include "ung_svm.h"
 #include "nlg_ssm.h"
+#include "lgg_ssm.h"
 
 // [[Rcpp::export]]
 Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
@@ -515,3 +516,39 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     Rcpp::Named("posterior") = mcmc_run.posterior_storage);
 }
 
+// [[Rcpp::export]]
+Rcpp::List general_gaussian_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 
+  SEXP T_fn_, SEXP R_fn_, SEXP a1_fn_, SEXP P1_fn_, 
+  const arma::vec& theta, 
+  SEXP D_fn_, SEXP C_fn_,
+  SEXP log_prior_pdf_, const arma::vec& known_params, 
+  const arma::mat& known_tv_params,
+  const unsigned int n_states, const unsigned int n_etas,
+  const unsigned int seed, const unsigned int n_iter, 
+  const unsigned int n_burnin, const unsigned int n_thin,
+  const double gamma, const double target_acceptance, const arma::mat S,
+  const bool end_ram, const unsigned int n_threads, const bool sim_states) {
+  
+  lgg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, a1_fn_, P1_fn_, 
+    D_fn_, C_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
+    seed);
+  
+  mcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, 
+    model.n, model.m, target_acceptance, gamma, S, true);
+  
+  mcmc_run.mcmc_gaussian(model, end_ram);
+  if(sim_states) mcmc_run.state_posterior(model, n_threads);
+  
+  if(sim_states) {
+    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } else {
+    return Rcpp::List::create(Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  }
+}

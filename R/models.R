@@ -1213,9 +1213,9 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 }
 
 #'
-#' General multivariate nonlinear Gaussian state space models
+#' General multivariate linear Gaussian state space models
 #' 
-#' Constructs an object of class \code{nlg_ssm} by defining the corresponding terms
+#' Constructs an object of class \code{llg_ssm} by defining the corresponding terms
 #' of the observation and state equation:
 #'
 #' \deqn{y_t = Z(t, \alpha_t, \theta) + H(t, \theta) \epsilon_t, (\textrm{observation equation})}
@@ -1244,6 +1244,7 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 #' @return Object of class \code{nlg_ssm}.
 #' @export
 lgg_ssm <- function(y, Z, H, T, R, a1, P1, theta, 
+  obs_intercept, state_intercept, 
   known_params = NA, known_tv_params = matrix(NA), n_states, n_etas, 
   log_prior_pdf, state_names = paste0("state",1:n_states)) {
   
@@ -1256,6 +1257,7 @@ lgg_ssm <- function(y, Z, H, T, R, a1, P1, theta,
   }
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, 
     R = R, a1 = a1, P1 = P1, theta = theta,
+    obs_intercept = obs_intercept, state_intercept = state_intercept, 
     log_prior_pdf = log_prior_pdf, known_params = known_params, 
     known_tv_params = known_tv_params,
     n_states = n_states, n_etas = n_etas, 

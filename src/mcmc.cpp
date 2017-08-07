@@ -247,6 +247,7 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
   trim_storage();
   acceptance_rate /= (n_iter - n_burnin);
 }
+
 template <>
 void mcmc::mcmc_gaussian<lgg_ssm>(lgg_ssm model, const bool end_ram) {
   

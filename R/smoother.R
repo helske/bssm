@@ -77,7 +77,20 @@ smoother.bsm <- function(object, ...) {
   out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
   out
 }
-
+#' @method smoother lgg_ssm
+#' @export
+smoother.lgg_ssm <- function(object, ...) {
+  
+  out <- general_gaussian_smoother(t(object$y), object$Z, object$H, object$T, 
+    object$R, object$a1, object$P1, 
+    object$theta, object$obs_intercept, object$state_intercept,
+    object$log_prior_pdf, object$known_params, 
+    object$known_tv_params,
+    object$n_states, object$n_etas)
+  colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- object$state_names
+  out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
+  out
+}
 #' @method smoother ngssm
 #' @export
 smoother.ngssm <- function(object, ...) {

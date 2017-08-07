@@ -89,6 +89,10 @@ gaussian_kfilter <- function(model_, model_type) {
     .Call('_bssm_gaussian_kfilter', PACKAGE = 'bssm', model_, model_type)
 }
 
+general_gaussian_kfilter <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, a1_fn_, P1_fn_, theta, D_fn_, C_fn_, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas) {
+    .Call('_bssm_general_gaussian_kfilter', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, a1_fn_, P1_fn_, theta, D_fn_, C_fn_, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas)
+}
+
 gaussian_loglik <- function(model_, model_type) {
     .Call('_bssm_gaussian_loglik', PACKAGE = 'bssm', model_, model_type)
 }
@@ -135,6 +139,10 @@ nonlinear_ekf_mcmc <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_f
 
 nonlinear_is_mcmc <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, const_sim, simulation_method, max_iter, conv_tol, iekf_iter) {
     .Call('_bssm_nonlinear_is_mcmc', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, const_sim, simulation_method, max_iter, conv_tol, iekf_iter)
+}
+
+general_gaussian_mcmc <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, a1_fn_, P1_fn_, theta, D_fn_, C_fn_, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, sim_states) {
+    .Call('_bssm_general_gaussian_mcmc', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, a1_fn_, P1_fn_, theta, D_fn_, C_fn_, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, sim_states)
 }
 
 R_milstein <- function(x0, L, t, theta, drift_pntr, diffusion_pntr, ddiffusion_pntr, positive, seed) {
@@ -199,6 +207,10 @@ sde_is_mcmc <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_
 
 gaussian_smoother <- function(model_, model_type) {
     .Call('_bssm_gaussian_smoother', PACKAGE = 'bssm', model_, model_type)
+}
+
+general_gaussian_smoother <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, a1_fn_, P1_fn_, theta, D_fn_, C_fn_, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas) {
+    .Call('_bssm_general_gaussian_smoother', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, a1_fn_, P1_fn_, theta, D_fn_, C_fn_, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas)
 }
 
 gaussian_ccov_smoother <- function(model_, model_type) {

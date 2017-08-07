@@ -6,6 +6,8 @@
 // typedef for a pointer of linear function of lgg-model equation returning vec (T, Z)
 typedef arma::mat (*mat_fnPtr2)(const unsigned int t, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params);
+typedef arma::vec (*vec_fnPtr2)(const unsigned int t, const arma::vec& theta, 
+  const arma::vec& known_params, const arma::mat& known_tv_params);
 
 // typedef for a pointer of nonlinear function of model equation returning vec (T, Z)
 typedef arma::vec (*vec_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
@@ -85,6 +87,22 @@ public:
   
 private:
   mat_fnPtr2 funptr;
+};
+
+class vec_fn2 {
+  
+public:
+  vec_fn2(SEXP xps) {
+    Rcpp::XPtr<vec_fnPtr2> xptr(xps);
+    funptr = *(xptr);
+  }
+  arma::vec eval(unsigned int t, const arma::vec& theta, 
+    const arma::vec& known_params, const arma::mat& known_tv_params) const {
+    return funptr(t, theta, known_params, known_tv_params);
+  }
+  
+private:
+  vec_fnPtr2 funptr;
 };
 
 class mat_varfn {

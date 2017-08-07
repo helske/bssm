@@ -30,6 +30,23 @@ kfilter.gssm <- function(object, ...) {
   out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   out
 }
+#' @method kfilter lgg_ssm
+#' @export
+kfilter.lgg_ssm <- function(object, ...) {
+  
+  out <- general_gaussian_kfilter(t(object$y), object$Z, object$H, object$T, 
+    object$R, object$a1, object$P1, 
+    object$theta, object$obs_intercept, object$state_intercept,
+    object$log_prior_pdf, object$known_params, 
+    object$known_tv_params,
+    object$n_states, object$n_etas)
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- object$state_names
+  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
+  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
+  out
+}
+
 #' @method kfilter bsm
 #' @export
 kfilter.bsm <- function(object, ...) {

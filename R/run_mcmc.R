@@ -638,3 +638,58 @@ run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
   attr(out, "model_type") <- "sde_ssm"
   out
 }
+
+
+#' @method run_mcmc lgg_ssm
+#' @rdname run_mcmc_g
+#' @inheritParams run_mcmc.gssm
+#' @export
+run_mcmc.lgg_ssm <- function(object, n_iter, sim_states = TRUE, type = "full",
+  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  n_threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  a <- proc.time()
+  check_target(target_acceptance)
+  
+  type <- match.arg(type, c("full", "summary"))
+  
+  if (missing(S)) {
+    S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
+  }
+  
+  priors <- combine_priors(object$priors)
+  
+  out <- switch(type,
+    full = {
+      out <- general_gaussian_mcmc(t(object$y), object$Z, object$H, object$T, 
+        object$R, object$a1, object$P1, 
+        object$theta, object$obs_intercept, object$state_intercept,
+        object$log_prior_pdf, object$known_params, 
+        object$known_tv_params,
+        object$n_states, object$n_etas, seed, 
+        n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        end_adaptive_phase, n_threads, sim_states)
+      
+      if (sim_states) {
+        colnames(out$alpha) <- object$state_names
+      }
+      out
+    },
+    summary = {
+      stop("Summary MCMC method not yet implemented.")
+    })
+  
+  colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
+  
+  out$call <- match.call()
+  out$seed <- seed
+  out$n_iter <- n_iter
+  out$n_burnin <- n_burnin
+  out$n_thin <- n_thin
+  out$isc <- FALSE
+  out$time <- proc.time() - a
+  class(out) <- "mcmc_output"
+  attr(out, "model_type") <- "lgg_ssm"
+  out
+}

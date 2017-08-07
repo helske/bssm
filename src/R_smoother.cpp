@@ -1,6 +1,7 @@
 #include "ugg_ssm.h"
 #include "ugg_bsm.h"
 #include "mgg_ssm.h"
+#include "lgg_ssm.h"
 
 // [[Rcpp::export]]
 Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
@@ -23,8 +24,7 @@ Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
   switch (model_type) {
   case -1: {
     mgg_ssm model(clone(model_), 1);
-    Rcpp::Rcout<<"not yet"<<std::endl;
-   // model.smoother(alphahat, Vt);
+    model.smoother(alphahat, Vt);
   } break;
   case 1: {
     ugg_ssm model(clone(model_), 1);
@@ -43,7 +43,35 @@ Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
     Rcpp::Named("Vt") = Vt);
 }
 
-
+// [[Rcpp::export]]
+Rcpp::List general_gaussian_smoother(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 
+  SEXP T_fn_, SEXP R_fn_, SEXP a1_fn_, SEXP P1_fn_, 
+  const arma::vec& theta, 
+  SEXP D_fn_, SEXP C_fn_,
+  SEXP log_prior_pdf_, const arma::vec& known_params, 
+  const arma::mat& known_tv_params,
+  const unsigned int n_states, const unsigned int n_etas) {
+  
+  lgg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, a1_fn_, P1_fn_, 
+    D_fn_, C_fn_, theta, log_prior_pdf_, known_params, known_tv_params, 
+    n_states, n_etas, 1);
+  mgg_ssm mgg_model = model.build_mgg();
+  
+  unsigned int m = model.m;
+  unsigned int n = model.n;
+  
+  arma::mat alphahat(m, n);
+  arma::cube Vt(m, m, n);
+  
+  mgg_model.smoother(alphahat, Vt);
+  
+  arma::inplace_trans(alphahat);
+  
+  return Rcpp::List::create(
+    Rcpp::Named("alphahat") = alphahat,
+    Rcpp::Named("Vt") = Vt);
+}
+  
 // [[Rcpp::export]]
 Rcpp::List gaussian_ccov_smoother(const Rcpp::List& model_, const int model_type) {
   
