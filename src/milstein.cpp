@@ -20,13 +20,13 @@ double milstein(const double x0, const unsigned int L, const double t,
   funcPtr drift, funcPtr diffusion, funcPtr ddiffusion,
   bool positive, sitmo::prng_engine& eng) {
 
-  int n = std::pow(2, L);
+  unsigned int n = std::pow(2, L);
   double dt = t / n;
 
   arma::vec dB(n);
   std::normal_distribution<> normal(0.0, std::sqrt(dt));
 
-  for (unsigned int i=0; i < n; i++){
+  for (unsigned int  i=0; i < n; i++){
     dB(i) = normal(eng);
   }
 
@@ -35,7 +35,7 @@ double milstein(const double x0, const unsigned int L, const double t,
 }
 
 // A worker which uses simulated Brownian differences
-double milstein_worker(double x, arma::vec& dB, double dt, int n,
+double milstein_worker(double x, arma::vec& dB, double dt, unsigned int n,
   const arma::vec& theta, funcPtr drift, funcPtr diffusion,
   funcPtr ddiffusion, bool positive) {
 
@@ -57,7 +57,7 @@ arma::vec brownian_bridge(const double t, const double sd, const unsigned int n,
   arma::vec dB(n);
   std::normal_distribution<> normal(0.0, sd);
 
-  for (unsigned int i=0; i < n; i++){
+  for (unsigned int i = 0; i < n; i++){
     dB(i) = normal(eng);
   }
 
@@ -66,9 +66,9 @@ arma::vec brownian_bridge(const double t, const double sd, const unsigned int n,
 }
 
 // Milstein scheme using coarse mesh filled with Brownian bridge
-// At the start of the joint filtering, the coarse engine eng_c 
+// At the start of the joint filtering, the coarse engine eng_c
 // should be restarted with the original seed used in coarce filter
-// in essense we end up simulating lot's of extra increments (2^L_c) but 
+// in essense we end up simulating lot's of extra increments (2^L_c) but
 // we save even more (?) in memory as we don't need to store all the increments
 
 // note that this approach does not work with thinning and/or parallelisation
@@ -79,17 +79,17 @@ double milstein_joint(const double x0,
   funcPtr drift, funcPtr diffusion, funcPtr ddiffusion,
   bool positive, sitmo::prng_engine& eng_c, sitmo::prng_engine& eng_f) {
 
-  int n_c = std::pow(2, L_c);
+  unsigned int n_c = std::pow(2, L_c);
   double dt_c = t / n_c;
-  int n_f = std::pow(2, L_f);
+  unsigned int n_f = std::pow(2, L_f);
   double dt_f = t / n_f;
-  int n_d = std::pow(2, L_f - L_c);
+  unsigned int n_d = std::pow(2, L_f - L_c);
 
   // Coarse-level path, with fixed seed
-  
+
   std::normal_distribution<> normal(0.0, std::sqrt(dt_c));
   arma::vec dB_c(n_c);
-  for (unsigned int i=0; i < n_c; i++){
+  for (unsigned int i = 0; i < n_c; i++){
     dB_c(i) = normal(eng_c);
   }
 

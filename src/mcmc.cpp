@@ -125,8 +125,8 @@ void mcmc::state_sampler(T& model, const arma::mat& theta, arma::cube& alpha) {
 }
 template <>
 void mcmc::state_sampler<lgg_ssm>(lgg_ssm& model, const arma::mat& theta, arma::cube& alpha) {
+  
   for (unsigned int i = 0; i < theta.n_cols; i++) {
-    arma::vec theta_i = theta.col(i);
     model.theta = theta.col(i);
     mgg_ssm mgg_model = model.build_mgg();
     alpha.slice(i) = mgg_model.simulate_states().slice(0).t();

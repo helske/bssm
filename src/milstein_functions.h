@@ -28,7 +28,7 @@ double milstein(const double x0, const unsigned int L, const double t,
   bool positive, sitmo::prng_engine& eng);
 
 // A worker which uses simulated Brownian differences
-double milstein_worker(double x, arma::vec& dB, double dt, int n,
+double milstein_worker(double x, arma::vec& dB, double dt, unsigned int n,
   const arma::vec& theta, funcPtr drift, funcPtr diffusion,
   funcPtr ddiffusion, bool positive);
 
