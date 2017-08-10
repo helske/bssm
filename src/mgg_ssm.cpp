@@ -566,7 +566,7 @@ arma::cube mgg_ssm::simulate_states() {
     um(j) = normal(engine);
   }
   asim.slice(0).col(0) = L_P1 * um;
-  arma::vec y_tmp = y;
+  arma::mat y_tmp = y;
   for (unsigned int t = 0; t < (n - 1); t++) {
     arma::uvec na_y = arma::find_nonfinite(y.col(t));
     if (na_y.n_elem < p) {
