@@ -71,7 +71,7 @@ void sde_amcmc::approx_mcmc(sde_ssm model, const bool end_ram,
     // compute prior
     double logprior_prop = model.log_prior_pdf(theta_prop);
     
-    if (arma::is_finite(logprior_prop) && logprior_prop > -arma::datum::inf) {
+    if (arma::is_finite(logprior_prop)) {
       // update parameters
       model.theta = theta_prop;
       

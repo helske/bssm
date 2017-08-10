@@ -75,7 +75,7 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
     arma::vec theta_prop = theta + S * u;
     // compute prior
     double logprior_prop = model.log_prior_pdf.eval(theta_prop);
-    if (arma::is_finite(logprior_prop) && logprior_prop > -arma::datum::inf) {
+    if (arma::is_finite(logprior_prop)) {
       // update parameters
       model.theta = theta_prop;
       arma::mat mode_estimate_prop(m, n);
