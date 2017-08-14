@@ -225,6 +225,10 @@ gaussian_sim_smoother <- function(model_, nsim, use_antithetic, seed, model_type
     .Call('_bssm_gaussian_sim_smoother', PACKAGE = 'bssm', model_, nsim, use_antithetic, seed, model_type)
 }
 
+general_gaussian_sim_smoother <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, a1_fn_, P1_fn_, theta, D_fn_, C_fn_, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, nsim, use_antithetic, seed) {
+    .Call('_bssm_general_gaussian_sim_smoother', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, a1_fn_, P1_fn_, theta, D_fn_, C_fn_, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, nsim, use_antithetic, seed)
+}
+
 ukf_nlg <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, time_varying, alpha, beta, kappa) {
     .Call('_bssm_ukf_nlg', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas, time_varying, alpha, beta, kappa)
 }

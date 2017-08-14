@@ -11,7 +11,7 @@ run_mcmc(object, n_iter, ...)
 
 \item{n_iter}{Number of MCMC iterations.}
 
-\item{...}{Parameters to specific methods. See \code{\link{run_mcmc.gssm}} and 
+\item{...}{Parameters to specific methods. See \code{\link{run_mcmc.gssm}} and
 \code{\link{run_mcmc.ngssm}} for details.}
 }
 \description{
@@ -22,7 +22,7 @@ Robust Adaptive Metropolis algorithm by Vihola (2012).
 Matti Vihola (2012). "Robust adaptive Metropolis algorithm with
 coerced acceptance rate". Statistics and Computing, Volume 22, Issue 5,
 pages 997--1008.
-Matti Vihola, Jouni Helske, Jordan Franks (2016). "Importance sampling type 
+Matti Vihola, Jouni Helske, Jordan Franks (2016). "Importance sampling type
 correction of Markov chain Monte Carlo and exact approximations."
 ArXiv:1609.02541.
 }

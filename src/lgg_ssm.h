@@ -20,7 +20,7 @@ public:
     const unsigned int seed);
   
   mgg_ssm build_mgg();
-  
+  void update_mgg(mgg_ssm& model);
   // linear functions of 
   // y_t = Z(alpha_t, theta,t) + H(theta,t)*eps_t, 
   // alpha_t+1 = T(alpha_t, theta,t) + R(theta, t)*eta_t

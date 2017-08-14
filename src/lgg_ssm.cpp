@@ -39,3 +39,15 @@ mgg_ssm lgg_ssm::build_mgg() {
   mgg_model.engine = engine;
   return mgg_model;
 }
+
+void lgg_ssm::update_mgg(mgg_ssm& model) {
+  
+  for (unsigned int t = 0; t < n; t++) {
+    model.Z.slice(t) = Z_fn.eval(t, theta, known_params, known_tv_params);
+    model.H.slice(t) = H_fn.eval(t, theta, known_params, known_tv_params); 
+    model.T.slice(t) = T_fn.eval(t, theta, known_params, known_tv_params);
+    model.R.slice(t) = R_fn.eval(t, theta, known_params, known_tv_params);
+    model.D.col(t) = D_fn.eval(t, theta, known_params, known_tv_params);
+    model.C.col(t) = C_fn.eval(t, theta, known_params, known_tv_params);
+  }
+}

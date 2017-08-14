@@ -156,3 +156,21 @@ arma::cube gaussian_sim_smoother(const Rcpp::List& model_, const unsigned int ns
   break;
   }
 }
+
+// [[Rcpp::export]]
+arma::cube general_gaussian_sim_smoother(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 
+  SEXP T_fn_, SEXP R_fn_, SEXP a1_fn_, SEXP P1_fn_, 
+  const arma::vec& theta, 
+  SEXP D_fn_, SEXP C_fn_,
+  SEXP log_prior_pdf_, const arma::vec& known_params, 
+  const arma::mat& known_tv_params,
+  const unsigned int n_states, const unsigned int n_etas, const unsigned int nsim, 
+  bool use_antithetic, const unsigned int seed) {
+  
+  lgg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, a1_fn_, P1_fn_, 
+    D_fn_, C_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
+    seed);
+  mgg_ssm mgg_model = model.build_mgg();
+  
+  return mgg_model.simulate_states();
+}

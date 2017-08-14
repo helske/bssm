@@ -40,11 +40,12 @@ more accurate than calculations based on simulation smoother.
 \eqn{\theta}. Optional for \code{bsm} objects.}
 
 \item{n_burnin}{Length of the burn-in period which is disregarded from the
-results. Defaults to \code{n_iter / 2}.}
+results. Defaults to \code{n_iter / 2}. Note that all MCMC algorithms of \code{bssm}
+ used adaptive MCMC during the burn-in period in order to find good proposal.}
 
-\item{n_thin}{Thinning rate. All MCMC algoritms in \code{bssm} use the jump chain 
-representation, and the thinning is applied to these blocks. 
-This defaults to 1, but for IS-corrected method (\code{method="isc"}), larger 
+\item{n_thin}{Thinning rate. All MCMC algoritms in \code{bssm} use the jump chain
+representation, and the thinning is applied to these blocks.
+This defaults to 1, but for IS-corrected method (\code{method="isc"}), larger
 value is often more effective.}
 
 \item{gamma}{Tuning parameter for the adaptation of RAM algorithm. Must be

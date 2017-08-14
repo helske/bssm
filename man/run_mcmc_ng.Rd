@@ -37,7 +37,7 @@
   max_iter = 100, conv_tol = 1e-04, iekf_iter = 0, ...)
 
 \method{run_mcmc}{sde_ssm}(object, n_iter, nsim_states, type = "full",
-  method = "pm", L_c, L_f, coupled = TRUE, const_m = TRUE,
+  method = "pm", L_c, L_f, coupled = FALSE, const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   n_threads = 1, seed = sample(.Machine$integer.max, size = 1), ...)
@@ -47,7 +47,7 @@
 
 \item{n_iter}{Number of MCMC iterations.}
 
-\item{nsim_states}{Number of state samples per MCMC iteration. 
+\item{nsim_states}{Number of state samples per MCMC iteration.
 If <2, approximate inference based on Gaussian approximation is performed.}
 
 \item{type}{Either \code{"full"} (default), or \code{"summary"}. The
@@ -61,7 +61,7 @@ importance sampling type correction (\code{"isc"}) is used.}
 on Gaussian approximation is used. If \code{"bootstrap"}, bootstrap filter
 is used, and if \code{"psi"}, psi-auxiliary particle filter is used.}
 
-\item{const_m}{For importance sampling correction method, should a constant number of 
+\item{const_m}{For importance sampling correction method, should a constant number of
 samples be used for each block? Default is \code{TRUE}. See references for details.}
 
 \item{delayed_acceptance}{For pseudo-marginal MCMC, should delayed acceptance based
@@ -84,8 +84,8 @@ distribution is \eqn{SS'}.}
 
 \item{end_adaptive_phase}{If \code{TRUE} (default), $S$ is held fixed after the burnin period.}
 
-\item{local_approx}{If \code{TRUE} (default), Gaussian approximation needed for 
-importance sampling is performed at each iteration. If false, approximation is updated only 
+\item{local_approx}{If \code{TRUE} (default), Gaussian approximation needed for
+importance sampling is performed at each iteration. If false, approximation is updated only
 once at the start of the MCMC. Not used for non-linear models.}
 
 \item{n_threads}{Number of threads for state simulation.}
@@ -98,9 +98,9 @@ once at the start of the MCMC. Not used for non-linear models.}
 
 \item{...}{Ignored.}
 
-\item{iekf_iter}{If zero (default), first approximation for non-linear 
-Gaussian models is obtained from extended Kalman filter. If 
-\code{iekf_iter > 0}, iterated extended Kalman filter is used with 
+\item{iekf_iter}{If zero (default), first approximation for non-linear
+Gaussian models is obtained from extended Kalman filter. If
+\code{iekf_iter > 0}, iterated extended Kalman filter is used with
 \code{iekf_iter} iterations.}
 }
 \description{

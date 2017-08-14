@@ -126,9 +126,11 @@ void mcmc::state_sampler(T& model, const arma::mat& theta, arma::cube& alpha) {
 template <>
 void mcmc::state_sampler<lgg_ssm>(lgg_ssm& model, const arma::mat& theta, arma::cube& alpha) {
   
+  
+  mgg_ssm mgg_model = model.build_mgg();
   for (unsigned int i = 0; i < theta.n_cols; i++) {
     model.theta = theta.col(i);
-    mgg_ssm mgg_model = model.build_mgg();
+    model.update_mgg(mgg_model);
     alpha.slice(i) = mgg_model.simulate_states().slice(0).t();
   }
 }
@@ -251,10 +253,10 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
 template <>
 void mcmc::mcmc_gaussian<lgg_ssm>(lgg_ssm model, const bool end_ram) {
   
-  mgg_ssm mgg_model0 = model.build_mgg();
+  mgg_ssm mgg_model = model.build_mgg();
   arma::vec theta = model.theta;
   double logprior = model.log_prior_pdf.eval(model.theta);
-  double loglik = mgg_model0.log_likelihood();
+  double loglik = mgg_model.log_likelihood();
   
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
@@ -278,7 +280,7 @@ void mcmc::mcmc_gaussian<lgg_ssm>(lgg_ssm model, const bool end_ram) {
     // compute prior
     model.theta = theta_prop;
     double logprior_prop = model.log_prior_pdf.eval(model.theta);
-    mgg_ssm mgg_model = model.build_mgg();
+    model.update_mgg(mgg_model);
     if (arma::is_finite(logprior_prop)) {
  
       // compute log-likelihood with proposed theta
