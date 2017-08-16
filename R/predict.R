@@ -1,10 +1,10 @@
 #' Predictions for State Space Models
 #'
 #' Posterior intervals of future observations or their means
-#' (success probabilities in binomial case) for Gaussian models. These are
-#' computed using either the quantile method where the intervals are computed
-#' as empirical quantiles the posterior sample, or parametric method by
-#' Helske (2016).
+#' (success probabilities in binomial case). These are
+#' computed using the quantile method where the intervals are computed
+#' as empirical quantiles the posterior sample ,or using a 
+#' parametric method by Helske (2016) in a linear-Gaussian case.
 #'
 #' @param object mcmc_output object obtained from \code{\link{run_mcmc}}
 #' @param intervals If \code{TRUE}, intervals are returned. Otherwise samples 

@@ -150,7 +150,7 @@ ts.plot(cbind(alpha_pm[, 1], alpha_ekf[, 1]), col = 1:2)
 Let's make some predictions based on our MCMC run:
 ```{r pred}
 future_model <- model
-future_model$y <- ts(rep(NA, 100), start = end(model$y))
+future_model$y <- ts(rep(NA, 100), start = end(model$y) + c(1, 0))
 out_pred <- predict(out_mcmc_pm, future_model, type = "response")
 library("ggplot2")
 autoplot(out_pred, y = model$y, plot_median = FALSE)
