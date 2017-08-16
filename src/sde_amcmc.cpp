@@ -126,7 +126,9 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
   if(coupled) {
     model.coarse_engine = sitmo::prng_engine(model.seed);
   }
+  
   if(n_threads > 1) {
+    
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
@@ -138,9 +140,12 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
   if(omp_get_thread_num() == static_cast<int>(n_threads - 1)) {
     end = n_stored - 1;
   }
-  // fast forward the RNG
-  model.coarse_engine.discard(iter_storage(start) * model.n * nsim_states * std::pow(2, L_c));
-  
+  if(coupled) {
+    // fast forward the RNG
+    model.coarse_engine.discard(iter_storage(start) * model.n * nsim_states * std::pow(2, L_c));
+  } else {
+    model.coarse_engine = sitmo::prng_engine(omp_get_thread_num() + n_threads + 1);
+  }
   arma::mat theta_piece = theta_storage(arma::span::all, arma::span(start, end));
   arma::cube alpha_piece(model.n, 1, end - start + 1);
   arma::vec weights_piece(end - start + 1);
@@ -169,24 +174,24 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
   weight_storage.subvec(start, end) = weights_piece;
 }
 #else
-    if (const_sim) {
-      if(coupled) {
-        state_sampler_cbsf_is2(model, nsim_states, L_c, L_f, 
-          approx_loglik_storage, theta_storage, alpha_storage, weight_storage, iter_storage);
-      } else {
-        state_sampler_bsf_is2(model, nsim_states, L_f, approx_loglik_storage, 
-          theta_storage, alpha_storage, weight_storage);
-      }
-    } else {
-      if(coupled) {
-        state_sampler_cbsf_is1(model, nsim_states, L_c, L_f, approx_loglik_storage, 
-          theta_storage, alpha_storage, weight_storage, count_storage, iter_storage);
-      } else {
-        state_sampler_bsf_is1(model, nsim_states, L_f, approx_loglik_storage, 
-          theta_storage, alpha_storage, weight_storage, count_storage);
-      }
-    }
-    
+if (const_sim) {
+  if(coupled) {
+    state_sampler_cbsf_is2(model, nsim_states, L_c, L_f, 
+      approx_loglik_storage, theta_storage, alpha_storage, weight_storage, iter_storage);
+  } else {
+    state_sampler_bsf_is2(model, nsim_states, L_f, approx_loglik_storage, 
+      theta_storage, alpha_storage, weight_storage);
+  }
+} else {
+  if(coupled) {
+    state_sampler_cbsf_is1(model, nsim_states, L_c, L_f, approx_loglik_storage, 
+      theta_storage, alpha_storage, weight_storage, count_storage, iter_storage);
+  } else {
+    state_sampler_bsf_is1(model, nsim_states, L_f, approx_loglik_storage, 
+      theta_storage, alpha_storage, weight_storage, count_storage);
+  }
+}
+
 #endif
   } else {
     if (const_sim) {
