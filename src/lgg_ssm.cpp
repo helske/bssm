@@ -50,4 +50,6 @@ void lgg_ssm::update_mgg(mgg_ssm& model) {
     model.D.col(t) = D_fn.eval(t, theta, known_params, known_tv_params);
     model.C.col(t) = C_fn.eval(t, theta, known_params, known_tv_params);
   }
+  model.compute_HH();
+  model.compute_RR();
 }
