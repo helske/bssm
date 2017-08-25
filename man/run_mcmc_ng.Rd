@@ -40,7 +40,8 @@
   method = "pm", L_c, L_f, coupled = FALSE, const_m = TRUE,
   delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  n_threads = 1, seed = sample(.Machine$integer.max, size = 1), ...)
+  n_threads = 1, seed = sample(.Machine$integer.max, size = 1),
+  parallel_type = 1, cppfile, ...)
 }
 \arguments{
 \item{object}{Model object.}

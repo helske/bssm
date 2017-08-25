@@ -14,7 +14,6 @@ sde_ssm::sde_ssm(const arma::vec& y, const arma::vec& theta,
 
 double sde_ssm::bsf_filter(const unsigned int nsim, const unsigned int L, 
   arma::cube& alpha, arma::mat& weights, arma::umat& indices) {
-  
   // alpha is  n x 1 x nsim
   for (unsigned int i = 0; i < nsim; i++) {
     alpha(0, 0, i) = milstein(x0, L, 1, theta, drift, diffusion, ddiffusion,
@@ -24,7 +23,7 @@ double sde_ssm::bsf_filter(const unsigned int nsim, const unsigned int L,
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec normalized_weights(nsim);
   double loglik = 0.0;
-  
+
   if(arma::is_finite(y(0))) {
     weights.col(0) = log_obs_density(y(0), alpha.tube(0, 0), theta);
     double max_weight = weights.col(0).max();

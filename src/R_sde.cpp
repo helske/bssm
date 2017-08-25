@@ -215,7 +215,8 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
   const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin,
   const double gamma, const double target_acceptance, const arma::mat S,
-  const bool end_ram, const unsigned int const_m, const unsigned int n_threads) {
+  const bool end_ram, const unsigned int const_m, const unsigned int n_threads, bool weighting, 
+  bool sis) {
   
   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);
@@ -229,16 +230,32 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
   sde_amcmc mcmc_run(n_iter, n_burnin, n_thin, model.n, target_acceptance, gamma, S);
   
   mcmc_run.approx_mcmc(model, end_ram, nsim_states, L_c); 
-  if(nsim_states > 1) {
-  mcmc_run.is_correction_bsf(model, nsim_states, L_c, L_f, coupled, 
-    const_m, n_threads);
+  
+  if(sis) {
+    mcmc_run.expand();
   }
-  return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
-    Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
-    Rcpp::Named("weights") = mcmc_run.weight_storage,
-    Rcpp::Named("counts") = mcmc_run.count_storage,
-    Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-    Rcpp::Named("S") = mcmc_run.S, 
-    Rcpp::Named("posterior") = mcmc_run.posterior_storage,
-    Rcpp::Named("approx_posterior") = mcmc_run.approx_loglik_storage + mcmc_run.prior_storage);
+  
+  if(weighting) {
+    
+    mcmc_run.is_correction_bsf(model, nsim_states, L_c, L_f, coupled, 
+      const_m, n_threads);
+    
+    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("weights") = mcmc_run.weight_storage,
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S, 
+      Rcpp::Named("posterior") = mcmc_run.posterior_storage,
+      Rcpp::Named("approx_posterior") = mcmc_run.approx_loglik_storage + mcmc_run.prior_storage);
+  } else {
+    return Rcpp::List::create(
+      Rcpp::Named("theta") = mcmc_run.theta_storage,
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,
+      Rcpp::Named("approx_loglik") = mcmc_run.approx_loglik_storage,
+      Rcpp::Named("prior") = mcmc_run.prior_storage);
+    
+  }
 }

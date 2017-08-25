@@ -14,6 +14,8 @@ public:
     const unsigned int n, const unsigned int m, const double target_acceptance, 
     const double gamma, const arma::mat& S, const bool store_states = true);
   
+  void expand();
+  
   //approximate mcmc
   template<class T>
   void approx_mcmc(T model, const bool end_ram, const bool local_approx, 

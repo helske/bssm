@@ -1,5 +1,23 @@
 #include "rep_mat.h"
 
+arma::uvec rep_uvec(const arma::uvec& x, const arma::uvec& counts) {
+  arma::uvec new_vec(arma::accu(counts));
+  arma::uvec cs_counts = arma::cumsum(counts);
+  for (unsigned int i = 0; i < counts.n_elem; ++i) {
+    new_vec.subvec(cs_counts(i) - counts(i), cs_counts(i) - 1).fill(x(i));
+  }
+  return new_vec;
+}
+
+arma::vec rep_vec(const arma::vec& x, const arma::uvec& counts) {
+  arma::vec new_vec(arma::accu(counts));
+  arma::uvec cs_counts = arma::cumsum(counts);
+  for (unsigned int i = 0; i < counts.n_elem; ++i) {
+    new_vec.subvec(cs_counts(i) - counts(i), cs_counts(i) - 1).fill(x(i));
+  }
+  return new_vec;
+}
+
 arma::mat rep_mat(const arma::mat& x, const arma::uvec& counts) {
   arma::mat new_mat(x.n_rows, arma::accu(counts));
   arma::uvec cs_counts = arma::cumsum(counts);

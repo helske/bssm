@@ -9,6 +9,7 @@
 #include "ung_bsm.h"
 #include "ung_svm.h"
 
+#include "rep_mat.h"
 #include "distr_consts.h"
 #include "filter_smoother.h"
 
@@ -39,6 +40,51 @@ void ung_amcmc::trim_storage() {
   prior_storage.resize(n_stored);
 }
 
+void ung_amcmc::expand() {
+  //trim extras first just in case
+  trim_storage();
+  n_stored = arma::accu(count_storage);
+  
+  arma::mat expanded_theta = rep_mat(theta_storage, count_storage);
+  theta_storage.set_size(n_par, n_stored);
+  theta_storage = expanded_theta;
+  
+  arma::vec expanded_posterior = rep_vec(posterior_storage, count_storage);
+  posterior_storage.set_size(n_stored);
+  posterior_storage = expanded_posterior;
+  
+  arma::cube expanded_alpha = rep_cube(alpha_storage, count_storage);
+  alpha_storage.set_size(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
+  alpha_storage = expanded_alpha;
+  
+  arma::mat expanded_scales = rep_mat(scales_storage, count_storage);
+  scales_storage.set_size(scales_storage.n_rows, n_stored);
+  scales_storage = expanded_scales;
+  
+  arma::mat expanded_y = rep_mat(y_storage, count_storage);
+  y_storage.set_size(y_storage.n_rows, n_stored);
+  y_storage = expanded_y;
+  
+  arma::mat expanded_H = rep_mat(H_storage, count_storage);
+  H_storage.set_size(H_storage.n_rows, n_stored);
+  H_storage = expanded_H;
+  
+  arma::vec expanded_weight = rep_vec(weight_storage, count_storage);
+  weight_storage.set_size(n_stored);
+  weight_storage = expanded_weight;
+  
+  arma::vec expanded_approx_loglik = rep_vec(approx_loglik_storage, count_storage);
+  approx_loglik_storage.set_size(n_stored);
+  approx_loglik_storage = expanded_approx_loglik;
+  
+  arma::vec expanded_prior = rep_vec(prior_storage, count_storage);
+  prior_storage.set_size(n_stored);
+  prior_storage = expanded_prior;
+  
+  count_storage.resize(n_stored);
+  count_storage.ones();
+  
+}
 // run approximate MCMC for
 // non-linear and/or non-Gaussian state space model
 template void ung_amcmc::approx_mcmc(ung_ssm model, const bool end_ram,

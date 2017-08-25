@@ -37,10 +37,10 @@ standard errors .
 }
 \description{
 Posterior intervals of future observations or their means
-(success probabilities in binomial case) for Gaussian models. These are
-computed using either the quantile method where the intervals are computed
-as empirical quantiles the posterior sample, or parametric method by
-Helske (2016).
+(success probabilities in binomial case). These are
+computed using the quantile method where the intervals are computed
+as empirical quantiles the posterior sample ,or using a 
+parametric method by Helske (2016) in a linear-Gaussian case.
 }
 \examples{
 require("graphics")

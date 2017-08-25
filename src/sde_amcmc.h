@@ -13,6 +13,8 @@ public:
     const unsigned int n_thin, const unsigned int n,
     const double target_acceptance, const double gamma, const arma::mat& S);
   
+  void expand();
+  
   void approx_mcmc(sde_ssm model, const bool end_ram, 
     const unsigned int nsim_states, const unsigned int L_c);
   

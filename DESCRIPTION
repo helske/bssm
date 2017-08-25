@@ -21,7 +21,9 @@ Suggests:
 Imports:
     coda (>= 0.18-1),
     diagis,
+    foreach,
     ggplot2 (>= 2.0.0),
+    doParallel,
     Rcpp (>= 0.12.3)
 LinkingTo: BH, Rcpp, RcppArmadillo, ramcmc, sitmo
 SystemRequirements: C++11

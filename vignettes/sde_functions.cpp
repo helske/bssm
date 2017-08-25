@@ -62,7 +62,9 @@ arma::vec log_obs_density(const double y,
 Rcpp::List create_pntrs() {
   // typedef for a pointer of drift/volatility function
   typedef double (*funcPtr)(const double x, const arma::vec& theta);
+  // typedef for log_prior_pdf
   typedef double (*prior_funcPtr)(const arma::vec& theta);
+  // typedef for log_obs_density
   typedef arma::vec (*obs_funcPtr)(const double y, 
     const arma::vec& alpha, const arma::vec& theta);
   
