@@ -85,8 +85,9 @@ void ung_amcmc::expand() {
   count_storage.ones();
   
 }
+
 // run approximate MCMC for
-// non-linear and/or non-Gaussian state space model
+// non-linear and/or non-Gaussian state space model with linear-Gaussian states
 template void ung_amcmc::approx_mcmc(ung_ssm model, const bool end_ram,
   const bool local_approx, const arma::vec& initial_mode,
   const unsigned int max_iter, const double conv_tol);
@@ -222,15 +223,15 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
 // approximate MCMC using EKF
 
 template void ung_amcmc::is_correction_psi(ung_ssm model, const unsigned int nsim_states, 
-  const bool const_sim, const unsigned int n_threads);
+  const unsigned int is_type, const unsigned int n_threads);
 template void ung_amcmc::is_correction_psi(ung_bsm model, const unsigned int nsim_states, 
-  const bool const_sim, const unsigned int n_threads);
+  const unsigned int is_type, const unsigned int n_threads);
 template void ung_amcmc::is_correction_psi(ung_svm model, const unsigned int nsim_states, 
-  const bool const_sim, const unsigned int n_threads);
+  const unsigned int is_type, const unsigned int n_threads);
 
 template <class T>
 void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states, 
-  const bool const_sim, const unsigned int n_threads) {
+  const unsigned int is_type, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
@@ -251,7 +252,7 @@ void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states,
   arma::mat y_piece = y_storage(arma::span::all, arma::span(start, end));
   arma::mat H_piece = H_storage(arma::span::all, arma::span(start, end));
   arma::mat scales_piece = scales_storage(arma::span::all, arma::span(start, end));
-  if (const_sim) {
+  if (is_type == 2) {
     state_sampler_psi_is2(model, nsim_states, theta_piece, alpha_piece, weights_piece,
       y_piece, H_piece, scales_piece);
   } else {
@@ -263,7 +264,7 @@ void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states,
   weight_storage.subvec(start, end) = weights_piece;
 }
 #else
-    if (const_sim) {
+    if (is_type == 2) {
       state_sampler_psi_is2(model, nsim_states, theta_storage, alpha_storage, weight_storage,
         y_storage, H_storage, scales_storage);
     } else {
@@ -273,7 +274,7 @@ void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states,
     
 #endif
   } else {
-    if (const_sim) {
+    if (is_type == 2) {
       state_sampler_psi_is2(model, nsim_states, theta_storage, alpha_storage, weight_storage,
         y_storage, H_storage, scales_storage);
     } else {
@@ -371,18 +372,18 @@ void ung_amcmc::state_sampler_psi_is1(T& model, const unsigned int nsim_states,
 
 
 template void ung_amcmc::is_correction_bsf(ung_ssm model, 
-  const unsigned int nsim_states, const bool const_sim, 
+  const unsigned int nsim_states, const unsigned int is_type, 
   const unsigned int n_threads);
 template void ung_amcmc::is_correction_bsf(ung_bsm model, 
-  const unsigned int nsim_states, const bool const_sim, 
+  const unsigned int nsim_states, const unsigned int is_type, 
   const unsigned int n_threads);
 template void ung_amcmc::is_correction_bsf(ung_svm model, 
-  const unsigned int nsim_states, const bool const_sim, 
+  const unsigned int nsim_states, const unsigned int is_type, 
   const unsigned int n_threads);
 
 template <class T>
 void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states, 
-  const bool const_sim, const unsigned int n_threads) {
+  const unsigned int is_type, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
@@ -401,7 +402,7 @@ void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states,
   arma::cube alpha_piece(model.n, model.m, end - start + 1);
   arma::vec weights_piece(end - start + 1);
   arma::vec approx_loglik_piece = approx_loglik_storage.subvec(start, end);
-  if (const_sim) {
+  if (is_type == 2) {
     state_sampler_bsf_is2(model, nsim_states, theta_piece, approx_loglik_piece, 
       alpha_piece, weights_piece);
   } else {
@@ -413,7 +414,7 @@ void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states,
   weight_storage.subvec(start, end) = weights_piece;
 }
 #else
-    if (const_sim) {
+    if (is_type == 2) {
       state_sampler_bsf_is2(model, nsim_states, approx_loglik_storage, theta_storage, 
         alpha_storage, weight_storage);
     } else {
@@ -422,7 +423,7 @@ void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states,
     }
 #endif
   } else {
-    if (const_sim) {
+    if (is_type == 2) {
       state_sampler_bsf_is2(model, nsim_states, approx_loglik_storage, theta_storage, 
         alpha_storage, weight_storage);
     } else {
@@ -511,15 +512,15 @@ void ung_amcmc::state_sampler_bsf_is1(T& model, const unsigned int nsim_states,
 }
 
 template void ung_amcmc::is_correction_spdk(ung_ssm model, unsigned int nsim_states, 
-  bool const_sim, const unsigned int n_threads);
+  unsigned int is_type, const unsigned int n_threads);
 template void ung_amcmc::is_correction_spdk(ung_bsm model, unsigned int nsim_states, 
-  bool const_sim, const unsigned int n_threads);
+  unsigned int is_type, const unsigned int n_threads);
 template void ung_amcmc::is_correction_spdk(ung_svm model, unsigned int nsim_states, 
-  bool const_sim, const unsigned int n_threads);
+  unsigned int is_type, const unsigned int n_threads);
 
 template <class T>
 void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim_states, 
-  const bool const_sim, const unsigned int n_threads) {
+  const unsigned int is_type, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
@@ -541,7 +542,7 @@ void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim_states,
   arma::mat H_piece = H_storage(arma::span::all, arma::span(start, end));
   arma::vec scales_piece = arma::sum(scales_storage(arma::span::all, 
     arma::span(start, end)));
-  if (const_sim) {
+  if (is_type == 2) {
     state_sampler_spdk_is2(model, nsim_states, theta_piece, alpha_piece, weights_piece,
       y_piece, H_piece, scales_piece);
   } else {
@@ -553,7 +554,7 @@ void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim_states,
   weight_storage.subvec(start, end) = weights_piece;
 }
 #else
-    if (const_sim) {
+    if (is_type == 2) {
       state_sampler_spdk_is2(model, nsim_states, theta_storage, alpha_storage, weight_storage,
         y_storage, H_storage, arma::sum(scales_storage));
     } else {
@@ -562,7 +563,7 @@ void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim_states,
     }
 #endif
   } else {
-    if (const_sim) {
+    if (is_type == 2) {
       state_sampler_spdk_is2(model, nsim_states, theta_storage, alpha_storage, weight_storage,
         y_storage, H_storage, arma::sum(scales_storage));
     } else {

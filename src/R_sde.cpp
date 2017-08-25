@@ -215,8 +215,7 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
   const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin,
   const double gamma, const double target_acceptance, const arma::mat S,
-  const bool end_ram, const unsigned int const_m, const unsigned int n_threads, bool weighting, 
-  bool sis) {
+  const bool end_ram, const unsigned int is_type, const unsigned int n_threads, bool weighting) {
   
   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);
@@ -231,14 +230,14 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
   
   mcmc_run.approx_mcmc(model, end_ram, nsim_states, L_c); 
   
-  if(sis) {
+  if(is_type == 3) {
     mcmc_run.expand();
   }
   
   if(weighting) {
     
     mcmc_run.is_correction_bsf(model, nsim_states, L_c, L_f, coupled, 
-      const_m, n_threads);
+      is_type == 2, n_threads);
     
     return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
       Rcpp::Named("theta") = mcmc_run.theta_storage.t(),

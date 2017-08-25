@@ -14,11 +14,13 @@ public:
     const unsigned int n, const unsigned int m, const double target_acceptance, 
     const double gamma, const arma::mat& S, const bool store_modes);
   
+  void expand();
+  
   void approx_mcmc(nlg_ssm model, const unsigned int max_iter, 
     const double conv_tol, const bool end_ram, const unsigned int iekf_iter);
   
   void is_correction_bsf(nlg_ssm model, const unsigned int nsim_states, 
-    const bool const_sim, const unsigned int n_threads);
+    const unsigned int is_type, const unsigned int n_threads);
   
   void state_sampler_bsf_is2(nlg_ssm& model, const unsigned int nsim_states, 
     const arma::vec& approx_loglik_storage, const arma::mat& theta,
@@ -29,7 +31,7 @@ public:
     arma::cube& alpha, arma::vec& weights, const arma::uvec& counts);
   
   void is_correction_psi(nlg_ssm model, const unsigned int nsim_states, 
-    const bool const_sim, const unsigned int n_threads);
+    const unsigned int is_type, const unsigned int n_threads);
   
   void state_sampler_psi_is2(nlg_ssm& model, const unsigned int nsim_states, 
     const arma::mat& theta, const arma::cube& mode,

@@ -287,8 +287,8 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
   const double target_acceptance, const arma::mat S, const unsigned int seed,
   const bool end_ram, const unsigned int n_threads, const bool local_approx,
   const arma::vec initial_mode, const unsigned int max_iter, const double conv_tol,
-  const unsigned int simulation_method, const bool const_sim, const int model_type,
-  const arma::uvec& Z_ind, const arma::uvec& T_ind, const arma::uvec& R_ind, const bool is1) {
+  const unsigned int simulation_method, const unsigned int is_type, const int model_type,
+  const arma::uvec& Z_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -311,18 +311,18 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
     mcmc_run.approx_mcmc(model, end_ram, local_approx, initial_mode,
       max_iter, conv_tol);
     if(nsim_states > 1) {
-      if(is1) {
+      if(is_type == 3) {
         mcmc_run.expand();
       }
       switch (simulation_method) {
       case 1:
-        mcmc_run.is_correction_psi(model, nsim_states, const_sim, n_threads);
+        mcmc_run.is_correction_psi(model, nsim_states, is_type, n_threads);
         break;
       case 2:
-        mcmc_run.is_correction_bsf(model, nsim_states, const_sim, n_threads);
+        mcmc_run.is_correction_bsf(model, nsim_states, is_type, n_threads);
         break;
       case 3:
-        mcmc_run.is_correction_spdk(model, nsim_states, const_sim, n_threads);
+        mcmc_run.is_correction_spdk(model, nsim_states, is_type, n_threads);
         break;
       }
     } else {
@@ -334,18 +334,18 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
     mcmc_run.approx_mcmc(model, end_ram, local_approx, initial_mode,
       max_iter, conv_tol);
     if(nsim_states > 1) {
-      if(is1) {
+      if(is_type == 3) {
         mcmc_run.expand();
       }
       switch (simulation_method) {
       case 1:
-        mcmc_run.is_correction_psi(model, nsim_states, const_sim, n_threads);
+        mcmc_run.is_correction_psi(model, nsim_states, is_type, n_threads);
         break;
       case 2:
-        mcmc_run.is_correction_bsf(model, nsim_states, const_sim, n_threads);
+        mcmc_run.is_correction_bsf(model, nsim_states, is_type, n_threads);
         break;
       case 3:
-        mcmc_run.is_correction_spdk(model, nsim_states, const_sim, n_threads);
+        mcmc_run.is_correction_spdk(model, nsim_states, is_type, n_threads);
         break;
       }
     } else {
@@ -357,18 +357,18 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
     mcmc_run.approx_mcmc(model, end_ram, local_approx, initial_mode,
       max_iter, conv_tol);
     if(nsim_states > 1) {
-      if(is1) {
+      if(is_type == 3) {
         mcmc_run.expand();
       }
       switch (simulation_method) {
       case 1:
-        mcmc_run.is_correction_psi(model, nsim_states, const_sim, n_threads);
+        mcmc_run.is_correction_psi(model, nsim_states, is_type, n_threads);
         break;
       case 2:
-        mcmc_run.is_correction_bsf(model, nsim_states, const_sim, n_threads);
+        mcmc_run.is_correction_bsf(model, nsim_states, is_type, n_threads);
         break;
       case 3:
-        mcmc_run.is_correction_spdk(model, nsim_states, const_sim, n_threads);
+        mcmc_run.is_correction_spdk(model, nsim_states, is_type, n_threads);
         break;
       }
     } else {
@@ -499,7 +499,7 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter,
   const unsigned int n_burnin, const unsigned int n_thin,
   const double gamma, const double target_acceptance, const arma::mat S,
-  const bool end_ram, const unsigned int n_threads, const bool const_sim,
+  const bool end_ram, const unsigned int n_threads, const unsigned int is_type,
   const unsigned int simulation_method, const unsigned int max_iter,
   const double conv_tol, const unsigned int iekf_iter) {
   
@@ -511,10 +511,13 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     model.m, target_acceptance, gamma, S, simulation_method == 1);
   
   mcmc_run.approx_mcmc(model, max_iter, conv_tol, end_ram, iekf_iter);
+  if (is_type == 3) {
+    mcmc_run.expand();
+  }
   if (simulation_method == 1) {
-    mcmc_run.is_correction_psi(model, nsim_states, const_sim, n_threads);
+    mcmc_run.is_correction_psi(model, nsim_states, is_type, n_threads);
   } else {
-    mcmc_run.is_correction_bsf(model, nsim_states, const_sim, n_threads);
+    mcmc_run.is_correction_bsf(model, nsim_states, is_type, n_threads);
   }
   return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
     Rcpp::Named("theta") = mcmc_run.theta_storage.t(),

@@ -9,39 +9,39 @@
 \title{Bayesian inference of non-Gaussian or non-linear state space models using MCMC}
 \usage{
 \method{run_mcmc}{ngssm}(object, n_iter, nsim_states, type = "full",
-  method = "pm", simulation_method = "psi", const_m = TRUE,
-  delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  local_approx = TRUE, n_threads = 1, seed = sample(.Machine$integer.max,
-  size = 1), max_iter = 100, conv_tol = 1e-08, ...)
+  method = "da", simulation_method = "psi", n_burnin = floor(n_iter/2),
+  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
+  end_adaptive_phase = TRUE, local_approx = TRUE, n_threads = 1,
+  seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
+  conv_tol = 1e-08, ...)
 
 \method{run_mcmc}{ng_bsm}(object, n_iter, nsim_states, type = "full",
-  method = "pm", simulation_method = "psi", const_m = TRUE,
-  delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  local_approx = TRUE, n_threads = 1, seed = sample(.Machine$integer.max,
-  size = 1), max_iter = 100, conv_tol = 1e-08, ...)
+  method = "pm", simulation_method = "psi", n_burnin = floor(n_iter/2),
+  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
+  end_adaptive_phase = TRUE, local_approx = TRUE, n_threads = 1,
+  seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
+  conv_tol = 1e-08, ...)
 
 \method{run_mcmc}{svm}(object, n_iter, nsim_states, type = "full",
-  method = "pm", simulation_method = "psi", const_m = TRUE,
-  delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  local_approx = TRUE, n_threads = 1, seed = sample(.Machine$integer.max,
-  size = 1), max_iter = 100, conv_tol = 1e-08, ...)
+  method = "pm", simulation_method = "psi", n_burnin = floor(n_iter/2),
+  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
+  end_adaptive_phase = TRUE, local_approx = TRUE, n_threads = 1,
+  seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
+  conv_tol = 1e-08, ...)
 
 \method{run_mcmc}{nlg_ssm}(object, n_iter, nsim_states, type = "full",
-  method = "pm", simulation_method = "psi", const_m = TRUE,
-  delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  n_threads = 1, seed = sample(.Machine$integer.max, size = 1),
-  max_iter = 100, conv_tol = 1e-04, iekf_iter = 0, ...)
+  method = "pm", simulation_method = "psi", n_burnin = floor(n_iter/2),
+  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
+  end_adaptive_phase = TRUE, n_threads = 1,
+  seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
+  conv_tol = 1e-04, iekf_iter = 0, ...)
 
 \method{run_mcmc}{sde_ssm}(object, n_iter, nsim_states, type = "full",
-  method = "pm", L_c, L_f, coupled = FALSE, const_m = TRUE,
-  delayed_acceptance = TRUE, n_burnin = floor(n_iter/2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  n_threads = 1, seed = sample(.Machine$integer.max, size = 1),
-  parallel_type = 1, cppfile, ...)
+  method = "da", L_c, L_f, coupled = FALSE, n_burnin = floor(n_iter/2),
+  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
+  end_adaptive_phase = TRUE, n_threads = 1,
+  seed = sample(.Machine$integer.max, size = 1), parallel_type = 1, cppfile,
+  ...)
 }
 \arguments{
 \item{object}{Model object.}
@@ -55,18 +55,20 @@ If <2, approximate inference based on Gaussian approximation is performed.}
 former produces samples of states whereas the latter gives the mean and
 variance estimates of the states.}
 
-\item{method}{Whether pseudo-marginal MCMC (\code{"pm"}) (default) or
-importance sampling type correction (\code{"isc"}) is used.}
+\item{method}{What MCMC algorithm to use? Possible choices are 
+\code{"pm"} for pseudo-marginal MCMC, 
+\code{"da"} for delayed acceptance version of PMCMC (default), or one of the three 
+importance sampling type weighting schemes:
+\code{"is3"} for simple importance sampling (weight is computed for each MCMC iteration independently),
+\code{"is2"} for jump chain importance sampling type weighting, or
+\code{"is1"} for importance sampling type weighting where the number of particles used for
+weight computations is proportional to the length of the jump chain block.}
 
 \item{simulation_method}{If \code{"spdk"}, non-sequential importance sampling based
 on Gaussian approximation is used. If \code{"bootstrap"}, bootstrap filter
-is used, and if \code{"psi"}, psi-auxiliary particle filter is used.}
-
-\item{const_m}{For importance sampling correction method, should a constant number of
-samples be used for each block? Default is \code{TRUE}. See references for details.}
-
-\item{delayed_acceptance}{For pseudo-marginal MCMC, should delayed acceptance based
-on the Gaussian approximation be used?}
+is used (default for \code{"nlg_ssm"} and only option for \code{"sde_ssm"}), 
+and if \code{"psi"}, psi-auxiliary particle filter is used 
+(default for models with linear-Gaussian state equation).}
 
 \item{n_burnin}{Length of the burn-in period which is disregarded from the
 results. Defaults to \code{n_iter / 2}.}

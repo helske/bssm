@@ -24,7 +24,7 @@ public:
   
   template <class T>
   void is_correction_psi(T model, const unsigned int nsim_states, 
-    const bool const_sim, const unsigned int n_threads);
+    const unsigned int is_type, const unsigned int n_threads);
     
   template <class T>
   void state_sampler_psi_is2(T& model, const unsigned int nsim_states, 
@@ -39,7 +39,7 @@ public:
   
   template <class T>
   void is_correction_bsf(T model, const unsigned int nsim_states, 
-    const bool const_sim, const unsigned int n_threads);
+    const unsigned int is_type, const unsigned int n_threads);
   template <class T>
   void state_sampler_bsf_is2(T& model, const unsigned int nsim_states, 
     const arma::vec& approx_loglik_storage, const arma::mat& theta,
@@ -51,7 +51,7 @@ public:
   
   template <class T>
   void is_correction_spdk(T model, const unsigned int nsim_states, 
-    const bool const_sim, const unsigned int n_threads);
+    const unsigned int is_type, const unsigned int n_threads);
   
   template <class T>
   void state_sampler_spdk_is2(T& model, const unsigned int nsim_states,

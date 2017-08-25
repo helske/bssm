@@ -963,7 +963,7 @@ double ugg_ssm::oaux_filter(const unsigned int nsim, arma::cube& alpha,
       um(j) = normal(engine);
     }
 
-    alpha.slice(i).col(0) = att1 + L * um;
+    alpha.slice(i).col(0) = att1 + L_P1 * um;
 
   }
 
@@ -976,7 +976,7 @@ double ugg_ssm::oaux_filter(const unsigned int nsim, arma::cube& alpha,
       double mu = arma::as_scalar(D(0) + Z.col(0).t() * alpha.slice(i).col(0));
       weights(i, 0) = -0.5 * std::pow(y(0) - mu, 2.0) / HH(0) +
       dmvnorm(alpha.slice(i).col(0), a1, P1, false, true) -
-      dmvnorm(alpha.slice(i).col(0), att1, L, true, true);
+      dmvnorm(alpha.slice(i).col(0), att1, L_P1, true, true);
     }
     double max_weight = weights.col(0).max();
     weights.col(0) = arma::exp(weights.col(0) - max_weight);

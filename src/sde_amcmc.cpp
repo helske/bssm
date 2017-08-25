@@ -163,7 +163,7 @@ void sde_amcmc::approx_mcmc(sde_ssm model, const bool end_ram,
 
 void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states, 
   const unsigned int L_c, const unsigned int L_f, const bool coupled,
-  const bool const_sim, const unsigned int n_threads) {
+  const unsigned int is_type, const unsigned int n_threads) {
   
   if(coupled) {
     model.coarse_engine = sitmo::prng_engine(model.seed);
@@ -192,7 +192,7 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
   arma::cube alpha_piece(model.n, 1, end - start + 1);
   arma::vec weights_piece(end - start + 1);
   arma::vec approx_loglik_piece = approx_loglik_storage.subvec(start, end);
-  if (const_sim) {
+  if (is_type == 2) {
     if(coupled) {
       arma::uvec iter_piece = iter_storage(arma::span(start, end));
       state_sampler_cbsf_is2(model, nsim_states, L_c, L_f, approx_loglik_piece, 
@@ -216,7 +216,7 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
   weight_storage.subvec(start, end) = weights_piece;
 }
 #else
-if (const_sim) {
+if (is_type == 2) {
   if(coupled) {
     state_sampler_cbsf_is2(model, nsim_states, L_c, L_f, 
       approx_loglik_storage, theta_storage, alpha_storage, weight_storage, iter_storage);
@@ -236,7 +236,7 @@ if (const_sim) {
 
 #endif
   } else {
-    if (const_sim) {
+    if (is_type == 2) {
       if(coupled) {
         state_sampler_cbsf_is2(model, nsim_states, L_c, L_f, 
           approx_loglik_storage, theta_storage, alpha_storage, weight_storage, iter_storage);

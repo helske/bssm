@@ -6,6 +6,7 @@
 #include "nlg_amcmc.h"
 #include "nlg_ssm.h"
 
+#include "rep_mat.h"
 #include "filter_smoother.h"
 
 nlg_amcmc::nlg_amcmc(const arma::uvec& prior_distributions, 
@@ -35,6 +36,47 @@ void nlg_amcmc::trim_storage() {
   mode_storage.resize(mode_storage.n_rows, mode_storage.n_cols, n_stored);
 }
 
+void nlg_amcmc::expand() {
+  
+  //trim extras first just in case
+  trim_storage();
+  n_stored = arma::accu(count_storage);
+  
+  arma::mat expanded_theta = rep_mat(theta_storage, count_storage);
+  theta_storage.set_size(n_par, n_stored);
+  theta_storage = expanded_theta;
+  
+  arma::vec expanded_posterior = rep_vec(posterior_storage, count_storage);
+  posterior_storage.set_size(n_stored);
+  posterior_storage = expanded_posterior;
+  
+  arma::cube expanded_alpha = rep_cube(alpha_storage, count_storage);
+  alpha_storage.set_size(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
+  alpha_storage = expanded_alpha;
+  
+  arma::mat expanded_scales = rep_mat(scales_storage, count_storage);
+  scales_storage.set_size(scales_storage.n_rows, n_stored);
+  scales_storage = expanded_scales;
+  
+  arma::vec expanded_weight = rep_vec(weight_storage, count_storage);
+  weight_storage.set_size(n_stored);
+  weight_storage = expanded_weight;
+  
+  arma::vec expanded_approx_loglik = rep_vec(approx_loglik_storage, count_storage);
+  approx_loglik_storage.set_size(n_stored);
+  approx_loglik_storage = expanded_approx_loglik;
+  
+  arma::vec expanded_prior = rep_vec(prior_storage, count_storage);
+  prior_storage.set_size(n_stored);
+  prior_storage = expanded_prior;
+  
+  arma::cube expanded_mode = rep_cube(mode_storage, count_storage);
+  mode_storage.set_size(mode_storage.n_rows, mode_storage.n_cols, n_stored);
+  mode_storage = expanded_mode;
+  count_storage.resize(n_stored);
+  count_storage.ones();
+  
+}
 // run approximate MCMC for
 // non-linear Gaussian state space model
 
@@ -135,7 +177,7 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
 }
 
 void nlg_amcmc::is_correction_bsf(nlg_ssm model, const unsigned int nsim_states, 
-  const bool const_sim, const unsigned int n_threads) {
+  const unsigned int is_type, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
@@ -153,7 +195,7 @@ void nlg_amcmc::is_correction_bsf(nlg_ssm model, const unsigned int nsim_states,
   arma::cube alpha_piece(model.n, model.m, end - start + 1);
   arma::vec weights_piece(end - start + 1);
   arma::vec approx_loglik_piece = approx_loglik_storage.subvec(start, end);
-  if (const_sim) {
+  if (is_type == 2) {
     state_sampler_bsf_is2(model, nsim_states, approx_loglik_piece, theta_piece,
       alpha_piece, weights_piece);
   } else {
@@ -165,7 +207,7 @@ void nlg_amcmc::is_correction_bsf(nlg_ssm model, const unsigned int nsim_states,
   weight_storage.subvec(start, end) = weights_piece;
 }
 #else
-    if (const_sim) {
+    if (is_type == 2) {
       state_sampler_bsf_is2(model, nsim_states, approx_loglik_storage, theta_storage, 
         alpha_storage, weight_storage);
     } else {
@@ -174,7 +216,7 @@ void nlg_amcmc::is_correction_bsf(nlg_ssm model, const unsigned int nsim_states,
     }
 #endif
   } else {
-    if (const_sim) {
+    if (is_type == 2) {
       state_sampler_bsf_is2(model, nsim_states, approx_loglik_storage, theta_storage, 
         alpha_storage, weight_storage);
     } else {
@@ -240,7 +282,7 @@ void nlg_amcmc::state_sampler_bsf_is1(nlg_ssm& model, const unsigned int nsim_st
 
 
 void nlg_amcmc::is_correction_psi(nlg_ssm model, const unsigned int nsim_states, 
-  const bool const_sim, const unsigned int n_threads) {
+  const unsigned int is_type, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
@@ -259,7 +301,7 @@ void nlg_amcmc::is_correction_psi(nlg_ssm model, const unsigned int nsim_states,
   arma::vec weights_piece(thread_size);
   arma::cube mode_piece = 
     mode_storage(arma::span::all, arma::span::all, arma::span(start, end));
-  if (const_sim) {
+  if (is_type == 2) {
     state_sampler_psi_is2(model, nsim_states, theta_piece, mode_piece,
       alpha_piece, weights_piece);
   } else {
@@ -271,7 +313,7 @@ void nlg_amcmc::is_correction_psi(nlg_ssm model, const unsigned int nsim_states,
   weight_storage.subvec(start, end) = weights_piece;
 }
 #else
-    if (const_sim) {
+    if (is_type == 2) {
       state_sampler_psi_is2(model, nsim_states, theta_storage, mode_storage,
         alpha_storage, weight_storage);
     } else {
@@ -280,7 +322,7 @@ void nlg_amcmc::is_correction_psi(nlg_ssm model, const unsigned int nsim_states,
     }
 #endif
   } else {
-    if (const_sim) {
+    if (is_type == 2) {
       state_sampler_psi_is2(model, nsim_states, theta_storage, mode_storage,
         alpha_storage, weight_storage);
     } else {

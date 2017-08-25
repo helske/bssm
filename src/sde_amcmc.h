@@ -20,7 +20,7 @@ public:
   
   void is_correction_bsf(sde_ssm model, const unsigned int nsim_states, 
     const unsigned int L_c, const unsigned int L_f, const bool coupled,
-    const bool const_sim, const unsigned int n_threads);
+    const unsigned int is_type, const unsigned int n_threads);
   
   void state_sampler_bsf_is2(sde_ssm& model, const unsigned int nsim_states,
     const unsigned int L_f, const arma::vec& approx_loglik_storage,

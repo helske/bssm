@@ -1,4 +1,5 @@
 #include "mgg_ssm.h"
+#include "psd_chol.h"
 
 // General constructor of mgg_ssm object from Rcpp::List
 // with parameter indices
