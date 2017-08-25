@@ -1,5 +1,7 @@
 bssm 0.1.2 (Release date: -)
 ==============
+  * API change for run_mcmc: All MCMC methods are now under the argument method, 
+    instead of having separate arguments for delayed acceptance and IS schemes.
   * summary method for MCMC output now omits the computation of SE and ESS in order 
     to speed up the function.
   * Added new model class lgg_ssm, which is a linear-Gaussian model defined 
@@ -8,6 +10,7 @@ bssm 0.1.2 (Release date: -)
   * Added another new model class, sde_ssm, which is a model with continuous 
     state dynamics defined as SDE. These too are defined via couple 
     simple C++ functions.
+
   
   
 bssm 0.1.1-1 (Release date: 2017-06-27)
