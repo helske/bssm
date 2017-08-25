@@ -85,7 +85,7 @@ print.mcmc_output <- function(x, ...) {
 #' @param object Output from \code{run_mcmc}
 #' @param return_se if \code{FALSE} (default), computation of standard 
 #' errors and effective sample sizes is omitted. 
-#' This saves time, as computing the spectral densities (by \code{coda}}) can be slow for 
+#' This saves time, as computing the spectral densities (by \code{coda}) can be slow for 
 #' large models.
 #' @param only_theta If \code{TRUE}, summaries are computed only for hyperparameters theta. 
 #' @param ... Ignored.
