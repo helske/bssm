@@ -3,7 +3,7 @@
 #' Posterior intervals of future observations or their means
 #' (success probabilities in binomial case). These are
 #' computed using the quantile method where the intervals are computed
-#' as empirical quantiles the posterior sample ,or using a 
+#' as empirical quantiles the posterior sample, or using a 
 #' parametric method by Helske (2016) in a linear-Gaussian case.
 #'
 #' @param object mcmc_output object obtained from \code{\link{run_mcmc}}
@@ -75,81 +75,85 @@ predict.mcmc_output <- function(object, future_model, type = "response",
   end_ts <- end(future_model$y)
   freq <- frequency(future_model$y)
   
-  if (attr(object, "model_type") %in% c("gssm", "bsm")) {
-    
-    out <- gaussian_predict(future_model, probs,
-      t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
-      pmatch(type, c("response", "mean", "state")), intervals, 
-      seed, pmatch(attr(object, "model_type"), c("gssm", "bsm")))
-    
-    if (intervals) {
+  switch(attr(object, "model_type"),
+    gssm = ,
+    bsm = {
       
-      if(return_MCSE) {
-        if(type != "state") {
-          ses <- matrix(0, n_ahead, length(probs))
-          nsim <- nrow(out$mean_pred)
-          
-          for (i in 1:n_ahead) {
-            for (j in 1:length(probs)) {
-              pnorms <- pnorm(q = out$intervals[i, j], out$mean_pred[, i], out$sd_pred[, i])
-              eff_n <-  effectiveSize(pnorms)
-              ses[i, j] <- sqrt((sum((probs[j] - pnorms) ^ 2) / nsim) / eff_n) /
-                sum(dnorm(x = out$intervals[i, j], out$mean_pred[, i], out$sd_pred[, i]) / nsim)
-            }
-          }
-          pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
-            intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
-              names = paste0(100*probs, "%")),
-            MCSE = ts(ses, start = start_ts, end = end_ts, frequency = freq,
-              names = paste0(100*probs, "%")))
-        } else {
-          m <- length(future_model$a1)
-          ses <- replicate(m, ts(matrix(0, n_ahead, length(probs)), 
-            start = start_ts, end = end_ts, frequency = freq,
-            names = paste0(100*probs, "%")), simplify = FALSE)
-          nsim <- nrow(out$mean_pred)
-          
-          for (k in 1:m) {
+      out <- gaussian_predict(future_model, probs,
+        t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
+        pmatch(type, c("response", "mean", "state")), intervals, 
+        seed, pmatch(attr(object, "model_type"), c("gssm", "bsm")))
+      
+      if (intervals) {
+        
+        if(return_MCSE) {
+          if(type != "state") {
+            ses <- matrix(0, n_ahead, length(probs))
+            nsim <- nrow(out$mean_pred)
+            
             for (i in 1:n_ahead) {
               for (j in 1:length(probs)) {
-                pnorms <- pnorm(q = out$intervals[i, j, k], out$mean_pred[, i, k], out$sd_pred[, i, k])
+                pnorms <- pnorm(q = out$intervals[i, j], out$mean_pred[, i], out$sd_pred[, i])
                 eff_n <-  effectiveSize(pnorms)
-                ses[[k]][i, j] <- sqrt((sum((probs[j] - pnorms) ^ 2) / nsim) / eff_n) /
-                  sum(dnorm(x = out$intervals[i, j, k], out$mean_pred[, i, k], out$sd_pred[, i, k]) / nsim)
+                ses[i, j] <- sqrt((sum((probs[j] - pnorms) ^ 2) / nsim) / eff_n) /
+                  sum(dnorm(x = out$intervals[i, j], out$mean_pred[, i], out$sd_pred[, i]) / nsim)
               }
             }
+            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
+              intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
+                names = paste0(100*probs, "%")),
+              MCSE = ts(ses, start = start_ts, end = end_ts, frequency = freq,
+                names = paste0(100*probs, "%")))
+          } else {
+            m <- length(future_model$a1)
+            ses <- replicate(m, ts(matrix(0, n_ahead, length(probs)), 
+              start = start_ts, end = end_ts, frequency = freq,
+              names = paste0(100*probs, "%")), simplify = FALSE)
+            nsim <- nrow(out$mean_pred)
+            
+            for (k in 1:m) {
+              for (i in 1:n_ahead) {
+                for (j in 1:length(probs)) {
+                  pnorms <- pnorm(q = out$intervals[i, j, k], out$mean_pred[, i, k], out$sd_pred[, i, k])
+                  eff_n <-  effectiveSize(pnorms)
+                  ses[[k]][i, j] <- sqrt((sum((probs[j] - pnorms) ^ 2) / nsim) / eff_n) /
+                    sum(dnorm(x = out$intervals[i, j, k], out$mean_pred[, i, k], out$sd_pred[, i, k]) / nsim)
+                }
+              }
+            }
+            
+            intv <- lapply(1:m, function(i) ts(out$intervals[,,i], 
+              start = start_ts, end = end_ts, frequency = freq,
+              names = paste0(100*probs, "%")))
+            names(ses) <- names(intv) <- names(future_model$a1)
+            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, 
+              end = end_ts, frequency = freq, names = names(intv)), 
+              intervals = intv, MCSE = ses)
           }
           
-          intv <- lapply(1:m, function(i) ts(out$intervals[,,i], 
-            start = start_ts, end = end_ts, frequency = freq,
-            names = paste0(100*probs, "%")))
-          names(ses) <- names(intv) <- names(future_model$a1)
-          pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, 
-            end = end_ts, frequency = freq, names = names(intv)), 
-            intervals = intv, MCSE = ses)
-        }
-        
-        
-      } else {
-        if(type != "state") {
-          pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
-            intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
-              names = paste0(100 * probs, "%"))) 
+          
         } else {
-          intv <- lapply(1:length(future_model$a1), function(i) ts(out$intervals[,,i], 
-            start = start_ts, end = end_ts, frequency = freq,
-            names = paste0(100*probs, "%")))
-          names(intv) <- names(future_model$a1)
-          pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, 
-            end = end_ts, frequency = freq, names = names(intv)), intervals = intv) 
+          if(type != "state") {
+            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
+              intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
+                names = paste0(100 * probs, "%"))) 
+          } else {
+            intv <- lapply(1:length(future_model$a1), function(i) ts(out$intervals[,,i], 
+              start = start_ts, end = end_ts, frequency = freq,
+              names = paste0(100*probs, "%")))
+            names(intv) <- names(future_model$a1)
+            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, 
+              end = end_ts, frequency = freq, names = names(intv)), intervals = intv) 
+          }
+          
         }
-        
+      } else {
+        pred <- aperm(out[[1]], c(2, 1, 3))
       }
-    } else {
-      pred <- aperm(out[[1]], c(2, 1, 3))
-    }
-  } else {
-    if(attr(object, "model_type") %in% c("ngssm", "ng_bsm", "svm")) {
+    },
+    ngssm = , 
+    ng_bsm = , 
+    svm = {
       
       future_model$distribution <- pmatch(future_model$distribution, 
         c("poisson", "binomial", "negative binomial"))
@@ -178,7 +182,8 @@ predict.mcmc_output <- function(object, future_model, type = "response",
       } else {
         pred <- out
       }
-    } else {
+    },
+    nlg_ssm = {
       out <- nonlinear_predict(t(future_model$y), future_model$Z, 
         future_model$H, future_model$T, future_model$R, future_model$Z_gn, 
         future_model$T_gn, future_model$a1, future_model$P1, 
@@ -219,9 +224,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
         pred <- out
       }
       
-    }
-    
-  }
+    }, stop("Not yet implemented for sde_ssm and lgg_ssm. "))
   class(pred) <- "predict_bssm"
   pred
 }
