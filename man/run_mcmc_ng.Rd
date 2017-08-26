@@ -40,8 +40,7 @@
   method = "da", L_c, L_f, coupled = FALSE, n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
   end_adaptive_phase = TRUE, n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), parallel_type = 1, cppfile,
-  ...)
+  seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
 \item{object}{Model object.}
@@ -55,9 +54,9 @@ If <2, approximate inference based on Gaussian approximation is performed.}
 former produces samples of states whereas the latter gives the mean and
 variance estimates of the states.}
 
-\item{method}{What MCMC algorithm to use? Possible choices are 
-\code{"pm"} for pseudo-marginal MCMC, 
-\code{"da"} for delayed acceptance version of PMCMC (default), or one of the three 
+\item{method}{What MCMC algorithm to use? Possible choices are
+\code{"pm"} for pseudo-marginal MCMC,
+\code{"da"} for delayed acceptance version of PMCMC (default), or one of the three
 importance sampling type weighting schemes:
 \code{"is3"} for simple importance sampling (weight is computed for each MCMC iteration independently),
 \code{"is2"} for jump chain importance sampling type weighting, or
@@ -65,9 +64,9 @@ importance sampling type weighting schemes:
 weight computations is proportional to the length of the jump chain block.}
 
 \item{simulation_method}{If \code{"spdk"}, non-sequential importance sampling based
-on Gaussian approximation is used. If \code{"bootstrap"}, bootstrap filter
-is used (default for \code{"nlg_ssm"} and only option for \code{"sde_ssm"}), 
-and if \code{"psi"}, psi-auxiliary particle filter is used 
+on Gaussian approximation is used. If \code{"bsf"}, bootstrap filter
+is used (default for \code{"nlg_ssm"} and only option for \code{"sde_ssm"}),
+and if \code{"psi"}, psi-auxiliary particle filter is used
 (default for models with linear-Gaussian state equation).}
 
 \item{n_burnin}{Length of the burn-in period which is disregarded from the
