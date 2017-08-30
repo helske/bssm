@@ -40,11 +40,12 @@ public:
     const arma::mat& theta, const arma::cube& mode,
     arma::cube& alpha, arma::vec& weights, const arma::uvec& counts);
   
-  void gaussian_sampling(nlg_ssm model, const unsigned int n_threads);
-  
-  void gaussian_state_sampler(nlg_ssm& model, 
+  void state_ekf_sample(nlg_ssm model, const unsigned int n_threads);
+  void ekf_sampler(nlg_ssm& model, 
     const arma::mat& theta, const arma::cube& mode, arma::cube& alpha);
   
+  void state_ekf_summary(nlg_ssm& model, arma::mat& alphahat, arma::cube& Vt);
+    
   arma::vec weight_storage;
   
 private:

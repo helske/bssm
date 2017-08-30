@@ -22,7 +22,7 @@ print.mcmc_output <- function(x, ...) {
   theta <- mcmc(x$theta)
   alpha <- mcmc(matrix(x$alpha[nrow(x$alpha),,], ncol = ncol(x$alpha), byrow = TRUE, 
     dimnames = list(NULL, colnames(x$alpha))))
-  w <- x$counts * if (x$isc) x$weights else 1
+  w <- x$counts * if (x$mcmc_type %in% paste0("is", 1:3)) x$weights else 1
   
   
   cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"), 
@@ -94,7 +94,7 @@ summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, .
   
   
   theta <- mcmc(object$theta)
-  w <- object$counts * if (object$isc) object$weights else 1
+  w <- object$counts * if (object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1
   
   mean_theta <- weighted_mean(theta, w)
   sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))

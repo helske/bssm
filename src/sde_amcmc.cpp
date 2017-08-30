@@ -165,16 +165,14 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
   const unsigned int L_c, const unsigned int L_f, const bool coupled,
   const unsigned int is_type, const unsigned int n_threads) {
   
-  if(coupled) {
-    model.coarse_engine = sitmo::prng_engine(model.seed);
-  }
+  // no coupling at the moment!
+  if(coupled) Rcpp::stop("Coupling not supported yet!.");
   
   if(n_threads > 1) {
     
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
-  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
   
   unsigned thread_size = std::floor(static_cast <double> (n_stored) / n_threads);
   unsigned int start = omp_get_thread_num() * thread_size;
@@ -182,41 +180,28 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
   if(omp_get_thread_num() == static_cast<int>(n_threads - 1)) {
     end = n_stored - 1;
   }
-  if(coupled) {
-    // fast forward the RNG
-    model.coarse_engine.discard(iter_storage(start) * model.n * nsim_states * std::pow(2, L_c));
-  } else {
-    model.coarse_engine = sitmo::prng_engine(omp_get_thread_num() + n_threads + 1);
-  }
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
+  model.coarse_engine = sitmo::prng_engine(omp_get_thread_num() + n_threads + 1);
+  
   arma::mat theta_piece = theta_storage(arma::span::all, arma::span(start, end));
+  arma::vec approx_loglik_piece = approx_loglik_storage.subvec(start, end);
+  
   arma::cube alpha_piece(model.n, 1, end - start + 1);
   arma::vec weights_piece(end - start + 1);
-  arma::vec approx_loglik_piece = approx_loglik_storage.subvec(start, end);
-  if (is_type == 2) {
-    if(coupled) {
-      arma::uvec iter_piece = iter_storage(arma::span(start, end));
-      state_sampler_cbsf_is2(model, nsim_states, L_c, L_f, approx_loglik_piece, 
-        theta_piece, alpha_piece, weights_piece, iter_piece);  
-    } else {
-      state_sampler_bsf_is2(model, nsim_states, L_f, approx_loglik_piece, 
-        theta_piece, alpha_piece, weights_piece);
-    }
+  
+  if (is_type != 1) {
+    state_sampler_bsf_is2(model, nsim_states, L_f, approx_loglik_piece, 
+      theta_piece, alpha_piece, weights_piece);
   } else {
     arma::uvec count_piece = count_storage(arma::span(start, end));
-    if(coupled) {
-      arma::uvec iter_piece = iter_storage(arma::span(start, end));
-      state_sampler_cbsf_is1(model, nsim_states, L_c, L_f, approx_loglik_piece, 
-        theta_piece, alpha_piece, weights_piece, count_piece, iter_piece);  
-    } else {
-      state_sampler_bsf_is1(model, nsim_states, L_f, approx_loglik_piece, 
-        theta_piece, alpha_piece, weights_piece, count_piece);
-    }
+    state_sampler_bsf_is1(model, nsim_states, L_f, approx_loglik_piece, 
+      theta_piece, alpha_piece, weights_piece, count_piece);
   }
   alpha_storage.slices(start, end) = alpha_piece;
   weight_storage.subvec(start, end) = weights_piece;
 }
 #else
-if (is_type == 2) {
+if (is_type != 1) {
   if(coupled) {
     state_sampler_cbsf_is2(model, nsim_states, L_c, L_f, 
       approx_loglik_storage, theta_storage, alpha_storage, weight_storage, iter_storage);
@@ -236,7 +221,7 @@ if (is_type == 2) {
 
 #endif
   } else {
-    if (is_type == 2) {
+    if (is_type != 1) {
       if(coupled) {
         state_sampler_cbsf_is2(model, nsim_states, L_c, L_f, 
           approx_loglik_storage, theta_storage, alpha_storage, weight_storage, iter_storage);

@@ -778,8 +778,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // nonlinear_ekf_mcmc
-Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, const arma::mat& known_tv_params, const arma::uvec& time_varying, const unsigned int n_states, const unsigned int n_etas, const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter, const unsigned int n_burnin, const unsigned int n_thin, const double gamma, const double target_acceptance, const arma::mat S, const bool end_ram, const unsigned int max_iter, const double conv_tol, const unsigned int n_threads, const unsigned int iekf_iter);
-RcppExport SEXP _bssm_nonlinear_ekf_mcmc(SEXP ySEXP, SEXP Z_fn_SEXP, SEXP H_fn_SEXP, SEXP T_fn_SEXP, SEXP R_fn_SEXP, SEXP Z_gn_SEXP, SEXP T_gn_SEXP, SEXP a1_fn_SEXP, SEXP P1_fn_SEXP, SEXP thetaSEXP, SEXP log_prior_pdf_SEXP, SEXP known_paramsSEXP, SEXP known_tv_paramsSEXP, SEXP time_varyingSEXP, SEXP n_statesSEXP, SEXP n_etasSEXP, SEXP seedSEXP, SEXP nsim_statesSEXP, SEXP n_iterSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP end_ramSEXP, SEXP max_iterSEXP, SEXP conv_tolSEXP, SEXP n_threadsSEXP, SEXP iekf_iterSEXP) {
+Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, const arma::mat& known_tv_params, const arma::uvec& time_varying, const unsigned int n_states, const unsigned int n_etas, const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter, const unsigned int n_burnin, const unsigned int n_thin, const double gamma, const double target_acceptance, const arma::mat S, const bool end_ram, const unsigned int max_iter, const double conv_tol, const unsigned int n_threads, const unsigned int iekf_iter, bool summary);
+RcppExport SEXP _bssm_nonlinear_ekf_mcmc(SEXP ySEXP, SEXP Z_fn_SEXP, SEXP H_fn_SEXP, SEXP T_fn_SEXP, SEXP R_fn_SEXP, SEXP Z_gn_SEXP, SEXP T_gn_SEXP, SEXP a1_fn_SEXP, SEXP P1_fn_SEXP, SEXP thetaSEXP, SEXP log_prior_pdf_SEXP, SEXP known_paramsSEXP, SEXP known_tv_paramsSEXP, SEXP time_varyingSEXP, SEXP n_statesSEXP, SEXP n_etasSEXP, SEXP seedSEXP, SEXP nsim_statesSEXP, SEXP n_iterSEXP, SEXP n_burninSEXP, SEXP n_thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP end_ramSEXP, SEXP max_iterSEXP, SEXP conv_tolSEXP, SEXP n_threadsSEXP, SEXP iekf_iterSEXP, SEXP summarySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -812,7 +812,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type conv_tol(conv_tolSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type n_threads(n_threadsSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type iekf_iter(iekf_iterSEXP);
-    rcpp_result_gen = Rcpp::wrap(nonlinear_ekf_mcmc(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, max_iter, conv_tol, n_threads, iekf_iter));
+    Rcpp::traits::input_parameter< bool >::type summary(summarySEXP);
+    rcpp_result_gen = Rcpp::wrap(nonlinear_ekf_mcmc(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, theta, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, max_iter, conv_tol, n_threads, iekf_iter, summary));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -969,8 +970,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // nonlinear_predict
-arma::cube nonlinear_predict(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, SEXP log_prior_pdf_, const arma::vec& known_params, const arma::mat& known_tv_params, const arma::uvec& time_varying, const unsigned int n_states, const unsigned int n_etas, const arma::vec& probs, const arma::mat& theta, const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type, const unsigned int seed);
-RcppExport SEXP _bssm_nonlinear_predict(SEXP ySEXP, SEXP Z_fn_SEXP, SEXP H_fn_SEXP, SEXP T_fn_SEXP, SEXP R_fn_SEXP, SEXP Z_gn_SEXP, SEXP T_gn_SEXP, SEXP a1_fn_SEXP, SEXP P1_fn_SEXP, SEXP log_prior_pdf_SEXP, SEXP known_paramsSEXP, SEXP known_tv_paramsSEXP, SEXP time_varyingSEXP, SEXP n_statesSEXP, SEXP n_etasSEXP, SEXP probsSEXP, SEXP thetaSEXP, SEXP alphaSEXP, SEXP countsSEXP, SEXP predict_typeSEXP, SEXP seedSEXP) {
+arma::cube nonlinear_predict(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, SEXP log_prior_pdf_, const arma::vec& known_params, const arma::mat& known_tv_params, const arma::uvec& time_varying, const unsigned int n_states, const unsigned int n_etas, const arma::vec& probs, const arma::mat& theta, const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type, const unsigned int seed, const unsigned int nsim);
+RcppExport SEXP _bssm_nonlinear_predict(SEXP ySEXP, SEXP Z_fn_SEXP, SEXP H_fn_SEXP, SEXP T_fn_SEXP, SEXP R_fn_SEXP, SEXP Z_gn_SEXP, SEXP T_gn_SEXP, SEXP a1_fn_SEXP, SEXP P1_fn_SEXP, SEXP log_prior_pdf_SEXP, SEXP known_paramsSEXP, SEXP known_tv_paramsSEXP, SEXP time_varyingSEXP, SEXP n_statesSEXP, SEXP n_etasSEXP, SEXP probsSEXP, SEXP thetaSEXP, SEXP alphaSEXP, SEXP countsSEXP, SEXP predict_typeSEXP, SEXP seedSEXP, SEXP nsimSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -995,7 +996,42 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::uvec& >::type counts(countsSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type predict_type(predict_typeSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(nonlinear_predict(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, probs, theta, alpha, counts, predict_type, seed));
+    Rcpp::traits::input_parameter< const unsigned int >::type nsim(nsimSEXP);
+    rcpp_result_gen = Rcpp::wrap(nonlinear_predict(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, probs, theta, alpha, counts, predict_type, seed, nsim));
+    return rcpp_result_gen;
+END_RCPP
+}
+// nonlinear_predict_ekf
+Rcpp::List nonlinear_predict_ekf(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, SEXP log_prior_pdf_, const arma::vec& known_params, const arma::mat& known_tv_params, const arma::uvec& time_varying, const unsigned int n_states, const unsigned int n_etas, const arma::vec& probs, const arma::mat& theta, const arma::mat& alpha_last, const arma::cube P_last, const arma::uvec& counts, const unsigned int predict_type, const bool intervals, const unsigned int seed, const unsigned int nsim);
+RcppExport SEXP _bssm_nonlinear_predict_ekf(SEXP ySEXP, SEXP Z_fn_SEXP, SEXP H_fn_SEXP, SEXP T_fn_SEXP, SEXP R_fn_SEXP, SEXP Z_gn_SEXP, SEXP T_gn_SEXP, SEXP a1_fn_SEXP, SEXP P1_fn_SEXP, SEXP log_prior_pdf_SEXP, SEXP known_paramsSEXP, SEXP known_tv_paramsSEXP, SEXP time_varyingSEXP, SEXP n_statesSEXP, SEXP n_etasSEXP, SEXP probsSEXP, SEXP thetaSEXP, SEXP alpha_lastSEXP, SEXP P_lastSEXP, SEXP countsSEXP, SEXP predict_typeSEXP, SEXP intervalsSEXP, SEXP seedSEXP, SEXP nsimSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< SEXP >::type Z_fn_(Z_fn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type H_fn_(H_fn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type T_fn_(T_fn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type R_fn_(R_fn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type Z_gn_(Z_gn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type T_gn_(T_gn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type a1_fn_(a1_fn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type P1_fn_(P1_fn_SEXP);
+    Rcpp::traits::input_parameter< SEXP >::type log_prior_pdf_(log_prior_pdf_SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type known_params(known_paramsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type known_tv_params(known_tv_paramsSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type time_varying(time_varyingSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type n_states(n_statesSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type n_etas(n_etasSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type alpha_last(alpha_lastSEXP);
+    Rcpp::traits::input_parameter< const arma::cube >::type P_last(P_lastSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type counts(countsSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type predict_type(predict_typeSEXP);
+    Rcpp::traits::input_parameter< const bool >::type intervals(intervalsSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type nsim(nsimSEXP);
+    rcpp_result_gen = Rcpp::wrap(nonlinear_predict_ekf(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, probs, theta, alpha_last, P_last, counts, predict_type, intervals, seed, nsim));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -1464,14 +1500,15 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bssm_nongaussian_is_mcmc", (DL_FUNC) &_bssm_nongaussian_is_mcmc, 23},
     {"_bssm_nonlinear_pm_mcmc", (DL_FUNC) &_bssm_nonlinear_pm_mcmc, 30},
     {"_bssm_nonlinear_da_mcmc", (DL_FUNC) &_bssm_nonlinear_da_mcmc, 30},
-    {"_bssm_nonlinear_ekf_mcmc", (DL_FUNC) &_bssm_nonlinear_ekf_mcmc, 29},
+    {"_bssm_nonlinear_ekf_mcmc", (DL_FUNC) &_bssm_nonlinear_ekf_mcmc, 30},
     {"_bssm_nonlinear_is_mcmc", (DL_FUNC) &_bssm_nonlinear_is_mcmc, 31},
     {"_bssm_general_gaussian_mcmc", (DL_FUNC) &_bssm_general_gaussian_mcmc, 25},
     {"_bssm_R_milstein", (DL_FUNC) &_bssm_R_milstein, 9},
     {"_bssm_R_milstein_joint", (DL_FUNC) &_bssm_R_milstein_joint, 10},
     {"_bssm_gaussian_predict", (DL_FUNC) &_bssm_gaussian_predict, 9},
     {"_bssm_nongaussian_predict", (DL_FUNC) &_bssm_nongaussian_predict, 8},
-    {"_bssm_nonlinear_predict", (DL_FUNC) &_bssm_nonlinear_predict, 21},
+    {"_bssm_nonlinear_predict", (DL_FUNC) &_bssm_nonlinear_predict, 22},
+    {"_bssm_nonlinear_predict_ekf", (DL_FUNC) &_bssm_nonlinear_predict_ekf, 24},
     {"_bssm_psi_smoother", (DL_FUNC) &_bssm_psi_smoother, 8},
     {"_bssm_psi_smoother_nlg", (DL_FUNC) &_bssm_psi_smoother_nlg, 21},
     {"_bssm_df_psi_smoother_nlg", (DL_FUNC) &_bssm_df_psi_smoother_nlg, 21},

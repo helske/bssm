@@ -471,7 +471,7 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const unsigned int n_burnin, const unsigned int n_thin,
   const double gamma, const double target_acceptance, const arma::mat S,
   const bool end_ram, const unsigned int max_iter, const double conv_tol
-  , const unsigned int n_threads, const unsigned int iekf_iter) {
+  , const unsigned int n_threads, const unsigned int iekf_iter, bool summary) {
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_,
     theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
@@ -482,12 +482,26 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   
   mcmc_run.approx_mcmc(model, max_iter, conv_tol, end_ram, iekf_iter);
   
-  mcmc_run.gaussian_sampling(model, n_threads);
-  return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
-    Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
-    Rcpp::Named("counts") = mcmc_run.count_storage,
-    Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-    Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  if (summary) {
+    
+    arma::mat alphahat(model.m, model.n);
+    arma::cube Vt(model.m, model.m, model.n);
+    mcmc_run.state_ekf_summary(model, alphahat, Vt);
+    
+    return Rcpp::List::create(Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") = Vt,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } else {
+    
+    mcmc_run.state_ekf_sample(model, n_threads);
+    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  }
 }
 
 // [[Rcpp::export]]

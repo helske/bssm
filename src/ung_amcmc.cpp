@@ -252,7 +252,7 @@ void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states,
   arma::mat y_piece = y_storage(arma::span::all, arma::span(start, end));
   arma::mat H_piece = H_storage(arma::span::all, arma::span(start, end));
   arma::mat scales_piece = scales_storage(arma::span::all, arma::span(start, end));
-  if (is_type == 2) {
+  if (is_type != 1) {
     state_sampler_psi_is2(model, nsim_states, theta_piece, alpha_piece, weights_piece,
       y_piece, H_piece, scales_piece);
   } else {
@@ -264,7 +264,7 @@ void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states,
   weight_storage.subvec(start, end) = weights_piece;
 }
 #else
-    if (is_type == 2) {
+    if (is_type != 1) {
       state_sampler_psi_is2(model, nsim_states, theta_storage, alpha_storage, weight_storage,
         y_storage, H_storage, scales_storage);
     } else {
@@ -274,7 +274,7 @@ void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states,
     
 #endif
   } else {
-    if (is_type == 2) {
+    if (is_type != 1) {
       state_sampler_psi_is2(model, nsim_states, theta_storage, alpha_storage, weight_storage,
         y_storage, H_storage, scales_storage);
     } else {
@@ -402,7 +402,7 @@ void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states,
   arma::cube alpha_piece(model.n, model.m, end - start + 1);
   arma::vec weights_piece(end - start + 1);
   arma::vec approx_loglik_piece = approx_loglik_storage.subvec(start, end);
-  if (is_type == 2) {
+  if (is_type != 1) {
     state_sampler_bsf_is2(model, nsim_states, theta_piece, approx_loglik_piece, 
       alpha_piece, weights_piece);
   } else {
@@ -414,7 +414,7 @@ void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states,
   weight_storage.subvec(start, end) = weights_piece;
 }
 #else
-    if (is_type == 2) {
+    if (is_type != 1) {
       state_sampler_bsf_is2(model, nsim_states, approx_loglik_storage, theta_storage, 
         alpha_storage, weight_storage);
     } else {
@@ -423,7 +423,7 @@ void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states,
     }
 #endif
   } else {
-    if (is_type == 2) {
+    if (is_type != 1) {
       state_sampler_bsf_is2(model, nsim_states, approx_loglik_storage, theta_storage, 
         alpha_storage, weight_storage);
     } else {
@@ -542,7 +542,7 @@ void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim_states,
   arma::mat H_piece = H_storage(arma::span::all, arma::span(start, end));
   arma::vec scales_piece = arma::sum(scales_storage(arma::span::all, 
     arma::span(start, end)));
-  if (is_type == 2) {
+  if (is_type != 1) {
     state_sampler_spdk_is2(model, nsim_states, theta_piece, alpha_piece, weights_piece,
       y_piece, H_piece, scales_piece);
   } else {
@@ -554,7 +554,7 @@ void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim_states,
   weight_storage.subvec(start, end) = weights_piece;
 }
 #else
-    if (is_type == 2) {
+    if (is_type != 1) {
       state_sampler_spdk_is2(model, nsim_states, theta_storage, alpha_storage, weight_storage,
         y_storage, H_storage, arma::sum(scales_storage));
     } else {
@@ -563,7 +563,7 @@ void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim_states,
     }
 #endif
   } else {
-    if (is_type == 2) {
+    if (is_type != 1) {
       state_sampler_spdk_is2(model, nsim_states, theta_storage, alpha_storage, weight_storage,
         y_storage, H_storage, arma::sum(scales_storage));
     } else {

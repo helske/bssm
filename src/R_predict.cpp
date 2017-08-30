@@ -26,7 +26,7 @@ Rcpp::List gaussian_predict(const Rcpp::List& model_,
       return model.predict_interval(probs, theta, alpha, counts, predict_type);
     } else {
       return Rcpp::List::create(model.predict_sample(theta, alpha, counts,
-        predict_type < 3));
+        predict_type));
     }
   } break;
   case 2: {
@@ -35,7 +35,7 @@ Rcpp::List gaussian_predict(const Rcpp::List& model_,
       return model.predict_interval(probs, theta, alpha, counts, predict_type);
     } else {
       return Rcpp::List::create(model.predict_sample(theta, alpha, counts, 
-        predict_type < 3));
+        predict_type));
     }
   } break;
   }
@@ -81,11 +81,36 @@ arma::cube nonlinear_predict(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const arma::mat& known_tv_params, const arma::uvec& time_varying, 
   const unsigned int n_states, const unsigned int n_etas,
   const arma::vec& probs, const arma::mat& theta, const arma::mat& alpha, 
-  const arma::uvec& counts, const unsigned int predict_type, const unsigned int seed) {
+  const arma::uvec& counts, const unsigned int predict_type, 
+  const unsigned int seed, const unsigned int nsim) {
   
   nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
     theta.col(0), log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
     time_varying, seed);
-  return model.predict_sample(theta, alpha, counts, predict_type);
+  
+  return model.predict_sample(theta, alpha, counts, predict_type, nsim);
+  
 }
 
+// [[Rcpp::export]]
+Rcpp::List nonlinear_predict_ekf(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 
+  SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, 
+  SEXP log_prior_pdf_, const arma::vec& known_params, 
+  const arma::mat& known_tv_params, const arma::uvec& time_varying, 
+  const unsigned int n_states, const unsigned int n_etas,
+  const arma::vec& probs, const arma::mat& theta, const arma::mat& alpha_last, const arma::cube P_last, 
+  const arma::uvec& counts, const unsigned int predict_type, 
+  const bool intervals, const unsigned int seed, const unsigned int nsim) {
+  
+  nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
+    theta.col(0), log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
+    time_varying, seed);
+  
+  if(intervals) {
+    return model.predict_interval(probs, theta,
+      alpha_last, P_last, counts, predict_type);
+  } else {
+    return Rcpp::List::create(model.predict_sample(theta, alpha_last, counts, 
+      predict_type, nsim));
+  }
+}

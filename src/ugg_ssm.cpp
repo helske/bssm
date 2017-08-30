@@ -700,10 +700,10 @@ Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
   }
 }
 arma::cube ugg_ssm::predict_sample(const arma::mat& theta,
-  const arma::mat& alpha, const arma::uvec& counts, const bool predict_obs) {
+  const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type) {
 
   unsigned int d = 1;
-  if (!predict_obs) d = m;
+  if (predict_type < 3) d = m;
 
   unsigned int n_samples = theta.n_cols;
   arma::cube sample(d, n, n_samples);
@@ -711,13 +711,13 @@ arma::cube ugg_ssm::predict_sample(const arma::mat& theta,
   arma::vec theta_i = theta.col(0);
   set_theta(theta_i);
   a1 = alpha.col(0);
-  sample.slice(0) = sample_model(predict_obs);
+  sample.slice(0) = sample_model(predict_type == 1);
 
   for (unsigned int i = 1; i < n_samples; i++) {
     arma::vec theta_i = theta.col(i);
     set_theta(theta_i);
     a1 = alpha.col(i);
-    sample.slice(i) = sample_model(predict_obs);
+    sample.slice(i) = sample_model(predict_type == 1);
   }
 
   return rep_cube(sample, counts);

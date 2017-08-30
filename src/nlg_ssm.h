@@ -27,10 +27,16 @@ public:
   arma::mat approximate(mgg_ssm& approx_model, const unsigned int max_iter, 
     const double conv_tol) const;
   
+  Rcpp::List predict_interval(const arma::vec& probs, const arma::mat& thetasim,
+    const arma::mat& alpha_last, const arma::cube& P_last, 
+    const arma::uvec& counts, const unsigned int predict_type);
   
   arma::cube predict_sample(const arma::mat& thetasim, const arma::mat& alpha, 
-    const arma::uvec& counts, const unsigned int predict_type);
-  arma::mat sample_model(const arma::vec& a1_sim, const unsigned int predict_type);
+    const arma::uvec& counts, const unsigned int predict_type, 
+    const unsigned int nsim);
+  
+  arma::cube sample_model(const arma::vec& a1_sim, 
+    const unsigned int predict_type, const unsigned int nsim);
   
   double ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, 
     arma::cube& Ptt, const unsigned int iekf_iter) const;

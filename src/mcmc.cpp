@@ -84,7 +84,6 @@ template void mcmc::state_summary(ugg_bsm model, arma::mat& alphahat,
 template <class T>
 void mcmc::state_summary(T model, arma::mat& alphahat, arma::cube& Vt) {
 
-  state_sampler(model, theta_storage, alpha_storage);
   arma::cube Valpha(model.m, model.m, model.n, arma::fill::zeros);
 
   arma::vec theta = theta_storage.col(0);

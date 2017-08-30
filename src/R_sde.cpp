@@ -236,7 +236,7 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
   
   
   mcmc_run.is_correction_bsf(model, nsim_states, L_c, L_f, coupled, 
-    is_type == 2, n_threads);
+    is_type, n_threads);
   
   return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
     Rcpp::Named("theta") = mcmc_run.theta_storage.t(),

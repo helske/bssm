@@ -39,21 +39,21 @@ test_that("MCMC results for SV model using IS-correction are correct",{
     sd_ar = halfnormal(1, 5), sigma = halfnormal(1, 2)), NA)
   
   expect_error(mcmc_svm <- run_mcmc(model_bssm, n_iter = 20, n_burnin = 15, nsim_states = 5,
-    method = "isc", seed = 1), NA)
+    method = "is2", seed = 1), NA)
   
   expect_equal(run_mcmc(model_bssm, n_iter = 100, nsim_states = 10,
-    method = "isc", seed = 1)[-14], 
-    run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, method = "isc", seed = 1)[-14])
+    method = "is2", seed = 1)[-14], 
+    run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, method = "is2", seed = 1)[-14])
   
   expect_equal(run_mcmc(model_bssm, n_iter = 100, nsim_states = 10,
-    method = "isc", seed = 1, simulation_method = "psi")[-14], 
+    method = "is2", seed = 1, simulation_method = "psi")[-14], 
     run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, 
-      method = "isc", seed = 1, simulation_method = "psi")[-14])
+      method = "is2", seed = 1, simulation_method = "psi")[-14])
   
   expect_equal(run_mcmc(model_bssm, n_iter = 100, nsim_states = 10,
-    method = "isc", seed = 1, simulation_method = "bsf")[-14], 
+    method = "is2", seed = 1, simulation_method = "bsf")[-14], 
     run_mcmc(model_bssm, n_iter = 100, nsim_states = 10, 
-      method = "isc", seed = 1, simulation_method = "bsf")[-14])
+      method = "is2", seed = 1, simulation_method = "bsf")[-14])
   
   skip_on_cran()
   mcmc_svm_ref <- readRDS("mcmc_reference/mcmc_svm_ref.rda")

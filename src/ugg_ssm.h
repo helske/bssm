@@ -70,7 +70,7 @@ public:
   Rcpp::List predict_interval(const arma::vec& probs, const arma::mat& theta,
     const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type);
   arma::cube predict_sample(const arma::mat& theta,
-    const arma::mat& alpha, const arma::uvec& counts, const bool simulate_obs);
+    const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type);
   arma::mat sample_model(const bool simulate_obs);
   
   arma::vec y;

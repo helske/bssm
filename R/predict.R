@@ -64,7 +64,7 @@
 #' autoplot(pred, y = model$y, fit = fit)
 #' }
 predict.mcmc_output <- function(object, future_model, type = "response",
-  intervals = TRUE, probs = c(0.05, 0.95), return_MCSE = TRUE, 
+  intervals = TRUE, probs = c(0.05, 0.95), nsim = 1, return_MCSE = TRUE, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   type <- match.arg(type, c("response", "mean", "state"))
@@ -86,8 +86,8 @@ predict.mcmc_output <- function(object, future_model, type = "response",
       
       if (intervals) {
         
-        if(return_MCSE) {
-          if(type != "state") {
+        if (return_MCSE) {
+          if (type != "state") {
             ses <- matrix(0, n_ahead, length(probs))
             nsim <- nrow(out$mean_pred)
             
@@ -133,7 +133,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
           
           
         } else {
-          if(type != "state") {
+          if (type != "state") {
             pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
               intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
                 names = paste0(100 * probs, "%"))) 
@@ -161,7 +161,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
         t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
         pmatch(type, c("response", "mean", "state")), seed, 
         pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm")))
-      if(intervals) {
+      if (intervals) {
         if (type != "state") {
           pred <- list(mean = ts(rowMeans(out[1,,]),  start = start_ts, end = end_ts, 
             frequency = freq, names = names(future_model$a1)),
@@ -184,46 +184,74 @@ predict.mcmc_output <- function(object, future_model, type = "response",
       }
     },
     nlg_ssm = {
-      out <- nonlinear_predict(t(future_model$y), future_model$Z, 
-        future_model$H, future_model$T, future_model$R, future_model$Z_gn, 
-        future_model$T_gn, future_model$a1, future_model$P1, 
-        future_model$log_prior_pdf, future_model$known_params, 
-        future_model$known_tv_params, as.integer(future_model$time_varying),
-        future_model$n_states, future_model$n_etas, probs,
-        t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
-        pmatch(type, c("response", "mean", "state")), seed)
-      
-      if(intervals) {
-        if (type != "state") {
-          if (is.null(ncol(future_model$y)) || ncol(future_model$y) == 1) {
-            intv <- ts(t(apply(out[1,,], 1, quantile, probs, type = 8)),
-              start = start_ts, end = end_ts, frequency = freq, 
-              names = paste0(100 * probs, "%"))
+      if (object$mcmc_type == "ekf") {
+        out <- nonlinear_predict_ekf(t(future_model$y), future_model$Z, 
+          future_model$H, future_model$T, future_model$R, future_model$Z_gn, 
+          future_model$T_gn, future_model$a1, future_model$P1, 
+          future_model$log_prior_pdf, future_model$known_params, 
+          future_model$known_tv_params, as.integer(future_model$time_varying),
+          future_model$n_states, future_model$n_etas, probs,
+          t(object$theta), object$alpha[nrow(object$alpha),,], 
+          array(0, c(future_model$n_states, future_model$n_states, nrow(object$theta))), 
+          object$counts, 
+          pmatch(type, c("response", "mean", "state")), intervals, seed, nsim)
+        
+        if (intervals) {
+          if (type != "state") {
+            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
+              intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
+                names = paste0(100 * probs, "%"))) 
           } else {
-            intv <- lapply(1:ncol(future_model$y), function(i) 
-              ts(t(apply(out[i,,], 1, quantile, probs, type = 8)), 
-                start = start_ts, end = end_ts, frequency = freq,
-                names = paste0(100*probs, "%")))
-            names(intv) <- colnames(future_model$y)
-          }
-          pred <- list(mean = ts(apply(out, 1, rowMeans), start = start_ts, 
-            end = end_ts, frequency = freq, names = colnames(future_model$y)),
-            intervals = intv)
-        } else {
-          intv <- lapply(1:future_model$n_states, function(i) 
-            ts(t(apply(out[i,,], 1, quantile, probs, type = 8)), 
+            intv <- lapply(1:length(future_model$n_states), function(i) ts(out$intervals[,,i], 
               start = start_ts, end = end_ts, frequency = freq,
-              names = paste0(100*probs, "%")))
-          names(intv) <- future_model$state_names
-          pred <- list(mean = ts(apply(out, 1, rowMeans), start = start_ts, 
-            end = end_ts, frequency = freq, names = future_model$state_names),
-            intervals = intv)
-        }
+              names = paste0(100 * probs, "%")))
+            names(intv) <- names(future_model$state_names)
+            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, 
+              end = end_ts, frequency = freq, names = names(intv)), intervals = intv) 
+          }
+        } else pred <- aperm(out[[1]], c(2, 1, 3))
         
       } else {
-        pred <- out
+        out <- nonlinear_predict(t(future_model$y), future_model$Z, 
+          future_model$H, future_model$T, future_model$R, future_model$Z_gn, 
+          future_model$T_gn, future_model$a1, future_model$P1, 
+          future_model$log_prior_pdf, future_model$known_params, 
+          future_model$known_tv_params, as.integer(future_model$time_varying),
+          future_model$n_states, future_model$n_etas, probs,
+          t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
+          pmatch(type, c("response", "mean", "state")), seed, nsim)
+        
+        if (intervals) {
+          if (type != "state") {
+            if (is.null(ncol(future_model$y)) || ncol(future_model$y) == 1) {
+              intv <- ts(t(apply(out[1,,], 1, quantile, probs, type = 8)),
+                start = start_ts, end = end_ts, frequency = freq, 
+                names = paste0(100 * probs, "%"))
+            } else {
+              intv <- lapply(1:ncol(future_model$y), function(i) 
+                ts(t(apply(out[i,,], 1, quantile, probs, type = 8)), 
+                  start = start_ts, end = end_ts, frequency = freq,
+                  names = paste0(100 * probs, "%")))
+              names(intv) <- colnames(future_model$y)
+            }
+            pred <- list(mean = ts(apply(out, 1, rowMeans), start = start_ts, 
+              end = end_ts, frequency = freq, names = colnames(future_model$y)),
+              intervals = intv)
+          } else {
+            intv <- lapply(1:future_model$n_states, function(i) 
+              ts(t(apply(out[i,,], 1, quantile, probs, type = 8)), 
+                start = start_ts, end = end_ts, frequency = freq,
+                names = paste0(100 * probs, "%")))
+            names(intv) <- future_model$state_names
+            pred <- list(mean = ts(apply(out, 1, rowMeans), start = start_ts, 
+              end = end_ts, frequency = freq, names = future_model$state_names),
+              intervals = intv)
+          }
+          
+        } else {
+          pred <- out
+        }
       }
-      
     }, stop("Not yet implemented for sde_ssm and lgg_ssm. "))
   class(pred) <- "predict_bssm"
   pred
