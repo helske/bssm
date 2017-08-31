@@ -155,15 +155,15 @@ arma::cube nlg_ssm::predict_sample(const arma::mat& thetasim,
   
   unsigned int d = p;
   if (predict_type == 3) d = m;
-  
-  unsigned int n_samples = thetasim.n_cols;
+  arma::mat expanded_theta = rep_mat(thetasim, counts);
+  unsigned int n_samples = expanded_theta.n_cols;
   arma::cube sample(d, n, nsim * n_samples);
   for (unsigned int i = 0; i < n_samples; i++) {
-    theta = thetasim.col(i);
-    sample.slices(i, (i + 1) * nsim - 1) = 
+    theta = expanded_theta.col(i);
+    sample.slices(i * nsim, (i + 1) * nsim - 1) = 
       sample_model(alpha.col(i), predict_type, nsim);
   }
-  return rep_cube(sample, counts * nsim);
+  return sample;
 }
 
 arma::cube nlg_ssm::sample_model(const arma::vec& a1_sim,
