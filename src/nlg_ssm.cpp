@@ -158,13 +158,12 @@ arma::cube nlg_ssm::predict_sample(const arma::mat& thetasim,
   
   unsigned int n_samples = thetasim.n_cols;
   arma::cube sample(d, n, nsim * n_samples);
-  
   for (unsigned int i = 0; i < n_samples; i++) {
     theta = thetasim.col(i);
-    sample.slices(i, (i + 1) * nsim) = 
+    sample.slices(i, (i + 1) * nsim - 1) = 
       sample_model(alpha.col(i), predict_type, nsim);
   }
-  return rep_cube(sample, counts);
+  return rep_cube(sample, counts * nsim);
 }
 
 arma::cube nlg_ssm::sample_model(const arma::vec& a1_sim,
@@ -188,13 +187,12 @@ arma::cube nlg_ssm::sample_model(const arma::vec& a1_sim,
           R_fn.eval(t, theta, known_params, known_tv_params) * uk;
     }
   }
-  
   if (predict_type < 3) {
     // construct mean
-    arma::cube y(p, n, nsim);
+    arma::cube y_pred(p, n, nsim);
     for (unsigned int i = 0; i < nsim; i++) {
       for (unsigned int t = 0; t < n; t++) {
-        y.slice(i).col(t) = Z_fn.eval(t, alpha.slice(i).col(t), theta, 
+        y_pred.slice(i).col(t) = Z_fn.eval(t, alpha.slice(i).col(t), theta, 
           known_params, known_tv_params);
       }
     }
@@ -203,14 +201,14 @@ arma::cube nlg_ssm::sample_model(const arma::vec& a1_sim,
       for (unsigned int i = 0; i < nsim; i++) {
         for (unsigned int t = 0; t < n; t++) {
           arma::vec up(p);
-          for (unsigned int j = 0; j < p; i++) {
+          for (unsigned int j = 0; j < p; j++) {
             up(j) = normal(engine);
           }
-          y.slice(i).col(t) += H_fn.eval(t, theta, known_params, known_tv_params) * up;
+          y_pred.slice(i).col(t) += H_fn.eval(t, theta, known_params, known_tv_params) * up;
         }
       }
     }
-    return y;
+    return y_pred;
   }
   return alpha;
   
