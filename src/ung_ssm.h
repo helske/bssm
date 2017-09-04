@@ -65,9 +65,9 @@ public:
       arma::mat& weights, arma::umat& indices);
   
   arma::cube predict_sample(const arma::mat& theta, const arma::mat& alpha, 
-    const arma::uvec& counts, const unsigned int predict_type);
+    const arma::uvec& counts, const unsigned int predict_type, const unsigned int nsim);
   
-  arma::mat sample_model(const unsigned int predict_type);
+  arma::mat sample_model(const unsigned int predict_type, const unsigned int nsim);
   
   arma::vec y;
   arma::mat Z;

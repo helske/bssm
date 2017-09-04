@@ -45,8 +45,8 @@ results. Defaults to \code{n_iter / 2}. Note that all MCMC algorithms of \code{b
 
 \item{n_thin}{Thinning rate. All MCMC algoritms in \code{bssm} use the jump chain
 representation, and the thinning is applied to these blocks.
-This defaults to 1, but for IS-corrected method (\code{method="isc"}), larger
-value is often more effective.}
+This defaults to 1, but for IS-corrected methods, larger
+value is often computationally more effective.}
 
 \item{gamma}{Tuning parameter for the adaptation of RAM algorithm. Must be
 between 0 and 1 (not checked).}

@@ -28,7 +28,7 @@ Rcpp::List nlg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
   const arma::uvec& counts, const unsigned int predict_type) {
   
   if(p > 1) 
-    Rcpp::stop("Interval prediction using summary statistics is currently not supported for multivariate observations.");
+    Rcpp::stop("Interval prediction using EKF is currently not supported for multivariate observations.");
   theta = thetasim.col(0);
   
   arma::mat at(m, n);
@@ -156,12 +156,16 @@ arma::cube nlg_ssm::predict_sample(const arma::mat& thetasim,
   unsigned int d = p;
   if (predict_type == 3) d = m;
   arma::mat expanded_theta = rep_mat(thetasim, counts);
+  arma::mat expanded_alpha = rep_mat(alpha, counts);
   unsigned int n_samples = expanded_theta.n_cols;
   arma::cube sample(d, n, nsim * n_samples);
   for (unsigned int i = 0; i < n_samples; i++) {
+   
     theta = expanded_theta.col(i);
+   
     sample.slices(i * nsim, (i + 1) * nsim - 1) = 
-      sample_model(alpha.col(i), predict_type, nsim);
+      sample_model(expanded_alpha.col(i), predict_type, nsim);
+   
   }
   return sample;
 }

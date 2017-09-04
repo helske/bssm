@@ -5,7 +5,7 @@
 \title{Predictions for State Space Models}
 \usage{
 \method{predict}{mcmc_output}(object, future_model, type = "response",
-  intervals = TRUE, probs = c(0.05, 0.95), return_MCSE = TRUE,
+  intervals = TRUE, probs = c(0.05, 0.95), nsim, return_MCSE = TRUE,
   seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
@@ -23,6 +23,13 @@ Defaults to \code{"response"}.}
 from the posterior predictive distribution are returned.}
 
 \item{probs}{Desired quantiles. Defaults to \code{c(0.05, 0.95)}. Always includes median 0.5.}
+
+\item{nsim}{Number of samples to draw per MCMC iteration. 
+Defaults to 1 except for EKF based MCMC output of non-linear Gaussian models (see below). 
+For linear-Gaussian models the intervals are computed based on Kalman filter so 
+this argument has no effect if \code{intervals} is \code{TRUE}. For non-linear Gaussian 
+models of class \code{nlg_ssm}, if \code{nsim} is 0 and \code{intervals} is \code{TRUE}, 
+EKF based approximation is used for computing the prediction intervals.}
 
 \item{return_MCSE}{For Gaussian models, if \code{TRUE}, the Monte Carlo
 standard errors of the intervals are also returned.}

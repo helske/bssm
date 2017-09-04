@@ -16,6 +16,12 @@
 #' @param future_model Model for future observations. Should have same structure
 #' as the original model which was used in MCMC, in order to plug the posterior 
 #' samples of the model parameters to right place.
+#' @param nsim Number of samples to draw per MCMC iteration. 
+#' Defaults to 1 except for EKF based MCMC output of non-linear Gaussian models (see below). 
+#' For linear-Gaussian models the intervals are computed based on Kalman filter so 
+#' this argument has no effect if \code{intervals} is \code{TRUE}. For non-linear Gaussian 
+#' models of class \code{nlg_ssm}, if \code{nsim} is 0 and \code{intervals} is \code{TRUE}, 
+#' EKF based approximation is used for computing the prediction intervals.
 #' @param return_MCSE For Gaussian models, if \code{TRUE}, the Monte Carlo
 #' standard errors of the intervals are also returned.
 #' @param seed Seed for RNG.
@@ -64,10 +70,18 @@
 #' autoplot(pred, y = model$y, fit = fit)
 #' }
 predict.mcmc_output <- function(object, future_model, type = "response",
-  intervals = TRUE, probs = c(0.05, 0.95), nsim = 1, return_MCSE = TRUE, 
+  intervals = TRUE, probs = c(0.05, 0.95), nsim, return_MCSE = TRUE, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   type <- match.arg(type, c("response", "mean", "state"))
+  
+  if (missing(nsim)) {
+    if(object$mcmc_type == "ekf" && intervals) {
+      nsim <- 0
+    } else {
+      nsim <- 1
+    }
+  }
   
   probs <- sort(unique(c(probs, 0.5)))
   n_ahead <- length(future_model$y)
@@ -82,7 +96,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
       out <- gaussian_predict(future_model, probs,
         t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
         pmatch(type, c("response", "mean", "state")), intervals, 
-        seed, pmatch(attr(object, "model_type"), c("gssm", "bsm")))
+        seed, pmatch(attr(object, "model_type"), c("gssm", "bsm")), nsim)
       
       if (intervals) {
         
@@ -184,7 +198,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
       }
     },
     nlg_ssm = {
-      if (object$mcmc_type == "ekf") {
+      if (nsim == 0 && intervals) {
         out <- nonlinear_predict_ekf(t(future_model$y), future_model$Z, 
           future_model$H, future_model$T, future_model$R, future_model$Z_gn, 
           future_model$T_gn, future_model$a1, future_model$P1, 
@@ -194,22 +208,21 @@ predict.mcmc_output <- function(object, future_model, type = "response",
           t(object$theta), object$alpha[nrow(object$alpha),,], 
           array(0, c(future_model$n_states, future_model$n_states, nrow(object$theta))), 
           object$counts, 
-          pmatch(type, c("response", "mean", "state")), intervals, seed, nsim)
+          pmatch(type, c("response", "mean", "state")))
         
-        if (intervals) {
-          if (type != "state") {
-            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
-              intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
-                names = paste0(100 * probs, "%"))) 
-          } else {
-            intv <- lapply(1:length(future_model$n_states), function(i) ts(out$intervals[,,i], 
-              start = start_ts, end = end_ts, frequency = freq,
-              names = paste0(100 * probs, "%")))
-            names(intv) <- names(future_model$state_names)
-            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, 
-              end = end_ts, frequency = freq, names = names(intv)), intervals = intv) 
-          }
-        } else pred <- aperm(out[[1]], c(2, 1, 3))
+        
+        if (type != "state") {
+          pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
+            intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
+              names = paste0(100 * probs, "%"))) 
+        } else {
+          intv <- lapply(1:length(future_model$n_states), function(i) ts(out$intervals[,,i], 
+            start = start_ts, end = end_ts, frequency = freq,
+            names = paste0(100 * probs, "%")))
+          names(intv) <- names(future_model$state_names)
+          pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, 
+            end = end_ts, frequency = freq, names = names(intv)), intervals = intv) 
+        }
         
       } else {
         out <- nonlinear_predict(t(future_model$y), future_model$Z, 

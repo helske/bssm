@@ -174,31 +174,54 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
   
-  unsigned thread_size = std::floor(static_cast <double> (n_stored) / n_threads);
-  unsigned int start = omp_get_thread_num() * thread_size;
-  unsigned int end = (omp_get_thread_num() + 1) * thread_size - 1;
-  if(omp_get_thread_num() == static_cast<int>(n_threads - 1)) {
-    end = n_stored - 1;
-  }
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
   model.coarse_engine = sitmo::prng_engine(omp_get_thread_num() + n_threads + 1);
   
-  arma::mat theta_piece = theta_storage(arma::span::all, arma::span(start, end));
-  arma::vec approx_loglik_piece = approx_loglik_storage.subvec(start, end);
-  
-  arma::cube alpha_piece(model.n, 1, end - start + 1);
-  arma::vec weights_piece(end - start + 1);
-  
   if (is_type != 1) {
-    state_sampler_bsf_is2(model, nsim_states, L_f, approx_loglik_piece, 
-      theta_piece, alpha_piece, weights_piece);
+    #pragma omp for schedule(dynamic)
+    for (unsigned int i = 0; i < n_stored; i++) {
+      model.theta = theta_storage.col(i);
+      
+      arma::cube alpha_i(1, model.n, nsim_states);
+      arma::mat weights_i(nsim_states, model.n);
+      arma::umat indices(nsim_states, model.n - 1);
+      double loglik = model.bsf_filter(nsim_states, L_f, alpha_i, weights_i, indices);
+      if(arma::is_finite(loglik)) {
+        weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
+        
+        filter_smoother(alpha_i, indices);
+        arma::vec w = weights_i.col(model.n - 1);
+        std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+        alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
+      } else {
+        weight_storage(i) = 0.0;
+        alpha_storage.slice(i).zeros();
+      }
+    }
   } else {
-    arma::uvec count_piece = count_storage(arma::span(start, end));
-    state_sampler_bsf_is1(model, nsim_states, L_f, approx_loglik_piece, 
-      theta_piece, alpha_piece, weights_piece, count_piece);
+    #pragma omp for schedule(dynamic)
+    for (unsigned int i = 0; i < n_stored; i++) {
+      
+      model.theta = theta_storage.col(i);
+      
+      unsigned int m = nsim_states * count_storage(i);
+      arma::cube alpha_i(1, model.n, m);
+      arma::mat weights_i(m, model.n);
+      arma::umat indices(m, model.n - 1);
+      double loglik = model.bsf_filter(m, L_f, alpha_i, weights_i, indices);
+      if(arma::is_finite(loglik)) {
+        weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
+        
+        filter_smoother(alpha_i, indices);
+        arma::vec w = weights_i.col(model.n - 1);
+        std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+        alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
+      } else {
+        weight_storage(i) = 0.0;
+        alpha_storage.slice(i).zeros();
+      }
+    }
   }
-  alpha_storage.slices(start, end) = alpha_piece;
-  weight_storage.subvec(start, end) = weights_piece;
 }
 #else
 if (is_type != 1) {

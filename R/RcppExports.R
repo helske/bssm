@@ -153,20 +153,20 @@ R_milstein_joint <- function(x0, L_c, L_f, t, theta, drift_pntr, diffusion_pntr,
     .Call('_bssm_R_milstein_joint', PACKAGE = 'bssm', x0, L_c, L_f, t, theta, drift_pntr, diffusion_pntr, ddiffusion_pntr, positive, seed)
 }
 
-gaussian_predict <- function(model_, probs, theta, alpha, counts, predict_type, intervals, seed, model_type) {
-    .Call('_bssm_gaussian_predict', PACKAGE = 'bssm', model_, probs, theta, alpha, counts, predict_type, intervals, seed, model_type)
+gaussian_predict <- function(model_, probs, theta, alpha, counts, predict_type, intervals, seed, model_type, nsim) {
+    .Call('_bssm_gaussian_predict', PACKAGE = 'bssm', model_, probs, theta, alpha, counts, predict_type, intervals, seed, model_type, nsim)
 }
 
-nongaussian_predict <- function(model_, probs, theta, alpha, counts, predict_type, seed, model_type) {
-    .Call('_bssm_nongaussian_predict', PACKAGE = 'bssm', model_, probs, theta, alpha, counts, predict_type, seed, model_type)
+nongaussian_predict <- function(model_, probs, theta, alpha, counts, predict_type, seed, model_type, nsim) {
+    .Call('_bssm_nongaussian_predict', PACKAGE = 'bssm', model_, probs, theta, alpha, counts, predict_type, seed, model_type, nsim)
 }
 
 nonlinear_predict <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, probs, theta, alpha, counts, predict_type, seed, nsim) {
     .Call('_bssm_nonlinear_predict', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, probs, theta, alpha, counts, predict_type, seed, nsim)
 }
 
-nonlinear_predict_ekf <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, probs, theta, alpha_last, P_last, counts, predict_type, intervals, seed, nsim) {
-    .Call('_bssm_nonlinear_predict_ekf', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, probs, theta, alpha_last, P_last, counts, predict_type, intervals, seed, nsim)
+nonlinear_predict_ekf <- function(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, probs, theta, alpha_last, P_last, counts, predict_type) {
+    .Call('_bssm_nonlinear_predict_ekf', PACKAGE = 'bssm', y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, log_prior_pdf_, known_params, known_tv_params, time_varying, n_states, n_etas, probs, theta, alpha_last, P_last, counts, predict_type)
 }
 
 psi_smoother <- function(model_, mode_estimate, nsim_states, smoothing_type, seed, max_iter, conv_tol, model_type) {
