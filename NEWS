@@ -10,6 +10,7 @@ bssm 0.1.2 (Release date: -)
   * Added another new model class, sde_ssm, which is a model with continuous 
     state dynamics defined as SDE. These too are defined via couple 
     simple C++ functions.
+  * Added argument nsim for predict method, which allows multiple draws per MCMC iteration.
   
 bssm 0.1.1-1 (Release date: 2017-06-27)
 ==============
