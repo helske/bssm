@@ -24,7 +24,7 @@ double gaussian_loglik(const Rcpp::List& model_, const int model_type) {
     ugg_bsm model(clone(model_), 1);
     loglik = model.log_likelihood();
   } break;
-  default: loglik = -arma::datum::inf;
+  default: loglik = -std::numeric_limits<double>::infinity();
   }
   
   return loglik;
@@ -54,7 +54,7 @@ double nongaussian_loglik(const Rcpp::List& model_, const arma::vec mode_estimat
     loglik = compute_ung_loglik(model, simulation_method, nsim_states,
       mode_estimate, max_iter, conv_tol);
   } break;
-  default: loglik = -arma::datum::inf;
+  default: loglik = -std::numeric_limits<double>::infinity();
   }
   
   return loglik;
@@ -117,7 +117,7 @@ double nonlinear_loglik(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     loglik = model.df_psi_filter(approx_model, approx_loglik,
       nsim_states, alpha, weights, indices);
   } break;
-  default: loglik = -arma::datum::inf;
+  default: loglik = -std::numeric_limits<double>::infinity();
   }
   
   return loglik;

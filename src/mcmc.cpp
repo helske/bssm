@@ -152,7 +152,7 @@ double mcmc::log_prior_pdf(const arma::vec& theta) const {
       break;
     case 1  :
       if (theta(i) < 0) {
-        return -arma::datum::inf;
+        return -std::numeric_limits<double>::infinity();
       } else {
         q += std::log(2.0) + R::dnorm(theta(i), 0, prior_parameters(0, i), 1);
       }
@@ -203,7 +203,7 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
     // compute prior
     double logprior_prop = log_prior_pdf(theta_prop);
 
-    if (logprior_prop > -arma::datum::inf) {
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
       model.set_theta(theta_prop);
       // compute log-likelihood with proposed theta
@@ -394,7 +394,7 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
     // compute prior
     double logprior_prop = log_prior_pdf(theta_prop);
 
-    if (logprior_prop > -arma::datum::inf) {
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
       model.set_theta(theta_prop);
 
@@ -542,7 +542,7 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
     // compute prior
     double logprior_prop = log_prior_pdf(theta_prop);
 
-    if (logprior_prop > -arma::datum::inf) {
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
       model.set_theta(theta_prop);
 
@@ -669,7 +669,7 @@ void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
     // compute prior
     double logprior_prop = log_prior_pdf(theta_prop);
 
-    if (logprior_prop > -arma::datum::inf) {
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
       model.set_theta(theta_prop);
 
@@ -794,7 +794,7 @@ void mcmc::da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
     // compute prior
     double logprior_prop = log_prior_pdf(theta_prop);
 
-    if (logprior_prop > -arma::datum::inf) {
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
       model.set_theta(theta_prop);
 
@@ -947,7 +947,7 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
     // compute prior
     double logprior_prop = log_prior_pdf(theta_prop);
 
-    if (logprior_prop > -arma::datum::inf) {
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
       model.set_theta(theta_prop);
 
@@ -1098,7 +1098,7 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
     // compute prior
     double logprior_prop = log_prior_pdf(theta_prop);
 
-    if (logprior_prop > -arma::datum::inf) {
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
       model.set_theta(theta_prop);
 
@@ -1238,8 +1238,8 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
       // construct the approximate Gaussian model
       mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
       if(!arma::is_finite(mode_estimate)) {
-        gaussian_loglik = -arma::datum::inf;
-        loglik_prop = -arma::datum::inf;
+        gaussian_loglik = -std::numeric_limits<double>::infinity();
+        loglik_prop = -std::numeric_limits<double>::infinity();
       } else {
         // compute the log-likelihood of the approximate model
         gaussian_loglik = approx_model.log_likelihood();
@@ -1449,7 +1449,7 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
     // compute prior
     double logprior_prop = model.log_prior_pdf.eval(theta_prop);
 
-    if (logprior_prop > -arma::datum::inf) {
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
       model.theta = theta_prop;
       // construct the approximate Gaussian model
@@ -1574,7 +1574,7 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
     // compute prior
     double logprior_prop = model.log_prior_pdf.eval(theta_prop);
 
-    if (logprior_prop > -arma::datum::inf) {
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
       model.theta = theta_prop;
 
@@ -1798,7 +1798,7 @@ void mcmc::da_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
     // compute prior
     double logprior_prop = model.log_prior_pdf(theta_prop);
 
-    if (logprior_prop > -arma::datum::inf) {
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
       model.theta = theta_prop;
 

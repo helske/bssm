@@ -33,7 +33,7 @@ double sde_ssm::bsf_filter(const unsigned int nsim, const unsigned int L,
     if(sum_weights > 0.0){
       normalized_weights = weights.col(0) / sum_weights;
     } else {
-      return -arma::datum::inf;
+      return -std::numeric_limits<double>::infinity();
     }
     loglik = max_weight + std::log(sum_weights / nsim);
   } else {
@@ -63,7 +63,7 @@ double sde_ssm::bsf_filter(const unsigned int nsim, const unsigned int L,
       if(sum_weights > 0.0){
         normalized_weights = weights.col(t + 1) / sum_weights;
       } else {
-        return -arma::datum::inf;
+        return -std::numeric_limits<double>::infinity();
       }
       loglik += max_weight + std::log(sum_weights / nsim);
     } else {
@@ -99,7 +99,7 @@ double sde_ssm::coupled_bsf_filter(const unsigned int nsim,
     if(sum_weights > 0.0){
       normalized_weights = weights.col(0) / sum_weights;
     } else {
-      return -arma::datum::inf;
+      return -std::numeric_limits<double>::infinity();
     }
     loglik = max_weight + std::log(sum_weights / nsim);
   } else {
@@ -129,7 +129,7 @@ double sde_ssm::coupled_bsf_filter(const unsigned int nsim,
       if(sum_weights > 0.0){
         normalized_weights = weights.col(t + 1) / sum_weights;
       } else {
-        return -arma::datum::inf;
+        return -std::numeric_limits<double>::infinity();
       }
       loglik += max_weight + std::log(sum_weights / nsim);
     } else {

@@ -103,7 +103,7 @@ double log_prior_pdf(const arma::vec& theta) {
   
   double log_pdf;
   if(arma::any(theta < 0)) {
-     log_pdf = -arma::datum::inf;
+     log_pdf = -std::numeric_limits<double>::infinity();
    } else {
     // weakly informative priors. 
     // Note that negative values are handled above

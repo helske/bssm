@@ -268,7 +268,7 @@ double ung_ssm::psi_filter(const ugg_ssm& approx_model,
     if(sum_weights > 0.0){
       normalized_weights = weights.col(0) / sum_weights;
     } else {
-      return -arma::datum::inf;
+      return -std::numeric_limits<double>::infinity();
     }
     loglik = approx_loglik + std::log(sum_weights / nsim);
   } else {
@@ -305,7 +305,7 @@ double ung_ssm::psi_filter(const ugg_ssm& approx_model,
       if(sum_weights > 0.0){
         normalized_weights = weights.col(t + 1) / sum_weights;
       } else {
-        return -arma::datum::inf;
+        return -std::numeric_limits<double>::infinity();
       }
       loglik += std::log(sum_weights / nsim);
     } else {
@@ -508,7 +508,7 @@ double ung_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
     if(sum_weights > 0.0){
       normalized_weights = weights.col(0) / sum_weights;
     } else {
-      return -arma::datum::inf;
+      return -std::numeric_limits<double>::infinity();
     }
     loglik = max_weight + std::log(sum_weights / nsim);
   } else {
@@ -548,7 +548,7 @@ double ung_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
       if(sum_weights > 0.0){
         normalized_weights = weights.col(t + 1) / sum_weights;
       } else {
-        return -arma::datum::inf;
+        return -std::numeric_limits<double>::infinity();
       }
       loglik += max_weight + std::log(sum_weights / nsim);
     } else {

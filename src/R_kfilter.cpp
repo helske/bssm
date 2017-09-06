@@ -35,7 +35,7 @@ Rcpp::List gaussian_kfilter(const Rcpp::List& model_, const int model_type) {
     loglik = model.filter(at, att, Pt, Ptt);
   } break;
   default: 
-    loglik = -arma::datum::inf;
+    loglik = -std::numeric_limits<double>::infinity();
   }
   
   arma::inplace_trans(at);

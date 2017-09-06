@@ -32,7 +32,7 @@ Rcpp::List gaussian_predict(const Rcpp::List& model_,
     }
   } break;
   }
-  return Rcpp::List::create(Rcpp::Named("error") = arma::datum::inf);
+  return Rcpp::List::create(Rcpp::Named("error") = std::numeric_limits<double>::infinity());
 }
 
 // [[Rcpp::export]]

@@ -790,7 +790,7 @@ double ugg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
     if(sum_weights > 0.0){
       normalized_weights = weights.col(0) / sum_weights;
     } else {
-      return -arma::datum::inf;
+      return -std::numeric_limits<double>::infinity();
     }
     loglik = max_weight + std::log(sum_weights / nsim) + norm_log_const(H(0));
   } else {
@@ -834,7 +834,7 @@ double ugg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
       if(sum_weights > 0.0){
         normalized_weights = weights.col(t + 1) / sum_weights;
       } else {
-        return -arma::datum::inf;
+        return -std::numeric_limits<double>::infinity();
       }
       loglik += max_weight + std::log(sum_weights / nsim) +
         norm_log_const(H(Htv * (t + 1)));
@@ -877,7 +877,7 @@ double ugg_ssm::aux_filter(const unsigned int nsim, arma::cube& alpha,
     if(sum_weights > 0.0){
       normalized_weights = weights.col(0) / sum_weights;
     } else {
-      return -arma::datum::inf;
+      return -std::numeric_limits<double>::infinity();
     }
     loglik = max_weight + std::log(sum_weights / nsim) + norm_log_const(H(0));
   } else {
@@ -942,7 +942,7 @@ double ugg_ssm::aux_filter(const unsigned int nsim, arma::cube& alpha,
       if(sum_weights > 0.0){
         normalized_weights = weights.col(t + 1) / sum_weights;
       } else {
-        return -arma::datum::inf;
+        return -std::numeric_limits<double>::infinity();
       }
       
       loglik += max_weight + std::log(sum_weights / nsim) + std::log(sum_aux_weights / nsim) +
@@ -992,7 +992,7 @@ double ugg_ssm::oaux_filter(const unsigned int nsim, arma::cube& alpha,
     if(sum_weights > 0.0){
       normalized_weights = weights.col(0) / sum_weights;
     } else {
-      return -arma::datum::inf;
+      return -std::numeric_limits<double>::infinity();
     }
     loglik = max_weight + std::log(sum_weights / nsim) + norm_log_const(H(0));
   } else {
@@ -1069,7 +1069,7 @@ double ugg_ssm::oaux_filter(const unsigned int nsim, arma::cube& alpha,
       if(sum_weights > 0.0){
         normalized_weights = weights.col(t + 1) / sum_weights;
       } else {
-        return -arma::datum::inf;
+        return -std::numeric_limits<double>::infinity();
       }
       
       loglik += max_weight + std::log(sum_weights / nsim) + std::log(sum_aux_weights / nsim) +
