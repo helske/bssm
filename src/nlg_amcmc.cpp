@@ -86,7 +86,7 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
   unsigned int m = model.m;
   unsigned n = model.n;
   
-  double logprior = model.log_prior_pdf.eval(model.theta);
+  double logprior = model.log_prior_pdf(model.theta);
   
   arma::mat mode_estimate(m, n);
   mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
@@ -116,8 +116,8 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
     // propose new theta
     arma::vec theta_prop = theta + S * u;
     // compute prior
-    double logprior_prop = model.log_prior_pdf.eval(theta_prop);
-    if (arma::is_finite(logprior_prop)) {
+    double logprior_prop = model.log_prior_pdf(theta_prop);
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
       model.theta = theta_prop;
       arma::mat mode_estimate_prop(m, n);
@@ -274,21 +274,21 @@ void nlg_amcmc::is_correction_psi(nlg_ssm model, const unsigned int nsim_states,
     
     model.theta = theta_storage.col(i);
     
-    approx_model.a1 = model.a1_fn.eval(model.theta, model.known_params);
-    approx_model.P1 = model.P1_fn.eval(model.theta, model.known_params);
+    approx_model.a1 = model.a1_fn(model.theta, model.known_params);
+    approx_model.P1 = model.P1_fn(model.theta, model.known_params);
     for (unsigned int t = 0; t < Z.n_slices; t++) {
-      approx_model.Z.slice(t) = model.Z_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.T.slice(t) = model.T_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.D.col(t) = model.Z_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+      approx_model.Z.slice(t) = model.Z_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.T.slice(t) = model.T_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.D.col(t) = model.Z_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
         approx_model.Z.slice(t) * mode_storage.slice(i).col(t);
-      approx_model.C.col(t) =  model.T_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+      approx_model.C.col(t) =  model.T_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
         approx_model.T.slice(t) * mode_storage.slice(i).col(t);
     }
     for (unsigned int t = 0; t < H.n_slices; t++) {
-      approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+      approx_model.H.slice(t) = model.H_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
     }
     for (unsigned int t = 0; t < R.n_slices; t++) {
-      approx_model.R.slice(t) = model.R_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+      approx_model.R.slice(t) = model.R_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
     }
     approx_model.compute_HH();
     approx_model.compute_RR();
@@ -338,21 +338,21 @@ for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
   
   model.theta = theta_storage.col(i);
   
-  approx_model.a1 = model.a1_fn.eval(model.theta, model.known_params);
-  approx_model.P1 = model.P1_fn.eval(model.theta, model.known_params);
+  approx_model.a1 = model.a1_fn(model.theta, model.known_params);
+  approx_model.P1 = model.P1_fn(model.theta, model.known_params);
   for (unsigned int t = 0; t < Z.n_slices; t++) {
-    approx_model.Z.slice(t) = model.Z_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-    approx_model.T.slice(t) = model.T_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-    approx_model.D.col(t) = model.Z_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+    approx_model.Z.slice(t) = model.Z_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+    approx_model.T.slice(t) = model.T_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+    approx_model.D.col(t) = model.Z_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
       approx_model.Z.slice(t) * mode_storage.slice(i).col(t);
-    approx_model.C.col(t) =  model.T_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+    approx_model.C.col(t) =  model.T_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
       approx_model.T.slice(t) * mode_storage.slice(i).col(t);
   }
   for (unsigned int t = 0; t < H.n_slices; t++) {
-    approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+    approx_model.H.slice(t) = model.H_fn(t, model.theta, model.known_params, model.known_tv_params);
   }
   for (unsigned int t = 0; t < R.n_slices; t++) {
-    approx_model.R.slice(t) = model.R_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+    approx_model.R.slice(t) = model.R_fn(t, model.theta, model.known_params, model.known_tv_params);
   }
   approx_model.compute_HH();
   approx_model.compute_RR();
@@ -413,21 +413,21 @@ void nlg_amcmc::state_ekf_sample(nlg_ssm model, const unsigned int n_threads) {
     
     model.theta = theta_storage.col(i);
     
-    approx_model.a1 = model.a1_fn.eval(model.theta, model.known_params);
-    approx_model.P1 = model.P1_fn.eval(model.theta, model.known_params);
+    approx_model.a1 = model.a1_fn(model.theta, model.known_params);
+    approx_model.P1 = model.P1_fn(model.theta, model.known_params);
     for (unsigned int t = 0; t < Z.n_slices; t++) {
-      approx_model.Z.slice(t) = model.Z_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.T.slice(t) = model.T_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.D.col(t) = model.Z_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+      approx_model.Z.slice(t) = model.Z_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.T.slice(t) = model.T_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.D.col(t) = model.Z_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
         approx_model.Z.slice(t) * mode_storage.slice(i).col(t);
-      approx_model.C.col(t) =  model.T_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+      approx_model.C.col(t) =  model.T_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
         approx_model.T.slice(t) * mode_storage.slice(i).col(t);
     }
     for (unsigned int t = 0; t < H.n_slices; t++) {
-      approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+      approx_model.H.slice(t) = model.H_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
     }
     for (unsigned int t = 0; t < R.n_slices; t++) {
-      approx_model.R.slice(t) = model.R_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+      approx_model.R.slice(t) = model.R_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
     }
     approx_model.compute_HH();
     approx_model.compute_RR();
@@ -458,21 +458,21 @@ for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
   
   model.theta = theta_storage.col(i);
   
-  approx_model.a1 = model.a1_fn.eval(model.theta, model.known_params);
-  approx_model.P1 = model.P1_fn.eval(model.theta, model.known_params);
+  approx_model.a1 = model.a1_fn(model.theta, model.known_params);
+  approx_model.P1 = model.P1_fn(model.theta, model.known_params);
   for (unsigned int t = 0; t < Z.n_slices; t++) {
-    approx_model.Z.slice(t) = model.Z_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-    approx_model.T.slice(t) = model.T_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-    approx_model.D.col(t) = model.Z_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+    approx_model.Z.slice(t) = model.Z_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+    approx_model.T.slice(t) = model.T_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+    approx_model.D.col(t) = model.Z_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
       approx_model.Z.slice(t) * mode_storage.slice(i).col(t);
-    approx_model.C.col(t) =  model.T_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+    approx_model.C.col(t) =  model.T_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
       approx_model.T.slice(t) * mode_storage.slice(i).col(t);
   }
   for (unsigned int t = 0; t < H.n_slices; t++) {
-    approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+    approx_model.H.slice(t) = model.H_fn(t, model.theta, model.known_params, model.known_tv_params);
   }
   for (unsigned int t = 0; t < R.n_slices; t++) {
-    approx_model.R.slice(t) = model.R_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+    approx_model.R.slice(t) = model.R_fn(t, model.theta, model.known_params, model.known_tv_params);
   }
   approx_model.compute_HH();
   approx_model.compute_RR();
@@ -507,21 +507,21 @@ void nlg_amcmc::state_ekf_summary(nlg_ssm& model,
   // first iteration
   model.theta = theta_storage.col(0);
   
-  approx_model.a1 = model.a1_fn.eval(model.theta, model.known_params);
-  approx_model.P1 = model.P1_fn.eval(model.theta, model.known_params);
+  approx_model.a1 = model.a1_fn(model.theta, model.known_params);
+  approx_model.P1 = model.P1_fn(model.theta, model.known_params);
   for (unsigned int t = 0; t < Z.n_slices; t++) {
-    approx_model.Z.slice(t) = model.Z_gn.eval(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params);
-    approx_model.T.slice(t) = model.T_gn.eval(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params);
-    approx_model.D.col(t) = model.Z_fn.eval(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params) -
+    approx_model.Z.slice(t) = model.Z_gn(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params);
+    approx_model.T.slice(t) = model.T_gn(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params);
+    approx_model.D.col(t) = model.Z_fn(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params) -
       approx_model.Z.slice(t) * mode_storage.slice(0).col(t);
-    approx_model.C.col(t) =  model.T_fn.eval(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params) -
+    approx_model.C.col(t) =  model.T_fn(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params) -
       approx_model.T.slice(t) * mode_storage.slice(0).col(t);
   }
   for (unsigned int t = 0; t < H.n_slices; t++) {
-    approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+    approx_model.H.slice(t) = model.H_fn(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params);
   }
   for (unsigned int t = 0; t < R.n_slices; t++) {
-    approx_model.R.slice(t) = model.R_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+    approx_model.R.slice(t) = model.R_fn(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params);
   }
   approx_model.compute_HH();
   approx_model.compute_RR();
@@ -537,21 +537,21 @@ void nlg_amcmc::state_ekf_summary(nlg_ssm& model,
     
     model.theta = theta_storage.col(i);
     
-    approx_model.a1 = model.a1_fn.eval(model.theta, model.known_params);
-    approx_model.P1 = model.P1_fn.eval(model.theta, model.known_params);
+    approx_model.a1 = model.a1_fn(model.theta, model.known_params);
+    approx_model.P1 = model.P1_fn(model.theta, model.known_params);
     for (unsigned int t = 0; t < Z.n_slices; t++) {
-      approx_model.Z.slice(t) = model.Z_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.T.slice(t) = model.T_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.D.col(t) = model.Z_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+      approx_model.Z.slice(t) = model.Z_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.T.slice(t) = model.T_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.D.col(t) = model.Z_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
         approx_model.Z.slice(t) * mode_storage.slice(i).col(t);
-      approx_model.C.col(t) =  model.T_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+      approx_model.C.col(t) =  model.T_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
         approx_model.T.slice(t) * mode_storage.slice(i).col(t);
     }
     for (unsigned int t = 0; t < H.n_slices; t++) {
-      approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+      approx_model.H.slice(t) = model.H_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
     }
     for (unsigned int t = 0; t < R.n_slices; t++) {
-      approx_model.R.slice(t) = model.R_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+      approx_model.R.slice(t) = model.R_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
     }
     approx_model.compute_HH();
     approx_model.compute_RR();

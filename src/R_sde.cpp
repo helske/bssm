@@ -13,6 +13,7 @@ double loglik_sde(const arma::vec& y, const double x0,
   const arma::vec& theta, const unsigned int nsim_states, 
   const unsigned int L, const unsigned int seed) {
   
+  
   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);
   Rcpp::XPtr<funcPtr> xpfun_ddiffusion(ddiffusion_pntr);

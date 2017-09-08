@@ -37,7 +37,6 @@ public:
   
   template <class T>
   void approx_state_posterior(T model, const unsigned int n_threads);
-  template <class T>
  
   arma::vec weight_storage;
   arma::mat y_storage;

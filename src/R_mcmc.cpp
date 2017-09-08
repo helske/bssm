@@ -387,9 +387,9 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
 }
 
 // [[Rcpp::export]]
-Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
-  SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_,
-  const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params,
+Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z, SEXP H,
+  SEXP T, SEXP R, SEXP Zg, SEXP Tg, SEXP a1, SEXP P1,
+  const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params, const arma::uvec& time_varying,
   const unsigned int n_states, const unsigned int n_etas,
   const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter,
@@ -399,8 +399,19 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const unsigned int max_iter, const double conv_tol,
   const unsigned int simulation_method, const unsigned int iekf_iter) {
   
-  nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_,
-    theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
+  
+  Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_H(H);
+  Rcpp::XPtr<nvec_fnPtr> xpfun_T(T);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_R(R);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_Zg(Zg);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_Tg(Tg);
+  Rcpp::XPtr<a1_fnPtr> xpfun_a1(a1);
+  Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
+  Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
+  
+  nlg_ssm model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg, 
+    *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     time_varying, seed);
   
   mcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n,
@@ -424,9 +435,9 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
     Rcpp::Named("posterior") = mcmc_run.posterior_storage);
 }
 // [[Rcpp::export]]
-Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
-  SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_,
-  const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params,
+Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z, SEXP H,
+  SEXP T, SEXP R, SEXP Zg, SEXP Tg, SEXP a1, SEXP P1,
+  const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params, const arma::uvec& time_varying,
   const unsigned int n_states, const unsigned int n_etas,
   const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter,
@@ -436,8 +447,19 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const unsigned int max_iter, const double conv_tol,
   const unsigned int simulation_method, const unsigned int iekf_iter) {
   
-  nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_,
-    theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
+  
+  Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_H(H);
+  Rcpp::XPtr<nvec_fnPtr> xpfun_T(T);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_R(R);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_Zg(Zg);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_Tg(Tg);
+  Rcpp::XPtr<a1_fnPtr> xpfun_a1(a1);
+  Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
+  Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
+  
+  nlg_ssm model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg, 
+    *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     time_varying, seed);
   
   mcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n,
@@ -462,9 +484,9 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
 }
 
 // [[Rcpp::export]]
-Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
-  SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_,
-  const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params,
+Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z, SEXP H,
+  SEXP T, SEXP R, SEXP Zg, SEXP Tg, SEXP a1, SEXP P1,
+  const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params, const arma::uvec& time_varying,
   const unsigned int n_states, const unsigned int n_etas,
   const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter,
@@ -473,8 +495,19 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const bool end_ram, const unsigned int max_iter, const double conv_tol
   , const unsigned int n_threads, const unsigned int iekf_iter, bool summary) {
   
-  nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_,
-    theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
+  
+  Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_H(H);
+  Rcpp::XPtr<nvec_fnPtr> xpfun_T(T);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_R(R);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_Zg(Zg);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_Tg(Tg);
+  Rcpp::XPtr<a1_fnPtr> xpfun_a1(a1);
+  Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
+  Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
+  
+  nlg_ssm model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg, 
+    *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     time_varying, seed);
   
   nlg_amcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n,
@@ -505,9 +538,9 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
 }
 
 // [[Rcpp::export]]
-Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
-  SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_,
-  const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params,
+Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
+  SEXP T, SEXP R, SEXP Zg, SEXP Tg, SEXP a1, SEXP P1,
+  const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params, const arma::uvec& time_varying,
   const unsigned int n_states, const unsigned int n_etas,
   const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter,
@@ -517,8 +550,19 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const unsigned int simulation_method, const unsigned int max_iter,
   const double conv_tol, const unsigned int iekf_iter) {
   
-  nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_,
-    theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
+  
+  Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_H(H);
+  Rcpp::XPtr<nvec_fnPtr> xpfun_T(T);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_R(R);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_Zg(Zg);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_Tg(Tg);
+  Rcpp::XPtr<a1_fnPtr> xpfun_a1(a1);
+  Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
+  Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
+  
+  nlg_ssm model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg, 
+    *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     time_varying, seed);
   
   nlg_amcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n,
@@ -543,11 +587,11 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
 }
 
 // [[Rcpp::export]]
-Rcpp::List general_gaussian_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
-  SEXP T_fn_, SEXP R_fn_, SEXP a1_fn_, SEXP P1_fn_,
+Rcpp::List general_gaussian_mcmc(const arma::mat& y, SEXP Z, SEXP H,
+  SEXP T, SEXP R, SEXP a1, SEXP P1,
   const arma::vec& theta,
-  SEXP D_fn_, SEXP C_fn_,
-  SEXP log_prior_pdf_, const arma::vec& known_params,
+  SEXP D, SEXP C,
+  SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params,
   const unsigned int n_states, const unsigned int n_etas,
   const unsigned int seed, const unsigned int n_iter,
@@ -555,8 +599,18 @@ Rcpp::List general_gaussian_mcmc(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   const double gamma, const double target_acceptance, const arma::mat S,
   const bool end_ram, const unsigned int n_threads, const bool sim_states) {
   
-  lgg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, a1_fn_, P1_fn_,
-    D_fn_, C_fn_, theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
+  Rcpp::XPtr<lmat_fnPtr> xpfun_Z(Z);
+  Rcpp::XPtr<lmat_fnPtr> xpfun_H(H);
+  Rcpp::XPtr<lmat_fnPtr> xpfun_T(T);
+  Rcpp::XPtr<lmat_fnPtr> xpfun_R(R);
+  Rcpp::XPtr<a1_fnPtr> xpfun_a1(a1);
+  Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
+  Rcpp::XPtr<lvec_fnPtr> xpfun_D(D);
+  Rcpp::XPtr<lvec_fnPtr> xpfun_C(C);
+  Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
+  
+  lgg_ssm model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_a1, *xpfun_P1, 
+    *xpfun_D, *xpfun_C, theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     seed);
   
   mcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin,

@@ -6,6 +6,7 @@
 #include "ung_svm.h"
 #include "ng_loglik.h"
 #include "nlg_ssm.h"
+#include "lgg_ssm.h"
 
 // [[Rcpp::export]]
 double gaussian_loglik(const Rcpp::List& model_, const int model_type) {
@@ -62,17 +63,28 @@ double nongaussian_loglik(const Rcpp::List& model_, const arma::vec mode_estimat
 
 
 // [[Rcpp::export]]
-double nonlinear_loglik(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_, 
-  SEXP T_fn_, SEXP R_fn_, SEXP Z_gn_, SEXP T_gn_, SEXP a1_fn_, SEXP P1_fn_, 
-  const arma::vec& theta, SEXP log_prior_pdf_, const arma::vec& known_params, 
+double nonlinear_loglik(const arma::mat& y, SEXP Z, SEXP H, 
+  SEXP T, SEXP R, SEXP Zg, SEXP Tg, SEXP a1, SEXP P1, 
+  const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params, 
   const arma::mat& known_tv_params, const unsigned int n_states, 
   const unsigned int n_etas,  const arma::uvec& time_varying,
   const unsigned int nsim_states, 
   const unsigned int seed, const unsigned int max_iter, 
   const double conv_tol, const unsigned int iekf_iter, const unsigned int method) {
   
-  nlg_ssm model(y, Z_fn_, H_fn_, T_fn_, R_fn_, Z_gn_, T_gn_, a1_fn_, P1_fn_, 
-    theta, log_prior_pdf_, known_params, known_tv_params, n_states, n_etas,
+  
+  Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_H(H);
+  Rcpp::XPtr<nvec_fnPtr> xpfun_T(T);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_R(R);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_Zg(Zg);
+  Rcpp::XPtr<nmat_fnPtr> xpfun_Tg(Tg);
+  Rcpp::XPtr<a1_fnPtr> xpfun_a1(a1);
+  Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
+  Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
+  
+  nlg_ssm model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg, 
+    *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     time_varying, seed);
   
   
@@ -106,20 +118,36 @@ double nonlinear_loglik(const arma::mat& y, SEXP Z_fn_, SEXP H_fn_,
   case 4: {
     loglik = model.aux_filter(nsim_states, alpha, weights, indices);
   } break;
-  case 5: {
-    arma::mat mode_estimate(m, n);
-    mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, 
-      iekf_iter);
-    if(!arma::is_finite(mode_estimate)) {
-      Rcpp::stop("Approximation did not converge. ");
-    }
-    double approx_loglik = approx_model.log_likelihood();
-    loglik = model.df_psi_filter(approx_model, approx_loglik,
-      nsim_states, alpha, weights, indices);
-  } break;
   default: loglik = -std::numeric_limits<double>::infinity();
   }
   
   return loglik;
 }
 
+// [[Rcpp::export]]
+double general_gaussian_loglik(const arma::mat& y, SEXP Z, SEXP H, 
+  SEXP T, SEXP R, SEXP a1, SEXP P1, 
+  const arma::vec& theta, 
+  SEXP D, SEXP C,
+  SEXP log_prior_pdf, const arma::vec& known_params, 
+  const arma::mat& known_tv_params,
+  const unsigned int n_states, const unsigned int n_etas) {
+  
+  Rcpp::XPtr<lmat_fnPtr> xpfun_Z(Z);
+  Rcpp::XPtr<lmat_fnPtr> xpfun_H(H);
+  Rcpp::XPtr<lmat_fnPtr> xpfun_T(T);
+  Rcpp::XPtr<lmat_fnPtr> xpfun_R(R);
+  Rcpp::XPtr<a1_fnPtr> xpfun_a1(a1);
+  Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
+  Rcpp::XPtr<lvec_fnPtr> xpfun_D(D);
+  Rcpp::XPtr<lvec_fnPtr> xpfun_C(C);
+  Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
+  
+  lgg_ssm model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_a1, *xpfun_P1, 
+    *xpfun_D, *xpfun_C, theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
+    1);
+  mgg_ssm mgg_model = model.build_mgg();
+  
+  return mgg_model.log_likelihood();
+  
+}

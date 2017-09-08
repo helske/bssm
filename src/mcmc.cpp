@@ -254,7 +254,7 @@ void mcmc::mcmc_gaussian<lgg_ssm>(lgg_ssm model, const bool end_ram) {
   
   mgg_ssm mgg_model = model.build_mgg();
   arma::vec theta = model.theta;
-  double logprior = model.log_prior_pdf.eval(model.theta);
+  double logprior = model.log_prior_pdf(model.theta);
   double loglik = mgg_model.log_likelihood();
   
   std::normal_distribution<> normal(0.0, 1.0);
@@ -278,7 +278,7 @@ void mcmc::mcmc_gaussian<lgg_ssm>(lgg_ssm model, const bool end_ram) {
     arma::vec theta_prop = theta + S * u;
     // compute prior
     model.theta = theta_prop;
-    double logprior_prop = model.log_prior_pdf.eval(model.theta);
+    double logprior_prop = model.log_prior_pdf(model.theta);
     model.update_mgg(mgg_model);
     if (arma::is_finite(logprior_prop)) {
  
@@ -1183,7 +1183,7 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   unsigned int m = model.m;
   unsigned n = model.n;
   // compute the log[p(theta)]
-  double logprior = model.log_prior_pdf.eval(model.theta);
+  double logprior = model.log_prior_pdf(model.theta);
   // construct the approximate Gaussian model
   arma::mat mode_estimate(m, n);
   mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
@@ -1227,7 +1227,7 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
     arma::vec theta_prop = theta + S * u;
     // compute prior
 
-    double logprior_prop = model.log_prior_pdf.eval(theta_prop);
+    double logprior_prop = model.log_prior_pdf(theta_prop);
 
     if (arma::is_finite(logprior_prop)) {
       // update parameters
@@ -1303,7 +1303,7 @@ void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram,
   unsigned int m = model.m;
   unsigned n = model.n;
   // compute the log[p(theta)]
-  double logprior = model.log_prior_pdf.eval(model.theta);
+  double logprior = model.log_prior_pdf(model.theta);
 
 
   arma::cube alpha(m, n, nsim_states);
@@ -1339,7 +1339,7 @@ void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram,
     arma::vec theta_prop = theta + S * u;
     // compute prior
 
-    double logprior_prop = model.log_prior_pdf.eval(theta_prop);
+    double logprior_prop = model.log_prior_pdf(theta_prop);
 
     if (arma::is_finite(logprior_prop)) {
       // update parameters
@@ -1403,7 +1403,7 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   unsigned int m = model.m;
   unsigned n = model.n;
   // compute the log[p(theta)]
-  double logprior = model.log_prior_pdf.eval(model.theta);
+  double logprior = model.log_prior_pdf(model.theta);
 
   // construct the approximate Gaussian model
   arma::mat mode_estimate(m, n);
@@ -1447,7 +1447,7 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
     // propose new theta
     arma::vec theta_prop = theta + S * u;
     // compute prior
-    double logprior_prop = model.log_prior_pdf.eval(theta_prop);
+    double logprior_prop = model.log_prior_pdf(theta_prop);
 
     if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
@@ -1528,7 +1528,7 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
   unsigned int m = model.m;
   unsigned n = model.n;
   // compute the log[p(theta)]
-  double logprior = model.log_prior_pdf.eval(model.theta);
+  double logprior = model.log_prior_pdf(model.theta);
 
   // construct the approximate Gaussian model
   arma::mat mode_estimate(m, n);
@@ -1572,7 +1572,7 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
     // propose new theta
     arma::vec theta_prop = theta + S * u;
     // compute prior
-    double logprior_prop = model.log_prior_pdf.eval(theta_prop);
+    double logprior_prop = model.log_prior_pdf(theta_prop);
 
     if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters

@@ -5,7 +5,7 @@
 \title{Predictions for State Space Models}
 \usage{
 \method{predict}{mcmc_output}(object, future_model, type = "response",
-  intervals = TRUE, probs = c(0.05, 0.95), nsim, return_MCSE = TRUE,
+  intervals = TRUE, probs = c(0.05, 0.95), nsim, return_MCSE = FALSE,
   seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
