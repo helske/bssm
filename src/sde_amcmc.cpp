@@ -168,221 +168,60 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
   // no coupling at the moment!
   if(coupled) Rcpp::stop("Coupling not supported yet!.");
   
-  if(n_threads > 1) {
-    
 #ifdef _OPENMP
-#pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
-{
+#pragma omp parallel num_threads(n_threads) default(none) firstprivate(model) 
+  {
   
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
   model.coarse_engine = sitmo::prng_engine(omp_get_thread_num() + n_threads + 1);
   
-  if (is_type != 1) {
-    #pragma omp for schedule(dynamic)
-    for (unsigned int i = 0; i < n_stored; i++) {
-      model.theta = theta_storage.col(i);
-      
-      arma::cube alpha_i(1, model.n, nsim_states);
-      arma::mat weights_i(nsim_states, model.n);
-      arma::umat indices(nsim_states, model.n - 1);
-      double loglik = model.bsf_filter(nsim_states, L_f, alpha_i, weights_i, indices);
-      if(arma::is_finite(loglik)) {
-        weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
-        
-        filter_smoother(alpha_i, indices);
-        arma::vec w = weights_i.col(model.n - 1);
-        std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-        alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
-      } else {
-        weight_storage(i) = 0.0;
-        alpha_storage.slice(i).zeros();
-      }
+#pragma omp for schedule(dynamic)
+  for (unsigned int i = 0; i < n_stored; i++) {
+    model.theta = theta_storage.col(i);
+    unsigned int nsim = nsim_states;
+    if (is_type == 1) {
+      nsim *= count_storage(i);
     }
-  } else {
-    #pragma omp for schedule(dynamic)
-    for (unsigned int i = 0; i < n_stored; i++) {
+    arma::cube alpha_i(1, model.n, nsim);
+    arma::mat weights_i(nsim, model.n);
+    arma::umat indices(nsim, model.n - 1);
+    double loglik = model.bsf_filter(nsim, L_f, alpha_i, weights_i, indices);
+    if(arma::is_finite(loglik)) {
+      weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
       
-      model.theta = theta_storage.col(i);
-      
-      unsigned int m = nsim_states * count_storage(i);
-      arma::cube alpha_i(1, model.n, m);
-      arma::mat weights_i(m, model.n);
-      arma::umat indices(m, model.n - 1);
-      double loglik = model.bsf_filter(m, L_f, alpha_i, weights_i, indices);
-      if(arma::is_finite(loglik)) {
-        weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
-        
-        filter_smoother(alpha_i, indices);
-        arma::vec w = weights_i.col(model.n - 1);
-        std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-        alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
-      } else {
-        weight_storage(i) = 0.0;
-        alpha_storage.slice(i).zeros();
-      }
+      filter_smoother(alpha_i, indices);
+      arma::vec w = weights_i.col(model.n - 1);
+      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+      alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
+    } else {
+      weight_storage(i) = 0.0;
+      alpha_storage.slice(i).zeros();
     }
   }
 }
 #else
-if (is_type != 1) {
-  if(coupled) {
-    state_sampler_cbsf_is2(model, nsim_states, L_c, L_f, 
-      approx_loglik_storage, theta_storage, alpha_storage, weight_storage, iter_storage);
-  } else {
-    state_sampler_bsf_is2(model, nsim_states, L_f, approx_loglik_storage, 
-      theta_storage, alpha_storage, weight_storage);
+for (unsigned int i = 0; i < n_stored; i++) {
+  model.theta = theta_storage.col(i);
+  unsigned int nsim = nsim_states;
+  if (is_type == 1) {
+    nsim *= count_storage(i);
   }
-} else {
-  if(coupled) {
-    state_sampler_cbsf_is1(model, nsim_states, L_c, L_f, approx_loglik_storage, 
-      theta_storage, alpha_storage, weight_storage, count_storage, iter_storage);
+  arma::cube alpha_i(1, model.n, nsim);
+  arma::mat weights_i(nsim, model.n);
+  arma::umat indices(nsim, model.n - 1);
+  double loglik = model.bsf_filter(nsim, L_f, alpha_i, weights_i, indices);
+  if(arma::is_finite(loglik)) {
+    weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
+    
+    filter_smoother(alpha_i, indices);
+    arma::vec w = weights_i.col(model.n - 1);
+    std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+    alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
   } else {
-    state_sampler_bsf_is1(model, nsim_states, L_f, approx_loglik_storage, 
-      theta_storage, alpha_storage, weight_storage, count_storage);
+    weight_storage(i) = 0.0;
+    alpha_storage.slice(i).zeros();
   }
 }
-
 #endif
-  } else {
-    if (is_type != 1) {
-      if(coupled) {
-        state_sampler_cbsf_is2(model, nsim_states, L_c, L_f, 
-          approx_loglik_storage, theta_storage, alpha_storage, weight_storage, iter_storage);
-      } else {
-        state_sampler_bsf_is2(model, nsim_states, L_f, approx_loglik_storage, 
-          theta_storage, alpha_storage, weight_storage);
-      }
-    } else {
-      if(coupled) {
-        state_sampler_cbsf_is1(model, nsim_states, L_c, L_f, approx_loglik_storage, 
-          theta_storage, alpha_storage, weight_storage, count_storage, iter_storage);
-      } else {
-        state_sampler_bsf_is1(model, nsim_states, L_f, approx_loglik_storage, 
-          theta_storage, alpha_storage, weight_storage, count_storage);
-      }
-    }
-  }
-  posterior_storage = prior_storage + approx_loglik_storage + arma::log(weight_storage);
-}
-
-void sde_amcmc::state_sampler_bsf_is2(sde_ssm& model, 
-  const unsigned int nsim_states, const unsigned int L_f,
-  const arma::vec& approx_loglik_storage, const arma::mat& theta,
-  arma::cube& alpha, arma::vec& weights) {
-  
-  for (unsigned int i = 0; i < theta.n_cols; i++) {
-    
-    model.theta = theta.col(i);
-    
-    arma::cube alpha_i(1, model.n, nsim_states);
-    arma::mat weights_i(nsim_states, model.n);
-    arma::umat indices(nsim_states, model.n - 1);
-    double loglik = model.bsf_filter(nsim_states, L_f, alpha_i, weights_i, indices);
-    if(arma::is_finite(loglik)) {
-      weights(i) = std::exp(loglik - approx_loglik_storage(i));
-      
-      filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n - 1);
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-      alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
-    } else {
-      weights(i) = 0.0;
-      alpha.slice(i).zeros();
-    }
-  }
-}
-
-
-void sde_amcmc::state_sampler_bsf_is1(sde_ssm& model, 
-  const unsigned int nsim_states, const unsigned int L_f,
-  const arma::vec& approx_loglik_storage, const arma::mat& theta,
-  arma::cube& alpha, arma::vec& weights, const arma::uvec& counts) {
-  
-  for (unsigned int i = 0; i < theta.n_cols; i++) {
-    
-    model.theta = theta.col(i);
-    
-    unsigned int m = nsim_states * counts(i);
-    arma::cube alpha_i(1, model.n, m);
-    arma::mat weights_i(m, model.n);
-    arma::umat indices(m, model.n - 1);
-    double loglik = model.bsf_filter(m, L_f, alpha_i, weights_i, indices);
-    if(arma::is_finite(loglik)) {
-      weights(i) = std::exp(loglik - approx_loglik_storage(i));
-      filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n - 1);
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-      alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
-    } else {
-      weights(i) = 0.0;
-      alpha.slice(i).zeros();
-    }
-  }
-}
-
-void sde_amcmc::state_sampler_cbsf_is2(sde_ssm& model, 
-  const unsigned int nsim_states, const unsigned int L_c, const unsigned int L_f,
-  const arma::vec& approx_loglik_storage, const arma::mat& theta,
-  arma::cube& alpha, arma::vec& weights, const arma::uvec& iter) {
-  
-  
-  arma::uvec iter_diff(theta.n_cols);
-  iter_diff(0) = iter(0) - 1;
-  iter_diff.subvec(1, iter_diff.n_elem - 1) = arma::diff(iter) - 1;
-  int d = model.n * nsim_states * std::pow(2, L_c);
-  for (unsigned int i = 0; i < theta.n_cols; i++) {
-    model.theta = theta.col(i);
-    arma::cube alpha_i(1, model.n, nsim_states);
-    
-    arma::mat weights_i(nsim_states, model.n);
-    arma::umat indices(nsim_states, model.n - 1);
-    model.coarse_engine.discard(iter_diff(i) * d);
-    double loglik = model.coupled_bsf_filter(nsim_states, L_c, L_f, alpha_i, weights_i, indices);
-    
-    if(arma::is_finite(loglik)) {
-      weights(i) = std::exp(loglik - approx_loglik_storage(i));
-      filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n - 1);
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-      alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
-    } else {
-      weights(i) = 0.0;
-      alpha.slice(i).zeros();
-    }
-  }
-}
-
-
-void sde_amcmc::state_sampler_cbsf_is1(sde_ssm& model, 
-  const unsigned int nsim_states, const unsigned int L_c, const unsigned int L_f,
-  const arma::vec& approx_loglik_storage, const arma::mat& theta,
-  arma::cube& alpha, arma::vec& weights, const arma::uvec& counts, const arma::uvec& iter) {
-  
-  arma::uvec iter_diff(theta.n_cols);
-  iter_diff(0) = iter(0) - 1;
-  iter_diff.subvec(1, iter_diff.n_elem - 1) = arma::diff(iter) - 1;
-  
-  int d = model.n * std::pow(2, L_c);
-  
-  for (unsigned int i = 0; i < theta.n_cols; i++) {
-    
-    model.theta = theta.col(i);
-    
-    unsigned int m = nsim_states * counts(i);
-    arma::cube alpha_i(1, model.n, m);
-    arma::mat weights_i(m, model.n);
-    arma::umat indices(m, model.n - 1);
-    model.coarse_engine.discard(iter_diff(i) * d * m);
-    double loglik = model.coupled_bsf_filter(nsim_states, L_c, L_f, alpha_i, weights_i, indices);
-    if(arma::is_finite(loglik)) {
-      weights(i) = std::exp(loglik - approx_loglik_storage(i));
-      filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n - 1);
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-      alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
-    } else {
-      weights(i) = 0.0;
-      alpha.slice(i).zeros();
-    }
-  }
+posterior_storage = prior_storage + approx_loglik_storage + arma::log(weight_storage);
 }
