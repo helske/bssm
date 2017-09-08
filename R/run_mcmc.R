@@ -292,7 +292,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
 #' @rdname run_mcmc_ng
 #' @export
 run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
-  method = "pm", simulation_method = "psi",
+  method = "da", simulation_method = "psi",
   n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   local_approx  = TRUE, n_threads = 1,
@@ -392,7 +392,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
 #' @export
 #'
 run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
-  method = "pm", simulation_method = "psi",
+  method = "da", simulation_method = "psi",
   n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   local_approx  = TRUE, n_threads = 1,
@@ -471,7 +471,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
 #' @rdname run_mcmc_ng
 #' @export
 run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
-  method = "pm", simulation_method = "psi",
+  method = "da", simulation_method = "psi",
   n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   n_threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100,

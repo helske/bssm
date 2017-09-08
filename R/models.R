@@ -1021,198 +1021,6 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     state_intercept = state_intercept), class = "ngssm")
 }
 
-#'
-#' General multivariate linear-Gaussian state space models
-#' 
-#' Construct an object of class \code{gssm} by defining the corresponding terms
-#' of the observation and state equation:
-#'
-#' \deqn{y_t = D_t + Z_t \alpha_t + H_t \epsilon_t, (\textrm{observation equation})}
-#' \deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
-#'
-#' where \eqn{\epsilon_t \sim N(0, I_p)}, \eqn{\eta_t \sim N(0, I_k)} and
-#' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
-#'
-#' @param y Observations as multivariate time series (or matrix) of length \eqn{n}.
-#' @param Z System matrix Z of the observation equation. Either a p x m matrix or 
-#' a p x m x n array, or an object which can be coerced to such.
-#' @param H Covarianc matrix for observational level noise.
-#' @param T System matrix T of the state equation. Either a m x m matrix or a
-#' m x m x n array, or object which can be coerced to such.
-#' @param R Lower triangular matrix R the state equation. Either a m x k matrix or a
-#' m x k x n array, or object which can be coerced to such.
-#' @param a1 Prior mean for the initial state as a vector of length m.
-#' @param P1 Prior covariance matrix for the initial state as m x m matrix.
-#' @param xreg An array containing p covariate matrices with dimensions n x h.
-#' @param beta matrix of regression coefficients with n columns. Used as an initial
-#' value in MCMC. Defaults to matrix of zeros.
-#' @param state_names Names for the states.
-#' @param H_prior,Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
-#' @param obs_intercept,state_intercept Intercept terms for observation and 
-#' state equations, given as a p times n and m times n matrices.
-#' @return Object of class \code{mv_gssm}.
-mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
-  H_prior, Z_prior, T_prior, R_prior, obs_intercept, state_intercept) {
-  
-  #check_y(y)
-  n <- nrow(y)
-  p <- ncol(y)
-  
-  if (is.null(xreg)) {
-    xreg <- array(0, c(0, 0, 0))
-    coefs <- matrix(0, 1, p)
-    beta <- NULL
-  } else {
-    if (missing(beta) || is.null(beta)) {
-      stop("No prior defined for beta. ")
-    }
-    if(!is_prior(beta) && !is_prior_list(beta)) {
-      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
-    }
-    
-    if (is.null(dim(xreg)) && length(xreg) == n) {
-      xreg <- matrix(xreg, n, 1)
-    }
-    
-    check_xreg(xreg, n)
-    if((nx <- ncol(xreg)) > 1) {
-      coefs <- sapply(beta, "[[", "init")
-    } else {
-      coefs <- beta$init
-    }
-    check_beta(coefs, nx)
-    if (is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
-    }
-    names(coefs) <- colnames(xreg)
-    
-  }
-  if (dim(Z)[1] != p || !(dim(Z)[3] %in% c(1, NA, n)))
-    stop("Argument Z must be a (p x m) matrix or (p x m x n) array
-        where p is the number of series, m is the number of states, and n is the length of the series. ")
-  m <- dim(Z)[2]
-  dim(Z) <- c(p, m, (n - 1) * (max(dim(Z)[3], 0, na.rm = TRUE) > 1) + 1)
-  
-  if (length(T) == 1 && m == 1) {
-    dim(T) <- c(1, 1, 1)
-  } else {
-    if ((length(T) == 1) || any(dim(T)[1:2] != m) || !(dim(T)[3] %in% c(1, NA, n)))
-      stop("Argument T must be a (m x m) matrix, (m x m x 1) or (m x m x n) array, where m is the number of states. ")
-    dim(T) <- c(m, m, (n - 1) * (max(dim(T)[3], 0, na.rm = TRUE) > 1) + 1)
-  }
-  
-  if (length(R) == m) {
-    dim(R) <- c(m, 1, 1)
-    k <- 1
-  } else {
-    if (!(dim(R)[1] == m) || dim(R)[2] > m || !dim(R)[3] %in% c(1, NA, n))
-      stop("Argument R must be a (m x k) matrix, (m x k x 1) or (m x k x n) array, where k<=m is the number of disturbances eta, and m is the number of states. ")
-    k <- dim(R)[2]
-    dim(R) <- c(m, k, (n - 1) * (max(dim(R)[3], 0, na.rm = TRUE) > 1) + 1)
-  }
-  
-  if (missing(a1)) {
-    a1 <- rep(0, m)
-  } else {
-    if (length(a1) <= m) {
-      a1 <- rep(a1, length.out = m)
-    } else stop("Misspecified a1, argument a1 must be a vector of length m, where m is the number of state_names and 1<=t<=m.")
-  }
-  if (missing(P1)) {
-    P1 <- matrix(0, m, m)
-  } else {
-    if (length(P1) == 1 && m == 1) {
-      dim(P1) <- c(1, 1)
-    } else {
-      if (any(dim(P1)[1:2] != m))
-        stop("Argument P1 must be (m x m) matrix, where m is the number of states. ")
-    }
-  }
-  if (any(dim(H)[1:2] != p) || !(dim(H)[3] %in% c(1, n, NA)))
-    stop("Argument H must be a p x p matrix or a p x p x n array.")
-  dim(H) <- c(p, p, (n - 1) * (max(dim(H)[3], 0, na.rm = TRUE) > 1) + 1)
-  
-  if (missing(state_names)) {
-    state_names <- paste("State", 1:m)
-  }
-  colnames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
-    rownames(P1) <- colnames(P1) <- state_names
-  
-  H_ind <- which(is.na(H)) - 1L
-  H_n <- length(H_ind)
-  Z_ind <- which(is.na(Z)) - 1L
-  Z_n <- length(Z_ind)
-  T_ind <- which(is.na(T)) - 1L
-  T_n <- length(T_ind)
-  R_ind <- which(is.na(R)) - 1L
-  R_n <- length(R_ind)
-  
-  if (H_n > 0) {
-    check_prior(H_prior, "H_prior")
-    if (H_n == 1) {
-      H[is.na(H)] <- H_prior$init
-    } else {
-      H[is.na(H)] <-  sapply(H_prior, "[[", "init")
-    }
-  } else H_prior <- NULL
-  
-  if (Z_n > 0) {
-    check_prior(Z_prior, "Z_prior")
-    if (Z_n == 1) {
-      Z[is.na(Z)] <- Z_prior$init
-    } else {
-      Z[is.na(Z)] <-  sapply(Z_prior, "[[", "init")
-    }
-  } else Z_prior <- NULL
-  
-  if (T_n > 0) {
-    check_prior(T_prior, "T_prior")
-    if (T_n == 1) {
-      T[is.na(T)] <- T_prior$init
-    } else {
-      T[is.na(T)] <-  sapply(T_prior, "[[", "init")
-    }
-  } else T_prior <- NULL
-  
-  if (R_n > 0) {
-    check_prior(R_prior, "R_prior")
-    if (R_n == 1) {
-      R[is.na(R)] <- R_prior$init
-    } else {
-      R[is.na(R)] <-  sapply(R_prior, "[[", "init")
-    }
-  } else R_prior <- NULL
-  
-  priors <- c(if(H_n > 1) Z_prior else list(H_prior), 
-    if(Z_n > 1) Z_prior else list(Z_prior), 
-    if(T_n > 1) T_prior else list(T_prior), 
-    if(R_n > 1) R_prior else list(R_prior), 
-    if(ncol(xreg) > 1) beta else list(beta))
-  
-  names(priors) <- c(if(H_n > 0) paste0("H_",1:H_n),  
-    if(Z_n > 0) paste0("Z_",1:Z_n),  
-    if(T_n > 0) paste0("T_",1:T_n), 
-    if(R_n > 0) paste0("R_",1:R_n), names(coefs))
-  priors <- priors[sapply(priors, is_prior)]
-  
-  if (!missing(obs_intercept)) {
-    check_obs_intercept(obs_intercept, p, n)
-  } else {
-    obs_intercept <- matrix(0, p, 1)
-  }
-  if (!missing(state_intercept)) {
-    check_state_intercept(state_intercept, m, n)
-  } else {
-    state_intercept <- matrix(0, m, 1)
-  }
-  
-  structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
-    xreg = xreg, coefs = coefs, priors = priors, Z_ind = Z_ind, 
-    H_ind = H_ind, T_ind = T_ind, R_ind = R_ind, obs_intercept = obs_intercept,
-    state_intercept = state_intercept), class = "mv_gssm")
-}
-
-#'
 #' General multivariate linear Gaussian state space models
 #' 
 #' Constructs an object of class \code{llg_ssm} by defining the corresponding terms
@@ -1358,4 +1166,196 @@ sde_ssm <- function(y, drift, diffusion, ddiffusion, obs_pdf,
     ddiffusion = ddiffusion, obs_pdf = obs_pdf, 
     prior_pdf = prior_pdf, theta = theta, x0 = x0, 
     positive = positive, state_names = "x"), class = "sde_ssm")
+}
+
+
+#'
+#' General multivariate linear-Gaussian state space models
+#' 
+#' Construct an object of class \code{gssm} by defining the corresponding terms
+#' of the observation and state equation:
+#'
+#' \deqn{y_t = D_t + Z_t \alpha_t + H_t \epsilon_t, (\textrm{observation equation})}
+#' \deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
+#'
+#' where \eqn{\epsilon_t \sim N(0, I_p)}, \eqn{\eta_t \sim N(0, I_k)} and
+#' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
+#'
+#' @param y Observations as multivariate time series (or matrix) of length \eqn{n}.
+#' @param Z System matrix Z of the observation equation. Either a p x m matrix or 
+#' a p x m x n array, or an object which can be coerced to such.
+#' @param H Covarianc matrix for observational level noise.
+#' @param T System matrix T of the state equation. Either a m x m matrix or a
+#' m x m x n array, or object which can be coerced to such.
+#' @param R Lower triangular matrix R the state equation. Either a m x k matrix or a
+#' m x k x n array, or object which can be coerced to such.
+#' @param a1 Prior mean for the initial state as a vector of length m.
+#' @param P1 Prior covariance matrix for the initial state as m x m matrix.
+#' @param xreg An array containing p covariate matrices with dimensions n x h.
+#' @param beta matrix of regression coefficients with n columns. Used as an initial
+#' value in MCMC. Defaults to matrix of zeros.
+#' @param state_names Names for the states.
+#' @param H_prior,Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
+#' @param obs_intercept,state_intercept Intercept terms for observation and 
+#' state equations, given as a p times n and m times n matrices.
+#' @return Object of class \code{mv_gssm}.
+mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
+  H_prior, Z_prior, T_prior, R_prior, obs_intercept, state_intercept) {
+  
+  #check_y(y)
+  n <- nrow(y)
+  p <- ncol(y)
+  
+  if (is.null(xreg)) {
+    xreg <- array(0, c(0, 0, 0))
+    coefs <- matrix(0, 1, p)
+    beta <- NULL
+  } else {
+    if (missing(beta) || is.null(beta)) {
+      stop("No prior defined for beta. ")
+    }
+    if(!is_prior(beta) && !is_prior_list(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
+    }
+    
+    if (is.null(dim(xreg)) && length(xreg) == n) {
+      xreg <- matrix(xreg, n, 1)
+    }
+    
+    check_xreg(xreg, n)
+    if((nx <- ncol(xreg)) > 1) {
+      coefs <- sapply(beta, "[[", "init")
+    } else {
+      coefs <- beta$init
+    }
+    check_beta(coefs, nx)
+    if (is.null(colnames(xreg))) {
+      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    }
+    names(coefs) <- colnames(xreg)
+    
+  }
+  if (dim(Z)[1] != p || !(dim(Z)[3] %in% c(1, NA, n)))
+    stop("Argument Z must be a (p x m) matrix or (p x m x n) array
+      where p is the number of series, m is the number of states, and n is the length of the series. ")
+  m <- dim(Z)[2]
+  dim(Z) <- c(p, m, (n - 1) * (max(dim(Z)[3], 0, na.rm = TRUE) > 1) + 1)
+  
+  if (length(T) == 1 && m == 1) {
+    dim(T) <- c(1, 1, 1)
+  } else {
+    if ((length(T) == 1) || any(dim(T)[1:2] != m) || !(dim(T)[3] %in% c(1, NA, n)))
+      stop("Argument T must be a (m x m) matrix, (m x m x 1) or (m x m x n) array, where m is the number of states. ")
+    dim(T) <- c(m, m, (n - 1) * (max(dim(T)[3], 0, na.rm = TRUE) > 1) + 1)
+  }
+  
+  if (length(R) == m) {
+    dim(R) <- c(m, 1, 1)
+    k <- 1
+  } else {
+    if (!(dim(R)[1] == m) || dim(R)[2] > m || !dim(R)[3] %in% c(1, NA, n))
+      stop("Argument R must be a (m x k) matrix, (m x k x 1) or (m x k x n) array, where k<=m is the number of disturbances eta, and m is the number of states. ")
+    k <- dim(R)[2]
+    dim(R) <- c(m, k, (n - 1) * (max(dim(R)[3], 0, na.rm = TRUE) > 1) + 1)
+  }
+  
+  if (missing(a1)) {
+    a1 <- rep(0, m)
+  } else {
+    if (length(a1) <= m) {
+      a1 <- rep(a1, length.out = m)
+    } else stop("Misspecified a1, argument a1 must be a vector of length m, where m is the number of state_names and 1<=t<=m.")
+  }
+  if (missing(P1)) {
+    P1 <- matrix(0, m, m)
+  } else {
+    if (length(P1) == 1 && m == 1) {
+      dim(P1) <- c(1, 1)
+    } else {
+      if (any(dim(P1)[1:2] != m))
+        stop("Argument P1 must be (m x m) matrix, where m is the number of states. ")
+    }
+  }
+  if (any(dim(H)[1:2] != p) || !(dim(H)[3] %in% c(1, n, NA)))
+    stop("Argument H must be a p x p matrix or a p x p x n array.")
+  dim(H) <- c(p, p, (n - 1) * (max(dim(H)[3], 0, na.rm = TRUE) > 1) + 1)
+  
+  if (missing(state_names)) {
+    state_names <- paste("State", 1:m)
+  }
+  colnames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
+    rownames(P1) <- colnames(P1) <- state_names
+  
+  H_ind <- which(is.na(H)) - 1L
+  H_n <- length(H_ind)
+  Z_ind <- which(is.na(Z)) - 1L
+  Z_n <- length(Z_ind)
+  T_ind <- which(is.na(T)) - 1L
+  T_n <- length(T_ind)
+  R_ind <- which(is.na(R)) - 1L
+  R_n <- length(R_ind)
+  
+  if (H_n > 0) {
+    check_prior(H_prior, "H_prior")
+    if (H_n == 1) {
+      H[is.na(H)] <- H_prior$init
+    } else {
+      H[is.na(H)] <-  sapply(H_prior, "[[", "init")
+    }
+  } else H_prior <- NULL
+  
+  if (Z_n > 0) {
+    check_prior(Z_prior, "Z_prior")
+    if (Z_n == 1) {
+      Z[is.na(Z)] <- Z_prior$init
+    } else {
+      Z[is.na(Z)] <-  sapply(Z_prior, "[[", "init")
+    }
+  } else Z_prior <- NULL
+  
+  if (T_n > 0) {
+    check_prior(T_prior, "T_prior")
+    if (T_n == 1) {
+      T[is.na(T)] <- T_prior$init
+    } else {
+      T[is.na(T)] <-  sapply(T_prior, "[[", "init")
+    }
+  } else T_prior <- NULL
+  
+  if (R_n > 0) {
+    check_prior(R_prior, "R_prior")
+    if (R_n == 1) {
+      R[is.na(R)] <- R_prior$init
+    } else {
+      R[is.na(R)] <-  sapply(R_prior, "[[", "init")
+    }
+  } else R_prior <- NULL
+  
+  priors <- c(if(H_n > 1) Z_prior else list(H_prior), 
+    if(Z_n > 1) Z_prior else list(Z_prior), 
+    if(T_n > 1) T_prior else list(T_prior), 
+    if(R_n > 1) R_prior else list(R_prior), 
+    if(ncol(xreg) > 1) beta else list(beta))
+  
+  names(priors) <- c(if(H_n > 0) paste0("H_",1:H_n),  
+    if(Z_n > 0) paste0("Z_",1:Z_n),  
+    if(T_n > 0) paste0("T_",1:T_n), 
+    if(R_n > 0) paste0("R_",1:R_n), names(coefs))
+  priors <- priors[sapply(priors, is_prior)]
+  
+  if (!missing(obs_intercept)) {
+    check_obs_intercept(obs_intercept, p, n)
+  } else {
+    obs_intercept <- matrix(0, p, 1)
+  }
+  if (!missing(state_intercept)) {
+    check_state_intercept(state_intercept, m, n)
+  } else {
+    state_intercept <- matrix(0, m, 1)
+  }
+  
+  structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
+    xreg = xreg, coefs = coefs, priors = priors, Z_ind = Z_ind, 
+    H_ind = H_ind, T_ind = T_ind, R_ind = R_ind, obs_intercept = obs_intercept,
+    state_intercept = state_intercept), class = "mv_gssm")
 }

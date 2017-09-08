@@ -151,7 +151,7 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
     // compute prior
     double logprior_prop = log_prior_pdf(theta_prop);
     
-    if (logprior_prop > -std::numeric_limits<double>::infinity() && std::isnan(logprior_prop)) {
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
       model.set_theta(theta_prop);
       
