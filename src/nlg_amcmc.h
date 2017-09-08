@@ -22,27 +22,11 @@ public:
   void is_correction_bsf(nlg_ssm model, const unsigned int nsim_states, 
     const unsigned int is_type, const unsigned int n_threads);
   
-  void state_sampler_bsf_is2(nlg_ssm& model, const unsigned int nsim_states, 
-    const arma::vec& approx_loglik_storage, const arma::mat& theta,
-    arma::cube& alpha, arma::vec& weights);
-  
-  void state_sampler_bsf_is1(nlg_ssm& model, const unsigned int nsim_states, 
-    const arma::vec& approx_loglik_storage, const arma::mat& theta,
-    arma::cube& alpha, arma::vec& weights, const arma::uvec& counts);
-  
+ 
   void is_correction_psi(nlg_ssm model, const unsigned int nsim_states, 
     const unsigned int is_type, const unsigned int n_threads);
   
-  void state_sampler_psi_is2(nlg_ssm& model, const unsigned int nsim_states, 
-    const arma::mat& theta, const arma::cube& mode,
-    arma::cube& alpha, arma::vec& weights);
-  void state_sampler_psi_is1(nlg_ssm& model, const unsigned int nsim_states, 
-    const arma::mat& theta, const arma::cube& mode,
-    arma::cube& alpha, arma::vec& weights, const arma::uvec& counts);
-  
   void state_ekf_sample(nlg_ssm model, const unsigned int n_threads);
-  void ekf_sampler(nlg_ssm& model, 
-    const arma::mat& theta, const arma::cube& mode, arma::cube& alpha);
   
   void state_ekf_summary(nlg_ssm& model, arma::mat& alphahat, arma::cube& Vt);
     

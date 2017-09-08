@@ -22,24 +22,6 @@ public:
     const unsigned int L_c, const unsigned int L_f, const bool coupled,
     const unsigned int is_type, const unsigned int n_threads);
   
-  void state_sampler_bsf_is2(sde_ssm& model, const unsigned int nsim_states,
-    const unsigned int L_f, const arma::vec& approx_loglik_storage,
-    const arma::mat& theta, arma::cube& alpha, arma::vec& weights);
-  
-  void state_sampler_bsf_is1(sde_ssm& model, const unsigned int nsim_states,
-    const unsigned int L_f, const arma::vec& approx_loglik_storage,
-    const arma::mat& theta, arma::cube& alpha, arma::vec& weights,
-    const arma::uvec& counts);
-  
-  void state_sampler_cbsf_is2(sde_ssm& model, const unsigned int nsim_states,
-    const unsigned int L_c, const unsigned int L_f, const arma::vec& approx_loglik_storage,
-    const arma::mat& theta, arma::cube& alpha, arma::vec& weights, const arma::uvec& iter);
-  
-  void state_sampler_cbsf_is1(sde_ssm& model, const unsigned int nsim_states,
-    const unsigned int L_c, const unsigned int L_f, const arma::vec& approx_loglik_storage,
-    const arma::mat& theta, arma::cube& alpha, arma::vec& weights, const arma::uvec& counts, 
-    const arma::uvec& iter);
-  
   arma::vec weight_storage;
   
   arma::vec approx_loglik_storage;

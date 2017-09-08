@@ -25,49 +25,20 @@ public:
   template <class T>
   void is_correction_psi(T model, const unsigned int nsim_states, 
     const unsigned int is_type, const unsigned int n_threads);
-    
-  template <class T>
-  void state_sampler_psi_is2(T& model, const unsigned int nsim_states, 
-    const arma::mat& theta, arma::cube& alpha, arma::vec& weights, 
-    const arma::mat& y, const arma::mat& H, const arma::mat& scales);
-  template <class T>
-  void state_sampler_psi_is1(T& model, const unsigned int nsim_states, 
-    const arma::mat& theta, arma::cube& alpha, arma::vec& weights, 
-    const arma::mat& y, const arma::mat& H, const arma::mat& scales,
-    const arma::uvec& counts);
-  
   
   template <class T>
   void is_correction_bsf(T model, const unsigned int nsim_states, 
     const unsigned int is_type, const unsigned int n_threads);
-  template <class T>
-  void state_sampler_bsf_is2(T& model, const unsigned int nsim_states, 
-    const arma::vec& approx_loglik_storage, const arma::mat& theta,
-    arma::cube& alpha, arma::vec& weights);
-  template <class T>
-  void state_sampler_bsf_is1(T& model, const unsigned int nsim_states, 
-    const arma::vec& approx_loglik_storage, const arma::mat& theta,
-    arma::cube& alpha, arma::vec& weights, const arma::uvec& counts);
   
   template <class T>
   void is_correction_spdk(T model, const unsigned int nsim_states, 
     const unsigned int is_type, const unsigned int n_threads);
-  
-  template <class T>
-  void state_sampler_spdk_is2(T& model, const unsigned int nsim_states,
-    const arma::mat& theta, arma::cube& alpha, arma::vec& weights, 
-    const arma::mat& y, const arma::mat& H, const arma::vec& scales);
-  template <class T>
-  void state_sampler_spdk_is1(T& model, const unsigned int nsim_states,
-    const arma::mat& theta, arma::cube& alpha, arma::vec& weights, 
-    const arma::mat& y, const arma::mat& H, const arma::vec& scales,
-    const arma::uvec& counts);
+
   
   template <class T>
   void approx_state_posterior(T model, const unsigned int n_threads);
   template <class T>
-  void approx_state_sampler(T& model, 
-    const arma::mat& theta, arma::cube& alpha, const arma::mat& y, const arma::mat& H);
+ 
   arma::vec weight_storage;
   arma::mat y_storage;
   arma::mat H_storage;

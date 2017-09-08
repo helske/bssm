@@ -179,163 +179,78 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
 void nlg_amcmc::is_correction_bsf(nlg_ssm model, const unsigned int nsim_states, 
   const unsigned int is_type, const unsigned int n_threads) {
   
-  if(n_threads > 1) {
 #ifdef _OPENMP
-#pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
+#pragma omp parallel num_threads(n_threads) default(none) firstprivate(model) 
 {
-  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-  unsigned thread_size = std::floor(static_cast <double> (n_stored) / n_threads);
-  unsigned int start = omp_get_thread_num() * thread_size;
-  unsigned int end = (omp_get_thread_num() + 1) * thread_size - 1;
-  if(omp_get_thread_num() == static_cast<int>(n_threads - 1)) {
-    end = n_stored - 1;
-  }
   
-  arma::mat theta_piece = theta_storage(arma::span::all, arma::span(start, end));
-  arma::cube alpha_piece(model.n, model.m, end - start + 1);
-  arma::vec weights_piece(end - start + 1);
-  arma::vec approx_loglik_piece = approx_loglik_storage.subvec(start, end);
-  if (is_type != 1) {
-    state_sampler_bsf_is2(model, nsim_states, approx_loglik_piece, theta_piece,
-      alpha_piece, weights_piece);
-  } else {
-    arma::uvec count_piece = count_storage(arma::span(start, end));
-    state_sampler_bsf_is1(model, nsim_states, approx_loglik_piece, theta_piece, 
-      alpha_piece, weights_piece, count_piece);
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
+  
+#pragma omp for schedule(dynamic)
+  for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
+    
+    model.theta = theta_storage.col(i);
+    
+    unsigned int nsim = nsim_states;
+    if (is_type == 1) {
+      nsim *= count_storage(i);
+    }
+    
+    arma::cube alpha_i(model.m, model.n, nsim);
+    arma::mat weights_i(nsim, model.n);
+    arma::umat indices(nsim, model.n - 1);
+    
+    double loglik = model.bsf_filter(nsim, alpha_i, weights_i, indices);
+    if(arma::is_finite(loglik)) {
+      weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
+      filter_smoother(alpha_i, indices);
+      arma::vec w = weights_i.col(model.n - 1);
+      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+      alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
+    } else {
+      weight_storage(i) = 0.0;
+      alpha_storage.slice(i).zeros();
+    }
   }
-  alpha_storage.slices(start, end) = alpha_piece;
-  weight_storage.subvec(start, end) = weights_piece;
 }
 #else
-    if (is_type != 1) {
-      state_sampler_bsf_is2(model, nsim_states, approx_loglik_storage, theta_storage, 
-        alpha_storage, weight_storage);
-    } else {
-      state_sampler_bsf_is1(model, nsim_states, approx_loglik_storage, theta_storage, 
-        alpha_storage, weight_storage, count_storage);
-    }
-#endif
+for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
+  
+  model.theta = theta_storage.col(i);
+  
+  unsigned int nsim = nsim_states;
+  if (is_type == 1) {
+    nsim *= count_storage(i);
+  }
+  
+  arma::cube alpha_i(model.m, model.n, nsim);
+  arma::mat weights_i(nsim, model.n);
+  arma::umat indices(nsim, model.n - 1);
+  
+  double loglik = model.bsf_filter(nsim, alpha_i, weights_i, indices);
+  if(arma::is_finite(loglik)) {
+    weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
+    filter_smoother(alpha_i, indices);
+    arma::vec w = weights_i.col(model.n - 1);
+    std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+    alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
   } else {
-    if (is_type != 1) {
-      state_sampler_bsf_is2(model, nsim_states, approx_loglik_storage, theta_storage, 
-        alpha_storage, weight_storage);
-    } else {
-      state_sampler_bsf_is1(model, nsim_states, approx_loglik_storage, theta_storage, 
-        alpha_storage, weight_storage, count_storage);
-    }
-  }
-  posterior_storage = prior_storage + arma::log(weight_storage);
-}
-
-void nlg_amcmc::state_sampler_bsf_is2(nlg_ssm& model, const unsigned int nsim_states, 
-  const arma::vec& approx_loglik_storage, const arma::mat& theta,
-  arma::cube& alpha, arma::vec& weights) {
-  
-  for (unsigned int i = 0; i < theta.n_cols; i++) {
-    
-    model.theta = theta.col(i);
-    
-    arma::cube alpha_i(model.m, model.n, nsim_states);
-    arma::mat weights_i(nsim_states, model.n);
-    arma::umat indices(nsim_states, model.n - 1);
-    double loglik = model.bsf_filter(nsim_states, alpha_i, weights_i, indices);
-    if(arma::is_finite(loglik)) {
-      weights(i) = std::exp(loglik - approx_loglik_storage(i));
-      
-      filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n - 1);
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-      alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
-    } else {
-      weights(i) = 0.0;
-      alpha.slice(i).zeros();
-    }
+    weight_storage(i) = 0.0;
+    alpha_storage.slice(i).zeros();
   }
 }
+#endif
 
-
-void nlg_amcmc::state_sampler_bsf_is1(nlg_ssm& model, const unsigned int nsim_states, 
-  const arma::vec& approx_loglik_storage, const arma::mat& theta,
-  arma::cube& alpha, arma::vec& weights, const arma::uvec& counts) {
-  
-  for (unsigned int i = 0; i < theta.n_cols; i++) {
-    
-    model.theta = theta.col(i);
-    
-    unsigned int m = nsim_states * counts(i);
-    arma::cube alpha_i(model.m, model.n, m);
-    arma::mat weights_i(m, model.n);
-    arma::umat indices(m, model.n - 1);
-    double loglik = model.bsf_filter(m, alpha_i, weights_i, indices);
-    if(arma::is_finite(loglik)) {
-      weights(i) = std::exp(loglik - approx_loglik_storage(i));
-      filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n - 1);
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-      alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
-    } else {
-      weights(i) = 0.0;
-      alpha.slice(i).zeros();
-    }
-  }
+posterior_storage = prior_storage + arma::log(weight_storage);
 }
 
 
 void nlg_amcmc::is_correction_psi(nlg_ssm model, const unsigned int nsim_states, 
   const unsigned int is_type, const unsigned int n_threads) {
   
-  if(n_threads > 1) {
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-  unsigned thread_size = std::floor(static_cast <double> (n_stored) / n_threads);
-  unsigned int start = omp_get_thread_num() * thread_size;
-  unsigned int end = (omp_get_thread_num() + 1) * thread_size - 1;
-  if(omp_get_thread_num() == static_cast<int>(n_threads - 1)) {
-    end = n_stored - 1;
-  }
-  
-  arma::mat theta_piece = theta_storage(arma::span::all, arma::span(start, end));
-  arma::cube alpha_piece(model.n, model.m, thread_size);
-  arma::vec weights_piece(thread_size);
-  arma::cube mode_piece = 
-    mode_storage(arma::span::all, arma::span::all, arma::span(start, end));
-  if (is_type != 1) {
-    state_sampler_psi_is2(model, nsim_states, theta_piece, mode_piece,
-      alpha_piece, weights_piece);
-  } else {
-    arma::uvec count_piece = count_storage(arma::span(start, end));
-    state_sampler_psi_is1(model, nsim_states, theta_piece, mode_piece,
-      alpha_piece, weights_piece, count_piece);
-  }
-  alpha_storage.slices(start, end) = alpha_piece;
-  weight_storage.subvec(start, end) = weights_piece;
-}
-#else
-    if (is_type != 1) {
-      state_sampler_psi_is2(model, nsim_states, theta_storage, mode_storage,
-        alpha_storage, weight_storage);
-    } else {
-      state_sampler_psi_is1(model, nsim_states, theta_storage, mode_storage,
-        alpha_storage, weight_storage, count_storage);
-    }
-#endif
-  } else {
-    if (is_type != 1) {
-      state_sampler_psi_is2(model, nsim_states, theta_storage, mode_storage,
-        alpha_storage, weight_storage);
-    } else {
-      state_sampler_psi_is1(model, nsim_states, theta_storage, mode_storage,
-        alpha_storage, weight_storage, count_storage);
-    }
-  }
-  posterior_storage = prior_storage + approx_loglik_storage - scales_storage + 
-    arma::log(weight_storage);
-}
-
-void nlg_amcmc::state_sampler_psi_is2(nlg_ssm& model, const unsigned int nsim_states, 
-  const arma::mat& theta, const arma::cube& mode, arma::cube& alpha, arma::vec& weights) {
   
   unsigned int p = model.p;
   unsigned int n = model.n;
@@ -354,19 +269,20 @@ void nlg_amcmc::state_sampler_psi_is2(nlg_ssm& model, const unsigned int nsim_st
   mgg_ssm approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
     arma::mat(0,0), D, C, model.seed);
   
-  for (unsigned int i = 0; i < theta.n_cols; i++) {
+#pragma omp for schedule(dynamic)
+  for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
     
-    model.theta = theta.col(i);
+    model.theta = theta_storage.col(i);
     
     approx_model.a1 = model.a1_fn.eval(model.theta, model.known_params);
     approx_model.P1 = model.P1_fn.eval(model.theta, model.known_params);
     for (unsigned int t = 0; t < Z.n_slices; t++) {
-      approx_model.Z.slice(t) = model.Z_gn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.T.slice(t) = model.T_gn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.D.col(t) = model.Z_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
-        approx_model.Z.slice(t) * mode.slice(i).col(t);
-      approx_model.C.col(t) =  model.T_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
-        approx_model.T.slice(t) * mode.slice(i).col(t);
+      approx_model.Z.slice(t) = model.Z_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.T.slice(t) = model.T_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.D.col(t) = model.Z_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+        approx_model.Z.slice(t) * mode_storage.slice(i).col(t);
+      approx_model.C.col(t) =  model.T_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+        approx_model.T.slice(t) * mode_storage.slice(i).col(t);
     }
     for (unsigned int t = 0; t < H.n_slices; t++) {
       approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
@@ -377,108 +293,103 @@ void nlg_amcmc::state_sampler_psi_is2(nlg_ssm& model, const unsigned int nsim_st
     approx_model.compute_HH();
     approx_model.compute_RR();
     
-    arma::cube alpha_i(model.m, model.n, nsim_states);
-    arma::mat weights_i(nsim_states, model.n);
-    arma::umat indices(nsim_states, model.n - 1);
-    weights(i) = std::exp(model.psi_filter(approx_model, 0.0,nsim_states, alpha_i, weights_i, indices));
+    unsigned int nsim = nsim_states;
+    if (is_type == 1) {
+      nsim *= count_storage(i);
+    }
+    
+    arma::cube alpha_i(model.m, model.n, nsim);
+    arma::mat weights_i(nsim, model.n);
+    arma::umat indices(nsim, model.n - 1);
+    
+    double loglik = model.psi_filter(approx_model, 0.0, nsim, alpha_i, weights_i, indices);
+    if(arma::is_finite(loglik)) {
+      weight_storage(i) = std::exp(loglik);
+      
+      filter_smoother(alpha_i, indices);
+      arma::vec w = weights_i.col(model.n - 1);
+      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+      alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t(); 
+    } else {
+      weight_storage(i) = 0.0;
+      alpha_storage.slice(i).zeros();
+    }
+  }
+}
+#else
+unsigned int p = model.p;
+unsigned int n = model.n;
+unsigned int m = model.m;
+unsigned int k = model.k;
+
+arma::vec a1(m);
+arma::mat P1(m, m);
+arma::cube Z(p, m, n);
+arma::cube H(p, p, (n - 1) * model.Htv + 1);
+arma::cube T(m, m, n);
+arma::cube R(m, k, (n - 1) * model.Rtv + 1);
+arma::mat D(p, n);
+arma::mat C(m, n);
+
+mgg_ssm approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
+  arma::mat(0,0), D, C, model.seed);
+
+for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
+  
+  model.theta = theta_storage.col(i);
+  
+  approx_model.a1 = model.a1_fn.eval(model.theta, model.known_params);
+  approx_model.P1 = model.P1_fn.eval(model.theta, model.known_params);
+  for (unsigned int t = 0; t < Z.n_slices; t++) {
+    approx_model.Z.slice(t) = model.Z_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+    approx_model.T.slice(t) = model.T_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+    approx_model.D.col(t) = model.Z_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+      approx_model.Z.slice(t) * mode_storage.slice(i).col(t);
+    approx_model.C.col(t) =  model.T_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+      approx_model.T.slice(t) * mode_storage.slice(i).col(t);
+  }
+  for (unsigned int t = 0; t < H.n_slices; t++) {
+    approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+  }
+  for (unsigned int t = 0; t < R.n_slices; t++) {
+    approx_model.R.slice(t) = model.R_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+  }
+  approx_model.compute_HH();
+  approx_model.compute_RR();
+  
+  unsigned int nsim = nsim_states;
+  if (is_type == 1) {
+    nsim *= count_storage(i);
+  }
+  
+  arma::cube alpha_i(model.m, model.n, nsim);
+  arma::mat weights_i(nsim, model.n);
+  arma::umat indices(nsim, model.n - 1);
+  
+  double loglik = model.psi_filter(approx_model, 0.0, nsim, alpha_i, weights_i, indices);
+  if(arma::is_finite(loglik)) {
+    weight_storage(i) = std::exp(loglik);
     
     filter_smoother(alpha_i, indices);
     arma::vec w = weights_i.col(model.n - 1);
     std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-    alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
+    alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t(); 
+  } else {
+    weight_storage(i) = 0.0;
+    alpha_storage.slice(i).zeros();
   }
 }
-
-
-void nlg_amcmc::state_sampler_psi_is1(nlg_ssm& model, const unsigned int nsim_states, 
-  const arma::mat& theta, const arma::cube& mode,
-  arma::cube& alpha, arma::vec& weights, const arma::uvec& counts) {
-  
-  unsigned int p = model.p;
-  unsigned int n = model.n;
-  unsigned int m = model.m;
-  unsigned int k = model.k;
-  
-  arma::vec a1(m);
-  arma::mat P1(m, m);
-  arma::cube Z(p, m, n);
-  arma::cube H(p, p, (n - 1) * model.Htv + 1);
-  arma::cube T(m, m, n);
-  arma::cube R(m, k, (n - 1) * model.Rtv + 1);
-  arma::mat D(p, n);
-  arma::mat C(m, n);
-  
-  mgg_ssm approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
-    arma::mat(0,0), D, C, model.seed);
-  
-  for (unsigned int i = 0; i < theta.n_cols; i++) {
-    
-    model.theta = theta.col(i);
-    
-    approx_model.a1 = model.a1_fn.eval(model.theta, model.known_params);
-    approx_model.P1 = model.P1_fn.eval(model.theta, model.known_params);
-    for (unsigned int t = 0; t < Z.n_slices; t++) {
-      approx_model.Z.slice(t) = model.Z_gn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.T.slice(t) = model.T_gn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.D.col(t) = model.Z_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
-        approx_model.Z.slice(t) * mode.slice(i).col(t);
-      approx_model.C.col(t) =  model.T_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
-        approx_model.T.slice(t) * mode.slice(i).col(t);
-    }
-    for (unsigned int t = 0; t < H.n_slices; t++) {
-      approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
-    }
-    for (unsigned int t = 0; t < R.n_slices; t++) {
-      approx_model.R.slice(t) = model.R_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
-    }
-    unsigned int m_sim = nsim_states * counts(i);
-    arma::cube alpha_i(model.m, model.n, m_sim);
-    arma::mat weights_i(m_sim, model.n);
-    arma::umat indices(m_sim, model.n - 1);
-    weights(i) = std::exp(model.psi_filter(approx_model, 0.0,m_sim, alpha_i, weights_i, indices));
-    
-    filter_smoother(alpha_i, indices);
-    arma::vec w = weights_i.col(model.n - 1);
-    std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-    alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
-  }
+#endif
+posterior_storage = prior_storage + approx_loglik_storage - scales_storage + 
+  arma::log(weight_storage);
 }
-
 
 void nlg_amcmc::state_ekf_sample(nlg_ssm model, const unsigned int n_threads) {
   
-  if(n_threads > 1) {
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
 {
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-  unsigned thread_size = std::floor(static_cast <double> (n_stored) / n_threads);
-  unsigned int start = omp_get_thread_num() * thread_size;
-  unsigned int end = (omp_get_thread_num() + 1) * thread_size - 1;
-  if(omp_get_thread_num() == static_cast<int>(n_threads - 1)) {
-    end = n_stored - 1;
-  }
-  
-  arma::mat theta_piece = theta_storage(arma::span::all, arma::span(start, end));
-  arma::cube alpha_piece(model.n, model.m, thread_size);
-  arma::cube mode_piece = 
-    mode_storage(arma::span::all, arma::span::all, arma::span(start, end));
-  ekf_sampler(model, theta_piece, mode_piece, alpha_piece);
-  alpha_storage.slices(start, end) = alpha_piece;
-}
-#else
-    ekf_sampler(model, theta_storage, mode_storage,
-      alpha_storage);
-#endif
-  } else {
-    ekf_sampler(model, theta_storage, mode_storage,
-      alpha_storage);
-  }
-  posterior_storage = prior_storage + approx_loglik_storage;
-}
-
-void nlg_amcmc::ekf_sampler(nlg_ssm& model,
-  const arma::mat& theta, const arma::cube& mode, arma::cube& alpha) {
   
   unsigned int p = model.p;
   unsigned int n = model.n;
@@ -497,19 +408,20 @@ void nlg_amcmc::ekf_sampler(nlg_ssm& model,
   mgg_ssm approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
     arma::mat(0,0), D, C, model.seed);
   
-  for (unsigned int i = 0; i < theta.n_cols; i++) {
+#pragma omp for schedule(dynamic)
+  for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
     
-    model.theta = theta.col(i);
+    model.theta = theta_storage.col(i);
     
     approx_model.a1 = model.a1_fn.eval(model.theta, model.known_params);
     approx_model.P1 = model.P1_fn.eval(model.theta, model.known_params);
     for (unsigned int t = 0; t < Z.n_slices; t++) {
-      approx_model.Z.slice(t) = model.Z_gn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.T.slice(t) = model.T_gn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.D.col(t) = model.Z_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
-        approx_model.Z.slice(t) * mode.slice(i).col(t);
-      approx_model.C.col(t) =  model.T_fn.eval(t, mode.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
-        approx_model.T.slice(t) * mode.slice(i).col(t);
+      approx_model.Z.slice(t) = model.Z_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.T.slice(t) = model.T_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.D.col(t) = model.Z_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+        approx_model.Z.slice(t) * mode_storage.slice(i).col(t);
+      approx_model.C.col(t) =  model.T_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+        approx_model.T.slice(t) * mode_storage.slice(i).col(t);
     }
     for (unsigned int t = 0; t < H.n_slices; t++) {
       approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
@@ -519,12 +431,61 @@ void nlg_amcmc::ekf_sampler(nlg_ssm& model,
     }
     approx_model.compute_HH();
     approx_model.compute_RR();
-    alpha.slice(i) = approx_model.simulate_states().slice(0).t();
+    alpha_storage.slice(i) = approx_model.simulate_states().slice(0).t();
+   
   }
+}
+#else
+unsigned int p = model.p;
+unsigned int n = model.n;
+unsigned int m = model.m;
+unsigned int k = model.k;
+
+arma::vec a1(m);
+arma::mat P1(m, m);
+arma::cube Z(p, m, n);
+arma::cube H(p, p, (n - 1) * model.Htv + 1);
+arma::cube T(m, m, n);
+arma::cube R(m, k, (n - 1) * model.Rtv + 1);
+arma::mat D(p, n);
+arma::mat C(m, n);
+
+mgg_ssm approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
+  arma::mat(0,0), D, C, model.seed);
+
+#pragma omp for schedule(dynamic)
+for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
+  
+  model.theta = theta_storage.col(i);
+  
+  approx_model.a1 = model.a1_fn.eval(model.theta, model.known_params);
+  approx_model.P1 = model.P1_fn.eval(model.theta, model.known_params);
+  for (unsigned int t = 0; t < Z.n_slices; t++) {
+    approx_model.Z.slice(t) = model.Z_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+    approx_model.T.slice(t) = model.T_gn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+    approx_model.D.col(t) = model.Z_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+      approx_model.Z.slice(t) * mode_storage.slice(i).col(t);
+    approx_model.C.col(t) =  model.T_fn.eval(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
+      approx_model.T.slice(t) * mode_storage.slice(i).col(t);
+  }
+  for (unsigned int t = 0; t < H.n_slices; t++) {
+    approx_model.H.slice(t) = model.H_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+  }
+  for (unsigned int t = 0; t < R.n_slices; t++) {
+    approx_model.R.slice(t) = model.R_fn.eval(t, model.theta, model.known_params, model.known_tv_params);
+  }
+  approx_model.compute_HH();
+  approx_model.compute_RR();
+  alpha_storage.slice(i) = approx_model.simulate_states().slice(0).t();
+  
+}
+#endif
+
+posterior_storage = prior_storage + approx_loglik_storage;
 }
 
 void nlg_amcmc::state_ekf_summary(nlg_ssm& model,
- arma::mat& alphahat, arma::cube& Vt) {
+  arma::mat& alphahat, arma::cube& Vt) {
   
   unsigned int p = model.p;
   unsigned int n = model.n;
@@ -543,7 +504,7 @@ void nlg_amcmc::state_ekf_summary(nlg_ssm& model,
   mgg_ssm approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
     arma::mat(0,0), D, C, model.seed);
   
-// first iteration
+  // first iteration
   model.theta = theta_storage.col(0);
   
   approx_model.a1 = model.a1_fn.eval(model.theta, model.known_params);
