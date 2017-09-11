@@ -12,5 +12,6 @@ arma::mat psd_chol(const arma::mat& x) {
   if (k > 0) {
     cholx.submat(nonzero, nonzero) = arma::chol(x.submat(nonzero, nonzero), "lower");
   }
+  
   return cholx;
 }

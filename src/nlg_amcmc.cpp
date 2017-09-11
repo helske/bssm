@@ -90,10 +90,15 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
   
   arma::mat mode_estimate(m, n);
   mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
+  if (!arma::is_finite(mode_estimate)) {
+    Rcpp::stop("Approximation based on initial theta failed.");
+  }
   double sum_scales = arma::accu(model.scaling_factors(approx_model0, mode_estimate));
   // compute the log-likelihood of the approximate model
   double loglik = approx_model0.log_likelihood() + sum_scales;
-  
+  if (!arma::is_finite(loglik)) {
+    Rcpp::stop("Initial approximate likelihood is not finite.");
+  }
   double acceptance_prob = 0.0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
@@ -117,20 +122,30 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
     arma::vec theta_prop = theta + S * u;
     // compute prior
     double logprior_prop = model.log_prior_pdf(theta_prop);
+    
     if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
+      
       // update parameters
       model.theta = theta_prop;
       arma::mat mode_estimate_prop(m, n);
       mgg_ssm approx_model = model.approximate(mode_estimate_prop, max_iter, 
         conv_tol, iekf_iter);
-      double sum_scales_prop = 
-        arma::accu(model.scaling_factors(approx_model, mode_estimate_prop));
-      // compute the log-likelihood of the approximate model
-      double loglik_prop = approx_model.log_likelihood() + sum_scales_prop;
+      double loglik_prop;
+      double sum_scales_prop;
+      if(!is_finite(mode_estimate_prop)) {
+        loglik_prop = -std::numeric_limits<double>::infinity();
+      } else {
+        sum_scales_prop = 
+          arma::accu(model.scaling_factors(approx_model, mode_estimate_prop));
+        // compute the log-likelihood of the approximate model
+        loglik_prop = approx_model.log_likelihood() + sum_scales_prop;
+      }
       
-      if(arma::is_finite(loglik_prop)) {
-        acceptance_prob = std::min(1.0, std::exp(loglik_prop - loglik +
-          logprior_prop - logprior));
+      if (loglik_prop > -std::numeric_limits<double>::infinity() && !std::isnan(loglik_prop)) {
+      
+        acceptance_prob = std::min(1.0, 
+          std::exp(loglik_prop - loglik + logprior_prop - logprior));
+        
       } else {
         acceptance_prob = 0.0; 
       }
@@ -160,6 +175,91 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
         if(store_modes) {
           mode_storage.slice(n_stored) = mode_estimate;
         }
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
+      }
+    }
+    
+    if (!end_ram || i <= n_burnin) {
+      ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
+    }
+  }
+  
+  trim_storage();
+  acceptance_rate /= (n_iter - n_burnin);
+}
+
+void nlg_amcmc::ekf_mcmc(nlg_ssm model, const bool end_ram, const unsigned int iekf_iter) {
+  
+  unsigned int m = model.m;
+  unsigned n = model.n;
+  
+  double logprior = model.log_prior_pdf(model.theta);
+  
+  // compute the log-likelihood
+  double loglik = model.ekf_loglik(iekf_iter);
+  if (!arma::is_finite(loglik)) {
+    Rcpp::stop("Initial approximate likelihood is not finite.");
+  }
+  double acceptance_prob = 0.0;
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+  
+  arma::vec theta = model.theta;
+  bool new_value = true;
+  unsigned int n_values = 0;
+  
+  for (unsigned int i = 1; i <= n_iter; i++) {
+    if (i % 16 == 0) {
+      Rcpp::checkUserInterrupt();
+    }
+    
+    // sample from standard normal distribution
+    arma::vec u(n_par);
+    for(unsigned int j = 0; j < n_par; j++) {
+      u(j) = normal(model.engine);
+    }
+    
+    // propose new theta
+    arma::vec theta_prop = theta + S * u;
+    // compute prior
+    double logprior_prop = model.log_prior_pdf(theta_prop);
+    
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
+      // update parameters
+      model.theta = theta_prop;
+      double loglik_prop = model.ekf_loglik(iekf_iter);
+      
+      if (loglik_prop > -std::numeric_limits<double>::infinity() && !std::isnan(loglik_prop)) {
+        
+        acceptance_prob = std::min(1.0, 
+          std::exp(loglik_prop - loglik + logprior_prop - logprior));
+        
+      } else {
+        acceptance_prob = 0.0; 
+      }
+      
+      if (unif(model.engine) < acceptance_prob) {
+        if (i > n_burnin) {
+          acceptance_rate++;
+          n_values++;
+        }
+        loglik = loglik_prop;
+        logprior = logprior_prop;
+        theta = theta_prop;
+        new_value = true;
+      }
+    } else acceptance_prob = 0.0;
+    
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        approx_loglik_storage(n_stored) = loglik;
+        prior_storage(n_stored) = logprior;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
         n_stored++;
         new_value = false;
       } else {
@@ -384,7 +484,7 @@ posterior_storage = prior_storage + approx_loglik_storage - scales_storage +
   arma::log(weight_storage);
 }
 
-void nlg_amcmc::state_ekf_sample(nlg_ssm model, const unsigned int n_threads) {
+void nlg_amcmc::state_ekf_sample(nlg_ssm model, const unsigned int n_threads, const unsigned int iekf_iter) {
   
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
@@ -412,27 +512,32 @@ void nlg_amcmc::state_ekf_sample(nlg_ssm model, const unsigned int n_threads) {
   for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
     
     model.theta = theta_storage.col(i);
+    arma::mat at(m, n + 1);
+    arma::mat att(m, n);
+    arma::cube Pt(m, m, n + 1);
+    arma::cube Ptt(m, m, n);
+    double loglik = model.ekf(at, att, Pt, Ptt, iekf_iter);
     
     approx_model.a1 = model.a1_fn(model.theta, model.known_params);
     approx_model.P1 = model.P1_fn(model.theta, model.known_params);
     for (unsigned int t = 0; t < Z.n_slices; t++) {
-      approx_model.Z.slice(t) = model.Z_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.T.slice(t) = model.T_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.D.col(t) = model.Z_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
-        approx_model.Z.slice(t) * mode_storage.slice(i).col(t);
-      approx_model.C.col(t) =  model.T_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
-        approx_model.T.slice(t) * mode_storage.slice(i).col(t);
+      approx_model.Z.slice(t) = model.Z_gn(t, at.col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.T.slice(t) = model.T_gn(t, att.col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.D.col(t) = model.Z_fn(t, at.col(t), model.theta, model.known_params, model.known_tv_params) -
+        approx_model.Z.slice(t) * at.col(t);
+      approx_model.C.col(t) =  model.T_fn(t, att.col(t), model.theta, model.known_params, model.known_tv_params) -
+        approx_model.T.slice(t) * att.col(t);
     }
     for (unsigned int t = 0; t < H.n_slices; t++) {
-      approx_model.H.slice(t) = model.H_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.H.slice(t) = model.H_fn(t, at.col(t), model.theta, model.known_params, model.known_tv_params);
     }
     for (unsigned int t = 0; t < R.n_slices; t++) {
-      approx_model.R.slice(t) = model.R_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
+      approx_model.R.slice(t) = model.R_fn(t, att.col(t), model.theta, model.known_params, model.known_tv_params);
     }
     approx_model.compute_HH();
     approx_model.compute_RR();
     alpha_storage.slice(i) = approx_model.simulate_states().slice(0).t();
-   
+    
   }
 }
 #else
@@ -458,21 +563,27 @@ for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
   
   model.theta = theta_storage.col(i);
   
+  arma::mat at(m, n + 1);
+  arma::mat att(m, n);
+  arma::cube Pt(m, m, n + 1);
+  arma::cube Ptt(m, m, n);
+  double loglik = model.ekf(at, att, Pt, Ptt, iekf_iter);
+  
   approx_model.a1 = model.a1_fn(model.theta, model.known_params);
   approx_model.P1 = model.P1_fn(model.theta, model.known_params);
   for (unsigned int t = 0; t < Z.n_slices; t++) {
-    approx_model.Z.slice(t) = model.Z_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-    approx_model.T.slice(t) = model.T_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-    approx_model.D.col(t) = model.Z_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
-      approx_model.Z.slice(t) * mode_storage.slice(i).col(t);
-    approx_model.C.col(t) =  model.T_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
-      approx_model.T.slice(t) * mode_storage.slice(i).col(t);
+    approx_model.Z.slice(t) = model.Z_gn(t, at.col(t), model.theta, model.known_params, model.known_tv_params);
+    approx_model.T.slice(t) = model.T_gn(t, att.col(t), model.theta, model.known_params, model.known_tv_params);
+    approx_model.D.col(t) = model.Z_fn(t, at.col(t), model.theta, model.known_params, model.known_tv_params) -
+      approx_model.Z.slice(t) * at.col(t);
+    approx_model.C.col(t) =  model.T_fn(t, att.col(t), model.theta, model.known_params, model.known_tv_params) -
+      approx_model.T.slice(t) * att.col(t);
   }
   for (unsigned int t = 0; t < H.n_slices; t++) {
-    approx_model.H.slice(t) = model.H_fn(t, model.theta, model.known_params, model.known_tv_params);
+    approx_model.H.slice(t) = model.H_fn(t, at.col(t), model.theta, model.known_params, model.known_tv_params);
   }
   for (unsigned int t = 0; t < R.n_slices; t++) {
-    approx_model.R.slice(t) = model.R_fn(t, model.theta, model.known_params, model.known_tv_params);
+    approx_model.R.slice(t) = model.R_fn(t, att.col(t), model.theta, model.known_params, model.known_tv_params);
   }
   approx_model.compute_HH();
   approx_model.compute_RR();
@@ -485,78 +596,22 @@ posterior_storage = prior_storage + approx_loglik_storage;
 }
 
 void nlg_amcmc::state_ekf_summary(nlg_ssm& model,
-  arma::mat& alphahat, arma::cube& Vt) {
-  
-  unsigned int p = model.p;
-  unsigned int n = model.n;
-  unsigned int m = model.m;
-  unsigned int k = model.k;
-  
-  arma::vec a1(m);
-  arma::mat P1(m, m);
-  arma::cube Z(p, m, n);
-  arma::cube H(p, p, (n - 1) * model.Htv + 1);
-  arma::cube T(m, m, n);
-  arma::cube R(m, k, (n - 1) * model.Rtv + 1);
-  arma::mat D(p, n);
-  arma::mat C(m, n);
-  
-  mgg_ssm approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
-    arma::mat(0,0), D, C, model.seed);
+  arma::mat& alphahat, arma::cube& Vt, const unsigned int iekf_iter) {
   
   // first iteration
   model.theta = theta_storage.col(0);
-  
-  approx_model.a1 = model.a1_fn(model.theta, model.known_params);
-  approx_model.P1 = model.P1_fn(model.theta, model.known_params);
-  for (unsigned int t = 0; t < Z.n_slices; t++) {
-    approx_model.Z.slice(t) = model.Z_gn(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params);
-    approx_model.T.slice(t) = model.T_gn(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params);
-    approx_model.D.col(t) = model.Z_fn(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params) -
-      approx_model.Z.slice(t) * mode_storage.slice(0).col(t);
-    approx_model.C.col(t) =  model.T_fn(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params) -
-      approx_model.T.slice(t) * mode_storage.slice(0).col(t);
-  }
-  for (unsigned int t = 0; t < H.n_slices; t++) {
-    approx_model.H.slice(t) = model.H_fn(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params);
-  }
-  for (unsigned int t = 0; t < R.n_slices; t++) {
-    approx_model.R.slice(t) = model.R_fn(t, mode_storage.slice(0).col(t), model.theta, model.known_params, model.known_tv_params);
-  }
-  approx_model.compute_HH();
-  approx_model.compute_RR();
-  approx_model.smoother(alphahat, Vt);
+  model.ekf_smoother(alphahat, Vt, iekf_iter);
   
   double sum_w = count_storage(0);
   arma::mat alphahat_i = alphahat;
   arma::cube Vt_i = Vt;
   
-  arma::cube Valpha(m, m, n, arma::fill::zeros);
+  arma::cube Valpha(model.m, model.m, model.n, arma::fill::zeros);
   
   for (unsigned int i = 1; i < theta_storage.n_cols; i++) {
     
     model.theta = theta_storage.col(i);
-    
-    approx_model.a1 = model.a1_fn(model.theta, model.known_params);
-    approx_model.P1 = model.P1_fn(model.theta, model.known_params);
-    for (unsigned int t = 0; t < Z.n_slices; t++) {
-      approx_model.Z.slice(t) = model.Z_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.T.slice(t) = model.T_gn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-      approx_model.D.col(t) = model.Z_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
-        approx_model.Z.slice(t) * mode_storage.slice(i).col(t);
-      approx_model.C.col(t) =  model.T_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params) -
-        approx_model.T.slice(t) * mode_storage.slice(i).col(t);
-    }
-    for (unsigned int t = 0; t < H.n_slices; t++) {
-      approx_model.H.slice(t) = model.H_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-    }
-    for (unsigned int t = 0; t < R.n_slices; t++) {
-      approx_model.R.slice(t) = model.R_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
-    }
-    approx_model.compute_HH();
-    approx_model.compute_RR();
-    approx_model.smoother(alphahat_i, Vt_i);
-    
+    model.ekf_smoother(alphahat_i, Vt_i, iekf_iter);
     arma::mat diff = alphahat_i - alphahat;
     double tmp = count_storage(i) + sum_w;
     alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;

@@ -19,6 +19,8 @@ public:
   void approx_mcmc(nlg_ssm model, const unsigned int max_iter, 
     const double conv_tol, const bool end_ram, const unsigned int iekf_iter);
   
+  void ekf_mcmc(nlg_ssm model, const bool end_ram, const unsigned int iekf_iter);
+  
   void is_correction_bsf(nlg_ssm model, const unsigned int nsim_states, 
     const unsigned int is_type, const unsigned int n_threads);
   
@@ -26,9 +28,9 @@ public:
   void is_correction_psi(nlg_ssm model, const unsigned int nsim_states, 
     const unsigned int is_type, const unsigned int n_threads);
   
-  void state_ekf_sample(nlg_ssm model, const unsigned int n_threads);
+  void state_ekf_sample(nlg_ssm model, const unsigned int n_threads, const unsigned int iekf_iter);
   
-  void state_ekf_summary(nlg_ssm& model, arma::mat& alphahat, arma::cube& Vt);
+  void state_ekf_summary(nlg_ssm& model, arma::mat& alphahat, arma::cube& Vt, const unsigned int iekf_iter);
     
   arma::vec weight_storage;
   

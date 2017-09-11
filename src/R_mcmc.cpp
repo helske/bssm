@@ -489,10 +489,10 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params, const arma::uvec& time_varying,
   const unsigned int n_states, const unsigned int n_etas,
-  const unsigned int seed, const unsigned int nsim_states, const unsigned int n_iter,
+  const unsigned int seed, const unsigned int n_iter,
   const unsigned int n_burnin, const unsigned int n_thin,
   const double gamma, const double target_acceptance, const arma::mat S,
-  const bool end_ram, const unsigned int max_iter, const double conv_tol
+  const bool end_ram
   , const unsigned int n_threads, const unsigned int iekf_iter, bool summary) {
   
   
@@ -511,15 +511,15 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, seed);
   
   nlg_amcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin, model.n,
-    model.m, target_acceptance, gamma, S, 1);
+    model.m, target_acceptance, gamma, S, false);
   
-  mcmc_run.approx_mcmc(model, max_iter, conv_tol, end_ram, iekf_iter);
+  mcmc_run.ekf_mcmc(model, end_ram, iekf_iter);
   
   if (summary) {
     
     arma::mat alphahat(model.m, model.n);
     arma::cube Vt(model.m, model.m, model.n);
-    mcmc_run.state_ekf_summary(model, alphahat, Vt);
+    mcmc_run.state_ekf_summary(model, alphahat, Vt, iekf_iter);
     
     return Rcpp::List::create(Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") = Vt,
       Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
@@ -528,7 +528,7 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z, SEXP H,
       Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
   } else {
     
-    mcmc_run.state_ekf_sample(model, n_threads);
+    mcmc_run.state_ekf_sample(model, n_threads, iekf_iter);
     return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
       Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
       Rcpp::Named("counts") = mcmc_run.count_storage,

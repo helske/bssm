@@ -486,13 +486,6 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   if(simulation_method == "spdk") {
     stop("SPDK is (currently) not supported for non-linear non-Gaussian models.")
   }
-  if(method == "ekf") {
-    nsim_states <- 1
-  }
-  if (nsim_states < 2 && method != "ekf") {
-    #approximate inference
-    method <- "ekf"
-  }
 
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
@@ -528,8 +521,8 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
               object$theta, object$log_prior_pdf, object$known_params,
               object$known_tv_params, as.integer(object$time_varying),
               object$n_states, object$n_etas, seed,
-              nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-              end_adaptive_phase, max_iter, conv_tol, n_threads, iekf_iter, FALSE)
+              n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+              end_adaptive_phase,  n_threads, iekf_iter, FALSE)
           } else {
             out <- nonlinear_is_mcmc(t(object$y), object$Z, object$H, object$T,
               object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
@@ -556,8 +549,8 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
           object$theta, object$log_prior_pdf, object$known_params,
           object$known_tv_params, as.integer(object$time_varying),
           object$n_states, object$n_etas, seed,
-          nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          end_adaptive_phase, max_iter, conv_tol, n_threads, iekf_iter, TRUE)
+          n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+          end_adaptive_phase, n_threads, iekf_iter, TRUE)
         colnames(out$alpha) <- object$state_names
         out
       }

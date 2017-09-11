@@ -241,13 +241,12 @@ double nlg_ssm::ekf(arma::mat& at, arma::mat& att, arma::cube& Pt,
       
       arma::mat Ft = Zg * Pt.slice(t) * Zg.t() + HHt;
       
-      // first check avoid armadillo warnings
-      bool chol_ok = Ft.is_finite();
+      // first check to avoid armadillo warnings
+        bool chol_ok = Ft.is_finite() && arma::all(Ft.diag() > 0);
       if (!chol_ok) return -std::numeric_limits<double>::infinity();
       arma::mat cholF(p, p);
-      chol_ok = arma::chol(cholF,Ft);
-      if(!chol_ok) return -std::numeric_limits<double>::infinity();
-      
+      chol_ok = arma::chol(cholF, Ft);
+      if (!chol_ok) return -std::numeric_limits<double>::infinity();
       
       arma::vec vt = y.col(t) - 
         Z_fn(t, at.col(t), theta, known_params, known_tv_params);
@@ -267,7 +266,6 @@ double nlg_ssm::ekf(arma::mat& at, arma::mat& att, arma::cube& Pt,
         HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
         
         Ft = Zg * Pt.slice(t) * Zg.t() + HHt;
-        
         // first check avoid armadillo warnings
         chol_ok = Ft.is_finite();
         if (!chol_ok) return -std::numeric_limits<double>::infinity();
@@ -331,11 +329,11 @@ double nlg_ssm::ekf_loglik(const unsigned int iekf_iter) const {
       
       arma::mat Ft = Zg * Pt * Zg.t() + HHt;
       // first check avoid armadillo warnings
-      bool chol_ok = Ft.is_finite();
+        bool chol_ok = Ft.is_finite() && arma::all(Ft.diag() > 0);
       if (!chol_ok) return -std::numeric_limits<double>::infinity();
       arma::mat cholF(p, p);
-      chol_ok = arma::chol(cholF,Ft);
-      if(!chol_ok) return -std::numeric_limits<double>::infinity();
+      chol_ok = arma::chol(cholF, Ft);
+      if (!chol_ok) return -std::numeric_limits<double>::infinity();
       
       arma::vec vt = y.col(t) - 
         Z_fn(t, at, theta, known_params, known_tv_params);
@@ -360,8 +358,8 @@ double nlg_ssm::ekf_loglik(const unsigned int iekf_iter) const {
         // first check avoid armadillo warnings
         chol_ok = Ft.is_finite();
         if (!chol_ok) return -std::numeric_limits<double>::infinity();
-        chol_ok = arma::chol(cholF,Ft);
-        if(!chol_ok) return -std::numeric_limits<double>::infinity();
+        chol_ok = arma::chol(cholF, Ft);
+        if (!chol_ok) return -std::numeric_limits<double>::infinity();
         
         vt = y.col(t) - 
           Z_fn(t, atthat, theta, known_params, known_tv_params) - 
@@ -423,13 +421,12 @@ double nlg_ssm::ekf_smoother(arma::mat& at, arma::cube& Pt, const unsigned int i
       HHt = HHt * HHt.t();
       HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
       arma::mat Ft = Zg * Pt.slice(t) * Zg.t() + HHt;
-      
       // first check avoid armadillo warnings
-      bool chol_ok = Ft.is_finite();
+        bool chol_ok = Ft.is_finite() && arma::all(Ft.diag() > 0);
       if (!chol_ok) return -std::numeric_limits<double>::infinity();
       arma::mat cholF(p, p);
-      chol_ok = arma::chol(cholF,Ft);
-      if(!chol_ok) return -std::numeric_limits<double>::infinity();
+      chol_ok = arma::chol(cholF, Ft);
+      if (!chol_ok) return -std::numeric_limits<double>::infinity();
       
       vt.col(t) = y.col(t) - 
         Z_fn(t, at.col(t), theta, known_params, known_tv_params);
@@ -455,8 +452,8 @@ double nlg_ssm::ekf_smoother(arma::mat& at, arma::cube& Pt, const unsigned int i
         // first check avoid armadillo warnings
         chol_ok = Ft.is_finite();
         if (!chol_ok) return -std::numeric_limits<double>::infinity();
-        chol_ok = arma::chol(cholF,Ft);
-        if(!chol_ok) return -std::numeric_limits<double>::infinity();
+        chol_ok = arma::chol(cholF, Ft);
+        if (!chol_ok) return -std::numeric_limits<double>::infinity();
         
         vt.col(t) = y.col(t) - 
           Z_fn(t, atthat, theta, known_params, known_tv_params) - 
@@ -543,11 +540,11 @@ double nlg_ssm::ekf_fast_smoother(arma::mat& at, const unsigned int iekf_iter) c
       
       arma::mat Ft = Zg * Pt.slice(t) * Zg.t() + HHt;
       // first check avoid armadillo warnings
-      bool chol_ok = Ft.is_finite();
+        bool chol_ok = Ft.is_finite() && arma::all(Ft.diag() > 0);
       if (!chol_ok) return -std::numeric_limits<double>::infinity();
       arma::mat cholF(p, p);
-      chol_ok = arma::chol(cholF,Ft);
-      if(!chol_ok) return -std::numeric_limits<double>::infinity();
+      chol_ok = arma::chol(cholF, Ft);
+      if (!chol_ok) return -std::numeric_limits<double>::infinity();
       
       vt.col(t) = y.col(t) - 
         Z_fn(t, at.col(t), theta, known_params, known_tv_params);
@@ -574,8 +571,8 @@ double nlg_ssm::ekf_fast_smoother(arma::mat& at, const unsigned int iekf_iter) c
         // first check avoid armadillo warnings
         chol_ok = Ft.is_finite();
         if (!chol_ok) return -std::numeric_limits<double>::infinity();
-        chol_ok = arma::chol(cholF,Ft);
-        if(!chol_ok) return -std::numeric_limits<double>::infinity();
+        chol_ok = arma::chol(cholF, Ft);
+        if (!chol_ok) return -std::numeric_limits<double>::infinity();
         
         vt.col(t) = y.col(t) - 
           Z_fn(t, atthat, theta, known_params, known_tv_params) - 
@@ -735,12 +732,26 @@ mgg_ssm nlg_ssm::approximate(arma::mat& mode_estimate,
   const unsigned int max_iter, const double conv_tol, 
   const unsigned int iekf_iter) const {
   
+  // initial approximation is based on EKF (at and att)
   arma::mat at(m, n + 1);
   arma::mat att(m, n);
   arma::cube Pt(m, m, n + 1);
   arma::cube Ptt(m, m, n);
-  ekf(at, att, Pt, Ptt, iekf_iter);
-  
+  double loglik = ekf(at, att, Pt, Ptt, iekf_iter);
+  if(!arma::is_finite(loglik)) {
+    mode_estimate.fill(std::numeric_limits<double>::infinity());
+    arma::vec a1 = a1_fn(theta, known_params);
+    arma::mat P1 = P1_fn(theta, known_params);
+    arma::cube Z(p, m, n);
+    arma::cube H(p, p, (n - 1) * Htv + 1);
+    arma::cube T(m, m, n);
+    arma::cube R(m, k, (n - 1) * Rtv + 1);
+    arma::mat D(p, n,arma::fill::zeros);
+    arma::mat C(m, n,arma::fill::zeros);
+    mgg_ssm approx_model(y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
+      arma::mat(0,0), D, C, seed);
+    return approx_model;
+  }
   arma::vec a1 = a1_fn(theta, known_params);
   arma::mat P1 = P1_fn(theta, known_params);
   arma::cube Z(p, m, n);
@@ -758,7 +769,7 @@ mgg_ssm nlg_ssm::approximate(arma::mat& mode_estimate,
   
   arma::cube R(m, k, (n - 1) * Rtv + 1);
   for (unsigned int t = 0; t < R.n_slices; t++) {
-    R.slice(t) = R_fn(t, at.col(t), theta, known_params, known_tv_params);
+    R.slice(t) = R_fn(t, att.col(t), theta, known_params, known_tv_params);
   }
   arma::mat D(p, n,arma::fill::zeros);
   arma::mat C(m, n,arma::fill::zeros);
@@ -772,7 +783,7 @@ mgg_ssm nlg_ssm::approximate(arma::mat& mode_estimate,
   
   mgg_ssm approx_model(y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
     arma::mat(0,0), D, C, seed);
-  
+  // Refine approximation iteratively
   mode_estimate = approximate(approx_model, max_iter, conv_tol);
   
   return approx_model;
@@ -781,11 +792,17 @@ mgg_ssm nlg_ssm::approximate(arma::mat& mode_estimate,
 arma::mat nlg_ssm::approximate(mgg_ssm& approx_model,
   const unsigned int max_iter, const double conv_tol) const {
   
+
+  //check model
+  arma::mat mode_estimate = approx_model.fast_smoother();
+  if (!arma::is_finite(mode_estimate)) {
+    return mode_estimate;
+  }
+  double ll;
+  if (max_iter > 0) ll = log_signal_pdf(mode_estimate);
   unsigned int i = 0;
   double rel_diff = 1.0e300; 
   double abs_diff = 1;
-  arma::mat mode_estimate = approx_model.fast_smoother();
-  double ll = log_signal_pdf(mode_estimate);
   
   while(i < max_iter && rel_diff > conv_tol && abs_diff > 1e-4) {
     
@@ -818,7 +835,10 @@ arma::mat nlg_ssm::approximate(mgg_ssm& approx_model,
     double ll_new = log_signal_pdf(mode_estimate_new);
     abs_diff = ll_new - ll;
     rel_diff = abs_diff / std::abs(ll);
-    
+    if (!arma::is_finite(mode_estimate_new) || !arma::is_finite(ll_new)) {
+      mode_estimate.fill(std::numeric_limits<double>::infinity());
+      return mode_estimate;
+    }
     if(rel_diff < -conv_tol && i > 1 && abs_diff > 1e-4) {
       
       unsigned int ii = 0;
@@ -834,6 +854,10 @@ arma::mat nlg_ssm::approximate(mgg_ssm& approx_model,
         abs_diff = ll_new - ll;
         rel_diff = abs_diff / std::abs(ll);
         ii++;
+        if (!arma::is_finite(mode_estimate) || !arma::is_finite(ll_new)) {
+          mode_estimate.fill(std::numeric_limits<double>::infinity());
+          return mode_estimate;
+        }
       }
       if (ii == 15) {
         mode_estimate.fill(std::numeric_limits<double>::infinity());
