@@ -569,6 +569,7 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     model.m, target_acceptance, gamma, S, simulation_method == 1);
   
   mcmc_run.approx_mcmc(model, max_iter, conv_tol, end_ram, iekf_iter);
+  if(nsim_states > 0) {
   if (is_type == 3) {
     mcmc_run.expand();
   }
@@ -576,6 +577,10 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     mcmc_run.is_correction_psi(model, nsim_states, is_type, n_threads);
   } else {
     mcmc_run.is_correction_bsf(model, nsim_states, is_type, n_threads);
+  }
+  } else {
+    mcmc_run.alpha_storage.zeros();
+    mcmc_run.weight_storage.ones();
   }
   return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
     Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
