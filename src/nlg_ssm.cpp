@@ -895,12 +895,12 @@ arma::vec nlg_ssm::log_weights(const mgg_ssm& approx_model,
       }
     } else {
       arma::mat H = H_fn(t, alpha.slice(0).col(t), theta, known_params, known_tv_params);
-      arma::uvec nonzero = arma::find(H.diag() > (arma::datum::eps * H.n_cols * H.diag().max()));
+      arma::uvec nonzero = arma::find(H.diag() > (std::numeric_limits<double>::epsilon() * H.n_cols * H.diag().max()));
       arma::mat Linv(nonzero.n_elem, nonzero.n_elem);
       double constant = precompute_dmvnorm(H, Linv, nonzero);
       
       arma::mat H_a = approx_model.H.slice(0);
-      arma::uvec nonzero_a = arma::find(H_a.diag() > (arma::datum::eps * H_a.n_cols * H_a.diag().max()));
+      arma::uvec nonzero_a = arma::find(H_a.diag() > (std::numeric_limits<double>::epsilon() * H_a.n_cols * H_a.diag().max()));
       arma::mat Linv_a(nonzero_a.n_elem, nonzero_a.n_elem);
       double constant_a = precompute_dmvnorm(H_a, Linv_a, nonzero_a);
       

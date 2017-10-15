@@ -10,15 +10,15 @@ ng_bsm(y, sd_level, sd_slope, sd_seasonal, sd_noise, distribution, phi, u = 1,
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
 
-\item{sd_level}{A fixed value or a prior for the standard error 
+\item{sd_level}{A fixed value or a prior for the standard error
 of the noise in level equation. See\link[=uniform]{priors} for details.}
 
-\item{sd_slope}{A fixed value or a prior for the standard error 
-of the noise in slope equation. See\link[=uniform]{priors} for details. 
+\item{sd_slope}{A fixed value or a prior for the standard error
+of the noise in slope equation. See\link[=uniform]{priors} for details.
 If missing, the slope term is omitted from the model.}
 
-\item{sd_seasonal}{A fixed value or a prior for the standard error 
-of the noise in seasonal equation. See\link[=uniform]{priors} for details. 
+\item{sd_seasonal}{A fixed value or a prior for the standard error
+of the noise in seasonal equation. See\link[=uniform]{priors} for details.
 If missing, the seasonal component is omitted from the model.}
 
 \item{sd_noise}{Prior for the standard error of the additional noise term.
@@ -27,8 +27,8 @@ See\link[=uniform]{priors} for details. If missing, no additional noise term is 
 \item{distribution}{distribution of the observation. Possible choices are
 \code{"poisson"} and \code{"binomial"}.}
 
-\item{phi}{Additional parameter relating to the non-Gaussian distribution. 
-For Negative binomial distribution this is the dispersion term, and for other 
+\item{phi}{Additional parameter relating to the non-Gaussian distribution.
+For Negative binomial distribution this is the dispersion term, and for other
 distributions this is ignored.}
 
 \item{u}{Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
@@ -47,7 +47,7 @@ Defaults to vector of zeros.}
 \item{P1}{Prior covariance for the initial states (level, slope, seasonals).
 Default is diagonal matrix with 1e5 on the diagonal.}
 
-\item{state_intercept}{Intercept terms for state equation, given as a 
+\item{state_intercept}{Intercept terms for state equation, given as a
 m times n matrix.}
 }
 \value{

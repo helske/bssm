@@ -10,7 +10,7 @@ mv_gssm(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names, H_prior,
 \arguments{
 \item{y}{Observations as multivariate time series (or matrix) of length \eqn{n}.}
 
-\item{Z}{System matrix Z of the observation equation. Either a p x m matrix or 
+\item{Z}{System matrix Z of the observation equation. Either a p x m matrix or
 a p x m x n array, or an object which can be coerced to such.}
 
 \item{H}{Covarianc matrix for observational level noise.}
@@ -34,7 +34,7 @@ value in MCMC. Defaults to matrix of zeros.}
 
 \item{H_prior, Z_prior, T_prior, R_prior}{Priors for the NA values in system matrices.}
 
-\item{obs_intercept, state_intercept}{Intercept terms for observation and 
+\item{obs_intercept, state_intercept}{Intercept terms for observation and
 state equations, given as a p times n and m times n matrices.}
 }
 \value{

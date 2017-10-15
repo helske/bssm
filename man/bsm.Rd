@@ -10,18 +10,18 @@ bsm(y, sd_y, sd_level, sd_slope, sd_seasonal, beta, xreg = NULL,
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
 
-\item{sd_y}{A fixed value or prior for the standard error of 
+\item{sd_y}{A fixed value or prior for the standard error of
 observation equation. See \link[=uniform]{priors} for details.}
 
-\item{sd_level}{A fixed value or a prior for the standard error 
+\item{sd_level}{A fixed value or a prior for the standard error
 of the noise in level equation. See\link[=uniform]{priors} for details.}
 
-\item{sd_slope}{A fixed value or a prior for the standard error 
-of the noise in slope equation. See\link[=uniform]{priors} for details. 
+\item{sd_slope}{A fixed value or a prior for the standard error
+of the noise in slope equation. See\link[=uniform]{priors} for details.
 If missing, the slope term is omitted from the model.}
 
-\item{sd_seasonal}{A fixed value or a prior for the standard error 
-of the noise in seasonal equation. See\link[=uniform]{priors} for details. 
+\item{sd_seasonal}{A fixed value or a prior for the standard error
+of the noise in seasonal equation. See\link[=uniform]{priors} for details.
 If missing, the seasonal component is omitted from the model.}
 
 \item{beta}{Prior for the regression coefficients.}
@@ -36,7 +36,7 @@ Defaults to vector of zeros.}
 \item{P1}{Prior covariance for the initial states (level, slope, seasonals).
 Default is diagonal matrix with 1000 on the diagonal.}
 
-\item{obs_intercept, state_intercept}{Intercept terms for observation and 
+\item{obs_intercept, state_intercept}{Intercept terms for observation and
 state equations, given as a length n vector and m times n matrix respectively.}
 }
 \value{
@@ -49,7 +49,7 @@ and seasonal component.
 \examples{
 
 prior <- uniform(0.1 * sd(log10(UKgas)), 0, 1)
-model <- bsm(log10(UKgas), sd_y = prior, sd_level =  prior, 
+model <- bsm(log10(UKgas), sd_y = prior, sd_level =  prior,
   sd_slope =  prior, sd_seasonal =  prior)
 
 mcmc_out <- run_mcmc(model, n_iter = 5000)

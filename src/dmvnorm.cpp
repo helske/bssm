@@ -9,7 +9,7 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
   unsigned int p = x.n_elem;
   
   if (lwr) {
-    arma::uvec nonzero = arma::find(sigma.diag() > (arma::datum::eps * p * sigma.diag().max()));
+    arma::uvec nonzero = arma::find(sigma.diag() > (std::numeric_limits<double>::epsilon() * p * sigma.diag().max()));
     arma::mat S = inv(trimatl(sigma(nonzero, nonzero)));
     arma::vec tmp = S * (x.rows(nonzero) - mean.rows(nonzero));
     out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + 
@@ -22,7 +22,7 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
     bool success = arma::svd_econ(U, s, V, sigma, "left");
     
     if (success) {
-      arma::uvec nonzero = arma::find(s > (arma::datum::eps * p * s(0)));
+      arma::uvec nonzero = arma::find(s > (std::numeric_limits<double>::epsilon() * p * s(0)));
       arma::vec tmp = U.cols(nonzero).t() * (x - mean);
       out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + arma::accu(arma::log(s(nonzero))) + 
         arma::as_scalar(tmp.t() * arma::diagmat(1.0 / s(nonzero)) * tmp));

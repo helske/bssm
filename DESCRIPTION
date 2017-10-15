@@ -27,4 +27,5 @@ LinkingTo: BH, Rcpp, RcppArmadillo, ramcmc, sitmo
 SystemRequirements: C++11
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr
+BugReports: https://github.com/helske/bssm/issues
 ByteCompile: true

@@ -10,33 +10,33 @@ sde_ssm(y, drift, diffusion, ddiffusion, obs_pdf, prior_pdf, theta, x0,
 \arguments{
 \item{y}{Observations as univariate time series (or vector) of length \eqn{n}.}
 
-\item{drift, diffusion, ddiffusion}{An external pointers for the C++ functions which 
+\item{drift, diffusion, ddiffusion}{An external pointers for the C++ functions which
 define the drift, diffusion and derivative of diffusion functions of SDE.}
 
-\item{obs_pdf}{An external pointer for the C++ function which 
+\item{obs_pdf}{An external pointer for the C++ function which
 computes the observational log-density given the the states and parameter vector theta.}
 
-\item{prior_pdf}{An external pointer for the C++ function which 
+\item{prior_pdf}{An external pointer for the C++ function which
 computes the prior log-density given the parameter vector theta.}
 
 \item{theta}{Parameter vector passed to all model functions.}
 
 \item{x0}{Fixed initial value for SDE at time 0.}
 
-\item{positive}{If \code{TRUE}, positive constraint is 
+\item{positive}{If \code{TRUE}, positive constraint is
 forced by \code{abs} in Millstein scheme.}
 }
 \value{
 Object of class \code{sde_ssm}.
 }
 \description{
-Constructs an object of class \code{sde_ssm} by defining the functions for 
-the drift, diffusion and derivative of diffusion terms of univariate SDE, 
-as well as the log-density of observation equation. We assume that the 
+Constructs an object of class \code{sde_ssm} by defining the functions for
+the drift, diffusion and derivative of diffusion terms of univariate SDE,
+as well as the log-density of observation equation. We assume that the
 observations are measured at integer times (missing values are allowed).
 }
 \details{
-As in case of \code{nlg_ssm} models, these general models need a bit more effort from 
-the user, as you must provide the several small C++ snippets which define the 
+As in case of \code{nlg_ssm} models, these general models need a bit more effort from
+the user, as you must provide the several small C++ snippets which define the
 model structure. See SDE vignette for an example.
 }

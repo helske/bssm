@@ -83,7 +83,9 @@ void sde_amcmc::approx_mcmc(sde_ssm model, const bool end_ram,
   unsigned n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
-  
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
   
   arma::cube alpha(m, n, nsim_states);
   arma::mat weights(nsim_states, n);

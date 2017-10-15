@@ -12,6 +12,7 @@
 #include "sde_ssm.h"
 #include "mgg_ssm.h"
 #include "lgg_ssm.h"
+#include "ung_ar1.h"
 
 #include "distr_consts.h"
 #include "filter_smoother.h"
@@ -336,6 +337,9 @@ template void mcmc::pm_mcmc_spdk(ung_bsm model, const bool end_ram,
 template void mcmc::pm_mcmc_spdk(ung_svm model, const bool end_ram,
   const unsigned int nsim_states, const bool local_approx,
   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
+template void mcmc::pm_mcmc_spdk(ung_ar1 model, const bool end_ram,
+  const unsigned int nsim_states, const bool local_approx,
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
 
 template<class T>
 void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_states,
@@ -346,7 +350,9 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
   arma::vec theta = model.get_theta();
   // compute the log[p(theta)]
   double logprior = log_prior_pdf(theta);
-
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
   // construct the approximate Gaussian model
   arma::vec mode_estimate = initial_mode;
   ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
@@ -477,6 +483,9 @@ template void mcmc::pm_mcmc_psi(ung_bsm model, const bool end_ram,
 template void mcmc::pm_mcmc_psi(ung_svm model, const bool end_ram,
   const unsigned int nsim_states, const bool local_approx,
   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
+template void mcmc::pm_mcmc_psi(ung_ar1 model, const bool end_ram,
+  const unsigned int nsim_states, const bool local_approx,
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
 
 template<class T>
 void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_states,
@@ -490,7 +499,9 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   arma::vec theta = model.get_theta();
   // compute the log[p(theta)]
   double logprior = log_prior_pdf(theta);
-
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
   // construct the approximate Gaussian model
   arma::vec mode_estimate = initial_mode;
   ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
@@ -623,7 +634,8 @@ template void mcmc::pm_mcmc_bsf(ung_bsm model, const bool end_ram,
   const unsigned int nsim_states);
 template void mcmc::pm_mcmc_bsf(ung_svm model, const bool end_ram,
   const unsigned int nsim_states);
-
+template void mcmc::pm_mcmc_bsf(ung_ar1 model, const bool end_ram,
+  const unsigned int nsim_states);
 template<class T>
 void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_states) {
 
@@ -635,7 +647,9 @@ void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
 
   // compute the log[p(theta)]
   double logprior = log_prior_pdf(theta);
-
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
   arma::cube alpha(m, n, nsim_states);
   arma::mat weights(nsim_states, n);
   arma::umat indices(nsim_states, n - 1);
@@ -734,7 +748,9 @@ template void mcmc::da_mcmc_spdk(ung_bsm model, const bool end_ram,
 template void mcmc::da_mcmc_spdk(ung_svm model, const bool end_ram,
   const unsigned int nsim_states, const bool local_approx,
   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
-
+template void mcmc::da_mcmc_spdk(ung_ar1 model, const bool end_ram,
+  const unsigned int nsim_states, const bool local_approx,
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
 template<class T>
 void mcmc::da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_states,
   const bool local_approx, const arma::vec& initial_mode, const unsigned int max_iter,
@@ -745,7 +761,9 @@ void mcmc::da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
   arma::vec theta = model.get_theta();
   // compute the log[p(theta)]
   double logprior = log_prior_pdf(theta);
-
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
   // construct the approximate Gaussian model
   arma::vec mode_estimate = initial_mode;
   ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
@@ -884,7 +902,9 @@ template void mcmc::da_mcmc_psi(ung_bsm model, const bool end_ram,
 template void mcmc::da_mcmc_psi(ung_svm model, const bool end_ram,
   const unsigned int nsim_states, const bool local_approx,
   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
-
+template void mcmc::da_mcmc_psi(ung_ar1 model, const bool end_ram,
+  const unsigned int nsim_states, const bool local_approx,
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
 template<class T>
 void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_states,
   const bool local_approx, const arma::vec& initial_mode, const unsigned int max_iter,
@@ -897,7 +917,9 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   arma::vec theta = model.get_theta();
   // compute the log[p(theta)]
   double logprior = log_prior_pdf(theta);
-
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
   // construct the approximate Gaussian model
   arma::vec mode_estimate = initial_mode;
   ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
@@ -1036,7 +1058,9 @@ template void mcmc::da_mcmc_bsf(ung_bsm model, const bool end_ram,
 template void mcmc::da_mcmc_bsf(ung_svm model, const bool end_ram,
   const unsigned int nsim_states, const bool local_approx,
   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
-
+template void mcmc::da_mcmc_bsf(ung_ar1 model, const bool end_ram,
+  const unsigned int nsim_states, const bool local_approx,
+  const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol);
 template<class T>
 void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_states,
   const bool local_approx, const arma::vec& initial_mode, const unsigned int max_iter,
@@ -1049,7 +1073,9 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
   arma::vec theta = model.get_theta();
   // compute the log[p(theta)]
   double logprior = log_prior_pdf(theta);
-
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
   // construct the approximate Gaussian model
   arma::vec mode_estimate = initial_mode;
   ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
@@ -1184,6 +1210,9 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   unsigned n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
   // construct the approximate Gaussian model
   arma::mat mode_estimate(m, n);
   mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
@@ -1304,7 +1333,9 @@ void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram,
   unsigned n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
-
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
 
   arma::cube alpha(m, n, nsim_states);
   arma::mat weights(nsim_states, n);
@@ -1404,7 +1435,9 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   unsigned n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
-
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
   // construct the approximate Gaussian model
   arma::mat mode_estimate(m, n);
   mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
@@ -1529,7 +1562,9 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
   unsigned n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
-
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
   // construct the approximate Gaussian model
   arma::mat mode_estimate(m, n);
   mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
@@ -1657,7 +1692,9 @@ void mcmc::pm_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
   unsigned n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
-
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
 
   arma::cube alpha(m, n, nsim_states);
   arma::mat weights(nsim_states, n);
@@ -1756,7 +1793,9 @@ void mcmc::da_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
   unsigned n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
-
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
   arma::cube alpha(m, n, nsim_states);
   arma::mat weights(nsim_states, n);
   arma::umat indices(nsim_states, n - 1);

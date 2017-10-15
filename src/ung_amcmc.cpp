@@ -8,6 +8,7 @@
 #include "ugg_bsm.h"
 #include "ung_bsm.h"
 #include "ung_svm.h"
+#include "ung_ar1.h"
 
 #include "rep_mat.h"
 #include "distr_consts.h"
@@ -97,17 +98,21 @@ template void ung_amcmc::approx_mcmc(ung_bsm model, const bool end_ram,
 template void ung_amcmc::approx_mcmc(ung_svm model, const bool end_ram,
   const bool local_approx, const arma::vec& initial_mode,
   const unsigned int max_iter, const double conv_tol);
-
+template void ung_amcmc::approx_mcmc(ung_ar1 model, const bool end_ram,
+  const bool local_approx, const arma::vec& initial_mode,
+  const unsigned int max_iter, const double conv_tol);
+  
 template<class T>
 void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx,
   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol) {
-  
   
   // get the current values of theta
   arma::vec theta = model.get_theta();
   // compute the log[p(theta)]
   double logprior = log_prior_pdf(theta);
-  
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
   // construct the approximate Gaussian model
   arma::vec mode_estimate = initial_mode;
   ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
@@ -228,7 +233,9 @@ template void ung_amcmc::is_correction_psi(ung_bsm model, const unsigned int nsi
   const unsigned int is_type, const unsigned int n_threads);
 template void ung_amcmc::is_correction_psi(ung_svm model, const unsigned int nsim_states, 
   const unsigned int is_type, const unsigned int n_threads);
-
+template void ung_amcmc::is_correction_psi(ung_ar1 model, const unsigned int nsim_states, 
+  const unsigned int is_type, const unsigned int n_threads);
+  
 template <class T>
 void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states, 
   const unsigned int is_type, const unsigned int n_threads) {
@@ -345,6 +352,9 @@ template void ung_amcmc::is_correction_bsf(ung_bsm model,
 template void ung_amcmc::is_correction_bsf(ung_svm model, 
   const unsigned int nsim_states, const unsigned int is_type, 
   const unsigned int n_threads);
+template void ung_amcmc::is_correction_bsf(ung_ar1 model, 
+  const unsigned int nsim_states, const unsigned int is_type, 
+  const unsigned int n_threads);
 
 template <class T>
 void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states, 
@@ -418,6 +428,8 @@ template void ung_amcmc::is_correction_spdk(ung_ssm model, unsigned int nsim_sta
 template void ung_amcmc::is_correction_spdk(ung_bsm model, unsigned int nsim_states, 
   unsigned int is_type, const unsigned int n_threads);
 template void ung_amcmc::is_correction_spdk(ung_svm model, unsigned int nsim_states, 
+  unsigned int is_type, const unsigned int n_threads);
+template void ung_amcmc::is_correction_spdk(ung_ar1 model, unsigned int nsim_states, 
   unsigned int is_type, const unsigned int n_threads);
 
 template <class T>
@@ -510,6 +522,7 @@ posterior_storage = prior_storage + approx_loglik_storage +
 template void ung_amcmc::approx_state_posterior(ung_ssm model, const unsigned int n_threads);
 template void ung_amcmc::approx_state_posterior(ung_bsm model, const unsigned int n_threads);
 template void ung_amcmc::approx_state_posterior(ung_svm model, const unsigned int n_threads);
+template void ung_amcmc::approx_state_posterior(ung_ar1 model, const unsigned int n_threads);
 
 template <class T>
 void ung_amcmc::approx_state_posterior(T model, const unsigned int n_threads) {

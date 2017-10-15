@@ -4,15 +4,15 @@
 #' and seasonal component.
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
-#' @param sd_y A fixed value or prior for the standard error of 
-#' observation equation. See \link[=uniform]{priors} for details. 
-#' @param sd_level A fixed value or a prior for the standard error 
+#' @param sd_y A fixed value or prior for the standard error of
+#' observation equation. See \link[=uniform]{priors} for details.
+#' @param sd_level A fixed value or a prior for the standard error
 #' of the noise in level equation. See\link[=uniform]{priors} for details.
-#' @param sd_slope A fixed value or a prior for the standard error 
-#' of the noise in slope equation. See\link[=uniform]{priors} for details. 
+#' @param sd_slope A fixed value or a prior for the standard error
+#' of the noise in slope equation. See\link[=uniform]{priors} for details.
 #' If missing, the slope term is omitted from the model.
-#' @param sd_seasonal A fixed value or a prior for the standard error 
-#' of the noise in seasonal equation. See\link[=uniform]{priors} for details. 
+#' @param sd_seasonal A fixed value or a prior for the standard error
+#' of the noise in seasonal equation. See\link[=uniform]{priors} for details.
 #' If missing, the seasonal component is omitted from the model.
 #' @param xreg Matrix containing covariates.
 #' @param beta Prior for the regression coefficients.
@@ -21,14 +21,14 @@
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
 #' Default is diagonal matrix with 1000 on the diagonal.
-#' @param obs_intercept,state_intercept Intercept terms for observation and 
+#' @param obs_intercept,state_intercept Intercept terms for observation and
 #' state equations, given as a length n vector and m times n matrix respectively.
 #' @return Object of class \code{bsm}.
 #' @export
 #' @examples
 #'
 #' prior <- uniform(0.1 * sd(log10(UKgas)), 0, 1)
-#' model <- bsm(log10(UKgas), sd_y = prior, sd_level =  prior, 
+#' model <- bsm(log10(UKgas), sd_y = prior, sd_level =  prior,
 #'   sd_slope =  prior, sd_seasonal =  prior)
 #'
 #' mcmc_out <- run_mcmc(model, n_iter = 5000)
@@ -60,7 +60,9 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     }
     
     check_xreg(xreg, n)
-    if((nx <- ncol(xreg)) > 1) {
+    nx <- ncol(xreg)
+    if (nx == 1 && is_prior_list(beta)) beta <- beta[[1]]
+    if(nx > 1) {
       coefs <- sapply(beta, "[[", "init")
     } else {
       coefs <- beta$init
@@ -196,7 +198,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     } else {
       R[2 + slope, 2 + slope] <- sd_seasonal
     }
-  } 
+  }
   
   dim(H) <- 1
   dim(T) <- c(m, m, 1)
@@ -238,20 +240,20 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' (or subset of these components).
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
-#' @param sd_level A fixed value or a prior for the standard error 
+#' @param sd_level A fixed value or a prior for the standard error
 #' of the noise in level equation. See\link[=uniform]{priors} for details.
-#' @param sd_slope A fixed value or a prior for the standard error 
-#' of the noise in slope equation. See\link[=uniform]{priors} for details. 
+#' @param sd_slope A fixed value or a prior for the standard error
+#' of the noise in slope equation. See\link[=uniform]{priors} for details.
 #' If missing, the slope term is omitted from the model.
-#' @param sd_seasonal A fixed value or a prior for the standard error 
-#' of the noise in seasonal equation. See\link[=uniform]{priors} for details. 
+#' @param sd_seasonal A fixed value or a prior for the standard error
+#' of the noise in seasonal equation. See\link[=uniform]{priors} for details.
 #' If missing, the seasonal component is omitted from the model.
 #' @param sd_noise Prior for the standard error of the additional noise term.
 #' See\link[=uniform]{priors} for details. If missing, no additional noise term is used.
 #' @param distribution distribution of the observation. Possible choices are
 #' \code{"poisson"} and \code{"binomial"}.
-#' @param phi Additional parameter relating to the non-Gaussian distribution. 
-#' For Negative binomial distribution this is the dispersion term, and for other 
+#' @param phi Additional parameter relating to the non-Gaussian distribution.
+#' For Negative binomial distribution this is the dispersion term, and for other
 #' distributions this is ignored.
 #' @param u Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
 #' term. For binomial, this is the number of trials.
@@ -263,7 +265,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
 #' Default is diagonal matrix with 1e5 on the diagonal.
-#' @param state_intercept Intercept terms for state equation, given as a 
+#' @param state_intercept Intercept terms for state equation, given as a
 #'  m times n matrix.
 #' @return Object of class \code{ng_bsm}.
 #' @export
@@ -293,7 +295,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 # autoplot(pred)
 #' }
 ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
-  distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), a1, P1, 
+  distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), a1, P1,
   state_intercept) {
   
   
@@ -318,7 +320,9 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     }
     
     check_xreg(xreg, n)
-    if((nx <- ncol(xreg)) > 1) {
+    nx <- ncol(xreg)
+    if (nx == 1 && is_prior_list(beta)) beta <- beta[[1]]
+    if(nx > 1) {
       coefs <- sapply(beta, "[[", "init")
     } else {
       coefs <- beta$init
@@ -450,7 +454,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     } else {
       R[2 + slope, 2 + slope] <- sd_seasonal
     }
-  } 
+  }
   
   #additional noise term
   if (noise) {
@@ -484,7 +488,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     }
   }
   
-  initial_mode <- init_mode(y, u, distribution)
+  initial_mode <- init_mode(y, u, distribution, if (ncol(xreg > 0)) xreg %*% coefs else NULL)
   
   
   dim(T) <- c(m, m, 1)
@@ -498,7 +502,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   } else {
     priors <- list(sd_level, sd_slope, sd_seasonal, sd_noise, phi, beta)
   }
-  names(priors) <- c("sd_level", "sd_slope", "sd_seasonal", "sd_noise", "phi", 
+  names(priors) <- c("sd_level", "sd_slope", "sd_seasonal", "sd_noise", "phi",
     names(coefs))
   priors <- priors[sapply(priors, is_prior)]
   
@@ -517,8 +521,8 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, phi = phi, u = u, xreg = xreg, coefs = coefs,
     slope = slope, seasonal = seasonal, noise = noise,
-    period = period, fixed = as.integer(!notfixed), 
-    distribution = distribution, initial_mode = initial_mode, 
+    period = period, fixed = as.integer(!notfixed),
+    distribution = distribution, initial_mode = initial_mode,
     priors = priors, phi_est = phi_est, obs_intercept = obs_intercept,
     state_intercept = state_intercept), class = c("ng_bsm", "ngssm"))
 }
@@ -531,29 +535,29 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' @param y Vector or a \code{\link{ts}} object of observations.
 #' @param rho prior for autoregressive coefficient.
 #' @param sigma Prior for sigma parameter of observation equation.
-#' @param mu Prior for mu parameter of transition equation. 
+#' @param mu Prior for mu parameter of transition equation.
 #' Ignored if \code{sigma} is provided.
 #' @param sd_ar Prior for the standard deviation of noise of the AR-process.
 #' @return Object of class \code{svm} or \code{svm2}.
 #' @export
 #' @rdname svm
 #' @examples
-#' 
+#'
 #' data("exchange")
-#' model <- svm(exchange, rho = uniform(0.98,-0.999,0.999), 
+#' model <- svm(exchange, rho = uniform(0.98,-0.999,0.999),
 #'  sd_ar = halfnormal(0.15, 5), sigma = halfnormal(0.6, 2))
 #'
 #' obj <- function(pars) {
-#'    -logLik(svm(exchange, rho = uniform(pars[1],-0.999,0.999), 
-#'    sd_ar = halfnormal(pars[2],sd=5), 
+#'    -logLik(svm(exchange, rho = uniform(pars[1],-0.999,0.999),
+#'    sd_ar = halfnormal(pars[2],sd=5),
 #'    sigma = halfnormal(pars[3],sd=2)), nsim_states = 0)
 #' }
 #' opt <- nlminb(c(0.98, 0.15, 0.6), obj, lower = c(-0.999, 1e-4, 1e-4), upper = c(0.999,10,10))
 #' pars <- opt$par
-#' model <- svm(exchange, rho = uniform(pars[1],-0.999,0.999), 
-#'   sd_ar = halfnormal(pars[2],sd=5), 
+#' model <- svm(exchange, rho = uniform(pars[1],-0.999,0.999),
+#'   sd_ar = halfnormal(pars[2],sd=5),
 #'   sigma = halfnormal(pars[3],sd=2))
-#'   
+#'
 svm <- function(y, rho, sd_ar, sigma, mu) {
   
   if(!missing(sigma) && !missing(mu)) {
@@ -604,14 +608,123 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, phi = if (svm_type == 0) sigma$init else 1, xreg = xreg, coefs = coefs,
-    initial_mode = initial_mode, priors = priors, 
+    initial_mode = initial_mode, priors = priors,
     svm_type = svm_type, distribution = 0L, u = 1, phi_est = !as.logical(svm_type),
-    obs_intercept = obs_intercept, state_intercept = state_intercept), 
+    obs_intercept = obs_intercept, state_intercept = state_intercept),
     class = c("svm", "ngssm"))
+}
+#'@export
+ng_ar1 <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NULL) {
+  
+  check_y(y)
+  
+  if (is.null(xreg)) {
+    xreg <- matrix(0, 0, 0)
+    coefs <- numeric(0)
+    beta <- NULL
+  } else {
+    
+    if (missing(beta) || is.null(beta)) {
+      stop("No prior defined for beta. ")
+    }
+    if(!is_prior(beta) && !is_prior_list(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
+    }
+    
+    if (is.null(dim(xreg)) && length(xreg) == n) {
+      xreg <- matrix(xreg, n, 1)
+    }
+    check_xreg(xreg, n)
+    nx <- ncol(xreg)
+    if (nx == 1 && is_prior_list(beta)) beta <- beta[[1]]
+    if(nx > 1) {
+      coefs <- sapply(beta, "[[", "init")
+    } else {
+      coefs <- beta$init
+    }
+    check_beta(coefs, nx)
+    
+    if (is.null(colnames(xreg))) {
+      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    }
+    names(coefs) <- colnames(xreg)
+    
+  }
+  
+  
+  check_rho(rho$init)
+  check_sd(sigma$init, "rho")
+  if (is_prior(mu)) {
+    check_mu(mu$init)
+    mu_est <- TRUE
+    a1 <- mu$init
+    state_intercept <- matrix(mu$init * (1 - rho$init))
+  } else {
+    mu_est <- FALSE
+    #check_mu(mu)
+    #a1 <- mu
+    #state_intercept <- matrix(mu * (1 - rho$init))
+    a1 <- 0
+    state_intercept <- matrix(0)
+  }
+  distribution <- match.arg(distribution, c("poisson", "binomial",
+    "negative binomial"))
+  
+  use_phi <- distribution %in% c("negative binomial", "gamma")
+  phi_est <- FALSE
+  if (use_phi) {
+    if (is_prior(phi)) {
+      check_phi(phi$init, distribution)
+      phi_est <- TRUE
+    } else {
+      check_phi(phi, distribution)
+    }
+  } else {
+    phi <- 1
+  }
+  
+  use_u <- distribution %in% c("poisson", "binomial", "negative binomial")
+  if (use_u) {
+    check_u(u)
+    if (length(u) != n) {
+      u <- rep(u, length.out = n)
+    }
+  }
+  initial_mode <- init_mode(y, u, distribution, if (ncol(xreg > 0)) xreg %*% coefs else NULL)
+  P1 <- matrix(sigma$init^2 / (1 - rho$init^2))
+  
+  Z <- matrix(1)
+  T <- array(rho$init, c(1, 1, 1))
+  R <- array(sigma$init, c(1, 1, 1))
+  
+  names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
+    rownames(T) <- colnames(T) <- rownames(R) <- "signal"
+  
+  
+  if(ncol(xreg) > 1) {
+    priors <- c(list(rho, sigma, mu, phi), beta)
+  } else {
+    priors <- list(rho, sigma, mu, phi, beta)
+  }
+  names(priors) <-
+    c("rho", "sigma", "mu", "phi", names(coefs))
+  priors <- priors[sapply(priors, is_prior)]
+  
+  if (phi_est) {
+    phi <- phi$init
+  }
+  obs_intercept <- matrix(0)
+  
+  structure(list(y = as.ts(y), Z = Z, T = T, R = R,
+    a1 = a1, P1 = P1, phi = phi, u = u, xreg = xreg, coefs = coefs,
+    initial_mode = initial_mode, priors = priors,
+    distribution = distribution, mu_est = mu_est, phi_est = phi_est,
+    obs_intercept = obs_intercept, state_intercept = state_intercept),
+    class = c("ng_ar1", "ngssm"))
 }
 #'
 #' General univariate linear-Gaussian state space models
-#' 
+#'
 #' Construct an object of class \code{gssm} by defining the corresponding terms
 #' of the observation and state equation:
 #'
@@ -637,7 +750,7 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
 #' value in MCMC. Defaults to vector of zeros.
 #' @param state_names Names for the states.
 #' @param H_prior,Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
-#' @param obs_intercept,state_intercept Intercept terms for observation and 
+#' @param obs_intercept,state_intercept Intercept terms for observation and
 #' state equations, given as a length n vector and m times n matrix respectively.
 #' @return Object of class \code{gssm}.
 #' @export
@@ -664,7 +777,9 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
     }
     
     check_xreg(xreg, n)
-    if((nx <- ncol(xreg)) > 1) {
+    nx <- ncol(xreg)
+    if (nx == 1 && is_prior_list(beta)) beta <- beta[[1]]
+    if(nx > 1) {
       coefs <- sapply(beta, "[[", "init")
     } else {
       coefs <- beta$init
@@ -775,15 +890,15 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
     }
   } else R_prior <- NULL
   
-  priors <- c(if(H_n > 1) Z_prior else list(H_prior), 
-    if(Z_n > 1) Z_prior else list(Z_prior), 
-    if(T_n > 1) T_prior else list(T_prior), 
-    if(R_n > 1) R_prior else list(R_prior), 
+  priors <- c(if(H_n > 1) Z_prior else list(H_prior),
+    if(Z_n > 1) Z_prior else list(Z_prior),
+    if(T_n > 1) T_prior else list(T_prior),
+    if(R_n > 1) R_prior else list(R_prior),
     if(ncol(xreg) > 1) beta else list(beta))
   
-  names(priors) <- c(if(H_n > 0) paste0("H_",1:H_n),  
-    if(Z_n > 0) paste0("Z_",1:Z_n),  
-    if(T_n > 0) paste0("T_",1:T_n), 
+  names(priors) <- c(if(H_n > 0) paste0("H_",1:H_n),
+    if(Z_n > 0) paste0("Z_",1:Z_n),
+    if(T_n > 0) paste0("T_",1:T_n),
     if(R_n > 0) paste0("R_",1:R_n), names(coefs))
   priors <- priors[sapply(priors, is_prior)]
   
@@ -799,7 +914,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   }
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
-    xreg = xreg, coefs = coefs, priors = priors, Z_ind = Z_ind, 
+    xreg = xreg, coefs = coefs, priors = priors, Z_ind = Z_ind,
     H_ind = H_ind, T_ind = T_ind, R_ind = R_ind, obs_intercept = obs_intercept,
     state_intercept = state_intercept), class = "gssm")
 }
@@ -826,8 +941,8 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param distribution distribution of the observation. Possible choices are
 #' \code{"poisson"}, \code{"binomial"}, and \code{"negative binomial"}.
-#' @param phi Additional parameter relating to the non-Gaussian distribution. 
-#' For Negative binomial distribution this is the dispersion term, and for other 
+#' @param phi Additional parameter relating to the non-Gaussian distribution.
+#' For Negative binomial distribution this is the dispersion term, and for other
 #' distributions this is ignored.
 #' @param u Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
 #' term. For binomial, this is the number of trials.
@@ -836,11 +951,11 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 #' value in MCMC. Defaults to vector of zeros.
 #' @param state_names Names for the states.
 #' @param Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
-#' @param state_intercept Intercept terms for state equation, given as a 
+#' @param state_intercept Intercept terms for state equation, given as a
 #'  m times n matrix.
 #' @return Object of class \code{ngssm}.
 #' @export
-ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL, 
+ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
   beta, state_names, Z_prior, T_prior, R_prior, state_intercept) {
   
   check_y(y)
@@ -864,7 +979,9 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     }
     
     check_xreg(xreg, n)
-    if((nx <- ncol(xreg)) > 1) {
+    nx <- ncol(xreg)
+    if (nx == 1 && is_prior_list(beta)) beta <- beta[[1]]
+    if(nx > 1) {
       coefs <- sapply(beta, "[[", "init")
     } else {
       coefs <- beta$init
@@ -982,7 +1099,7 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     }
   }
   
-  initial_mode <- init_mode(y, u, distribution)
+  initial_mode <- init_mode(y, u, distribution, if (ncol(xreg > 0)) xreg %*% coefs else NULL)
   
   if (missing(state_names)) {
     state_names <- paste("State", 1:m)
@@ -992,13 +1109,13 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
   
   
   
-  priors <- c(if(Z_n > 1) Z_prior else list(Z_prior), 
-    if(T_n > 1) T_prior else list(T_prior), 
-    if(R_n > 1) R_prior else list(R_prior), list(phi), 
+  priors <- c(if(Z_n > 1) Z_prior else list(Z_prior),
+    if(T_n > 1) T_prior else list(T_prior),
+    if(R_n > 1) R_prior else list(R_prior), list(phi),
     if(ncol(xreg) > 1) beta else list(beta))
   
-  names(priors) <- c(if(Z_n > 0) paste0("Z_",1:Z_n),  
-    if(T_n > 0) paste0("T_",1:T_n), 
+  names(priors) <- c(if(Z_n > 0) paste0("Z_",1:Z_n),
+    if(T_n > 0) paste0("T_",1:T_n),
     if(R_n > 0) paste0("R_",1:R_n), "phi", names(coefs))
   priors <- priors[sapply(priors, is_prior)]
   
@@ -1015,14 +1132,14 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
   }
   
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
-    xreg = xreg, coefs = coefs, distribution = distribution, 
-    initial_mode = initial_mode, priors = priors, Z_ind = Z_ind, 
+    xreg = xreg, coefs = coefs, distribution = distribution,
+    initial_mode = initial_mode, priors = priors, Z_ind = Z_ind,
     T_ind = T_ind, R_ind = R_ind, phi_est = phi_est, obs_intercept = obs_intercept,
     state_intercept = state_intercept), class = "ngssm")
 }
 
 #' General multivariate linear Gaussian state space models
-#' 
+#'
 #' Constructs an object of class \code{llg_ssm} by defining the corresponding terms
 #' of the observation and state equation:
 #'
@@ -1033,12 +1150,12 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
 #' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and functions
 #' \eqn{Z, H, T, R} can depend on \eqn{\alpha_t} and parameter vector \eqn{\theta}.
 #'
-#' Compared to other models, these general models need a bit more effort from 
-#' the user, as you must provide the several small C++ snippets which define the 
+#' Compared to other models, these general models need a bit more effort from
+#' the user, as you must provide the several small C++ snippets which define the
 #' model structure. See examples in ZZZ.
 #' @param y Observations as multivariate time series (or matrix) of length \eqn{n}.
-#' @param Z,H,T,R  An external pointers for the C++ functions which 
-#' define the corresponding model functions. 
+#' @param Z,H,T,R  An external pointers for the C++ functions which
+#' define the corresponding model functions.
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param theta Parameter vector passed to all model functions.
@@ -1046,14 +1163,14 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
 #' @param known_tv_params Matrix of known parameters passed to all model functions.
 #' @param n_states Number of states in the model.
 #' @param n_etas Dimension of the noise term of the transition equation.
-#' @param log_prior_pdf An external pointer for the C++ function which 
+#' @param log_prior_pdf An external pointer for the C++ function which
 #' computes the log-prior density given theta.
 #' @param state_names Names for the states.
 #' @return Object of class \code{nlg_ssm}.
 #' @export
-lgg_ssm <- function(y, Z, H, T, R, a1, P1, theta, 
-  obs_intercept, state_intercept, 
-  known_params = NA, known_tv_params = matrix(NA), n_states, n_etas, 
+lgg_ssm <- function(y, Z, H, T, R, a1, P1, theta,
+  obs_intercept, state_intercept,
+  known_params = NA, known_tv_params = matrix(NA), n_states, n_etas,
   log_prior_pdf, state_names = paste0("state",1:n_states)) {
   
   if (is.null(dim(y))) {
@@ -1063,18 +1180,18 @@ lgg_ssm <- function(y, Z, H, T, R, a1, P1, theta,
   if(missing(n_etas)) {
     n_etas <- n_states
   }
-  structure(list(y = as.ts(y), Z = Z, H = H, T = T, 
+  structure(list(y = as.ts(y), Z = Z, H = H, T = T,
     R = R, a1 = a1, P1 = P1, theta = theta,
-    obs_intercept = obs_intercept, state_intercept = state_intercept, 
-    log_prior_pdf = log_prior_pdf, known_params = known_params, 
+    obs_intercept = obs_intercept, state_intercept = state_intercept,
+    log_prior_pdf = log_prior_pdf, known_params = known_params,
     known_tv_params = known_tv_params,
-    n_states = n_states, n_etas = n_etas, 
+    n_states = n_states, n_etas = n_etas,
     state_names = state_names), class = "lgg_ssm")
 }
 
 #'
 #' General multivariate nonlinear Gaussian state space models
-#' 
+#'
 #' Constructs an object of class \code{nlg_ssm} by defining the corresponding terms
 #' of the observation and state equation:
 #'
@@ -1085,14 +1202,14 @@ lgg_ssm <- function(y, Z, H, T, R, a1, P1, theta,
 #' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and functions
 #' \eqn{Z, H, T, R} can depend on \eqn{\alpha_t} and parameter vector \eqn{\theta}.
 #'
-#' Compared to other models, these general models need a bit more effort from 
-#' the user, as you must provide the several small C++ snippets which define the 
+#' Compared to other models, these general models need a bit more effort from
+#' the user, as you must provide the several small C++ snippets which define the
 #' model structure. See examples in ZZZ.
 #' @param y Observations as multivariate time series (or matrix) of length \eqn{n}.
-#' @param Z,H,T,R  An external pointers for the C++ functions which 
-#' define the corresponding model functions. 
-#' @param Z_gn,T_gn An external pointers for the C++ functions which 
-#' define the gradients of the corresponding model functions. 
+#' @param Z,H,T,R  An external pointers for the C++ functions which
+#' define the corresponding model functions.
+#' @param Z_gn,T_gn An external pointers for the C++ functions which
+#' define the gradients of the corresponding model functions.
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param theta Parameter vector passed to all model functions.
@@ -1100,16 +1217,16 @@ lgg_ssm <- function(y, Z, H, T, R, a1, P1, theta,
 #' @param known_tv_params Matrix of known parameters passed to all model functions.
 #' @param n_states Number of states in the model.
 #' @param n_etas Dimension of the noise term of the transition equation.
-#' @param log_prior_pdf An external pointer for the C++ function which 
+#' @param log_prior_pdf An external pointer for the C++ function which
 #' computes the log-prior density given theta.
-#' @param time_varying Optional logical vector of length 4, denoting whether the values of 
-#' Z, H, T, and R vary with respect to time variable (given identical states). 
+#' @param time_varying Optional logical vector of length 4, denoting whether the values of
+#' Z, H, T, and R vary with respect to time variable (given identical states).
 #' If used, can speed up some computations.
 #' @param state_names Names for the states.
 #' @return Object of class \code{nlg_ssm}.
 #' @export
-nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta, 
-  known_params = NA, known_tv_params = matrix(NA), n_states, n_etas, 
+nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
+  known_params = NA, known_tv_params = matrix(NA), n_states, n_etas,
   log_prior_pdf, time_varying = rep(TRUE, 4), state_names = paste0("state",1:n_states)) {
   
   if (is.null(dim(y))) {
@@ -1119,11 +1236,11 @@ nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
   if(missing(n_etas)) {
     n_etas <- n_states
   }
-  structure(list(y = as.ts(y), Z = Z, H = H, T = T, 
+  structure(list(y = as.ts(y), Z = Z, H = H, T = T,
     R = R, Z_gn = Z_gn, T_gn = T_gn, a1 = a1, P1 = P1, theta = theta,
-    log_prior_pdf = log_prior_pdf, known_params = known_params, 
+    log_prior_pdf = log_prior_pdf, known_params = known_params,
     known_tv_params = known_tv_params,
-    n_states = n_states, n_etas = n_etas, 
+    n_states = n_states, n_etas = n_etas,
     time_varying = time_varying,
     state_names = state_names), class = "nlg_ssm")
 }
@@ -1132,46 +1249,46 @@ nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
 
 #'
 #' Univariate state space model with continuous SDE dynamics
-#' 
-#' Constructs an object of class \code{sde_ssm} by defining the functions for 
-#' the drift, diffusion and derivative of diffusion terms of univariate SDE, 
-#' as well as the log-density of observation equation. We assume that the 
+#'
+#' Constructs an object of class \code{sde_ssm} by defining the functions for
+#' the drift, diffusion and derivative of diffusion terms of univariate SDE,
+#' as well as the log-density of observation equation. We assume that the
 #' observations are measured at integer times (missing values are allowed).
-#' 
-#' As in case of \code{nlg_ssm} models, these general models need a bit more effort from 
-#' the user, as you must provide the several small C++ snippets which define the 
+#'
+#' As in case of \code{nlg_ssm} models, these general models need a bit more effort from
+#' the user, as you must provide the several small C++ snippets which define the
 #' model structure. See SDE vignette for an example.
-#' 
+#'
 #' @param y Observations as univariate time series (or vector) of length \eqn{n}.
-#' @param drift,diffusion,ddiffusion An external pointers for the C++ functions which 
+#' @param drift,diffusion,ddiffusion An external pointers for the C++ functions which
 #' define the drift, diffusion and derivative of diffusion functions of SDE.
-#' @param obs_pdf An external pointer for the C++ function which 
+#' @param obs_pdf An external pointer for the C++ function which
 #' computes the observational log-density given the the states and parameter vector theta.
-#' @param prior_pdf An external pointer for the C++ function which 
+#' @param prior_pdf An external pointer for the C++ function which
 #' computes the prior log-density given the parameter vector theta.
 #' @param theta Parameter vector passed to all model functions.
 #' @param x0 Fixed initial value for SDE at time 0.
-#' @param positive If \code{TRUE}, positive constraint is 
+#' @param positive If \code{TRUE}, positive constraint is
 #'   forced by \code{abs} in Millstein scheme.
 #' @return Object of class \code{sde_ssm}.
 #' @export
-sde_ssm <- function(y, drift, diffusion, ddiffusion, obs_pdf, 
+sde_ssm <- function(y, drift, diffusion, ddiffusion, obs_pdf,
   prior_pdf, theta, x0, positive) {
   
   check_y(y)
   n <- length(y)
   
-  structure(list(y = as.ts(y), drift = drift, 
-    diffusion = diffusion, 
-    ddiffusion = ddiffusion, obs_pdf = obs_pdf, 
-    prior_pdf = prior_pdf, theta = theta, x0 = x0, 
+  structure(list(y = as.ts(y), drift = drift,
+    diffusion = diffusion,
+    ddiffusion = ddiffusion, obs_pdf = obs_pdf,
+    prior_pdf = prior_pdf, theta = theta, x0 = x0,
     positive = positive, state_names = "x"), class = "sde_ssm")
 }
 
 
 #'
 #' General multivariate linear-Gaussian state space models
-#' 
+#'
 #' Construct an object of class \code{gssm} by defining the corresponding terms
 #' of the observation and state equation:
 #'
@@ -1182,7 +1299,7 @@ sde_ssm <- function(y, drift, diffusion, ddiffusion, obs_pdf,
 #' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
 #'
 #' @param y Observations as multivariate time series (or matrix) of length \eqn{n}.
-#' @param Z System matrix Z of the observation equation. Either a p x m matrix or 
+#' @param Z System matrix Z of the observation equation. Either a p x m matrix or
 #' a p x m x n array, or an object which can be coerced to such.
 #' @param H Covarianc matrix for observational level noise.
 #' @param T System matrix T of the state equation. Either a m x m matrix or a
@@ -1196,7 +1313,7 @@ sde_ssm <- function(y, drift, diffusion, ddiffusion, obs_pdf,
 #' value in MCMC. Defaults to matrix of zeros.
 #' @param state_names Names for the states.
 #' @param H_prior,Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
-#' @param obs_intercept,state_intercept Intercept terms for observation and 
+#' @param obs_intercept,state_intercept Intercept terms for observation and
 #' state equations, given as a p times n and m times n matrices.
 #' @return Object of class \code{mv_gssm}.
 mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
@@ -1331,15 +1448,15 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
     }
   } else R_prior <- NULL
   
-  priors <- c(if(H_n > 1) Z_prior else list(H_prior), 
-    if(Z_n > 1) Z_prior else list(Z_prior), 
-    if(T_n > 1) T_prior else list(T_prior), 
-    if(R_n > 1) R_prior else list(R_prior), 
+  priors <- c(if(H_n > 1) Z_prior else list(H_prior),
+    if(Z_n > 1) Z_prior else list(Z_prior),
+    if(T_n > 1) T_prior else list(T_prior),
+    if(R_n > 1) R_prior else list(R_prior),
     if(ncol(xreg) > 1) beta else list(beta))
   
-  names(priors) <- c(if(H_n > 0) paste0("H_",1:H_n),  
-    if(Z_n > 0) paste0("Z_",1:Z_n),  
-    if(T_n > 0) paste0("T_",1:T_n), 
+  names(priors) <- c(if(H_n > 0) paste0("H_",1:H_n),
+    if(Z_n > 0) paste0("Z_",1:Z_n),
+    if(T_n > 0) paste0("T_",1:T_n),
     if(R_n > 0) paste0("R_",1:R_n), names(coefs))
   priors <- priors[sapply(priors, is_prior)]
   
@@ -1355,7 +1472,7 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   }
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
-    xreg = xreg, coefs = coefs, priors = priors, Z_ind = Z_ind, 
+    xreg = xreg, coefs = coefs, priors = priors, Z_ind = Z_ind,
     H_ind = H_ind, T_ind = T_ind, R_ind = R_ind, obs_intercept = obs_intercept,
     state_intercept = state_intercept), class = "mv_gssm")
 }

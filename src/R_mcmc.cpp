@@ -6,7 +6,7 @@
 #include "ung_svm.h"
 #include "nlg_ssm.h"
 #include "lgg_ssm.h"
-
+#include "ung_ar1.h"
 // [[Rcpp::export]]
 Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
   const arma::uvec prior_types, const arma::mat prior_pars,
@@ -179,6 +179,22 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
       break;
     }
   } break;
+  case 4: {
+    ung_ar1 model(clone(model_), seed);
+    switch (simulation_method) {
+    case 1:
+      mcmc_run.pm_mcmc_psi(model, end_ram, nsim_states, local_approx, initial_mode,
+        max_iter, conv_tol);
+      break;
+    case 2:
+      mcmc_run.pm_mcmc_bsf(model, end_ram, nsim_states);
+      break;
+    case 3:
+      mcmc_run.pm_mcmc_spdk(model, end_ram, nsim_states, local_approx, initial_mode,
+        max_iter, conv_tol);
+      break;
+    }
+  } break;
   }
   
   return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
@@ -268,6 +284,23 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
       break;
     }
   } break;
+  case 4: {
+    ung_ar1 model(clone(model_), seed);
+    switch (simulation_method) {
+    case 1:
+      mcmc_run.da_mcmc_psi(model, end_ram, nsim_states, local_approx, initial_mode,
+        max_iter, conv_tol);
+      break;
+    case 2:
+      mcmc_run.da_mcmc_bsf(model, end_ram, nsim_states, local_approx, initial_mode,
+        max_iter, conv_tol);
+      break;
+    case 3:
+      mcmc_run.da_mcmc_spdk(model, end_ram, nsim_states, local_approx, initial_mode,
+        max_iter, conv_tol);
+      break;
+    }
+  } break;
   }
   
   return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
@@ -304,7 +337,10 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
   
   ung_amcmc mcmc_run(prior_types, prior_pars, n_iter, n_burnin, n_thin, n, m,
     target_acceptance, gamma, S, true);
-  
+  if (nsim_states <= 1) {
+    mcmc_run.alpha_storage.zeros();
+    mcmc_run.weight_storage.ones();
+  }
   switch (model_type) {
   case 1: {
     ung_ssm model(clone(model_), seed, Z_ind, T_ind, R_ind);
@@ -354,6 +390,29 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
   } break;
   case 3: {
     ung_svm model(clone(model_), seed);
+    mcmc_run.approx_mcmc(model, end_ram, local_approx, initial_mode,
+      max_iter, conv_tol);
+    if(nsim_states > 1) {
+      if(is_type == 3) {
+        mcmc_run.expand();
+      }
+      switch (simulation_method) {
+      case 1:
+        mcmc_run.is_correction_psi(model, nsim_states, is_type, n_threads);
+        break;
+      case 2:
+        mcmc_run.is_correction_bsf(model, nsim_states, is_type, n_threads);
+        break;
+      case 3:
+        mcmc_run.is_correction_spdk(model, nsim_states, is_type, n_threads);
+        break;
+      }
+    } else {
+      if(nsim_states == 1) mcmc_run.approx_state_posterior(model, n_threads);
+    }
+  } break;  
+  case 4: {
+    ung_ar1 model(clone(model_), seed);
     mcmc_run.approx_mcmc(model, end_ram, local_approx, initial_mode,
       max_iter, conv_tol);
     if(nsim_states > 1) {
@@ -570,14 +629,14 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   
   mcmc_run.approx_mcmc(model, max_iter, conv_tol, end_ram, iekf_iter);
   if(nsim_states > 0) {
-  if (is_type == 3) {
-    mcmc_run.expand();
-  }
-  if (simulation_method == 1) {
-    mcmc_run.is_correction_psi(model, nsim_states, is_type, n_threads);
-  } else {
-    mcmc_run.is_correction_bsf(model, nsim_states, is_type, n_threads);
-  }
+    if (is_type == 3) {
+      mcmc_run.expand();
+    }
+    if (simulation_method == 1) {
+      mcmc_run.is_correction_psi(model, nsim_states, is_type, n_threads);
+    } else {
+      mcmc_run.is_correction_bsf(model, nsim_states, is_type, n_threads);
+    }
   } else {
     mcmc_run.alpha_storage.zeros();
     mcmc_run.weight_storage.ones();

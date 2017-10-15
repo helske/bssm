@@ -11,10 +11,10 @@ nlg_ssm(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta, known_params = NA,
 \arguments{
 \item{y}{Observations as multivariate time series (or matrix) of length \eqn{n}.}
 
-\item{Z, H, T, R}{An external pointers for the C++ functions which 
+\item{Z, H, T, R}{An external pointers for the C++ functions which
 define the corresponding model functions.}
 
-\item{Z_gn, T_gn}{An external pointers for the C++ functions which 
+\item{Z_gn, T_gn}{An external pointers for the C++ functions which
 define the gradients of the corresponding model functions.}
 
 \item{a1}{Prior mean for the initial state as a vector of length m.}
@@ -31,11 +31,11 @@ define the gradients of the corresponding model functions.}
 
 \item{n_etas}{Dimension of the noise term of the transition equation.}
 
-\item{log_prior_pdf}{An external pointer for the C++ function which 
+\item{log_prior_pdf}{An external pointer for the C++ function which
 computes the log-prior density given theta.}
 
-\item{time_varying}{Optional logical vector of length 4, denoting whether the values of 
-Z, H, T, and R vary with respect to time variable (given identical states). 
+\item{time_varying}{Optional logical vector of length 4, denoting whether the values of
+Z, H, T, and R vary with respect to time variable (given identical states).
 If used, can speed up some computations.}
 
 \item{state_names}{Names for the states.}
@@ -55,7 +55,7 @@ where \eqn{\epsilon_t \sim N(0, I_p)}, \eqn{\eta_t \sim N(0, I_m)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and functions
 \eqn{Z, H, T, R} can depend on \eqn{\alpha_t} and parameter vector \eqn{\theta}.
 
-Compared to other models, these general models need a bit more effort from 
-the user, as you must provide the several small C++ snippets which define the 
+Compared to other models, these general models need a bit more effort from
+the user, as you must provide the several small C++ snippets which define the
 model structure. See examples in ZZZ.
 }

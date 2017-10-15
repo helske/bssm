@@ -11,7 +11,7 @@ lgg_ssm(y, Z, H, T, R, a1, P1, theta, obs_intercept, state_intercept,
 \arguments{
 \item{y}{Observations as multivariate time series (or matrix) of length \eqn{n}.}
 
-\item{Z, H, T, R}{An external pointers for the C++ functions which 
+\item{Z, H, T, R}{An external pointers for the C++ functions which
 define the corresponding model functions.}
 
 \item{a1}{Prior mean for the initial state as a vector of length m.}
@@ -28,7 +28,7 @@ define the corresponding model functions.}
 
 \item{n_etas}{Dimension of the noise term of the transition equation.}
 
-\item{log_prior_pdf}{An external pointer for the C++ function which 
+\item{log_prior_pdf}{An external pointer for the C++ function which
 computes the log-prior density given theta.}
 
 \item{state_names}{Names for the states.}
@@ -48,7 +48,7 @@ where \eqn{\epsilon_t \sim N(0, I_p)}, \eqn{\eta_t \sim N(0, I_m)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and functions
 \eqn{Z, H, T, R} can depend on \eqn{\alpha_t} and parameter vector \eqn{\theta}.
 
-Compared to other models, these general models need a bit more effort from 
-the user, as you must provide the several small C++ snippets which define the 
+Compared to other models, these general models need a bit more effort from
+the user, as you must provide the several small C++ snippets which define the
 model structure. See examples in ZZZ.
 }

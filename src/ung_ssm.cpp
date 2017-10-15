@@ -7,24 +7,24 @@
 
 // General constructor of ung_ssm object from Rcpp::List
 // with parameter indices
-ung_ssm::ung_ssm(const Rcpp::List& model, const unsigned int seed, 
+ung_ssm::ung_ssm(const Rcpp::List& model, const unsigned int seed,
   const arma::uvec& Z_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) :
   y(Rcpp::as<arma::vec>(model["y"])), Z(Rcpp::as<arma::mat>(model["Z"])),
-  T(Rcpp::as<arma::cube>(model["T"])), R(Rcpp::as<arma::cube>(model["R"])), 
-  a1(Rcpp::as<arma::vec>(model["a1"])), P1(Rcpp::as<arma::mat>(model["P1"])), 
-  xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(Rcpp::as<arma::vec>(model["coefs"])), 
-  D(Rcpp::as<arma::vec>(model["obs_intercept"])), 
+  T(Rcpp::as<arma::cube>(model["T"])), R(Rcpp::as<arma::cube>(model["R"])),
+  a1(Rcpp::as<arma::vec>(model["a1"])), P1(Rcpp::as<arma::mat>(model["P1"])),
+  xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(Rcpp::as<arma::vec>(model["coefs"])),
+  D(Rcpp::as<arma::vec>(model["obs_intercept"])),
   C(Rcpp::as<arma::mat>(model["state_intercept"])),
-  Ztv(Z.n_cols > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1), Dtv(D.n_elem > 1), 
+  Ztv(Z.n_cols > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1), Dtv(D.n_elem > 1),
   Ctv(C.n_cols > 1),
-  n(y.n_elem), m(a1.n_elem), k(R.n_cols), RR(arma::cube(m, m, Rtv * (n - 1) + 1)), 
+  n(y.n_elem), m(a1.n_elem), k(R.n_cols), RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
   xbeta(arma::vec(n, arma::fill::zeros)), engine(seed), zero_tol(1e-8),
-  phi(model["phi"]), 
-  u(Rcpp::as<arma::vec>(model["u"])), distribution(model["distribution"]), 
-  phi_est(Rcpp::as<bool>(model["phi_est"])), max_iter(100), conv_tol(1.0e-8), 
+  phi(model["phi"]),
+  u(Rcpp::as<arma::vec>(model["u"])), distribution(model["distribution"]),
+  phi_est(Rcpp::as<bool>(model["phi_est"])), max_iter(100), conv_tol(1.0e-8),
   Z_ind(Z_ind), T_ind(T_ind), R_ind(R_ind),
   seed(seed) {
-  
+
   if(xreg.n_cols > 0) {
     compute_xbeta();
   }
@@ -39,7 +39,7 @@ void ung_ssm::compute_RR(){
 
 // update system matrices given theta
 void ung_ssm::set_theta(const arma::vec& theta) {
-  
+
   if (Z_ind.n_elem > 0) {
     Z.elem(Z_ind) = theta.subvec(0, Z_ind.n_elem - 1);
   }
@@ -50,11 +50,11 @@ void ung_ssm::set_theta(const arma::vec& theta) {
     R.elem(R_ind) = theta.subvec(Z_ind.n_elem + T_ind.n_elem,
       Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem - 1);
   }
-  
+
   if (R_ind.n_elem  > 0) {
     compute_RR();
   }
-  
+
   if(phi_est) {
     phi = theta(Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem);
   }
@@ -62,15 +62,15 @@ void ung_ssm::set_theta(const arma::vec& theta) {
     beta = theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1);
     compute_xbeta();
   }
-  
+
 }
 
 // pick up theta from system matrices
 arma::vec ung_ssm::get_theta(void) const {
-  
+
   // !! add phi when adding other distributions !!
   arma::vec theta(Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem + (distribution == 3));
-  
+
   if (Z_ind.n_elem > 0) {
     theta.subvec(0, Z_ind.n_elem - 1) = Z.elem(Z_ind);
   }
@@ -81,7 +81,7 @@ arma::vec ung_ssm::get_theta(void) const {
     theta.subvec(Z_ind.n_elem + T_ind.n_elem,
       Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem - 1) = R.elem(R_ind);
   }
-  
+
   if(phi_est) {
     theta(Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem) = phi;
   }
@@ -89,13 +89,13 @@ arma::vec ung_ssm::get_theta(void) const {
     theta.subvec(theta.n_elem - xreg.n_cols,
       theta.n_elem - 1) = beta;
   }
-  
-  
+
+
   return theta;
 }
 
-// given the current guess of mode, compute new values of y and H of 
-// approximate model 
+// given the current guess of mode, compute new values of y and H of
+// approximate model
 /* distribution:
  * 0 = Stochastic volatility model
  * 1 = Poisson
@@ -103,11 +103,11 @@ arma::vec ung_ssm::get_theta(void) const {
  * 3 = Negative binomial
  */
 ///// TODO: Change to enums later!!!!
-void ung_ssm::laplace_iter(const arma::vec& signal, arma::vec& approx_y, 
+void ung_ssm::laplace_iter(const arma::vec& signal, arma::vec& approx_y,
   arma::vec& approx_H) const {
-  
+
   //note: using the variable approx_H to store approx_HH first
-  
+
   switch(distribution) {
   case 0: {
   arma::vec tmp = y;
@@ -137,19 +137,20 @@ void ung_ssm::laplace_iter(const arma::vec& signal, arma::vec& approx_y,
 
 // construct an approximating Gaussian model
 // Note the difference to previous versions, the convergence is assessed only
-// by checking the changes in mode, not the actual function values. This is 
+// by checking the changes in mode, not the actual function values. This is
 // slightly faster and sufficient as the approximation doesn't need to be accurate.
 // Using function values would be safer though, as we could use line search etc
 // in case of potential divergence etc...
-ugg_ssm ung_ssm::approximate(arma::vec& mode_estimate, const unsigned int max_iter, 
+ugg_ssm ung_ssm::approximate(arma::vec& mode_estimate, const unsigned int max_iter,
   const double conv_tol) const {
+
   //Construct y and H for the Gaussian model
-  arma::vec approx_y(n);
-  arma::vec approx_H(n);
+  arma::vec approx_y(n, arma::fill::zeros);
+  arma::vec approx_H(n, arma::fill::zeros);
   ugg_ssm approx_model(approx_y, Z, approx_H, T, R, a1, P1, xreg, beta, D, C, seed);
-  
+
   unsigned int i = 0;
-  double diff = conv_tol + 1; 
+  double diff = conv_tol + 1;
   while(i < max_iter && diff > conv_tol) {
     i++;
     //Construct y and H for the Gaussian model
@@ -168,14 +169,14 @@ ugg_ssm ung_ssm::approximate(arma::vec& mode_estimate, const unsigned int max_it
     diff = arma::mean(arma::square(mode_estimate_new - mode_estimate));
     mode_estimate = mode_estimate_new;
   }
-  
+
   return approx_model;
 }
 
 //update previously obtained approximation
-void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate, 
+void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate,
   const unsigned int max_iter, const double conv_tol) const {
-  
+
   //update model
   approx_model.Z = Z;
   approx_model.T = T;
@@ -187,7 +188,7 @@ void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate,
   approx_model.C = C;
   approx_model.RR = RR;
   approx_model.xbeta = xbeta;
-  
+
   if(max_iter == 0 && mode_estimate.n_elem == n) {
     if (distribution == 0) {
       mode_estimate = arma::vectorise(approx_model.fast_smoother());
@@ -199,7 +200,7 @@ void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate,
     }
   }
   unsigned int i = 0;
-  double diff = conv_tol + 1; 
+  double diff = conv_tol + 1;
   while(i < max_iter && diff > conv_tol) {
     i++;
     //Construct y and H for the Gaussian model
@@ -218,13 +219,13 @@ void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate,
     diff = arma::mean(arma::square(mode_estimate_new - mode_estimate));
     mode_estimate = mode_estimate_new;
   }
-  
+
 }
 
 
 // psi particle filter using Gaussian approximation //
 
-/* 
+/*
  * approx_model:  Gaussian approximation of the original model
  * approx_loglik: approximate log-likelihood
  *                sum(log[g(y_t | ^alpha_t) / ~g(~y_t | ^alpha_t)]) + loglik(approx_model)
@@ -233,24 +234,24 @@ void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate,
  * nsim:          Number of particles
  * alpha:         Simulated particles
  * weights:       Potentials g(y_t | alpha_t) / ~g(~y_t | alpha_t)
- * indices:       Indices from resampling, alpha.slice(ind(i, t)).col(t) is 
- *                the ancestor of alpha.slice(i).col(t + 1) 
+ * indices:       Indices from resampling, alpha.slice(ind(i, t)).col(t) is
+ *                the ancestor of alpha.slice(i).col(t + 1)
  */
 
 double ung_ssm::psi_filter(const ugg_ssm& approx_model,
   const double approx_loglik, const arma::vec& scales,
   const unsigned int nsim, arma::cube& alpha, arma::mat& weights,
   arma::umat& indices) {
-  
+
   arma::mat alphahat(m, n);
   arma::cube Vt(m, m, n);
   arma::cube Ct(m, m, n);
   approx_model.smoother_ccov(alphahat, Vt, Ct);
   conditional_cov(Vt, Ct);
-  
+
   std::normal_distribution<> normal(0.0, 1.0);
-  
-  
+
+
   for (unsigned int i = 0; i < nsim; i++) {
     arma::vec um(m);
     for(unsigned int j = 0; j < m; j++) {
@@ -258,7 +259,7 @@ double ung_ssm::psi_filter(const ugg_ssm& approx_model,
     }
     alpha.slice(i).col(0) = alphahat.col(0) + Vt.slice(0) * um;
   }
-  
+
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec normalized_weights(nsim);
   double loglik = 0.0;
@@ -276,16 +277,16 @@ double ung_ssm::psi_filter(const ugg_ssm& approx_model,
     normalized_weights.fill(1.0 / nsim);
     loglik = approx_loglik;
   }
-  
+
   for (unsigned int t = 0; t < (n - 1); t++) {
     arma::vec r(nsim);
     for (unsigned int i = 0; i < nsim; i++) {
       r(i) = unif(engine);
     }
     indices.col(t) = stratified_sample(normalized_weights, r, nsim);
-    
+
     arma::mat alphatmp(m, nsim);
-    
+
     for (unsigned int i = 0; i < nsim; i++) {
       alphatmp.col(i) = alpha.slice(indices(i, t)).col(t);
     }
@@ -297,9 +298,9 @@ double ung_ssm::psi_filter(const ugg_ssm& approx_model,
       alpha.slice(i).col(t + 1) = alphahat.col(t + 1) +
         Ct.slice(t + 1) * (alphatmp.col(i) - alphahat.col(t)) + Vt.slice(t + 1) * um;
     }
-    
+
     if(arma::is_finite(y(t + 1))) {
-      weights.col(t + 1) = 
+      weights.col(t + 1) =
         arma::exp(log_weights(approx_model, t + 1, alpha) - scales(t + 1));
       double sum_weights = arma::accu(weights.col(t + 1));
       if(sum_weights > 0.0){
@@ -316,7 +317,7 @@ double ung_ssm::psi_filter(const ugg_ssm& approx_model,
   return loglik;
 }
 
-arma::vec ung_ssm::importance_weights(const ugg_ssm& approx_model, 
+arma::vec ung_ssm::importance_weights(const ugg_ssm& approx_model,
   const arma::cube& alpha) const {
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
   for(unsigned int t = 0; t < n; t++) {
@@ -330,11 +331,11 @@ arma::vec ung_ssm::importance_weights(const ugg_ssm& approx_model,
  * t:             Time point where the weights are computed
  * alpha:         Simulated particles
  */
-arma::vec ung_ssm::log_weights(const ugg_ssm& approx_model, 
+arma::vec ung_ssm::log_weights(const ugg_ssm& approx_model,
   const unsigned int t, const arma::cube& alpha) const {
-  
+
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
-  
+
   if (arma::is_finite(y(t))) {
     switch(distribution) {
     case 0  :
@@ -378,9 +379,9 @@ arma::vec ung_ssm::log_weights(const ugg_ssm& approx_model,
 // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
 arma::vec ung_ssm::scaling_factors(const ugg_ssm& approx_model,
   const arma::vec& mode_estimate) const {
-  
+
   arma::vec weights(n, arma::fill::zeros);
-  
+
   switch(distribution) {
   case 0  :
     for(unsigned int t = 0; t < n; t++) {
@@ -423,7 +424,7 @@ arma::vec ung_ssm::scaling_factors(const ugg_ssm& approx_model,
     }
     break;
   }
-  
+
   return weights;
 }
 
@@ -432,11 +433,11 @@ arma::vec ung_ssm::scaling_factors(const ugg_ssm& approx_model,
  * t:             Time point where the densities are computed
  * alpha:         Simulated particles
  */
-arma::vec ung_ssm::log_obs_density(const unsigned int t, 
+arma::vec ung_ssm::log_obs_density(const unsigned int t,
   const arma::cube& alpha) const {
-  
+
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
-  
+
   if (arma::is_finite(y(t))) {
     switch(distribution) {
     case 0  :
@@ -463,7 +464,7 @@ arma::vec ung_ssm::log_obs_density(const unsigned int t,
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
         double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
           alpha.slice(i).col(t) + xbeta(t));
-        weights(i) = y(t) * simsignal - (y(t) + phi) * 
+        weights(i) = y(t) * simsignal - (y(t) + phi) *
           std::log(phi + u(t) * std::exp(simsignal));
       }
       break;
@@ -474,12 +475,12 @@ arma::vec ung_ssm::log_obs_density(const unsigned int t,
 
 double ung_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
-  
+
   // arma::mat U(m, m);
   // arma::mat V(m, m);
   // arma::vec s(m);
   // arma::svd_econ(U, s, V, P1, "left");
-  // arma::uvec nonzero = arma::find(s > (arma::datum::eps * m * s(0)));
+  // arma::uvec nonzero = arma::find(s > (std::numeric_limits<double>::epsilon() * m * s(0)));
   // arma::mat L = arma::diagmat(1.0 / s(nonzero)) U
   arma::uvec nonzero = arma::find(P1.diag() > 0);
   arma::mat L_P1(m, m, arma::fill::zeros);
@@ -495,11 +496,11 @@ double ung_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
     }
     alpha.slice(i).col(0) = a1 + L_P1 * um;
   }
-  
+
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec normalized_weights(nsim);
   double loglik = 0.0;
-  
+
   if(arma::is_finite(y(0))) {
     weights.col(0) = log_obs_density(0, alpha);
     double max_weight = weights.col(0).max();
@@ -516,32 +517,32 @@ double ung_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
     normalized_weights.fill(1.0 / nsim);
   }
   for (unsigned int t = 0; t < (n - 1); t++) {
-    
+
     arma::vec r(nsim);
     for (unsigned int i = 0; i < nsim; i++) {
       r(i) = unif(engine);
     }
-    
+
     indices.col(t) = stratified_sample(normalized_weights, r, nsim);
-    
+
     arma::mat alphatmp(m, nsim);
-    
+
     for (unsigned int i = 0; i < nsim; i++) {
       alphatmp.col(i) = alpha.slice(indices(i, t)).col(t);
     }
-    
+
     for (unsigned int i = 0; i < nsim; i++) {
       arma::vec uk(k);
       for(unsigned int j = 0; j < k; j++) {
         uk(j) = normal(engine);
       }
-      alpha.slice(i).col(t + 1) = C.col(t * Ctv) + 
+      alpha.slice(i).col(t + 1) = C.col(t * Ctv) +
         T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
     }
-    
+
     if(arma::is_finite(y(t + 1))) {
       weights.col(t + 1) = log_obs_density(t + 1, alpha);
-      
+
       double max_weight = weights.col(t + 1).max();
       weights.col(t + 1) = arma::exp(weights.col(t + 1) - max_weight);
       double sum_weights = arma::accu(weights.col(t + 1));
@@ -578,12 +579,12 @@ double ung_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
 }
 
 arma::cube ung_ssm::predict_sample(const arma::mat& theta,
-  const arma::mat& alpha, const arma::uvec& counts, 
+  const arma::mat& alpha, const arma::uvec& counts,
   const unsigned int predict_type, const unsigned int nsim) {
-  
+
   unsigned int d = 1;
   if (predict_type == 3) d = m;
-  
+
   arma::mat expanded_theta = rep_mat(theta, counts);
   arma::mat expanded_alpha = rep_mat(alpha, counts);
   unsigned int n_samples = expanded_theta.n_cols;
@@ -591,54 +592,54 @@ arma::cube ung_ssm::predict_sample(const arma::mat& theta,
   for (unsigned int i = 0; i < n_samples; i++) {
     set_theta(expanded_theta.col(i));
     a1 = expanded_alpha.col(i);
-    sample.slices(i * nsim, (i + 1) * nsim - 1) = 
+    sample.slices(i * nsim, (i + 1) * nsim - 1) =
       sample_model(predict_type, nsim);
-    
+
   }
   return sample;
 }
 
 
-arma::mat ung_ssm::sample_model(const unsigned int predict_type, 
+arma::mat ung_ssm::sample_model(const unsigned int predict_type,
   const unsigned int nsim) {
-  
+
   arma::cube alpha(m, n, nsim);
   std::normal_distribution<> normal(0.0, 1.0);
-  
+
   for (unsigned int i = 0; i < nsim; i++) {
-    
+
     alpha.slice(i).col(0) = a1;
-    
+
     for (unsigned int t = 0; t < (n - 1); t++) {
       arma::vec uk(k);
       for(unsigned int j = 0; j < k; j++) {
         uk(j) = normal(engine);
       }
-      alpha.slice(i).col(t + 1) = 
-        C.col(t * Ctv) + T.slice(t * Ttv) * alpha.slice(i).col(t) + 
+      alpha.slice(i).col(t + 1) =
+        C.col(t * Ctv) + T.slice(t * Ttv) * alpha.slice(i).col(t) +
         R.slice(t * Rtv) * uk;
     }
   }
   if (predict_type < 3) {
-    
+
     arma::cube y(1, n, nsim);
-    
+
     switch(distribution) {
-    case 0: 
-      y.zeros(); 
+    case 0:
+      y.zeros();
       break;
-    case 1: 
+    case 1:
       for (unsigned int i = 0; i < nsim; i++) {
         for (unsigned int t = 0; t < n; t++) {
-          y(0, t, i) = std::exp(xbeta(t) + D(t * Dtv) + 
+          y(0, t, i) = std::exp(xbeta(t) + D(t * Dtv) +
             arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
         }
       }
       break;
-    case 2: 
+    case 2:
       for (unsigned int i = 0; i < nsim; i++) {
         for (unsigned int t = 0; t < n; t++) {
-          double tmp = std::exp(xbeta(t) + D(t * Dtv) + 
+          double tmp = std::exp(xbeta(t) + D(t * Dtv) +
             arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
           y(0, t, i) = tmp / (1.0 + tmp);
         }
@@ -647,15 +648,15 @@ arma::mat ung_ssm::sample_model(const unsigned int predict_type,
     case 3:
       for (unsigned int i = 0; i < nsim; i++) {
         for (unsigned int t = 0; t < n; t++) {
-          y(0, t, i) = std::exp(xbeta(t) + D(t * Dtv) + 
+          y(0, t, i) = std::exp(xbeta(t) + D(t * Dtv) +
             arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
         }
       }
       break;
     }
-    
+
     if (predict_type == 1) {
-      
+
       switch(distribution) {
       case 0:
         break;
@@ -666,12 +667,12 @@ arma::mat ung_ssm::sample_model(const unsigned int predict_type,
             if ((u(t) * y(0, t, i)) < poisson.max()) {
               y(0, t, i) = poisson(engine);
             } else {
-              y(0, t, i) = arma::datum::nan;
+              y(0, t, i) = std::numeric_limits<double>::quiet_NaN();
             }
-          } 
+          }
         }
         break;
-      case 2: 
+      case 2:
         for (unsigned int i = 0; i < nsim; i++) {
           for (unsigned int t = 0; t < n; t++) {
             std::binomial_distribution<> binomial(u(t), y(0, t, i));
@@ -679,17 +680,17 @@ arma::mat ung_ssm::sample_model(const unsigned int predict_type,
           }
         }
         break;
-      case 3: 
+      case 3:
         for (unsigned int i = 0; i < nsim; i++) {
           for (unsigned int t = 0; t < n; t++) {
-            std::negative_binomial_distribution<> 
+            std::negative_binomial_distribution<>
             negative_binomial(phi, phi / (phi + u(t) * y(0, t, i)));
             y(0, t, i) = negative_binomial(engine);
           }
         }
         break;
       }
-    } 
+    }
     return y;
   }
   return alpha;

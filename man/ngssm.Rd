@@ -26,8 +26,8 @@ m x k x n array, or object which can be coerced to such.}
 \item{distribution}{distribution of the observation. Possible choices are
 \code{"poisson"}, \code{"binomial"}, and \code{"negative binomial"}.}
 
-\item{phi}{Additional parameter relating to the non-Gaussian distribution. 
-For Negative binomial distribution this is the dispersion term, and for other 
+\item{phi}{Additional parameter relating to the non-Gaussian distribution.
+For Negative binomial distribution this is the dispersion term, and for other
 distributions this is ignored.}
 
 \item{u}{Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
@@ -42,7 +42,7 @@ value in MCMC. Defaults to vector of zeros.}
 
 \item{Z_prior, T_prior, R_prior}{Priors for the NA values in system matrices.}
 
-\item{state_intercept}{Intercept terms for state equation, given as a 
+\item{state_intercept}{Intercept terms for state equation, given as a
 m times n matrix.}
 }
 \value{

@@ -5,6 +5,8 @@ template double compute_ung_loglik(ung_ssm model, unsigned int simulation_method
   arma::vec mode_estimate, unsigned int max_iter, double conv_tol);
 template double compute_ung_loglik(ung_bsm model, unsigned int simulation_method, unsigned int nsim_states,
   arma::vec mode_estimate, unsigned int max_iter, double conv_tol);
+template double compute_ung_loglik(ung_ar1 model, unsigned int simulation_method, unsigned int nsim_states,
+  arma::vec mode_estimate, unsigned int max_iter, double conv_tol);
 template double compute_ung_loglik(ung_svm model, unsigned int simulation_method, unsigned int nsim_states,
   arma::vec mode_estimate, unsigned int max_iter, double conv_tol);
 

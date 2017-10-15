@@ -35,7 +35,7 @@ value in MCMC. Defaults to vector of zeros.}
 
 \item{H_prior, Z_prior, T_prior, R_prior}{Priors for the NA values in system matrices.}
 
-\item{obs_intercept, state_intercept}{Intercept terms for observation and 
+\item{obs_intercept, state_intercept}{Intercept terms for observation and
 state equations, given as a length n vector and m times n matrix respectively.}
 }
 \value{

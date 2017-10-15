@@ -87,7 +87,9 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
   unsigned n = model.n;
   
   double logprior = model.log_prior_pdf(model.theta);
-  
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
   arma::mat mode_estimate(m, n);
   mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
   if (!arma::is_finite(mode_estimate)) {
