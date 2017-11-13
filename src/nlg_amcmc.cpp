@@ -195,9 +195,6 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
 
 void nlg_amcmc::ekf_mcmc(nlg_ssm model, const bool end_ram, const unsigned int iekf_iter) {
   
-  unsigned int m = model.m;
-  unsigned n = model.n;
-  
   double logprior = model.log_prior_pdf(model.theta);
   
   // compute the log-likelihood
@@ -451,10 +448,10 @@ for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
       approx_model.T.slice(t) * mode_storage.slice(i).col(t);
   }
   for (unsigned int t = 0; t < H.n_slices; t++) {
-    approx_model.H.slice(t) = model.H_fn(t, model.theta, model.known_params, model.known_tv_params);
+    approx_model.H.slice(t) = model.H_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
   }
   for (unsigned int t = 0; t < R.n_slices; t++) {
-    approx_model.R.slice(t) = model.R_fn(t, model.theta, model.known_params, model.known_tv_params);
+    approx_model.R.slice(t) = model.R_fn(t, mode_storage.slice(i).col(t), model.theta, model.known_params, model.known_tv_params);
   }
   approx_model.compute_HH();
   approx_model.compute_RR();
@@ -518,7 +515,7 @@ void nlg_amcmc::state_ekf_sample(nlg_ssm model, const unsigned int n_threads, co
     arma::mat att(m, n);
     arma::cube Pt(m, m, n + 1);
     arma::cube Ptt(m, m, n);
-    double loglik = model.ekf(at, att, Pt, Ptt, iekf_iter);
+    model.ekf(at, att, Pt, Ptt, iekf_iter);
     
     approx_model.a1 = model.a1_fn(model.theta, model.known_params);
     approx_model.P1 = model.P1_fn(model.theta, model.known_params);
@@ -569,7 +566,7 @@ for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
   arma::mat att(m, n);
   arma::cube Pt(m, m, n + 1);
   arma::cube Ptt(m, m, n);
-  double loglik = model.ekf(at, att, Pt, Ptt, iekf_iter);
+  model.ekf(at, att, Pt, Ptt, iekf_iter);
   
   approx_model.a1 = model.a1_fn(model.theta, model.known_params);
   approx_model.P1 = model.P1_fn(model.theta, model.known_params);

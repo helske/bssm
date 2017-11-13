@@ -9,7 +9,7 @@ lgg_ssm::lgg_ssm(const arma::mat& y_, lmat_fnPtr Z_fn_, lmat_fnPtr H_fn_,
   const unsigned int seed) :
   y(y_), Z_fn(Z_fn_), H_fn(H_fn_), T_fn(T_fn_), 
   R_fn(R_fn_), a1_fn(a1_fn_), P1_fn(P1_fn_), 
-  theta(theta), D_fn(D_fn_), C_fn(C_fn_),
+  D_fn(D_fn_), C_fn(C_fn_), theta(theta), 
   log_prior_pdf(log_prior_pdf_), known_params(known_params), 
   known_tv_params(known_tv_params), m(m), k(k), n(y.n_cols),  p(y.n_rows),
   seed(seed), engine(seed), zero_tol(1e-8) {
