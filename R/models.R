@@ -613,7 +613,26 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
     obs_intercept = obs_intercept, state_intercept = state_intercept),
     class = c("svm", "ngssm"))
 }
-#'@export
+#' Non-Gaussian model with AR(1) latent process
+#'
+#' Constructs a simple non-Gaussian model where the state dynamics follow AR(1) process.
+#'
+#' @param y Vector or a \code{\link{ts}} object of observations.
+#' @param rho prior for autoregressive coefficient.
+#' @param mu Prior for the intercept mu of the transition equation. Parameter is omitted if this is set to 0.
+#' @param sigma Prior for the standard deviation of noise of the AR-process.
+#' @param beta Prior for the regression coefficients.
+#' @param xreg Matrix containing covariates.
+#' @param distribution distribution of the observation. Possible choices are
+#' \code{"poisson"}, \code{"binomial"} and \code{"negative binomial"}.
+#' @param phi Additional parameter relating to the non-Gaussian distribution.
+#' For Negative binomial distribution this is the dispersion term, and for other
+#' distributions this is ignored.
+#' @param u Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
+#' term. For binomial, this is the number of trials.
+#' @return Object of class \code{ng_ar1}.
+#' @export
+#' @rdname ng_ar1
 ng_ar1 <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NULL) {
   
   check_y(y)
@@ -1165,6 +1184,10 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
 #' @param n_etas Dimension of the noise term of the transition equation.
 #' @param log_prior_pdf An external pointer for the C++ function which
 #' computes the log-prior density given theta.
+#' @param obs_intercept Intercept terms for the observations equation, given as a
+#'  length n vector.
+#' @param state_intercept Intercept terms for the state equation, given as a
+#'  m times n matrix.
 #' @param state_names Names for the states.
 #' @return Object of class \code{nlg_ssm}.
 #' @export

@@ -1,0 +1,7 @@
+@Manual{bssm,
+    title = {{bssm}: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R},
+    author = {Jouni Helske, Matti Vihola},
+    year = {2017},
+    note = {Vignette for R package version 0.1.2},
+    url = {https://cran.r-project.org/web/packages/bssm/vignettes/bssm.pdf},
+  }

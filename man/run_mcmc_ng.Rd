@@ -45,10 +45,9 @@
   conv_tol = 1e-04, iekf_iter = 0, ...)
 
 \method{run_mcmc}{sde_ssm}(object, n_iter, nsim_states, type = "full",
-  method = "da", L_c, L_f, coupled = FALSE, n_burnin = floor(n_iter/2),
-  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
-  end_adaptive_phase = TRUE, n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+  method = "da", L_c, L_f, n_burnin = floor(n_iter/2), n_thin = 1,
+  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  n_threads = 1, seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
 \item{object}{Model object.}
@@ -112,6 +111,9 @@ once at the start of the MCMC. Not used for non-linear models.}
 Gaussian models is obtained from extended Kalman filter. If
 \code{iekf_iter > 0}, iterated extended Kalman filter is used with
 \code{iekf_iter} iterations.}
+
+\item{L_c, L_f}{Integer values defining the discretization levels for first and second stages. 
+For PM methods, maximum of these is used.}
 }
 \description{
 Methods for posterior inference of states and parameters.

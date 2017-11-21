@@ -211,15 +211,16 @@ particle_smoother.nlg_ssm <- function(object, nsim,
 
 #' @rdname particle_smoother
 #' @method particle_smoother sde_ssm
+#' @param Integer defining the discretization level.
 #' @export
 particle_smoother.sde_ssm <- function(object, nsim, L, 
 seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  if(L <= 0) stop("Discretization level L must be larger than 0.")
+  if(L < 1) stop("Discretization level L must be larger than 0.")
   out <-  bsf_smoother_sde(object$y, object$x0, object$positive, 
     object$drift, object$diffusion, object$ddiffusion, 
     object$prior_pdf, object$obs_pdf, object$theta, 
-    nsim, L, seed)
+    nsim, round(L), seed)
   
   colnames(out$alphahat) <- colnames(out$Vt) <-
     colnames(out$Vt) <- object$state_names

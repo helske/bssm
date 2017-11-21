@@ -1,4 +1,4 @@
-bssm 0.1.2 (Release date: -)
+bssm 0.1.2 (Release date: 2017-11-21)
 ==============
   * API change for run_mcmc: All MCMC methods are now under the argument method, 
     instead of having separate arguments for delayed acceptance and IS schemes.
@@ -10,6 +10,7 @@ bssm 0.1.2 (Release date: -)
   * Added another new model class, sde_ssm, which is a model with continuous 
     state dynamics defined as SDE. These too are defined via couple 
     simple C++ functions.
+  * Added non-gaussian AR(1) model class.
   * Added argument nsim for predict method, which allows multiple draws per MCMC iteration.
   * The noise multiplier matrices H and R in nlg_ssm models can now depend on states.
   

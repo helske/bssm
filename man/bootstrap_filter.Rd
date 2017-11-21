@@ -30,6 +30,8 @@ bootstrap_filter(object, nsim, ...)
 \item{...}{Ignored.}
 
 \item{seed}{Seed for RNG.}
+
+\item{L}{Integer defining the discretization level.}
 }
 \value{
 A list containing samples, weights from the last time point, and an

@@ -20,6 +20,12 @@ define the corresponding model functions.}
 
 \item{theta}{Parameter vector passed to all model functions.}
 
+\item{obs_intercept}{Intercept terms for the observations equation, given as a
+length n vector.}
+
+\item{state_intercept}{Intercept terms for the state equation, given as a
+m times n matrix.}
+
 \item{known_params}{Vector of known parameters passed to all model functions.}
 
 \item{known_tv_params}{Matrix of known parameters passed to all model functions.}

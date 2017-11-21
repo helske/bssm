@@ -656,9 +656,11 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
 
 #' @method run_mcmc sde_ssm
 #' @rdname run_mcmc_ng
+#' @param L_c,L_f Integer values defining the discretization levels for first and second stages. 
+#' For PM methods, maximum of these is used.
 #' @export
 run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
-  method = "da", L_c, L_f, coupled = FALSE,
+  method = "da", L_c, L_f,
   n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   n_threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -683,11 +685,11 @@ run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
     full = {
       if (method == "da"){
         if (L_f <= L_c) stop("L_f should be larger than L_c.")
-        if(L_c <= 0) stop("L_c should be positive.")
+        if(L_c < 1) stop("L_c should be at least 1")
         out <- sde_da_mcmc(object$y, object$x0, object$positive,
           object$drift, object$diffusion, object$ddiffusion,
           object$prior_pdf, object$obs_pdf, object$theta,
-          nsim_states, L_c, L_f, coupled, seed,
+          nsim_states, L_c, L_f, FALSE, seed,
           n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
           end_adaptive_phase)
       } else {
@@ -704,12 +706,12 @@ run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
             end_adaptive_phase)
         } else {
           if (L_f <= L_c) stop("L_f should be larger than L_c.")
-          if(L_c <= 0) stop("L_c should be positive.")
+          if(L_c < 1) stop("L_c should be at least 1")
 
           out <- sde_is_mcmc(object$y, object$x0, object$positive,
             object$drift, object$diffusion, object$ddiffusion,
             object$prior_pdf, object$obs_pdf, object$theta,
-            nsim_states, L_c, L_f, coupled, seed,
+            nsim_states, L_c, L_f, FALSE, seed,
             n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
             end_adaptive_phase, pmatch(method, paste0("is", 1:3)), n_threads)
         }

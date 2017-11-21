@@ -114,14 +114,15 @@ bootstrap_filter.nlg_ssm <- function(object, nsim,
 
 #' @method bootstrap_filter sde_ssm
 #' @rdname bootstrap_filter
+#' @param L Integer defining the discretization level.
 #' @export
 bootstrap_filter.sde_ssm <- function(object, nsim, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {
-  if(L <= 0) stop("Discretization level L must be larger than 0.")
+  if(L < 1) stop("Discretization level L must be larger than 0.")
   out <- bsf_sde(object$y, object$x0, object$positive,
     object$drift, object$diffusion, object$ddiffusion,
     object$prior_pdf, object$obs_pdf, object$theta,
-    nsim, L, seed)
+    nsim, round(L), seed)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <-
     rownames(out$alpha) <- object$state_names
