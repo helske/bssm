@@ -211,7 +211,7 @@ particle_smoother.nlg_ssm <- function(object, nsim,
 
 #' @rdname particle_smoother
 #' @method particle_smoother sde_ssm
-#' @param Integer defining the discretization level.
+#' @param L Integer defining the discretization level.
 #' @export
 particle_smoother.sde_ssm <- function(object, nsim, L, 
 seed = sample(.Machine$integer.max, size = 1), ...) {
