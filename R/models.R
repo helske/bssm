@@ -649,7 +649,7 @@ ng_ar1 <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
     if(!is_prior(beta) && !is_prior_list(beta)) {
       stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
     }
-    
+    n <- length(y)
     if (is.null(dim(xreg)) && length(xreg) == n) {
       xreg <- matrix(xreg, n, 1)
     }

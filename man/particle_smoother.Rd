@@ -56,7 +56,7 @@ Gaussian models is obtained from extended Kalman filter. If
 \code{iekf_iter > 0}, iterated extended Kalman filter is used with 
 \code{iekf_iter} iterations.}
 
-\item{Integer}{defining the discretization level.}
+\item{L}{Integer defining the discretization level.}
 }
 \description{
 Function \code{particle_smoother} performs filter-smoother or forward-backward smoother,

@@ -9,7 +9,7 @@ Description: Efficient methods for Bayesian inference of state space models
     via particle Markov chain Monte Carlo and parallel importance sampling type weighted 
     Markov chain Monte Carlo. Gaussian, Poisson, binomial, or negative binomial 
     observation densities, stochastic volatility models with Gaussian state 
-    dynamics, as well as general non-linear Gaussian models and discretized diffusion models 
+    dynamics, as well as general non-linear Gaussian models and discretised diffusion models 
     are supported.
 License: GPL (>= 2)
 Depends: R (>= 3.1.3)
