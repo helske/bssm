@@ -146,8 +146,10 @@ double general_gaussian_loglik(const arma::mat& y, SEXP Z, SEXP H,
   lgg_ssm model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_a1, *xpfun_P1, 
     *xpfun_D, *xpfun_C, theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     1);
+  Rcpp::Rcout<<"lgg_ssm ok"<<std::endl;
   mgg_ssm mgg_model = model.build_mgg();
   
+  Rcpp::Rcout<<"mgg_ssm ok"<<std::endl;
   return mgg_model.log_likelihood();
   
 }

@@ -752,7 +752,10 @@ ng_ar1 <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
 #'
 #' where \eqn{\epsilon_t \sim N(0, 1)}, \eqn{\eta_t \sim N(0, I_k)} and
 #' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
-#'
+#' 
+#' The priors are defined for each NA value of the system matrices, in the same order as 
+#' these values are naturally read in R. For more flexibility, see \code{\link{lgg_ssm}}.
+#' 
 #' @param y Observations as time series (or vector) of length \eqn{n}.
 #' @param Z System matrix Z of the observation equation. Either a vector of
 #' length m or a m x n array, or an object which can be coerced to such.

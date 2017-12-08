@@ -13,13 +13,13 @@ output:
     fig_width: 8
 bibliography: bssm.bib
 vignette: >
-  %\VignetteIndexEntry{bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R}
+%\VignetteIndexEntry{bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
   %\VignetteDepends{ggplot2, bayesplot}
----
+  ---
   
-```{r setup, include=FALSE}
+  ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -27,7 +27,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Introduction
 
 
-State space models (SSM) are latent variable models which are commonly applied in analysing time series data due to their flexible and general framework  [cf. @durbin-koopman2012]. For `R` [@r-core], there is large number of packages available for state space modelling, especially for the two special cases. First special case is linear-Gaussian SSM where both the observation and state densities are Gaussian with linear relationships with the states. Another special case is SSM with discrete state space, which are sometimes called hidden Markov models (HMM). We do not consider HMMs in this paper. What is special about these two class of models is that the marginal likelihood function, and the conditional state distributions (conditioned on the observations) of these models are analytically tractable, making inference relatively straightforward. See for example [@Petris2010, @Tusell2010, @helske2017, @helskehelske2017] for review of some of the `R` packages dealing with these type of models. The `R` package `bssm` is designed for Bayesian inference of general state space models with non-Gaussian and/or non-linear observational and state equations. The package aims to provide easy-to-use and efficient functions for fully Bayesian inference of common time series models such basic structural time series model (BSM) [@Harvey1989] with exogenous covariates, simple stochastic volatility models, and discretized diffusion models, making it straighforward and efficient to make predictions and other inference in a Bayesian setting.
+State space models (SSM) are latent variable models which are commonly applied in analysing time series data due to their flexible and general framework  [cf. @durbin-koopman2012]. For `R` [@r-core], there is large number of packages available for state space modelling, especially for the two special cases. First special case is linear-Gaussian SSM (LGSSM) where both the observation and state densities are Gaussian with linear relationships with the states. Another special case is SSM with discrete state space, which are sometimes called hidden Markov models (HMM). We do not consider HMMs in this paper. What is special about these two class of models is that the marginal likelihood function, and the conditional state distributions (conditioned on the observations) of these models are analytically tractable, making inference relatively straightforward. See for example [@Petris2010, @Tusell2010, @helske2017, @helskehelske2017] for review of some of the `R` packages dealing with these type of models. The `R` package `bssm` is designed for Bayesian inference of general state space models with non-Gaussian and/or non-linear observational and state equations. The package aims to provide easy-to-use and efficient functions for fully Bayesian inference of common time series models such basic structural time series model (BSM) [@Harvey1989] with exogenous covariates, simple stochastic volatility models, and discretized diffusion models, making it straighforward and efficient to make predictions and other inference in a Bayesian setting.
 
 When extending the state space modelling to non-linear or non-Gaussian models, some difficulties arise. As the model densities are no longer analytically tractable, computing the latent state distributions, as well as hyperparameter estimation of the model becomes more difficult. One general option is to use Markov chain Monte Carlo (MCMC) methods targeting the full joint posterior of hyperparameters and the latent states, for example by Gibbs sampling or Hamiltonian Monte Carlo. Unfortunately the joint posterior can be very high dimensional and due to the strong autocorrelation structures of the state densities, the efficiency of such methods can be relatively poor. Another asymptotically exact approach is based on the pseudo-marginal particle MCMC approach [@andrieu-doucet-holenstein], where the likelihood function and the state distributions are estimated using sequential Monte Carlo (SMC) i.e. particle filter (PF). However, methods can also be computationally demanding, and optimal tuning of such algorithms can be cumbersome. Yet another option is to resort to approximative methods such extended and unscented Kalman filters, as well as more general Laplace approximation provided for example by [@inla].
 
@@ -147,9 +147,9 @@ with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{
 
 The `bssm` package also supports models where the state equation is defined as a continuous time diffusion model of form
 $$
-    \textrm{d} \alpha_t =
-    \mu(t, \alpha_t,\theta) \textrm{d} t +
-    \sigma(t, \alpha_t, \theta) \textrm{d} B_t,
+\textrm{d} \alpha_t =
+\mu(t, \alpha_t,\theta) \textrm{d} t +
+\sigma(t, \alpha_t, \theta) \textrm{d} B_t,
 $$
 where $B_t$ is a (vector valued) Brownian motion and where
 $\mu$ and $\sigma$ are vector and matrix valued functions. As these
@@ -163,7 +163,45 @@ Main functions of `bssm` is written in `C++`, with help of `Rcpp` and `RcppArmad
 
 ## Model building functions
 
-For linear-Gaussian models, `bssm` offers 
+For linear-Gaussian models, `bssm` offers functions `bsm` for basic structural time series models (BSM), as well as general `lgg_ssm` for arbitrary LGSSMs, defined via pointers to user supplied `C++` functions. There is also a function `gssm` for general LGSSM where user defines the system matrices directly as R objects, which can be more convinient in many cases. However, defining the priors for this model is somewhat more restricted, whereas for `lgg_smm`, arbitrary prior definitions can be used. As an example, one can build Gaussian BSM model as 
+
+```{r nhtemp}
+library("bssm")
+data("nhtemp", package = "datasets")
+
+prior <- halfnormal(1, 10)
+bsm_model <- bsm(y = nhtemp, sd_y = prior, sd_level = prior,
+  sd_slope = prior)
+```
+
+Here we use helper function `halfnormal` which defines half-Normal prior distribution for the standard deviation parameters, with first argument defining the initial value of the parameter, and second defines the scale parameter of the half-Normal distribution. Other prior options are `normal` and `uniform`.
+
+Same model could also by built with `lgg_ssm`, by defining the small `C++` snippets and passing the corresponding external pointers to `lgg_ssm`. For the BSM model, we can use following `cpp` file:
+
+```{Rcpp lgg_ssm_template, code=readLines('lgg_ssm_template.cpp'), eval = FALSE, echo = TRUE}
+```
+
+We can then compile the file and construct the model as
+```{r nhtemp_cpp}
+library("Rcpp")
+sourceCpp("lgg_ssm_template.cpp")
+pntrs <- create_xptrs()
+bsm_model2 <- lgg_ssm(y = nhtemp, Z = pntrs$Z, H = pntrs$H, T = pntrs$T, R = pntrs$R, 
+  a1 = pntrs$a1, P1 = pntrs$P1, state_intercept = pntrs$C, obs_intercept = pntrs$D, 
+  log_prior_pdf = pntrs$log_prior_pdf, theta = rep(1, 3), known_params = c(0, 1000), 
+  n_states = 2, state_names = c("level", "slope"))
+```
+
+
+Note that most of this code is general and can be modified to specific models accordingly. Word of caution when using these `C++` snippets: Due to the use of pointers, users must recompile and construct the model objects in each `R` session, i.e. saving and later loading the model object is not sufficient. Also, repeatedly recompiling the external pointers from same file with `sourceCpp` can cause `R` crash unexpectedly if the corresponding cache directory is not changed between compilations^[1].
+
+[^1]: https://github.com/helske/crashtest/issues/1.
+
+```{r nhtemp_loglik}
+logLik(bsm_model)
+logLik(bsm_model2)
+```
+
 ## Filtering and smoothing
 
 ## Markov chain Monte Carlo
@@ -172,7 +210,7 @@ For linear-Gaussian models, `bssm` offers
 ## Illustration
 
 Here is a short example. First we build our model using `bsm` function:
- 
+
 ```{r UKgas}
 library("bssm")
 set.seed(123)
@@ -191,57 +229,57 @@ mcmc_out
 
 For plotting purposes, we'll use `bayesplot` package for the figures after expanding our jump chain representation. Note that the API of the `expand_sample` function is likely change in future. 
 
-```{r plot}
-theta <- expand_sample(mcmc_out, "theta") ## until bayesplot is updated
-library("bayesplot")
-mcmc_areas(theta, bw = 0.001)
-level <- expand_sample(mcmc_out, "alpha",  times = 101:108, states = 1)
-mcmc_areas(level)
+<!-- ```{r plot} -->
+<!-- theta <- expand_sample(mcmc_out, "theta") ## until bayesplot is updated -->
+<!-- library("bayesplot") -->
+<!-- mcmc_areas(theta, bw = 0.001) -->
+<!-- level <- expand_sample(mcmc_out, "alpha",  times = 101:108, states = 1) -->
+<!-- mcmc_areas(level) -->
 
-# posterior mode estimates
-mcmc_out$theta[which.max(mcmc_out$posterior), ]
+<!-- # posterior mode estimates -->
+<!-- mcmc_out$theta[which.max(mcmc_out$posterior), ] -->
 
-```
+<!-- ``` -->
 
-Smoothed trend:
+<!-- Smoothed trend: -->
 
-```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component with 95% intervals."}
-level <- expand_sample(mcmc_out, "alpha", states = 1)
-# or using summary method:
-sumr <- summary(mcmc_out)
-level <- sumr$states$Mean[, 1]
-lwr <- level - 1.96 * sumr$states$SD[, 1]
-upr <- level + 1.96 * sumr$states$SD[, 1]
-ts.plot(model$y, cbind(level, lwr, upr), col = c(1, 2, 2, 2), lty = c(1, 1, 2, 2))
-```
+<!-- ```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component with 95% intervals."} -->
+<!-- level <- expand_sample(mcmc_out, "alpha", states = 1) -->
+<!-- # or using summary method: -->
+<!-- sumr <- summary(mcmc_out) -->
+<!-- level <- sumr$states$Mean[, 1] -->
+<!-- lwr <- level - 1.96 * sumr$states$SD[, 1] -->
+<!-- upr <- level + 1.96 * sumr$states$SD[, 1] -->
+<!-- ts.plot(model$y, cbind(level, lwr, upr), col = c(1, 2, 2, 2), lty = c(1, 1, 2, 2)) -->
+<!-- ``` -->
 
 
-For prediction intervals, we first build a model for the future time points, and 
-then use the previously obtained posterior samples for the prediction:
+<!-- For prediction intervals, we first build a model for the future time points, and  -->
+<!-- then use the previously obtained posterior samples for the prediction: -->
 
-```{r predict, dev.args=list(pointsize = 10), fig.cap="Mean predictions and prediction intervals."}
-future_model <- model
-future_model$y <- ts(rep(NA, 24), start = end(model$y) + c(0, 1), frequency = 4)
-pred <- predict(mcmc_out, future_model, probs = c(0.025, 0.1, 0.9, 0.975))
-ts.plot(log10(UKgas), pred$mean, pred$intervals[, -3],
-  col = c(1, 2, c(3, 4, 4, 3)), lty = c(1, 1, rep(2, 4)))
-```
+<!-- ```{r predict, dev.args=list(pointsize = 10), fig.cap="Mean predictions and prediction intervals."} -->
+<!-- future_model <- model -->
+<!-- future_model$y <- ts(rep(NA, 24), start = end(model$y) + c(0, 1), frequency = 4) -->
+<!-- pred <- predict(mcmc_out, future_model, probs = c(0.025, 0.1, 0.9, 0.975)) -->
+<!-- ts.plot(log10(UKgas), pred$mean, pred$intervals[, -3], -->
+<!--   col = c(1, 2, c(3, 4, 4, 3)), lty = c(1, 1, rep(2, 4))) -->
+<!-- ``` -->
 
-Now same with `ggplot2`:
+<!-- Now same with `ggplot2`: -->
 
-```{r predict2, dev.args=list(pointsize = 10), fig.cap="Prediction plots with ggplot2."}
-require("ggplot2")
-level_fit <- ts(colMeans(expand_sample(mcmc_out, "alpha")$level), start = start(model$y), 
-  frequency = 4)
-autoplot(pred, y = model$y, fit = level_fit, interval_color = "red", alpha_fill = 0.2)
-```
+<!-- ```{r predict2, dev.args=list(pointsize = 10), fig.cap="Prediction plots with ggplot2."} -->
+<!-- require("ggplot2") -->
+<!-- level_fit <- ts(colMeans(expand_sample(mcmc_out, "alpha")$level), start = start(model$y),  -->
+<!--   frequency = 4) -->
+<!-- autoplot(pred, y = model$y, fit = level_fit, interval_color = "red", alpha_fill = 0.2) -->
+<!-- ``` -->
 
-We can also obtain predictions in terms of individual components of the state vector:
-```{r predict3, dev.args=list(pointsize = 10), fig.cap="State prediction."}
-pred_state <- predict(mcmc_out, future_model, probs = c(0.025, 0.1, 0.9, 0.975), type = "state")
-ts.plot(log10(UKgas), level_fit, pred_state$mean[,"level"], pred_state$intervals$level[, -3],
-  col = c(1, 2, 2, c(3, 4, 4, 3)), lty = c(1, 1, 1, rep(2, 4)))
-```
+<!-- We can also obtain predictions in terms of individual components of the state vector: -->
+<!-- ```{r predict3, dev.args=list(pointsize = 10), fig.cap="State prediction."} -->
+<!-- pred_state <- predict(mcmc_out, future_model, probs = c(0.025, 0.1, 0.9, 0.975), type = "state") -->
+<!-- ts.plot(log10(UKgas), level_fit, pred_state$mean[,"level"], pred_state$intervals$level[, -3], -->
+<!--   col = c(1, 2, 2, c(3, 4, 4, 3)), lty = c(1, 1, 1, rep(2, 4))) -->
+<!-- ``` -->
 
 
 # References
