@@ -3,7 +3,7 @@ title: "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Mode
 author: 
   - Jouni Helske^[Linköping University, Department of Science and Technology, Sweden, University of Jyväskylä, Department of Mathematics and Statistics, Finland]
   - Matti Vihola^[University of Jyväskylä, Department of Mathematics and Statistics, Finland]
-date: "November 21, 2017"
+date: "December 08, 2017"
 link-citations: true
 output: 
   pdf_document:
@@ -35,7 +35,7 @@ The motivation behind the `bssm` package is in [@vihola-helske-franks] which sug
 
 We will first introduce the basic state space modelling framework used in `bssm`, and the relevant algorithms. We then give illustrations how to use `bssm` in practice.
 
-# State space models with linear-Gaussian dynamics
+## State space models with linear-Gaussian dynamics
 
 Denote a sequence of observations $(y_1,\ldots,y_T)$ as $y_{1:T}$, and sequence of latent state variables $(\alpha_1,\ldots, \alpha_T)$ as $\alpha_{1:T}$. Note that in general both the observations and the states can be multivariate, but currently the main algorithms of `bssm` support only univariate observations. A general state space model consists of two parts: observation level densities $g_t(y_t | \alpha_t)$ and latent state transition densities $\mu_t(\alpha_{t+1} | \alpha_t)$. We first focus on the case where the state transitions are linear-Gaussian:
 $$
@@ -95,7 +95,7 @@ $$
 
 If the interest is in the posterior means and variances of the states, we can replace the simulation smoothing in step 3 with standard fixed interval smoothing which gives the smoothed estimates (expected values and variances) of the states given the data and the model parameters. From these, the posterior means and variances of the states can be computed straightforwardly.
 
-# Non-Gaussian models
+## Non-Gaussian models
 
 For non-linear/non-Gaussian models, the marginal likelihood $p(y_{1:T} | \theta)$ is typically not available in closed form. Thus we need to resort to simulation methods, which leads to pseudo-marginal MCMC algorithm [@lin-liu-sloan, @beaumont, @andrieu-roberts]. The observational densities of our non-linear/non-Gaussian models are all twice differentiable, so we can straightforwardly use the Laplace approximation based on [@DK2000]. This gives us an approximating Gaussian model which has the same mode of $p(\alpha_{1:T} | y_{1:T}, \theta)$ as the original model. Often this approximating Gaussian model works well as such, and thus we can use it in MCMC scheme directly, which results in an approximate Bayesian inference. We can also use the approximating model together with importance sampling or particle filtering, which produces exact Bayesian inference on $p(\alpha_{1:T}, \theta | y_{1:T})$. 
 
@@ -132,7 +132,7 @@ In addition to standard pseudo-marginal MCMC or its DA variant, `bssm` also supp
 
 For all MCMC algorithms, `bssm` uses so-called jump chain representation of the Markov chain $X_1,\ldots,X_n$, where we only store each accepted $X_k$ and the number of steps we stayed on the same state. So for example if $X_{1:n} = (1,2,2,1,1,1)$, we present such chain as $\tilde X = (1,2,1)$, $N=(1,2,3)$. This approach reduces the storage space, and makes it more efficient to use importance sampling type correction algorithms. One drawback of this approach is that the results from the MCMC runs correspond to weighted samples from the target posterior, so some of the commonly used postprocessing tools need to be adjusted. Of course in case of other methods than IS-weighting, the simplest option is to just expand the samples using the stored counts $N$ instead.
 
-# Non-linear model state densities
+## Non-linear model state densities
 
 In case the state equation is non-linear, the standard particle MCMC approach using bootstrap filter can still be used. For delayed acceptance and IS-weighting approaches, as well as $\psi$-APF, new approximation techniques are needed. For this tasks, the `bssm` supports approximations by extended Kalman filter (EKF). Same approach is also applicable to the case with non-linear Gaussian observation densities. Due to the more general form of these models, definition of these models with `bssm` is slightly more complex. The general non-linear Gaussian model in the `bssm` has following form:
 
@@ -143,7 +143,7 @@ y_t = Z(t, \alpha_t, \theta) + H(t, \alpha_t, \theta)\epsilon_t,\\
 $$
 with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ needed by the EKF and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions. All of these functions can also depend on some known parameters, defined as `known_params` (vector) and `known_tv_params` (matrix with $n$ columns) arguments to `nlg_ssm` function. Note that while using the Laplace approximation as intermediate step is typically always more efficient that standard BSF based particle MCMC, the EKF approximation can be very unstable, and thus the the methods using EKF in the approximation phase can have poor performance in some cases.
 
-# Time-discretized diffusion models
+## Time-discretised diffusion models
 
 The `bssm` package also supports models where the state equation is defined as a continuous time diffusion model of form
 $$
@@ -157,7 +157,19 @@ transition densities are generally unavailable for non-linear
 diffusions, we use Millstein time-discretisation scheme for approximate simulation with bootstrap particle filter. Fine discretisation mesh gives less bias than the coarser one, with increased computational complexity. The DA and IS approaches can be used to speed up the inference by using coarse discretisation in the first stage, and then using more fine mesh in the second stage. For comparison of DA and IS approaches in case of geometric Brownian motion model, see again @vihola-helske-franks. Like non-linear Gaussian models, this model is also defined by small C++ snippets.
 
 
-# Example
+# Package functionality
+
+Main functions of `bssm` is written in `C++`, with help of `Rcpp` and `RcppArmadillo` packages. On the `R`side,  package uses S3 methods in order to provide relatively unified workflow independent of the type of the model one is working with. The model building functions such as `ng_bsm` and `svm` are used to construct the actual state models which can be then passed to other methods, such as `logLik` and `run_mcmc` which compute the log-likelihood value and run MCMC algorithm respectively. We will now briefly describe the main functions and methods of `bssm`, for more detailed descriptions of different function arguments and return values, see the corresponding documentation in `R`.
+
+## Model building functions
+
+For linear-Gaussian models, `bssm` offers 
+## Filtering and smoothing
+
+## Markov chain Monte Carlo
+
+
+## Illustration
 
 Here is a short example. First we build our model using `bsm` function:
  
