@@ -13,7 +13,7 @@ sde_amcmc::sde_amcmc(const unsigned int n_iter,
   const unsigned int n_burnin, const unsigned int n_thin, const unsigned int n, 
   const double target_acceptance, const double gamma, 
   const arma::mat& S) :
-  mcmc(arma::uvec(S.n_cols), arma::mat(1,1), n_iter, n_burnin, n_thin, n, 1,
+  mcmc(n_iter, n_burnin, n_thin, n, 1,
     target_acceptance, gamma, S, true),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
     approx_loglik_storage(arma::vec(n_samples)),

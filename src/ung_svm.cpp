@@ -6,7 +6,7 @@ ung_svm::ung_svm(const Rcpp::List& model, const unsigned int seed) :
 }
 
 // update model given the parameters theta
-void ung_svm::set_theta(const arma::vec& theta) {
+void ung_svm::update_model(const arma::vec& theta) {
 
   if(svm_type == 0) {
     phi = theta(2);

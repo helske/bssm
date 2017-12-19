@@ -5,7 +5,7 @@ ung_ar1::ung_ar1(const Rcpp::List& model, const unsigned int seed) :
   ung_ssm(model, seed), mu_est(Rcpp::as<bool>(model["mu_est"])) {
 }
 
-void ung_ar1::set_theta(const arma::vec& theta) {
+void ung_ar1::update_model(const arma::vec& theta) {
   
   
   T(0, 0, 0) = theta(0);

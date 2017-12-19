@@ -31,11 +31,11 @@ uniform <- function(init, min, max){
   n <- max(length(init), length(min), length(max))
   
   if(n > 1) {
-    structure(lapply(1:n, function(i) structure(list(prior_type = "uniform", init = safe_pick(init, i),
+    structure(lapply(1:n, function(i) structure(list(prior_distribution = "uniform", init = safe_pick(init, i),
       min = safe_pick(min, i), max = safe_pick(max, i)), class = "bssm_prior_list")), 
       class = "bssm_prior_list")
   } else {
-    structure(list(prior_type = "uniform", init = init, min = min, max = max), class = "bssm_prior")
+    structure(list(prior_distribution = "uniform", init = init, min = min, max = max), class = "bssm_prior")
   }
 }
 
@@ -55,10 +55,10 @@ halfnormal <- function(init, sd){
   n <- max(length(init), length(sd))
   
   if (n > 1) {
-    structure(lapply(1:n, function(i) structure(list(prior_type = "halfnormal", init = safe_pick(init, i),
+    structure(lapply(1:n, function(i) structure(list(prior_distribution = "halfnormal", init = safe_pick(init, i),
       sd = safe_pick(sd, i)), class = "bssm_prior")), class = "bssm_prior_list")
   } else {
-    structure(list(prior_type = "halfnormal", init = init, sd = sd), class = "bssm_prior")
+    structure(list(prior_distribution = "halfnormal", init = init, sd = sd), class = "bssm_prior")
   }
 }
 
@@ -76,25 +76,26 @@ normal <- function(init, mean, sd){
   
   n <- max(length(init), length(mean), length(sd))
   if (n > 1) {
-    structure(lapply(1:n, function(i) structure(list(prior_type = "normal", 
+    structure(lapply(1:n, function(i) structure(list(prior_distribution = "normal", 
       init = safe_pick(init, i), mean = safe_pick(mean, i), sd = safe_pick(sd, i)), 
       class = "bssm_prior")), class = "bssm_prior_list")
 
   } else {
-    structure(list(prior_type = "normal", init = init, mean = mean, sd = sd), 
+    structure(list(prior_distribution = "normal", init = init, mean = mean, sd = sd), 
       class = "bssm_prior")
   }
 }
 
 combine_priors <- function(x) {
   
-  prior_types <- sapply(x, "[[", "prior_type")
-  params <- matrix(NA, 2, length(prior_types))
-  for(i in 1:length(prior_types)) {
-    params[1:(length(x[[i]])-2), i] <- as.numeric(x[[i]][-(1:2)])
+  prior_distributions <- sapply(x, "[[", "prior_distribution")
+  parameters <- matrix(NA, 2, length(prior_distributions))
+  for(i in 1:length(prior_distributions)) {
+    parameters[1:(length(x[[i]])-2), i] <- as.numeric(x[[i]][-(1:2)])
   }
-  list(prior_types = pmatch(prior_types, c("uniform", "halfnormal", "normal"), duplicates.ok = TRUE)-1, 
-    params = params)
+  list(prior_distributions = 
+      pmatch(prior_distributions, c("uniform", "halfnormal", "normal"), duplicates.ok = TRUE)-1, 
+    parameters = parameters)
 }
 
 is_prior <- function(x){

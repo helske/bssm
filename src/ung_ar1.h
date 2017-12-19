@@ -10,7 +10,7 @@ public:
   ung_ar1(const Rcpp::List& model, const unsigned int seed);
   
   // update model given the parameters theta
-  void set_theta(const arma::vec& theta);
+  void update_model(const arma::vec& theta);
   // extract theta from the model
   arma::vec get_theta() const;
   

@@ -9,7 +9,7 @@ ung_bsm::ung_bsm(const Rcpp::List& model, const unsigned int seed) :
   slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0) {
 }
 
-void ung_bsm::set_theta(const arma::vec& theta) {
+void ung_bsm::update_model(const arma::vec& theta) {
 
   if (arma::accu(fixed) < 3 || noise || phi_est) {
 

@@ -12,7 +12,7 @@ lgg_ssm::lgg_ssm(const arma::mat& y_, lmat_fnPtr Z_fn_, lmat_fnPtr H_fn_,
   D_fn(D_fn_), C_fn(C_fn_), theta(theta), 
   log_prior_pdf(log_prior_pdf_), known_params(known_params), 
   known_tv_params(known_tv_params), m(m), k(k), n(y.n_cols),  p(y.n_rows),
-  seed(seed), engine(seed), zero_tol(1e-8) {
+  engine(seed), zero_tol(1e-8) {
 }
 
 mgg_ssm lgg_ssm::build_mgg() {

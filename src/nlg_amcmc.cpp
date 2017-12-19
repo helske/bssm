@@ -9,12 +9,11 @@
 #include "rep_mat.h"
 #include "filter_smoother.h"
 
-nlg_amcmc::nlg_amcmc(const arma::uvec& prior_distributions, 
-  const arma::mat& prior_parameters, const unsigned int n_iter, 
+nlg_amcmc::nlg_amcmc(const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin, const unsigned int n, 
   const unsigned int m, const double target_acceptance, const double gamma, 
   const arma::mat& S, const bool store_modes) :
-  mcmc(prior_distributions, prior_parameters, n_iter, n_burnin, n_thin, n, m,
+  mcmc(n_iter, n_burnin, n_thin, n, m,
     target_acceptance, gamma, S, true),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
     approx_loglik_storage(arma::vec(n_samples)),
