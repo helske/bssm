@@ -15,6 +15,9 @@ ung_ssm::ung_ssm(const Rcpp::List& model, const unsigned int seed,
   xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(Rcpp::as<arma::vec>(model["coefs"])),
   D(Rcpp::as<arma::vec>(model["obs_intercept"])),
   C(Rcpp::as<arma::mat>(model["state_intercept"])),
+  theta(Rcpp::as<arma::vec>(model["theta"])), 
+  prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
+  prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
   Ztv(Z.n_cols > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1), Dtv(D.n_elem > 1),
   Ctv(C.n_cols > 1),
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
@@ -22,8 +25,7 @@ ung_ssm::ung_ssm(const Rcpp::List& model, const unsigned int seed,
   phi(model["phi"]),
   u(Rcpp::as<arma::vec>(model["u"])), distribution(model["distribution"]),
   phi_est(Rcpp::as<bool>(model["phi_est"])), max_iter(100), conv_tol(1.0e-8),
-  Z_ind(Z_ind), T_ind(T_ind), R_ind(R_ind),
-  seed(seed) {
+  Z_ind(Z_ind), T_ind(T_ind), R_ind(R_ind) {
 
   if(xreg.n_cols > 0) {
     compute_xbeta();
@@ -38,7 +40,7 @@ void ung_ssm::compute_RR(){
 }
 
 // update system matrices given theta
-void ung_ssm::set_theta(const arma::vec& theta) {
+void ung_ssm::update_model(const arma::vec& theta) {
 
   if (Z_ind.n_elem > 0) {
     Z.elem(Z_ind) = theta.subvec(0, Z_ind.n_elem - 1);
@@ -65,34 +67,36 @@ void ung_ssm::set_theta(const arma::vec& theta) {
 
 }
 
-// pick up theta from system matrices
-arma::vec ung_ssm::get_theta(void) const {
-
-  // !! add phi when adding other distributions !!
-  arma::vec theta(Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem + (distribution == 3));
-
-  if (Z_ind.n_elem > 0) {
-    theta.subvec(0, Z_ind.n_elem - 1) = Z.elem(Z_ind);
+double ung_ssm::log_prior_pdf(const arma::vec& x) const {
+  
+  double log_prior = 0.0;
+  
+  for(unsigned int i = 0; i < x.n_elem; i++) {
+    switch(prior_distributions(i)) {
+    case 0  :
+      if (x(i) < prior_parameters(0, i) || x(i) > prior_parameters(1, i)) {
+        return -std::numeric_limits<double>::infinity(); 
+      }
+      break;
+    case 1  :
+      if (x(i) < 0) {
+        return -std::numeric_limits<double>::infinity();
+      } else {
+        log_prior -= 0.5 * std::pow(x(i) / prior_parameters(0, i), 2);
+      }
+      break;
+    case 2  :
+      log_prior -= 0.5 * std::pow((x(i) - prior_parameters(0, i)) / prior_parameters(1, i), 2);
+      break;
+    }
   }
-  if (T_ind.n_elem > 0) {
-    theta.subvec(Z_ind.n_elem,  Z_ind.n_elem + T_ind.n_elem - 1) = T.elem(T_ind);
-  }
-  if (R_ind.n_elem > 0) {
-    theta.subvec(Z_ind.n_elem + T_ind.n_elem,
-      Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem - 1) = R.elem(R_ind);
-  }
-
-  if(phi_est) {
-    theta(Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem) = phi;
-  }
-  if(xreg.n_cols > 0) {
-    theta.subvec(theta.n_elem - xreg.n_cols,
-      theta.n_elem - 1) = beta;
-  }
-
-
-  return theta;
+  return log_prior;
 }
+
+double ung_ssm::log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const {
+  return 0.0;
+}
+
 
 // given the current guess of mode, compute new values of y and H of
 // approximate model
@@ -142,13 +146,18 @@ void ung_ssm::laplace_iter(const arma::vec& signal, arma::vec& approx_y,
 // Using function values would be safer though, as we could use line search etc
 // in case of potential divergence etc...
 ugg_ssm ung_ssm::approximate(arma::vec& mode_estimate, const unsigned int max_iter,
-  const double conv_tol) const {
+  const double conv_tol) {
 
   //Construct y and H for the Gaussian model
   arma::vec approx_y(n, arma::fill::zeros);
   arma::vec approx_H(n, arma::fill::zeros);
-  ugg_ssm approx_model(approx_y, Z, approx_H, T, R, a1, P1, xreg, beta, D, C, seed);
-
+  
+  // RNG of approximate model is only used in basic IS sampling
+  // set seed for new RNG stream based on the original model
+  std::uniform_int_distribution<> unif(0, std::numeric_limits<int>::max());
+  const unsigned int new_seed = unif(engine);
+  ugg_ssm approx_model(approx_y, Z, approx_H, T, R, a1, P1, xreg, beta, D, C, new_seed);
+  
   unsigned int i = 0;
   double diff = conv_tol + 1;
   while(i < max_iter && diff > conv_tol) {
@@ -590,7 +599,7 @@ arma::cube ung_ssm::predict_sample(const arma::mat& theta,
   unsigned int n_samples = expanded_theta.n_cols;
   arma::cube sample(d, n, nsim * n_samples);
   for (unsigned int i = 0; i < n_samples; i++) {
-    set_theta(expanded_theta.col(i));
+    update_model(expanded_theta.col(i));
     a1 = expanded_alpha.col(i);
     sample.slices(i * nsim, (i + 1) * nsim - 1) =
       sample_model(predict_type, nsim);

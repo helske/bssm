@@ -5,34 +5,36 @@
 #include <sitmo.h>
 
 #include "bssm.h"
-#include "gg_abc.h"
 
-class mgg_ssm : public gg_abc {
+class mgg_ssm {
   
 public:
   
   // constructor from Rcpp::List
   mgg_ssm(const Rcpp::List& model, 
     const unsigned int seed = 1, 
-    const arma::uvec& Z_ind = arma::uvec(), 
-    const arma::uvec& H_ind = arma::uvec(), 
-    const arma::uvec& T_ind = arma::uvec(), 
-    const arma::uvec& R_ind = arma::uvec());
+    const arma::uvec& Z_ind_ = arma::uvec(), 
+    const arma::uvec& H_ind_ = arma::uvec(), 
+    const arma::uvec& T_ind_ = arma::uvec(), 
+    const arma::uvec& R_ind_ = arma::uvec());
   
   // constructor from armadillo objects
   mgg_ssm(const arma::mat& y, const arma::cube& Z, const arma::cube& H, 
     const arma::cube& T, const arma::cube& R, const arma::vec& a1, 
     const arma::mat& P1, const arma::cube& xreg, const arma::mat& beta, 
-    const arma::mat& D, const arma::mat& C, const unsigned int seed = 1, 
-    const arma::uvec& Z_ind = arma::uvec(), 
-    const arma::uvec& H_ind = arma::uvec(), 
-    const arma::uvec& T_ind = arma::uvec(), 
-    const arma::uvec& R_ind = arma::uvec());
+    const arma::mat& D, const arma::mat& C, 
+    const unsigned int seed = 1, const arma::vec& theta = arma::vec(),
+    const arma::uvec& prior_distributions = arma::uvec(),
+    const arma::mat& prior_parameters = arma::mat(), 
+    const arma::uvec& Z_ind_ = arma::uvec(), 
+    const arma::uvec& H_ind_ = arma::uvec(), 
+    const arma::uvec& T_ind_ = arma::uvec(), 
+    const arma::uvec& R_ind_ = arma::uvec());
   
   // update model matrices
-  void set_theta(const arma::vec& theta);
-  // get current value of theta
-  arma::vec get_theta() const;
+  void update_model(const arma::vec& new_theta);
+  double log_prior_pdf(const arma::vec& x) const;
+  double log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const;
   
   // compute the covariance matrices
   void compute_RR();
@@ -45,7 +47,6 @@ public:
   double log_likelihood() const;
   
   arma::cube simulate_states();
-  // 
   void smoother(arma::mat& at, arma::cube& Pt) const; 
   // perform fast state smoothing
   arma::mat fast_smoother() const;
@@ -63,7 +64,6 @@ public:
   arma::mat beta;
   arma::mat D;
   arma::mat C;
-
   
   const unsigned int Ztv;
   const unsigned int Htv;
@@ -80,6 +80,9 @@ public:
   arma::cube HH;
   arma::cube RR;
   arma::mat xbeta;
+  arma::vec theta;
+  const arma::uvec prior_distributions;
+  const arma::mat prior_parameters;
   
   sitmo::prng_engine engine;
   const double zero_tol;
@@ -89,7 +92,6 @@ private:
   arma::uvec H_ind;
   arma::uvec T_ind;
   arma::uvec R_ind;
-  unsigned int seed;
 };
 
 

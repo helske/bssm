@@ -161,7 +161,7 @@ Rcpp::List sde_pm_mcmc(const arma::vec& y, const double x0,
   sde_ssm model(y, theta, x0, positive, seed, *xpfun_drift,
     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_prior, *xpfun_obs);
   
-  mcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, 
+  mcmc mcmc_run(n_iter, n_burnin, 
     n_thin, model.n, 1, target_acceptance, gamma, S, true);
   
   mcmc_run.pm_mcmc_bsf_sde(model, end_ram, nsim_states, L);
@@ -194,7 +194,7 @@ Rcpp::List sde_da_mcmc(const arma::vec& y, const double x0,
   sde_ssm model(y, theta, x0, positive, seed, *xpfun_drift,
     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_prior, *xpfun_obs);
   
-  mcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, 
+  mcmc mcmc_run(n_iter, n_burnin, 
     n_thin, model.n, 1, target_acceptance, gamma, S, true);
   
   mcmc_run.da_mcmc_bsf_sde(model, end_ram, nsim_states, L_c, L_f, coupled);

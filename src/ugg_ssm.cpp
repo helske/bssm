@@ -8,9 +8,10 @@
 
 // General constructor of ugg_ssm object from Rcpp::List
 // with parameter indices
-ugg_ssm::ugg_ssm(const Rcpp::List& model, const unsigned int seed,
-  const arma::uvec& Z_ind, const arma::uvec& H_ind,
-  const arma::uvec& T_ind, const arma::uvec& R_ind) :
+ugg_ssm::ugg_ssm(const Rcpp::List& model,
+  const unsigned int seed,
+  const arma::uvec& Z_ind_, const arma::uvec& H_ind_,
+  const arma::uvec& T_ind_, const arma::uvec& R_ind_) :
   y(Rcpp::as<arma::vec>(model["y"])), Z(Rcpp::as<arma::mat>(model["Z"])),
   H(Rcpp::as<arma::vec>(model["H"])), T(Rcpp::as<arma::cube>(model["T"])),
   R(Rcpp::as<arma::cube>(model["R"])), a1(Rcpp::as<arma::vec>(model["a1"])),
@@ -18,11 +19,14 @@ ugg_ssm::ugg_ssm(const Rcpp::List& model, const unsigned int seed,
   beta(Rcpp::as<arma::vec>(model["coefs"])),
   D(Rcpp::as<arma::vec>(model["obs_intercept"])),
   C(Rcpp::as<arma::mat>(model["state_intercept"])),
+  theta(Rcpp::as<arma::vec>(model["theta"])), 
+  prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
+  prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
   Dtv(D.n_elem > 1), Ctv(C.n_cols > 1), n(y.n_elem), m(a1.n_elem), k(R.n_cols),
   HH(arma::vec(Htv * (n - 1) + 1)), RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
   xbeta(arma::vec(n, arma::fill::zeros)), engine(seed), zero_tol(1e-8),
-  Z_ind(Z_ind), H_ind(H_ind), T_ind(T_ind), R_ind(R_ind), seed(seed) {
+  Z_ind(Z_ind_), H_ind(H_ind_), T_ind(T_ind_), R_ind(R_ind_) {
   
   if(xreg.n_cols > 0) {
     compute_xbeta();
@@ -30,21 +34,27 @@ ugg_ssm::ugg_ssm(const Rcpp::List& model, const unsigned int seed,
   compute_HH();
   compute_RR();
 }
-
 
 // General constructor of ugg_ssm object
 // with parameter indices
 ugg_ssm::ugg_ssm(const arma::vec& y, const arma::mat& Z, const arma::vec& H,
   const arma::cube& T, const arma::cube& R, const arma::vec& a1,
   const arma::mat& P1, const arma::mat& xreg, const arma::vec& beta,
-  const arma::vec& D, const arma::mat& C, const unsigned int seed, const arma::uvec& Z_ind,
-  const arma::uvec& H_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) :
+  const arma::vec& D, const arma::mat& C, 
+  const unsigned int seed,
+  const arma::vec& theta,
+  const arma::uvec& prior_distributions,
+  const arma::mat& prior_parameters,  const arma::uvec& Z_ind_,
+  const arma::uvec& H_ind_, const arma::uvec& T_ind_, const arma::uvec& R_ind_) :
   y(y), Z(Z), H(H), T(T), R(R), a1(a1), P1(P1), xreg(xreg), beta(beta), D(D), C(C),
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
   Dtv(D.n_elem > 1), Ctv(C.n_cols > 1), n(y.n_elem), m(a1.n_elem), k(R.n_cols),
   HH(arma::vec(Htv * (n - 1) + 1)), RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
-  xbeta(arma::vec(n, arma::fill::zeros)), engine(seed), zero_tol(1e-8),
-  Z_ind(Z_ind), H_ind(H_ind), T_ind(T_ind), R_ind(R_ind), seed(seed) {
+  xbeta(arma::vec(n, arma::fill::zeros)), 
+  theta(theta), prior_distributions(prior_distributions), 
+  prior_parameters(prior_parameters),
+  engine(seed), zero_tol(1e-8),
+  Z_ind(Z_ind_), H_ind(H_ind_), T_ind(T_ind_), R_ind(R_ind_) {
   
   if(xreg.n_cols > 0) {
     compute_xbeta();
@@ -53,20 +63,20 @@ ugg_ssm::ugg_ssm(const arma::vec& y, const arma::mat& Z, const arma::vec& H,
   compute_RR();
 }
 
-void ugg_ssm::set_theta(const arma::vec& theta) {
+void ugg_ssm::update_model(const arma::vec& new_theta) {
   
   if (Z_ind.n_elem > 0) {
-    Z.elem(Z_ind) = theta.subvec(0, Z_ind.n_elem - 1);
+    Z.elem(Z_ind) = new_theta.subvec(0, Z_ind.n_elem - 1);
   }
   if (H_ind.n_elem > 0) {
-    H.elem(H_ind) = theta.subvec(Z_ind.n_elem, Z_ind.n_elem + H_ind.n_elem - 1);
+    H.elem(H_ind) = new_theta.subvec(Z_ind.n_elem, Z_ind.n_elem + H_ind.n_elem - 1);
   }
   if (T_ind.n_elem > 0) {
-    T.elem(T_ind) = theta.subvec(Z_ind.n_elem + H_ind.n_elem,
+    T.elem(T_ind) = new_theta.subvec(Z_ind.n_elem + H_ind.n_elem,
       Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem - 1);
   }
   if (R_ind.n_elem > 0) {
-    R.elem(R_ind) = theta.subvec(Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem,
+    R.elem(R_ind) = new_theta.subvec(Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem,
       Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem + R_ind.n_elem - 1);
   }
   
@@ -77,34 +87,40 @@ void ugg_ssm::set_theta(const arma::vec& theta) {
     compute_RR();
   }
   if(xreg.n_cols > 0) {
-    beta = theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1);
+    beta = new_theta.subvec(new_theta.n_elem - xreg.n_cols, new_theta.n_elem - 1);
     compute_xbeta();
   }
+  theta = new_theta;
 }
 
-arma::vec ugg_ssm::get_theta() const {
+double ugg_ssm::log_prior_pdf(const arma::vec& x) const {
   
-  arma::vec theta(Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem + R_ind.n_elem);
+  double log_prior = 0.0;
   
-  if (Z_ind.n_elem > 0) {
-    theta.subvec(0, Z_ind.n_elem - 1) = Z.elem(Z_ind);
+  for(unsigned int i = 0; i < x.n_elem; i++) {
+    switch(prior_distributions(i)) {
+    case 0  :
+      if (x(i) < prior_parameters(0, i) || x(i) > prior_parameters(1, i)) {
+        return -std::numeric_limits<double>::infinity(); 
+      }
+      break;
+    case 1  :
+      if (x(i) < 0) {
+        return -std::numeric_limits<double>::infinity();
+      } else {
+        log_prior -= 0.5 * std::pow(x(i) / prior_parameters(0, i), 2);
+      }
+      break;
+    case 2  :
+      log_prior -= 0.5 * std::pow((x(i) - prior_parameters(0, i)) / prior_parameters(1, i), 2);
+      break;
+    }
   }
-  if (H_ind.n_elem > 0) {
-    theta.subvec(Z_ind.n_elem, Z_ind.n_elem + H_ind.n_elem - 1) = H.elem(H_ind);
-  }
-  if (T_ind.n_elem > 0) {
-    theta.subvec(Z_ind.n_elem + H_ind.n_elem,
-      Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem - 1) = T.elem(T_ind);
-  }
-  if (R_ind.n_elem > 0) {
-    theta.subvec(Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem,
-      Z_ind.n_elem + H_ind.n_elem + T_ind.n_elem + R_ind.n_elem - 1) =
-        R.elem(R_ind);
-  }
-  if(xreg.n_cols > 0) {
-    theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1) = beta;
-  }
-  return theta;
+  return log_prior;
+}
+
+double ugg_ssm::log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const {
+  return 0.0;
 }
 
 void ugg_ssm::compute_RR(){
@@ -602,7 +618,7 @@ Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
   const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type) {
   
   arma::vec theta_i = theta.col(0);
-  set_theta(theta_i);
+  update_model(theta_i);
   a1 = alpha.col(0);
   P1.zeros();
   arma::mat at(m, n + 1);
@@ -632,7 +648,7 @@ Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
     
     for (unsigned int i = 1; i < n_samples; i++) {
       arma::vec theta_i = theta.col(i);
-      set_theta(theta_i);
+      update_model(theta_i);
       a1 = alpha.col(i);
       P1.zeros();
       filter(at, att, Pt, Ptt);
@@ -670,7 +686,7 @@ Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
     
     for (unsigned int i = 1; i < n_samples; i++) {
       arma::vec theta_i = theta.col(i);
-      set_theta(theta_i);
+      update_model(theta_i);
       a1 = alpha.col(i);
       P1.zeros();
       filter(at, att, Pt, Ptt);
@@ -713,7 +729,7 @@ arma::cube ugg_ssm::predict_sample(const arma::mat& theta,
   
   for (unsigned int i = 0; i < n_samples; i++) {
     arma::vec theta_i = theta.col(i);
-    set_theta(theta_i);
+    update_model(theta_i);
     a1 = alpha.col(i);
     sample.slices(i * nsim, (i + 1) * nsim - 1) = sample_model(predict_type, nsim);
   }

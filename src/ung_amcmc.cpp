@@ -14,12 +14,11 @@
 #include "distr_consts.h"
 #include "filter_smoother.h"
 
-ung_amcmc::ung_amcmc(const arma::uvec& prior_distributions, 
-  const arma::mat& prior_parameters, const unsigned int n_iter, 
+ung_amcmc::ung_amcmc(const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin, const unsigned int n, 
   const unsigned int m, const double target_acceptance, const double gamma, 
   const arma::mat& S, const bool store_states) :
-  mcmc(prior_distributions, prior_parameters, n_iter, n_burnin, n_thin, n, m,
+  mcmc(n_iter, n_burnin, n_thin, n, m,
     target_acceptance, gamma, S, store_states),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
     y_storage(arma::mat(n, n_samples)), H_storage(arma::mat(n, n_samples)),
@@ -107,9 +106,9 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol) {
   
   // get the current values of theta
-  arma::vec theta = model.get_theta();
+  arma::vec theta = model.theta;
   // compute the log[p(theta)]
-  double logprior = log_prior_pdf(theta);
+  double logprior = model.log_prior_pdf(theta);
   if (!arma::is_finite(logprior)) {
     Rcpp::stop("Initial prior probability is not finite.");
   }
@@ -154,11 +153,11 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
     // propose new theta
     arma::vec theta_prop = theta + S * u;
     // compute prior
-    double logprior_prop = log_prior_pdf(theta_prop);
+    double logprior_prop = model.log_prior_pdf(theta_prop);
     
     if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
-      model.set_theta(theta_prop);
+      model.update_model(theta_prop);
       
       if (local_approx) {
         // construct the approximate Gaussian model
@@ -252,7 +251,7 @@ void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states,
 #pragma omp for schedule(dynamic)
   for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
     
-    model.set_theta(theta_storage.col(i));
+    model.update_model(theta_storage.col(i));
     approx_model.Z = model.Z;
     approx_model.T = model.T;
     approx_model.R = model.R;
@@ -299,7 +298,7 @@ ugg_ssm approx_model = model.approximate(tmp, 0, 0);
 
 for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
   
-  model.set_theta(theta_storage.col(i));
+  model.update_model(theta_storage.col(i));
   approx_model.Z = model.Z;
   approx_model.T = model.T;
   approx_model.R = model.R;
@@ -369,7 +368,7 @@ void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states,
 #pragma omp for schedule(dynamic)
   for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
     
-    model.set_theta(theta_storage.col(i));
+    model.update_model(theta_storage.col(i));
     
     unsigned int nsim = nsim_states;
     if (is_type == 1) {
@@ -396,7 +395,7 @@ void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states,
 #else
 for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
   
-  model.set_theta(theta_storage.col(i));
+  model.update_model(theta_storage.col(i));
   
   unsigned int nsim = nsim_states;
   if (is_type == 1) {
@@ -449,7 +448,7 @@ void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim_states,
 #pragma omp for schedule(dynamic)
   for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
     
-    model.set_theta(theta_storage.col(i));
+    model.update_model(theta_storage.col(i));
     approx_model.Z = model.Z;
     approx_model.T = model.T;
     approx_model.R = model.R;
@@ -485,7 +484,7 @@ ugg_ssm approx_model = model.approximate(tmp, 0, 0);
 
 for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
   
-  model.set_theta(theta_storage.col(i));
+  model.update_model(theta_storage.col(i));
   approx_model.Z = model.Z;
   approx_model.T = model.T;
   approx_model.R = model.R;
@@ -539,7 +538,7 @@ void ung_amcmc::approx_state_posterior(T model, const unsigned int n_threads) {
 #pragma omp for schedule(dynamic)
   for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
     
-    model.set_theta(theta_storage.col(i));
+    model.update_model(theta_storage.col(i));
     approx_model.Z = model.Z;
     approx_model.T = model.T;
     approx_model.R = model.R;
@@ -562,7 +561,7 @@ ugg_ssm approx_model = model.approximate(tmp, 0, 0);
 
 for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
   
-  model.set_theta(theta_storage.col(i));
+  model.update_model(theta_storage.col(i));
   approx_model.Z = model.Z;
   approx_model.T = model.T;
   approx_model.R = model.R;

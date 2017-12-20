@@ -21,11 +21,11 @@ test_that("Test that gaussian bsf still works",{
     T = array(c(1, 0, 1, 1), c(2, 2, 1)), R = array(diag(2, 2), c(2, 2, 1)), 
     a1 = matrix(0, 2, 1), P1 = diag(2, 2), state_names = c("level", "slope")), NA)
   expect_error(bsf_gssm <- bootstrap_filter(model_gssm, 10, seed = 1), NA)
-  
-  skip_on_cran()
-  bsf_gssm_ref <- readRDS("bsf_reference/bsf_gssm_ref.rda")
-  expect_equal(bsf_gssm$logLik, bsf_gssm_ref$logLik, tolerance = tol)
-  expect_equal(bsf_gssm$alpha, bsf_gssm_ref$alpha, tolerance = tol)
+  expect_gte(min(bsf_gssm$weights), 0)
+  expect_lt(max(bsf_gssm$weights), Inf)
+  expect_true(is.finite(bsf_gssm$logLik))
+  expect_true(is.finite(sum(bsf_gssm$att)))
+  expect_true(is.finite(sum(bsf_gssm$Ptt)))
 })
 
 test_that("Test that poisson ng_bsm still works",{
@@ -34,9 +34,11 @@ test_that("Test that poisson ng_bsm still works",{
     distribution = "poisson"), NA)
   expect_error(bsf_poisson <- bootstrap_filter(model, 10, seed = 1), NA)
 
-  skip_on_cran()
-  bsf_poisson_ref <- readRDS("bsf_reference/bsf_poisson_ref.rda")
-  expect_equal(bsf_poisson, bsf_poisson_ref, tolerance = tol)
+  expect_gte(min(bsf_poisson$weights), 0)
+  expect_lt(max(bsf_poisson$weights), Inf)
+  expect_true(is.finite(bsf_poisson$logLik))
+  expect_true(is.finite(sum(bsf_poisson$att)))
+  expect_true(is.finite(sum(bsf_poisson$Ptt)))
 })
 
 test_that("Test that binomial ng_bsm still works",{
@@ -45,9 +47,11 @@ test_that("Test that binomial ng_bsm still works",{
     distribution = "binomial"), NA)
   expect_error(bsf_binomial <- bootstrap_filter(model, 10, seed = 1), NA)
   
-  skip_on_cran()
-  bsf_binomial_ref <- readRDS("bsf_reference/bsf_binomial_ref.rda")
-  expect_equal(bsf_binomial, bsf_binomial_ref, tolerance = tol)
+  expect_gte(min(bsf_binomial$weights), 0)
+  expect_lt(max(bsf_binomial$weights), Inf)
+  expect_true(is.finite(bsf_binomial$logLik))
+  expect_true(is.finite(sum(bsf_binomial$att)))
+  expect_true(is.finite(sum(bsf_binomial$Ptt)))
   
 })
 
@@ -59,9 +63,11 @@ test_that("Test that negative binomial ng_bsm still works",{
     distribution = "negative binomial", phi = 0.1, u = 2), NA)
   expect_error(bsf_nbinomial <- bootstrap_filter(model, 10, seed = 1), NA)
   
-  skip_on_cran()
-  bsf_nbinomial_ref <- readRDS("bsf_reference/bsf_nbinomial_ref.rda")
-  expect_equal(bsf_nbinomial, bsf_nbinomial_ref, tolerance = tol)
+  expect_gte(min(bsf_nbinomial$weights), 0)
+  expect_lt(max(bsf_nbinomial$weights), Inf)
+  expect_true(is.finite(bsf_nbinomial$logLik))
+  expect_true(is.finite(sum(bsf_nbinomial$att)))
+  expect_true(is.finite(sum(bsf_nbinomial$Ptt)))
 })
 
 
@@ -72,9 +78,11 @@ test_that("Test that still svm works",{
   
   expect_error(bsf_svm <- bootstrap_filter(model, 10, seed = 1), NA)
   
-  skip_on_cran()
-  bsf_svm_ref <- readRDS("bsf_reference/bsf_svm_ref.rda")
-  expect_equal(bsf_svm, bsf_svm_ref, tolerance = tol)
+  expect_gte(min(bsf_svm$weights), 0)
+  expect_lt(max(bsf_svm$weights), Inf)
+  expect_true(is.finite(bsf_svm$logLik))
+  expect_true(is.finite(sum(bsf_svm$att)))
+  expect_true(is.finite(sum(bsf_svm$Ptt)))
   
 })
 

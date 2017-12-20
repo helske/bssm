@@ -9,8 +9,7 @@ class ung_amcmc: public mcmc {
 public:
   
   // constructor
-  ung_amcmc(const arma::uvec& prior_distributions, const arma::mat& prior_parameters,
-    const unsigned int n_iter, const unsigned int n_burnin, const unsigned int n_thin, 
+  ung_amcmc(const unsigned int n_iter, const unsigned int n_burnin, const unsigned int n_thin, 
     const unsigned int n, const unsigned int m, const double target_acceptance, 
     const double gamma, const arma::mat& S, const bool store_states = true);
   

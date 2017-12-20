@@ -5,12 +5,11 @@
 #define UNG_SSM_H
 
 #include <sitmo.h>
-#include "unn_abc.h"
 #include "bssm.h"
 
 class ugg_ssm;
 
-class ung_ssm: public unn_abc {
+class ung_ssm {
   
 public:
   
@@ -21,9 +20,11 @@ public:
     const arma::uvec& T_ind = arma::uvec(), 
     const arma::uvec& R_ind = arma::uvec());
   
-  //get and set theta
-  void set_theta(const arma::vec& theta);
-  arma::vec get_theta() const;
+  // update model
+  void update_model(const arma::vec& theta);
+  
+  double log_prior_pdf(const arma::vec& x) const;
+  double log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const;
   
   // compute covariance matrices RR and regression part
   void compute_RR();
@@ -33,8 +34,10 @@ public:
   void laplace_iter(const arma::vec& mode_estimate, arma::vec& approx_y, 
     arma::vec& approx_H) const;
   // find the approximating Gaussian model
+  // not const as advances RNG in order to generate random seed for 
+  // approximating model
   ugg_ssm approximate(arma::vec& mode_estimate, const unsigned int max_iter, 
-    const double conv_tol) const;
+    const double conv_tol);
   
   // update aproximating Gaussian model
   void approximate(ugg_ssm& approx_model, arma::vec& mode_estimate, 
@@ -103,12 +106,14 @@ public:
   bool phi_est;
   unsigned int max_iter;
   double conv_tol;
+  arma::vec theta;
+  const arma::uvec prior_distributions;
+  const arma::mat prior_parameters;
   
 private:
   arma::uvec Z_ind;
   arma::uvec T_ind;
   arma::uvec R_ind;
-  unsigned int seed;
 };
 
 

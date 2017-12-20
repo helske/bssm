@@ -10,9 +10,9 @@ public:
   ung_ar1(const Rcpp::List& model, const unsigned int seed);
   
   // update model given the parameters theta
-  void set_theta(const arma::vec& theta);
-  // extract theta from the model
-  arma::vec get_theta() const;
+  void update_model(const arma::vec& theta);
+  double log_prior_pdf(const arma::vec& x) const;
+  double log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const;
   
 private:
   const bool mu_est;

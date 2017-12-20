@@ -18,11 +18,11 @@ test_that("Test that svm still works",{
   model <- svm(exchange, rho = uniform(0.98,-0.999,0.999), 
     sd_ar = halfnormal(0.2, 5), sigma = halfnormal(1, 2))
   
-  expect_error(sim <- importance_sample(model, 4, seed = 2), NA)
+  expect_error(sim <- importance_sample(model, 10, seed = 2), NA)
   
-  skip_on_cran()
-  testvalues <- structure(c(2.08604083835474, 0.245724972898813, 0.0860932717666039, 
-    0.591816325453726), .Dim = c(4L, 1L))
-  expect_equal(sim$weights, testvalues)
-  
+  expect_gte(min(sim$weights), 0)
+  expect_lt(max(sim$weights), Inf)
+  expect_true(is.finite(sum(sim$states)))
+  expect_true(is.finite(sum(sim$weights)))
 })
+

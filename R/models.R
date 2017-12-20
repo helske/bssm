@@ -226,11 +226,17 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   } else {
     state_intercept <- matrix(0, m, 1)
   }
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
+  priors <- combine_priors(priors)
+  
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
     a1 = a1, P1 = P1, xreg = xreg, coefs = coefs,
-    slope = slope, seasonal = seasonal, period = period,
-    fixed = as.integer(!notfixed), priors = priors, obs_intercept = obs_intercept,
-    state_intercept = state_intercept), class = c("bsm", "gssm"))
+    obs_intercept = obs_intercept,
+    state_intercept = state_intercept,
+    slope = slope, seasonal = seasonal, period = period, 
+    fixed = as.integer(!notfixed), 
+    prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
+    theta = theta), class = c("bsm", "gssm"))
 }
 
 #' Non-Gaussian Basic Structural (Time Series) Model
@@ -517,14 +523,18 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   } else {
     state_intercept <- matrix(0, m, 1)
   }
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
+  priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
-    a1 = a1, P1 = P1, phi = phi, u = u, xreg = xreg, coefs = coefs,
+    a1 = a1, P1 = P1, phi = phi, u = u, xreg = xreg, coefs = coefs, 
+    obs_intercept = obs_intercept,
+    state_intercept = state_intercept,
     slope = slope, seasonal = seasonal, noise = noise,
     period = period, fixed = as.integer(!notfixed),
-    distribution = distribution, initial_mode = initial_mode,
-    priors = priors, phi_est = phi_est, obs_intercept = obs_intercept,
-    state_intercept = state_intercept), class = c("ng_bsm", "ngssm"))
+    distribution = distribution, initial_mode = initial_mode, 
+    prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
+    theta = theta, phi_est = phi_est), class = c("ng_bsm", "ngssm"))
 }
 
 #' Stochastic Volatility Model
@@ -606,11 +616,16 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
   state_intercept <- if (svm_type) matrix(mu$init * (1 - T[1])) else matrix(0)
   obs_intercept <- matrix(0)
   
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
+  priors <- combine_priors(priors)
+  
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
-    a1 = a1, P1 = P1, phi = if (svm_type == 0) sigma$init else 1, xreg = xreg, coefs = coefs,
-    initial_mode = initial_mode, priors = priors,
+    a1 = a1, P1 = P1, phi = if (svm_type == 0) sigma$init else 1, xreg = xreg, 
+    coefs = coefs, obs_intercept = obs_intercept, state_intercept = state_intercept, 
+    initial_mode = initial_mode, 
     svm_type = svm_type, distribution = 0L, u = 1, phi_est = !as.logical(svm_type),
-    obs_intercept = obs_intercept, state_intercept = state_intercept),
+    prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
+    theta = theta),
     class = c("svm", "ngssm"))
 }
 #' Non-Gaussian model with AR(1) latent process
@@ -734,11 +749,16 @@ ng_ar1 <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
   }
   obs_intercept <- matrix(0)
   
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
+  priors <- combine_priors(priors)
+  
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, phi = phi, u = u, xreg = xreg, coefs = coefs,
-    initial_mode = initial_mode, priors = priors,
+    obs_intercept = obs_intercept, state_intercept = state_intercept,
+    initial_mode = initial_mode,
     distribution = distribution, mu_est = mu_est, phi_est = phi_est,
-    obs_intercept = obs_intercept, state_intercept = state_intercept),
+    prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
+    theta = theta),
     class = c("ng_ar1", "ngssm"))
 }
 #'
@@ -931,11 +951,14 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   } else {
     state_intercept <- matrix(0, m, 1)
   }
-  
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
+  priors <- combine_priors(priors)
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
-    xreg = xreg, coefs = coefs, priors = priors, Z_ind = Z_ind,
-    H_ind = H_ind, T_ind = T_ind, R_ind = R_ind, obs_intercept = obs_intercept,
-    state_intercept = state_intercept), class = "gssm")
+    xreg = xreg, coefs = coefs, obs_intercept = obs_intercept,
+    state_intercept = state_intercept, Z_ind = Z_ind,
+    H_ind = H_ind, T_ind = T_ind, R_ind = R_ind,
+    prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
+    theta = theta), class = "gssm")
 }
 #' General univariate non-Gaussian/non-linear state space models
 #'
@@ -1150,11 +1173,16 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     state_intercept <- matrix(0, m, 1)
   }
   
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
+  priors <- combine_priors(priors)
+  
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
-    xreg = xreg, coefs = coefs, distribution = distribution,
-    initial_mode = initial_mode, priors = priors, Z_ind = Z_ind,
-    T_ind = T_ind, R_ind = R_ind, phi_est = phi_est, obs_intercept = obs_intercept,
-    state_intercept = state_intercept), class = "ngssm")
+    xreg = xreg, coefs = coefs, obs_intercept = obs_intercept,
+    state_intercept = state_intercept, distribution = distribution,
+    initial_mode = initial_mode, Z_ind = Z_ind,
+    T_ind = T_ind, R_ind = R_ind, phi_est = phi_est, 
+    prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
+    theta = theta), class = "ngssm")
 }
 
 #' General multivariate linear Gaussian state space models
@@ -1495,7 +1523,9 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   }
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
-    xreg = xreg, coefs = coefs, priors = priors, Z_ind = Z_ind,
-    H_ind = H_ind, T_ind = T_ind, R_ind = R_ind, obs_intercept = obs_intercept,
-    state_intercept = state_intercept), class = "mv_gssm")
+    xreg = xreg, coefs = coefs, obs_intercept = obs_intercept,
+    state_intercept = state_intercept, Z_ind = Z_ind,
+    H_ind = H_ind, T_ind = T_ind, R_ind = R_ind, 
+    prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
+    theta = theta), class = "mv_gssm")
 }

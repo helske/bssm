@@ -4,34 +4,38 @@
 
 #include <sitmo.h>
 #include "bssm.h"
-#include "gg_abc.h"
 
-class ugg_ssm : public gg_abc {
+class ugg_ssm {
   
 public:
   
   // constructor from Rcpp::List
   ugg_ssm(const Rcpp::List& model, 
     const unsigned int seed = 1, 
-    const arma::uvec& Z_ind = arma::uvec(), 
-    const arma::uvec& H_ind = arma::uvec(), 
-    const arma::uvec& T_ind = arma::uvec(), 
-    const arma::uvec& R_ind = arma::uvec());
+    const arma::uvec& Z_ind_ = arma::uvec(), 
+    const arma::uvec& H_ind_ = arma::uvec(), 
+    const arma::uvec& T_ind_ = arma::uvec(), 
+    const arma::uvec& R_ind_ = arma::uvec());
   
   // constructor from armadillo objects
   ugg_ssm(const arma::vec& y, const arma::mat& Z, const arma::vec& H, 
     const arma::cube& T, const arma::cube& R, const arma::vec& a1, 
     const arma::mat& P1, const arma::mat& xreg, const arma::vec& beta, 
-    const arma::vec& D, const arma::mat& C, const unsigned int seed = 1, 
-    const arma::uvec& Z_ind = arma::uvec(), 
-    const arma::uvec& H_ind = arma::uvec(), 
-    const arma::uvec& T_ind = arma::uvec(), 
-    const arma::uvec& R_ind = arma::uvec());
+    const arma::vec& D, const arma::mat& C, 
+    const unsigned int seed = 1, 
+    const arma::vec& theta = arma::vec(),
+    const arma::uvec& prior_distributions = arma::uvec(),
+    const arma::mat& prior_parameters = arma::mat(), 
+    const arma::uvec& Z_ind_ = arma::uvec(), 
+    const arma::uvec& H_ind_ = arma::uvec(), 
+    const arma::uvec& T_ind_ = arma::uvec(), 
+    const arma::uvec& R_ind_ = arma::uvec());
   
   // update model matrices
-  void set_theta(const arma::vec& theta);
-  // get current value of theta
-  arma::vec get_theta() const;
+  void update_model(const arma::vec& new_theta);
+  
+  double log_prior_pdf(const arma::vec& x) const;
+  double log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const;
   
   // compute the log-likelihood
   double log_likelihood() const;
@@ -100,7 +104,9 @@ public:
   arma::vec HH;
   arma::cube RR;
   arma::vec xbeta;
-  
+  arma::vec theta;
+  const arma::uvec prior_distributions;
+  const arma::mat prior_parameters;
   sitmo::prng_engine engine;
   const double zero_tol;
   
@@ -109,7 +115,6 @@ private:
   arma::uvec H_ind;
   arma::uvec T_ind;
   arma::uvec R_ind;
-  unsigned int seed;
 };
 
 

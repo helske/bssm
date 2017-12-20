@@ -109,24 +109,24 @@ general_gaussian_loglik <- function(y, Z, H, T, R, a1, P1, theta, D, C, log_prio
     .Call('_bssm_general_gaussian_loglik', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, n_states, n_etas)
 }
 
-gaussian_mcmc <- function(model_, prior_types, prior_pars, sim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, Z_ind, H_ind, T_ind, R_ind) {
-    .Call('_bssm_gaussian_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, sim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, Z_ind, H_ind, T_ind, R_ind)
+gaussian_mcmc <- function(model_, sim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, Z_ind, H_ind, T_ind, R_ind) {
+    .Call('_bssm_gaussian_mcmc', PACKAGE = 'bssm', model_, sim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, Z_ind, H_ind, T_ind, R_ind)
 }
 
-gaussian_mcmc_summary <- function(model_, prior_types, prior_pars, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, Z_ind, H_ind, T_ind, R_ind) {
-    .Call('_bssm_gaussian_mcmc_summary', PACKAGE = 'bssm', model_, prior_types, prior_pars, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, Z_ind, H_ind, T_ind, R_ind)
+gaussian_mcmc_summary <- function(model_, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, Z_ind, H_ind, T_ind, R_ind) {
+    .Call('_bssm_gaussian_mcmc_summary', PACKAGE = 'bssm', model_, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, Z_ind, H_ind, T_ind, R_ind)
 }
 
-nongaussian_pm_mcmc <- function(model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, model_type, Z_ind, T_ind, R_ind) {
-    .Call('_bssm_nongaussian_pm_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, model_type, Z_ind, T_ind, R_ind)
+nongaussian_pm_mcmc <- function(model_, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, model_type, Z_ind, T_ind, R_ind) {
+    .Call('_bssm_nongaussian_pm_mcmc', PACKAGE = 'bssm', model_, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, model_type, Z_ind, T_ind, R_ind)
 }
 
-nongaussian_da_mcmc <- function(model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, model_type, Z_ind, T_ind, R_ind) {
-    .Call('_bssm_nongaussian_da_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, model_type, Z_ind, T_ind, R_ind)
+nongaussian_da_mcmc <- function(model_, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, model_type, Z_ind, T_ind, R_ind) {
+    .Call('_bssm_nongaussian_da_mcmc', PACKAGE = 'bssm', model_, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, model_type, Z_ind, T_ind, R_ind)
 }
 
-nongaussian_is_mcmc <- function(model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, is_type, model_type, Z_ind, T_ind, R_ind) {
-    .Call('_bssm_nongaussian_is_mcmc', PACKAGE = 'bssm', model_, prior_types, prior_pars, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, is_type, model_type, Z_ind, T_ind, R_ind)
+nongaussian_is_mcmc <- function(model_, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, is_type, model_type, Z_ind, T_ind, R_ind) {
+    .Call('_bssm_nongaussian_is_mcmc', PACKAGE = 'bssm', model_, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, local_approx, initial_mode, max_iter, conv_tol, simulation_method, is_type, model_type, Z_ind, T_ind, R_ind)
 }
 
 nonlinear_pm_mcmc <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, max_iter, conv_tol, simulation_method, iekf_iter) {

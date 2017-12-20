@@ -5,7 +5,7 @@ ung_ar1::ung_ar1(const Rcpp::List& model, const unsigned int seed) :
   ung_ssm(model, seed), mu_est(Rcpp::as<bool>(model["mu_est"])) {
 }
 
-void ung_ar1::set_theta(const arma::vec& theta) {
+void ung_ar1::update_model(const arma::vec& theta) {
   
   
   T(0, 0, 0) = theta(0);
@@ -28,23 +28,33 @@ void ung_ar1::set_theta(const arma::vec& theta) {
   }
 }
 
-arma::vec ung_ar1::get_theta(void) const {
+double ung_ar1::log_prior_pdf(const arma::vec& x) const {
   
-  unsigned int npar = 2 + mu_est + xreg.n_cols + phi_est;
+  double log_prior = 0.0;
   
-  arma::vec theta(npar);
-  theta(0) = T(0, 0, 0);
-  theta(1) = R(0, 0, 0);
-  if (mu_est) {
-    theta(2) = a1(0);
+  for(unsigned int i = 0; i < x.n_elem; i++) {
+    switch(prior_distributions(i)) {
+    case 0  :
+      if (x(i) < prior_parameters(0, i) || x(i) > prior_parameters(1, i)) {
+        return -std::numeric_limits<double>::infinity(); 
+      }
+      break;
+    case 1  :
+      if (x(i) < 0) {
+        return -std::numeric_limits<double>::infinity();
+      } else {
+        log_prior -= 0.5 * std::pow(x(i) / prior_parameters(0, i), 2);
+      }
+      break;
+    case 2  :
+      log_prior -= 0.5 * std::pow((x(i) - prior_parameters(0, i)) / prior_parameters(1, i), 2);
+      break;
+    }
   }
-  
-  if (phi_est) {
-    theta(2 + mu_est) = phi;
-  }
-  
-  if (xreg.n_cols > 0) {
-    theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1) = beta;
-  }
-  return theta;
+  return log_prior;
 }
+
+double ung_ar1::log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const {
+  return 0.0;
+}
+
