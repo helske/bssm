@@ -94,3 +94,16 @@ logLik.sde_ssm <- function(object, nsim_states, L, seed = 1, ...) {
     object$prior_pdf, object$obs_pdf, object$theta, 
     nsim_states, L, seed)
 }
+
+
+#' @method logLik lgg_ssm
+#' @export
+logLik.lgg_ssm <- function(object, ...) {
+  
+  general_gaussian_loglik(t(object$y), object$Z, object$H, object$T, 
+    object$R, object$a1, object$P1, 
+    object$theta, object$obs_intercept, object$state_intercept, 
+    object$log_prior_pdf, object$known_params, 
+    object$known_tv_params, as.integer(object$time_varying), 
+    object$n_states, object$n_etas)
+}

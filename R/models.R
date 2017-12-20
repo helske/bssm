@@ -7,12 +7,12 @@
 #' @param sd_y A fixed value or prior for the standard error of
 #' observation equation. See \link[=uniform]{priors} for details.
 #' @param sd_level A fixed value or a prior for the standard error
-#' of the noise in level equation. See\link[=uniform]{priors} for details.
+#' of the noise in level equation. See \link[=uniform]{priors} for details.
 #' @param sd_slope A fixed value or a prior for the standard error
-#' of the noise in slope equation. See\link[=uniform]{priors} for details.
+#' of the noise in slope equation. See \link[=uniform]{priors} for details.
 #' If missing, the slope term is omitted from the model.
 #' @param sd_seasonal A fixed value or a prior for the standard error
-#' of the noise in seasonal equation. See\link[=uniform]{priors} for details.
+#' of the noise in seasonal equation. See \link[=uniform]{priors} for details.
 #' If missing, the seasonal component is omitted from the model.
 #' @param xreg Matrix containing covariates.
 #' @param beta Prior for the regression coefficients.
@@ -247,15 +247,15 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
 #' @param sd_level A fixed value or a prior for the standard error
-#' of the noise in level equation. See\link[=uniform]{priors} for details.
+#' of the noise in level equation. See \link[=uniform]{priors} for details.
 #' @param sd_slope A fixed value or a prior for the standard error
-#' of the noise in slope equation. See\link[=uniform]{priors} for details.
+#' of the noise in slope equation. See \link[=uniform]{priors} for details.
 #' If missing, the slope term is omitted from the model.
 #' @param sd_seasonal A fixed value or a prior for the standard error
-#' of the noise in seasonal equation. See\link[=uniform]{priors} for details.
+#' of the noise in seasonal equation. See \link[=uniform]{priors} for details.
 #' If missing, the seasonal component is omitted from the model.
 #' @param sd_noise Prior for the standard error of the additional noise term.
-#' See\link[=uniform]{priors} for details. If missing, no additional noise term is used.
+#' See \link[=uniform]{priors} for details. If missing, no additional noise term is used.
 #' @param distribution distribution of the observation. Possible choices are
 #' \code{"poisson"} and \code{"binomial"}.
 #' @param phi Additional parameter relating to the non-Gaussian distribution.
@@ -651,7 +651,7 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
 ng_ar1 <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NULL) {
   
   check_y(y)
-  
+  n <- length(y)
   if (is.null(xreg)) {
     xreg <- matrix(0, 0, 0)
     coefs <- numeric(0)
@@ -772,7 +772,10 @@ ng_ar1 <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
 #'
 #' where \eqn{\epsilon_t \sim N(0, 1)}, \eqn{\eta_t \sim N(0, I_k)} and
 #' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
-#'
+#' 
+#' The priors are defined for each NA value of the system matrices, in the same order as 
+#' these values are naturally read in R. For more flexibility, see \code{\link{lgg_ssm}}.
+#' 
 #' @param y Observations as time series (or vector) of length \eqn{n}.
 #' @param Z System matrix Z of the observation equation. Either a vector of
 #' length m or a m x n array, or an object which can be coerced to such.
@@ -1212,17 +1215,22 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
 #' @param n_etas Dimension of the noise term of the transition equation.
 #' @param log_prior_pdf An external pointer for the C++ function which
 #' computes the log-prior density given theta.
-#' @param obs_intercept Intercept terms for the observations equation, given as a
-#'  length n vector.
+#'  #' @param time_varying Optional logical vector of length 4, denoting whether the values of
+#' Z, H, T, and R vary with respect to time variable (given identical states).
+#' If used, can speed up some computations.
 #' @param state_intercept Intercept terms for the state equation, given as a
 #'  m times n matrix.
+#' @param time_varying Optional logical vector of length 6, denoting whether the values of
+#' Z, H, T, R, D and C can vary with respect to time variable.
+#' If used, can speed up some computations.
 #' @param state_names Names for the states.
-#' @return Object of class \code{nlg_ssm}.
+#' @return Object of class \code{llg_ssm}.
 #' @export
 lgg_ssm <- function(y, Z, H, T, R, a1, P1, theta,
   obs_intercept, state_intercept,
   known_params = NA, known_tv_params = matrix(NA), n_states, n_etas,
-  log_prior_pdf, state_names = paste0("state",1:n_states)) {
+  log_prior_pdf, time_varying = rep(TRUE, 6), 
+  state_names = paste0("state",1:n_states)) {
   
   if (is.null(dim(y))) {
     dim(y) <- c(length(y), 1)
@@ -1235,7 +1243,7 @@ lgg_ssm <- function(y, Z, H, T, R, a1, P1, theta,
     R = R, a1 = a1, P1 = P1, theta = theta,
     obs_intercept = obs_intercept, state_intercept = state_intercept,
     log_prior_pdf = log_prior_pdf, known_params = known_params,
-    known_tv_params = known_tv_params,
+    known_tv_params = known_tv_params, time_varying = time_varying,
     n_states = n_states, n_etas = n_etas,
     state_names = state_names), class = "lgg_ssm")
 }
@@ -1272,7 +1280,7 @@ lgg_ssm <- function(y, Z, H, T, R, a1, P1, theta,
 #' computes the log-prior density given theta.
 #' @param time_varying Optional logical vector of length 4, denoting whether the values of
 #' Z, H, T, and R vary with respect to time variable (given identical states).
-#' If used, can speed up some computations.
+#' If used, this can speed up some computations.
 #' @param state_names Names for the states.
 #' @return Object of class \code{nlg_ssm}.
 #' @export
@@ -1319,7 +1327,7 @@ nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
 #' computes the prior log-density given the parameter vector theta.
 #' @param theta Parameter vector passed to all model functions.
 #' @param x0 Fixed initial value for SDE at time 0.
-#' @param positive If \code{TRUE}, positive constraint is
+#' @param positive If \code{TRUE}, positivity constraint is
 #'   forced by \code{abs} in Millstein scheme.
 #' @return Object of class \code{sde_ssm}.
 #' @export

@@ -48,7 +48,7 @@ sim_smoother.lgg_ssm <- function(object, nsim = 1,
     object$R, object$a1, object$P1, 
     object$theta, object$obs_intercept, object$state_intercept,
     object$log_prior_pdf, object$known_params, 
-    object$known_tv_params,
+    object$known_tv_params, as.integer(object$time_varying), 
     object$n_states, object$n_etas, nsim, use_antithetic, seed)
   rownames(out) <- names(object$a1)
   aperm(out, c(2, 1, 3))
