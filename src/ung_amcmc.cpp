@@ -106,7 +106,7 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
   const arma::vec& initial_mode, const unsigned int max_iter, const double conv_tol) {
   
   // get the current values of theta
-  arma::vec theta = model.get_theta();
+  arma::vec theta = model.theta;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(theta);
   if (!arma::is_finite(logprior)) {

@@ -12,8 +12,8 @@ public:
   
   // update model given the parameters theta
   void update_model(const arma::vec& theta);
-  // extract theta from the model
-  arma::vec get_theta() const;
+  double log_prior_pdf(const arma::vec& x) const;
+  double log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const;
   
 private:
   unsigned int svm_type;

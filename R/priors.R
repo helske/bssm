@@ -88,6 +88,8 @@ normal <- function(init, mean, sd){
 
 combine_priors <- function(x) {
   
+  if (length(x) == 0) return(list(prior_distributions = 0, parameters = matrix(0, 0, 0)))
+  
   prior_distributions <- sapply(x, "[[", "prior_distribution")
   parameters <- matrix(NA, 2, length(prior_distributions))
   for(i in 1:length(prior_distributions)) {

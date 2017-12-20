@@ -43,39 +43,37 @@ void ung_bsm::update_model(const arma::vec& theta) {
   }
 }
 
-arma::vec ung_bsm::get_theta(void) const {
-
-  unsigned int npar = level_est + slope_est + seasonal_est + noise +
-    xreg.n_cols + phi_est;
-
-  arma::vec theta(npar);
-
-  if (arma::accu(fixed) < 3 || noise) {
-    // sd_level
-    if (level_est) {
-      theta(0) = R(0, 0, 0);
-    }
-    // sd_slope
-    if (slope_est) {
-      theta(level_est) = R(1, 1, 0);
-    }
-    // sd_seasonal
-    if (seasonal_est) {
-      theta(level_est + slope_est) =
-        R(1 + slope, 1 + slope, 0);
-    }
-    if (noise) {
-      theta(level_est + slope_est + seasonal_est) =
-        R(m - 1, 1 + slope + seasonal, 0);
+double ung_bsm::log_prior_pdf(const arma::vec& x) const {
+  
+  double log_prior = 0.0;
+  arma::vec pars = x;
+  pars.subvec(0, pars.n_elem - xreg.n_cols - 1) = 
+    arma::exp(pars.subvec(0, pars.n_elem - xreg.n_cols - 1)) - 1.0;
+  
+  for(unsigned int i = 0; i < pars.n_elem; i++) {
+    switch(prior_distributions(i)) {
+    case 0  :
+      if (pars(i) < prior_parameters(0, i) || pars(i) > prior_parameters(1, i)) {
+        return -std::numeric_limits<double>::infinity(); 
+      }
+      break;
+    case 1  :
+      if (pars(i) < 0) {
+        return -std::numeric_limits<double>::infinity();
+      } else {
+        log_prior -= 0.5 * std::pow(pars(i) / prior_parameters(0, i), 2);
+      }
+      break;
+    case 2  :
+      log_prior -= 0.5 * std::pow((pars(i) - prior_parameters(0, i)) / prior_parameters(1, i), 2);
+      break;
     }
   }
+  return log_prior;
+}
 
-  if(phi_est) {
-    theta(level_est + slope_est + seasonal_est + noise) = phi;
-  }
-
-  if(xreg.n_cols > 0) {
-    theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1) = beta;
-  }
-  return theta;
+double ung_bsm::log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const {
+  
+  return arma::accu(new_theta.subvec(0, new_theta.n_elem - xreg.n_cols - 1)) -
+    arma::accu(old_theta.subvec(0, old_theta.n_elem - xreg.n_cols - 1));
 }

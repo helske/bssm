@@ -26,9 +26,6 @@ public:
   double log_prior_pdf(const arma::vec& x) const;
   double log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const;
   
-  
-  arma::vec get_theta() const;
-  
   // compute covariance matrices RR and regression part
   void compute_RR();
   void compute_xbeta() { xbeta = xreg * beta; }

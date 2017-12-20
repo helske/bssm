@@ -226,7 +226,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   } else {
     state_intercept <- matrix(0, m, 1)
   }
-  theta <- sapply(priors, "[[", "init")
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
@@ -523,7 +523,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   } else {
     state_intercept <- matrix(0, m, 1)
   }
-  theta <- sapply(priors, "[[", "init")
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
@@ -616,7 +616,7 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
   state_intercept <- if (svm_type) matrix(mu$init * (1 - T[1])) else matrix(0)
   obs_intercept <- matrix(0)
   
-  theta <- sapply(priors, "[[", "init")
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
@@ -749,7 +749,7 @@ ng_ar1 <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
   }
   obs_intercept <- matrix(0)
   
-  theta <- sapply(priors, "[[", "init")
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
@@ -951,7 +951,7 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   } else {
     state_intercept <- matrix(0, m, 1)
   }
-  theta <- sapply(priors, "[[", "init")
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
   priors <- combine_priors(priors)
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
     xreg = xreg, coefs = coefs, obs_intercept = obs_intercept,
@@ -1173,14 +1173,16 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     state_intercept <- matrix(0, m, 1)
   }
   
-  theta <- sapply(priors, "[[", "init")
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
-    xreg = xreg, coefs = coefs, distribution = distribution,
-    initial_mode = initial_mode, priors = priors, Z_ind = Z_ind,
-    T_ind = T_ind, R_ind = R_ind, phi_est = phi_est, obs_intercept = obs_intercept,
-    state_intercept = state_intercept), class = "ngssm")
+    xreg = xreg, coefs = coefs, obs_intercept = obs_intercept,
+    state_intercept = state_intercept, distribution = distribution,
+    initial_mode = initial_mode, Z_ind = Z_ind,
+    T_ind = T_ind, R_ind = R_ind, phi_est = phi_est, 
+    prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
+    theta = theta), class = "ngssm")
 }
 
 #' General multivariate linear Gaussian state space models
@@ -1521,7 +1523,9 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   }
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
-    xreg = xreg, coefs = coefs, priors = priors, Z_ind = Z_ind,
-    H_ind = H_ind, T_ind = T_ind, R_ind = R_ind, obs_intercept = obs_intercept,
-    state_intercept = state_intercept), class = "mv_gssm")
+    xreg = xreg, coefs = coefs, obs_intercept = obs_intercept,
+    state_intercept = state_intercept, Z_ind = Z_ind,
+    H_ind = H_ind, T_ind = T_ind, R_ind = R_ind, 
+    prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
+    theta = theta), class = "mv_gssm")
 }

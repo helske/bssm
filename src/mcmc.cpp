@@ -319,7 +319,7 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
                         const double conv_tol) {
   
   // get the current values of theta
-  arma::vec theta = model.get_theta();
+  arma::vec theta = model.theta;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(theta);
   if (!arma::is_finite(logprior)) {
@@ -469,7 +469,7 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   unsigned n = model.n;
   
   // get the current values of theta
-  arma::vec theta = model.get_theta();
+  arma::vec theta = model.theta;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(theta);
   if (!arma::is_finite(logprior)) {
@@ -617,7 +617,7 @@ void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
   unsigned n = model.n;
   
   // get the current values of theta
-  arma::vec theta = model.get_theta();
+  arma::vec theta = model.theta;
   
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(theta);
@@ -733,7 +733,7 @@ void mcmc::da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
   
   
   // get the current values of theta
-  arma::vec theta = model.get_theta();
+  arma::vec theta = model.theta;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(theta);
   if (!arma::is_finite(logprior)) {
@@ -890,7 +890,7 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   unsigned n = model.n;
   
   // get the current values of theta
-  arma::vec theta = model.get_theta();
+  arma::vec theta = model.theta;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(theta);
   if (!arma::is_finite(logprior)) {
@@ -1047,7 +1047,7 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
   unsigned n = model.n;
   
   // get the current values of theta
-  arma::vec theta = model.get_theta();
+  arma::vec theta = model.theta;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(theta);
   if (!arma::is_finite(logprior)) {

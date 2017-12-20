@@ -97,34 +97,6 @@ double ung_ssm::log_proposal_ratio(const arma::vec& new_theta, const arma::vec& 
   return 0.0;
 }
 
-// pick up theta from system matrices
-arma::vec ung_ssm::get_theta(void) const {
-
-  // !! add phi when adding other distributions !!
-  arma::vec theta(Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem + (distribution == 3));
-
-  if (Z_ind.n_elem > 0) {
-    theta.subvec(0, Z_ind.n_elem - 1) = Z.elem(Z_ind);
-  }
-  if (T_ind.n_elem > 0) {
-    theta.subvec(Z_ind.n_elem,  Z_ind.n_elem + T_ind.n_elem - 1) = T.elem(T_ind);
-  }
-  if (R_ind.n_elem > 0) {
-    theta.subvec(Z_ind.n_elem + T_ind.n_elem,
-      Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem - 1) = R.elem(R_ind);
-  }
-
-  if(phi_est) {
-    theta(Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem) = phi;
-  }
-  if(xreg.n_cols > 0) {
-    theta.subvec(theta.n_elem - xreg.n_cols,
-      theta.n_elem - 1) = beta;
-  }
-
-
-  return theta;
-}
 
 // given the current guess of mode, compute new values of y and H of
 // approximate model
