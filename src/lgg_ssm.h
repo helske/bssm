@@ -30,8 +30,8 @@ public:
   lgg_ssm(const arma::mat& y, lmat_fnPtr Z_fn_, lmat_fnPtr H_fn_, lmat_fnPtr T_fn_, lmat_fnPtr R_fn_, 
     a1_fnPtr a1_fn_, P1_fnPtr P1_fn_, lvec_fnPtr D_fn_, lvec_fnPtr C_fn_, 
     const arma::vec& theta, prior_fnPtr log_prior_pdf_, const arma::vec& known_params, 
-    const arma::mat& known_tv_params, const unsigned int m, const unsigned int k,
-    const unsigned int seed);
+    const arma::mat& known_tv_params, const arma::uvec& time_varying, 
+    const unsigned int m, const unsigned int k,  const unsigned int seed);
   
   mgg_ssm build_mgg();
   void update_mgg(mgg_ssm& model);
@@ -59,6 +59,8 @@ public:
   arma::vec known_params;
   // matrix of known (time-varying) parameters
   arma::mat known_tv_params;
+  // vector of defining which variables are time-varying
+  arma::uvec time_varying;
   
   const unsigned int m;
   const unsigned int k;

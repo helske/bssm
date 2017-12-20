@@ -89,8 +89,8 @@ gaussian_kfilter <- function(model_, model_type) {
     .Call('_bssm_gaussian_kfilter', PACKAGE = 'bssm', model_, model_type)
 }
 
-general_gaussian_kfilter <- function(y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, n_states, n_etas) {
-    .Call('_bssm_general_gaussian_kfilter', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, n_states, n_etas)
+general_gaussian_kfilter <- function(y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas) {
+    .Call('_bssm_general_gaussian_kfilter', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas)
 }
 
 gaussian_loglik <- function(model_, model_type) {
@@ -105,8 +105,8 @@ nonlinear_loglik <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf
     .Call('_bssm_nonlinear_loglik', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, nsim_states, seed, max_iter, conv_tol, iekf_iter, method)
 }
 
-general_gaussian_loglik <- function(y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, n_states, n_etas) {
-    .Call('_bssm_general_gaussian_loglik', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, n_states, n_etas)
+general_gaussian_loglik <- function(y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas) {
+    .Call('_bssm_general_gaussian_loglik', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas)
 }
 
 gaussian_mcmc <- function(model_, prior_types, prior_pars, sim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, Z_ind, H_ind, T_ind, R_ind) {
@@ -145,8 +145,8 @@ nonlinear_is_mcmc <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pd
     .Call('_bssm_nonlinear_is_mcmc', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, is_type, simulation_method, max_iter, conv_tol, iekf_iter)
 }
 
-general_gaussian_mcmc <- function(y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, sim_states) {
-    .Call('_bssm_general_gaussian_mcmc', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, sim_states)
+general_gaussian_mcmc <- function(y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, sim_states) {
+    .Call('_bssm_general_gaussian_mcmc', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, n_threads, sim_states)
 }
 
 R_milstein <- function(x0, L, t, theta, drift_pntr, diffusion_pntr, ddiffusion_pntr, positive, seed) {
@@ -217,8 +217,8 @@ gaussian_smoother <- function(model_, model_type) {
     .Call('_bssm_gaussian_smoother', PACKAGE = 'bssm', model_, model_type)
 }
 
-general_gaussian_smoother <- function(y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, n_states, n_etas) {
-    .Call('_bssm_general_gaussian_smoother', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, n_states, n_etas)
+general_gaussian_smoother <- function(y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas) {
+    .Call('_bssm_general_gaussian_smoother', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas)
 }
 
 gaussian_ccov_smoother <- function(model_, model_type) {
@@ -233,8 +233,8 @@ gaussian_sim_smoother <- function(model_, nsim, use_antithetic, seed, model_type
     .Call('_bssm_gaussian_sim_smoother', PACKAGE = 'bssm', model_, nsim, use_antithetic, seed, model_type)
 }
 
-general_gaussian_sim_smoother <- function(y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, nsim, use_antithetic, seed) {
-    .Call('_bssm_general_gaussian_sim_smoother', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, nsim, use_antithetic, seed)
+general_gaussian_sim_smoother <- function(y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, nsim, use_antithetic, seed) {
+    .Call('_bssm_general_gaussian_sim_smoother', PACKAGE = 'bssm', y, Z, H, T, R, a1, P1, theta, D, C, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, nsim, use_antithetic, seed)
 }
 
 ukf_nlg <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, alpha, beta, kappa) {

@@ -149,12 +149,9 @@ The `bssm` package also supports models where the state equation is defined as a
 $$
 \textrm{d} \alpha_t =
 \mu(t, \alpha_t,\theta) \textrm{d} t +
-\sigma(t, \alpha_t, \theta) \textrm{d} B_t,
+\sigma(t, \alpha_t, \theta) \textrm{d} B_t, \quad t\geq0,
 $$
-where $B_t$ is a (vector valued) Brownian motion and where
-$\mu$ and $\sigma$ are vector and matrix valued functions. As these
-transition densities are generally unavailable for non-linear
-diffusions, we use Millstein time-discretisation scheme for approximate simulation with bootstrap particle filter. Fine discretisation mesh gives less bias than the coarser one, with increased computational complexity. The DA and IS approaches can be used to speed up the inference by using coarse discretisation in the first stage, and then using more fine mesh in the second stage. For comparison of DA and IS approaches in case of geometric Brownian motion model, see again @vihola-helske-franks. Like non-linear Gaussian models, this model is also defined by small C++ snippets.
+where $B_t$ is a (vector valued) Brownian motion and where $\mu$ and $\sigma$ are vector and matrix valued functions, with the univariate observation density $p(y_k | \alpha_k)$ defined at integer times $k=1\ldots,n$. As these transition densities are generally unavailable for non-linear diffusions, we use Millstein time-discretisation scheme for approximate simulation with bootstrap particle filter. Fine discretisation mesh gives less bias than the coarser one, with increased computational complexity. The DA and IS approaches can be used to speed up the inference by using coarse discretisation in the first stage, and then using more fine mesh in the second stage. For comparison of DA and IS approaches in case of geometric Brownian motion model, see again @vihola-helske-franks. Like non-linear Gaussian models, this model is also defined by small C++ snippets.
 
 
 # Package functionality
@@ -163,12 +160,20 @@ Main functions of `bssm` is written in `C++`, with help of `Rcpp` and `RcppArmad
 
 ## Model building functions
 
-For linear-Gaussian models, `bssm` offers functions `bsm` for basic structural time series models (BSM), as well as general `lgg_ssm` for arbitrary LGSSMs, defined via pointers to user supplied `C++` functions. There is also a function `gssm` for general LGSSM where user defines the system matrices directly as R objects, which can be more convinient in many cases. However, defining the priors for this model is somewhat more restricted, whereas for `lgg_smm`, arbitrary prior definitions can be used. As an example, one can build Gaussian BSM model as 
+For linear-Gaussian models, `bssm` offers functions `bsm` for basic univariate structural time series models (BSM), as well as general `lgg_ssm` for arbitrary (multivariate) LGSSMs, defined via pointers to user supplied `C++` functions. There is also a function `gssm` for general univariate LGSSM where user defines the system matrices directly as R objects, which can be more convinient in many cases. However, defining the priors for this model is somewhat more restricted, whereas for `lgg_smm`, arbitrary prior definitions can be used. As an example, consider a Gaussian local linear trend model of form
+
+$$
+\begin{align}
+y_t &= \mu_t + \epsilon_t,\\
+\mu_{t+1} &= \mu_t + \nu_t + \eta_t,\\
+\nu_{t+1} &= \nu_t + \xi_t,
+\end{align}
+$$
+with zero-mean Gaussian noise terms $\epsilon_t, \eta_t, \xi_t$ with unknown standard deviations. This model can be built with `bsm` function as 
 
 ```{r nhtemp}
 library("bssm")
 data("nhtemp", package = "datasets")
-
 prior <- halfnormal(1, 10)
 bsm_model <- bsm(y = nhtemp, sd_y = prior, sd_level = prior,
   sd_slope = prior)
@@ -181,28 +186,72 @@ Same model could also by built with `lgg_ssm`, by defining the small `C++` snipp
 ```{Rcpp lgg_ssm_template, code=readLines('lgg_ssm_template.cpp'), eval = FALSE, echo = TRUE}
 ```
 
-We can then compile the file and construct the model as
-```{r nhtemp_cpp}
-library("Rcpp")
-sourceCpp("lgg_ssm_template.cpp")
-pntrs <- create_xptrs()
-bsm_model2 <- lgg_ssm(y = nhtemp, Z = pntrs$Z, H = pntrs$H, T = pntrs$T, R = pntrs$R, 
-  a1 = pntrs$a1, P1 = pntrs$P1, state_intercept = pntrs$C, obs_intercept = pntrs$D, 
-  log_prior_pdf = pntrs$log_prior_pdf, theta = rep(1, 3), known_params = c(0, 1000), 
-  n_states = 2, state_names = c("level", "slope"))
-```
-
-
 Note that most of this code is general and can be modified to specific models accordingly. Word of caution when using these `C++` snippets: Due to the use of pointers, users must recompile and construct the model objects in each `R` session, i.e. saving and later loading the model object is not sufficient. Also, repeatedly recompiling the external pointers from same file with `sourceCpp` can cause `R` crash unexpectedly if the corresponding cache directory is not changed between compilations^[1].
 
 [^1]: https://github.com/helske/crashtest/issues/1.
 
+We can then compile the file and construct the model as
+```{r nhtemp_cpp}
+Rcpp::sourceCpp("lgg_ssm_template.cpp", rebuild = TRUE, 
+  cacheDir = paste0(tempdir(), round(runif(1) * 1000)), 
+  cleanupCacheDir = TRUE)
+pntrs <- create_xptrs()
+bsm_model2 <- lgg_ssm(y = nhtemp, Z = pntrs$Z, H = pntrs$H, T = pntrs$T, R = pntrs$R, 
+  a1 = pntrs$a1, P1 = pntrs$P1, state_intercept = pntrs$C, obs_intercept = pntrs$D, 
+  log_prior_pdf = pntrs$log_prior_pdf, theta = rep(1, 3),
+  n_states = 2, state_names = c("level", "slope"), time_varying = rep(FALSE, 6))
+```
+Compared to `bsm`, we need to manually define the actual number of states, and optionally their names. 
+We can also use argument `time_varying` for defining whether or not some of the system matrices vary in time or not which can lead to some computational savings
+
+And we seem to get identical results as expected:
 ```{r nhtemp_loglik}
 logLik(bsm_model)
 logLik(bsm_model2)
 ```
 
+For non-Gaussian models, function `ng_bsm` can be used for constructing an BSM model where the observations are assumed to be distributed according to Poisson, binomial or negative binomial distribution. The syntax is nearly identical as in case of `bsm`, but we now define also the distribution via argument `distribution`, and depending on the model, we can also define paramters `u` and `phi`. For Poisson and negative binomial models, the known parameter `u` corresponds to the offset term, whereas in case of binomial model `u` defines the number of trials. For negative binomial model, argument `phi` defines the dispersion term, which can be given as a fixed value, or as a prior function. For same observational densities, a model where the state equation follows a first order autoregressive process can be defined using the function `ng_ar1`. Finally, a stochastic volatility model can be defined using a function `svm`, and an arbirary linear-Gaussian state model with Poisson, binomial or negative binomial distributed observations can be defined with `ngssm`.
+
+For models where the state equation is now longer linear-Gaussian, we can again use our pointer-based interface. General non-linear Gaussian model can be defined with the function `nlg_ssm`, with similar fashion as in case of `lgg_ssm`. A template for `nlg_ssm` can be found in the Appendix.
+
+As a relatively new feature, `bssm` now supports also discretely observed diffusion models where the state process is assumed to be continous stochastic process These can be constructed using the `sde_ssm` function, which takes pointers to C++ functions defining the drift, diffusion, the derivative of the diffusion function, and the log-densities of the observations and the prior. As an example, let us consider an Ornstein–Uhlenbeck process
+$$
+\textrm{d} \alpha_t = \rho (\nu - \alpha_t) \textrm{d} t + \sigma \textrm{d} B_t,
+$$
+with parameters $\theta = (\phi, \nu, \sigma) = (0.5, 2, 1)$ and the initial condition $\alpha_0 = 1$. For observation density, we use Poisson distribution with parameter $\exp(\alpha_k)$. We first simulate a trajectory $x_0, \ldots, x_n$ using the `sde.sim` function from the `sde` package [@sde] and use that for simulating the observations $y$:
+```{r}
+set.seed(1)
+library("sde")
+x <- sde.sim(t0 = 0, T = 100, X0 = 1, N = 100,
+  drift = expression(0.5 * (2 - x)),
+  sigma = expression(1),
+  sigma.x = expression(0))
+y <- rpois(100, exp(x[-1]))
+```
+We then compile and build the model as in the case of `lgg_ssm` model:
+```{r}
+Rcpp::sourceCpp("sde_ssm_template.cpp", rebuild = TRUE, 
+  cacheDir = paste0(tempdir(), round(runif(1) * 1000)), 
+  cleanupCacheDir = TRUE)
+pntrs <- create_xptrs()
+sde_model <- sde_ssm(y, pntrs$drift, pntrs$diffusion, 
+  pntrs$ddiffusion, pntrs$obs_density, pntrs$prior, c(0.5, 2, 1), 1, FALSE)
+
+ng_model <- ng_ar1(y, rho = uniform(0.9, -1, 1), mu = normal(0, 0, 10),
+  sigma = halfnormal(0, 10), distribution = "poisson")
+
+
+out <- run_mcmc(model, n_iter = 6e4, n_burnin=1e4, nsim_state = 500, L_c = 1, L_f = 2, method = "da")
+out2 <- run_mcmc(ng_model, n_iter = 6e4, nsim_states = 100)
+
+```
+
 ## Filtering and smoothing
+
+Filtering refers to estimating the conditional densities of the hidden states at time $t$, given the observations up to that point. For linear-Gaussian models, these densities can be efficiently computed using the Kalman filter recursions. The `bssm` has a method `kfilter` for this task. For models defined with the `ngssm` ,`ng_bsm`, `ng_ar1`, and `svm` functions, `kfilter` will first construct an approximating Gaussian model for which the Kalman filter is then used. For details of this approximation, see @durbin-koopman1997 and @vihola-helske-franks. For non-linear models defined by `nlg_ssm` it is possible to perform filtering using extended Kalman filter (EKF) with the function `ekf`, or unscented Kalman filter with the function `ukf`. It is also possible to use iterated EKF (IEKF) by changing the argument `iekf_iter` of the `ekf` function. Compared to EKF, in IEKF the observation equation is linearized iteratively within each time step.
+
+While Kalman filter solves the filtering problem exactly in case of linear-Gaussian models, other previously mentioned approaches produce only approximate, possibly biased estimates.
+linear-Gaussian models, `bssm` offers classical Kalman filtering and smoothing as functions `kfilter` and `smoother`. Simulation smoother [@durbin-koopman], as well as 
 
 ## Markov chain Monte Carlo
 
@@ -223,7 +272,7 @@ model <- bsm(log10(UKgas), sd_y = prior, sd_level = prior,
 
 And run MCMC and print some summary statistics (there is also a `summary` method with similar output):
 ```{r mcmc}
-mcmc_out <- run_mcmc(model, n_iter = 1e5)
+mcmc_out <- run_mcmc(model, n_iter = 1e4)
 mcmc_out
 ```
 
@@ -283,3 +332,10 @@ For plotting purposes, we'll use `bayesplot` package for the figures after expan
 
 
 # References
+
+# Appendix
+
+## Template for non-linear Gaussian model
+
+```{Rcpp nlg_ssm_template, code=readLines('nlg_ssm_template'), eval = FALSE, echo = TRUE}
+```

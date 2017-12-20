@@ -38,7 +38,7 @@ kfilter.lgg_ssm <- function(object, ...) {
     object$R, object$a1, object$P1, 
     object$theta, object$obs_intercept, object$state_intercept,
     object$log_prior_pdf, object$known_params, 
-    object$known_tv_params,
+    object$known_tv_params, as.integer(object$time_varying), 
     object$n_states, object$n_etas)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- object$state_names
@@ -74,6 +74,11 @@ kfilter.ng_bsm <- function(object, ...) {
 #' @method kfilter svm
 #' @export
 kfilter.svm <- function(object, ...) {
+  kfilter(gaussian_approx(object))
+}
+#' @method kfilter ng_ar1
+#' @export
+kfilter.ng_ar1 <- function(object, ...) {
   kfilter(gaussian_approx(object))
 }
 

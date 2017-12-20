@@ -769,7 +769,7 @@ run_mcmc.lgg_ssm <- function(object, n_iter, sim_states = TRUE, type = "full",
         object$R, object$a1, object$P1,
         object$theta, object$obs_intercept, object$state_intercept,
         object$log_prior_pdf, object$known_params,
-        object$known_tv_params,
+        object$known_tv_params, as.integer(object$time_varying), 
         object$n_states, object$n_etas, seed,
         n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
         end_adaptive_phase, n_threads, sim_states)

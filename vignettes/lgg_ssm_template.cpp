@@ -1,3 +1,6 @@
+// A template for building a general linear-Gaussian state space model
+// Here we define an univariate local linear trend model which could be 
+// constructed also with bsm function.
 
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -8,27 +11,18 @@
 // theta(1) = standard deviation sigma_level
 // theta(2) = standard deviation sigma_slope
 //
-// known_params contains the prior for the initial state
-// known_tv_params is not used in this model
-// known_params(0): prior mean a_1
-// known_params(1): prior _variance_ P_1
-
 // Function for the prior mean of alpha_1
 // [[Rcpp::export]]
 arma::vec a1_fn(const arma::vec& theta, const arma::vec& known_params) {
-  
-  arma::vec a1(1);
-  a1(0) = known_params(0);
-  
-  return a1;
+  return arma::vec(2, arma::fill::zeros);
 }
 // Function for the prior variance of alpha_1
 // [[Rcpp::export]]
 arma::mat P1_fn(const arma::vec& theta, const arma::vec& known_params) {
   
-  arma::mat P1(1, 1);
-  P1(0,0) = known_params(1);
-  
+  arma::mat P1(2, 2, arma::fill::zeros);
+  P1(0, 0) = 1000;
+  P1(1, 1) = 1000;
   return P1;
 }
 
@@ -36,9 +30,10 @@ arma::mat P1_fn(const arma::vec& theta, const arma::vec& known_params) {
 // [[Rcpp::export]]
 arma::mat H_fn(const unsigned int t, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
-  
+  // note no transformations, needs to check for positivity in prior
+  // we could also use exp(theta) here and work with the corresponding prior
   arma::mat H(1,1);
-  H(0, 0) = exp(theta(0)); //force standard deviation to positive via transformation
+  H(0, 0) = theta(0);
   return H;
 }
 
@@ -46,8 +41,9 @@ arma::mat H_fn(const unsigned int t, const arma::vec& theta,
 // [[Rcpp::export]]
 arma::mat R_fn(const unsigned int t, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
-  arma::mat R(1, 1);
-  R(0, 0) = exp(theta(1));
+  arma::mat R(2, 2, arma::fill::zeros);
+  R(0, 0) = theta(1);
+  R(1, 1) = theta(2);
   return R;
 }
 
@@ -74,7 +70,7 @@ arma::mat T_fn(const unsigned int t, const arma::vec& theta,
 // [[Rcpp::export]]
 arma::vec C_fn(const unsigned int t, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
-  return arma::vec(1, arma::fill::zeros);
+  return arma::vec(2, arma::fill::zeros);
 }
 // input to observation equation
 // [[Rcpp::export]]
@@ -87,9 +83,12 @@ arma::vec D_fn(const unsigned int t, const arma::vec& theta,
 // [[Rcpp::export]]
 double log_prior_pdf(const arma::vec& theta) {
   
-  double log_pdf = R::dnorm(theta(0), 0, 10, 1) + 
-    R::dnorm(theta(1), 0, 10, 1) + 
-    R::dnorm(theta(2), 0, 10, 1);
+  double log_pdf = -std::numeric_limits<double>::infinity();
+  if (arma::all(theta >= 0)) {
+   log_pdf = R::dnorm(theta(0), 0, 10, 1) + 
+     R::dnorm(theta(1), 0, 10, 1) + 
+     R::dnorm(theta(2), 0, 10, 1); 
+  }
   
   return log_pdf;
 }
@@ -100,32 +99,29 @@ double log_prior_pdf(const arma::vec& theta) {
 // [[Rcpp::export]]
 Rcpp::List create_xptrs() {
   
-  // typedef for a pointer of linear function of lgg-model equation returning vec (T, Z)
-  typedef arma::mat (*mat_fnPtr2)(const unsigned int t, const arma::vec& theta, 
+  // typedef for a pointer of linear function of lgg-model equation returning matrices Z, H, T, and R
+  typedef arma::mat (*lmat_fnPtr)(const unsigned int t, const arma::vec& theta, 
     const arma::vec& known_params, const arma::mat& known_tv_params);
-  // typedef for intercept terms (C, D)
-  typedef arma::vec (*vec_fnPtr2)(const unsigned int t, const arma::vec& theta, 
+  // typedef for a pointer of linear function of lgg-model equation returning vectors D and C
+  typedef arma::vec (*lvec_fnPtr)(const unsigned int t, const arma::vec& theta, 
     const arma::vec& known_params, const arma::mat& known_tv_params);
   
-  // typedef for a pointer of function of model equation returning mat (R, H)
-  typedef arma::mat (*mat_varfnPtr)(const unsigned int t, const arma::vec& theta, 
-    const arma::vec& known_params, const arma::mat& known_tv_params);
-  // typedef for a pointer of nonlinear function of model equation returning vec (a1)
-  typedef arma::vec (*vec_initfnPtr)(const arma::vec& theta, const arma::vec& known_params);
-  // typedef for a pointer of nonlinear function of model equation returning mat (P1)
-  typedef arma::mat (*mat_initfnPtr)(const arma::vec& theta, const arma::vec& known_params);
+  // typedef for a pointer returning vector a1
+  typedef arma::vec (*a1_fnPtr)(const arma::vec& theta, const arma::vec& known_params);
+  // typedef for a pointer returning matrix P1
+  typedef arma::mat (*P1_fnPtr)(const arma::vec& theta, const arma::vec& known_params);
   // typedef for a pointer of log-prior function
-  typedef double (*double_fnPtr)(const arma::vec&);
+  typedef double (*prior_fnPtr)(const arma::vec&);
   
   return Rcpp::List::create(
-    Rcpp::Named("a1_fn") = Rcpp::XPtr<vec_initfnPtr>(new vec_initfnPtr(&a1_fn)),
-    Rcpp::Named("P1_fn") = Rcpp::XPtr<mat_initfnPtr>(new mat_initfnPtr(&P1_fn)),
-    Rcpp::Named("Z_fn") = Rcpp::XPtr<mat_fnPtr2>(new mat_fnPtr2(&Z_fn)),
-    Rcpp::Named("H_fn") = Rcpp::XPtr<mat_varfnPtr>(new mat_varfnPtr(&H_fn)),
-    Rcpp::Named("T_fn") = Rcpp::XPtr<mat_fnPtr2>(new mat_fnPtr2(&T_fn)),
-    Rcpp::Named("R_fn") = Rcpp::XPtr<mat_varfnPtr>(new mat_varfnPtr(&R_fn)),
-    Rcpp::Named("D_fn") = Rcpp::XPtr<vec_fnPtr2>(new vec_fnPtr2(&D_fn)),
-    Rcpp::Named("C_fn") = Rcpp::XPtr<vec_fnPtr2>(new vec_fnPtr2(&C_fn)),
+    Rcpp::Named("a1_fn") = Rcpp::XPtr<a1_fnPtr>(new a1_fnPtr(&a1_fn)),
+    Rcpp::Named("P1_fn") = Rcpp::XPtr<P1_fnPtr>(new P1_fnPtr(&P1_fn)),
+    Rcpp::Named("Z_fn") = Rcpp::XPtr<lmat_fnPtr>(new lmat_fnPtr(&Z_fn)),
+    Rcpp::Named("H_fn") = Rcpp::XPtr<lmat_fnPtr>(new lmat_fnPtr(&H_fn)),
+    Rcpp::Named("T_fn") = Rcpp::XPtr<lmat_fnPtr>(new lmat_fnPtr(&T_fn)),
+    Rcpp::Named("R_fn") = Rcpp::XPtr<lmat_fnPtr>(new lmat_fnPtr(&R_fn)),
+    Rcpp::Named("D_fn") = Rcpp::XPtr<lvec_fnPtr>(new lvec_fnPtr(&D_fn)),
+    Rcpp::Named("C_fn") = Rcpp::XPtr<lvec_fnPtr>(new lvec_fnPtr(&C_fn)),
     Rcpp::Named("log_prior_pdf") = 
-      Rcpp::XPtr<double_fnPtr>(new double_fnPtr(&log_prior_pdf)));
+      Rcpp::XPtr<prior_fnPtr>(new prior_fnPtr(&log_prior_pdf)));
 }

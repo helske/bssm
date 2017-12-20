@@ -1,4 +1,7 @@
-// Functions for univariate SDE models
+// A template for building a univariate discretely observed diffusion model
+// Here we define a latent Ornstein–Uhlenbeck process with Poisson observations
+// d\alpha_t = \rho (\nu - \alpha_t) dt + \sigma dB_t, t>=0
+// y_k ~ Poisson(exp(\alpha_k)), k = 1,...,n
 
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -7,24 +10,24 @@
 // x: state
 // theta: vector of parameters
 
-// Geometric Brownian motion case:
-// theta(0) = mu
-// theta(1) = sigma
+// theta(0) = rho
+// theta(1) = nu
+// theta(2) = sigma
 
 // Drift function
 // [[Rcpp::export]]
 double drift(const double x, const arma::vec& theta) {
-  return theta(0) * x;
+  return theta(0) * (theta(1) - x);
 }
-// Volatility function
+// diffusion function
 // [[Rcpp::export]]
 double diffusion(const double x, const arma::vec& theta) {
-  return std::max(0.0, theta(1) * x);
+  return theta(2);
 }
-// Derivative of volatility
+// Derivative of the diffusion function
 // [[Rcpp::export]]
 double ddiffusion(const double x, const arma::vec& theta) {
-  return theta(1) * (x > 0.0);
+  return 0.0;
 }
 
 // log-density of the prior
@@ -32,13 +35,13 @@ double ddiffusion(const double x, const arma::vec& theta) {
 double log_prior_pdf(const arma::vec& theta) {
   
   double log_pdf;
-  if(theta(1) <= 0.0 || theta(2) <= 0.0) {
+  if(theta(0) <= 0.0 || theta(2) <= 0.0) {
     log_pdf = -std::numeric_limits<double>::infinity();
   } else {
     // weakly informative priors. 
     // Note that negative values are handled above
-    log_pdf = R::dnorm(theta(0), 0, 1, 1) + R::dnorm(theta(1), 0, 1, 1) + 
-      R::dnorm(theta(2), 0, 1, 1);
+    log_pdf = R::dnorm(theta(0), 0, 10, 1) + R::dnorm(theta(1), 0, 10, 1) + 
+      R::dnorm(theta(2), 0, 10, 1);
   }
   return log_pdf;
 }
@@ -50,7 +53,7 @@ arma::vec log_obs_density(const double y,
   
   arma::vec log_pdf(alpha.n_elem);
   for (unsigned int i = 0; i < alpha.n_elem; i++) {
-    log_pdf(i) = R::dnorm(y, std::log(alpha(i)), theta(2), 1);
+    log_pdf(i) = R::dpois(y, exp(alpha(i)), 1);
   }
   return log_pdf;
 }
@@ -59,7 +62,7 @@ arma::vec log_obs_density(const double y,
 // Function which returns the pointers to above functions (no need to modify)
 
 // [[Rcpp::export]]
-Rcpp::List create_pntrs() {
+Rcpp::List create_xptrs() {
   // typedef for a pointer of drift/volatility function
   typedef double (*funcPtr)(const double x, const arma::vec& theta);
   // typedef for log_prior_pdf

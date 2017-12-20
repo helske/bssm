@@ -104,5 +104,6 @@ logLik.lgg_ssm <- function(object, ...) {
     object$R, object$a1, object$P1, 
     object$theta, object$obs_intercept, object$state_intercept, 
     object$log_prior_pdf, object$known_params, 
-    object$known_tv_params, object$n_states, object$n_etas)
+    object$known_tv_params, as.integer(object$time_varying), 
+    object$n_states, object$n_etas)
 }

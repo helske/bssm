@@ -656,7 +656,7 @@ Rcpp::List general_gaussian_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   const arma::vec& theta,
   SEXP D, SEXP C,
   SEXP log_prior_pdf, const arma::vec& known_params,
-  const arma::mat& known_tv_params,
+  const arma::mat& known_tv_params, const arma::uvec& time_varying,
   const unsigned int n_states, const unsigned int n_etas,
   const unsigned int seed, const unsigned int n_iter,
   const unsigned int n_burnin, const unsigned int n_thin,
@@ -674,8 +674,8 @@ Rcpp::List general_gaussian_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
   
   lgg_ssm model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_a1, *xpfun_P1, 
-    *xpfun_D, *xpfun_C, theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
-    seed);
+    *xpfun_D, *xpfun_C, theta, *xpfun_prior, known_params, known_tv_params, 
+    time_varying, n_states, n_etas, seed);
   
   mcmc mcmc_run(arma::uvec(theta.n_elem), arma::mat(1,1), n_iter, n_burnin, n_thin,
     model.n, model.m, target_acceptance, gamma, S, true);

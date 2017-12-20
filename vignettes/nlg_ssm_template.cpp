@@ -8,7 +8,7 @@
 // Function for the prior mean of alpha_1
 // [[Rcpp::export]]
 arma::vec a1_fn(const arma::vec& theta, const arma::vec& known_params) {
-  
+ 
   arma::vec a1(2);
   a1(0) = known_params(2);
   a1(1) = known_params(3);
@@ -69,7 +69,7 @@ arma::vec T_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
   
   double dT = known_params(0);
   double k = known_params(1);
-  
+
   arma::vec alpha_new(2);
   alpha_new(0) = alpha(0);
   alpha_new(1) = k * alpha(1) * exp(alpha(0) * dT) / 
@@ -104,8 +104,8 @@ double log_prior_pdf(const arma::vec& theta) {
   
   double log_pdf;
   if(arma::any(theta < 0)) {
-    log_pdf = -std::numeric_limits<double>::infinity();
-  } else {
+     log_pdf = -std::numeric_limits<double>::infinity();
+   } else {
     // weakly informative priors. 
     // Note that negative values are handled above
     log_pdf = R::dnorm(theta(0), 0, 10, 1) + R::dnorm(theta(1), 0, 10, 1) + 
