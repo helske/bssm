@@ -14,14 +14,14 @@ bsm(y, sd_y, sd_level, sd_slope, sd_seasonal, beta, xreg = NULL,
 observation equation. See \link[=uniform]{priors} for details.}
 
 \item{sd_level}{A fixed value or a prior for the standard error
-of the noise in level equation. See\link[=uniform]{priors} for details.}
+of the noise in level equation. See \link[=uniform]{priors} for details.}
 
 \item{sd_slope}{A fixed value or a prior for the standard error
-of the noise in slope equation. See\link[=uniform]{priors} for details.
+of the noise in slope equation. See \link[=uniform]{priors} for details.
 If missing, the slope term is omitted from the model.}
 
 \item{sd_seasonal}{A fixed value or a prior for the standard error
-of the noise in seasonal equation. See\link[=uniform]{priors} for details.
+of the noise in seasonal equation. See \link[=uniform]{priors} for details.
 If missing, the seasonal component is omitted from the model.}
 
 \item{beta}{Prior for the regression coefficients.}

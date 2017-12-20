@@ -23,7 +23,7 @@ computes the prior log-density given the parameter vector theta.}
 
 \item{x0}{Fixed initial value for SDE at time 0.}
 
-\item{positive}{If \code{TRUE}, positive constraint is
+\item{positive}{If \code{TRUE}, positivity constraint is
 forced by \code{abs} in Millstein scheme.}
 }
 \value{

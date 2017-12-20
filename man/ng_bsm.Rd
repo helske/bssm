@@ -11,18 +11,18 @@ ng_bsm(y, sd_level, sd_slope, sd_seasonal, sd_noise, distribution, phi, u = 1,
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
 
 \item{sd_level}{A fixed value or a prior for the standard error
-of the noise in level equation. See\link[=uniform]{priors} for details.}
+of the noise in level equation. See \link[=uniform]{priors} for details.}
 
 \item{sd_slope}{A fixed value or a prior for the standard error
-of the noise in slope equation. See\link[=uniform]{priors} for details.
+of the noise in slope equation. See \link[=uniform]{priors} for details.
 If missing, the slope term is omitted from the model.}
 
 \item{sd_seasonal}{A fixed value or a prior for the standard error
-of the noise in seasonal equation. See\link[=uniform]{priors} for details.
+of the noise in seasonal equation. See \link[=uniform]{priors} for details.
 If missing, the seasonal component is omitted from the model.}
 
 \item{sd_noise}{Prior for the standard error of the additional noise term.
-See\link[=uniform]{priors} for details. If missing, no additional noise term is used.}
+See \link[=uniform]{priors} for details. If missing, no additional noise term is used.}
 
 \item{distribution}{distribution of the observation. Possible choices are
 \code{"poisson"} and \code{"binomial"}.}

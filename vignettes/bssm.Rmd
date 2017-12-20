@@ -237,13 +237,6 @@ pntrs <- create_xptrs()
 sde_model <- sde_ssm(y, pntrs$drift, pntrs$diffusion, 
   pntrs$ddiffusion, pntrs$obs_density, pntrs$prior, c(0.5, 2, 1), 1, FALSE)
 
-ng_model <- ng_ar1(y, rho = uniform(0.9, -1, 1), mu = normal(0, 0, 10),
-  sigma = halfnormal(0, 10), distribution = "poisson")
-
-
-out <- run_mcmc(model, n_iter = 6e4, n_burnin=1e4, nsim_state = 500, L_c = 1, L_f = 2, method = "da")
-out2 <- run_mcmc(ng_model, n_iter = 6e4, nsim_states = 100)
-
 ```
 
 ## Filtering and smoothing

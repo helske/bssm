@@ -36,7 +36,7 @@ computes the log-prior density given theta.}
 
 \item{time_varying}{Optional logical vector of length 4, denoting whether the values of
 Z, H, T, and R vary with respect to time variable (given identical states).
-If used, can speed up some computations.}
+If used, this can speed up some computations.}
 
 \item{state_names}{Names for the states.}
 }

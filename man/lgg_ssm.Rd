@@ -6,7 +6,8 @@
 \usage{
 lgg_ssm(y, Z, H, T, R, a1, P1, theta, obs_intercept, state_intercept,
   known_params = NA, known_tv_params = matrix(NA), n_states, n_etas,
-  log_prior_pdf, state_names = paste0("state", 1:n_states))
+  log_prior_pdf, time_varying = rep(TRUE, 6), state_names = paste0("state",
+  1:n_states))
 }
 \arguments{
 \item{y}{Observations as multivariate time series (or matrix) of length \eqn{n}.}
@@ -20,9 +21,6 @@ define the corresponding model functions.}
 
 \item{theta}{Parameter vector passed to all model functions.}
 
-\item{obs_intercept}{Intercept terms for the observations equation, given as a
-length n vector.}
-
 \item{state_intercept}{Intercept terms for the state equation, given as a
 m times n matrix.}
 
@@ -35,12 +33,19 @@ m times n matrix.}
 \item{n_etas}{Dimension of the noise term of the transition equation.}
 
 \item{log_prior_pdf}{An external pointer for the C++ function which
-computes the log-prior density given theta.}
+computes the log-prior density given theta.
+ #' @param time_varying Optional logical vector of length 4, denoting whether the values of
+Z, H, T, and R vary with respect to time variable (given identical states).
+If used, can speed up some computations.}
+
+\item{time_varying}{Optional logical vector of length 6, denoting whether the values of
+Z, H, T, R, D and C can vary with respect to time variable.
+If used, can speed up some computations.}
 
 \item{state_names}{Names for the states.}
 }
 \value{
-Object of class \code{nlg_ssm}.
+Object of class \code{llg_ssm}.
 }
 \description{
 Constructs an object of class \code{llg_ssm} by defining the corresponding terms
