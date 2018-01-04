@@ -248,13 +248,16 @@ Compared to filtering problem, in smoothing problems we are interested in the co
 
 ## Markov chain Monte Carlo
 
-The main purpose of the `bssm` is to allow efficient MCMC-based inference for various state space models. For this task, a method `run_mcmc` can be used. The function takes large number of arguments, depending on the model class, but for many of these, default values are provided. For linear-Gaussian models, we only need to supply the number of iterations:
+The main purpose of the `bssm` is to allow efficient MCMC-based inference for various state space models. For this task, a method `run_mcmc` can be used. The function takes large number of arguments, depending on the model class, but for many of these, default values are provided. For linear-Gaussian models, we only need to supply the number of iterations. Here we define a random walk model with a drift and stochastic seasonal component for UK gas consumption dataset and use 40 000 MCMC iteration where first half is discarded by default as a burn-in (burn-in phase is also used for the adaptation of the proposal distribution):
 
 ```{r mcmc_bsm}
-mcmc_bsm <- run_mcmc(bsm_model, n_iter = 1e4)
+prior <- halfnormal(0.1, 1)
+UKgas_model <- bsm(log10(UKgas), sd_y = prior, sd_level = prior,
+  sd_slope = prior, sd_seasonal =  prior)
+
+mcmc_bsm <- run_mcmc(UKgas_model, n_iter = 4e4)
 mcmc_bsm
 ```
-
 For plotting purposes, we'll use `bayesplot` package for the figures after expanding our jump chain representation. 
 
 ```{r plot}
@@ -262,7 +265,7 @@ theta <- expand_sample(mcmc_bsm, "theta")
 library("bayesplot")
 mcmc_areas(theta, bw = 0.001)
 level <- expand_sample(mcmc_bsm, "alpha",  times = 101:108, states = 1)
-mcmc_areas(level)
+mcmc_areas(level, bw = 0.005)
 ```
 
 Smoothed trend:
@@ -274,7 +277,7 @@ sumr <- summary(mcmc_bsm)
 level <- sumr$states$Mean[, 1]
 lwr <- level - 1.96 * sumr$states$SD[, 1]
 upr <- level + 1.96 * sumr$states$SD[, 1]
-ts.plot(model$y, cbind(level, lwr, upr), col = c(1, 2, 2, 2), lty = c(1, 1, 2, 2))
+ts.plot(UKgas_model$y, cbind(level, lwr, upr), col = c(1, 2, 2, 2), lty = c(1, 1, 2, 2))
 ```
 
 
@@ -282,8 +285,8 @@ For prediction intervals, we first build a model for the future time points, and
 then use the previously obtained posterior samples for the prediction:
 
 ```{r predict, dev.args=list(pointsize = 10), fig.cap="Mean predictions and prediction intervals."}
-future_model <- model
-future_model$y <- ts(rep(NA, 24), start = end(model$y) + c(0, 1), frequency = 4)
+future_model <- UKgas_model
+future_model$y <- ts(rep(NA, 24), start = end(UKgas_model$y) + c(0, 1), frequency = 4)
 pred <- predict(mcmc_bsm, future_model, probs = c(0.025, 0.1, 0.9, 0.975))
 ts.plot(log10(UKgas), pred$mean, pred$intervals[, -3],
   col = c(1, 2, c(3, 4, 4, 3)), lty = c(1, 1, rep(2, 4)))
@@ -293,9 +296,9 @@ Now same with `ggplot2`:
 
 ```{r predict2, dev.args=list(pointsize = 10), fig.cap="Prediction plots with ggplot2."}
 require("ggplot2")
-level_fit <- ts(colMeans(expand_sample(mcmc_bsm, "alpha")$level), start = start(model$y),
+level_fit <- ts(colMeans(expand_sample(mcmc_bsm, "alpha")$level), start = start(UKgas_model$y),
   frequency = 4)
-autoplot(pred, y = model$y, fit = level_fit, interval_color = "red", alpha_fill = 0.2)
+autoplot(pred, y = UKgas_model$y, fit = level_fit, interval_color = "red", alpha_fill = 0.2)
 ```
 
 We can also obtain predictions in terms of individual components of the state vector:

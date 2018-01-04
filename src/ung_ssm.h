@@ -21,10 +21,10 @@ public:
     const arma::uvec& R_ind = arma::uvec());
   
   // update model
-  void update_model(const arma::vec& theta);
+  virtual void update_model(const arma::vec& new_theta);
   
-  double log_prior_pdf(const arma::vec& x) const;
-  double log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const;
+  virtual double log_prior_pdf(const arma::vec& x) const;
+  virtual double log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const;
   
   // compute covariance matrices RR and regression part
   void compute_RR();
@@ -67,7 +67,7 @@ public:
   double bsf_filter(const unsigned int nsim, arma::cube& alphasim, 
       arma::mat& weights, arma::umat& indices);
   
-  arma::cube predict_sample(const arma::mat& theta, const arma::mat& alpha, 
+  arma::cube predict_sample(const arma::mat& theta_posterior, const arma::mat& alpha, 
     const arma::uvec& counts, const unsigned int predict_type, const unsigned int nsim);
   
   arma::mat sample_model(const unsigned int predict_type, const unsigned int nsim);

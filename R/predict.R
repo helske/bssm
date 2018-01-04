@@ -89,6 +89,10 @@ predict.mcmc_output <- function(object, future_model, type = "response",
   end_ts <- end(future_model$y)
   freq <- frequency(future_model$y)
   
+  if (attr(object, "model_type") %in% c("bsm", "ng_bsm")) {
+    object$theta[,1:(ncol(object$theta) - length(future_model$coefs))] <- 
+      log(1 + object$theta[,1:(ncol(object$theta) - length(future_model$coefs))])
+  }
   switch(attr(object, "model_type"),
     gssm = ,
     bsm = {

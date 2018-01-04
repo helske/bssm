@@ -32,10 +32,10 @@ public:
     const arma::uvec& R_ind_ = arma::uvec());
   
   // update model matrices
-  void update_model(const arma::vec& new_theta);
+  virtual void update_model(const arma::vec& new_theta);
   
-  double log_prior_pdf(const arma::vec& x) const;
-  double log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const;
+  virtual double log_prior_pdf(const arma::vec& x) const;
+  virtual double log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const;
   
   // compute the log-likelihood
   double log_likelihood() const;
@@ -104,12 +104,13 @@ public:
   arma::vec HH;
   arma::cube RR;
   arma::vec xbeta;
-  arma::vec theta;
-  const arma::uvec prior_distributions;
-  const arma::mat prior_parameters;
   sitmo::prng_engine engine;
   const double zero_tol;
   
+  arma::vec theta;
+  const arma::uvec prior_distributions;
+  const arma::mat prior_parameters;
+
 private:
   arma::uvec Z_ind;
   arma::uvec H_ind;

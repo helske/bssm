@@ -9,38 +9,39 @@ ung_bsm::ung_bsm(const Rcpp::List& model, const unsigned int seed) :
   slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0) {
 }
 
-void ung_bsm::update_model(const arma::vec& theta) {
+void ung_bsm::update_model(const arma::vec& new_theta) {
 
   if (arma::accu(fixed) < 3 || noise || phi_est) {
 
     // sd_level
     if (level_est) {
-      R(0, 0, 0) = theta(0);
+      R(0, 0, 0) = std::exp(new_theta(0)) - 1.0;
     }
     // sd_slope
     if (slope_est) {
-      R(1, 1, 0) = theta(level_est);
+      R(1, 1, 0) = std::exp(new_theta(level_est)) - 1.0;
     }
     // sd_seasonal
     if (seasonal_est) {
       R(1 + slope, 1 + slope, 0) =
-        theta(level_est + slope_est);
+        std::exp(new_theta(level_est + slope_est)) - 1.0;
     }
     if(noise) {
       R(m - 1, 1 + slope + seasonal, 0) =
-        theta(level_est + slope_est + seasonal_est);
-      P1(m - 1, m - 1) = std::pow(theta(level_est + slope_est + seasonal_est), 2.0);
+        std::exp(new_theta(level_est + slope_est + seasonal_est)) - 1.0;
+      P1(m - 1, m - 1) = std::pow(R(m - 1, 1 + slope + seasonal, 0), 2.0);
     }
     compute_RR();
   }
   if(phi_est) {
-    phi = theta(level_est + slope_est + seasonal_est + noise);
+    phi = std::exp(new_theta(level_est + slope_est + seasonal_est + noise)) - 1.0;
   }
 
   if(xreg.n_cols > 0) {
-    beta = theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1);
+    beta = new_theta.subvec(new_theta.n_elem - xreg.n_cols, new_theta.n_elem - 1);
     compute_xbeta();
   }
+  theta = new_theta;
 }
 
 double ung_bsm::log_prior_pdf(const arma::vec& x) const {

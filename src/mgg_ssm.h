@@ -32,9 +32,9 @@ public:
     const arma::uvec& R_ind_ = arma::uvec());
   
   // update model matrices
-  void update_model(const arma::vec& new_theta);
-  double log_prior_pdf(const arma::vec& x) const;
-  double log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const;
+  virtual void update_model(const arma::vec& new_theta);
+  virtual double log_prior_pdf(const arma::vec& x) const;
+  virtual double log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const;
   
   // compute the covariance matrices
   void compute_RR();

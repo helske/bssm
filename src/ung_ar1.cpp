@@ -5,27 +5,28 @@ ung_ar1::ung_ar1(const Rcpp::List& model, const unsigned int seed) :
   ung_ssm(model, seed), mu_est(Rcpp::as<bool>(model["mu_est"])) {
 }
 
-void ung_ar1::update_model(const arma::vec& theta) {
+void ung_ar1::update_model(const arma::vec& new_theta) {
   
   
-  T(0, 0, 0) = theta(0);
-  R(0, 0, 0) = theta(1);
+  T(0, 0, 0) = new_theta(0);
+  R(0, 0, 0) = new_theta(1);
   if (mu_est) {
-    a1(0) = theta(2);
-    C.fill(theta(2) * (1.0 - theta(0)));
+    a1(0) = new_theta(2);
+    C.fill(new_theta(2) * (1.0 - new_theta(0)));
   }
-  P1(0, 0) = std::pow(theta(1), 2) / (1.0 - std::pow(theta(0), 2));
+  P1(0, 0) = std::pow(new_theta(1), 2) / (1.0 - std::pow(new_theta(0), 2));
   
   compute_RR();
   
   if(phi_est) {
-    phi = theta(2 + mu_est);
+    phi = new_theta(2 + mu_est);
   }
   
   if(xreg.n_cols > 0) {
-    beta = theta.subvec(theta.n_elem - xreg.n_cols, theta.n_elem - 1);
+    beta = new_theta.subvec(new_theta.n_elem - xreg.n_cols, new_theta.n_elem - 1);
     compute_xbeta();
   }
+  theta = new_theta;
 }
 
 double ung_ar1::log_prior_pdf(const arma::vec& x) const {
