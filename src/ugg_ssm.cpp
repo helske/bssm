@@ -19,7 +19,6 @@ ugg_ssm::ugg_ssm(const Rcpp::List& model,
   beta(Rcpp::as<arma::vec>(model["coefs"])),
   D(Rcpp::as<arma::vec>(model["obs_intercept"])),
   C(Rcpp::as<arma::mat>(model["state_intercept"])),
-
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
   Dtv(D.n_elem > 1), Ctv(C.n_cols > 1), n(y.n_elem), m(a1.n_elem), k(R.n_cols),
   HH(arma::vec(Htv * (n - 1) + 1)), RR(arma::cube(m, m, Rtv * (n - 1) + 1)),

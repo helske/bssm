@@ -80,12 +80,13 @@ public:
   arma::cube HH;
   arma::cube RR;
   arma::mat xbeta;
-  arma::vec theta;
-  const arma::uvec prior_distributions;
-  const arma::mat prior_parameters;
   
   sitmo::prng_engine engine;
   const double zero_tol;
+  
+  arma::vec theta;
+  const arma::uvec prior_distributions;
+  const arma::mat prior_parameters;
   
 private:
   arma::uvec Z_ind;
