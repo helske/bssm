@@ -99,7 +99,7 @@ double log_prior_pdf(const arma::vec& theta) {
 // [[Rcpp::export]]
 Rcpp::List create_xptrs() {
   
-  // typedef for a pointer of linear function of lgg-model equation returning matrices Z, H, T, and R
+  // typedef for a pointer returning matrices Z, H, T, and R
   typedef arma::mat (*lmat_fnPtr)(const unsigned int t, const arma::vec& theta, 
     const arma::vec& known_params, const arma::mat& known_tv_params);
   // typedef for a pointer of linear function of lgg-model equation returning vectors D and C

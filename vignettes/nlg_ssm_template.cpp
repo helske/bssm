@@ -120,11 +120,11 @@ double log_prior_pdf(const arma::vec& theta) {
 Rcpp::List create_xptrs() {
   
   // typedef for a pointer of nonlinear function of model equation returning vec (T, Z)
-  typedef arma::vec (*nvec_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
-    const arma::vec& known_params, const arma::mat& known_tv_params);
-  // typedef for a pointer of nonlinear function of model equation returning mat (Tg, Zg, H, R)
-  typedef arma::mat (*nmat_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
-    const arma::vec& known_params, const arma::mat& known_tv_params);
+  typedef arma::vec (*nvec_fnPtr)(const unsigned int t, const arma::vec& alpha, 
+    const arma::vec& theta, const arma::vec& known_params, const arma::mat& known_tv_params);
+  // typedef for a pointer of nonlinear function returning mat (Tg, Zg, H, R)
+  typedef arma::mat (*nmat_fnPtr)(const unsigned int t, const arma::vec& alpha, 
+    const arma::vec& theta, const arma::vec& known_params, const arma::mat& known_tv_params);
   
   // typedef for a pointer returning a1
   typedef arma::vec (*a1_fnPtr)(const arma::vec& theta, const arma::vec& known_params);

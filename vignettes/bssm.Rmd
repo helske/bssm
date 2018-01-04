@@ -315,15 +315,15 @@ ts.plot(log10(UKgas), level_fit, pred_state$mean[,"level"], pred_state$intervals
 
 ## Template for general linear-Gaussian model
 
-```{Rcpp lgg_ssm_template, code=readLines('lgg_ssm_template.cpp'), eval = FALSE, echo = TRUE}
+```{Rcpp lgg_ssm_template, code=readLines('lgg_ssm_template.cpp'), eval = FALSE, echo = TRUE, size = 'small'}
 ```
 
 ## Template for non-linear Gaussian model
 
-```{Rcpp nlg_ssm_template, code=readLines('nlg_ssm_template.cpp'), eval = FALSE, echo = TRUE}
+```{Rcpp nlg_ssm_template, code=readLines('nlg_ssm_template.cpp'), eval = FALSE, echo = TRUE, size = 'small'}
 ```
 
 ## Template for SDE model
 
-```{Rcpp sde_ssm_template, code=readLines('sde_ssm_template.cpp'), eval = FALSE, echo = TRUE}
+```{Rcpp sde_ssm_template, code=readLines('sde_ssm_template.cpp'), eval = FALSE, echo = TRUE, size = 'small'}
 ```
