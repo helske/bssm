@@ -160,5 +160,5 @@ autoplot(out_pred_ekf, y = model$y, plot_median = FALSE)
 
 This is the full `growth_model_functions.cpp` file:
 
-```{Rcpp nlg_ssm_template, code=readLines('nlg_ssm_template'), eval = FALSE, echo = TRUE}
+```{Rcpp nlg_ssm_template, code=readLines('nlg_ssm_template.cpp'), eval = FALSE, echo = TRUE}
 ```
