@@ -15,12 +15,13 @@
 Prints some basic summaries from the MCMC run by  \code{\link{run_mcmc}}.
 }
 \details{
-Two-types of standard error and effective sample size estimates are returned. 
+In case of IS-corrected MCMC, 
+two-types of standard error and effective sample size estimates are returned. 
 SE-IS (ESS-IS) are based only on importance sampling estimates, with weights 
 corresponding to the block sizes of the jump chain multiplied by the 
 importance correction weights (if IS-corrected method was used). These estimates
 ignore the possible autocorrelations but provide a lower-bound for the asymptotic 
 standard error. The SE-AR (ESS-AR) estimates are based on the spectral density 
 of \eqn{(x-hatx) * w} where \eqn{hatx} is the weighted mean of \eqn{x} and 
-\eqn{w} contains the weights. See vignette for details.
+\eqn{w} contains the weights.
 }
