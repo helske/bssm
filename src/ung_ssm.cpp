@@ -16,8 +16,6 @@ ung_ssm::ung_ssm(const Rcpp::List& model, const unsigned int seed,
   D(Rcpp::as<arma::vec>(model["obs_intercept"])),
   C(Rcpp::as<arma::mat>(model["state_intercept"])),
   theta(Rcpp::as<arma::vec>(model["theta"])), 
-  prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
-  prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
   Ztv(Z.n_cols > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1), Dtv(D.n_elem > 1),
   Ctv(C.n_cols > 1),
   n(y.n_elem), m(a1.n_elem), k(R.n_cols), RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
@@ -25,6 +23,8 @@ ung_ssm::ung_ssm(const Rcpp::List& model, const unsigned int seed,
   phi(model["phi"]),
   u(Rcpp::as<arma::vec>(model["u"])), distribution(model["distribution"]),
   phi_est(Rcpp::as<bool>(model["phi_est"])), max_iter(100), conv_tol(1.0e-8),
+  prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
+  prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
   Z_ind(Z_ind), T_ind(T_ind), R_ind(R_ind) {
 
   if(xreg.n_cols > 0) {

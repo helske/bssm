@@ -16,7 +16,7 @@ vignette: >
 %\VignetteIndexEntry{bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  %\VignetteDepends{ggplot2, bayesplot}
+  %\VignetteDepends{ggplot2, bayesplot, sde}
   ---
   
   ```{r setup, include=FALSE}
@@ -156,7 +156,7 @@ where $B_t$ is a (vector valued) Brownian motion and where $\mu$ and $\sigma$ ar
 
 # Package functionality
 
-Main functions of `bssm` is written in `C++`, with help of `Rcpp` and `RcppArmadillo` packages. On the `R`side,  package uses S3 methods in order to provide relatively unified workflow independent of the type of the model one is working with. The model building functions such as `ng_bsm` and `svm` are used to construct the actual state models which can be then passed to other methods, such as `logLik` and `run_mcmc` which compute the log-likelihood value and run MCMC algorithm respectively. We will now briefly describe the main functions and methods of `bssm`, for more detailed descriptions of different function arguments and return values, see the corresponding documentation in `R`.
+Main functions of `bssm` is written in `C++`, with help of `Rcpp` and `RcppArmadillo` packages. On the `R`side, package uses S3 methods in order to provide relatively unified workflow independent of the type of the model one is working with. The model building functions such as `ng_bsm` and `svm` are used to construct the actual state models which can be then passed to other methods, such as `logLik` and `run_mcmc` which compute the log-likelihood value and run MCMC algorithm respectively. We will now briefly describe the main functions and methods of `bssm`, for more detailed descriptions of different function arguments and return values, see the corresponding documentation in `R`.
 
 ## Model building functions
 
@@ -186,7 +186,7 @@ Same model could also by built with `lgg_ssm`, by defining the small `C++` snipp
 ```{Rcpp lgg_ssm_template, code=readLines('lgg_ssm_template.cpp'), eval = FALSE, echo = TRUE}
 ```
 
-Note that most of this code is general and can be modified to specific models accordingly. Word of caution when using these `C++` snippets: Due to the use of pointers, users must recompile and construct the model objects in each `R` session, i.e. saving and later loading the model object is not sufficient. Also, repeatedly recompiling the external pointers from same file with `sourceCpp` can cause `R` crash unexpectedly if the corresponding cache directory is not changed between compilations^[1].
+Note that most of this code is general and can be modified to specific models accordingly by changing the function bodies. Word of caution when using these `C++` snippets: Due to the use of pointers, users must recompile and construct the model objects in each `R` session, i.e. saving and later loading the model object is not sufficient. Also, using the `sourceCpp` function from the `Rcpp` package repeatedly for the recompilation of the external pointers from the same file can cause `R` crash unexpectedly, if the corresponding cache directory is not changed between compilations^[1].
 
 [^1]: https://github.com/helske/crashtest/issues/1.
 
@@ -218,7 +218,7 @@ As a relatively new feature, `bssm` now supports also discretely observed diffus
 $$
 \textrm{d} \alpha_t = \rho (\nu - \alpha_t) \textrm{d} t + \sigma \textrm{d} B_t,
 $$
-with parameters $\theta = (\phi, \nu, \sigma) = (0.5, 2, 1)$ and the initial condition $\alpha_0 = 1$. For observation density, we use Poisson distribution with parameter $\exp(\alpha_k)$. We first simulate a trajectory $x_0, \ldots, x_n$ using the `sde.sim` function from the `sde` package [@sde] and use that for simulating the observations $y$:
+with parameters $\theta = (\phi, \nu, \sigma) = (0.5, 2, 1)$ and the initial condition $\alpha_0 = 1$. For observation density, we use Poisson distribution with parameter $\exp(\alpha_k)$. We first simulate a trajectory $x_0, \ldots, x_n$ using the `sde.sim` function from the `sde` package [@sde] and use that for the simulation of observations $y$:
 ```{r}
 set.seed(1)
 library("sde")
@@ -236,92 +236,74 @@ Rcpp::sourceCpp("sde_ssm_template.cpp", rebuild = TRUE,
 pntrs <- create_xptrs()
 sde_model <- sde_ssm(y, pntrs$drift, pntrs$diffusion, 
   pntrs$ddiffusion, pntrs$obs_density, pntrs$prior, c(0.5, 2, 1), 1, FALSE)
-
 ```
 
 ## Filtering and smoothing
 
 Filtering refers to estimating the conditional densities of the hidden states at time $t$, given the observations up to that point. For linear-Gaussian models, these densities can be efficiently computed using the Kalman filter recursions. The `bssm` has a method `kfilter` for this task. For models defined with the `ngssm` ,`ng_bsm`, `ng_ar1`, and `svm` functions, `kfilter` will first construct an approximating Gaussian model for which the Kalman filter is then used. For details of this approximation, see @durbin-koopman1997 and @vihola-helske-franks. For non-linear models defined by `nlg_ssm` it is possible to perform filtering using extended Kalman filter (EKF) with the function `ekf`, or unscented Kalman filter with the function `ukf`. It is also possible to use iterated EKF (IEKF) by changing the argument `iekf_iter` of the `ekf` function. Compared to EKF, in IEKF the observation equation is linearized iteratively within each time step.
 
-While Kalman filter solves the filtering problem exactly in case of linear-Gaussian models, other previously mentioned approaches produce only approximate, possibly biased estimates.
-linear-Gaussian models, `bssm` offers classical Kalman filtering and smoothing as functions `kfilter` and `smoother`. Simulation smoother [@durbin-koopman], as well as 
+While Kalman filter solves the filtering problem exactly in case of linear-Gaussian models, EKF, UKF, and the fitlering based on the approximating Gaussian models produce only approximate, possibly biased filtering estimates for general models. This problem can be solved by the use of particle filters (PF). These sequential Monte Carlo methods are computationally more expensive, but can in principle deal with almost arbitrary state space models. The `bssm` supports general bootstrap particle filter (BSF) for all model classes of the `bssm`, as well as some more efficient particle filters for some specific cases. For `ngssm` ,`ng_bsm`, `ng_ar1`, and `svm` models we recommend the particle filter called $\psi$-APF [@vihola-helske-franks] which makes use of the previously mentioned approximating Gaussian model in order to produce more efficient filter. It is also available for `nlg_ssm` models but in case of severe non-linearities, it is not necessarily best option.
+
+Compared to filtering problem, in smoothing problems we are interested in the conditional densities of the hidden states at certain time point $t$ given all the observations $y_1,\ldots,y_t,\ldots,y_n$. Again for linear-Gaussian models we can use so called Kalman smoothing recursions, where as in case of more general models we can rely on approximating methods, or smoothing algorithms based on the output of particle filters. Currently only filter-smoother approach [@kitagawa] for particle smoothing is fully supported.
 
 ## Markov chain Monte Carlo
 
+The main purpose of the `bssm` is to allow efficient MCMC-based inference for various state space models. For this task, a method `run_mcmc` can be used. The function takes large number of arguments, depending on the model class, but for many of these, default values are provided. For linear-Gaussian models, we only need to supply the number of iterations:
 
-## Illustration
-
-Here is a short example. First we build our model using `bsm` function:
-
-```{r UKgas}
-library("bssm")
-set.seed(123)
-
-init_sd <- 0.1 * sd(log10(UKgas))
-prior <- halfnormal(init_sd, 1)
-model <- bsm(log10(UKgas), sd_y = prior, sd_level = prior,
-  sd_slope = prior, sd_seasonal =  prior)
+```{r mcmc_bsm}
+mcmc_bsm <- run_mcmc(bsm_model, n_iter = 1e4)
+mcmc_bsm
 ```
 
-And run MCMC and print some summary statistics (there is also a `summary` method with similar output):
-```{r mcmc}
-mcmc_out <- run_mcmc(model, n_iter = 1e4)
-mcmc_out
+For plotting purposes, we'll use `bayesplot` package for the figures after expanding our jump chain representation. 
+
+```{r plot}
+theta <- expand_sample(mcmc_bsm, "theta")
+library("bayesplot")
+mcmc_areas(theta, bw = 0.001)
+level <- expand_sample(mcmc_bsm, "alpha",  times = 101:108, states = 1)
+mcmc_areas(level)
 ```
 
-For plotting purposes, we'll use `bayesplot` package for the figures after expanding our jump chain representation. Note that the API of the `expand_sample` function is likely change in future. 
+Smoothed trend:
 
-<!-- ```{r plot} -->
-<!-- theta <- expand_sample(mcmc_out, "theta") ## until bayesplot is updated -->
-<!-- library("bayesplot") -->
-<!-- mcmc_areas(theta, bw = 0.001) -->
-<!-- level <- expand_sample(mcmc_out, "alpha",  times = 101:108, states = 1) -->
-<!-- mcmc_areas(level) -->
-
-<!-- # posterior mode estimates -->
-<!-- mcmc_out$theta[which.max(mcmc_out$posterior), ] -->
-
-<!-- ``` -->
-
-<!-- Smoothed trend: -->
-
-<!-- ```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component with 95% intervals."} -->
-<!-- level <- expand_sample(mcmc_out, "alpha", states = 1) -->
-<!-- # or using summary method: -->
-<!-- sumr <- summary(mcmc_out) -->
-<!-- level <- sumr$states$Mean[, 1] -->
-<!-- lwr <- level - 1.96 * sumr$states$SD[, 1] -->
-<!-- upr <- level + 1.96 * sumr$states$SD[, 1] -->
-<!-- ts.plot(model$y, cbind(level, lwr, upr), col = c(1, 2, 2, 2), lty = c(1, 1, 2, 2)) -->
-<!-- ``` -->
+```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component with 95% intervals."}
+level <- expand_sample(mcmc_bsm, "alpha", states = 1)
+# or using summary method:
+sumr <- summary(mcmc_bsm)
+level <- sumr$states$Mean[, 1]
+lwr <- level - 1.96 * sumr$states$SD[, 1]
+upr <- level + 1.96 * sumr$states$SD[, 1]
+ts.plot(model$y, cbind(level, lwr, upr), col = c(1, 2, 2, 2), lty = c(1, 1, 2, 2))
+```
 
 
-<!-- For prediction intervals, we first build a model for the future time points, and  -->
-<!-- then use the previously obtained posterior samples for the prediction: -->
+For prediction intervals, we first build a model for the future time points, and
+then use the previously obtained posterior samples for the prediction:
 
-<!-- ```{r predict, dev.args=list(pointsize = 10), fig.cap="Mean predictions and prediction intervals."} -->
-<!-- future_model <- model -->
-<!-- future_model$y <- ts(rep(NA, 24), start = end(model$y) + c(0, 1), frequency = 4) -->
-<!-- pred <- predict(mcmc_out, future_model, probs = c(0.025, 0.1, 0.9, 0.975)) -->
-<!-- ts.plot(log10(UKgas), pred$mean, pred$intervals[, -3], -->
-<!--   col = c(1, 2, c(3, 4, 4, 3)), lty = c(1, 1, rep(2, 4))) -->
-<!-- ``` -->
+```{r predict, dev.args=list(pointsize = 10), fig.cap="Mean predictions and prediction intervals."}
+future_model <- model
+future_model$y <- ts(rep(NA, 24), start = end(model$y) + c(0, 1), frequency = 4)
+pred <- predict(mcmc_bsm, future_model, probs = c(0.025, 0.1, 0.9, 0.975))
+ts.plot(log10(UKgas), pred$mean, pred$intervals[, -3],
+  col = c(1, 2, c(3, 4, 4, 3)), lty = c(1, 1, rep(2, 4)))
+```
 
-<!-- Now same with `ggplot2`: -->
+Now same with `ggplot2`:
 
-<!-- ```{r predict2, dev.args=list(pointsize = 10), fig.cap="Prediction plots with ggplot2."} -->
-<!-- require("ggplot2") -->
-<!-- level_fit <- ts(colMeans(expand_sample(mcmc_out, "alpha")$level), start = start(model$y),  -->
-<!--   frequency = 4) -->
-<!-- autoplot(pred, y = model$y, fit = level_fit, interval_color = "red", alpha_fill = 0.2) -->
-<!-- ``` -->
+```{r predict2, dev.args=list(pointsize = 10), fig.cap="Prediction plots with ggplot2."}
+require("ggplot2")
+level_fit <- ts(colMeans(expand_sample(mcmc_bsm, "alpha")$level), start = start(model$y),
+  frequency = 4)
+autoplot(pred, y = model$y, fit = level_fit, interval_color = "red", alpha_fill = 0.2)
+```
 
-<!-- We can also obtain predictions in terms of individual components of the state vector: -->
-<!-- ```{r predict3, dev.args=list(pointsize = 10), fig.cap="State prediction."} -->
-<!-- pred_state <- predict(mcmc_out, future_model, probs = c(0.025, 0.1, 0.9, 0.975), type = "state") -->
-<!-- ts.plot(log10(UKgas), level_fit, pred_state$mean[,"level"], pred_state$intervals$level[, -3], -->
-<!--   col = c(1, 2, 2, c(3, 4, 4, 3)), lty = c(1, 1, 1, rep(2, 4))) -->
-<!-- ``` -->
+We can also obtain predictions in terms of individual components of the state vector:
+```{r predict3, dev.args=list(pointsize = 10), fig.cap="State prediction."}
+pred_state <- predict(mcmc_bsm, future_model, probs = c(0.025, 0.1, 0.9, 0.975), type = "state")
+ts.plot(log10(UKgas), level_fit, pred_state$mean[,"level"], pred_state$intervals$level[, -3],
+  col = c(1, 2, 2, c(3, 4, 4, 3)), lty = c(1, 1, 1, rep(2, 4)))
+```
 
 
 # References
@@ -331,4 +313,9 @@ For plotting purposes, we'll use `bayesplot` package for the figures after expan
 ## Template for non-linear Gaussian model
 
 ```{Rcpp nlg_ssm_template, code=readLines('nlg_ssm_template'), eval = FALSE, echo = TRUE}
+```
+
+## Template for SDE model
+
+```{Rcpp sde_ssm_template, code=readLines('sde_ssm_template.cpp'), eval = FALSE, echo = TRUE}
 ```

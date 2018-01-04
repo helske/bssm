@@ -14,13 +14,13 @@ mgg_ssm::mgg_ssm(const Rcpp::List& model, const unsigned int seed,
   D(Rcpp::as<arma::mat>(model["obs_intercept"])),
   C(Rcpp::as<arma::mat>(model["state_intercept"])),  
   theta(Rcpp::as<arma::vec>(model["theta"])), 
-  prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
-  prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
   Ztv(Z.n_slices > 1), Htv(H.n_slices > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
   Dtv(D.n_cols > 1), Ctv(C.n_cols > 1), n(y.n_cols), m(a1.n_elem), k(R.n_cols),
   p(y.n_rows), HH(arma::cube(p, p, Htv * (n - 1) + 1)),
   RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
   xbeta(arma::mat(n, p, arma::fill::zeros)), engine(seed), zero_tol(1e-8),
+  prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
+  prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
   Z_ind(Z_ind_), H_ind(H_ind_), T_ind(T_ind_), R_ind(R_ind_) {
   
   if(xreg.n_elem > 0) {

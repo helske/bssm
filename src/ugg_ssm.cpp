@@ -19,13 +19,13 @@ ugg_ssm::ugg_ssm(const Rcpp::List& model,
   beta(Rcpp::as<arma::vec>(model["coefs"])),
   D(Rcpp::as<arma::vec>(model["obs_intercept"])),
   C(Rcpp::as<arma::mat>(model["state_intercept"])),
-  theta(Rcpp::as<arma::vec>(model["theta"])), 
-  prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
-  prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
+  theta(Rcpp::as<arma::vec>(model["theta"])),
   Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
   Dtv(D.n_elem > 1), Ctv(C.n_cols > 1), n(y.n_elem), m(a1.n_elem), k(R.n_cols),
   HH(arma::vec(Htv * (n - 1) + 1)), RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
-  xbeta(arma::vec(n, arma::fill::zeros)), engine(seed), zero_tol(1e-8),
+  xbeta(arma::vec(n, arma::fill::zeros)), engine(seed), zero_tol(1e-8), 
+  prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
+  prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
   Z_ind(Z_ind_), H_ind(H_ind_), T_ind(T_ind_), R_ind(R_ind_) {
   
   if(xreg.n_cols > 0) {
