@@ -1193,21 +1193,18 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
 #' Constructs an object of class \code{llg_ssm} by defining the corresponding terms
 #' of the observation and state equation:
 #'
-#' \deqn{y_t = Z(t, \alpha_t, \theta) + H(t, \theta) \epsilon_t, (\textrm{observation equation})}
-#' \deqn{\alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \theta)\eta_t, (\textrm{transition equation})}
+#' \deqn{y_t = D(t,\theta) + Z(t,\theta)  \alpha_t + H(t, \theta) \epsilon_t, (\textrm{observation equation})}
+#' \deqn{\alpha_{t+1} = C(t,\theta) + T(t, \theta) \alpha_t + R(t, \theta)\eta_t, (\textrm{transition equation})}
 #'
 #' where \eqn{\epsilon_t \sim N(0, I_p)}, \eqn{\eta_t \sim N(0, I_m)} and
-#' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and functions
-#' \eqn{Z, H, T, R} can depend on \eqn{\alpha_t} and parameter vector \eqn{\theta}.
+#' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
 #'
 #' Compared to other models, these general models need a bit more effort from
 #' the user, as you must provide the several small C++ snippets which define the
-#' model structure. See examples in ZZZ.
+#' model structure. See examples in the vignette.
 #' @param y Observations as multivariate time series (or matrix) of length \eqn{n}.
-#' @param Z,H,T,R  An external pointers for the C++ functions which
+#' @param Z,H,T,R,a1,P1,obs_intercept,state_intercept An external pointers for the C++ functions which
 #' define the corresponding model functions.
-#' @param a1 Prior mean for the initial state as a vector of length m.
-#' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param theta Parameter vector passed to all model functions.
 #' @param known_params Vector of known parameters passed to all model functions.
 #' @param known_tv_params Matrix of known parameters passed to all model functions.
@@ -1215,11 +1212,6 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
 #' @param n_etas Dimension of the noise term of the transition equation.
 #' @param log_prior_pdf An external pointer for the C++ function which
 #' computes the log-prior density given theta.
-#'  #' @param time_varying Optional logical vector of length 4, denoting whether the values of
-#' Z, H, T, and R vary with respect to time variable (given identical states).
-#' If used, can speed up some computations.
-#' @param state_intercept Intercept terms for the state equation, given as a
-#'  m times n matrix.
 #' @param time_varying Optional logical vector of length 6, denoting whether the values of
 #' Z, H, T, R, D and C can vary with respect to time variable.
 #' If used, can speed up some computations.
@@ -1529,6 +1521,9 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   } else {
     state_intercept <- matrix(0, m, 1)
   }
+  
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
+  priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
     xreg = xreg, coefs = coefs, obs_intercept = obs_intercept,
