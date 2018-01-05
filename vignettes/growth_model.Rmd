@@ -92,7 +92,7 @@ The name of this function does not matter, but it should always return Armadillo
 After creating the file for `C++` functions, you need to compile the file using `Rcpp`:
 
 ```{r pointers}
-Rcpp::sourceCpp("growth_model_functions.cpp")
+Rcpp::sourceCpp("nlg_ssm_template.cpp")
 pntrs <- create_xptrs()
 ```
 
@@ -158,7 +158,7 @@ autoplot(out_pred_ekf, y = model$y, plot_median = FALSE)
 
 ## Appendix
 
-This is the full `growth_model_functions.cpp` file:
+This is the full `nlg_ssm_template.cpp` file:
 
 ```{Rcpp nlg_ssm_template, code=readLines('nlg_ssm_template.cpp'), eval = FALSE, echo = TRUE}
 ```
