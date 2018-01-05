@@ -71,38 +71,47 @@ print.mcmc_output <- function(x, ...) {
   print(esss)
   
   
+  n <- nrow(x$alpha)
+  cat(paste0("\nSummary for alpha_", n), ":\n\n", sep = "")
   
-  cat(paste0("\nSummary for alpha_",nrow(x$alpha)), ":\n\n", sep="")
-  if (x$mcmc_type %in% paste0("is", 1:3)) {
-    mean_alpha <- weighted_mean(alpha, w)
-    sd_alpha <- sqrt(diag(weighted_var(alpha, w, method = "moment")))
-    se_alpha_is <- weighted_se(alpha, w)
-    spec <- sapply(1:ncol(alpha), function(i) spectrum0.ar((alpha[, i] - mean_alpha[i]) * w)$spec)
-    se_alpha_ar <- sqrt(spec / length(w)) / mean(w)
-    se_alpha_total <- sqrt(se_alpha_is^2 + se_alpha_ar^2)
-    stats <- matrix(c(mean_alpha, sd_alpha, se_alpha_is, se_alpha_ar, se_alpha_total), ncol = 5, 
-      dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE-IS", "SE-AR", "SE")))
+  if (is.null(x$alphahat)) {
+    if (x$mcmc_type %in% paste0("is", 1:3)) {
+      mean_alpha <- weighted_mean(alpha, w)
+      sd_alpha <- sqrt(diag(weighted_var(alpha, w, method = "moment")))
+      se_alpha_is <- weighted_se(alpha, w)
+      spec <- sapply(1:ncol(alpha), function(i) spectrum0.ar((alpha[, i] - mean_alpha[i]) * w)$spec)
+      se_alpha_ar <- sqrt(spec / length(w)) / mean(w)
+      se_alpha_total <- sqrt(se_alpha_is^2 + se_alpha_ar^2)
+      stats <- matrix(c(mean_alpha, sd_alpha, se_alpha_is, se_alpha_ar, se_alpha_total), ncol = 5, 
+        dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE-IS", "SE-AR", "SE")))
+    } else {
+      mean_alpha <- colMeans(alpha)
+      sd_alpha <- apply(alpha, 2, sd)
+      se_alpha <-  sqrt(spectrum0.ar(alpha)$spec / nrow(alpha))
+      stats <- matrix(c(mean_alpha, sd_alpha, se_alpha), ncol = 3, 
+        dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE")))
+    }
+    print(stats)
+    
+  
+    cat(paste0("\nEffective sample sizes for alpha_", n), ":\n\n", sep = "")
+    if (x$mcmc_type %in% paste0("is", 1:3)) {
+      ess_alpha_is <- apply(alpha, 2, function(z) ess(w, identity, z))
+      ess_alpha_ar <- (sd_alpha / se_alpha_ar)^2
+      esss <- matrix(c(ess_alpha_is, ess_alpha_ar), ncol = 2, 
+        dimnames = list(colnames(x$alpha), c("ESS-IS", "ESS-AR")))
+    } else {
+      esss <- matrix((sd_alpha / se_alpha)^2, ncol = 1, 
+        dimnames = list(colnames(x$alpha), c("ESS")))
+    }
+    print(esss)
   } else {
-    mean_alpha <- colMeans(alpha)
-    sd_alpha <- apply(alpha, 2, sd)
-    se_alpha <-  sqrt(spectrum0.ar(alpha)$spec/nrow(alpha))
-    stats <- matrix(c(mean_alpha, sd_alpha, se_alpha), ncol = 3, 
-      dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE")))
+    if (ncol(x$alphahat == 1)) {
+      print(cbind("Mean" = x$alphahat[n, ], "SD" = sqrt(x$Vt[,,n])))
+    } else {
+      print(cbind("Mean" = x$alphahat[n, ], "SD" = sqrt(diag(x$Vt[,,n]))))
+    }
   }
-  print(stats)
-  
-  cat("\nEffective sample sizes for alpha:\n\n")
-  if (x$mcmc_type %in% paste0("is", 1:3)) {
-    ess_alpha_is <- apply(alpha, 2, function(z) ess(w, identity, z))
-    ess_alpha_ar <- (sd_alpha / se_alpha_ar)^2
-    esss <- matrix(c(ess_alpha_is, ess_alpha_ar), ncol = 2, 
-      dimnames = list(colnames(x$alpha), c("ESS-IS", "ESS-AR")))
-  } else {
-    esss <- matrix((sd_alpha / se_alpha)^2, ncol = 1, 
-      dimnames = list(colnames(x$alpha), c("ESS")))
-  }
-  print(esss)
-  
   cat("\nRun time:\n")
   print(x$time)
 }
