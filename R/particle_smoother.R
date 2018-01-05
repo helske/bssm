@@ -48,8 +48,9 @@ particle_smoother.gssm <- function(object, nsim,
   }
   colnames(out$alphahat) <- colnames(out$Vt) <-
     colnames(out$Vt) <- names(object$a1)
-  out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
-  
+  out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
+  out$alphahat <- ts(out$alphahat, start = start(object$y), end = end(object$y), 
+    frequency = frequency(object$y))
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -74,8 +75,9 @@ particle_smoother.bsm <- function(object, nsim,
   }
   colnames(out$alphahat) <- colnames(out$Vt) <-
     colnames(out$Vt) <- names(object$a1)
-  out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
-  
+  out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
+  out$alphahat <- ts(out$alphahat, start = start(object$y), end = end(object$y), 
+    frequency = frequency(object$y))
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -102,8 +104,9 @@ particle_smoother.ngssm <- function(object, nsim,
   }
   colnames(out$alphahat) <- colnames(out$Vt) <-
     colnames(out$Vt) <- names(object$a1)
-  out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
-  
+  out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
+  out$alphahat <- ts(out$alphahat, start = start(object$y), end = end(object$y), 
+    frequency = frequency(object$y))
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -128,8 +131,9 @@ particle_smoother.ng_bsm <- function(object, nsim, filter_type = "psi",
   }
   colnames(out$alphahat) <- colnames(out$Vt) <-
     colnames(out$Vt) <- names(object$a1)
-  out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
-  
+  out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
+  out$alphahat <- ts(out$alphahat, start = start(object$y), end = end(object$y), 
+    frequency = frequency(object$y))
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -154,8 +158,9 @@ particle_smoother.svm <- function(object, nsim,
   }
   colnames(out$alphahat) <- colnames(out$Vt) <-
     colnames(out$Vt) <- names(object$a1)
-  out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
-  
+  out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
+  out$alphahat <- ts(out$alphahat, start = start(object$y), end = end(object$y), 
+    frequency = frequency(object$y))
   rownames(out$alpha) <- names(object$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -201,8 +206,9 @@ particle_smoother.nlg_ssm <- function(object, nsim,
   )
   colnames(out$alphahat) <- colnames(out$Vt) <-
     colnames(out$Vt) <- object$state_names
-  out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
-  
+  out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
+  out$alphahat <- ts(out$alphahat, start = start(object$y), end = end(object$y), 
+    frequency = frequency(object$y))
   rownames(out$alpha) <- object$state_names
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
@@ -224,8 +230,9 @@ seed = sample(.Machine$integer.max, size = 1), ...) {
   
   colnames(out$alphahat) <- colnames(out$Vt) <-
     colnames(out$Vt) <- object$state_names
-  out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
-  
+  out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
+  out$alphahat <- ts(out$alphahat, start = start(object$y), end = end(object$y), 
+    frequency = frequency(object$y))
   rownames(out$alpha) <- object$state_names
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
