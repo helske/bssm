@@ -630,11 +630,11 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
 }
 #' Non-Gaussian model with AR(1) latent process
 #'
-#' Constructs a simple non-Gaussian model where the state dynamics follow AR(1) process.
+#' Constructs a simple non-Gaussian model where the state dynamics follow an AR(1) process.
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
 #' @param rho prior for autoregressive coefficient.
-#' @param mu Prior for the intercept mu of the transition equation. Parameter is omitted if this is set to 0.
+#' @param mu A fixed value or a prior for the intercept mu of the transition equation. Parameter is omitted if this is set to 0.
 #' @param sigma Prior for the standard deviation of noise of the AR-process.
 #' @param beta Prior for the regression coefficients.
 #' @param xreg Matrix containing covariates.
@@ -688,6 +688,7 @@ ng_ar1 <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
   
   check_rho(rho$init)
   check_sd(sigma$init, "rho")
+  
   if (is_prior(mu)) {
     check_mu(mu$init)
     mu_est <- TRUE
@@ -695,11 +696,9 @@ ng_ar1 <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
     state_intercept <- matrix(mu$init * (1 - rho$init))
   } else {
     mu_est <- FALSE
-    #check_mu(mu)
-    #a1 <- mu
-    #state_intercept <- matrix(mu * (1 - rho$init))
-    a1 <- 0
-    state_intercept <- matrix(0)
+    check_mu(mu)
+    a1 <- mu
+    state_intercept <- matrix(mu * (1 - rho$init))
   }
   distribution <- match.arg(distribution, c("poisson", "binomial",
     "negative binomial"))
@@ -761,6 +760,117 @@ ng_ar1 <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
     theta = theta),
     class = c("ng_ar1", "ngssm"))
 }
+#' Univariate Gaussian model with AR(1) latent process
+#'
+#' Constructs a simple Gaussian model where the state dynamics follow an AR(1) process.
+#'
+#' @param y Vector or a \code{\link{ts}} object of observations.
+#' @param rho prior for autoregressive coefficient.
+#' @param mu A fixed value or a prior for the intercept mu of the transition equation. Parameter is omitted if this is set to 0.
+#' @param sigma Prior for the standard deviation of noise of the AR-process.
+#' @param sd_y Prior for the standard deviation of observation equation.
+#' @param beta Prior for the regression coefficients.
+#' @param xreg Matrix containing covariates.
+#' @return Object of class \code{ar1}.
+#' @export
+#' @rdname ar1
+ar1 <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
+  
+  check_y(y)
+  n <- length(y)
+  if (is.null(xreg)) {
+    xreg <- matrix(0, 0, 0)
+    coefs <- numeric(0)
+    beta <- NULL
+  } else {
+    
+    if (missing(beta) || is.null(beta)) {
+      stop("No prior defined for beta. ")
+    }
+    if(!is_prior(beta) && !is_prior_list(beta)) {
+      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
+    }
+    n <- length(y)
+    if (is.null(dim(xreg)) && length(xreg) == n) {
+      xreg <- matrix(xreg, n, 1)
+    }
+    check_xreg(xreg, n)
+    nx <- ncol(xreg)
+    if (nx == 1 && is_prior_list(beta)) beta <- beta[[1]]
+    if(nx > 1) {
+      coefs <- sapply(beta, "[[", "init")
+    } else {
+      coefs <- beta$init
+    }
+    check_beta(coefs, nx)
+    
+    if (is.null(colnames(xreg))) {
+      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    }
+    names(coefs) <- colnames(xreg)
+    
+  }
+  
+  
+  check_rho(rho$init)
+  check_sd(sigma$init, "rho")
+  
+  if (is_prior(mu)) {
+    check_mu(mu$init)
+    mu_est <- TRUE
+    a1 <- mu$init
+    state_intercept <- matrix(mu$init * (1 - rho$init))
+  } else {
+    mu_est <- FALSE
+    check_mu(mu)
+    a1 <- mu
+    state_intercept <- matrix(mu * (1 - rho$init))
+  }
+ 
+  if (is_prior(sd_y)) {
+    check_sd(sd_y$init, "y")
+    sd_y_est <- TRUE
+    H <- matrix(sd_y$init)
+  } else {
+    sd_y_est <- FALSE
+    check_sd(sd_y, "y")
+    H <- matrix(sd_y)
+  }
+  
+ 
+  P1 <- matrix(sigma$init^2 / (1 - rho$init^2))
+  
+  Z <- matrix(1)
+  T <- array(rho$init, c(1, 1, 1))
+  R <- array(sigma$init, c(1, 1, 1))
+  
+  names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
+    rownames(T) <- colnames(T) <- rownames(R) <- "signal"
+  
+  
+  if(ncol(xreg) > 1) {
+    priors <- c(list(rho, sigma, mu, sd_y), beta)
+  } else {
+    priors <- list(rho, sigma, mu, sd_y, beta)
+  }
+  names(priors) <-
+    c("rho", "sigma", "mu", "sd_y", names(coefs))
+  priors <- priors[sapply(priors, is_prior)]
+
+  obs_intercept <- matrix(0)
+  
+  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
+  priors <- combine_priors(priors)
+  
+  structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
+    a1 = a1, P1 = P1, xreg = xreg, coefs = coefs,
+    obs_intercept = obs_intercept, state_intercept = state_intercept,
+    mu_est = mu_est, sd_y_est = sd_y_est,
+    prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
+    theta = theta),
+    class = c("ar1", "gssm"))
+}
+
 #'
 #' General univariate linear-Gaussian state space models
 #'

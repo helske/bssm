@@ -26,14 +26,12 @@
 
 \item{n_iter}{Number of MCMC iterations.}
 
-\item{sim_states}{Simulate states of Gaussian state space models. Default is \code{TRUE}.}
+\item{sim_states}{Simulate states of Gaussian state space models. Default is \code{TRUE}. 
+Ignored if argument \code{type = "summary"}.}
 
 \item{type}{Type of output. Default is \code{"full"}, which returns
-samples from the posterior \eqn{p(\alpha, \theta}. Option
-\code{"parameters"} samples only parameters \eqn{\theta} (which includes the
-regression coefficients \eqn{\beta}). This can be used for faster inference of
-\eqn{\theta} only, or as an preliminary run for obtaining
-initial values for \code{S}. Option \code{"summary"} does not simulate
+samples from the posterior \eqn{p(\alpha, \theta)}. 
+ Option \code{"summary"} does not simulate
 states directly but computes the posterior means and variances of states using
 fast Kalman smoothing. This is slightly faster, memory  efficient and
 more accurate than calculations based on simulation smoother.

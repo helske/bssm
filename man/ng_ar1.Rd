@@ -13,7 +13,7 @@ ng_ar1(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NULL)
 
 \item{sigma}{Prior for the standard deviation of noise of the AR-process.}
 
-\item{mu}{Prior for the intercept mu of the transition equation. Parameter is omitted if this is set to 0.}
+\item{mu}{A fixed value or a prior for the intercept mu of the transition equation. Parameter is omitted if this is set to 0.}
 
 \item{distribution}{distribution of the observation. Possible choices are
 \code{"poisson"}, \code{"binomial"} and \code{"negative binomial"}.}
@@ -33,5 +33,5 @@ term. For binomial, this is the number of trials.}
 Object of class \code{ng_ar1}.
 }
 \description{
-Constructs a simple non-Gaussian model where the state dynamics follow AR(1) process.
+Constructs a simple non-Gaussian model where the state dynamics follow an AR(1) process.
 }

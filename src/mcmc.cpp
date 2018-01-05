@@ -13,6 +13,7 @@
 #include "mgg_ssm.h"
 #include "lgg_ssm.h"
 #include "ung_ar1.h"
+#include "ugg_ar1.h"
 
 #include "distr_consts.h"
 #include "filter_smoother.h"
@@ -42,6 +43,7 @@ void mcmc::trim_storage() {
 
 template void mcmc::state_posterior(ugg_ssm model, const unsigned int n_threads);
 template void mcmc::state_posterior(ugg_bsm model, const unsigned int n_threads);
+template void mcmc::state_posterior(ugg_ar1 model, const unsigned int n_threads);
 template void mcmc::state_posterior(lgg_ssm model, const unsigned int n_threads);
 
 template <class T>
@@ -79,6 +81,8 @@ template void mcmc::state_summary(ugg_ssm model, arma::mat& alphahat,
                                   arma::cube& Vt);
 template void mcmc::state_summary(ugg_bsm model, arma::mat& alphahat,
                                   arma::cube& Vt);
+template void mcmc::state_summary(ugg_ar1 model, arma::mat& alphahat,
+  arma::cube& Vt);
 
 template <class T>
 void mcmc::state_summary(T model, arma::mat& alphahat, arma::cube& Vt) {
@@ -139,6 +143,7 @@ void mcmc::state_sampler<lgg_ssm>(lgg_ssm& model, const arma::mat& theta, arma::
 // sample states separately given the posterior sample of theta
 template void mcmc::mcmc_gaussian(ugg_ssm model, const bool end_ram);
 template void mcmc::mcmc_gaussian(ugg_bsm model, const bool end_ram);
+template void mcmc::mcmc_gaussian(ugg_ar1 model, const bool end_ram);
 template void mcmc::mcmc_gaussian(mgg_ssm model, const bool end_ram);
 
 template<class T>

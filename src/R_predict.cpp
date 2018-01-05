@@ -4,6 +4,8 @@
 #include "ung_bsm.h"
 #include "ung_svm.h"
 #include "nlg_ssm.h"
+#include "ung_ar1.h"
+#include "ugg_ar1.h"
 
 // [[Rcpp::export]]
 Rcpp::List gaussian_predict(const Rcpp::List& model_,
@@ -24,6 +26,15 @@ Rcpp::List gaussian_predict(const Rcpp::List& model_,
   } break;
   case 2: {
     ugg_bsm model(clone(model_), seed);
+    if (intervals) {
+      return model.predict_interval(probs, theta, alpha, counts, predict_type);
+    } else {
+      return Rcpp::List::create(model.predict_sample(theta, alpha, counts, 
+        predict_type, nsim));
+    }
+  } break;
+  case 3: {
+    ugg_ar1 model(clone(model_), seed);
     if (intervals) {
       return model.predict_interval(probs, theta, alpha, counts, predict_type);
     } else {
@@ -53,6 +64,10 @@ arma::cube nongaussian_predict(const Rcpp::List& model_,
   } break;
   case 3: {
     ung_svm model(clone(model_), seed);
+    return model.predict_sample(theta, alpha, counts, predict_type, nsim);
+  } break;
+  case 4: {
+    ung_ar1 model(clone(model_), seed);
     return model.predict_sample(theta, alpha, counts, predict_type, nsim);
   } break;
   }

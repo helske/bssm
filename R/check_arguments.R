@@ -25,7 +25,7 @@ check_sd <- function(x, type, add_prefix = TRUE) {
   if (!is.numeric(x)) {
     stop(paste0("Argument ", param, " must be numeric."))
   }
-  if (length(x) < 0) {
+  if (x < 0) {
     stop(paste0("Argument ", param, " must be non-negative."))
   }
   if (is.infinite(x)) {

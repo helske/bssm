@@ -6,6 +6,7 @@
 #' as empirical quantiles the posterior sample, or using a 
 #' parametric method by Helske (2016) in a linear-Gaussian case.
 #'
+#' @importFrom utils hasName
 #' @param object mcmc_output object obtained from \code{\link{run_mcmc}}
 #' @param intervals If \code{TRUE}, intervals are returned. Otherwise samples 
 #' from the posterior predictive distribution are returned.
@@ -75,6 +76,8 @@ predict.mcmc_output <- function(object, future_model, type = "response",
   
   type <- match.arg(type, c("response", "mean", "state"))
   
+  if (!hasName(object, "alpha")) stop("MCMC output must contain posterior samples of the states.")
+  
   if (missing(nsim)) {
     if(object$mcmc_type == "ekf" && intervals) {
       nsim <- 0
@@ -93,15 +96,19 @@ predict.mcmc_output <- function(object, future_model, type = "response",
     object$theta[,1:(ncol(object$theta) - length(future_model$coefs))] <- 
       log(1 + object$theta[,1:(ncol(object$theta) - length(future_model$coefs))])
   }
+  
+  future_model$y <- c(NA, future_model$y) ## state posterior is for previous time step
+  
   switch(attr(object, "model_type"),
     gssm = ,
-    bsm = {
+    bsm = ,
+    ar1 = {
       
       out <- gaussian_predict(future_model, probs,
-        t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
-        pmatch(type, c("response", "mean", "state")), intervals, 
-        seed, pmatch(attr(object, "model_type"), c("gssm", "bsm")), nsim)
-      
+        t(object$theta), matrix(object$alpha[nrow(object$alpha),,], nrow = ncol(object$alpha)), 
+        object$counts, pmatch(type, c("response", "mean", "state")), intervals, 
+        seed, pmatch(attr(object, "model_type"), c("gssm", "bsm", "ar1")), nsim)
+     
       if (intervals) {
         
         if (return_MCSE) {
@@ -178,7 +185,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
       out <- nongaussian_predict(future_model, probs,
         t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
         pmatch(type, c("response", "mean", "state")), seed, 
-        pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm")))
+        pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm", "ng_ar1")))
       if (intervals) {
         if (type != "state") {
           pred <- list(mean = ts(rowMeans(out[1,,]),  start = start_ts, end = end_ts, 
@@ -209,10 +216,9 @@ predict.mcmc_output <- function(object, future_model, type = "response",
           future_model$log_prior_pdf, future_model$known_params, 
           future_model$known_tv_params, as.integer(future_model$time_varying),
           future_model$n_states, future_model$n_etas, probs,
-          t(object$theta), object$alpha[nrow(object$alpha),,], 
+          t(object$theta), matrix(object$alpha[nrow(object$alpha),,], nrow = ncol(object$alpha)), 
           array(0, c(future_model$n_states, future_model$n_states, nrow(object$theta))), 
-          object$counts, 
-          pmatch(type, c("response", "mean", "state")))
+          object$counts, pmatch(type, c("response", "mean", "state")))
         
         
         if (type != "state") {
@@ -235,8 +241,8 @@ predict.mcmc_output <- function(object, future_model, type = "response",
           future_model$log_prior_pdf, future_model$known_params, 
           future_model$known_tv_params, as.integer(future_model$time_varying),
           future_model$n_states, future_model$n_etas, probs,
-          t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
-          pmatch(type, c("response", "mean", "state")), seed, nsim)
+          t(object$theta), matrix(object$alpha[nrow(object$alpha),,], nrow = ncol(object$alpha)), 
+          object$counts, pmatch(type, c("response", "mean", "state")), seed, nsim)
         
         if (intervals) {
           if (type != "state") {

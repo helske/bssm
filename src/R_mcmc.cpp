@@ -7,6 +7,7 @@
 #include "nlg_ssm.h"
 #include "lgg_ssm.h"
 #include "ung_ar1.h"
+#include "ugg_ar1.h"
 
 // [[Rcpp::export]]
 Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
@@ -39,6 +40,11 @@ Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
   } break;
   case 2: {
     ugg_bsm model(clone(model_), seed);
+    mcmc_run.mcmc_gaussian(model, end_ram);
+    if(sim_states) mcmc_run.state_posterior(model, n_threads);
+  } break;
+  case 3: {
+    ugg_ar1 model(clone(model_), seed);
     mcmc_run.mcmc_gaussian(model, end_ram);
     if(sim_states) mcmc_run.state_posterior(model, n_threads);
   } break;
@@ -91,6 +97,11 @@ Rcpp::List gaussian_mcmc_summary(const Rcpp::List& model_,
   } break;
   case 2: {
     ugg_bsm model(clone(model_), seed);
+    mcmc_run.mcmc_gaussian(model, end_ram);
+    mcmc_run.state_summary(model, alphahat, Vt);
+  } break;
+  case 3: {
+    ugg_ar1 model(clone(model_), seed);
     mcmc_run.mcmc_gaussian(model, end_ram);
     mcmc_run.state_summary(model, alphahat, Vt);
   } break;

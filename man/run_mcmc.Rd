@@ -2,9 +2,15 @@
 % Please edit documentation in R/run_mcmc.R
 \name{run_mcmc}
 \alias{run_mcmc}
+\alias{run_mcmc.ar1}
 \title{Bayesian Inference of State Space Models}
 \usage{
 run_mcmc(object, n_iter, ...)
+
+\method{run_mcmc}{ar1}(object, n_iter, sim_states = TRUE, type = "full",
+  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE, n_threads = 1,
+  seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
 \item{object}{State space model object of \code{bssm} package.}

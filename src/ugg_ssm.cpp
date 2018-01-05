@@ -626,20 +626,21 @@ Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
   filter(at, att, Pt, Ptt);
   
   unsigned int n_samples = theta_posterior.n_cols;
+  
   if (predict_type < 3) {
     
-    arma::mat mean_pred(n, n_samples);
-    arma::mat var_pred(n, n_samples);
+    arma::mat mean_pred(n - 1, n_samples);
+    arma::mat var_pred(n - 1, n_samples);
     
-    for(unsigned int t = 0; t < n; t++) {
-      mean_pred(t, 0) = arma::as_scalar(xbeta(t) +
+    for(unsigned int t = 1; t < n; t++) {
+      mean_pred(t - 1, 0) = arma::as_scalar(xbeta(t) +
         Z.col(Ztv * t).t() * at.col(t));
-      var_pred(t, 0) = arma::as_scalar(Z.col(Ztv * t).t() * Pt.slice(t) * Z.col(Ztv * t));
+      var_pred(t - 1, 0) = arma::as_scalar(Z.col(Ztv * t).t() * Pt.slice(t) * Z.col(Ztv * t));
     }
     
     if (predict_type == 1) {
-      for(unsigned int t = 0; t < n; t++) {
-        var_pred(t, 0) += HH(Htv * t);
+      for(unsigned int t = 1; t < n; t++) {
+        var_pred(t - 1, 0) += HH(Htv * t);
       }
     }
     
@@ -649,35 +650,37 @@ Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
       P1.zeros();
       filter(at, att, Pt, Ptt);
       
-      for(unsigned int t = 0; t < n; t++) {
-        mean_pred(t, i) = arma::as_scalar(xbeta(t) +
+      for(unsigned int t = 1; t < n; t++) {
+        mean_pred(t - 1, i) = arma::as_scalar(xbeta(t) +
           Z.col(Ztv * t).t() * at.col(t));
-        var_pred(t, i) = arma::as_scalar(Z.col(Ztv * t).t() * Pt.slice(t) * Z.col(Ztv * t));
+        var_pred(t - 1, i) = arma::as_scalar(Z.col(Ztv * t).t() * Pt.slice(t) * Z.col(Ztv * t));
       }
       if (predict_type == 1) {
-        for(unsigned int t = 0; t < n; t++) {
-          var_pred(t, i) += HH(Htv * t);
+        for(unsigned int t = 1; t < n; t++) {
+          var_pred(t - 1, i) += HH(Htv * t);
         }
       }
       
     }
-   
+    
     arma::mat expanded_sd = rep_mat(arma::sqrt(var_pred), counts);
     arma::inplace_trans(expanded_sd);
     arma::mat expanded_mean = rep_mat(mean_pred, counts);
     arma::inplace_trans(expanded_mean);
-    arma::mat intv = intervals(expanded_mean, expanded_sd, probs, n);
+    arma::mat intv = intervals(expanded_mean, expanded_sd, probs, n - 1);
     
     return Rcpp::List::create(Rcpp::Named("intervals") = intv,
       Rcpp::Named("mean_pred") = expanded_mean,
       Rcpp::Named("sd_pred") = expanded_sd);
-  } else {
-    arma::cube mean_pred(n, n_samples, m);
-    arma::cube var_pred(n, n_samples, m);
     
-    for(unsigned int t = 0; t < n; t++) {
-      mean_pred.tube(t, 0) = at.col(t);
-      var_pred.tube(t, 0) = Pt.slice(t).diag();
+  } else {
+    
+    arma::cube mean_pred(n - 1, n_samples, m);
+    arma::cube var_pred(n - 1, n_samples, m);
+    
+    for(unsigned int t = 1; t < n; t++) {
+      mean_pred.tube(t - 1, 0) = at.col(t);
+      var_pred.tube(t - 1, 0) = Pt.slice(t).diag();
     }
     
     for (unsigned int i = 1; i < n_samples; i++) {
@@ -686,9 +689,9 @@ Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
       P1.zeros();
       filter(at, att, Pt, Ptt);
       
-      for(unsigned int t = 0; t < n; t++) {
-        mean_pred.tube(t, i) = at.col(t);
-        var_pred.tube(t, i) = Pt.slice(t).diag();
+      for(unsigned int t = 1; t < n; t++) {
+        mean_pred.tube(t - 1, i) = at.col(t);
+        var_pred.tube(t - 1, i) = Pt.slice(t).diag();
       }
     }
     
@@ -720,44 +723,51 @@ arma::cube ugg_ssm::predict_sample(const arma::mat& theta_posterior,
   arma::mat expanded_theta = rep_mat(theta_posterior, counts);
   arma::mat expanded_alpha = rep_mat(alpha, counts);
   unsigned int n_samples = expanded_theta.n_cols;
-  arma::cube sample(d, n, nsim * n_samples);
+  arma::cube sample(d, n - 1, nsim * n_samples);
   
   for (unsigned int i = 0; i < n_samples; i++) {
     update_model(expanded_theta.col(i));
     a1 = expanded_alpha.col(i);
     sample.slices(i * nsim, (i + 1) * nsim - 1) = sample_model(predict_type, nsim);
   }
-  
   return sample;
 }
 
 
 arma::mat ugg_ssm::sample_model(const unsigned int predict_type, const unsigned int nsim) {
   
-  arma::cube alpha(m, n, nsim);
+  arma::cube alpha(m, n - 1, nsim);
   
   std::normal_distribution<> normal(0.0, 1.0);
+  
   for (unsigned int i = 0; i < nsim; i++) {
-    alpha.slice(i).col(0) = a1;
     
-    for (unsigned int t = 0; t < (n - 1); t++) {
+    arma::vec uk(k);
+    for(unsigned int j = 0; j < k; j++) {
+      uk(j) = normal(engine);
+    }
+    alpha.slice(i).col(0) = C.col(0) + T.slice(0) * a1 + R.slice(0) * uk;
+    
+    for (unsigned int t = 1; t < (n - 1); t++) {
       arma::vec uk(k);
       for(unsigned int j = 0; j < k; j++) {
         uk(j) = normal(engine);
       }
-      alpha.slice(i).col(t + 1) = C.col(t * Ctv) + 
-        T.slice(t * Ttv) * alpha.slice(i).col(t) + R.slice(t * Rtv) * uk;
+      alpha.slice(i).col(t) = C.col(t * Ctv) + 
+        T.slice(t * Ttv) * alpha.slice(i).col(t - 1) + R.slice(t * Rtv) * uk;
     }
   }
+  
   if (predict_type < 3) {
-    arma::cube y(1, n, nsim);
+    
+    arma::cube y(1, n - 1, nsim);
     
     for (unsigned int i = 0; i < nsim; i++) {
-      for (unsigned int t = 0; t < n; t++) {
-        y(0, t, i) = xbeta(t) + D(t * Dtv) +
-          arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t));
+      for (unsigned int t = 1; t < n; t++) {
+        y(0, t - 1, i) = xbeta(t) + D(t * Dtv) +
+          arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t - 1));
         if(predict_type == 1)
-          y(0, t, i) += H(t * Htv) * normal(engine);
+          y(0, t - 1, i) += H(t * Htv) * normal(engine);
       }
     }
     return y;

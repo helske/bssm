@@ -24,13 +24,11 @@ run_mcmc <- function(object, n_iter, ...) {
 #' @rdname run_mcmc_g
 #' @param object Model object.
 #' @param n_iter Number of MCMC iterations.
-#' @param sim_states Simulate states of Gaussian state space models. Default is \code{TRUE}.
+#' @param sim_states Simulate states of Gaussian state space models. Default is \code{TRUE}. 
+#' Ignored if argument \code{type = "summary"}.
 #' @param type Type of output. Default is \code{"full"}, which returns
-#' samples from the posterior \eqn{p(\alpha, \theta}. Option
-#' \code{"parameters"} samples only parameters \eqn{\theta} (which includes the
-#' regression coefficients \eqn{\beta}). This can be used for faster inference of
-#' \eqn{\theta} only, or as an preliminary run for obtaining
-#' initial values for \code{S}. Option \code{"summary"} does not simulate
+#' samples from the posterior \eqn{p(\alpha, \theta)}. 
+#'  Option \code{"summary"} does not simulate
 #' states directly but computes the posterior means and variances of states using
 #' fast Kalman smoothing. This is slightly faster, memory  efficient and
 #' more accurate than calculations based on simulation smoother.
@@ -120,7 +118,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   
   names_ind <- !object$fixed & c(TRUE, TRUE, object$slope, object$seasonal)
   object$theta[c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]] <- 
-      log(1 + object$theta[c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]])
+    log(1 + object$theta[c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]])
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
   }
@@ -148,7 +146,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
       out
     })
   
- 
+  
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
   out$theta[, c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]] <- 
     exp(out$theta[, c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]]) - 1
@@ -459,6 +457,59 @@ run_mcmc.ng_ar1 <-  function(object, n_iter, nsim_states, type = "full",
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "ng_ar1"
+  out
+}
+
+#' @method run_mcmc ar1
+#' @rdname run_mcmc
+#' @export
+run_mcmc.ar1 <-  function(object, n_iter, sim_states = TRUE, type = "full",
+  n_burnin = floor(n_iter/2), n_thin = 1,
+  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  n_threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  a <- proc.time()
+  check_target(target_acceptance)
+  
+  type <- match.arg(type, c("full", "summary"))
+  
+  if (missing(S)) {
+    S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
+  }
+  
+  out <- switch(type,
+    full = {
+      out <- gaussian_mcmc(object, sim_states,
+        n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed,
+        end_adaptive_phase, n_threads, model_type = 3L, 0, 0, 0, 0)
+      
+      if (sim_states) {
+        colnames(out$alpha) <- names(object$a1)
+      }
+      out
+    },
+    summary = {
+      out <- gaussian_mcmc_summary(object,
+        n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed,
+        end_adaptive_phase, n_threads, model_type = 3L, 0, 0, 0, 0)
+      colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
+        names(object$a1)
+      out$alphahat <- ts(out$alphahat, start = start(object$y),
+        frequency = frequency(object$y))
+      out
+    })
+  
+  
+  colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
+  out$n_iter <- n_iter
+  out$n_burnin <- n_burnin
+  out$n_thin <- n_thin
+  out$mcmc_type <- "gaussian_mcmc"
+  out$call <- match.call()
+  out$seed <- seed
+  out$time <- proc.time() - a
+  class(out) <- "mcmc_output"
+  attr(out, "model_type") <- "ar1"
   out
 }
 
