@@ -18,8 +18,8 @@ Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
     n = y.n_rows;
   }
   
-  arma::mat alphahat(m, n);
-  arma::cube Vt(m, m, n);
+  arma::mat alphahat(m, n + 1);
+  arma::cube Vt(m, m, n + 1);
   
   switch (model_type) {
   case -1: {
@@ -70,8 +70,8 @@ Rcpp::List general_gaussian_smoother(const arma::mat& y, SEXP Z, SEXP H,
   unsigned int m = model.m;
   unsigned int n = model.n;
   
-  arma::mat alphahat(m, n);
-  arma::cube Vt(m, m, n);
+  arma::mat alphahat(m, n + 1);
+  arma::cube Vt(m, m, n + 1);
   
   mgg_model.smoother(alphahat, Vt);
   
@@ -97,9 +97,9 @@ Rcpp::List gaussian_ccov_smoother(const Rcpp::List& model_, const int model_type
     n = y.n_rows;
   }
   
-  arma::mat alphahat(m, n);
-  arma::cube Vt(m, m, n);
-  arma::cube Ct(m, m, n);
+  arma::mat alphahat(m, n + 1);
+  arma::cube Vt(m, m, n + 1);
+  arma::cube Ct(m, m, n + 1);
   switch (model_type) {
   case -1: {
     mgg_ssm model(clone(model_), 1);

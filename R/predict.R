@@ -16,7 +16,7 @@
 #' @param probs Desired quantiles. Defaults to \code{c(0.05, 0.95)}. Always includes median 0.5.
 #' @param future_model Model for future observations. Should have same structure
 #' as the original model which was used in MCMC, in order to plug the posterior 
-#' samples of the model parameters to right place.
+#' samples of the model parameters to the right places.
 #' @param nsim Number of samples to draw per MCMC iteration. 
 #' Defaults to 1 except for EKF based MCMC output of non-linear Gaussian models (see below). 
 #' For linear-Gaussian models the intervals are computed based on Kalman filter so 
@@ -96,8 +96,6 @@ predict.mcmc_output <- function(object, future_model, type = "response",
     object$theta[,1:(ncol(object$theta) - length(future_model$coefs))] <- 
       log(1 + object$theta[,1:(ncol(object$theta) - length(future_model$coefs))])
   }
-  
-  future_model$y <- c(NA, future_model$y) ## state posterior is for previous time step
   
   switch(attr(object, "model_type"),
     gssm = ,

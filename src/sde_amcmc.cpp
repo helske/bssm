@@ -87,9 +87,9 @@ void sde_amcmc::approx_mcmc(sde_ssm model, const bool end_ram,
     Rcpp::stop("Initial prior probability is not finite.");
   }
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   double loglik = model.bsf_filter(nsim_states, L, alpha, weights, indices);
   
   double acceptance_prob = 0.0;
@@ -164,11 +164,8 @@ void sde_amcmc::approx_mcmc(sde_ssm model, const bool end_ram,
 }
 
 void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states, 
-  const unsigned int L_c, const unsigned int L_f, const bool coupled,
+  const unsigned int L_c, const unsigned int L_f, 
   const unsigned int is_type, const unsigned int n_threads) {
-  
-  // no coupling at the moment!
-  if(coupled) Rcpp::stop("Coupling not supported yet!.");
   
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model) 
@@ -184,15 +181,15 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
     if (is_type == 1) {
       nsim *= count_storage(i);
     }
-    arma::cube alpha_i(1, model.n, nsim);
-    arma::mat weights_i(nsim, model.n);
-    arma::umat indices(nsim, model.n - 1);
+    arma::cube alpha_i(1, model.n + 1, nsim);
+    arma::mat weights_i(nsim, model.n + 1);
+    arma::umat indices(nsim, model.n);
     double loglik = model.bsf_filter(nsim, L_f, alpha_i, weights_i, indices);
     if(arma::is_finite(loglik)) {
       weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
       
       filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n - 1);
+      arma::vec w = weights_i.col(model.n);
       std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
       alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
     } else {
@@ -208,15 +205,15 @@ for (unsigned int i = 0; i < n_stored; i++) {
   if (is_type == 1) {
     nsim *= count_storage(i);
   }
-  arma::cube alpha_i(1, model.n, nsim);
-  arma::mat weights_i(nsim, model.n);
-  arma::umat indices(nsim, model.n - 1);
+  arma::cube alpha_i(1, model.n + 1, nsim);
+  arma::mat weights_i(nsim, model.n + 1);
+  arma::umat indices(nsim, model.n);
   double loglik = model.bsf_filter(nsim, L_f, alpha_i, weights_i, indices);
   if(arma::is_finite(loglik)) {
     weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
     
     filter_smoother(alpha_i, indices);
-    arma::vec w = weights_i.col(model.n - 1);
+    arma::vec w = weights_i.col(model.n);
     std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
     alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
   } else {

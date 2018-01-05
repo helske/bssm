@@ -271,9 +271,9 @@ void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states,
       nsim *= count_storage(i);
     }
     
-    arma::cube alpha_i(model.m, model.n, nsim);
-    arma::mat weights_i(nsim, model.n);
-    arma::umat indices(nsim, model.n - 1);
+    arma::cube alpha_i(model.m, model.n + 1, nsim);
+    arma::mat weights_i(nsim, model.n + 1);
+    arma::umat indices(nsim, model.n);
     
     double loglik = model.psi_filter(approx_model, 0, scales_storage.col(i),
       nsim, alpha_i, weights_i, indices);
@@ -281,7 +281,7 @@ void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states,
     if(arma::is_finite(loglik)) {
       weight_storage(i) = std::exp(loglik);
       filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n - 1);
+      arma::vec w = weights_i.col(model.n);
       std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
       alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
     } else {
@@ -318,16 +318,16 @@ for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
     nsim *= count_storage(i);
   }
   
-  arma::cube alpha_i(model.m, model.n, nsim);
-  arma::mat weights_i(nsim, model.n);
-  arma::umat indices(nsim, model.n - 1);
+  arma::cube alpha_i(model.m, model.n + 1, nsim);
+  arma::mat weights_i(nsim, model.n + 1);
+  arma::umat indices(nsim, model.n);
   double loglik = model.psi_filter(approx_model, 0, scales_storage.col(i),
     nsim, alpha_i, weights_i, indices);
   
   if(arma::is_finite(loglik)) {
     weight_storage(i) = std::exp(loglik);
     filter_smoother(alpha_i, indices);
-    arma::vec w = weights_i.col(model.n - 1);
+    arma::vec w = weights_i.col(model.n);
     std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
     alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
   } else {
@@ -375,15 +375,15 @@ void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states,
       nsim *= count_storage(i);
     }
     
-    arma::cube alpha_i(model.m, model.n, nsim);
-    arma::mat weights_i(nsim, model.n);
-    arma::umat indices(nsim, model.n - 1);
+    arma::cube alpha_i(model.m, model.n + 1, nsim);
+    arma::mat weights_i(nsim, model.n + 1);
+    arma::umat indices(nsim, model.n);
     
     double loglik = model.bsf_filter(nsim, alpha_i, weights_i, indices);
     if(arma::is_finite(loglik)) {
       weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
       filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n - 1);
+      arma::vec w = weights_i.col(model.n);
       std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
       alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
     } else {
@@ -402,15 +402,15 @@ for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
     nsim *= count_storage(i);
   }
   
-  arma::cube alpha_i(model.m, model.n, nsim);
-  arma::mat weights_i(nsim, model.n);
-  arma::umat indices(nsim, model.n - 1);
+  arma::cube alpha_i(model.m, model.n + 1, nsim);
+  arma::mat weights_i(nsim, model.n + 1);
+  arma::umat indices(nsim, model.n);
   
   double loglik = model.bsf_filter(nsim, alpha_i, weights_i, indices);
   if(arma::is_finite(loglik)) {
     weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
     filter_smoother(alpha_i, indices);
-    arma::vec w = weights_i.col(model.n - 1);
+    arma::vec w = weights_i.col(model.n);
     std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
     alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
   } else {

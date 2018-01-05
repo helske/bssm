@@ -29,7 +29,7 @@ mcmc::mcmc(const unsigned int n_iter, const unsigned int n_burnin,
   posterior_storage(arma::vec(n_samples)),
   theta_storage(arma::mat(n_par, n_samples)),
   count_storage(arma::uvec(n_samples, arma::fill::zeros)),
-  alpha_storage(arma::cube(n, m, store_states * n_samples)), S(S),
+  alpha_storage(arma::cube(n + 1, m, store_states * n_samples)), S(S),
   acceptance_rate(0.0) {
 }
 
@@ -87,7 +87,7 @@ template void mcmc::state_summary(ugg_ar1 model, arma::mat& alphahat,
 template <class T>
 void mcmc::state_summary(T model, arma::mat& alphahat, arma::cube& Vt) {
   
-  arma::cube Valpha(model.m, model.m, model.n, arma::fill::zeros);
+  arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   
   arma::vec theta = theta_storage.col(0);
   model.update_model(theta);
@@ -106,7 +106,7 @@ void mcmc::state_summary(T model, arma::mat& alphahat, arma::cube& Vt) {
     double tmp = count_storage(i) + sum_w;
     alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
     
-    for (unsigned int t = 0; t < model.n; t++) {
+    for (unsigned int t = 0; t < model.n + 1; t++) {
       Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
     }
     Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
@@ -498,14 +498,14 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   // log-likelihood approximation
   double approx_loglik = gaussian_loglik + const_term + sum_scales;
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   double loglik = model.psi_filter(approx_model, approx_loglik, scales,
                                    nsim_states, alpha, weights, indices);
   
   filter_smoother(alpha, indices);
-  arma::vec w = weights.col(n - 1);
+  arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
@@ -570,7 +570,7 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
           n_values++;
         }
         filter_smoother(alpha, indices);
-        w = weights.col(n - 1);
+        w = weights.col(n);
         std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
         sampled_alpha = alpha.slice(sample(model.engine));
         loglik = loglik_prop;
@@ -629,13 +629,13 @@ void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
   if (!arma::is_finite(logprior)) {
     Rcpp::stop("Initial prior probability is not finite.");
   }
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
   
   filter_smoother(alpha, indices);
-  arma::vec w = weights.col(n - 1);
+  arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
@@ -683,7 +683,7 @@ void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
           n_values++;
         }
         filter_smoother(alpha, indices);
-        w = weights.col(n - 1);
+        w = weights.col(n);
         std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
         sampled_alpha = alpha.slice(sample(model.engine));
         loglik = loglik_prop;
@@ -917,14 +917,14 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   // log-likelihood approximation
   double approx_loglik = gaussian_loglik + const_term + sum_scales;
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   double loglik = model.psi_filter(approx_model, approx_loglik, scales,
                                    nsim_states, alpha, weights, indices);
   
   filter_smoother(alpha, indices);
-  arma::vec w = weights.col(n - 1);
+  arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
@@ -993,7 +993,7 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
               n_values++;
             }
             filter_smoother(alpha, indices);
-            w = weights.col(n - 1);
+            w = weights.col(n);
             std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
             sampled_alpha = alpha.slice(sample(model.engine));
             approx_loglik = approx_loglik_prop;
@@ -1074,13 +1074,13 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
   // log-likelihood approximation
   double approx_loglik = gaussian_loglik + const_term + sum_scales;
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
   
   filter_smoother(alpha, indices);
-  arma::vec w = weights.col(n - 1);
+  arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
@@ -1147,7 +1147,7 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
               n_values++;
             }
             filter_smoother(alpha, indices);
-            w = weights.col(n - 1);
+            w = weights.col(n);
             std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
             sampled_alpha = alpha.slice(sample(model.engine));
             approx_loglik = approx_loglik_prop;
@@ -1205,15 +1205,15 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   // compute the log-likelihood of the gaussian model
   double gaussian_loglik = approx_model0.log_likelihood();
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   
   double loglik = model.psi_filter(approx_model0, gaussian_loglik,
                                    nsim_states, alpha, weights, indices);
   
   filter_smoother(alpha, indices);
-  arma::vec w = weights.col(n - 1);
+  arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
@@ -1275,7 +1275,7 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
           n_values++;
         }
         filter_smoother(alpha, indices);
-        w = weights.col(n - 1);
+        w = weights.col(n);
         std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
         sampled_alpha = alpha.slice(sample(model.engine));
         loglik = loglik_prop;
@@ -1320,13 +1320,13 @@ void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram,
     Rcpp::stop("Initial prior probability is not finite.");
   }
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
   
   filter_smoother(alpha, indices);
-  arma::vec w = weights.col(n - 1);
+  arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
@@ -1375,7 +1375,7 @@ void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram,
           n_values++;
         }
         filter_smoother(alpha, indices);
-        w = weights.col(n - 1);
+        w = weights.col(n);
         std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
         sampled_alpha = alpha.slice(sample(model.engine));
         loglik = loglik_prop;
@@ -1430,14 +1430,14 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   // compute the log-likelihood of the approximate model
   double approx_loglik = approx_model0.log_likelihood();
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   double loglik = model.psi_filter(approx_model0, approx_loglik,
                                    nsim_states, alpha, weights, indices);
   approx_loglik += arma::accu(model.scaling_factors(approx_model0, mode_estimate));
   filter_smoother(alpha, indices);
-  arma::vec w = weights.col(n - 1);
+  arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
@@ -1499,7 +1499,7 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
                 n_values++;
               }
               filter_smoother(alpha, indices);
-              w = weights.col(n - 1);
+              w = weights.col(n);
               std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
               sampled_alpha = alpha.slice(sample(model.engine));
               approx_loglik = approx_loglik_prop;
@@ -1558,13 +1558,13 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
   double sum_scales = arma::accu(model.scaling_factors(approx_model0, mode_estimate));
   double approx_loglik = approx_model0.log_likelihood() + sum_scales;
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
   
   filter_smoother(alpha, indices);
-  arma::vec w = weights.col(n - 1);
+  arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
@@ -1630,7 +1630,7 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
                 n_values++;
               }
               filter_smoother(alpha, indices);
-              w = weights.col(n - 1);
+              w = weights.col(n);
               std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
               sampled_alpha = alpha.slice(sample(model.engine));
               approx_loglik = approx_loglik_prop;
@@ -1679,13 +1679,13 @@ void mcmc::pm_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
     Rcpp::stop("Initial prior probability is not finite.");
   }
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   double loglik = model.bsf_filter(nsim_states, L, alpha, weights, indices);
   
   filter_smoother(alpha, indices);
-  arma::vec w = weights.col(n - 1);
+  arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
@@ -1733,7 +1733,7 @@ void mcmc::pm_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
           n_values++;
         }
         filter_smoother(alpha, indices);
-        w = weights.col(n - 1);
+        w = weights.col(n);
         std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
         sampled_alpha = alpha.slice(sample(model.engine));
         loglik = loglik_prop;
@@ -1767,10 +1767,9 @@ void mcmc::pm_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
 }
 
 // run delayed acceptance MCMC for SDE model using BSF
-// either using coupled BSF or two independent BSFs
 void mcmc::da_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
                            const unsigned int nsim_states, const unsigned int L_c,
-                           const unsigned int L_f, const bool coupled, const bool target_full) {
+                           const unsigned int L_f, const bool target_full) {
   
   unsigned int m = 1;
   unsigned n = model.n;
@@ -1779,20 +1778,16 @@ void mcmc::da_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
   if (!arma::is_finite(logprior)) {
     Rcpp::stop("Initial prior probability is not finite.");
   }
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   sitmo::prng_engine tmp_engine = model.coarse_engine;
   double loglik_c = model.bsf_filter(nsim_states, L_c, alpha, weights, indices);
   double loglik_f = 0.0;
-  if (coupled) {
-    model.coarse_engine = tmp_engine;
-    loglik_f = model.coupled_bsf_filter(nsim_states, L_c, L_f, alpha, weights, indices);
-  } else {
-    loglik_f = model.bsf_filter(nsim_states, L_f, alpha, weights, indices);
-  }
+  loglik_f = model.bsf_filter(nsim_states, L_f, alpha, weights, indices);
+ 
   filter_smoother(alpha, indices);
-  arma::vec w = weights.col(n - 1);
+  arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
   
@@ -1840,14 +1835,8 @@ void mcmc::da_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
         // initial acceptance
         if (unif(model.engine) < acceptance_prob) {
           
-          double loglik_f_prop = 0.0;
-          if (coupled) {
-            model.coarse_engine = tmp_engine;
-            loglik_f_prop = model.coupled_bsf_filter(nsim_states, L_c, L_f, alpha, weights, indices);
-          } else {
-            loglik_f_prop = model.bsf_filter(nsim_states, L_f, alpha, weights, indices);
-          }
-          
+          double loglik_f_prop = model.bsf_filter(nsim_states, L_f, alpha, weights, indices);
+         
           //just in case
           if(std::isfinite(loglik_f_prop)) {
             // delayed acceptance ratio, in log-scale
@@ -1863,7 +1852,7 @@ void mcmc::da_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
                 n_values++;
               }
               filter_smoother(alpha, indices);
-              w = weights.col(n - 1);
+              w = weights.col(n);
               std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
               sampled_alpha = alpha.slice(sample(model.engine));
               loglik_c = loglik_c_prop;

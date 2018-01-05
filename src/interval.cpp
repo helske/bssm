@@ -38,7 +38,7 @@ arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& pro
         objective_gaussian f(means.col(i), sds.col(i), probs(j));
         std::pair<double, double> r =
           boost::math::tools::bracket_and_solve_root(f, guess, 2.0, true, tol, maxit);
-        if (!tol(r.first, r.second) | (maxit >= 1000)) {
+        if (!tol(r.first, r.second) || (maxit >= 1000)) {
           maxit = 1000;
           r = boost::math::tools::bracket_and_solve_root(f, -guess, 2.0, true, tol, maxit);
         }

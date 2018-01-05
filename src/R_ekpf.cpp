@@ -30,18 +30,16 @@ Rcpp::List ekpf(const arma::mat& y, SEXP Z, SEXP H,
   unsigned int m = model.m;
   unsigned n = model.n;
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
-  double loglik;
-  
-    loglik = model.ekf_filter(nsim_states, alpha, weights, indices);
+  arma::cube alpha(m, n, nsim_states + 1);
+  arma::mat weights(nsim_states + 1, n);
+  arma::umat indices(nsim_states, n);
+  double loglik = model.ekf_filter(nsim_states, alpha, weights, indices);
   
   
-  arma::mat at(m, n);
-  arma::mat att(m, n);
-  arma::cube Pt(m, m, n);
-  arma::cube Ptt(m, m, n);
+  arma::mat at(m, n + 1);
+  arma::mat att(m, n + 1);
+  arma::cube Pt(m, m, n + 1);
+  arma::cube Ptt(m, m, n + 1);
   filter_summary(alpha, at, att, Pt, Ptt, weights);
   
   arma::inplace_trans(att);
@@ -78,12 +76,10 @@ Rcpp::List ekpf_smoother(const arma::mat& y, SEXP Z, SEXP H,
   unsigned int m = model.m;
   unsigned n = model.n;
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
-  double loglik;
- 
-  loglik = model.ekf_filter(nsim_states, alpha, weights, indices);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
+  double loglik = model.ekf_filter(nsim_states, alpha, weights, indices);
 
   
   arma::mat alphahat(model.m, model.n);
@@ -91,7 +87,7 @@ Rcpp::List ekpf_smoother(const arma::mat& y, SEXP Z, SEXP H,
   
   //  if (smoothing_type == 1) {
   filter_smoother(alpha, indices);
-  running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n - 1));
+  running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
   /*} else {
   Rcpp::stop("Forward-backward smoothing with psi-filter is not yet implemented.");
 }*/

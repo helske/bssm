@@ -24,11 +24,6 @@ public:
   double bsf_filter(const unsigned int nsim, const unsigned int L, 
     arma::cube& alpha, arma::mat& weights, arma::umat& indices);
   
-  // coupled bootstrap filter
-  double coupled_bsf_filter(const unsigned int nsim, 
-    const unsigned int L_c, const unsigned int L_f, 
-    arma::cube& alpha, arma::mat& weights, arma::umat& indices);
-    
   arma::vec y;
   // Parameter vector used in _all_ functions
   arma::vec theta;

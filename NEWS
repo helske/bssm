@@ -1,10 +1,11 @@
 bssm 0.1.3 (Release date: 2018-01-05)
 ==============
   * Streamlined the output of the print method for MCMC results.
-  * Fixed a bug in Gaussian prediction intervals.
+  * Fixed a bug in predict method which caused wrong values for the prediction intervals.
   * Fixed some package dependencies.
   * Sampling for standard deviation parameters of BSM and their non-Gaussian counterparts 
     is now done in logarithmic scale for slightly increased efficiency.
+  * Added a new model class ar1 for univariate (possibly noisy) Gaussian AR(1) processes.
   
 bssm 0.1.2 (Release date: 2017-11-21)
 ==============

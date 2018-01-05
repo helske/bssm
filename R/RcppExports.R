@@ -197,20 +197,16 @@ bsf_smoother_sde <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffu
     .Call('_bssm_bsf_smoother_sde', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L, seed)
 }
 
-coupled_bsf_sde <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L_c, L_f, seed) {
-    .Call('_bssm_coupled_bsf_sde', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L_c, L_f, seed)
-}
-
 sde_pm_mcmc <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram) {
     .Call('_bssm_sde_pm_mcmc', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram)
 }
 
-sde_da_mcmc <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L_c, L_f, coupled, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram) {
-    .Call('_bssm_sde_da_mcmc', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L_c, L_f, coupled, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram)
+sde_da_mcmc <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L_c, L_f, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram) {
+    .Call('_bssm_sde_da_mcmc', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L_c, L_f, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram)
 }
 
-sde_is_mcmc <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L_c, L_f, coupled, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, is_type, n_threads) {
-    .Call('_bssm_sde_is_mcmc', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L_c, L_f, coupled, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, is_type, n_threads)
+sde_is_mcmc <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L_c, L_f, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, is_type, n_threads) {
+    .Call('_bssm_sde_is_mcmc', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L_c, L_f, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, is_type, n_threads)
 }
 
 gaussian_smoother <- function(model_, model_type) {

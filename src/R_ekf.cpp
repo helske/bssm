@@ -63,8 +63,8 @@ Rcpp::List ekf_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     time_varying, 1);
   
-  arma::mat alphahat(model.m, model.n);
-  arma::cube Vt(model.m, model.m, model.n);
+  arma::mat alphahat(model.m, model.n + 1);
+  arma::cube Vt(model.m, model.m, model.n + 1);
   double loglik = model.ekf_smoother(alphahat, Vt, iekf_iter);
   arma::inplace_trans(alphahat);
   
@@ -96,7 +96,7 @@ Rcpp::List ekf_fast_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     time_varying, 1);
   
-  arma::mat alphahat(model.m, model.n);
+  arma::mat alphahat(model.m, model.n + 1);
   double loglik = model.ekf_fast_smoother(alphahat, iekf_iter);
   arma::inplace_trans(alphahat);
   

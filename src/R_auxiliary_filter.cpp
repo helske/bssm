@@ -35,18 +35,18 @@ Rcpp::List aux_nlg(const arma::mat& y, SEXP Z, SEXP H,
   unsigned int m = model.m;
   unsigned n = model.n;
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   double loglik;
   
   loglik = model.aux_filter(nsim_states, alpha, weights, indices);
   
   
-  arma::mat at(m, n);
-  arma::mat att(m, n);
-  arma::cube Pt(m, m, n);
-  arma::cube Ptt(m, m, n);
+  arma::mat at(m, n + 1);
+  arma::mat att(m, n + 1);
+  arma::cube Pt(m, m, n + 1);
+  arma::cube Ptt(m, m, n + 1);
   filter_summary(alpha, at, att, Pt, Ptt, weights);
   
   arma::inplace_trans(att);
@@ -84,20 +84,19 @@ Rcpp::List aux_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
   unsigned int m = model.m;
   unsigned n = model.n;
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   double loglik;
   
   loglik = model.aux_filter(nsim_states, alpha, weights, indices);
   
-  
-  arma::mat alphahat(model.m, model.n);
-  arma::cube Vt(model.m, model.m, model.n);
+  arma::mat alphahat(model.m, model.n + 1);
+  arma::cube Vt(model.m, model.m, model.n + 1);
   
   //  if (smoothing_type == 1) {
   filter_smoother(alpha, indices);
-  running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n - 1));
+  running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
   /*} else {
    Rcpp::stop("Forward-backward smoothing with psi-filter is not yet implemented.");
   }*/
@@ -122,9 +121,9 @@ Rcpp::List aux(const Rcpp::List& model_,
   unsigned int m = model.m;
   unsigned n = model.n;
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   double loglik;
   if (optimal) {
     loglik = model.oaux_filter(nsim_states, alpha, weights, indices);
@@ -132,10 +131,10 @@ Rcpp::List aux(const Rcpp::List& model_,
   } else {
     loglik = model.aux_filter(nsim_states, alpha, weights, indices);
   }
-  arma::mat at(m, n);
-  arma::mat att(m, n);
-  arma::cube Pt(m, m, n);
-  arma::cube Ptt(m, m, n);
+  arma::mat at(m, n + 1);
+  arma::mat att(m, n + 1);
+  arma::cube Pt(m, m, n + 1);
+  arma::cube Ptt(m, m, n + 1);
   filter_summary(alpha, at, att, Pt, Ptt, weights);
   
   arma::inplace_trans(att);
@@ -150,9 +149,9 @@ Rcpp::List aux(const Rcpp::List& model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n, nsim_states);
-      arma::mat weights(nsim_states, n);
-      arma::umat indices(nsim_states, n - 1);
+      arma::cube alpha(m, n, nsim_states + 1);
+      arma::mat weights(nsim_states, n + 1);
+      arma::umat indices(nsim_states, n);
       double loglik;
       if (optimal) {
         loglik = model.oaux_filter(nsim_states, alpha, weights, indices);
@@ -161,10 +160,10 @@ Rcpp::List aux(const Rcpp::List& model_,
         loglik = model.aux_filter(nsim_states, alpha, weights, indices);
       }
       
-      arma::mat at(m, n);
-      arma::mat att(m, n);
-      arma::cube Pt(m, m, n);
-      arma::cube Ptt(m, m, n);
+      arma::mat at(m, n + 1);
+      arma::mat att(m, n + 1);
+      arma::cube Pt(m, m, n + 1);
+      arma::cube Ptt(m, m, n + 1);
       filter_summary(alpha, at, att, Pt, Ptt, weights);
       
       arma::inplace_trans(att);
@@ -191,20 +190,20 @@ Rcpp::List aux_smoother(const Rcpp::List& model_,
   unsigned int m = model.m;
   unsigned n = model.n;
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(m, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   double loglik;
   if (optimal) {
     loglik = model.oaux_filter(nsim_states, alpha, weights, indices);
   } else {
     loglik = model.aux_filter(nsim_states, alpha, weights, indices);
   }
-  arma::mat alphahat(model.m, model.n);
-  arma::cube Vt(model.m, model.m, model.n);
+  arma::mat alphahat(model.m, model.n + 1);
+  arma::cube Vt(model.m, model.m, model.n + 1);
   
   filter_smoother(alpha, indices);
-  running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n - 1));
+  running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
   
   arma::inplace_trans(alphahat);
   
@@ -219,9 +218,9 @@ Rcpp::List aux_smoother(const Rcpp::List& model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n, nsim_states);
-      arma::mat weights(nsim_states, n);
-      arma::umat indices(nsim_states, n - 1);
+      arma::cube alpha(m, n + 1, nsim_states);
+      arma::mat weights(nsim_states, n + 1);
+      arma::umat indices(nsim_states, n);
       double loglik;
       if (optimal) {
         loglik = model.oaux_filter(nsim_states, alpha, weights, indices);
@@ -230,11 +229,11 @@ Rcpp::List aux_smoother(const Rcpp::List& model_,
         loglik = model.aux_filter(nsim_states, alpha, weights, indices);
       }
       
-      arma::mat alphahat(model.m, model.n);
-      arma::cube Vt(model.m, model.m, model.n);
+      arma::mat alphahat(model.m, model.n + 1);
+      arma::cube Vt(model.m, model.m, model.n + 1);
       
       filter_smoother(alpha, indices);
-      running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n - 1));
+      running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
       
       arma::inplace_trans(alphahat);
       

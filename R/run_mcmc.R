@@ -729,7 +729,7 @@ run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
         out <- sde_da_mcmc(object$y, object$x0, object$positive,
           object$drift, object$diffusion, object$ddiffusion,
           object$prior_pdf, object$obs_pdf, object$theta,
-          nsim_states, L_c, L_f, FALSE, seed,
+          nsim_states, L_c, L_f, seed,
           n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
           end_adaptive_phase)
       } else {
@@ -751,7 +751,7 @@ run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
           out <- sde_is_mcmc(object$y, object$x0, object$positive,
             object$drift, object$diffusion, object$ddiffusion,
             object$prior_pdf, object$obs_pdf, object$theta,
-            nsim_states, L_c, L_f, FALSE, seed,
+            nsim_states, L_c, L_f, seed,
             n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
             end_adaptive_phase, pmatch(method, paste0("is", 1:3)), n_threads)
         }
