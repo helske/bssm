@@ -27,7 +27,7 @@ arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& pro
   arma::mat intv(n_ahead, probs.n_elem);
  
   for (unsigned int i = 0; i < n_ahead; i++) {
-    if (arma::any(sds.col(i))) {
+    //if (arma::any(sds.col(i))) {
       for (unsigned int j = 0; j < probs.n_elem; j++) {
         double guess = 0.0;
         for (unsigned int k = 0; k < means.n_rows; k++) {
@@ -44,9 +44,9 @@ arma::mat intervals(arma::mat& means, const arma::mat& sds, const arma::vec& pro
         }
         intv(i, j) = r.first + (r.second - r.first) / 2.0;
       }
-    } else {
-      intv.row(i).fill(arma::mean(means.col(i)));
-    }
+   // } else {
+  //    intv.row(i).fill(arma::mean(means.col(i)));
+  //  }
   }
   return intv;
 }
