@@ -3,6 +3,7 @@
 #' Adaptive Markov chain Monte Carlo simulation of state space models using
 #' Robust Adaptive Metropolis algorithm by Vihola (2012).
 #'
+#' @importFrom stats tsp
 #' @param object State space model object of \code{bssm} package.
 #' @param n_iter Number of MCMC iterations.
 #' @param ... Parameters to specific methods. See \code{\link{run_mcmc.gssm}} and
@@ -99,6 +100,8 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "gssm"
+  attr(out, "ts") <- 
+    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -159,6 +162,8 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "bsm"
+  attr(out, "ts") <- 
+    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -278,6 +283,8 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "ngssm"
+  attr(out, "ts") <- 
+    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -378,6 +385,8 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "ng_bsm"
+  attr(out, "ts") <- 
+    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -457,6 +466,7 @@ run_mcmc.ng_ar1 <-  function(object, n_iter, nsim_states, type = "full",
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "ng_ar1"
+  attr(out, "ts") <- c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -510,6 +520,8 @@ run_mcmc.ar1 <-  function(object, n_iter, sim_states = TRUE, type = "full",
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "ar1"
+  attr(out, "ts") <- 
+    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -691,6 +703,8 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "nlg_ssm"
+  attr(out, "ts") <- 
+    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -774,6 +788,8 @@ run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "sde_ssm"
+  attr(out, "ts") <- 
+    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -834,5 +850,7 @@ run_mcmc.lgg_ssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "lgg_ssm"
+  attr(out, "ts") <- 
+    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
