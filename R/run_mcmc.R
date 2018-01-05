@@ -101,7 +101,7 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "gssm"
   attr(out, "ts") <- 
-    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
+    list(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -163,7 +163,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "bsm"
   attr(out, "ts") <- 
-    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
+    list(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -284,7 +284,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "ngssm"
   attr(out, "ts") <- 
-    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
+    list(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -386,7 +386,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "ng_bsm"
   attr(out, "ts") <- 
-    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
+    list(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -466,7 +466,7 @@ run_mcmc.ng_ar1 <-  function(object, n_iter, nsim_states, type = "full",
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "ng_ar1"
-  attr(out, "ts") <- c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
+  attr(out, "ts") <- list(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -521,7 +521,7 @@ run_mcmc.ar1 <-  function(object, n_iter, sim_states = TRUE, type = "full",
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "ar1"
   attr(out, "ts") <- 
-    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
+    list(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -704,7 +704,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "nlg_ssm"
   attr(out, "ts") <- 
-    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
+    list(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -789,7 +789,7 @@ run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "sde_ssm"
   attr(out, "ts") <- 
-    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
+    list(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
@@ -851,6 +851,6 @@ run_mcmc.lgg_ssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "lgg_ssm"
   attr(out, "ts") <- 
-    c(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
+    list(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }

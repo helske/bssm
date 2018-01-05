@@ -164,7 +164,7 @@ summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, .
   if (!only_theta) {
     m <- ncol(object$alpha)
     mean_alpha <- ts(weighted_mean(object$alpha, w), start = attr(object, "ts")$start,
-      end = attr(object, "ts")$end, frequency = attr(object, "ts")$frequency)
+      frequency = attr(object, "ts")$frequency, names = colnames(object$alpha))
     sd_alpha <- weighted_var(object$alpha, w, method = "moment")
     sd_alpha <- if(m > 1) sqrt(t(apply(sd_alpha, 3, diag))) else matrix(sqrt(sd_alpha), ncol = 1)
     if(return_se) {

@@ -258,21 +258,21 @@ UKgas_model <- bsm(log10(UKgas), sd_y = prior, sd_level = prior,
 mcmc_bsm <- run_mcmc(UKgas_model, n_iter = 4e4)
 mcmc_bsm
 ```
+Note that all MCMC algorithms of `bssm` output also state forecasts for the timepoint $n + 1$, the summary statistics of this state is also shown in the output above.
+
 For plotting purposes, we'll use `bayesplot` package for the figures after expanding our jump chain representation. 
 
 ```{r plot}
 theta <- expand_sample(mcmc_bsm, "theta")
 library("bayesplot")
 mcmc_areas(theta, bw = 0.001)
-level <- expand_sample(mcmc_bsm, "alpha",  times = 101:108, states = 1)
+level <- expand_sample(mcmc_bsm, "alpha",  times = 101:109, states = 1)
 mcmc_areas(level, bw = 0.005)
 ```
 
-Smoothed trend:
+Using the `summary` method we can obtain the posterior estimates of the trend:
 
 ```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component with 95% intervals."}
-level <- expand_sample(mcmc_bsm, "alpha", states = 1)
-# or using summary method:
 sumr <- summary(mcmc_bsm)
 level <- sumr$states$Mean[, 1]
 lwr <- level - 1.96 * sumr$states$SD[, 1]
