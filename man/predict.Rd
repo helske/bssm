@@ -13,7 +13,7 @@
 
 \item{future_model}{Model for future observations. Should have same structure
 as the original model which was used in MCMC, in order to plug the posterior 
-samples of the model parameters to right place.}
+samples of the model parameters to the right places.}
 
 \item{type}{Compute predictions on \code{"mean"} ("confidence interval"),
 \code{"response"} ("prediction interval"), or \code{"state"} level. 
@@ -24,8 +24,10 @@ from the posterior predictive distribution are returned.}
 
 \item{probs}{Desired quantiles. Defaults to \code{c(0.05, 0.95)}. Always includes median 0.5.}
 
-\item{nsim}{Number of samples to draw per MCMC iteration. 
-Defaults to 1 except for EKF based MCMC output of non-linear Gaussian models (see below). 
+\item{nsim}{Number of state samples to draw per MCMC iteration. 
+Note that this has no effect for the time point $n+1$ 
+(where $n$ is the length of the original series) as this is directly obtained from the MCMC output.
+\code{nsim} defaults to 1 except for the EKF based MCMC output of non-linear Gaussian models (see below). 
 For linear-Gaussian models the intervals are computed based on Kalman filter so 
 this argument has no effect if \code{intervals} is \code{TRUE}. For non-linear Gaussian 
 models of class \code{nlg_ssm}, if \code{nsim} is 0 and \code{intervals} is \code{TRUE}, 

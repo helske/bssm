@@ -42,19 +42,23 @@ void filter_summary(const arma::cube& alpha, arma::mat& at, arma::mat& att,
   at.zeros();
   att.zeros();
   
-  for (unsigned int t = 0; t < alpha.n_cols; t++) {
+  for (unsigned int t = 0; t < alpha.n_cols - 1; t++) {
     weights.col(t) /= arma::accu(weights.col(t));
     for (unsigned int i = 0; i < alpha.n_slices; i++) {
       att.col(t) += alpha.slice(i).col(t) * weights(i, t);
       at.col(t) += alpha.slice(i).col(t);
     }
   }
+  weights.col(alpha.n_cols - 1) /= arma::accu(weights.col(alpha.n_cols - 1));
+  for (unsigned int i = 0; i < alpha.n_slices; i++) {
+    at.col(alpha.n_cols - 1) += alpha.slice(i).col(alpha.n_cols - 1);
+  }
   
   at /= alpha.n_slices;
   
   Pt.zeros();
   Ptt.zeros();
-  for (unsigned int t = 0; t < alpha.n_cols; t++) {
+  for (unsigned int t = 0; t < alpha.n_cols - 1; t++) {
     for(unsigned int i = 0; i < alpha.n_slices; i++) {
       Pt.slice(t) += 
         (alpha.slice(i).col(t) - at.col(t)) * (alpha.slice(i).col(t) - at.col(t)).t();
@@ -62,6 +66,11 @@ void filter_summary(const arma::cube& alpha, arma::mat& at, arma::mat& att,
         (alpha.slice(i).col(t) - att.col(t)) * (alpha.slice(i).col(t) - att.col(t)).t();
       
     }
+  }
+  double t = alpha.n_cols - 1;
+  for(unsigned int i = 0; i < alpha.n_slices; i++) {
+    Pt.slice(t) += 
+      (alpha.slice(i).col(t) - at.col(t)) * (alpha.slice(i).col(t) - at.col(t)).t();
   }
   Pt /= alpha.n_slices;
 }

@@ -792,7 +792,7 @@ arma::mat nlg_ssm::approximate(mgg_ssm& approx_model,
   
 
   //check model
-  arma::mat mode_estimate = approx_model.fast_smoother();
+  arma::mat mode_estimate = approx_model.fast_smoother().head_cols(n);
   if (!arma::is_finite(mode_estimate)) {
     return mode_estimate;
   }
@@ -829,7 +829,7 @@ arma::mat nlg_ssm::approximate(mgg_ssm& approx_model,
     approx_model.compute_RR();
     
     // compute new value of mode
-    arma::mat mode_estimate_new = approx_model.fast_smoother();
+    arma::mat mode_estimate_new = approx_model.fast_smoother().head_cols(n);
     double ll_new = log_signal_pdf(mode_estimate_new);
     abs_diff = ll_new - ll;
     rel_diff = abs_diff / std::abs(ll);

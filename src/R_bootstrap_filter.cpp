@@ -25,9 +25,9 @@ Rcpp::List bsf(const Rcpp::List& model_,
   arma::umat indices(nsim_states, n);
   double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
   
-  arma::mat at(m, n);
+  arma::mat at(m, n + 1);
   arma::mat att(m, n);
-  arma::cube Pt(m, m, n);
+  arma::cube Pt(m, m, n + 1);
   arma::cube Ptt(m, m, n);
   filter_summary(alpha, at, att, Pt, Ptt, weights);
   
@@ -49,9 +49,9 @@ Rcpp::List bsf(const Rcpp::List& model_,
       arma::umat indices(nsim_states, n);
       double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
       
-      arma::mat at(m, n);
+      arma::mat at(m, n + 1);
       arma::mat att(m, n);
-      arma::cube Pt(m, m, n);
+      arma::cube Pt(m, m, n + 1);
       arma::cube Ptt(m, m, n);
       filter_summary(alpha, at, att, Pt, Ptt, weights);
       
@@ -76,9 +76,9 @@ Rcpp::List bsf(const Rcpp::List& model_,
     arma::umat indices(nsim_states, n);
     double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
     
-    arma::mat at(m, n);
+    arma::mat at(m, n + 1);
     arma::mat att(m, n);
-    arma::cube Pt(m, m, n);
+    arma::cube Pt(m, m, n + 1);
     arma::cube Ptt(m, m, n);
     filter_summary(alpha, at, att, Pt, Ptt, weights);
     
@@ -99,9 +99,9 @@ Rcpp::List bsf(const Rcpp::List& model_,
       arma::mat weights(nsim_states, n + 1);
       arma::umat indices(nsim_states, n);
       double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
-      arma::mat at(m, n);
+      arma::mat at(m, n + 1);
       arma::mat att(m, n);
-      arma::cube Pt(m, m, n);
+      arma::cube Pt(m, m, n + 1);
       arma::cube Ptt(m, m, n);
       filter_summary(alpha, at, att, Pt, Ptt, weights);
       
@@ -123,9 +123,9 @@ Rcpp::List bsf(const Rcpp::List& model_,
       arma::mat weights(nsim_states, n + 1);
       arma::umat indices(nsim_states, n);
       double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
-      arma::mat at(m, n);
+      arma::mat at(m, n + 1);
       arma::mat att(m, n);
-      arma::cube Pt(m, m, n);
+      arma::cube Pt(m, m, n + 1);
       arma::cube Ptt(m, m, n);
       filter_summary(alpha, at, att, Pt, Ptt, weights);
       

@@ -471,7 +471,8 @@ run_mcmc.ng_ar1 <-  function(object, n_iter, nsim_states, type = "full",
 }
 
 #' @method run_mcmc ar1
-#' @rdname run_mcmc
+#' @rdname run_mcmc_g
+#' @inheritParams run_mcmc.gssm
 #' @export
 run_mcmc.ar1 <-  function(object, n_iter, sim_states = TRUE, type = "full",
   n_burnin = floor(n_iter/2), n_thin = 1,

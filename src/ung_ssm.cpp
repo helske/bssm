@@ -168,9 +168,9 @@ ugg_ssm ung_ssm::approximate(arma::vec& mode_estimate, const unsigned int max_it
     // compute new guess of mode
     arma::vec mode_estimate_new(n);
     if (distribution == 0) {
-      mode_estimate_new = arma::vectorise(approx_model.fast_smoother());
+      mode_estimate_new = arma::vectorise(approx_model.fast_smoother().head_cols(n));
     } else {
-      arma::mat alpha = approx_model.fast_smoother();
+      arma::mat alpha = approx_model.fast_smoother().head_cols(n);
       for (unsigned int t = 0; t < n; t++) {
         mode_estimate_new(t) = arma::as_scalar(Z.col(Ztv * t).t() * alpha.col(t));
       }
@@ -200,9 +200,9 @@ void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate,
   
   if(max_iter == 0 && mode_estimate.n_elem == n) {
     if (distribution == 0) {
-      mode_estimate = arma::vectorise(approx_model.fast_smoother());
+      mode_estimate = arma::vectorise(approx_model.fast_smoother().head_cols(n));
     } else {
-      arma::mat alpha = approx_model.fast_smoother();
+      arma::mat alpha = approx_model.fast_smoother().head_cols(n);
       for (unsigned int t = 0; t < n; t++) {
         mode_estimate(t) = arma::as_scalar(Z.col(Ztv * t).t() * alpha.col(t));
       }
@@ -218,9 +218,9 @@ void ung_ssm::approximate(ugg_ssm& approx_model, arma::vec& mode_estimate,
     // compute new guess of mode
     arma::vec mode_estimate_new(n);
     if (distribution == 0) {
-      mode_estimate_new = arma::vectorise(approx_model.fast_smoother());
+      mode_estimate_new = arma::vectorise(approx_model.fast_smoother().head_cols(n));
     } else {
-      arma::mat alpha = approx_model.fast_smoother();
+      arma::mat alpha = approx_model.fast_smoother().head_cols(n);
       for (unsigned int t = 0; t < n; t++) {
         mode_estimate_new(t) = arma::as_scalar(Z.col(Ztv * t).t() * alpha.col(t));
       }
