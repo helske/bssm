@@ -16,7 +16,7 @@ vignette: >
   %\VignetteIndexEntry{bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  %\VignetteDepends{ggplot2, bayesplot, sde}
+  %\VignetteDepends{ggplot2, bayesplot, sde, ramcmc}
 ---
   
 ```{r setup, include=FALSE}
