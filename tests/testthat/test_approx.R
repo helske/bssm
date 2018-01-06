@@ -78,3 +78,4 @@ test_that("results for negative binomial GLM are equal to glm function",{
   expect_equivalent(sm$alphahat[1], unname(coef(glm_nb)[1]))
   expect_equal(sm$V[, , 1], vcov(glm_nb)[1])
 })
+

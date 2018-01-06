@@ -21,7 +21,7 @@ fast_smoother.gssm <- function(object, ...) {
   
   out <- gaussian_fast_smoother(object, model_type = 1L)
   colnames(out) <- names(object$a1)
-  ts(out[-nrow(out$alphahat), , drop = FALSE], start = start(object$y), 
+  ts(out[-nrow(out), , drop = FALSE], start = start(object$y), 
     frequency = frequency(object$y))
 }
 #' @method fast_smoother bsm
@@ -30,7 +30,7 @@ fast_smoother.bsm <- function(object, ...) {
   
   out <- gaussian_fast_smoother(object, model_type = 2L)
   colnames(out) <- names(object$a1)
-  ts(out[-nrow(out$alphahat), , drop = FALSE], start = start(object$y), 
+  ts(out[-nrow(out), , drop = FALSE], start = start(object$y), 
     frequency = frequency(object$y))
 }
 #' @method fast_smoother mv_gssm
@@ -39,7 +39,7 @@ fast_smoother.mv_gssm <- function(object, ...) {
   
   out <- gaussian_fast_smoother(object, model_type = -1L)
   colnames(out) <- names(object$a1)
-  ts(out[-nrow(out$alphahat), , drop = FALSE], start = start(object$y), 
+  ts(out[-nrow(out), , drop = FALSE], start = start(object$y), 
     frequency = frequency(object$y))
 }
 #' @method fast_smoother ngssm
