@@ -112,12 +112,6 @@ double nonlinear_loglik(const arma::mat& y, SEXP Z, SEXP H,
     loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
     
   } break;
-  case 3: {
-    loglik = model.aux_filter(nsim_states, alpha, weights, indices);
-  } break;
-  case 4: {
-    loglik = model.aux_filter(nsim_states, alpha, weights, indices);
-  } break;
   default: loglik = -std::numeric_limits<double>::infinity();
   }
   

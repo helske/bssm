@@ -29,22 +29,6 @@ gaussian_approx_model_nlg <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_
     .Call('_bssm_gaussian_approx_model_nlg', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, max_iter, conv_tol, iekf_iter)
 }
 
-aux_nlg <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, nsim_states, seed) {
-    .Call('_bssm_aux_nlg', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, nsim_states, seed)
-}
-
-aux_smoother_nlg <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, nsim_states, seed) {
-    .Call('_bssm_aux_smoother_nlg', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, nsim_states, seed)
-}
-
-aux <- function(model_, nsim_states, seed, gaussian, model_type, optimal) {
-    .Call('_bssm_aux', PACKAGE = 'bssm', model_, nsim_states, seed, gaussian, model_type, optimal)
-}
-
-aux_smoother <- function(model_, nsim_states, seed, gaussian, model_type, optimal) {
-    .Call('_bssm_aux_smoother', PACKAGE = 'bssm', model_, nsim_states, seed, gaussian, model_type, optimal)
-}
-
 bsf <- function(model_, nsim_states, seed, gaussian, model_type) {
     .Call('_bssm_bsf', PACKAGE = 'bssm', model_, nsim_states, seed, gaussian, model_type)
 }
@@ -173,8 +157,8 @@ nonlinear_predict_ekf <- function(y, Z, H, T, R, Zg, Tg, a1, P1, log_prior_pdf, 
     .Call('_bssm_nonlinear_predict_ekf', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, probs, theta, alpha_last, P_last, counts, predict_type)
 }
 
-psi_smoother <- function(model_, mode_estimate, nsim_states, smoothing_type, seed, max_iter, conv_tol, model_type) {
-    .Call('_bssm_psi_smoother', PACKAGE = 'bssm', model_, mode_estimate, nsim_states, smoothing_type, seed, max_iter, conv_tol, model_type)
+psi_smoother <- function(model_, mode_estimate, nsim_states, seed, max_iter, conv_tol, model_type) {
+    .Call('_bssm_psi_smoother', PACKAGE = 'bssm', model_, mode_estimate, nsim_states, seed, max_iter, conv_tol, model_type)
 }
 
 psi_smoother_nlg <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, nsim_states, seed, max_iter, conv_tol, iekf_iter) {

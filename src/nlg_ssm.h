@@ -67,10 +67,6 @@ public:
   double bsf_filter(const unsigned int nsim, arma::cube& alpha, 
     arma::mat& weights, arma::umat& indices);
   
-  // auxiliary particle filter  
-  double aux_filter(const unsigned int nsim, arma::cube& alpha, 
-    arma::mat& weights, arma::umat& indices);
-  
   // psi-particle filter
   double psi_filter(const mgg_ssm& approx_model, const double approx_loglik,
     const unsigned int nsim, arma::cube& alpha, arma::mat& weights,

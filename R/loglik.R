@@ -7,7 +7,8 @@
 #' See vignette for details.
 #' @param method Method for computing the log-likelihood of non-Gaussian/non-linear model. 
 #' Method \code{"spdk"} uses the importance sampling approach by 
-#' Shephard and Pitt (1997), and Durbin and Koopman (1997). \code{"psi"} (the default for linear-Gaussian signals) uses psi-auxiliary filter and 
+#' Shephard and Pitt (1997), and Durbin and Koopman (1997). 
+#' \code{"psi"} (the default for linear-Gaussian signals) uses psi-auxiliary filter and 
 #' \code{"bsf"} bootstrap filter (default for general non-linear Gaussian models).
 #' @param seed Seed for the random number generator. Compared to other functions of the package, the
 #' default seed is fixed (as 1) in order to work properly in numerical optimization algorithms.

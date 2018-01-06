@@ -10,17 +10,16 @@
 \usage{
 particle_smoother(object, nsim, ...)
 
-\method{particle_smoother}{gssm}(object, nsim, filter_type = "bsf",
-  smoothing_method = "fs", seed = sample(.Machine$integer.max, size = 1),
-  optimal = TRUE, ...)
+\method{particle_smoother}{gssm}(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{particle_smoother}{ngssm}(object, nsim, filter_type = "bsf",
-  smoothing_method = "fs", seed = sample(.Machine$integer.max, size = 1),
-  max_iter = 100, conv_tol = 1e-08, ...)
+  seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
+  conv_tol = 1e-08, ...)
 
 \method{particle_smoother}{nlg_ssm}(object, nsim, filter_type = "psi",
-  smoothing_method = "fs", seed = sample(.Machine$integer.max, size = 1),
-  max_iter = 100, conv_tol = 1e-08, iekf_iter = 0, ...)
+  seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
+  conv_tol = 1e-08, iekf_iter = 0, ...)
 
 \method{particle_smoother}{sde_ssm}(object, nsim, L,
   seed = sample(.Machine$integer.max, size = 1), ...)
@@ -32,20 +31,14 @@ particle_smoother(object, nsim, ...)
 
 \item{...}{Ignored.}
 
+\item{seed}{Seed for RNG.}
+
 \item{filter_type}{Choice of particle filter algorithm. For Gaussian models, 
-possible choices are \code{"bsf"} (bootstrap particle filter) and 
-\code{"apf"} (auxiliary particle filter). In addition, for non-Gaussian or 
+only option is \code{"bsf"} (bootstrap particle filter). 
+In addition, for non-Gaussian or 
 non-linear models, \code{"psi"} uses psi-particle filter, and 
 for non-linear models options \code{"ekf"} (extended Kalman particle filter) 
 is also available.}
-
-\item{smoothing_method}{Either \code{"fs"} (filter-smoother), or \code{"fbs"} 
-(forward-backward smoother).}
-
-\item{seed}{Seed for RNG.}
-
-\item{optimal}{For Gaussian models, use optimal auxiliary particle filter? 
-Default is \code{TRUE}.}
 
 \item{max_iter}{Maximum number of iterations used in Gaussian approximation. Used psi-PF.}
 
