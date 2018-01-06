@@ -50,9 +50,12 @@ Rcpp::List aux_nlg(const arma::mat& y, SEXP Z, SEXP H,
   filter_summary(alpha, at, att, Pt, Ptt, weights);
   
   arma::inplace_trans(att);
+  arma::inplace_trans(at);
   return Rcpp::List::create(
     Rcpp::Named("att") = att, 
     Rcpp::Named("Ptt") = Ptt, 
+    Rcpp::Named("at") = at, 
+    Rcpp::Named("Pt") = Pt, 
     Rcpp::Named("weights") = weights,
     Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
 }
@@ -138,9 +141,12 @@ Rcpp::List aux(const Rcpp::List& model_,
   filter_summary(alpha, at, att, Pt, Ptt, weights);
   
   arma::inplace_trans(att);
+  arma::inplace_trans(at);
   return Rcpp::List::create(
     Rcpp::Named("att") = att, 
     Rcpp::Named("Ptt") = Ptt, 
+    Rcpp::Named("at") = at, 
+    Rcpp::Named("Pt") = Pt, 
     Rcpp::Named("weights") = weights,
     Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
 } break;
@@ -159,7 +165,6 @@ Rcpp::List aux(const Rcpp::List& model_,
       } else {
         loglik = model.aux_filter(nsim_states, alpha, weights, indices);
       }
-      
       arma::mat at(m, n + 1);
       arma::mat att(m, n);
       arma::cube Pt(m, m, n + 1);
@@ -167,9 +172,12 @@ Rcpp::List aux(const Rcpp::List& model_,
       filter_summary(alpha, at, att, Pt, Ptt, weights);
       
       arma::inplace_trans(att);
+      arma::inplace_trans(at);
       return Rcpp::List::create(
         Rcpp::Named("att") = att, 
         Rcpp::Named("Ptt") = Ptt, 
+        Rcpp::Named("at") = at, 
+        Rcpp::Named("Pt") = Pt, 
         Rcpp::Named("weights") = weights,
         Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
     } break;

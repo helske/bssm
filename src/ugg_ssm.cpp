@@ -203,7 +203,7 @@ arma::cube ugg_ssm::simulate_states(const unsigned int nsim, const bool use_anti
         }
         aplus.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * aplus.col(t) + R.slice(t * Rtv) * uk;
       }
-
+      
       asim.slice(i) = -fast_smoother(Ft, Kt, Lt) + aplus;
       if (use_antithetic){
         asim.slice(i + nsim2) = alphahat - asim.slice(i);
@@ -353,7 +353,7 @@ arma::mat ugg_ssm::fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
     }
   }
-
+  
   arma::mat rt(m, n);
   rt.col(n - 1).zeros();
   
@@ -460,7 +460,7 @@ void ugg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
     }
     ccov.slice(t) = Pt.slice(t+1); //store for smoothing;
   }
-
+  
   
   arma::vec rt(m, arma::fill::zeros);
   arma::mat Nt(m, m, arma::fill::zeros);
@@ -546,7 +546,7 @@ void ugg_ssm::smoother(arma::mat& at, arma::cube& Pt) const {
         RR.slice(t * Rtv));
     }
   }
-
+  
   arma::vec rt(m, arma::fill::zeros);
   arma::mat Nt(m, m, arma::fill::zeros);
   
@@ -612,7 +612,7 @@ Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
       }
       
     }
-   
+    
     arma::mat expanded_sd = rep_mat(arma::sqrt(var_pred), counts);
     arma::inplace_trans(expanded_sd);
     arma::mat expanded_mean = rep_mat(mean_pred, counts);
@@ -855,13 +855,17 @@ double ugg_ssm::aux_filter(const unsigned int nsim, arma::cube& alpha,
     
     arma::mat alphatmp_init(m, nsim);
     arma::vec aux_weights(nsim);
-    for (unsigned int i = 0; i < nsim; i++) {
-      alphatmp_init.col(i) = alpha.slice(indices_init(i)).col(t);
-      double mu = arma::as_scalar(D((t + 1) * Dtv) + Z.col(Ztv * (t + 1)).t() *
-        (C.col(t * Ctv) + T.slice(Ttv * t) * alphatmp_init.col(i)));
-      aux_weights(i) = -0.5 * std::pow(y(t + 1) - mu, 2.0) / HH(Htv * (t + 1));
-    }
     
+    if (t < (n - 1)) {
+      for (unsigned int i = 0; i < nsim; i++) {
+        alphatmp_init.col(i) = alpha.slice(indices_init(i)).col(t);
+        double mu = arma::as_scalar(D((t + 1) * Dtv) + Z.col(Ztv * (t + 1)).t() *
+          (C.col(t * Ctv) + T.slice(Ttv * t) * alphatmp_init.col(i)));
+        aux_weights(i) = -0.5 * std::pow(y(t + 1) - mu, 2.0) / HH(Htv * (t + 1));
+      }
+    } else {
+      aux_weights.zeros();
+    }
     double max_aux_weight = aux_weights.max();
     arma::vec normalized_aux_weights = arma::exp(aux_weights-max_aux_weight);
     double sum_aux_weights = arma::accu(normalized_aux_weights);

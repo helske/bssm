@@ -603,7 +603,6 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   out
 }
 
-
 #' @method run_mcmc nlg_ssm
 #' @rdname run_mcmc_ng
 #' @export
