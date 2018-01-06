@@ -160,7 +160,7 @@ Main functions of `bssm` is written in `C++`, with help of `Rcpp` and `RcppArmad
 
 ## Model building functions
 
-For linear-Gaussian models, `bssm` offers functions `bsm` for basic univariate structural time series models (BSM), as well as general `lgg_ssm` for arbitrary (multivariate) LGSSMs, defined via pointers to user supplied `C++` functions. There is also a function `gssm` for general univariate LGSSM where user defines the system matrices directly as R objects, which can be more convinient in many cases. However, defining the priors for this model is somewhat more restricted, whereas for `lgg_smm`, arbitrary prior definitions can be used. As an example, consider a Gaussian local linear trend model of form
+For linear-Gaussian models, `bssm` offers functions `bsm` for basic univariate structural time series models (BSM), `ar1` for univariate, possibly noisy AR(1) process, as well as general `lgg_ssm` for arbitrary (multivariate) LGSSMs, defined via pointers to user supplied `C++` functions. There is also a function `gssm` for general univariate LGSSM where user defines the system matrices directly as R objects, which can be more convinient in many cases. However, defining the priors for this model is somewhat more restricted, whereas for `lgg_smm`, arbitrary prior definitions can be used. As an example, consider a Gaussian local linear trend model of form
 
 $$
 \begin{aligned}
@@ -221,7 +221,7 @@ $$
 with parameters $\theta = (\phi, \nu, \sigma) = (0.5, 2, 1)$ and the initial condition $\alpha_0 = 1$. For observation density, we use Poisson distribution with parameter $\exp(\alpha_k)$. We first simulate a trajectory $x_0, \ldots, x_n$ using the `sde.sim` function from the `sde` package [@sde] and use that for the simulation of observations $y$:
 ```{r}
 set.seed(1)
-library("sde")
+suppressMessages(library("sde"))
 x <- sde.sim(t0 = 0, T = 100, X0 = 1, N = 100,
   drift = expression(0.5 * (2 - x)),
   sigma = expression(1),
@@ -264,7 +264,7 @@ For plotting purposes, we'll use `bayesplot` package for the figures after expan
 
 ```{r plot}
 theta <- expand_sample(mcmc_bsm, "theta")
-library("bayesplot")
+suppressMessages(library("bayesplot"))
 mcmc_areas(theta, bw = 0.001)
 level <- expand_sample(mcmc_bsm, "alpha",  times = 101:109, states = 1)
 mcmc_areas(level, bw = 0.005)
