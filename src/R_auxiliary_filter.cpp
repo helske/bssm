@@ -44,9 +44,9 @@ Rcpp::List aux_nlg(const arma::mat& y, SEXP Z, SEXP H,
   
   
   arma::mat at(m, n + 1);
-  arma::mat att(m, n + 1);
+  arma::mat att(m, n);
   arma::cube Pt(m, m, n + 1);
-  arma::cube Ptt(m, m, n + 1);
+  arma::cube Ptt(m, m, n);
   filter_summary(alpha, at, att, Pt, Ptt, weights);
   
   arma::inplace_trans(att);
@@ -132,9 +132,9 @@ Rcpp::List aux(const Rcpp::List& model_,
     loglik = model.aux_filter(nsim_states, alpha, weights, indices);
   }
   arma::mat at(m, n + 1);
-  arma::mat att(m, n + 1);
+  arma::mat att(m, n);
   arma::cube Pt(m, m, n + 1);
-  arma::cube Ptt(m, m, n + 1);
+  arma::cube Ptt(m, m, n);
   filter_summary(alpha, at, att, Pt, Ptt, weights);
   
   arma::inplace_trans(att);
@@ -149,7 +149,7 @@ Rcpp::List aux(const Rcpp::List& model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n, nsim_states + 1);
+      arma::cube alpha(m, n + 1, nsim_states);
       arma::mat weights(nsim_states, n + 1);
       arma::umat indices(nsim_states, n);
       double loglik;
@@ -161,9 +161,9 @@ Rcpp::List aux(const Rcpp::List& model_,
       }
       
       arma::mat at(m, n + 1);
-      arma::mat att(m, n + 1);
+      arma::mat att(m, n);
       arma::cube Pt(m, m, n + 1);
-      arma::cube Ptt(m, m, n + 1);
+      arma::cube Ptt(m, m, n);
       filter_summary(alpha, at, att, Pt, Ptt, weights);
       
       arma::inplace_trans(att);
