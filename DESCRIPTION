@@ -20,7 +20,9 @@ Suggests:
     rmarkdown (>= 0.8.1),
     testthat,
     bayesplot,
-    sde
+    sde,
+    ramcmc,
+    sitmo
 Imports:
     coda (>= 0.18-1),
     diagis,

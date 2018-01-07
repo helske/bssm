@@ -51,9 +51,9 @@ ugg_ssm::ugg_ssm(const arma::vec& y, const arma::mat& Z, const arma::vec& H,
   Dtv(D.n_elem > 1), Ctv(C.n_cols > 1), n(y.n_elem), m(a1.n_elem), k(R.n_cols),
   HH(arma::vec(Htv * (n - 1) + 1)), RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
   xbeta(arma::vec(n, arma::fill::zeros)), 
+  engine(seed), zero_tol(1e-8), 
   theta(theta), prior_distributions(prior_distributions), 
   prior_parameters(prior_parameters),
-  engine(seed), zero_tol(1e-8),
   Z_ind(Z_ind_), H_ind(H_ind_), T_ind(T_ind_), R_ind(R_ind_) {
   
   if(xreg.n_cols > 0) {
