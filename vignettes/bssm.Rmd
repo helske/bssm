@@ -260,7 +260,7 @@ mcmc_bsm
 ```
 Note that all MCMC algorithms of `bssm` output also state forecasts for the timepoint $n + 1$, the summary statistics of this state is also shown in the output above.
 
-For plotting purposes, we'll use `bayesplot` package for the figures after expanding our jump chain representation. 
+For plotting purposes, we'll use `bayesplot` package for the figures after expanding our jump chain representation. The function `expand_sample` expands the jump chain representation to typical Markov chain, and returns an object of class `mcmc` of the `coda` package [@coda] (thus the plotting and diagnostic methods of `coda` can also be used). 
 
 ```{r plot}
 theta <- expand_sample(mcmc_bsm, "theta")

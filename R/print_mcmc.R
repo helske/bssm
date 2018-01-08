@@ -193,8 +193,9 @@ summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, .
 #' The MCMC algorithms of \code{bssm} use a jump chain representation where we 
 #' store the accepted values and the number of times we stayed in the current value.
 #' Although this saves bit memory and is especially convinient for IS-corrected 
-#' MCMC, sometimes we want to have the usual sample paths. Function \code{expand} 
-#' returns the expanded sample based on the counts.
+#' MCMC, sometimes we want to have the usual sample paths. Function \code{expand_sample} 
+#' returns the expanded sample based on the counts. Note that for IS-corrected output the expanded 
+#' sample corresponds to the approximate posterior.
 #' 
 #' @param x Output from \code{\link{run_mcmc}}.
 #' @param variable Expand parameters \code{"theta"} or states \code{"state"}.
@@ -204,6 +205,9 @@ summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, .
 #' @param ... Ignored.
 #' @export
 expand_sample <- function(x, variable = "theta", times, states, by_states = TRUE) {
+  
+  if (x$mcmc_type %in% paste0("is", 1:3)) 
+    warning("Input is based on a IS-weighted MCMC, the results correspond to the approximate posteriors.")
   if(variable == "theta") {
     out <- apply(x$theta, 2, rep, times = x$counts)
   } else {
