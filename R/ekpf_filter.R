@@ -1,7 +1,7 @@
 #' Extended Kalman Particle Filtering
 #'
 #' Function \code{ekpf_filter} performs a extended Kalman particle filtering with stratification
-#' resampling.
+#' resampling, based on Van Der Merwe et al (2001).
 #'
 #' @param object of class \code{nlg_ssm}.
 #' @param nsim Number of samples.
@@ -9,6 +9,7 @@
 #' @param ... Ignored.
 #' @return A list containing samples, filtered estimates and the corresponding covariances,
 #' weights from the last time point, and an estimate of log-likelihood.
+#' @references Van Der Merwe, R., Doucet, A., De Freitas, N., & Wan, E. A. (2001). The unscented particle filter. In Advances in neural information processing systems (pp. 584-590).
 #' @export
 #' @rdname ekpf_filter
 ekpf_filter <- function(object, nsim, ...) {

@@ -132,7 +132,7 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
       mgg_ssm approx_model = model.approximate(mode_estimate_prop, max_iter, 
         conv_tol, iekf_iter);
       double loglik_prop;
-      double sum_scales_prop;
+      double sum_scales_prop = 0.0; // initialize in order to get rid of false warning
       if(!is_finite(mode_estimate_prop)) {
         loglik_prop = -std::numeric_limits<double>::infinity();
       } else {

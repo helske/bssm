@@ -292,6 +292,18 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
 #' @method run_mcmc ng_bsm
 #' @rdname run_mcmc_ng
 #' @export
+#' @examples 
+#' set.seed(1)
+#' n <- 250
+#' 
+#' slope <- cumsum(c(0, rnorm(n - 1, sd = 0.001)))
+#' level <- cumsum(slope + c(0, rnorm(n - 1, sd = 0.2)))
+#' y <- rpois(n, exp(level))
+#' poisson_model <- ng_bsm(y, sd_level = halfnormal(0.01, 1), sd_slope = halfnormal(0.01, 0.1), 
+#'   P1 = diag(c(10, 0.1)), distribution = "poisson")
+#' mcmc_is <- run_mcmc(poisson_model, n_iter = 2e4, nsim_states = 10, method = "is2") #211294722
+#' sum(mcmc_is$posterior)
+#' if(!is.finite(sum(mcmc_is$posterior))) stop("Error")
 run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   method = "da", simulation_method = "psi",
   n_burnin = floor(n_iter/2), n_thin = 1,
