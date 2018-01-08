@@ -19,9 +19,9 @@ double compute_ung_loglik(T model, const unsigned int simulation_method,
   
   // bootstrap filter
   if(simulation_method == 2) {
-    arma::cube alpha(model.m, model.n, nsim_states);
-    arma::mat weights(nsim_states, model.n);
-    arma::umat indices(nsim_states, model.n - 1);
+    arma::cube alpha(model.m, model.n + 1, nsim_states);
+    arma::mat weights(nsim_states, model.n + 1);
+    arma::umat indices(nsim_states, model.n);
     loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
   } else {
     ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
@@ -38,9 +38,9 @@ double compute_ung_loglik(T model, const unsigned int simulation_method,
     if(nsim_states > 0) {
       // psi-PF
       if (simulation_method == 1) {
-        arma::cube alpha(model.m, model.n, nsim_states);
-        arma::mat weights(nsim_states, model.n);
-        arma::umat indices(nsim_states, model.n - 1);
+        arma::cube alpha(model.m, model.n + 1, nsim_states);
+        arma::mat weights(nsim_states, model.n + 1);
+        arma::umat indices(nsim_states, model.n);
         
         loglik =  model.psi_filter(approx_model, approx_loglik, scales, 
           nsim_states, alpha, weights, indices);
