@@ -302,7 +302,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
 #'   sd_level = halfnormal(0.01, 1), 
 #'   sd_slope = halfnormal(0.01, 0.1), 
 #'   P1 = diag(c(10, 0.1)), distribution = "poisson")
-#' mcmc_is <- run_mcmc(poisson_model, n_iter = 1e4, nsim_states = 10, method = "is2")
+#' mcmc_is <- run_mcmc(poisson_model, n_iter = 1000, nsim_states = 10, method = "is2")
 #' summary(mcmc_is, only_theta = TRUE, return_se = TRUE)
 run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   method = "da", simulation_method = "psi",

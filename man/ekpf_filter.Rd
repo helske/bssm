@@ -25,5 +25,8 @@ weights from the last time point, and an estimate of log-likelihood.
 }
 \description{
 Function \code{ekpf_filter} performs a extended Kalman particle filtering with stratification
-resampling.
+resampling, based on Van Der Merwe et al (2001).
+}
+\references{
+Van Der Merwe, R., Doucet, A., De Freitas, N., & Wan, E. A. (2001). The unscented particle filter. In Advances in neural information processing systems (pp. 584-590).
 }

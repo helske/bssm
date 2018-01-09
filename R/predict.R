@@ -6,7 +6,6 @@
 #' as empirical quantiles the posterior sample, or using a 
 #' parametric method by Helske (2016) in a linear-Gaussian case.
 #'
-#' @importFrom utils hasName
 #' @param object mcmc_output object obtained from \code{\link{run_mcmc}}
 #' @param intervals If \code{TRUE}, intervals are returned. Otherwise samples 
 #' from the posterior predictive distribution are returned.
@@ -78,7 +77,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
   
   type <- match.arg(type, c("response", "mean", "state"))
   
-  if (!hasName(object, "alpha")) stop("MCMC output must contain posterior samples of the states.")
+  if (is.null(object$alpha)) stop("MCMC output must contain posterior samples of the states.")
   
   if (missing(nsim)) {
     if(object$mcmc_type == "ekf" && intervals) {

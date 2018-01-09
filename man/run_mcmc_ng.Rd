@@ -120,14 +120,14 @@ Methods for posterior inference of states and parameters.
 }
 \examples{
 set.seed(1)
-n <- 250
-
+n <- 50 
 slope <- cumsum(c(0, rnorm(n - 1, sd = 0.001)))
 level <- cumsum(slope + c(0, rnorm(n - 1, sd = 0.2)))
 y <- rpois(n, exp(level))
-poisson_model <- ng_bsm(y, sd_level = halfnormal(0.01, 1), sd_slope = halfnormal(0.01, 0.1), 
+poisson_model <- ng_bsm(y, 
+  sd_level = halfnormal(0.01, 1), 
+  sd_slope = halfnormal(0.01, 0.1), 
   P1 = diag(c(10, 0.1)), distribution = "poisson")
-mcmc_is <- run_mcmc(poisson_model, n_iter = 1e4, nsim_states = 10, method = "is2") #211294722
-sum(mcmc_is$posterior)
-if(!is.finite(sum(mcmc_is$posterior))) stop("Error")
+mcmc_is <- run_mcmc(poisson_model, n_iter = 1000, nsim_states = 10, method = "is2")
+summary(mcmc_is, only_theta = TRUE, return_se = TRUE)
 }
