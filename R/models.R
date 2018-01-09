@@ -494,7 +494,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     }
   }
   
-  initial_mode <- init_mode(y, u, distribution, if (ncol(xreg > 0)) xreg %*% coefs else NULL)
+  initial_mode <- init_mode(y, u, distribution, if (ncol(xreg) > 0) xreg %*% coefs else NULL)
   
   
   dim(T) <- c(m, m, 1)
@@ -723,7 +723,7 @@ ng_ar1 <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
       u <- rep(u, length.out = n)
     }
   }
-  initial_mode <- init_mode(y, u, distribution, if (ncol(xreg > 0)) xreg %*% coefs else NULL)
+  initial_mode <- init_mode(y, u, distribution, if (ncol(xreg) > 0) xreg %*% coefs else NULL)
   P1 <- matrix(sigma$init^2 / (1 - rho$init^2))
   
   Z <- matrix(1)
@@ -1254,7 +1254,7 @@ ngssm <- function(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL,
     }
   }
   
-  initial_mode <- init_mode(y, u, distribution, if (ncol(xreg > 0)) xreg %*% coefs else NULL)
+  initial_mode <- init_mode(y, u, distribution, if (ncol(xreg) > 0) xreg %*% coefs else NULL)
   
   if (missing(state_names)) {
     state_names <- paste("State", 1:m)

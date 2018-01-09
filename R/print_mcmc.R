@@ -108,7 +108,7 @@ print.mcmc_output <- function(x, ...) {
       print(esss)
     } else print("No posterior samples for states available.")
   } else {
-    if (ncol(x$alphahat == 1)) {
+    if (ncol(x$alphahat) == 1) {
       print(cbind("Mean" = x$alphahat[n, ], "SD" = sqrt(x$Vt[,,n])))
     } else {
       print(cbind("Mean" = x$alphahat[n, ], "SD" = sqrt(diag(x$Vt[,,n]))))
