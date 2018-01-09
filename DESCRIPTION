@@ -2,12 +2,12 @@ Package: bssm
 Type: Package
 Title: Bayesian Inference of Non-Linear and Non-Gaussian State Space Models
 Version: 0.1.3
-Date: 2018-01-08
+Date: 2018-01-09
 Author: Jouni Helske, Matti Vihola
 Maintainer: Jouni Helske <jouni.helske@iki.fi>
 Description: Efficient methods for Bayesian inference of state space models 
     via particle Markov chain Monte Carlo and parallel importance sampling type weighted 
-    Markov chain Monte Carlo (Vihola, Helske, and Franks, 2017, arXiv:1609.02541). 
+    Markov chain Monte Carlo (Vihola, Helske, and Franks, 2017, <arXiv:1609.02541>). 
     Gaussian, Poisson, binomial, or negative binomial 
     observation densities and basic stochastic volatility models with Gaussian state 
     dynamics, as well as general non-linear Gaussian models and discretised diffusion models 
