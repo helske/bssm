@@ -634,7 +634,7 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
 #' @param rho prior for autoregressive coefficient.
-#' @param mu A fixed value or a prior for the intercept mu of the transition equation. Parameter is omitted if this is set to 0.
+#' @param mu A fixed value or a prior for the stationary mean of the latent AR(1) process. Parameter is omitted if this is set to 0.
 #' @param sigma Prior for the standard deviation of noise of the AR-process.
 #' @param beta Prior for the regression coefficients.
 #' @param xreg Matrix containing covariates.
@@ -766,7 +766,7 @@ ng_ar1 <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
 #' @param rho prior for autoregressive coefficient.
-#' @param mu A fixed value or a prior for the intercept mu of the transition equation. Parameter is omitted if this is set to 0.
+#' @param mu A fixed value or a prior for the stationary mean of the latent AR(1) process. Parameter is omitted if this is set to 0.
 #' @param sigma Prior for the standard deviation of noise of the AR-process.
 #' @param sd_y Prior for the standard deviation of observation equation.
 #' @param beta Prior for the regression coefficients.
