@@ -650,8 +650,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
         }
       }
     }
-    
-    colnames(out$alpha) <- object$state_names
+    if (type == 1) colnames(out$alpha) <- object$state_names
     out
   } else {
     if (method != "ekf") {

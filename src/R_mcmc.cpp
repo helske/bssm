@@ -634,7 +634,7 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     arma::cube Vt(model.m, model.m, model.n + 1);
     mcmc_run.state_ekf_summary(model, alphahat, Vt, iekf_iter);
     
-    return Rcpp::List::create(Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") = Vt,
+    return Rcpp::List::create(Rcpp::Named("alphahat") = alphahat.t(), Rcpp::Named("Vt") = Vt,
       Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
       Rcpp::Named("counts") = mcmc_run.count_storage,
       Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
