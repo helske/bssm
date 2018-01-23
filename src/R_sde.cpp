@@ -113,7 +113,7 @@ Rcpp::List sde_pm_mcmc(const arma::vec& y, const double x0,
   const unsigned int seed, const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin,
   const double gamma, const double target_acceptance, const arma::mat S,
-  const bool end_ram) {
+  const bool end_ram, const unsigned int type) {
   
   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);
@@ -146,7 +146,7 @@ Rcpp::List sde_da_mcmc(const arma::vec& y, const double x0,
   const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin,
   const double gamma, const double target_acceptance, const arma::mat S,
-  const bool end_ram) {
+  const bool end_ram, const unsigned int type) {
   
   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);
@@ -179,7 +179,8 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
   const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin,
   const double gamma, const double target_acceptance, const arma::mat S,
-  const bool end_ram, const unsigned int is_type, const unsigned int n_threads) {
+  const bool end_ram, const unsigned int is_type, const unsigned int n_threads,
+  const unsigned int type) {
   
   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);

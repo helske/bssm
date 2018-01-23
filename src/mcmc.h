@@ -92,6 +92,7 @@ public:
   arma::cube alpha_storage;
   arma::mat S;
   double acceptance_rate;
+  bool store_states;
   
   
   

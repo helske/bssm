@@ -3,10 +3,9 @@
 
 #include "bssm.h"
 
-void running_summary(const arma::mat& x, arma::mat& mean_x, arma::cube& cov_x,
-  unsigned int n);
+void running_summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x);
 void running_weighted_summary(const arma::cube& x, arma::mat& mean_x,
   arma::cube& cov_x, const arma::vec& weights);
 void filter_summary(const arma::cube& alpha, arma::mat& at, arma::mat& att, 
-  arma::cube& Pt, arma::cube& Ptt, arma::mat& weights);
+  arma::cube& Pt, arma::cube& Ptt, arma::mat weights);
 #endif

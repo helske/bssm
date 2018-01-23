@@ -485,12 +485,6 @@ arma::vec ung_ssm::log_obs_density(const unsigned int t,
 double ung_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
   
-  // arma::mat U(m, m);
-  // arma::mat V(m, m);
-  // arma::vec s(m);
-  // arma::svd_econ(U, s, V, P1, "left");
-  // arma::uvec nonzero = arma::find(s > (std::numeric_limits<double>::epsilon() * m * s(0)));
-  // arma::mat L = arma::diagmat(1.0 / s(nonzero)) U
   arma::uvec nonzero = arma::find(P1.diag() > 0);
   arma::mat L_P1(m, m, arma::fill::zeros);
   if (nonzero.n_elem > 0) {

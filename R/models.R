@@ -1365,7 +1365,7 @@ lgg_ssm <- function(y, Z, H, T, R, a1, P1, theta,
 #'
 #' Compared to other models, these general models need a bit more effort from
 #' the user, as you must provide the several small C++ snippets which define the
-#' model structure. See examples in ZZZ.
+#' model structure. See examples in the vignette.
 #' @param y Observations as multivariate time series (or matrix) of length \eqn{n}.
 #' @param Z,H,T,R  An external pointers for the C++ functions which
 #' define the corresponding model functions.

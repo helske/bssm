@@ -1,17 +1,16 @@
 #include "bssm.h"
 
-void running_summary(const arma::mat& x, arma::mat& mean_x, arma::cube& cov_x,
-  unsigned int n) {
+void running_summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x) {
   
-  cov_x *= n;
-  
-  arma::mat diff = x - mean_x;
-  mean_x += diff / (n + 1);
-  for (unsigned int t = 0; t < x.n_cols; t++) {
-    cov_x.slice(t) += diff.col(t) * (x.col(t) - mean_x.col(t)).t();
+  cov_x.zeros();
+  mean_x.zeros();
+  for(unsigned int i = 0; i < x.n_slices; i++) {
+    arma::mat diff = x.slice(i) - mean_x;
+    mean_x += diff / (i + 1);
+    for (unsigned int t = 0; t < x.n_cols; t++) {
+      cov_x.slice(t) +=  diff.col(t) * (x.slice(i).col(t) - mean_x.col(t)).t();
+    }
   }
-  cov_x /= (n + 1);
-  
 }
 
 void running_weighted_summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, 
@@ -37,7 +36,7 @@ void running_weighted_summary(const arma::cube& x, arma::mat& mean_x, arma::cube
 
 
 void filter_summary(const arma::cube& alpha, arma::mat& at, arma::mat& att, 
-  arma::cube& Pt, arma::cube& Ptt, arma::mat& weights) {
+  arma::cube& Pt, arma::cube& Ptt, arma::mat weights) {
   
   at.zeros();
   att.zeros();

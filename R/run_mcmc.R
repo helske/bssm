@@ -25,15 +25,12 @@ run_mcmc <- function(object, n_iter, ...) {
 #' @rdname run_mcmc_g
 #' @param object Model object.
 #' @param n_iter Number of MCMC iterations.
-#' @param sim_states Simulate states of Gaussian state space models. Default is \code{TRUE}. 
-#' Ignored if argument \code{type = "summary"}.
 #' @param type Type of output. Default is \code{"full"}, which returns
-#' samples from the posterior \eqn{p(\alpha, \theta)}. 
-#'  Option \code{"summary"} does not simulate
+#' samples from the posterior \eqn{p(\alpha, \theta)}. Option \code{"summary"} does not simulate
 #' states directly but computes the posterior means and variances of states using
 #' fast Kalman smoothing. This is slightly faster, memory  efficient and
-#' more accurate than calculations based on simulation smoother.
-#' \eqn{\theta}. Optional for \code{bsm} objects.
+#' more accurate than calculations based on simulation smoother. Using option \code{"theta"} will only
+#' return samples from the marginal posterior of the hyperparameters \eqn{\theta}.
 #' @param n_burnin Length of the burn-in period which is disregarded from the
 #' results. Defaults to \code{n_iter / 2}. Note that all MCMC algorithms of \code{bssm}
 #'  used adaptive MCMC during the burn-in period in order to find good proposal.
@@ -54,7 +51,7 @@ run_mcmc <- function(object, n_iter, ...) {
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @export
-run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
+run_mcmc.gssm <- function(object, n_iter, type = "full",
   n_burnin = floor(n_iter / 2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -63,40 +60,33 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   
   check_target(target_acceptance)
   
-  type <- match.arg(type, c("full", "summary"))
+  type <- pmatch(type, c("full", "summary", "theta"))
   
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
   }
-  out <- switch(type,
-    full = {
-      out <- gaussian_mcmc(object, sim_states,
-        n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed,
-        end_adaptive_phase, n_threads, model_type = 1L,
-        object$Z_ind, object$H_ind, object$T_ind, object$R_ind)
-      if (sim_states) {
-        colnames(out$alpha) <- names(object$a1)
-      }
-      out
-    },
-    summary = {
-      out <- gaussian_mcmc_summary(object, 
-        n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed,
-        end_adaptive_phase, n_threads, model_type = 1L,
-        object$Z_ind, object$H_ind, object$T_ind, object$R_ind)
+  
+  out <- gaussian_mcmc(object, type,
+    n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed,
+    end_adaptive_phase, n_threads, model_type = 1L,
+    object$Z_ind, object$H_ind, object$T_ind, object$R_ind)
+  if (type == 1) {
+    colnames(out$alpha) <- names(object$a1)
+  } else {
+    if (type == 2) {
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
         names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y),
         frequency = frequency(object$y))
-      out
     }
-  )
+  }
   out$call <- match.call()
   out$seed <- seed
   out$n_iter <- n_iter
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
   out$mcmc_type <- "gaussian_mcmc"
+  out$output_type <- type
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "gssm"
@@ -109,7 +99,7 @@ run_mcmc.gssm <- function(object, n_iter, sim_states = TRUE, type = "full",
 #' @rdname run_mcmc_g
 #' @inheritParams run_mcmc.gssm
 #' @export
-run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
+run_mcmc.bsm <- function(object, n_iter, type = "full",
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   n_threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -117,38 +107,29 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   a <- proc.time()
   check_target(target_acceptance)
   
-  type <- match.arg(type, c("full", "summary"))
+  type <- pmatch(type, c("full", "summary", "theta"))
   
   names_ind <- !object$fixed & c(TRUE, TRUE, object$slope, object$seasonal)
   object$theta[c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]] <- 
     log(1 + object$theta[c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]])
+  
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
   }
   
-  
-  out <- switch(type,
-    full = {
-      out <- gaussian_mcmc(object, sim_states,
-        n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed,
-        end_adaptive_phase, n_threads, model_type = 2L, 0, 0, 0, 0)
-      
-      if (sim_states) {
-        colnames(out$alpha) <- names(object$a1)
-      }
-      out
-    },
-    summary = {
-      out <- gaussian_mcmc_summary(object,
-        n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed,
-        end_adaptive_phase, n_threads, model_type = 2L, 0, 0, 0, 0)
+  out <- gaussian_mcmc(object, type,
+    n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed,
+    end_adaptive_phase, n_threads, model_type = 2L, 0, 0, 0, 0)
+  if (type == 1) {
+    colnames(out$alpha) <- names(object$a1)
+  } else {
+    if (type == 2) {
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
         names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y),
         frequency = frequency(object$y))
-      out
-    })
-  
+    }
+  }
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
   out$theta[, c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]] <- 
@@ -159,6 +140,7 @@ run_mcmc.bsm <- function(object, n_iter, sim_states = TRUE, type = "full",
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
   out$mcmc_type <- "gaussian_mcmc"
+  out$output_type <- type
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "bsm"
@@ -228,9 +210,9 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   a <- proc.time()
   check_target(target_acceptance)
   
-  type <- match.arg(type, c("full", "summary"))
+  type <- pmatch(type, c("full", "summary", "theta"))
   method <- match.arg(method, c("pm", "da", paste0("is", 1:3)))
-  simulation_method <- match.arg(simulation_method, c("psi", "bsf", "spdk"))
+  simulation_method <- pmatch(simulation_method, c("psi", "bsf", "spdk"))
   
   if (nsim_states < 2) {
     method <- "is2"
@@ -243,41 +225,44 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
   
-  out <-  switch(type,
-    full = {
-      if (method == "da") {
-        out <- nongaussian_da_mcmc(object,
-          nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
-          max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")),
-          model_type = 1L, object$Z_ind, object$T_ind, object$R_ind)
-      } else {
-        if(method == "pm"){
-          out <- nongaussian_pm_mcmc(object, 
-            nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
-            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")),
-            model_type = 1L, object$Z_ind, object$T_ind, object$R_ind)
-        } else {
-          out <- nongaussian_is_mcmc(object, 
-            nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
-            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")),
-            pmatch(method, paste0("is", 1:3)),
-            model_type = 1L, object$Z_ind, object$T_ind, object$R_ind)
-        }
-      }
-      colnames(out$alpha) <- names(object$a1)
-      out
-    },
-    summary = {
-      stop("summary method for general models is not yet implemented.")
-    })
+  if (method == "da") {
+    out <- nongaussian_da_mcmc(object, type,
+      nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+      seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
+      max_iter, conv_tol, simulation_method,
+      model_type = 1L, object$Z_ind, object$T_ind, object$R_ind)
+  } else {
+    if(method == "pm"){
+      out <- nongaussian_pm_mcmc(object, type,
+        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
+        max_iter, conv_tol, simulation_method,
+        model_type = 1L, object$Z_ind, object$T_ind, object$R_ind)
+    } else {
+      out <- nongaussian_is_mcmc(object, type,
+        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
+        max_iter, conv_tol, simulation_method,
+        pmatch(method, paste0("is", 1:3)),
+        model_type = 1L, object$Z_ind, object$T_ind, object$R_ind)
+    }
+  }
+  if (type == 1) {
+    colnames(out$alpha) <- names(object$a1)
+  } else {
+    if (type == 2) {
+      colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
+        names(object$a1)
+      out$alphahat <- ts(out$alphahat, start = start(object$y),
+        frequency = frequency(object$y))
+    }
+  }
   
   out$n_iter <- n_iter
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
   out$mcmc_type <- method
+  out$output_type <- type
   out$call <- match.call()
   out$seed <- seed
   out$time <- proc.time() - a
@@ -314,9 +299,9 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   a <- proc.time()
   check_target(target_acceptance)
   
-  type <- match.arg(type, c("full", "summary"))
+  type <- pmatch(type, c("full", "summary", "theta"))
   method <- match.arg(method, c("pm", "da", paste0("is", 1:3)))
-  simulation_method <- match.arg(simulation_method, c("psi", "bsf", "spdk"))
+  simulation_method <- pmatch(simulation_method, c("psi", "bsf", "spdk"))
   
   if (nsim_states < 2) {
     #approximate inference
@@ -336,53 +321,39 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
   
-  out <-  switch(type,
-    full = {
-      if (method == "da") {
-        out <- nongaussian_da_mcmc(object,
-          nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
-          max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")),
-          model_type = 2L, 0, 0, 0)
-      } else {
-        if(method == "pm") {
-          out <- nongaussian_pm_mcmc(object, 
-            nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
-            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")),
-            model_type = 2L, 0, 0, 0)
-        } else {
-          out <- nongaussian_is_mcmc(object,
-            nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
-            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")),
-            pmatch(method, paste0("is", 1:3)),
-            model_type = 2L, 0, 0, 0)
-        }
-      }
-      colnames(out$alpha) <- names(object$a1)
-      out
-    },
-    summary = {
-      stop("summary method not yet re-implemented.")
-      # if (method == "pm"){
-      #   out <- ng_bsm_run_mcmc_summary(object, priors$prior_types, priors$params, n_iter,
-      #     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-      #     object$initial_mode, seed,  n_threads, end_adaptive_phase, local_approx,
-      #     delayed_acceptance, pmatch(simulation_method, c("psi", "bsf", "spdk")))
-      # } else {
-      #
-      #   out <- ng_bsm_run_mcmc_summary_is(object, priors$prior_types, priors$params, n_iter,
-      #     nsim_states, n_burnin, n_thin, gamma, target_acceptance, S,
-      #     object$initial_mode, seed,  n_threads, end_adaptive_phase, local_approx,
-      #     pmatch(simulation_method, c("psi", "bsf", "spdk")), pmatch(method, paste0("is", 1:3)),
-      #     sample(.Machine$integer.max, size = n_threads))
-      # }
-      colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
-      out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
-      out$muhat <- ts(out$muhat, start = start(object$y), frequency = frequency(object$y))
-      out
-    })
+  
+  if (method == "da") {
+    out <- nongaussian_da_mcmc(object, type,
+      nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+      seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
+      max_iter, conv_tol, simulation_method,
+      model_type = 2L, 0, 0, 0)
+  } else {
+    if(method == "pm") {
+      out <- nongaussian_pm_mcmc(object, type,
+        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
+        max_iter, conv_tol, simulation_method,
+        model_type = 2L, 0, 0, 0)
+    } else {
+      out <- nongaussian_is_mcmc(object, type,
+        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
+        max_iter, conv_tol, simulation_method,
+        pmatch(method, paste0("is", 1:3)),
+        model_type = 2L, 0, 0, 0)
+    }
+  }
+  if (type == 1) {
+    colnames(out$alpha) <- names(object$a1)
+  } else {
+    if (type == 2) {
+      colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
+        names(object$a1)
+      out$alphahat <- ts(out$alphahat, start = start(object$y),
+        frequency = frequency(object$y))
+    }
+  }
   
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
@@ -392,6 +363,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
   out$mcmc_type <- method
+  out$output_type <- type
   out$call <- match.call()
   out$seed <- seed
   out$time <- proc.time() - a
@@ -415,9 +387,9 @@ run_mcmc.ng_ar1 <-  function(object, n_iter, nsim_states, type = "full",
   a <- proc.time()
   check_target(target_acceptance)
   
-  type <- match.arg(type, c("full", "summary"))
+  type <- pmatch(type, c("full", "summary", "theta"))
   method <- match.arg(method, c("pm", "da", paste0("is", 1:3)))
-  simulation_method <- match.arg(simulation_method, c("psi", "bsf", "spdk"))
+  simulation_method <- pmatch(simulation_method, c("psi", "bsf", "spdk"))
   
   if (nsim_states < 2) {
     #approximate inference
@@ -432,40 +404,37 @@ run_mcmc.ng_ar1 <-  function(object, n_iter, nsim_states, type = "full",
   object$distribution <- pmatch(object$distribution,
     c("poisson", "binomial", "negative binomial"))
   
-  out <-  switch(type,
-    full = {
-      if (method == "da") {
-        out <- nongaussian_da_mcmc(object, 
-          nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
-          max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")),
-          model_type = 4L, 0, 0, 0)
-      } else {
-        if(method == "pm") {
-          out <- nongaussian_pm_mcmc(object, 
-            nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
-            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")),
-            model_type = 4L, 0, 0, 0)
-        } else {
-          out <- nongaussian_is_mcmc(object, 
-            nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
-            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")),
-            pmatch(method, paste0("is", 1:3)),
-            model_type = 4L, 0, 0, 0)
-        }
-      }
-      colnames(out$alpha) <- names(object$a1)
-      out
-    },
-    summary = {
-      stop("summary method not yet re-implemented.")
-      colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
-      out$alphahat <- ts(out$alphahat, start = start(object$y), frequency = frequency(object$y))
-      out$muhat <- ts(out$muhat, start = start(object$y), frequency = frequency(object$y))
-      out
-    })
+  if (method == "da") {
+    out <- nongaussian_da_mcmc(object, 
+      nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+      seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
+      max_iter, conv_tol, simulation_method, model_type = 4L, 0, 0, 0)
+  } else {
+    if(method == "pm") {
+      out <- nongaussian_pm_mcmc(object, 
+        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
+        max_iter, conv_tol, simulation_method,
+        model_type = 4L, 0, 0, 0)
+    } else {
+      out <- nongaussian_is_mcmc(object, 
+        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
+        max_iter, conv_tol, simulation_method,
+        pmatch(method, paste0("is", 1:3)),
+        model_type = 4L, 0, 0, 0)
+    }
+  }
+  if (type == 1) {
+    colnames(out$alpha) <- names(object$a1)
+  } else {
+    if (type == 2) {
+      colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
+        names(object$a1)
+      out$alphahat <- ts(out$alphahat, start = start(object$y),
+        frequency = frequency(object$y))
+    }
+  }
   
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
@@ -473,6 +442,7 @@ run_mcmc.ng_ar1 <-  function(object, n_iter, nsim_states, type = "full",
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
   out$mcmc_type <- method
+  out$output_type <- type
   out$call <- match.call()
   out$seed <- seed
   out$time <- proc.time() - a
@@ -486,7 +456,7 @@ run_mcmc.ng_ar1 <-  function(object, n_iter, nsim_states, type = "full",
 #' @rdname run_mcmc_g
 #' @inheritParams run_mcmc.gssm
 #' @export
-run_mcmc.ar1 <-  function(object, n_iter, sim_states = TRUE, type = "full",
+run_mcmc.ar1 <-  function(object, n_iter, type = "full",
   n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   n_threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -494,33 +464,26 @@ run_mcmc.ar1 <-  function(object, n_iter, sim_states = TRUE, type = "full",
   a <- proc.time()
   check_target(target_acceptance)
   
-  type <- match.arg(type, c("full", "summary"))
+  type <- pmatch(type, c("full", "summary", "theta"))
   
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
   }
   
-  out <- switch(type,
-    full = {
-      out <- gaussian_mcmc(object, sim_states,
-        n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed,
-        end_adaptive_phase, n_threads, model_type = 3L, 0, 0, 0, 0)
-      
-      if (sim_states) {
-        colnames(out$alpha) <- names(object$a1)
-      }
-      out
-    },
-    summary = {
-      out <- gaussian_mcmc_summary(object,
-        n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed,
-        end_adaptive_phase, n_threads, model_type = 3L, 0, 0, 0, 0)
+  out <- gaussian_mcmc(object, type,
+    n_iter, n_burnin, n_thin, gamma, target_acceptance, S, seed,
+    end_adaptive_phase, n_threads, model_type = 3L, 0, 0, 0, 0)
+  
+  if (type == 1) {
+    colnames(out$alpha) <- names(object$a1)
+  } else {
+    if (type == 2) {
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
         names(object$a1)
       out$alphahat <- ts(out$alphahat, start = start(object$y),
         frequency = frequency(object$y))
-      out
-    })
+    }
+  }
   
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
@@ -528,6 +491,7 @@ run_mcmc.ar1 <-  function(object, n_iter, sim_states = TRUE, type = "full",
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
   out$mcmc_type <- "gaussian_mcmc"
+  out$output_type <- type
   out$call <- match.call()
   out$seed <- seed
   out$time <- proc.time() - a
@@ -552,9 +516,9 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   
   a <- proc.time()
   check_target(target_acceptance)
-  type <- match.arg(type, c("full", "summary"))
+  type <- pmatch(type, c("full", "summary", "theta"))
   method <- match.arg(method, c("pm", "da", paste0("is", 1:3)))
-  simulation_method <- match.arg(simulation_method, c("psi", "bsf", "spdk"))
+  simulation_method <- pmatch(simulation_method, c("psi", "bsf", "spdk"))
   
   
   if (nsim_states < 2) {
@@ -567,37 +531,40 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   }
   
   
-  out <-  switch(type,
-    full = {
-      if (method == "da"){
-        out <- nongaussian_da_mcmc(object,
-          nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
-          max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")),
-          model_type = 3L, 0, 0, 0)
-      } else {
-        if (method == "pm") {
-          out <- nongaussian_pm_mcmc(object, 
-            nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
-            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")),
-            model_type = 3L, 0, 0, 0)
-        } else {
-          out <- nongaussian_is_mcmc(object, 
-            nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
-            max_iter, conv_tol, pmatch(simulation_method, c("psi", "bsf", "spdk")),
-            pmatch(method, paste0("is", 1:3)),
-            model_type = 3L, 0, 0, 0)
-        }
-      }
-      
-      colnames(out$alpha) <- names(object$a1)
-      out
-    },
-    summary = {
-      stop("summary for SV models not yet implemented.")
-    })
+  
+  if (method == "da"){
+    out <- nongaussian_da_mcmc(object, type,
+      nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+      seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
+      max_iter, conv_tol, simulation_method,
+      model_type = 3L, 0, 0, 0)
+  } else {
+    if (method == "pm") {
+      out <- nongaussian_pm_mcmc(object, type,
+        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
+        max_iter, conv_tol, simulation_method,
+        model_type = 3L, 0, 0, 0)
+    } else {
+      out <- nongaussian_is_mcmc(object, type,
+        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
+        max_iter, conv_tol, simulation_method,
+        pmatch(method, paste0("is", 1:3)),
+        model_type = 3L, 0, 0, 0)
+    }
+  }
+  
+  if (type == 1) {
+    colnames(out$alpha) <- names(object$a1)
+  } else {
+    if (type == 2) {
+      colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
+        names(object$a1)
+      out$alphahat <- ts(out$alphahat, start = start(object$y),
+        frequency = frequency(object$y))
+    }
+  }
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
   
@@ -605,7 +572,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
   out$mcmc_type <- method
-  
+  out$output_type <- type
   out$call <- match.call()
   out$seed <- seed
   
@@ -628,10 +595,10 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   a <- proc.time()
   check_target(target_acceptance)
   
-  type <- match.arg(type, c("full", "summary"))
+  type <- pmatch(type, c("full", "summary", "theta"))
   method <- match.arg(method, c("pm", "da", paste0("is", 1:3), "ekf"))
-  simulation_method <- match.arg(simulation_method, c("psi", "bsf", "spdk"))
-  if(simulation_method == "spdk") {
+  simulation_method <- pmatch(match.arg(simulation_method, c("psi", "bsf", "spdk")), c("psi", "bsf", "spdk"))
+  if(simulation_method == 3) {
     stop("SPDK is (currently) not supported for non-linear non-Gaussian models.")
   }
   
@@ -639,10 +606,20 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
     S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
   }
   
-  out <-  switch(type,
-    full = {
-      if (method == "da"){
-        out <- nonlinear_da_mcmc(t(object$y), object$Z, object$H, object$T,
+  if (type != 2) {
+    if (method == "da"){
+      out <- nonlinear_da_mcmc(t(object$y), object$Z, object$H, object$T,
+        object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
+        object$theta, object$log_prior_pdf, object$known_params,
+        object$known_tv_params, as.integer(object$time_varying),
+        object$n_states, object$n_etas, seed,
+        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        end_adaptive_phase, n_threads,
+        max_iter, conv_tol,
+        simulation_method,iekf_iter, type)
+    } else {
+      if (method == "pm") {
+        out <- nonlinear_pm_mcmc(t(object$y), object$Z, object$H, object$T,
           object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
           object$theta, object$log_prior_pdf, object$known_params,
           object$known_tv_params, as.integer(object$time_varying),
@@ -650,59 +627,47 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
           nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
           end_adaptive_phase, n_threads,
           max_iter, conv_tol,
-          pmatch(simulation_method, c("psi", "bsf", "spdk")), iekf_iter)
+          simulation_method,iekf_iter, type)
       } else {
-        if (method == "pm") {
-          out <- nonlinear_pm_mcmc(t(object$y), object$Z, object$H, object$T,
+        if(method == "ekf") {
+          out <- nonlinear_ekf_mcmc(t(object$y), object$Z, object$H, object$T,
+            object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
+            object$theta, object$log_prior_pdf, object$known_params,
+            object$known_tv_params, as.integer(object$time_varying),
+            object$n_states, object$n_etas, seed,
+            n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+            end_adaptive_phase,  n_threads, iekf_iter, type)
+        } else {
+          out <- nonlinear_is_mcmc(t(object$y), object$Z, object$H, object$T,
             object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
             object$theta, object$log_prior_pdf, object$known_params,
             object$known_tv_params, as.integer(object$time_varying),
             object$n_states, object$n_etas, seed,
             nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            end_adaptive_phase, n_threads,
-            max_iter, conv_tol,
-            pmatch(simulation_method, c("psi", "bsf", "spdk")), iekf_iter)
-        } else {
-          if(method == "ekf") {
-            out <- nonlinear_ekf_mcmc(t(object$y), object$Z, object$H, object$T,
-              object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
-              object$theta, object$log_prior_pdf, object$known_params,
-              object$known_tv_params, as.integer(object$time_varying),
-              object$n_states, object$n_etas, seed,
-              n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-              end_adaptive_phase,  n_threads, iekf_iter, FALSE)
-          } else {
-            out <- nonlinear_is_mcmc(t(object$y), object$Z, object$H, object$T,
-              object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
-              object$theta, object$log_prior_pdf, object$known_params,
-              object$known_tv_params, as.integer(object$time_varying),
-              object$n_states, object$n_etas, seed,
-              nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-              end_adaptive_phase, n_threads, pmatch(method, paste0("is", 1:3)),
-              pmatch(simulation_method, c("psi", "bsf", "spdk")),
-              max_iter, conv_tol, iekf_iter)
-          }
+            end_adaptive_phase, n_threads, pmatch(method, paste0("is", 1:3)),
+            simulation_method,
+            max_iter, conv_tol, iekf_iter, type)
         }
       }
-      
-      colnames(out$alpha) <- object$state_names
+    }
+    
+    colnames(out$alpha) <- object$state_names
+    out
+  } else {
+    if (method != "ekf") {
+      stop("summary MCMC for non-linear models is only implemented for EKF approximation.")
+    } else {
+      out <- nonlinear_ekf_mcmc(t(object$y), object$Z, object$H, object$T,
+        object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
+        object$theta, object$log_prior_pdf, object$known_params,
+        object$known_tv_params, as.integer(object$time_varying),
+        object$n_states, object$n_etas, seed,
+        n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        end_adaptive_phase, n_threads, iekf_iter, type)
+      if(type == 2) colnames(out$alphahat) <- object$state_names
       out
-    },
-    summary = {
-      if (method != "ekf") {
-        stop("summary MCMC for non-linear models is only implemented for EKF approximation.")
-      } else {
-        out <- nonlinear_ekf_mcmc(t(object$y), object$Z, object$H, object$T,
-          object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
-          object$theta, object$log_prior_pdf, object$known_params,
-          object$known_tv_params, as.integer(object$time_varying),
-          object$n_states, object$n_etas, seed,
-          n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          end_adaptive_phase, n_threads, iekf_iter, TRUE)
-        colnames(out$alpha) <- object$state_names
-        out
-      }
-    })
+    }
+  }
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
   
@@ -710,6 +675,7 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
   out$mcmc_type <- method
+  out$output_type <- type
   out$call <- match.call()
   out$seed <- seed
   out$time <- proc.time() - a
@@ -740,54 +706,52 @@ run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
   check_target(target_acceptance)
   if(nsim_states <= 0) stop("nsim_states should be positive integer.")
   
-  type <- match.arg(type, c("full", "summary"))
+  type <- pmatch(type, c("full", "summary", "theta"))
   method <- match.arg(method, c("pm", "da", paste0("is", 1:3)))
   
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
   }
   
-  out <-  switch(type,
-    full = {
-      if (method == "da"){
+  if (type != 2) {
+    if (method == "da"){
+      if (L_f <= L_c) stop("L_f should be larger than L_c.")
+      if(L_c < 1) stop("L_c should be at least 1")
+      out <- sde_da_mcmc(object$y, object$x0, object$positive,
+        object$drift, object$diffusion, object$ddiffusion,
+        object$prior_pdf, object$obs_pdf, object$theta,
+        nsim_states, L_c, L_f, seed,
+        n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        end_adaptive_phase)
+    } else {
+      if(method == "pm") {
+        if (missing(L_c)) L_c <- 0
+        if (missing(L_f)) L_f <- 0
+        L <- max(L_c, L_f)
+        if(L <= 0) stop("L should be positive.")
+        out <- sde_pm_mcmc(object$y, object$x0, object$positive,
+          object$drift, object$diffusion, object$ddiffusion,
+          object$prior_pdf, object$obs_pdf, object$theta,
+          nsim_states, L, seed,
+          n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+          end_adaptive_phase, type)
+      } else {
         if (L_f <= L_c) stop("L_f should be larger than L_c.")
         if(L_c < 1) stop("L_c should be at least 1")
-        out <- sde_da_mcmc(object$y, object$x0, object$positive,
+        
+        out <- sde_is_mcmc(object$y, object$x0, object$positive,
           object$drift, object$diffusion, object$ddiffusion,
           object$prior_pdf, object$obs_pdf, object$theta,
           nsim_states, L_c, L_f, seed,
           n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          end_adaptive_phase)
-      } else {
-        if(method == "pm") {
-          if (missing(L_c)) L_c <- 0
-          if (missing(L_f)) L_f <- 0
-          L <- max(L_c, L_f)
-          if(L <= 0) stop("L should be positive.")
-          out <- sde_pm_mcmc(object$y, object$x0, object$positive,
-            object$drift, object$diffusion, object$ddiffusion,
-            object$prior_pdf, object$obs_pdf, object$theta,
-            nsim_states, L, seed,
-            n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            end_adaptive_phase)
-        } else {
-          if (L_f <= L_c) stop("L_f should be larger than L_c.")
-          if(L_c < 1) stop("L_c should be at least 1")
-          
-          out <- sde_is_mcmc(object$y, object$x0, object$positive,
-            object$drift, object$diffusion, object$ddiffusion,
-            object$prior_pdf, object$obs_pdf, object$theta,
-            nsim_states, L_c, L_f, seed,
-            n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            end_adaptive_phase, pmatch(method, paste0("is", 1:3)), n_threads)
-        }
+          end_adaptive_phase, pmatch(method, paste0("is", 1:3)), 
+          n_threads, type)
       }
-      colnames(out$alpha) <- object$state_names
-      out
-    },
-    summary = {
-      stop("summary MCMC not implemented for SDE models.")
-    })
+    }
+    colnames(out$alpha) <- object$state_names
+  } else {
+    stop("summary MCMC not implemented for SDE models.")
+  }
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
   
@@ -795,6 +759,7 @@ run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
   out$mcmc_type <- method
+  out$output_type <- type
   out$call <- match.call()
   out$seed <- seed
   out$time <- proc.time() - a
@@ -810,7 +775,7 @@ run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
 #' @rdname run_mcmc_g
 #' @inheritParams run_mcmc.gssm
 #' @export
-run_mcmc.lgg_ssm <- function(object, n_iter, sim_states = TRUE, type = "full",
+run_mcmc.lgg_ssm <- function(object, n_iter, type = "full",
   n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   n_threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -825,31 +790,31 @@ run_mcmc.lgg_ssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   a <- proc.time()
   check_target(target_acceptance)
   
-  type <- match.arg(type, c("full", "summary"))
-  
+  type <- pmatch(type, c("full", "summary", "theta"))
+  if (type != 1) stop("summary and marginal type of MCMC not yet implemented for lgg_ssm.")
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
   }
   
-  out <- switch(type,
-    full = {
-      out <- general_gaussian_mcmc(t(object$y), object$Z, object$H, object$T,
-        object$R, object$a1, object$P1,
-        object$theta, object$obs_intercept, object$state_intercept,
-        object$log_prior_pdf, object$known_params,
-        object$known_tv_params, as.integer(object$time_varying), 
-        object$n_states, object$n_etas, seed,
-        n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-        end_adaptive_phase, n_threads, sim_states)
-      
-      if (sim_states) {
-        colnames(out$alpha) <- object$state_names
-      }
-      out
-    },
-    summary = {
-      stop("Summary MCMC method not yet implemented.")
-    })
+  out <- general_gaussian_mcmc(t(object$y), 
+    object$Z, object$H, object$T, object$R, object$a1, object$P1,
+    object$theta, object$obs_intercept, object$state_intercept,
+    object$log_prior_pdf, object$known_params,
+    object$known_tv_params, as.integer(object$time_varying), 
+    object$n_states, object$n_etas, seed,
+    n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+    end_adaptive_phase, n_threads, type)
+  
+  if (type == 1) {
+    colnames(out$alpha) <- object$state_names
+  } else {
+    if (type == 2) {
+      colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
+        object$state_names
+      out$alphahat <- ts(out$alphahat, start = start(object$y),
+        frequency = frequency(object$y))
+    }
+  }
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
   
@@ -859,6 +824,7 @@ run_mcmc.lgg_ssm <- function(object, n_iter, sim_states = TRUE, type = "full",
   out$n_burnin <- n_burnin
   out$n_thin <- n_thin
   out$mcmc_type <- "gaussian_mcmc"
+  out$output_type <- type
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "lgg_ssm"

@@ -22,12 +22,14 @@ print.mcmc_output <- function(x, ...) {
   
   if (x$mcmc_type %in% paste0("is", 1:3)) {
     theta <- mcmc(x$theta)
-    alpha <- mcmc(matrix(x$alpha[nrow(x$alpha),,], ncol = ncol(x$alpha), byrow = TRUE, 
-      dimnames = list(NULL, colnames(x$alpha))))
+    if(x$output_type == 1)
+      alpha <- mcmc(matrix(x$alpha[nrow(x$alpha),,], ncol = ncol(x$alpha), byrow = TRUE, 
+        dimnames = list(NULL, colnames(x$alpha))))
     w <- x$counts * x$weights
   } else {
     theta <- expand_sample(x, "theta")
-    alpha <- expand_sample(x, "state", times = nrow(x$alpha), by_states = FALSE)[[1]]
+    if(x$output_type == 1)
+      alpha <- expand_sample(x, "state", times = nrow(x$alpha), by_states = FALSE)[[1]]
   }
   
   cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"), 
@@ -70,12 +72,12 @@ print.mcmc_output <- function(x, ...) {
   }
   print(esss)
   
-  
-  n <- nrow(x$alpha)
-  cat(paste0("\nSummary for alpha_", n), ":\n\n", sep = "")
-  
-  if (is.null(x$alphahat)) {
-    if (!is.null(x$alpha)) {
+  if(x$output_type != 3) {
+    
+    n <- nrow(x$alpha)
+    cat(paste0("\nSummary for alpha_", n), ":\n\n", sep = "")
+    
+    if (is.null(x$alphahat)) {
       if (x$mcmc_type %in% paste0("is", 1:3)) {
         mean_alpha <- weighted_mean(alpha, w)
         sd_alpha <- sqrt(diag(weighted_var(alpha, w, method = "moment")))
@@ -106,14 +108,15 @@ print.mcmc_output <- function(x, ...) {
           dimnames = list(colnames(x$alpha), c("ESS")))
       }
       print(esss)
-    } else print("No posterior samples for states available.")
-  } else {
-    if (ncol(x$alphahat) == 1) {
-      print(cbind("Mean" = x$alphahat[n, ], "SD" = sqrt(x$Vt[,,n])))
+      
     } else {
-      print(cbind("Mean" = x$alphahat[n, ], "SD" = sqrt(diag(x$Vt[,,n]))))
+      if (ncol(x$alphahat) == 1) {
+        print(cbind("Mean" = x$alphahat[n, ], "SD" = sqrt(x$Vt[,,n])))
+      } else {
+        print(cbind("Mean" = x$alphahat[n, ], "SD" = sqrt(diag(x$Vt[,,n]))))
+      }
     }
-  }
+  } else cat("\nNo posterior samples for states available.\n")
   cat("\nRun time:\n")
   print(x$time)
 }
@@ -161,7 +164,8 @@ summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, .
       dimnames = list(colnames(object$theta), c("Mean", "SD")))
   }
   
-  if (!only_theta) {
+  if (!only_theta && object$output_type == 1) {
+    
     m <- ncol(object$alpha)
     mean_alpha <- ts(weighted_mean(object$alpha, w), start = attr(object, "ts")$start,
       frequency = attr(object, "ts")$frequency, names = colnames(object$alpha))
@@ -211,31 +215,26 @@ expand_sample <- function(x, variable = "theta", times, states, by_states = TRUE
   if(variable == "theta") {
     out <- apply(x$theta, 2, rep, times = x$counts)
   } else {
-    if(missing(times)) times <- 1:nrow(x$alpha)
-    if(missing(states)) states <- 1:ncol(x$alpha)
-    
-    if(by_states) {
-      out <- lapply(states, function(i) {
-        z <- apply(x$alpha[times, i, , drop = FALSE], 1, rep, x$counts)
-        colnames(z) <- times
-        z
-      })
-      names(out) <- colnames(x$alpha)[states]
-    } else {
-      out <- lapply(times, function(i) {
-        z <- apply(x$alpha[i, states, , drop = FALSE], 2, rep, x$counts)
-        colnames(z) <- colnames(x$alpha)[states]
-        z
-      })
-      names(out) <- times
-    }
+    if (x$output_type == 1) {
+      if(missing(times)) times <- 1:nrow(x$alpha)
+      if(missing(states)) states <- 1:ncol(x$alpha)
+      
+      if(by_states) {
+        out <- lapply(states, function(i) {
+          z <- apply(x$alpha[times, i, , drop = FALSE], 1, rep, x$counts)
+          colnames(z) <- times
+          z
+        })
+        names(out) <- colnames(x$alpha)[states]
+      } else {
+        out <- lapply(times, function(i) {
+          z <- apply(x$alpha[i, states, , drop = FALSE], 2, rep, x$counts)
+          colnames(z) <- colnames(x$alpha)[states]
+          z
+        })
+        names(out) <- times
+      }
+    } else stop("MCMC output does not contain posterior samples of states.")
   }
   mcmc(out, start = x$n_burnin + 1, thin = x$n_thin)
 }
-# 
-# 
-# resample_sample <- function(x, variable = "theta", times, states) {
-#   
-#   out <- expand_sample(x, variable, times, states)
-#   mcmc(apply(out, 2, function(y) sample(y, replace=TRUE, prob = rep(x$weights, x$counts))))
-# }
