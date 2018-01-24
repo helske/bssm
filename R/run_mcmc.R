@@ -605,20 +605,9 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
   }
-  
-  if (method == "da"){
-    out <- nonlinear_da_mcmc(t(object$y), object$Z, object$H, object$T,
-      object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
-      object$theta, object$log_prior_pdf, object$known_params,
-      object$known_tv_params, as.integer(object$time_varying),
-      object$n_states, object$n_etas, seed,
-      nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-      end_adaptive_phase, n_threads,
-      max_iter, conv_tol,
-      simulation_method,iekf_iter, type)
-  } else {
-    if (method == "pm") {
-      out <- nonlinear_pm_mcmc(t(object$y), object$Z, object$H, object$T,
+  out <- switch(method,
+    "da" = {
+      nonlinear_da_mcmc(t(object$y), object$Z, object$H, object$T,
         object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
         object$theta, object$log_prior_pdf, object$known_params,
         object$known_tv_params, as.integer(object$time_varying),
@@ -627,38 +616,39 @@ run_mcmc.nlg_ssm <-  function(object, n_iter, nsim_states, type = "full",
         end_adaptive_phase, n_threads,
         max_iter, conv_tol,
         simulation_method,iekf_iter, type)
-    } else {
-      if(method == "ekf") {
-        if (type != 2) {
-          out <- nonlinear_ekf_mcmc(t(object$y), object$Z, object$H, object$T,
-            object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
-            object$theta, object$log_prior_pdf, object$known_params,
-            object$known_tv_params, as.integer(object$time_varying),
-            object$n_states, object$n_etas, seed,
-            n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            end_adaptive_phase,  n_threads, iekf_iter, type)
-        } else {
-          out <- nonlinear_ekf_mcmc(t(object$y), object$Z, object$H, object$T,
-            object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
-            object$theta, object$log_prior_pdf, object$known_params,
-            object$known_tv_params, as.integer(object$time_varying),
-            object$n_states, object$n_etas, seed,
-            n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-            end_adaptive_phase, n_threads, iekf_iter, type)
-        }
-      } else {
-        out <- nonlinear_is_mcmc(t(object$y), object$Z, object$H, object$T,
-          object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
-          object$theta, object$log_prior_pdf, object$known_params,
-          object$known_tv_params, as.integer(object$time_varying),
-          object$n_states, object$n_etas, seed,
-          nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          end_adaptive_phase, n_threads, pmatch(method, paste0("is", 1:3)),
-          simulation_method,
-          max_iter, conv_tol, iekf_iter, type)
-      }
+    },
+    "pm" = {
+      nonlinear_pm_mcmc(t(object$y), object$Z, object$H, object$T,
+        object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
+        object$theta, object$log_prior_pdf, object$known_params,
+        object$known_tv_params, as.integer(object$time_varying),
+        object$n_states, object$n_etas, seed,
+        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        end_adaptive_phase, n_threads,
+        max_iter, conv_tol,
+        simulation_method,iekf_iter, type)
+    },
+    "ekf" = {
+      nonlinear_ekf_mcmc(t(object$y), object$Z, object$H, object$T,
+        object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
+        object$theta, object$log_prior_pdf, object$known_params,
+        object$known_tv_params, as.integer(object$time_varying),
+        object$n_states, object$n_etas, seed,
+        n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        end_adaptive_phase,  n_threads, iekf_iter, type)
+    },
+    "is" = {
+      nonlinear_is_mcmc(t(object$y), object$Z, object$H, object$T,
+        object$R, object$Z_gn, object$T_gn, object$a1, object$P1,
+        object$theta, object$log_prior_pdf, object$known_params,
+        object$known_tv_params, as.integer(object$time_varying),
+        object$n_states, object$n_etas, seed,
+        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        end_adaptive_phase, n_threads, pmatch(method, paste0("is", 1:3)),
+        simulation_method,
+        max_iter, conv_tol, iekf_iter, type)
     }
-  }
+  )
   if (type == 1) {
     colnames(out$alpha) <- names(object$a1)
   } else {
