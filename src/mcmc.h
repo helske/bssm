@@ -28,7 +28,7 @@ public:
   mcmc(const unsigned int n_iter, const unsigned int n_burnin, 
     const unsigned int n_thin, const unsigned int n, const unsigned int m,
     const double target_acceptance, const double gamma, const arma::mat& S, 
-    const bool store_states = true);
+    const unsigned int output_type = 1);
   
   // sample states given theta
   template <class T>
@@ -90,12 +90,11 @@ public:
   arma::mat theta_storage;
   arma::uvec count_storage;
   arma::cube alpha_storage;
+  arma::mat alphahat;
+  arma::cube Vt;
   arma::mat S;
   double acceptance_rate;
-  bool store_states;
-  
-  
-  
+  unsigned int output_type;
   
 };
 

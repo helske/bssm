@@ -30,7 +30,7 @@ Rcpp::List psi_smoother(const Rcpp::List& model_, const arma::vec mode_estimate,
   arma::cube Vt(model.m, model.m, model.n + 1);
   
   filter_smoother(alpha, indices);
-  running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+  weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
 
   arma::inplace_trans(alphahat);
   return Rcpp::List::create(
@@ -51,7 +51,7 @@ Rcpp::List psi_smoother(const Rcpp::List& model_, const arma::vec mode_estimate,
     arma::cube Vt(model.m, model.m, model.n + 1);
     
     filter_smoother(alpha, indices);
-    running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+    weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
    
     arma::inplace_trans(alphahat);
     return Rcpp::List::create(
@@ -72,7 +72,7 @@ Rcpp::List psi_smoother(const Rcpp::List& model_, const arma::vec mode_estimate,
     arma::cube Vt(model.m, model.m, model.n + 1);
     
     filter_smoother(alpha, indices);
-    running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+    weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
    
     arma::inplace_trans(alphahat);
     return Rcpp::List::create(
@@ -129,7 +129,7 @@ Rcpp::List psi_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
   arma::cube Vt(model.m, model.m, model.n + 1);
   
     filter_smoother(alpha, indices);
-    running_weighted_summary(alpha, alphahat, Vt, weights.col(n));
+    weighted_summary(alpha, alphahat, Vt, weights.col(n));
   arma::inplace_trans(alphahat);
   return Rcpp::List::create(
     Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") = Vt, 

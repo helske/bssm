@@ -158,7 +158,7 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
   }
   
   mcmc mcmc_run(n_iter, n_burnin, n_thin, n, m,
-    target_acceptance, gamma, S, type != 3); // type=1 is full, 2 is summary, 3 is marginal
+    target_acceptance, gamma, S, type);
   
   switch (model_type) {
   case 1: {
@@ -235,10 +235,8 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
       Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
   } break;
   case 2: {
-    arma::mat alphahat(m, n + 1);
-    arma::cube Vt(m, m, n + 1);
-    running_summary(mcmc_run.alpha_storage, alphahat, Vt);
-    return Rcpp::List::create(Rcpp::Named("alphahat") = alphahat.t(), Rcpp::Named("Vt") = Vt,
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
       Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
       Rcpp::Named("counts") = mcmc_run.count_storage,
       Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
@@ -281,7 +279,7 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
   }
   
   mcmc mcmc_run(n_iter, n_burnin, n_thin, n, m,
-    target_acceptance, gamma, S, type != 3);
+    target_acceptance, gamma, S, type);
   
   switch (model_type) {
   case 1: {
@@ -355,11 +353,32 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
   } break;
   }
   
-  return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
-    Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
-    Rcpp::Named("counts") = mcmc_run.count_storage,
-    Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-    Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  switch (type) { 
+  case 1: {
+    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 2: {
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 3: {
+    return Rcpp::List::create(
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  }
+  
+  return Rcpp::List::create(Rcpp::Named("error") = "error");
 }
 
 
@@ -388,7 +407,7 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
   }
   
   ung_amcmc mcmc_run(n_iter, n_burnin, n_thin, n, m,
-    target_acceptance, gamma, S, type != 3);
+    target_acceptance, gamma, S, type);
   if (nsim_states <= 1) {
     mcmc_run.alpha_storage.zeros();
     mcmc_run.weight_storage.ones();
@@ -527,7 +546,7 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, seed);
   
   mcmc mcmc_run(n_iter, n_burnin, n_thin, model.n,
-    model.m, target_acceptance, gamma, S, type != 3);
+    model.m, target_acceptance, gamma, S, type);
   
   switch (simulation_method) {
   case 1:
@@ -538,13 +557,32 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     break;
   }
   
+  switch (type) { 
+  case 1: {
+    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 2: {
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 3: {
+    return Rcpp::List::create(
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  }
   
-  return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
-    Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
-    Rcpp::Named("counts") = mcmc_run.count_storage,
-    Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-    Rcpp::Named("S") = mcmc_run.S,
-    Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  return Rcpp::List::create(Rcpp::Named("error") = "error");
 }
 // [[Rcpp::export]]
 Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z, SEXP H,
@@ -576,7 +614,7 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, seed);
   
   mcmc mcmc_run(n_iter, n_burnin, n_thin, model.n,
-    model.m, target_acceptance, gamma, S, type != 3);
+    model.m, target_acceptance, gamma, S, type);
   
   
   switch (simulation_method) {
@@ -588,12 +626,32 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     break;
   }
   
+  switch (type) { 
+  case 1: {
+    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 2: {
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 3: {
+    return Rcpp::List::create(
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  }
   
-  return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
-    Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
-    Rcpp::Named("counts") = mcmc_run.count_storage,
-    Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-    Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  return Rcpp::List::create(Rcpp::Named("error") = "error");
 }
 
 // [[Rcpp::export]]
@@ -624,7 +682,7 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, seed);
   
   nlg_amcmc mcmc_run(n_iter, n_burnin, n_thin, model.n,
-    model.m, target_acceptance, gamma, S, type != 3);
+    model.m, target_acceptance, gamma, S, type);
   
   mcmc_run.ekf_mcmc(model, end_ram, iekf_iter);
   
@@ -741,12 +799,12 @@ Rcpp::List general_gaussian_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, n_states, n_etas, seed);
   
   mcmc mcmc_run(n_iter, n_burnin, n_thin,
-    model.n, model.m, target_acceptance, gamma, S, type != 3);
+    model.n, model.m, target_acceptance, gamma, S, type);
   
   mcmc_run.mcmc_gaussian(model, end_ram);
-  if(type != 3) mcmc_run.state_posterior(model, n_threads);
+  if(type == 1) mcmc_run.state_posterior(model, n_threads);
   
-  if(type != 3) {
+  if(type == 1) {
     return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
       Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
       Rcpp::Named("counts") = mcmc_run.count_storage,

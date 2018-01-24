@@ -85,12 +85,9 @@ Rcpp::List ekpf_smoother(const arma::mat& y, SEXP Z, SEXP H,
   arma::mat alphahat(model.m, model.n);
   arma::cube Vt(model.m, model.m, model.n);
   
-  //  if (smoothing_type == 1) {
   filter_smoother(alpha, indices);
-  running_weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
-  /*} else {
-  Rcpp::stop("Forward-backward smoothing with psi-filter is not yet implemented.");
-}*/
+  weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+ 
   arma::inplace_trans(alphahat);
   
   return Rcpp::List::create(
