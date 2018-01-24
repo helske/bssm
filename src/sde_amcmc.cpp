@@ -185,17 +185,17 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
     arma::mat weights_i(nsim, model.n + 1);
     arma::umat indices(nsim, model.n);
     double loglik = model.bsf_filter(nsim, L_f, alpha_i, weights_i, indices);
-    if(arma::is_finite(loglik)) {
+    // if(arma::is_finite(loglik)) {
       weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
       
       filter_smoother(alpha_i, indices);
       arma::vec w = weights_i.col(model.n);
       std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
       alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
-    } else {
-      weight_storage(i) = 0.0;
-      alpha_storage.slice(i).zeros();
-    }
+    // } else {
+    //   weight_storage(i) = 0.0;
+    //   alpha_storage.slice(i).zeros();
+    // }
   }
 }
 #else
@@ -209,17 +209,17 @@ for (unsigned int i = 0; i < n_stored; i++) {
   arma::mat weights_i(nsim, model.n + 1);
   arma::umat indices(nsim, model.n);
   double loglik = model.bsf_filter(nsim, L_f, alpha_i, weights_i, indices);
-  if(arma::is_finite(loglik)) {
+  // if(arma::is_finite(loglik)) {
     weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
     
     filter_smoother(alpha_i, indices);
     arma::vec w = weights_i.col(model.n);
     std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
     alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
-  } else {
-    weight_storage(i) = 0.0;
-    alpha_storage.slice(i).zeros();
-  }
+  // } else {
+  //   weight_storage(i) = 0.0;
+  //   alpha_storage.slice(i).zeros();
+  // }
 }
 #endif
 posterior_storage = prior_storage + approx_loglik_storage + arma::log(weight_storage);

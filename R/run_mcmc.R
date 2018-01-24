@@ -36,8 +36,7 @@ run_mcmc <- function(object, n_iter, ...) {
 #'  used adaptive MCMC during the burn-in period in order to find good proposal.
 #' @param n_thin Thinning rate. All MCMC algoritms in \code{bssm} use the jump chain
 #' representation, and the thinning is applied to these blocks.
-#' This defaults to 1, but for IS-corrected methods, larger
-#' value is often computationally more effective.
+#' Defaults to 1.
 #' @param gamma Tuning parameter for the adaptation of RAM algorithm. Must be
 #' between 0 and 1 (not checked).
 #' @param target_acceptance Target acceptance ratio for RAM. Defaults to 0.234.
@@ -180,13 +179,18 @@ run_mcmc.bsm <- function(object, n_iter, type = "full",
 #' @param n_burnin Length of the burn-in period which is disregarded from the
 #' results. Defaults to \code{n_iter / 2}.
 #' @param n_thin Thinning rate. Defaults to 1. Increase for large models in
-#' order to save memory.
+#' order to save memory. For IS-corrected methods, larger
+#' value can also be statistically more effective. 
+#' Note: With \code{type = "summary"}, the thinning does not affect the computations 
+#' of the summary statistics in case of pseudo-marginal methods.
 #' @param gamma Tuning parameter for the adaptation of RAM algorithm. Must be
 #' between 0 and 1 (not checked).
 #' @param target_acceptance Target acceptance ratio for RAM. Defaults to 0.234.
 #' @param S Initial value for the lower triangular matrix of RAM
 #' algorithm, so that the covariance matrix of the Gaussian proposal
-#' distribution is \eqn{SS'}.
+#' distribution is \eqn{SS'}. Note that for some parameters 
+#' (currently the standard deviation and dispersion parameters of bsm models) the sampling
+#' is done for transformed parameters with internal_theta = log(1 + theta).
 #' @param end_adaptive_phase If \code{TRUE} (default), $S$ is held fixed after the burnin period.
 #' @param local_approx If \code{TRUE} (default), Gaussian approximation needed for
 #' importance sampling is performed at each iteration. If false, approximation is updated only

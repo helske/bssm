@@ -1,4 +1,11 @@
-bssm 0.1.3 (Release date: 2018-01-07)
+bssm 0.1.4 (Release date:)
+==============
+  * MCMC output can now be defined with argument `type`. Instead of returning joint posterior 
+    samples, run_mcmc can now return only marginal samples of theta, or summary statistics of 
+    the states.
+  * Due to the above change, argument `sim_states` was removed from the Gaussian MCMC methods.
+  
+  bssm 0.1.3 (Release date: 2018-01-07)
 ==============
   * Streamlined the output of the print method for MCMC results.
   * Fixed major bugs in predict method which caused wrong values for the prediction intervals.

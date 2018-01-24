@@ -507,13 +507,35 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
   } break;
   }
   
-  return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
-    Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
-    Rcpp::Named("weights") = mcmc_run.weight_storage,
-    Rcpp::Named("counts") = mcmc_run.count_storage,
-    Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-    Rcpp::Named("S") = mcmc_run.S,
-    Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  switch (type) { 
+  case 1: {
+    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("weights") = mcmc_run.weight_storage,
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 2: {
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("weights") = mcmc_run.weight_storage,
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 3: {
+    return Rcpp::List::create(
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("weights") = mcmc_run.weight_storage,
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  }
+  
+  return Rcpp::List::create(Rcpp::Named("error") = "error");
 }
 
 // [[Rcpp::export]]

@@ -116,9 +116,7 @@ void mcmc::state_summary(T model, arma::mat& alphahat, arma::cube& Vt) {
     Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
     sum_w = tmp;
   }
-  Vt += Valpha / n_samples; // Var[E(alpha)] + E[Var(alpha)]
-  
-  
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
 
 template <class T>
@@ -417,7 +415,6 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
       
       //compute the acceptance probability
       // use explicit min(...) as we need this value later
-      
       acceptance_prob = std::min(1.0, std::exp(loglik_prop - loglik +
         logprior_prop - logprior + 
         model.log_proposal_ratio(theta_prop, theta)));
@@ -428,11 +425,11 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
           acceptance_rate++;
           n_values++;
         }
-        if (output_type == 1) {
-          std::discrete_distribution<unsigned int> sample(weights.begin(), weights.end());
-          sampled_alpha = alpha.slice(ind);
-        } else {
-          if (output_type == 2) {
+        if (output_type != 3) {
+          if (output_type == 1) {
+            std::discrete_distribution<unsigned int> sample(weights.begin(), weights.end());
+            sampled_alpha = alpha.slice(ind);
+          } else {
             //summary statistics for single iteration
             weighted_summary(alpha, alphahat_i, Vt_i, weights);
           }
@@ -605,14 +602,13 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
           acceptance_rate++;
           n_values++;
         }
-        filter_smoother(alpha, indices);
-        w = weights.col(n);
-        if (output_type == 1) {
-          std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-          sampled_alpha = alpha.slice(sample(model.engine));
-        } else {
-          if (output_type == 2) {
-            //summary statistics for single iteration
+        if (output_type != 3) {
+          filter_smoother(alpha, indices);
+          w = weights.col(n);
+          if (output_type == 1) {
+            std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+            sampled_alpha = alpha.slice(sample(model.engine));
+          } else {
             weighted_summary(alpha, alphahat_i, Vt_i, w);
           }
         }
@@ -743,14 +739,13 @@ void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
           acceptance_rate++;
           n_values++;
         }
-        filter_smoother(alpha, indices);
-        w = weights.col(n);
-        if (output_type == 1) {
-          std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-          sampled_alpha = alpha.slice(sample(model.engine));
-        } else {
-          if (output_type == 2) {
-            //summary statistics for single iteration
+        if (output_type != 3) {
+          filter_smoother(alpha, indices);
+          w = weights.col(n);
+          if (output_type == 1) {
+            std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+            sampled_alpha = alpha.slice(sample(model.engine));
+          } else {
             weighted_summary(alpha, alphahat_i, Vt_i, w);
           }
         }
@@ -923,11 +918,11 @@ void mcmc::da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
               acceptance_rate++;
               n_values++;
             }
-            if (output_type == 1) {
-              std::discrete_distribution<unsigned int> sample(weights.begin(), weights.end());
-              sampled_alpha = alpha.slice(sample(model.engine));
-            } else {
-              if (output_type == 2) {
+            if (output_type != 3) {
+              if (output_type == 1) {
+                std::discrete_distribution<unsigned int> sample(weights.begin(), weights.end());
+                sampled_alpha = alpha.slice(sample(model.engine));
+              } else {
                 //summary statistics for single iteration
                 weighted_summary(alpha, alphahat_i, Vt_i, weights);
               }
@@ -1103,14 +1098,13 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
               acceptance_rate++;
               n_values++;
             }
-            filter_smoother(alpha, indices);
-            w = weights.col(n);
-            if (output_type == 1) {
-              std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-              sampled_alpha = alpha.slice(sample(model.engine));
-            } else {
-              if (output_type == 2) {
-                //summary statistics for single iteration
+            if (output_type != 3) {
+              filter_smoother(alpha, indices);
+              w = weights.col(n);
+              if (output_type == 1) {
+                std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+                sampled_alpha = alpha.slice(sample(model.engine));
+              } else {
                 weighted_summary(alpha, alphahat_i, Vt_i, w);
               }
             }
@@ -1282,14 +1276,13 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
               acceptance_rate++;
               n_values++;
             }
-            filter_smoother(alpha, indices);
-            w = weights.col(n);
-            if (output_type == 1) {
-              std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-              sampled_alpha = alpha.slice(sample(model.engine));
-            } else {
-              if (output_type == 2) {
-                //summary statistics for single iteration
+            if (output_type != 3) {
+              filter_smoother(alpha, indices);
+              w = weights.col(n);
+              if (output_type == 1) {
+                std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+                sampled_alpha = alpha.slice(sample(model.engine));
+              } else {
                 weighted_summary(alpha, alphahat_i, Vt_i, w);
               }
             }
@@ -1435,15 +1428,13 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
           acceptance_rate++;
           n_values++;
         }
-        filter_smoother(alpha, indices);
-        w = weights.col(n);
-        
-        if (output_type == 1) {
-          std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-          sampled_alpha = alpha.slice(sample(model.engine));
-        } else {
-          if (output_type == 2) {
-            //summary statistics for single iteration
+        if (output_type != 3) {
+          filter_smoother(alpha, indices);
+          w = weights.col(n);
+          if (output_type == 1) {
+            std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+            sampled_alpha = alpha.slice(sample(model.engine));
+          } else {
             weighted_summary(alpha, alphahat_i, Vt_i, w);
           }
         }
@@ -1561,15 +1552,13 @@ void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram,
           acceptance_rate++;
           n_values++;
         }
-        filter_smoother(alpha, indices);
-        w = weights.col(n);
-        
-        if (output_type == 1) {
-          std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-          sampled_alpha = alpha.slice(sample(model.engine));
-        } else {
-          if (output_type == 2) {
-            //summary statistics for single iteration
+        if (output_type != 3) {
+          filter_smoother(alpha, indices);
+          w = weights.col(n);
+          if (output_type == 1) {
+            std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+            sampled_alpha = alpha.slice(sample(model.engine));
+          } else {
             weighted_summary(alpha, alphahat_i, Vt_i, w);
           }
         }
@@ -1711,14 +1700,13 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
                 acceptance_rate++;
                 n_values++;
               }
-              filter_smoother(alpha, indices);
-              w = weights.col(n);
-              if (output_type == 1) {
-                std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-                sampled_alpha = alpha.slice(sample(model.engine));
-              } else {
-                if (output_type == 2) {
-                  //summary statistics for single iteration
+              if (output_type != 3) {
+                filter_smoother(alpha, indices);
+                w = weights.col(n);
+                if (output_type == 1) {
+                  std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+                  sampled_alpha = alpha.slice(sample(model.engine));
+                } else {
                   weighted_summary(alpha, alphahat_i, Vt_i, w);
                 }
               }
@@ -1867,14 +1855,13 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
                 acceptance_rate++;
                 n_values++;
               }
-              filter_smoother(alpha, indices);
-              w = weights.col(n);
-              if (output_type == 1) {
-                std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-                sampled_alpha = alpha.slice(sample(model.engine));
-              } else {
-                if (output_type == 2) {
-                  //summary statistics for single iteration
+              if (output_type != 3) {
+                filter_smoother(alpha, indices);
+                w = weights.col(n);
+                if (output_type == 1) {
+                  std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+                  sampled_alpha = alpha.slice(sample(model.engine));
+                } else {
                   weighted_summary(alpha, alphahat_i, Vt_i, w);
                 }
               }
@@ -1996,14 +1983,13 @@ void mcmc::pm_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
           acceptance_rate++;
           n_values++;
         }
-        filter_smoother(alpha, indices);
-        w = weights.col(n);
-        if (output_type == 1) {
-          std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-          sampled_alpha = alpha.slice(sample(model.engine));
-        } else {
-          if (output_type == 2) {
-            //summary statistics for single iteration
+        if (output_type != 3) {
+          filter_smoother(alpha, indices);
+          w = weights.col(n);
+          if (output_type == 1) {
+            std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+            sampled_alpha = alpha.slice(sample(model.engine));
+          } else {
             weighted_summary(alpha, alphahat_i, Vt_i, w);
           }
         }
@@ -2140,14 +2126,13 @@ void mcmc::da_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
                 acceptance_rate++;
                 n_values++;
               }
-              filter_smoother(alpha, indices);
-              w = weights.col(n);
-              if (output_type == 1) {
-                std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-                sampled_alpha = alpha.slice(sample(model.engine));
-              } else {
-                if (output_type == 2) {
-                  //summary statistics for single iteration
+              if (output_type != 3) {
+                filter_smoother(alpha, indices);
+                w = weights.col(n);
+                if (output_type == 1) {
+                  std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+                  sampled_alpha = alpha.slice(sample(model.engine));
+                } else {
                   weighted_summary(alpha, alphahat_i, Vt_i, w);
                 }
               }
