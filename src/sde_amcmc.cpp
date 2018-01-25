@@ -8,6 +8,7 @@
 #include "rep_mat.h"
 
 #include "filter_smoother.h"
+#include "summary.h"
 
 sde_amcmc::sde_amcmc(const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin, const unsigned int n, 
@@ -167,9 +168,12 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
   const unsigned int L_c, const unsigned int L_f, 
   const unsigned int is_type, const unsigned int n_threads) {
   
+  arma::cube Valpha(1, 1, model.n + 1, arma::fill::zeros);
+  double sum_w = 0.0;
+  
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(none) firstprivate(model) 
-  {
+{
   
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
   model.coarse_engine = sitmo::prng_engine(omp_get_thread_num() + n_threads + 1);
@@ -185,17 +189,31 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
     arma::mat weights_i(nsim, model.n + 1);
     arma::umat indices(nsim, model.n);
     double loglik = model.bsf_filter(nsim, L_f, alpha_i, weights_i, indices);
-    // if(arma::is_finite(loglik)) {
-      weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
-      
+    weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
+    
+    if (output_type != 3) {
       filter_smoother(alpha_i, indices);
       arma::vec w = weights_i.col(model.n);
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-      alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
-    // } else {
-    //   weight_storage(i) = 0.0;
-    //   alpha_storage.slice(i).zeros();
-    // }
+      if (output_type == 1) {
+        std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+        alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
+      } else {
+        arma::mat alphahat_i(1, model.n + 1);
+        arma::cube Vt_i(1, 1, model.n + 1);
+        weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+#pragma omp critical
+{
+  arma::mat diff = alphahat_i - alphahat;
+  double tmp = count_storage(i) + sum_w;
+  alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+  for (unsigned int t = 0; t < model.n + 1; t++) {
+    Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+  }
+  Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
+  sum_w = tmp;
+}
+      }
+    }
   }
 }
 #else
@@ -209,18 +227,34 @@ for (unsigned int i = 0; i < n_stored; i++) {
   arma::mat weights_i(nsim, model.n + 1);
   arma::umat indices(nsim, model.n);
   double loglik = model.bsf_filter(nsim, L_f, alpha_i, weights_i, indices);
-  // if(arma::is_finite(loglik)) {
-    weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
-    
+  weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
+  
+  if (output_type != 3) {
     filter_smoother(alpha_i, indices);
     arma::vec w = weights_i.col(model.n);
-    std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
-    alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
-  // } else {
-  //   weight_storage(i) = 0.0;
-  //   alpha_storage.slice(i).zeros();
-  // }
+    if (output_type == 1) {
+      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+      alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
+    } else {
+      arma::mat alphahat_i(model.m, model.n + 1);
+      arma::cube Vt_i(model.m, model.m, model.n + 1);
+      weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+      
+      arma::mat diff = alphahat_i - alphahat;
+      double tmp = count_storage(i) + sum_w;
+      alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+      for (unsigned int t = 0; t < model.n + 1; t++) {
+        Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+      }
+      Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
+      sum_w = tmp;
+      
+    }
+  }
 }
 #endif
+if (output_type == 2) {
+  Vt += Valpha / theta_storage.n_cols; // Var[E(alpha)] + E[Var(alpha)]
+}
 posterior_storage = prior_storage + approx_loglik_storage + arma::log(weight_storage);
 }
