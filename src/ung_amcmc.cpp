@@ -244,7 +244,7 @@ void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states,
   double sum_w = 0.0;
   
 #ifdef _OPENMP
-#pragma omp parallel num_threads(n_threads) default(none) firstprivate(model) 
+#pragma omp parallel num_threads(n_threads) default(none) shared(Valpha, sum_w) firstprivate(model) 
 {
   
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
@@ -393,7 +393,7 @@ void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states,
   double sum_w = 0.0;
   
 #ifdef _OPENMP
-#pragma omp parallel num_threads(n_threads) default(none) firstprivate(model) 
+#pragma omp parallel num_threads(n_threads) default(none) shared(Valpha, sum_w) firstprivate(model) 
 {
   
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
@@ -503,7 +503,7 @@ void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim_states,
   double sum_w = 0.0;
   
 #ifdef _OPENMP
-#pragma omp parallel num_threads(n_threads) default(none) firstprivate(model) 
+#pragma omp parallel num_threads(n_threads) default(none) shared(Valpha, sum_w) firstprivate(model) 
 {
   
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
