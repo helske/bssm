@@ -11,7 +11,8 @@ public:
   // constructor
   sde_amcmc(const unsigned int n_iter, const unsigned int n_burnin,
     const unsigned int n_thin, const unsigned int n,
-    const double target_acceptance, const double gamma, const arma::mat& S);
+    const double target_acceptance, const double gamma, 
+    const arma::mat& S, const unsigned int output_type);
   
   void expand();
   
@@ -23,13 +24,11 @@ public:
     const unsigned int is_type, const unsigned int n_threads);
   
   arma::vec weight_storage;
-  
   arma::vec approx_loglik_storage;
   arma::vec prior_storage;
 private:
   
   void trim_storage();
-  arma::uvec iter_storage;
 };
 
 

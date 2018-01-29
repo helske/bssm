@@ -13,13 +13,12 @@
 sde_amcmc::sde_amcmc(const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin, const unsigned int n, 
   const double target_acceptance, const double gamma, 
-  const arma::mat& S) :
+  const arma::mat& S, const unsigned int output_type) :
   mcmc(n_iter, n_burnin, n_thin, n, 1,
-    target_acceptance, gamma, S, true),
+    target_acceptance, gamma, S, output_type),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
     approx_loglik_storage(arma::vec(n_samples)),
-    prior_storage(arma::vec(n_samples)),
-    iter_storage(arma::uvec(n_samples)){
+    prior_storage(arma::vec(n_samples)){
 }
 
 void sde_amcmc::trim_storage() {
@@ -32,7 +31,6 @@ void sde_amcmc::trim_storage() {
     weight_storage.resize(n_stored);
     approx_loglik_storage.resize(n_stored);
     prior_storage.resize(n_stored);
-    iter_storage.resize(n_stored);
   }
 }
 
@@ -65,9 +63,6 @@ void sde_amcmc::expand() {
   prior_storage.set_size(n_stored);
   prior_storage = expanded_prior;
   
-  arma::uvec expanded_iter = rep_uvec(iter_storage, count_storage);
-  iter_storage.set_size(n_stored);
-  iter_storage = expanded_iter;
   
   count_storage.resize(n_stored);
   count_storage.ones();
@@ -147,7 +142,6 @@ void sde_amcmc::approx_mcmc(sde_ssm model, const bool end_ram,
         prior_storage(n_stored) = logprior;
         theta_storage.col(n_stored) = theta;
         count_storage(n_stored) = 1;
-        iter_storage(n_stored) = i; //count 0 as well
         n_stored++;
         new_value = false;
       } else {
