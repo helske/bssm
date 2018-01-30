@@ -407,7 +407,7 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
   }
   
   ung_amcmc mcmc_run(n_iter, n_burnin, n_thin, n, m,
-    target_acceptance, gamma, S, type);
+    target_acceptance, gamma, S, type, simulation_method != 2);
   if (nsim_states <= 1) {
     mcmc_run.alpha_storage.zeros();
     mcmc_run.weight_storage.ones();
@@ -704,7 +704,7 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, seed);
   
   nlg_amcmc mcmc_run(n_iter, n_burnin, n_thin, model.n,
-    model.m, target_acceptance, gamma, S, type);
+    model.m, target_acceptance, gamma, S, type, false);
   
   mcmc_run.ekf_mcmc(model, end_ram, iekf_iter);
   
@@ -768,7 +768,7 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, seed);
   
   nlg_amcmc mcmc_run(n_iter, n_burnin, n_thin, model.n,
-    model.m, target_acceptance, gamma, S, simulation_method == 1);
+    model.m, target_acceptance, gamma, S, type, simulation_method == 1);
   
   mcmc_run.approx_mcmc(model, max_iter, conv_tol, end_ram, iekf_iter);
   if(nsim_states > 0) {

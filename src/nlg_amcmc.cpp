@@ -13,12 +13,12 @@
 nlg_amcmc::nlg_amcmc(const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin, const unsigned int n, 
   const unsigned int m, const double target_acceptance, const double gamma, 
-  const arma::mat& S, const bool store_modes) :
+  const arma::mat& S, const unsigned int output_type, const bool store_modes) :
   mcmc(n_iter, n_burnin, n_thin, n, m,
-    target_acceptance, gamma, S, true),
+    target_acceptance, gamma, S, output_type),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
     approx_loglik_storage(arma::vec(n_samples)),
-    scales_storage(arma::vec(n_samples)),
+    scales_storage(arma::vec(n_samples * store_modes)),
     prior_storage(arma::vec(n_samples)),
     store_modes(store_modes),
     mode_storage(arma::cube(m, n + 1, n_samples * store_modes)){
@@ -28,12 +28,16 @@ void nlg_amcmc::trim_storage() {
   theta_storage.resize(n_par, n_stored);
   posterior_storage.resize(n_stored);
   count_storage.resize(n_stored);
-  alpha_storage.resize(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
-  scales_storage.resize(n_stored);
   weight_storage.resize(n_stored);
-  approx_loglik_storage.resize(n_stored);
   prior_storage.resize(n_stored);
-  mode_storage.resize(mode_storage.n_rows, mode_storage.n_cols, n_stored);
+  approx_loglik_storage.resize(n_stored);
+  if (output_type == 1) {
+    alpha_storage.resize(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
+  }
+  if (store_modes) {
+    mode_storage.resize(mode_storage.n_rows, mode_storage.n_cols, n_stored);
+    scales_storage.resize(n_stored);
+  }
 }
 
 void nlg_amcmc::expand() {
@@ -49,15 +53,7 @@ void nlg_amcmc::expand() {
   arma::vec expanded_posterior = rep_vec(posterior_storage, count_storage);
   posterior_storage.set_size(n_stored);
   posterior_storage = expanded_posterior;
-  
-  arma::cube expanded_alpha = rep_cube(alpha_storage, count_storage);
-  alpha_storage.set_size(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
-  alpha_storage = expanded_alpha;
-  
-  arma::mat expanded_scales = rep_mat(scales_storage, count_storage);
-  scales_storage.set_size(scales_storage.n_rows, n_stored);
-  scales_storage = expanded_scales;
-  
+
   arma::vec expanded_weight = rep_vec(weight_storage, count_storage);
   weight_storage.set_size(n_stored);
   weight_storage = expanded_weight;
@@ -69,12 +65,24 @@ void nlg_amcmc::expand() {
   arma::vec expanded_prior = rep_vec(prior_storage, count_storage);
   prior_storage.set_size(n_stored);
   prior_storage = expanded_prior;
-  
-  arma::cube expanded_mode = rep_cube(mode_storage, count_storage);
-  mode_storage.set_size(mode_storage.n_rows, mode_storage.n_cols, n_stored);
-  mode_storage = expanded_mode;
+
   count_storage.resize(n_stored);
   count_storage.ones();
+  
+  if (output_type == 1) {
+    arma::cube expanded_alpha = rep_cube(alpha_storage, count_storage);
+    alpha_storage.set_size(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
+    alpha_storage = expanded_alpha;
+  }
+  if (store_modes) {
+    arma::mat expanded_scales = rep_mat(scales_storage, count_storage);
+    scales_storage.set_size(scales_storage.n_rows, n_stored);
+    scales_storage = expanded_scales;
+
+    arma::cube expanded_mode = rep_cube(mode_storage, count_storage);
+    mode_storage.set_size(mode_storage.n_rows, mode_storage.n_cols, n_stored);
+    mode_storage = expanded_mode;
+  }
   
 }
 // run approximate MCMC for
@@ -172,10 +180,10 @@ void nlg_amcmc::approx_mcmc(nlg_ssm model, const unsigned int max_iter,
         approx_loglik_storage(n_stored) = loglik;
         prior_storage(n_stored) = logprior;
         theta_storage.col(n_stored) = theta;
-        scales_storage(n_stored) = sum_scales;
         count_storage(n_stored) = 1;
         if(store_modes) {
           mode_storage.slice(n_stored) = mode_estimate;
+          scales_storage(n_stored) = sum_scales;
         }
         n_stored++;
         new_value = false;

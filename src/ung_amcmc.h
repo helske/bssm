@@ -11,7 +11,8 @@ public:
   // constructor
   ung_amcmc(const unsigned int n_iter, const unsigned int n_burnin, const unsigned int n_thin, 
     const unsigned int n, const unsigned int m, const double target_acceptance, 
-    const double gamma, const arma::mat& S, const unsigned int output_type = 1);
+    const double gamma, const arma::mat& S, const unsigned int output_type = 1, 
+    const bool store_modes = true);
   
   void expand();
   
@@ -46,6 +47,7 @@ private:
   arma::mat scales_storage;
   arma::vec approx_loglik_storage;
   arma::vec prior_storage;
+  const bool store_modes;
 };
 
 

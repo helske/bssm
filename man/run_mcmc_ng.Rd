@@ -80,7 +80,10 @@ and if \code{"psi"}, psi-auxiliary particle filter is used
 results. Defaults to \code{n_iter / 2}.}
 
 \item{n_thin}{Thinning rate. Defaults to 1. Increase for large models in
-order to save memory.}
+order to save memory. For IS-corrected methods, larger
+value can also be statistically more effective. 
+Note: With \code{type = "summary"}, the thinning does not affect the computations 
+of the summary statistics in case of pseudo-marginal methods.}
 
 \item{gamma}{Tuning parameter for the adaptation of RAM algorithm. Must be
 between 0 and 1 (not checked).}
@@ -89,7 +92,9 @@ between 0 and 1 (not checked).}
 
 \item{S}{Initial value for the lower triangular matrix of RAM
 algorithm, so that the covariance matrix of the Gaussian proposal
-distribution is \eqn{SS'}.}
+distribution is \eqn{SS'}. Note that for some parameters 
+(currently the standard deviation and dispersion parameters of bsm models) the sampling
+is done for transformed parameters with internal_theta = log(1 + theta).}
 
 \item{end_adaptive_phase}{If \code{TRUE} (default), $S$ is held fixed after the burnin period.}
 

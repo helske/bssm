@@ -13,7 +13,7 @@ ar1(y, rho, sigma, mu, sd_y, beta, xreg = NULL)
 
 \item{sigma}{Prior for the standard deviation of noise of the AR-process.}
 
-\item{mu}{A fixed value or a prior for the intercept mu of the transition equation. Parameter is omitted if this is set to 0.}
+\item{mu}{A fixed value or a prior for the stationary mean of the latent AR(1) process. Parameter is omitted if this is set to 0.}
 
 \item{sd_y}{Prior for the standard deviation of observation equation.}
 
