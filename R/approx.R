@@ -54,6 +54,20 @@ gaussian_approx.svm <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
   model$coefs <- object$coefs
   model
 }
+#' @method gaussian_approx ng_ar1
+#' @export
+gaussian_approx.ng_ar1 <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
+  
+  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
+  out <- gaussian_approx_model(object, object$initial_mode, max_iter, conv_tol, model_type = 4L)
+  out$y <- ts(out$y, start = start(object$y), end = end(object$y), frequency = frequency(object$y))
+  model <- gssm(y = out$y, Z = object$Z, H = out$H, T = object$T, R = object$R, a1 = object$a1, P1 = object$P1,
+    obs_intercept = object$obs_intercept, state_intercept = object$state_intercept, 
+    state_names = names(object$a1))
+  model$xreg <- object$xreg
+  model$coefs <- object$coefs
+  model
+}
 
 #' @method gaussian_approx nlg_ssm
 #' @export

@@ -1,5 +1,6 @@
 #include "ugg_ssm.h"
 #include "ugg_bsm.h"
+#include "ugg_ar1.h"
 #include "mgg_ssm.h"
 #include "lgg_ssm.h"
 
@@ -32,6 +33,10 @@ Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
   } break;
   case 2: {
     ugg_bsm model(clone(model_), 1);
+    model.smoother(alphahat, Vt);
+  } break;
+    case 3: {
+    ugg_ar1 model(clone(model_), 1);
     model.smoother(alphahat, Vt);
   } break;
   }
@@ -114,6 +119,10 @@ Rcpp::List gaussian_ccov_smoother(const Rcpp::List& model_, const int model_type
     ugg_bsm model(clone(model_), 1);
     model.smoother_ccov(alphahat, Vt, Ct);
   } break;
+  case 3: {
+    ugg_ar1 model(clone(model_), 1);
+    model.smoother_ccov(alphahat, Vt, Ct);
+  } break;
   }
   
   arma::inplace_trans(alphahat);
@@ -142,6 +151,10 @@ arma::mat gaussian_fast_smoother(const Rcpp::List& model_, const int model_type)
     ugg_bsm model(clone(model_), 1);
     return model.fast_smoother().t();
   } break;
+  case 3: {
+    ugg_ar1 model(clone(model_), 1);
+    return model.fast_smoother().t();
+  } break;
   default:
     return arma::mat(0,0);
   break;
@@ -159,6 +172,10 @@ arma::cube gaussian_sim_smoother(const Rcpp::List& model_, const unsigned int ns
 } break;
   case 2: {
     ugg_bsm model(clone(model_), seed);
+    return model.simulate_states(nsim, use_antithetic);
+  } break;
+  case 3: {
+    ugg_ar1 model(clone(model_), seed);
     return model.simulate_states(nsim, use_antithetic);
   } break;
   default:

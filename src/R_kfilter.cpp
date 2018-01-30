@@ -2,6 +2,7 @@
 #include "ugg_bsm.h"
 #include "lgg_ssm.h"
 #include "mgg_ssm.h"
+#include "ugg_ar1.h"
 
 // [[Rcpp::export]]
 Rcpp::List gaussian_kfilter(const Rcpp::List& model_, const int model_type) {
@@ -32,6 +33,10 @@ Rcpp::List gaussian_kfilter(const Rcpp::List& model_, const int model_type) {
   } break;
   case 2: {
     ugg_bsm model(clone(model_), 1);
+    loglik = model.filter(at, att, Pt, Ptt);
+  } break;
+  case 3: {
+    ugg_ar1 model(clone(model_), 1);
     loglik = model.filter(at, att, Pt, Ptt);
   } break;
   default: 

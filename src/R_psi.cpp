@@ -3,6 +3,7 @@
 #include "ung_ssm.h"
 #include "ung_bsm.h"
 #include "ung_svm.h"
+#include "ung_ar1.h"
 #include "nlg_ssm.h"
 #include "distr_consts.h"
 #include "filter_smoother.h"
@@ -74,6 +75,27 @@ Rcpp::List psi_smoother(const Rcpp::List& model_, const arma::vec mode_estimate,
     filter_smoother(alpha, indices);
     weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
    
+    arma::inplace_trans(alphahat);
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") = Vt, 
+      Rcpp::Named("weights") = weights,
+      Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
+  } break;
+  case 4: {
+    ung_ar1 model(clone(model_), seed);
+    arma::cube alpha(model.m, model.n + 1, nsim_states);
+    arma::mat weights(nsim_states, model.n + 1);
+    arma::umat indices(nsim_states, model.n);
+    
+    double loglik = compute_ung_psi_filter(model, nsim_states, 
+      mode_estimate, max_iter, conv_tol, alpha, weights, indices);
+    
+    arma::mat alphahat(model.m, model.n + 1);
+    arma::cube Vt(model.m, model.m, model.n + 1);
+    
+    filter_smoother(alpha, indices);
+    weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+    
     arma::inplace_trans(alphahat);
     return Rcpp::List::create(
       Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") = Vt, 

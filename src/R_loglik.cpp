@@ -2,8 +2,10 @@
 #include "ugg_ssm.h"
 #include "ung_ssm.h"
 #include "ugg_bsm.h"
+#include "ugg_ar1.h"
 #include "ung_bsm.h"
 #include "ung_svm.h"
+#include "ung_ar1.h"
 #include "ng_loglik.h"
 #include "nlg_ssm.h"
 #include "lgg_ssm.h"
@@ -23,6 +25,10 @@ double gaussian_loglik(const Rcpp::List& model_, const int model_type) {
   } break;
   case 2: {
     ugg_bsm model(clone(model_), 1);
+    loglik = model.log_likelihood();
+  } break;
+  case 3: {
+    ugg_ar1 model(clone(model_), 1);
     loglik = model.log_likelihood();
   } break;
   default: loglik = -std::numeric_limits<double>::infinity();
@@ -52,6 +58,11 @@ double nongaussian_loglik(const Rcpp::List& model_, const arma::vec mode_estimat
   } break;
   case 3: {
     ung_svm model(clone(model_), seed);
+    loglik = compute_ung_loglik(model, simulation_method, nsim_states,
+      mode_estimate, max_iter, conv_tol);
+  } break;
+  case 4: {
+    ung_ar1 model(clone(model_), seed);
     loglik = compute_ung_loglik(model, simulation_method, nsim_states,
       mode_estimate, max_iter, conv_tol);
   } break;

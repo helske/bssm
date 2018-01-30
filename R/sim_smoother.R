@@ -75,3 +75,10 @@ sim_smoother.svm <- function(object, nsim = 1,
   sim_smoother(gaussian_approx(object), nsim = nsim, 
     use_antithetic = use_antithetic, seed = seed)
 }
+#' @method sim_smoother ng_ar1
+#' @export
+sim_smoother.ng_ar1 <- function(object, nsim = 1,
+  seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
+  sim_smoother(gaussian_approx(object), nsim = nsim, 
+    use_antithetic = use_antithetic, seed = seed)
+}

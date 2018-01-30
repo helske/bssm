@@ -107,6 +107,29 @@ particle_smoother.ng_bsm <- function(object, nsim, filter_type = "psi",
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
+#' @method particle_smoother ng_ar1
+#' @export
+particle_smoother.ng_ar1 <- function(object, nsim, filter_type = "psi", 
+  seed = sample(.Machine$integer.max, size = 1), 
+  max_iter = 100, conv_tol = 1e-8, ...) {
+  
+  filter_type <- match.arg(filter_type, c("psi", "bsf"))
+  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
+  if(filter_type == "psi") {
+    out <- psi_smoother(object, object$initial_mode, nsim, 
+      seed, max_iter, conv_tol, 4L)
+  } else {
+    out <- bsf_smoother(object, nsim, seed, FALSE, 4L)
+  }
+  colnames(out$alphahat) <- colnames(out$Vt) <-
+    colnames(out$Vt) <- names(object$a1)
+  out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
+  out$alphahat <- ts(out$alphahat[-nrow(out$alphahat), , drop = FALSE], 
+    start = start(object$y), frequency = frequency(object$y))
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
+}
 #' @method particle_smoother svm
 #' @export
 particle_smoother.svm <- function(object, nsim,

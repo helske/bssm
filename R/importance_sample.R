@@ -57,3 +57,16 @@ importance_sample.svm <- function(object, nsim, use_antithetic = TRUE,
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
+#' @method importance_sample ung_ar1
+#' @rdname importance_sample
+#' @export
+importance_sample.ung_ar1 <- function(object, nsim, use_antithetic = TRUE, 
+  max_iter = 100, conv_tol = 1e-8, seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
+  out <- importance_sample_ung(object, nsim, use_antithetic, object$initial_mode, 
+    max_iter, conv_tol, seed, 4L)
+  rownames(out$alpha) <- names(object$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
+}

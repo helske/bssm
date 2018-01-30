@@ -33,6 +33,15 @@ fast_smoother.bsm <- function(object, ...) {
   ts(out[-nrow(out), , drop = FALSE], start = start(object$y), 
     frequency = frequency(object$y))
 }
+#' @method fast_smoother ar1
+#' @export
+fast_smoother.ar1 <- function(object, ...) {
+  
+  out <- gaussian_fast_smoother(object, model_type = 3L)
+  colnames(out) <- names(object$a1)
+  ts(out[-nrow(out), , drop = FALSE], start = start(object$y), 
+    frequency = frequency(object$y))
+}
 #' @method fast_smoother mv_gssm
 #' @export
 fast_smoother.mv_gssm <- function(object, ...) {
@@ -57,6 +66,11 @@ fast_smoother.ng_bsm <- function(object, ...) {
 fast_smoother.svm <- function(object, ...) {
   fast_smoother(gaussian_approx(object))
 }
+#' @method fast_smoother ng_ar1
+#' @export
+fast_smoother.ng_ar1 <- function(object, ...) {
+  fast_smoother(gaussian_approx(object))
+}
 #' @export
 #' @rdname smoother
 smoother <- function(object, ...) {
@@ -79,6 +93,17 @@ smoother.gssm <- function(object, ...) {
 smoother.bsm <- function(object, ...) {
   
   out <- gaussian_smoother(object, model_type = 2L)
+  colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
+  out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
+  out$alphahat <- ts(out$alphahat[-nrow(out$alphahat), , drop = FALSE], 
+    start = start(object$y), frequency = frequency(object$y))
+  out
+}
+#' @method smoother ar1
+#' @export
+smoother.ar1 <- function(object, ...) {
+  
+  out <- gaussian_smoother(object, model_type = 3L)
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
   out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
   out$alphahat <- ts(out$alphahat[-nrow(out$alphahat), , drop = FALSE], 
@@ -119,6 +144,11 @@ smoother.svm <- function(object, ...) {
   smoother(gaussian_approx(object))
 }
 
+#' @method smoother ng_ar1
+#' @export
+smoother.ng_ar1 <- function(object, ...) {
+  smoother(gaussian_approx(object))
+}
 #' Extended Kalman Smoothing
 #'
 #' Function \code{ekf_smoother} runs the (iterated) extended Kalman smoother for 

@@ -68,7 +68,18 @@ logLik.svm <- function(object, nsim_states, method = "psi", seed = 1,
   nongaussian_loglik(object, object$initial_mode, nsim_states, 
     pmatch(method,  c("psi", "bsf", "spdk")), seed, max_iter, conv_tol, model_type = 3L)
 }
-
+#' @method logLik ng_ar1
+#' @export
+logLik.ng_ar1 <- function(object, nsim_states, method = "psi", seed = 1,
+  max_iter = 100, conv_tol = 1e-8, ...) {
+  
+  method <- match.arg(method,  c("psi", "bsf", "spdk"))
+  if (method == "bsf" & nsim_states == 0) stop("'nsim_state' must be positive for bootstrap filter.")
+  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
+  
+  nongaussian_loglik(object, object$initial_mode, nsim_states, 
+    pmatch(method,  c("psi", "bsf", "spdk")), seed, max_iter, conv_tol, model_type = 4L)
+}
 #' @method logLik nlg_ssm
 #' @export
 logLik.nlg_ssm <- function(object, nsim_states, method = "bsf", seed = 1, 

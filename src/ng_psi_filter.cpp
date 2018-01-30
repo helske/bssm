@@ -3,6 +3,7 @@
 #include "ung_ssm.h"
 #include "ung_bsm.h"
 #include "ung_svm.h"
+#include "ung_ar1.h"
 #include "distr_consts.h"
 
 template double compute_ung_psi_filter(ung_ssm model, const unsigned int nsim_states, 
@@ -12,6 +13,9 @@ template double compute_ung_psi_filter(ung_bsm model, const unsigned int nsim_st
   arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
   arma::cube& alpha, arma::mat& weights, arma::umat& indices);
 template double compute_ung_psi_filter(ung_svm model, const unsigned int nsim_states, 
+  arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
+  arma::cube& alpha, arma::mat& weights, arma::umat& indices);
+template double compute_ung_psi_filter(ung_ar1 model, const unsigned int nsim_states, 
   arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
   arma::cube& alpha, arma::mat& weights, arma::umat& indices);
 

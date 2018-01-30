@@ -230,8 +230,8 @@ for (unsigned int i = 0; i < n_stored; i++) {
       std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
       alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
     } else {
-      arma::mat alphahat_i(model.m, model.n + 1);
-      arma::cube Vt_i(model.m, model.m, model.n + 1);
+      arma::mat alphahat_i(1, model.n + 1);
+      arma::cube Vt_i(1, 1, model.n + 1);
       weighted_summary(alpha_i, alphahat_i, Vt_i, w);
       
       arma::mat diff = alphahat_i - alphahat;
