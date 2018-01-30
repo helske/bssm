@@ -153,6 +153,8 @@ Rcpp::List sde_pm_mcmc(const arma::vec& y, const double x0,
       Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
   } break;
   }
+  
+  return Rcpp::List::create(Rcpp::Named("error") = "error");
 }
 
 // [[Rcpp::export]]
@@ -204,6 +206,7 @@ Rcpp::List sde_da_mcmc(const arma::vec& y, const double x0,
       Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
   } break;
   }
+  return Rcpp::List::create(Rcpp::Named("error") = "error");
 }
 
 // [[Rcpp::export]]
@@ -266,4 +269,5 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
   } break;
   }
   
+  return Rcpp::List::create(Rcpp::Named("error") = "error");
 }
