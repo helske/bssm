@@ -3,7 +3,7 @@ title: "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Mode
 author: 
   - Jouni Helske^[Linköping University, Department of Science and Technology, Sweden, University of Jyväskylä, Department of Mathematics and Statistics, Finland]
   - Matti Vihola^[University of Jyväskylä, Department of Mathematics and Statistics, Finland]
-date: "January 04, 2017"
+date: "January 31, 2017"
 link-citations: true
 output: 
   pdf_document:
@@ -13,42 +13,40 @@ output:
     fig_width: 8
 bibliography: bssm.bib
 vignette: >
-%\VignetteIndexEntry{bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R}
+  %\VignetteIndexEntry{bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
   %\VignetteDepends{ggplot2, bayesplot, sde, ramcmc, sitmo}
-  ---
+---
   
-  ```{r setup, include=FALSE}
-  knitr::opts_chunk$set(echo = TRUE)
-  ```
-  
-  
-  # Introduction
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
   
   
-  State space models (SSM) are latent variable models which are commonly applied in analysing time series data due to their flexible and general framework  [cf. @DK2012]. For `R` [@r-core], there is large number of packages available for state space modelling, especially for the two special cases. First special case is linear-Gaussian SSM (LGSSM) where both the observation and state densities are Gaussian with linear relationships with the states. Another special case is SSM with discrete state space, which are sometimes called hidden Markov models (HMM). We do not consider HMMs in this paper. What is special about these two class of models is that the marginal likelihood function, and the conditional state distributions (conditioned on the observations) of these models are analytically tractable, making inference relatively straightforward. See for example [@Petris2010, @Tusell2010, @helske2017, @HelskeHelske2017] for review of some of the `R` packages dealing with these type of models. The `R` package `bssm` is designed for Bayesian inference of general state space models with non-Gaussian and/or non-linear observational and state equations. The package aims to provide easy-to-use and efficient functions for fully Bayesian inference of common time series models such basic structural time series model (BSM) [@Harvey1989] with exogenous covariates, simple stochastic volatility models, and discretized diffusion models, making it straighforward and efficient to make predictions and other inference in a Bayesian setting.
+# Introduction
   
-  When extending the state space modelling to non-linear or non-Gaussian models, some difficulties arise. As the model densities are no longer analytically tractable, computing the latent state distributions, as well as hyperparameter estimation of the model becomes more difficult. One general option is to use Markov chain Monte Carlo (MCMC) methods targeting the full joint posterior of hyperparameters and the latent states, for example by Gibbs sampling or Hamiltonian Monte Carlo. Unfortunately the joint posterior can be very high dimensional and due to the strong autocorrelation structures of the state densities, the efficiency of such methods can be relatively poor. Another asymptotically exact approach is based on the pseudo-marginal particle MCMC approach [@andrieu-doucet-holenstein], where the likelihood function and the state distributions are estimated using sequential Monte Carlo (SMC) i.e. particle filter (PF). However, methods can also be computationally demanding, and optimal tuning of such algorithms can be cumbersome. Yet another option is to resort to approximative methods such extended and unscented Kalman filters, as well as more general Laplace approximation provided for example by [@inla].
+State space models (SSM) are latent variable models which are commonly applied in analysing time series data due to their flexible and general framework  [cf. @DK2012]. For `R` [@r-core], there is large number of packages available for state space modelling, especially for the two special cases. First special case is linear-Gaussian SSM (LGSSM) where both the observation and state densities are Gaussian with linear relationships with the states. Another special case is SSM with discrete state space, which are sometimes called hidden Markov models (HMM). We do not consider HMMs in this paper. What is special about these two class of models is that the marginal likelihood function, and the conditional state distributions (conditioned on the observations) of these models are analytically tractable, making inference relatively straightforward. See for example [@Petris2010, @Tusell2010, @helske2017, @HelskeHelske2017] for review of some of the `R` packages dealing with these type of models. The `R` package `bssm` is designed for Bayesian inference of general state space models with non-Gaussian and/or non-linear observational and state equations. The package aims to provide easy-to-use and efficient functions for fully Bayesian inference of common time series models such basic structural time series model (BSM) [@Harvey1989] with exogenous covariates, simple stochastic volatility models, and discretized diffusion models, making it straighforward and efficient to make predictions and other inference in a Bayesian setting.
   
-  The motivation behind the `bssm` package is in [@vihola-helske-franks] which suggests a new computationally efficient, parallelisable approach for Bayesian inference of state space models. The core idea is to use fast approximative MCMC targeting the approximate marginal posterior of the hyperparameters, which is then used in importance sampling type weighting phase which provides asymptotically exact samples from the joint posterior of hyperparameters and the hidden states. In addition to this the two-stage procedure, standard pseudo-marginal MCMC and so called delayed acceptance pseudo-marginal MCMC are also supported. 
+When extending the state space modelling to non-linear or non-Gaussian models, some difficulties arise. As the model densities are no longer analytically tractable, computing the latent state distributions, as well as hyperparameter estimation of the model becomes more difficult. One general option is to use Markov chain Monte Carlo (MCMC) methods targeting the full joint posterior of hyperparameters and the latent states, for example by Gibbs sampling or Hamiltonian Monte Carlo. Unfortunately the joint posterior can be very high dimensional and due to the strong autocorrelation structures of the state densities, the efficiency of such methods can be relatively poor. Another asymptotically exact approach is based on the pseudo-marginal particle MCMC approach [@andrieu-doucet-holenstein], where the likelihood function and the state distributions are estimated using sequential Monte Carlo (SMC) i.e. particle filter (PF). However, methods can also be computationally demanding, and optimal tuning of such algorithms can be cumbersome. Yet another option is to resort to approximative methods such extended and unscented Kalman filters, as well as more general Laplace approximation provided for example by [@inla].
   
-  We will first introduce the basic state space modelling framework used in `bssm`, and the relevant algorithms. We then give illustrations how to use `bssm` in practice.
+The motivation behind the `bssm` package is in [@vihola-helske-franks] which suggests a new computationally efficient, parallelisable approach for Bayesian inference of state space models. The core idea is to use fast approximative MCMC targeting the approximate marginal posterior of the hyperparameters, which is then used in importance sampling type weighting phase which provides asymptotically exact samples from the joint posterior of hyperparameters and the hidden states. In addition to this the two-stage procedure, standard pseudo-marginal MCMC and so called delayed acceptance pseudo-marginal MCMC are also supported. 
   
-  ## State space models with linear-Gaussian dynamics
+We will first introduce the basic state space modelling framework used in `bssm`, and the relevant algorithms. We then give illustrations how to use `bssm` in practice.
   
-  Denote a sequence of observations $(y_1,\ldots,y_T)$ as $y_{1:T}$, and sequence of latent state variables $(\alpha_1,\ldots, \alpha_T)$ as $\alpha_{1:T}$. Note that in general both the observations and the states can be multivariate, but currently the main algorithms of `bssm` support only univariate observations. A general state space model consists of two parts: observation level densities $g_t(y_t | \alpha_t)$ and latent state transition densities $\mu_t(\alpha_{t+1} | \alpha_t)$. We first focus on the case where the state transitions are linear-Gaussian:
-  $$
-  \alpha_{t+1} = c_t + T_t \alpha_t + R_t \eta_t,
-  $$
-  where $c_t$ is known input vector (often omitted), and $T_t$ and $R_t$ are a system matrices which can depend on unknown parameters. Also, $\eta_t \sim N(0, I_k)$ and $\alpha_1 \sim N(a_1, P_1)$ independently of each other. For observation level density $g_t$, the `bssm` package currently supports basic stochastic volatility model and general exponential family state space models. 
+## State space models with linear-Gaussian dynamics
   
-  For exponential family models, the observation equation has a general form
+Denote a sequence of observations $(y_1,\ldots,y_T)$ as $y_{1:T}$, and sequence of latent state variables $(\alpha_1,\ldots, \alpha_T)$ as $\alpha_{1:T}$. Note that in general both the observations and the states can be multivariate, but currently the main algorithms of `bssm` support only univariate observations. A general state space model consists of two parts: observation level densities $g_t(y_t | \alpha_t)$ and latent state transition densities $\mu_t(\alpha_{t+1} | \alpha_t)$. We first focus on the case where the state transitions are linear-Gaussian:
+$$
+\alpha_{t+1} = c_t + T_t \alpha_t + R_t \eta_t,
+$$
+where $c_t$ is known input vector (often omitted), and $T_t$ and $R_t$ are a system matrices which can depend on unknown parameters. Also, $\eta_t \sim N(0, I_k)$ and $\alpha_1 \sim N(a_1, P_1)$ independently of each other. For observation level density $g_t$, the `bssm` package currently supports basic stochastic volatility model and general exponential family state space models. 
   
-  $$
-  g_t(y_t | d_t + Z_t \alpha_t, x'_t\beta, \phi, u_t),
-  $$
-  where $d_t$ is a again known input, $x_t$ contains the exogenous covariate values at time $t$, with $\beta$ corresponding to the regression coefficients. Parameter $\phi$ and the known vector $u_t$ are distribution specific and can be omitted in some cases. Currently, following observational level distributions are supported:
+For exponential family models, the observation equation has a general form
+$$
+g_t(y_t | d_t + Z_t \alpha_t, x'_t\beta, \phi, u_t),
+$$
+where $d_t$ is a again known input, $x_t$ contains the exogenous covariate values at time $t$, with $\beta$ corresponding to the regression coefficients. Parameter $\phi$ and the known vector $u_t$ are distribution specific and can be omitted in some cases. Currently, following observational level distributions are supported:
   
   * Gaussian distribution: $g_t(y_t | Z_t \alpha_t, x'_t\beta) = x'_t \beta + Z_t \alpha_t + H_t \epsilon_t$ with $\epsilon_t \sim N(0, 1)$.
   
@@ -58,32 +56,32 @@ vignette: >
   
   * Negative binomial distribution: $g_t(y_t | Z_t \alpha_t, x'_t \beta, \phi, u_t) = \textrm{negative binomial}(\exp(x'_t \beta + Z_t \alpha_t), \phi, u_t)$, where $u_t \exp(x'_t \beta + Z_t \alpha_t)$ is the expected value and $\phi$ is the dispersion parameter ($u_t$ is again exposure term).
   
-  For stochastic volatility model, there are two possible parameterizations available. In general for we have
-  $$
-  y_t = x'_t\beta + \sigma \exp(\alpha_t / 2)\epsilon_t, \quad \epsilon_t \sim N(0, 1),
-  $$
-  and
-  $$
-  \alpha_{t+1} = \mu + \rho (\alpha_t - \mu) + \sigma_{\eta} \eta_t,
-  $$
-  with $\alpha_1 \sim  N(\mu, \sigma^2_{\eta} / (1-\rho^2))$. For identifiability purposes we must either choose $\sigma=1$ or $\mu=0$. Although analytically identical, the parameterization with $\mu$ is often preferable in terms of computational efficiency.
+For stochastic volatility model, there are two possible parameterizations available. In general for we have
+$$
+y_t = x'_t\beta + \sigma \exp(\alpha_t / 2)\epsilon_t, \quad \epsilon_t \sim N(0, 1),
+$$
+and
+$$
+\alpha_{t+1} = \mu + \rho (\alpha_t - \mu) + \sigma_{\eta} \eta_t,
+$$
+with $\alpha_1 \sim  N(\mu, \sigma^2_{\eta} / (1-\rho^2))$. For identifiability purposes we must either choose $\sigma=1$ or $\mu=0$. Although analytically identical, the parameterization with $\mu$ is often preferable in terms of computational efficiency.
   
-  Typically some of the model components such as $\beta$, $T_t$ or $R_t$ depend on unknown parameter vector $\theta$, so $g_t(y_t | \alpha_t)$ and $\mu_t(\alpha_{t+1} | \alpha_t)$ depend implicitly on $\theta$. Our goal is to perform Bayesian inference of the joint posterior of $\alpha_{1:T}$ and $\theta$. 
+Typically some of the model components such as $\beta$, $T_t$ or $R_t$ depend on unknown parameter vector $\theta$, so $g_t(y_t | \alpha_t)$ and $\mu_t(\alpha_{t+1} | \alpha_t)$ depend implicitly on $\theta$. Our goal is to perform Bayesian inference of the joint posterior of $\alpha_{1:T}$ and $\theta$. 
   
   
-  ## MCMC for Gaussian state space models
+## MCMC for Gaussian state space models
   
-  Given the prior $p(\theta)$, the joint posterior of $\theta$ and $\alpha_{1:T}$ is given as
+Given the prior $p(\theta)$, the joint posterior of $\theta$ and $\alpha_{1:T}$ is given as
   
-  $$
-  p(\alpha_{1:T}, \theta | y_{1:T}) \propto p(\theta) p(\alpha_{1:T}, y_{1:T} | \theta) = p(\theta) p(y | \theta)  p( \alpha_{1:T} | y_{1:T}, \theta)
-  $$
+$$
+p(\alpha_{1:T}, \theta | y_{1:T}) \propto p(\theta) p(\alpha_{1:T}, y_{1:T} | \theta) = p(\theta) p(y | \theta)  p( \alpha_{1:T} | y_{1:T}, \theta)
+$$
   
-  where $p(y_{1:T} | \theta)$ is the marginal likelihood, and $p(\alpha_{1:T} | y_{1:T}, \theta)$ is often referred as a smoothing distribution. However, instead of targeting this joint posterior, it is typically more efficient to target the marginal posterior $p(\theta | y)$, and then given the sample $\{\theta^{i}\}^n_{i=1}$ from this marginal posterior, simulate states $\alpha^i_{1:T}$ from the smoothing distribution $p(\alpha_{1:T} | y_{1:T}, \theta^i)$ for $i=1\ldots,n$.
+where $p(y_{1:T} | \theta)$ is the marginal likelihood, and $p(\alpha_{1:T} | y_{1:T}, \theta)$ is often referred as a smoothing distribution. However, instead of targeting this joint posterior, it is typically more efficient to target the marginal posterior $p(\theta | y)$, and then given the sample $\{\theta^{i}\}^n_{i=1}$ from this marginal posterior, simulate states $\alpha^i_{1:T}$ from the smoothing distribution $p(\alpha_{1:T} | y_{1:T}, \theta^i)$ for $i=1\ldots,n$.
   
-  For Gaussian models given the parameters $\theta$, the marginal likelihood $p(y_{1:T} | \theta)$ can be computed using the well known Kalman filter recursions, and there are several algorithms for simulating the states $\alpha_{1:T}$ from the smoothing distribution $p(\alpha_{1:T} | y_{1:T})$ (see for example @DK2012). Therefore we can straightforwardly apply standard MCMC algoritms. In `bssm`, we use an adaptive random walk Metropolis algorithm based on RAM [@Vihola2012] where we fix the target acceptance rate beforehand. There RAM algorithm is provided by the `ramcmc` package [@helske-ram]. The complete adaptive MCMC algorithm of `bssm` for Gaussian models is as follows.
+For Gaussian models given the parameters $\theta$, the marginal likelihood $p(y_{1:T} | \theta)$ can be computed using the well known Kalman filter recursions, and there are several algorithms for simulating the states $\alpha_{1:T}$ from the smoothing distribution $p(\alpha_{1:T} | y_{1:T})$ (see for example @DK2012). Therefore we can straightforwardly apply standard MCMC algoritms. In `bssm`, we use an adaptive random walk Metropolis algorithm based on RAM [@Vihola2012] where we fix the target acceptance rate beforehand. There RAM algorithm is provided by the `ramcmc` package [@helske-ram]. The complete adaptive MCMC algorithm of `bssm` for Gaussian models is as follows.
   
-  Given the target acceptance rate $a^{\ast}$ (e.g. 0.234) and $\gamma \in (0,1]$ (the default 2/3 works well in practice), at iteration $i$:
+Given the target acceptance rate $a^{\ast}$ (e.g. 0.234) and $\gamma \in (0,1]$ (the default 2/3 works well in practice), at iteration $i$:
   
   1. Compute the proposal $\theta' = \theta^{i-1} + S_{i-1} u^i$, where $u_i$ is simulated from the standard $d$-dimensional Gaussian distribution and $S_{i-1}$ is a lower diagonal matrix with positive diagonal elements. 
   2. Accept the proposal with probability $a^i := \min\{1, \frac{p(\theta')p(y_{1:T} | \theta')}{p(\theta^{i-1}) p(y_{1:T} | \theta^{i-1})\}}$.
@@ -93,105 +91,105 @@ vignette: >
   S_i S_i^T = S_{i-1}\left(I + \min\{1, d i^{-\gamma}\} (a^i - a^{\ast}) \frac{u_i u_i^T}{\|u_i\|^2}\right) S_{i-1}^T.
   $$
   
-  If the interest is in the posterior means and variances of the states, we can replace the simulation smoothing in step 3 with standard fixed interval smoothing which gives the smoothed estimates (expected values and variances) of the states given the data and the model parameters. From these, the posterior means and variances of the states can be computed straightforwardly.
+If the interest is in the posterior means and variances of the states, we can replace the simulation smoothing in step 3 with standard fixed interval smoothing which gives the smoothed estimates (expected values and variances) of the states given the data and the model parameters. From these, the posterior means and variances of the states can be computed straightforwardly.
   
-  ## Non-Gaussian models
+## Non-Gaussian models
   
-  For non-linear/non-Gaussian models, the marginal likelihood $p(y_{1:T} | \theta)$ is typically not available in closed form. Thus we need to resort to simulation methods, which leads to pseudo-marginal MCMC algorithm [@lin-liu-sloan, @beaumont, @andrieu-roberts]. The observational densities of our non-linear/non-Gaussian models are all twice differentiable, so we can straightforwardly use the Laplace approximation based on [@DK2000]. This gives us an approximating Gaussian model which has the same mode of $p(\alpha_{1:T} | y_{1:T}, \theta)$ as the original model. Often this approximating Gaussian model works well as such, and thus we can use it in MCMC scheme directly, which results in an approximate Bayesian inference. We can also use the approximating model together with importance sampling or particle filtering, which produces exact Bayesian inference on $p(\alpha_{1:T}, \theta | y_{1:T})$. 
+For non-linear/non-Gaussian models, the marginal likelihood $p(y_{1:T} | \theta)$ is typically not available in closed form. Thus we need to resort to simulation methods, which leads to pseudo-marginal MCMC algorithm [@lin-liu-sloan, @beaumont, @andrieu-roberts]. The observational densities of our non-linear/non-Gaussian models are all twice differentiable, so we can straightforwardly use the Laplace approximation based on [@DK2000]. This gives us an approximating Gaussian model which has the same mode of $p(\alpha_{1:T} | y_{1:T}, \theta)$ as the original model. Often this approximating Gaussian model works well as such, and thus we can use it in MCMC scheme directly, which results in an approximate Bayesian inference. We can also use the approximating model together with importance sampling or particle filtering, which produces exact Bayesian inference on $p(\alpha_{1:T}, \theta | y_{1:T})$. 
   
-  We will illustrate our approach using simple importance sampling. We can factor the likelihood of the non-Gaussian model as [@DK2012]
-  $$
-  \begin{aligned}
-  p(y_{1:T} | \theta) &= \int g(\alpha_{1:T}, y_{1:T} | \theta)\textrm{d}\alpha \\
-  &= g(y_{1:T} | \theta) E_g\left[\frac{g(y_{1:T}| \alpha_{1:T}, \theta)}{\tilde g(y_{1:T}| \alpha_{1:T}, \theta)}\right],
-  \end{aligned}
-  $$
-  where $\tilde g(y_{1:T} | \theta)$ is the likelihood of the Gaussian approximating model and the expectation is taken with respect to the Gaussian density $g(\alpha|y, \theta)$. Equivalently we can write
-  $$
-  \begin{aligned}
-  \log p(y_{1:T} | \theta) &= \log g(y_{1:T} | \theta) + \log E_g\left[\frac{g(y_{1:T}| \alpha_{1:T}, \theta)}{\tilde g(y_{1:T}| \alpha_{1:T}, \theta)}\right] \\
-  &= \log g(y_{1:T} | \theta) + \log \frac{g(y_{1:T}| \hat \alpha_{1:T}, \theta)}{\tilde g(y_{1:T}| \hat \alpha_{1:T}, \theta)}+ \log E_g\left[\frac{g(y_{1:T}| \alpha, \theta) / g(y_{1:T} | \hat \alpha_{1:T}, \theta)}{\tilde g(y_{1:T}| \alpha_{1:T}, \theta) / \tilde g(y_{1:T} | \hat \alpha_{1:T}, \theta)}\right]\\
-  &=\log g(y | \theta) + \log \hat w + \log E_g w^{\ast}\\
-  &\approx \log g(y | \theta) + \log \hat w  + \log \frac{1}{N}\sum_{j=1}^N w_j^{\ast},
-  \end{aligned}
-  $$
-  where $\hat \alpha_{1:T}$ is the conditional mode estimate obtained from the approximating Gaussian model. For approximating inference, we simply omit the term $\log \frac{1}{N}\sum_{j=1}^N w_j^{\ast}$.
+We will illustrate our approach using simple importance sampling. We can factor the likelihood of the non-Gaussian model as [@DK2012]
+$$
+\begin{aligned}
+p(y_{1:T} | \theta) &= \int g(\alpha_{1:T}, y_{1:T} | \theta)\textrm{d}\alpha \\
+&= g(y_{1:T} | \theta) E_g\left[\frac{g(y_{1:T}| \alpha_{1:T}, \theta)}{\tilde g(y_{1:T}| \alpha_{1:T}, \theta)}\right],
+\end{aligned}
+$$
+where $\tilde g(y_{1:T} | \theta)$ is the likelihood of the Gaussian approximating model and the expectation is taken with respect to the Gaussian density $g(\alpha|y, \theta)$. Equivalently we can write
+$$
+\begin{aligned}
+\log p(y_{1:T} | \theta) &= \log g(y_{1:T} | \theta) + \log E_g\left[\frac{g(y_{1:T}| \alpha_{1:T}, \theta)}{\tilde g(y_{1:T}| \alpha_{1:T}, \theta)}\right] \\
+&= \log g(y_{1:T} | \theta) + \log \frac{g(y_{1:T}| \hat \alpha_{1:T}, \theta)}{\tilde g(y_{1:T}| \hat \alpha_{1:T}, \theta)}+ \log E_g\left[\frac{g(y_{1:T}| \alpha, \theta) / g(y_{1:T} | \hat alpha_{1:T}, \theta)}{\tilde g(y_{1:T}| \alpha_{1:T}, \theta) / \tilde g(y_{1:T} | \hat \alpha_{1:T}, \theta)}\right]\\
+&=\log g(y | \theta) + \log \hat w + \log E_g w^{\ast}\\
+&\approx \log g(y | \theta) + \log \hat w  + \log \frac{1}{N}\sum_{j=1}^N w_j^{\ast},
+\end{aligned}
+$$
+where $\hat \alpha_{1:T}$ is the conditional mode estimate obtained from the approximating Gaussian model. For approximating inference, we simply omit the term $\log \frac{1}{N}\sum_{j=1}^N w_j^{\ast}$.
   
-  In principle, when using the exact Bayesian inference we should simulate multiple realizations of the states $\alpha_{1:T}$ in each iteration of MCMC in order to compute $\log \frac{1}{N}\sum_{j=1}^N w_j^{\ast}$. Fortunately, we can use so called delayed acceptance (DA) approach [@Christen2005; @Banterle2015] which speeds up the computation considerably. Instead of single acceptance step we use two-stage approach as follows.
+In principle, when using the exact Bayesian inference we should simulate multiple realizations of the states $\alpha_{1:T}$ in each iteration of MCMC in order to compute $\log \frac{1}{N}\sum_{j=1}^N w_j^{\ast}$. Fortunately, we can use so called delayed acceptance (DA) approach [@Christen2005; @Banterle2015] which speeds up the computation considerably. Instead of single acceptance step we use two-stage approach as follows.
   
   1. Make initial acceptance of the given proposal $\theta'$ with probability 
   $\min\left\{1, \frac{p(y_{1:T} | \theta') \hat w' }{p(y_{1:T} | \theta^{i-1}) \hat w^{i-1}}\right\}$.
   2. If accepted, perform the importance sampling of the states $\alpha_{1:T}$ and make the delayed acceptance with probability $\min\{1, \sum_{j=1}^N w_{j}^{\ast,'} / \sum_{j=1}^N w_j^{\ast, i-1}\}$.
   3. If the delayed acceptance is successful, set $\theta^i = \theta'$ and sample one (or multiple) realization of the previously simulated states with weights $w^i_j, j = 1, \ldots, N$ (with replacement in case of multiple samples are stored). Otherwise, set $\theta^i = \theta^{i-1}$ and similarly for the states.
   
-  If our approximation is good, then most of the times when we accept in the first stage we also accept in seconds stage, and thus we often need to simulate the states only for each accepted state. Compared to standard pseudo-marginal approach where we need to simulate the states for each proposal, DA can provide substantial computational benefits.
+If our approximation is good, then most of the times when we accept in the first stage we also accept in seconds stage, and thus we often need to simulate the states only for each accepted state. Compared to standard pseudo-marginal approach where we need to simulate the states for each proposal, DA can provide substantial computational benefits.
   
-  However, the simple importance approach does not scale well with the data, leading to large variance in importance weights. Thus it is more efficient to use particle filtering based simulation methods for the marginal likelihood estimation and state simulation. Although `bssm` supports standard bootstrap particle filter [@gordon-salmond-smith], we recommend using more efficient $\psi$-auxiliary particle filter [@vihola-helske-franks] which makes use of our approximating Gaussian model. With $\psi$-APF, we typically need only a very few particles (say 10) for relatively accurate likelihood estimate, which again speeds up the computations.
+However, the simple importance approach does not scale well with the data, leading to large variance in importance weights. Thus it is more efficient to use particle filtering based simulation methods for the marginal likelihood estimation and state simulation. Although `bssm` supports standard bootstrap particle filter [@gordon-salmond-smith], we recommend using more efficient $\psi$-auxiliary particle filter [@vihola-helske-franks] which makes use of our approximating Gaussian model. With $\psi$-APF, we typically need only a very few particles (say 10) for relatively accurate likelihood estimate, which again speeds up the computations.
   
-  In addition to standard pseudo-marginal MCMC or its DA variant, `bssm` also supports the importance sampling type correction method presented in @vihola-helske-franks. Here the MCMC algorithm targets the approximate marginal posterior of $\theta$, and the correction to actual target joint posterior is made in offline fashion using SMC. Essentially it has all the same ingredients as DA algorithm described above, but by splitting work into to separate tasks, we get additional computational benefits over DA as we need to run the particle filter only for each accepted value of the Markov chain (after burnin), and the weight computations are straightforwardly parallelisable. fOr effciency comparisons between IS-weighting and DA, see @vihola-helske-franks and @franks-vihola.
+In addition to standard pseudo-marginal MCMC or its DA variant, `bssm` also supports the importance sampling type correction method presented in @vihola-helske-franks. Here the MCMC algorithm targets the approximate marginal posterior of $\theta$, and the correction to actual target joint posterior is made in offline fashion using SMC. Essentially it has all the same ingredients as DA algorithm described above, but by splitting work into to separate tasks, we get additional computational benefits over DA as we need to run the particle filter only for each accepted value of the Markov chain (after burnin), and the weight computations are straightforwardly parallelisable. fOr effciency comparisons between IS-weighting and DA, see @vihola-helske-franks and @franks-vihola.
   
-  For all MCMC algorithms, `bssm` uses so-called jump chain representation of the Markov chain $X_1,\ldots,X_n$, where we only store each accepted $X_k$ and the number of steps we stayed on the same state. So for example if $X_{1:n} = (1,2,2,1,1,1)$, we present such chain as $\tilde X = (1,2,1)$, $N=(1,2,3)$. This approach reduces the storage space, and makes it more efficient to use importance sampling type correction algorithms. One drawback of this approach is that the results from the MCMC runs correspond to weighted samples from the target posterior, so some of the commonly used postprocessing tools need to be adjusted. Of course in case of other methods than IS-weighting, the simplest option is to just expand the samples using the stored counts $N$ instead.
+For all MCMC algorithms, `bssm` uses so-called jump chain representation of the Markov chain $X_1,\ldots,X_n$, where we only store each accepted $X_k$ and the number of steps we stayed on the same state. So for example if $X_{1:n} = (1,2,2,1,1,1)$, we present such chain as $\tilde X = (1,2,1)$, $N=(1,2,3)$. This approach reduces the storage space, and makes it more efficient to use importance sampling type correction algorithms. One drawback of this approach is that the results from the MCMC runs correspond to weighted samples from the target posterior, so some of the commonly used postprocessing tools need to be adjusted. Of course in case of other methods than IS-weighting, the simplest option is to just expand the samples using the stored counts $N$ instead.
   
-  ## Non-linear model state densities
+## Non-linear model state densities
   
-  In case the state equation is non-linear, the standard particle MCMC approach using bootstrap filter can still be used. For delayed acceptance and IS-weighting approaches, as well as $\psi$-APF, new approximation techniques are needed. For this tasks, the `bssm` supports approximations by extended Kalman filter (EKF). Same approach is also applicable to the case with non-linear Gaussian observation densities. Due to the more general form of these models, definition of these models with `bssm` is slightly more complex. The general non-linear Gaussian model in the `bssm` has following form:
+In case the state equation is non-linear, the standard particle MCMC approach using bootstrap filter can still be used. For delayed acceptance and IS-weighting approaches, as well as $\psi$-APF, new approximation techniques are needed. For this tasks, the `bssm` supports approximations by extended Kalman filter (EKF). Same approach is also applicable to the case with non-linear Gaussian observation densities. Due to the more general form of these models, definition of these models with `bssm` is slightly more complex. The general non-linear Gaussian model in the `bssm` has following form:
   
-  $$
-  y_t = Z(t, \alpha_t, \theta) + H(t, \alpha_t, \theta)\epsilon_t,\\
-  \alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \alpha_t, \theta)\eta_t,\\
-  \alpha_1 \sim N(a_1(\theta), P_1(\theta)),
-  $$
-  with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ needed by the EKF and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions. All of these functions can also depend on some known parameters, defined as `known_params` (vector) and `known_tv_params` (matrix with $n$ columns) arguments to `nlg_ssm` function. Note that while using the Laplace approximation as intermediate step is typically always more efficient that standard BSF based particle MCMC, the EKF approximation can be very unstable, and thus the the methods using EKF in the approximation phase can have poor performance in some cases.
+$$
+y_t = Z(t, \alpha_t, \theta) + H(t, \alpha_t, \theta)\epsilon_t,\\
+\alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \alpha_t, \theta)\eta_t,\\
+\alpha_1 \sim N(a_1(\theta), P_1(\theta)),
+$$
+with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ needed by the EKF and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions. All of these functions can also depend on some known parameters, defined as `known_params` (vector) and `known_tv_params` (matrix with $n$ columns) arguments to `nlg_ssm` function. Note that while using the Laplace approximation as intermediate step is typically always more efficient that standard BSF based particle MCMC, the EKF approximation can be very unstable, and thus the the methods using EKF in the approximation phase can have poor performance in some cases.
   
-  ## Time-discretised diffusion models
+## Time-discretised diffusion models
   
-  The `bssm` package also supports models where the state equation is defined as a continuous time diffusion model of form
-  $$
-  \textrm{d} \alpha_t =
-  \mu(t, \alpha_t,\theta) \textrm{d} t +
-  \sigma(t, \alpha_t, \theta) \textrm{d} B_t, \quad t\geq0,
-  $$
-  where $B_t$ is a (vector valued) Brownian motion and where $\mu$ and $\sigma$ are vector and matrix valued functions, with the univariate observation density $p(y_k | \alpha_k)$ defined at integer times $k=1\ldots,n$. As these transition densities are generally unavailable for non-linear diffusions, we use Millstein time-discretisation scheme for approximate simulation with bootstrap particle filter. Fine discretisation mesh gives less bias than the coarser one, with increased computational complexity. The DA and IS approaches can be used to speed up the inference by using coarse discretisation in the first stage, and then using more fine mesh in the second stage. For comparison of DA and IS approaches in case of geometric Brownian motion model, see again @vihola-helske-franks. Like non-linear Gaussian models, this model is also defined by small C++ snippets.
+The `bssm` package also supports models where the state equation is defined as a continuous time diffusion model of form
+$$
+\textrm{d} \alpha_t =
+\mu(t, \alpha_t,\theta) \textrm{d} t +
+\sigma(t, \alpha_t, \theta) \textrm{d} B_t, \quad t\geq0,
+$$
+where $B_t$ is a (vector valued) Brownian motion and where $\mu$ and $\sigma$ are vector and matrix valued functions, with the univariate observation density $p(y_k | \alpha_k)$ defined at integer times $k=1\ldots,n$. As these transition densities are generally unavailable for non-linear diffusions, we use Millstein time-discretisation scheme for approximate simulation with bootstrap particle filter. Fine discretisation mesh gives less bias than the coarser one, with increased computational complexity. The DA and IS approaches can be used to speed up the inference by using coarse discretisation in the first stage, and then using more fine mesh in the second stage. For comparison of DA and IS approaches in case of geometric Brownian motion model, see again @vihola-helske-franks. Like non-linear Gaussian models, this model is also defined by small C++ snippets.
   
   
-  # Package functionality
+# Package functionality
   
-  Main functions of `bssm` is written in `C++`, with help of `Rcpp` and `RcppArmadillo` packages. On the `R`side, package uses S3 methods in order to provide relatively unified workflow independent of the type of the model one is working with. The model building functions such as `ng_bsm` and `svm` are used to construct the actual state models which can be then passed to other methods, such as `logLik` and `run_mcmc` which compute the log-likelihood value and run MCMC algorithm respectively. We will now briefly describe the main functions and methods of `bssm`, for more detailed descriptions of different function arguments and return values, see the corresponding documentation in `R`.
+Main functions of `bssm` is written in `C++`, with help of `Rcpp` and `RcppArmadillo` packages. On the `R`side, package uses S3 methods in order to provide relatively unified workflow independent of the type of the model one is working with. The model building functions such as `ng_bsm` and `svm` are used to construct the actual state models which can be then passed to other methods, such as `logLik` and `run_mcmc` which compute the log-likelihood value and run MCMC algorithm respectively. We will now briefly describe the main functions and methods of `bssm`, for more detailed descriptions of different function arguments and return values, see the corresponding documentation in `R`.
   
-  ## Model building functions
+## Model building functions
   
-  For linear-Gaussian models, `bssm` offers functions `bsm` for basic univariate structural time series models (BSM), `ar1` for univariate, possibly noisy AR(1) process, as well as general `lgg_ssm` for arbitrary (multivariate) LGSSMs, defined via pointers to user supplied `C++` functions. There is also a function `gssm` for general univariate LGSSM where user defines the system matrices directly as R objects, which can be more convinient in many cases. However, defining the priors for this model is somewhat more restricted, whereas for `lgg_smm`, arbitrary prior definitions can be used. As an example, consider a Gaussian local linear trend model of form
+For linear-Gaussian models, `bssm` offers functions `bsm` for basic univariate structural time series models (BSM), `ar1` for univariate, possibly noisy AR(1) process, as well as general `lgg_ssm` for arbitrary (multivariate) LGSSMs, defined via pointers to user supplied `C++` functions. There is also a function `gssm` for general univariate LGSSM where user defines the system matrices directly as R objects, which can be more convinient in many cases. However, defining the priors for this model is somewhat more restricted, whereas for `lgg_smm`, arbitrary prior definitions can be used. As an example, consider a Gaussian local linear trend model of form
   
-  $$
-  \begin{aligned}
-  y_t &= \mu_t + \epsilon_t,\\
-  \mu_{t+1} &= \mu_t + \nu_t + \eta_t,\\
-  \nu_{t+1} &= \nu_t + \xi_t,
-  \end{aligned}
-  $$
-  with zero-mean Gaussian noise terms $\epsilon_t, \eta_t, \xi_t$ with unknown standard deviations. This model can be built with `bsm` function as 
+$$
+\begin{aligned}
+y_t &= \mu_t + \epsilon_t,\\
+\mu_{t+1} &= \mu_t + \nu_t + \eta_t,\\
+\nu_{t+1} &= \nu_t + \xi_t,
+\end{aligned}
+$$
+with zero-mean Gaussian noise terms $\epsilon_t, \eta_t, \xi_t$ with unknown standard deviations. This model can be built with `bsm` function as 
+
+```{r nhtemp}
+library("bssm")
+data("nhtemp", package = "datasets")
+prior <- halfnormal(1, 10)
+bsm_model <- bsm(y = nhtemp, sd_y = prior, sd_level = prior,
+sd_slope = prior)
+```
   
-  ```{r nhtemp}
-  library("bssm")
-  data("nhtemp", package = "datasets")
-  prior <- halfnormal(1, 10)
-  bsm_model <- bsm(y = nhtemp, sd_y = prior, sd_level = prior,
-  sd_slope = prior)
-  ```
+Here we use helper function `halfnormal` which defines half-Normal prior distribution for the standard deviation parameters, with first argument defining the initial value of the parameter, and second defines the scale parameter of the half-Normal distribution. Other prior options are `normal` and `uniform`.
   
-  Here we use helper function `halfnormal` which defines half-Normal prior distribution for the standard deviation parameters, with first argument defining the initial value of the parameter, and second defines the scale parameter of the half-Normal distribution. Other prior options are `normal` and `uniform`.
+Same model could also by built with `lgg_ssm`, by defining the small `C++` snippets and passing the corresponding external pointers to `lgg_ssm`. For the BSM model, we can use following `cpp` file:
   
-  Same model could also by built with `lgg_ssm`, by defining the small `C++` snippets and passing the corresponding external pointers to `lgg_ssm`. For the BSM model, we can use following `cpp` file:
+```{Rcpp lgg_ssm_template, code=readLines('lgg_ssm_template.cpp'), eval = FALSE, echo = TRUE}
+```
   
-  ```{Rcpp lgg_ssm_template, code=readLines('lgg_ssm_template.cpp'), eval = FALSE, echo = TRUE}
-  ```
+Note that most of this code is general and can be modified to specific models accordingly by changing the function bodies. Word of caution when using these `C++` snippets: Due to the use of pointers, users must recompile and construct the model objects in each `R` session, i.e. saving and later loading the model object is not sufficient. Also, using the `sourceCpp` function from the `Rcpp` package repeatedly for the recompilation of the external pointers from the same file can cause `R` crash unexpectedly, if the corresponding cache directory is not changed between compilations^[1].
   
-  Note that most of this code is general and can be modified to specific models accordingly by changing the function bodies. Word of caution when using these `C++` snippets: Due to the use of pointers, users must recompile and construct the model objects in each `R` session, i.e. saving and later loading the model object is not sufficient. Also, using the `sourceCpp` function from the `Rcpp` package repeatedly for the recompilation of the external pointers from the same file can cause `R` crash unexpectedly, if the corresponding cache directory is not changed between compilations^[1].
+[^1]: https://github.com/helske/crashtest/issues/1.
   
-  [^1]: https://github.com/helske/crashtest/issues/1.
-  
-  We can then compile the file and construct the model as
-  ```{r nhtemp_cpp}
+We can then compile the file and construct the model as
+```{r nhtemp_cpp}
 Rcpp::sourceCpp("lgg_ssm_template.cpp", rebuild = TRUE, 
 cacheDir = paste0(tempdir(), round(runif(1) * 1000)), 
 cleanupCacheDir = TRUE)
