@@ -18,27 +18,32 @@
 ung_amcmc::ung_amcmc(const unsigned int n_iter, 
   const unsigned int n_burnin, const unsigned int n_thin, const unsigned int n, 
   const unsigned int m, const double target_acceptance, const double gamma, 
-  const arma::mat& S, const unsigned int output_type) :
+  const arma::mat& S, const unsigned int output_type, const bool store_modes) :
   mcmc(n_iter, n_burnin, n_thin, n, m,
     target_acceptance, gamma, S, output_type),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
-    y_storage(arma::mat(n, n_samples)), H_storage(arma::mat(n, n_samples)),
-    scales_storage(arma::mat(n, n_samples)),
+    y_storage(arma::mat(n, n_samples * store_modes)), 
+    H_storage(arma::mat(n, n_samples * store_modes)),
+    scales_storage(arma::mat(n, n_samples * store_modes)),
     approx_loglik_storage(arma::vec(n_samples)), 
-    prior_storage(arma::vec(n_samples)){
+    prior_storage(arma::vec(n_samples)), store_modes(store_modes) {
 }
 
 void ung_amcmc::trim_storage() {
   theta_storage.resize(n_par, n_stored);
   posterior_storage.resize(n_stored);
   count_storage.resize(n_stored);
-  alpha_storage.resize(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
-  weight_storage.resize(n_stored);
-  scales_storage.resize(y_storage.n_rows, n_stored);
-  y_storage.resize(y_storage.n_rows, n_stored);
-  H_storage.resize(H_storage.n_rows, n_stored);
+  if (output_type == 1) {
+    alpha_storage.resize(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
+  }
   approx_loglik_storage.resize(n_stored);
+  weight_storage.resize(n_stored);
   prior_storage.resize(n_stored);
+  if (store_modes) {
+    scales_storage.resize(y_storage.n_rows, n_stored);
+    y_storage.resize(y_storage.n_rows, n_stored);
+    H_storage.resize(H_storage.n_rows, n_stored);
+  }
 }
 
 void ung_amcmc::expand() {
@@ -54,10 +59,28 @@ void ung_amcmc::expand() {
   posterior_storage.set_size(n_stored);
   posterior_storage = expanded_posterior;
   
-  arma::cube expanded_alpha = rep_cube(alpha_storage, count_storage);
-  alpha_storage.set_size(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
-  alpha_storage = expanded_alpha;
+  arma::vec expanded_weight = rep_vec(weight_storage, count_storage);
+  weight_storage.set_size(n_stored);
+  weight_storage = expanded_weight;
   
+  arma::vec expanded_prior = rep_vec(prior_storage, count_storage);
+  prior_storage.set_size(n_stored);
+  prior_storage = expanded_prior;
+  
+  count_storage.resize(n_stored);
+  count_storage.ones();
+  
+  arma::vec expanded_approx_loglik = rep_vec(approx_loglik_storage, count_storage);
+  approx_loglik_storage.set_size(n_stored);
+  approx_loglik_storage = expanded_approx_loglik;
+  
+  if (output_type == 1) {
+    arma::cube expanded_alpha = rep_cube(alpha_storage, count_storage);
+    alpha_storage.set_size(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
+    alpha_storage = expanded_alpha;
+  }
+  
+  if (store_modes) {
   arma::mat expanded_scales = rep_mat(scales_storage, count_storage);
   scales_storage.set_size(scales_storage.n_rows, n_stored);
   scales_storage = expanded_scales;
@@ -70,21 +93,7 @@ void ung_amcmc::expand() {
   H_storage.set_size(H_storage.n_rows, n_stored);
   H_storage = expanded_H;
   
-  arma::vec expanded_weight = rep_vec(weight_storage, count_storage);
-  weight_storage.set_size(n_stored);
-  weight_storage = expanded_weight;
-  
-  arma::vec expanded_approx_loglik = rep_vec(approx_loglik_storage, count_storage);
-  approx_loglik_storage.set_size(n_stored);
-  approx_loglik_storage = expanded_approx_loglik;
-  
-  arma::vec expanded_prior = rep_vec(prior_storage, count_storage);
-  prior_storage.set_size(n_stored);
-  prior_storage = expanded_prior;
-  
-  count_storage.resize(n_stored);
-  count_storage.ones();
-  
+  }
 }
 
 // run approximate MCMC for
@@ -203,10 +212,12 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
       if (new_value) {
         approx_loglik_storage(n_stored) = approx_loglik;
         theta_storage.col(n_stored) = theta;
-        y_storage.col(n_stored) = approx_y;
-        H_storage.col(n_stored) = approx_H;
+        if (store_modes) {
+          y_storage.col(n_stored) = approx_y;
+          H_storage.col(n_stored) = approx_H;
+          scales_storage.col(n_stored) = scales;
+        }
         prior_storage(n_stored) = logprior;
-        scales_storage.col(n_stored) = scales;
         count_storage(n_stored) = 1;
         n_stored++;
         new_value = false;

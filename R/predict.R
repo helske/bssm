@@ -77,7 +77,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
   
   type <- match.arg(type, c("response", "mean", "state"))
   
-  if (object$mcmc_type != 1) stop("MCMC output must contain posterior samples of the states.")
+  if (object$output_type != 1) stop("MCMC output must contain posterior samples of the states.")
   
   if (missing(nsim)) {
     if(object$mcmc_type == "ekf" && intervals) {

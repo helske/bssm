@@ -709,45 +709,42 @@ run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
     S <- diag(0.1 * pmax(0.1, abs(object$theta)), length(object$theta))
   }
   
-  if (type != 2) {
-    if (method == "da"){
+  if (method == "da"){
+    if (L_f <= L_c) stop("L_f should be larger than L_c.")
+    if(L_c < 1) stop("L_c should be at least 1")
+    out <- sde_da_mcmc(object$y, object$x0, object$positive,
+      object$drift, object$diffusion, object$ddiffusion,
+      object$prior_pdf, object$obs_pdf, object$theta,
+      nsim_states, L_c, L_f, seed,
+      n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+      end_adaptive_phase)
+  } else {
+    if(method == "pm") {
+      if (missing(L_c)) L_c <- 0
+      if (missing(L_f)) L_f <- 0
+      L <- max(L_c, L_f)
+      if(L <= 0) stop("L should be positive.")
+      out <- sde_pm_mcmc(object$y, object$x0, object$positive,
+        object$drift, object$diffusion, object$ddiffusion,
+        object$prior_pdf, object$obs_pdf, object$theta,
+        nsim_states, L, seed,
+        n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        end_adaptive_phase, type)
+    } else {
       if (L_f <= L_c) stop("L_f should be larger than L_c.")
       if(L_c < 1) stop("L_c should be at least 1")
-      out <- sde_da_mcmc(object$y, object$x0, object$positive,
+      
+      out <- sde_is_mcmc(object$y, object$x0, object$positive,
         object$drift, object$diffusion, object$ddiffusion,
         object$prior_pdf, object$obs_pdf, object$theta,
         nsim_states, L_c, L_f, seed,
         n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-        end_adaptive_phase)
-    } else {
-      if(method == "pm") {
-        if (missing(L_c)) L_c <- 0
-        if (missing(L_f)) L_f <- 0
-        L <- max(L_c, L_f)
-        if(L <= 0) stop("L should be positive.")
-        out <- sde_pm_mcmc(object$y, object$x0, object$positive,
-          object$drift, object$diffusion, object$ddiffusion,
-          object$prior_pdf, object$obs_pdf, object$theta,
-          nsim_states, L, seed,
-          n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          end_adaptive_phase, type)
-      } else {
-        if (L_f <= L_c) stop("L_f should be larger than L_c.")
-        if(L_c < 1) stop("L_c should be at least 1")
-        
-        out <- sde_is_mcmc(object$y, object$x0, object$positive,
-          object$drift, object$diffusion, object$ddiffusion,
-          object$prior_pdf, object$obs_pdf, object$theta,
-          nsim_states, L_c, L_f, seed,
-          n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-          end_adaptive_phase, pmatch(method, paste0("is", 1:3)), 
-          n_threads, type)
-      }
+        end_adaptive_phase, pmatch(method, paste0("is", 1:3)), 
+        n_threads, type)
     }
-    colnames(out$alpha) <- object$state_names
-  } else {
-    stop("summary MCMC not implemented for SDE models.")
   }
+  colnames(out$alpha) <- object$state_names
+  
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(object$theta)
   

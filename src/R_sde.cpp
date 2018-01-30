@@ -125,16 +125,34 @@ Rcpp::List sde_pm_mcmc(const arma::vec& y, const double x0,
     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_prior, *xpfun_obs);
   
   mcmc mcmc_run(n_iter, n_burnin, 
-    n_thin, model.n, 1, target_acceptance, gamma, S, true);
+    n_thin, model.n, 1, target_acceptance, gamma, S, type);
   
   mcmc_run.pm_mcmc_bsf_sde(model, end_ram, nsim_states, L);
   
-  return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
-    Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
-    Rcpp::Named("counts") = mcmc_run.count_storage,
-    Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-    Rcpp::Named("S") = mcmc_run.S, 
-    Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  switch (type) { 
+  case 1: {
+    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 2: {
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 3: {
+    return Rcpp::List::create(
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  }
 }
 
 // [[Rcpp::export]]
@@ -158,16 +176,34 @@ Rcpp::List sde_da_mcmc(const arma::vec& y, const double x0,
     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_prior, *xpfun_obs);
   
   mcmc mcmc_run(n_iter, n_burnin, 
-    n_thin, model.n, 1, target_acceptance, gamma, S, true);
+    n_thin, model.n, 1, target_acceptance, gamma, S, type);
   
   mcmc_run.da_mcmc_bsf_sde(model, end_ram, nsim_states, L_c, L_f);
   
-  return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
-    Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
-    Rcpp::Named("counts") = mcmc_run.count_storage,
-    Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-    Rcpp::Named("S") = mcmc_run.S, 
-    Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  switch (type) { 
+  case 1: {
+    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 2: {
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 3: {
+    return Rcpp::List::create(
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  }
 }
 
 // [[Rcpp::export]]
@@ -191,7 +227,8 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
   sde_ssm model(y, theta, x0, positive, seed, *xpfun_drift,
     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_prior, *xpfun_obs);
   
-  sde_amcmc mcmc_run(n_iter, n_burnin, n_thin, model.n, target_acceptance, gamma, S);
+  sde_amcmc mcmc_run(n_iter, n_burnin, n_thin, model.n, 
+    target_acceptance, gamma, S, type);
   
   mcmc_run.approx_mcmc(model, end_ram, nsim_states, L_c); 
   
@@ -201,13 +238,32 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
   
   mcmc_run.is_correction_bsf(model, nsim_states, L_c, L_f, is_type, n_threads);
   
-  return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
-    Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
-    Rcpp::Named("weights") = mcmc_run.weight_storage,
-    Rcpp::Named("counts") = mcmc_run.count_storage,
-    Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-    Rcpp::Named("S") = mcmc_run.S, 
-    Rcpp::Named("posterior") = mcmc_run.posterior_storage,
-    Rcpp::Named("approx_posterior") = mcmc_run.approx_loglik_storage + mcmc_run.prior_storage);
+  switch (type) { 
+  case 1: {
+    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("weights") = mcmc_run.weight_storage,
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 2: {
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("weights") = mcmc_run.weight_storage,
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 3: {
+    return Rcpp::List::create(
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("weights") = mcmc_run.weight_storage,
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  }
   
 }

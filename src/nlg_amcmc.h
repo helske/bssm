@@ -11,7 +11,8 @@ public:
   // constructor
   nlg_amcmc(const unsigned int n_iter, const unsigned int n_burnin, const unsigned int n_thin, 
     const unsigned int n, const unsigned int m, const double target_acceptance, 
-    const double gamma, const arma::mat& S, const bool store_modes);
+    const double gamma, const arma::mat& S, const unsigned int output_type, 
+    const bool store_modes);
   
   void expand();
   
