@@ -50,7 +50,6 @@ importance_sample.ng_bsm <- function(object, nsim, use_antithetic = TRUE,
 importance_sample.svm <- function(object, nsim, use_antithetic = TRUE, 
   max_iter = 100, conv_tol = 1e-8, seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
   out <- importance_sample_ung(object, nsim, use_antithetic, object$initial_mode, 
     max_iter, conv_tol, seed, 3L)
   rownames(out$alpha) <- names(object$a1)
