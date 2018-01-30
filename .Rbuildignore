@@ -9,4 +9,5 @@
 ^bssm.pdf$
 ^growth_model.pdf
 vignettes/bssm_with_stan.Rmd
+vignettes/stan_ar1.stan
 vignettes/stan_model.stan
