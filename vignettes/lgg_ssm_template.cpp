@@ -26,7 +26,7 @@ arma::mat P1_fn(const arma::vec& theta, const arma::vec& known_params) {
   return P1;
 }
 
-// Function for the observational level standard deviation
+// Function for the Cholesky of the observational level covariance matrix
 // [[Rcpp::export]]
 arma::mat H_fn(const unsigned int t, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
@@ -37,7 +37,7 @@ arma::mat H_fn(const unsigned int t, const arma::vec& theta,
   return H;
 }
 
-// Function for the Cholesky of state level covariance
+// Function for the Cholesky of state level covariance matrix
 // [[Rcpp::export]]
 arma::mat R_fn(const unsigned int t, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {

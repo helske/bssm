@@ -880,7 +880,8 @@ arma::vec nlg_ssm::log_weights(const mgg_ssm& approx_model,
   
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
   
-  if (arma::is_finite(y(t))) {
+  arma::uvec na_y = arma::find_nonfinite(y.col(t));
+  if (na_y.n_elem < p) {
     
     // original H depends on time or state <=> approx H depends on time or state
     if(Htv == 1) {
@@ -913,7 +914,6 @@ arma::vec nlg_ssm::log_weights(const mgg_ssm& approx_model,
   }
   arma::vec weights_t(alpha.n_slices, arma::fill::zeros);
   if(t > 0) {
-    
     for (unsigned int i = 0; i < alpha.n_slices; i++) {
       
       arma::vec mean = T_fn(t - 1, alpha_prev.col(i), theta, known_params, known_tv_params);

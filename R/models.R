@@ -1393,7 +1393,9 @@ nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
   if (is.null(dim(y))) {
     dim(y) <- c(length(y), 1)
   }
-  
+  if (ncol(y) > 1 && any(is.na(y))) {
+    warning("Although nlg_ssm models support multivariate data, the missing values are not yet handled properly for multivariate case. Please state interest in Github for a fix. ")
+  }
   if(missing(n_etas)) {
     n_etas <- n_states
   }
@@ -1483,7 +1485,9 @@ mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   #check_y(y)
   n <- nrow(y)
   p <- ncol(y)
-  
+  if (ncol(y) > 1 && any(is.na(y))) {
+    warning("Although mv_gssm models support multivariate data, the missing values are not yet handled properly for multivariate case. Please state interest in Github for a fix. ")
+  }
   if (is.null(xreg)) {
     xreg <- array(0, c(0, 0, 0))
     coefs <- matrix(0, 1, p)

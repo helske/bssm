@@ -6,24 +6,48 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
   
   double out = -std::numeric_limits<double>::infinity();
   
-  unsigned int p = x.n_elem;
+  
+  arma::uvec finite_x = arma::find_finite(x);
+  unsigned int p = finite_x.n_elem;
   
   if (lwr) {
-    arma::uvec nonzero = arma::find(sigma.diag() > (std::numeric_limits<double>::epsilon() * p * sigma.diag().max()));
-    arma::mat S = inv(trimatl(sigma(nonzero, nonzero)));
-    arma::vec tmp = S * (x.rows(nonzero) - mean.rows(nonzero));
-    out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + 
-      2.0 * arma::accu(arma::log(arma::diagvec(sigma.submat(nonzero, nonzero)))) + 
-      arma::as_scalar(tmp.t() * tmp));
+    // lazy, should never happen
+    if (p < x.n_elem) {
+      arma::mat sigma2 = sigma * sigma.t();
+      arma::mat U(p, p);
+      arma::mat V(p, p);
+      arma::vec s(p);
+      bool success = arma::svd_econ(U, s, V, sigma2(finite_x, finite_x), "left");
+      
+      if (success) {
+        arma::uvec nonzero = arma::find(s > (std::numeric_limits<double>::epsilon() * p * s(0)));
+        
+        arma::vec tmp = U.cols(nonzero).t() * (x(finite_x) - mean((finite_x)));
+        out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + arma::accu(arma::log(s(nonzero))) + 
+          arma::as_scalar(tmp.t() * arma::diagmat(1.0 / s(nonzero)) * tmp));
+      }
+    } else {
+      arma::uvec nonzero = arma::find(sigma.diag() > (std::numeric_limits<double>::epsilon() * p * sigma.diag().max()));
+      if (finite_x.n_elem < p) {
+        nonzero = arma::intersect(finite_x, nonzero);
+      }
+      arma::mat S = inv(trimatl(sigma(nonzero, nonzero)));
+      arma::vec tmp = S * (x.rows(nonzero) - mean.rows(nonzero));
+      
+      out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + 
+        2.0 * arma::accu(arma::log(arma::diagvec(sigma.submat(nonzero, nonzero)))) + 
+        arma::as_scalar(tmp.t() * tmp));
+    }
   } else {
     arma::mat U(p, p);
     arma::mat V(p, p);
     arma::vec s(p);
-    bool success = arma::svd_econ(U, s, V, sigma, "left");
+    bool success = arma::svd_econ(U, s, V, sigma(finite_x, finite_x), "left");
     
     if (success) {
       arma::uvec nonzero = arma::find(s > (std::numeric_limits<double>::epsilon() * p * s(0)));
-      arma::vec tmp = U.cols(nonzero).t() * (x - mean);
+      
+      arma::vec tmp = U.cols(nonzero).t() * (x(finite_x) - mean((finite_x)));
       out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + arma::accu(arma::log(s(nonzero))) + 
         arma::as_scalar(tmp.t() * arma::diagmat(1.0 / s(nonzero)) * tmp));
     }
