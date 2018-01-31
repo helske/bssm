@@ -351,7 +351,7 @@ arma::vec ung_ssm::log_weights(const ugg_ssm& approx_model,
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
         double simsignal = alpha(0, t, i);
         weights(i) = -0.5 * (simsignal + std::pow(y(t) / phi, 2.0) * std::exp(-simsignal)) +
-          0.5 * std::pow(approx_model.y(t) - simsignal, 2.0) / approx_model.HH(t);
+          0.5 * std::pow((approx_model.y(t) - simsignal) / approx_model.H(t), 2.0);
       }
       break;
     case 1  :
@@ -359,7 +359,7 @@ arma::vec ung_ssm::log_weights(const ugg_ssm& approx_model,
         double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
           alpha.slice(i).col(t) + xbeta(t));
         weights(i) = y(t) * simsignal  - u(t) * std::exp(simsignal) +
-          0.5 * std::pow(approx_model.y(t) - simsignal, 2.0) / approx_model.HH(t);
+          0.5 * std::pow((approx_model.y(t) - simsignal) / approx_model.H(t), 2.0);
       }
       break;
     case 2  :
@@ -367,7 +367,7 @@ arma::vec ung_ssm::log_weights(const ugg_ssm& approx_model,
         double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
           alpha.slice(i).col(t) + xbeta(t));
         weights(i) = y(t) * simsignal - u(t) * std::log1p(std::exp(simsignal)) +
-          0.5 * std::pow(approx_model.y(t) - simsignal, 2.0) / approx_model.HH(t);
+          0.5 * std::pow((approx_model.y(t) - simsignal) / approx_model.H(t), 2.0);
       }
       break;
     case 3  :
@@ -376,7 +376,7 @@ arma::vec ung_ssm::log_weights(const ugg_ssm& approx_model,
           alpha.slice(i).col(t) + xbeta(t));
         weights(i) = y(t) * simsignal - (y(t) + phi) *
           std::log(phi + u(t) * std::exp(simsignal)) +
-          0.5 * std::pow(approx_model.y(t) - simsignal, 2.0) / approx_model.HH(t);
+          0.5 * std::pow((approx_model.y(t) - simsignal) / approx_model.H(t), 2.0);
       }
       break;
     }
@@ -397,7 +397,7 @@ arma::vec ung_ssm::scaling_factors(const ugg_ssm& approx_model,
       if (arma::is_finite(y(t))) {
         weights(t) = -0.5 * (mode_estimate(t) + std::pow(y(t) / phi, 2.0) *
           std::exp(-mode_estimate(t))) +
-          0.5 * std::pow(approx_model.y(t) - mode_estimate(t), 2.0) / approx_model.HH(t);
+          0.5 * std::pow((approx_model.y(t) - mode_estimate(t)) / approx_model.H(t), 2.0);
       }
     }
     break;
@@ -406,8 +406,7 @@ arma::vec ung_ssm::scaling_factors(const ugg_ssm& approx_model,
       if (arma::is_finite(y(t))) {
         weights(t) = y(t) * (mode_estimate(t) + xbeta(t)) -
           u(t) * std::exp(mode_estimate(t) + xbeta(t)) +
-          0.5 * std::pow(approx_model.y(t) - (mode_estimate(t) + xbeta(t)), 2.0) /
-            approx_model.HH(t);
+          0.5 * std::pow((approx_model.y(t) - (mode_estimate(t) + xbeta(t))) / approx_model.H(t), 2.0);
       }
     }
     break;
@@ -416,8 +415,7 @@ arma::vec ung_ssm::scaling_factors(const ugg_ssm& approx_model,
       if (arma::is_finite(y(t))) {
         weights(t) = y(t) * (mode_estimate(t) + xbeta(t)) -
           u(t) * std::log1p(std::exp(mode_estimate(t) + xbeta(t))) +
-          0.5 * std::pow(approx_model.y(t) - (mode_estimate(t) + xbeta(t)), 2.0) /
-            approx_model.HH(t);
+          0.5 * std::pow((approx_model.y(t) - (mode_estimate(t) + xbeta(t))) / approx_model.H(t), 2.0);
       }
     }
     break;
@@ -427,8 +425,7 @@ arma::vec ung_ssm::scaling_factors(const ugg_ssm& approx_model,
         weights(t) = y(t) * (mode_estimate(t) + xbeta(t)) -
           (y(t) + phi) *
           std::log(phi + u(t) * std::exp(mode_estimate(t) + xbeta(t))) +
-          0.5 * std::pow(approx_model.y(t) - (mode_estimate(t) + xbeta(t)), 2.0) /
-            approx_model.HH(t);
+          0.5 * std::pow((approx_model.y(t) - (mode_estimate(t) + xbeta(t))) / approx_model.H(t), 2.0);
       }
     }
     break;
