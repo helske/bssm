@@ -35,7 +35,7 @@ Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
     ugg_bsm model(clone(model_), 1);
     model.smoother(alphahat, Vt);
   } break;
-    case 3: {
+  case 3: {
     ugg_ar1 model(clone(model_), 1);
     model.smoother(alphahat, Vt);
   } break;
@@ -86,7 +86,7 @@ Rcpp::List general_gaussian_smoother(const arma::mat& y, SEXP Z, SEXP H,
     Rcpp::Named("alphahat") = alphahat,
     Rcpp::Named("Vt") = Vt);
 }
-  
+
 // [[Rcpp::export]]
 Rcpp::List gaussian_ccov_smoother(const Rcpp::List& model_, const int model_type) {
   
@@ -209,5 +209,10 @@ arma::cube general_gaussian_sim_smoother(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, n_states, n_etas, seed);
   mgg_ssm mgg_model = model.build_mgg();
   
-  return mgg_model.simulate_states();
+  arma::cube asim(model.m, model.n + 1, nsim);
+  for (unsigned int i = 0; i < nsim; i++) {
+    asim.slice(i) = mgg_model.simulate_states();
+  }
+  
+  return asim;
 }
