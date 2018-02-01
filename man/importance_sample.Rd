@@ -5,6 +5,7 @@
 \alias{importance_sample.ngssm}
 \alias{importance_sample.ng_bsm}
 \alias{importance_sample.svm}
+\alias{importance_sample.ung_ar1}
 \title{Importance Sampling from non-Gaussian State Space Model}
 \usage{
 importance_sample(object, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
@@ -18,6 +19,10 @@ importance_sample(object, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
   size = 1), ...)
 
 \method{importance_sample}{svm}(object, nsim, use_antithetic = TRUE,
+  max_iter = 100, conv_tol = 1e-08, seed = sample(.Machine$integer.max,
+  size = 1), ...)
+
+\method{importance_sample}{ung_ar1}(object, nsim, use_antithetic = TRUE,
   max_iter = 100, conv_tol = 1e-08, seed = sample(.Machine$integer.max,
   size = 1), ...)
 }

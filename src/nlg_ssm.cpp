@@ -1062,9 +1062,8 @@ double nlg_ssm::psi_filter(const mgg_ssm& approx_model,
       alpha.slice(i).col(t + 1) = alphahat.col(t + 1) +
         Ct.slice(t + 1) * (alphatmp.col(i) - alphahat.col(t)) + Vt.slice(t + 1) * um;
     }
-    arma::uvec na_y = arma::find_nonfinite(y.col(t + 1));
-    if ((t < (n - 1)) && na_y.n_elem < p) {
-      
+    
+    if (t < (n - 1) && arma::find_nonfinite(y.col(t + 1).n_elem < p) {
       weights.col(t + 1) = log_weights(approx_model, t + 1, alpha, alphatmp);
       double max_weight = weights.col(t+1).max();
       weights.col(t+1) = arma::exp(weights.col(t+1) - max_weight);
@@ -1153,8 +1152,8 @@ double nlg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
       alpha.slice(i).col(t + 1) = T_fn(t, alphatmp.col(i), theta, known_params, known_tv_params) + 
         R_fn(t, alphatmp.col(i), theta, known_params, known_tv_params) * uk;
     }
-    arma::uvec na_y = arma::find_nonfinite(y.col(t + 1));
-    if ((t < (n - 1)) && na_y.n_elem < p) {
+
+    if (t < (n - 1) && arma::find_nonfinite(y.col(t + 1).n_elem < p) {
       weights.col(t + 1) = log_obs_density(t + 1, alpha);
       
       double max_weight = weights.col(t + 1).max();
@@ -1261,8 +1260,8 @@ double nlg_ssm::ekf_filter(const unsigned int nsim, arma::cube& alpha,
       }
       alpha.slice(i).col(t + 1) = att.col(i) + Ptt.slice(i) * um;
     } 
-    arma::uvec na_y = arma::find_nonfinite(y.col(t + 1));
-    if ((t < (n - 1)) && na_y.n_elem < p) {
+    
+    if (t < (n - 1) && arma::find_nonfinite(y.col(t + 1).n_elem < p) {
       weights.col(t + 1) = log_obs_density(t + 1, alpha);
       for (unsigned int i = 0; i < nsim; i++) {
         arma::mat Rt = R_fn(t,  alphatmp.col(i), theta, known_params, known_tv_params);
@@ -1339,7 +1338,6 @@ double nlg_ssm::log_signal_pdf(const arma::mat& alpha) const {
     if (na_y.n_elem < p) {
       ll += dmvnorm(y.col(t + 1), Z_fn(t + 1, alpha.col(t + 1), theta, known_params, known_tv_params), 
         H_fn(t + 1, alpha.col(t + 1), theta, known_params, known_tv_params), true, true);
-      
     }
   }
   return ll;

@@ -3,7 +3,6 @@
 #include "rep_mat.h"
 #include "sample.h"
 #include "distr_consts.h"
-#include "dmvnorm.h"
 #include "psd_chol.h"
 
 // General constructor of ugg_ssm object from Rcpp::List
