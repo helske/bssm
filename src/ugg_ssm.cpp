@@ -291,7 +291,10 @@ arma::mat ugg_ssm::fast_smoother() const {
       Kt.col(t) = Pt * Z.col(t * Ztv) / Ft(t);
       vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
-      Pt = arma::symmatu(T.slice(t * Ttv) * (Pt - Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      //Pt = arma::symmatu(T.slice(t * Ttv) * (Pt - Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      // Switched to numerically better form
+      arma::mat tmp = arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t();
+      Pt = arma::symmatu(T.slice(t * Ttv) * (tmp * Pt * tmp.t() + Kt.col(t) * HH(t * Htv) * Kt.col(t).t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     } else {
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
       Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
@@ -397,7 +400,10 @@ arma::mat ugg_ssm::fast_precomputing_smoother(arma::vec& Ft, arma::mat& Kt,
       Kt.col(t) = Pt * Z.col(t * Ztv) / Ft(t);
       vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
-      Pt = arma::symmatu(T.slice(t * Ttv) * (Pt - Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      //Pt = arma::symmatu(T.slice(t * Ttv) * (Pt - Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      // Switched to numerically better form
+      arma::mat tmp = arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t();
+      Pt = arma::symmatu(T.slice(t * Ttv) * (tmp * Pt * tmp.t() + Kt.col(t) * HH(t * Htv) * Kt.col(t).t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     } else {
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
       Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
@@ -450,8 +456,11 @@ void ugg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
       Kt.col(t) = Pt.slice(t) * Z.col(t * Ztv) / Ft(t);
       vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
-      Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (Pt.slice(t) -
-        Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      //Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (Pt.slice(t) -
+      //  Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      // Switched to numerically better form
+      arma::mat tmp = arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t();
+      Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (tmp * Pt.slice(t) * tmp.t() + Kt.col(t) * HH(t * Htv) * Kt.col(t).t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     } else {
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * Pt.slice(t) * T.slice(t * Ttv).t() +
@@ -504,7 +513,10 @@ double ugg_ssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
       arma::vec K = Pt.slice(t) * Z.col(t * Ztv) / F;
       att.col(t) = at.col(t) + K * v;
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (att.col(t));
-      Ptt.slice(t) = Pt.slice(t) - K * K.t() * F;
+      // Ptt.slice(t) = Pt.slice(t) - K * K.t() * F;
+      // Switched to numerically better form
+      arma::mat tmp = arma::eye(m, m) - K * Z.col(t * Ztv).t();
+      Ptt.slice(t) = tmp * Pt.slice(t) * tmp.t() + K * HH(t * Htv) * K.t();
       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * Ptt.slice(t) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
       logLik -= 0.5 * (LOG2PI + std::log(F) + v * v/F);
     } else {
@@ -537,8 +549,11 @@ void ugg_ssm::smoother(arma::mat& at, arma::cube& Pt) const {
       Kt.col(t) = Pt.slice(t) * Z.col(t * Ztv) / Ft(t);
       vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
-      Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (Pt.slice(t) -
-        Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      //Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (Pt.slice(t) -
+      //  Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      // Switched to numerically better form
+      arma::mat tmp = arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t();
+      Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (tmp * Pt.slice(t) * tmp.t() + Kt.col(t) * HH(t * Htv) * Kt.col(t).t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     } else {
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * Pt.slice(t) * T.slice(t * Ttv).t() +

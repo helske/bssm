@@ -285,7 +285,10 @@ double nlg_ssm::ekf(arma::mat& at, arma::mat& att, arma::cube& Pt,
         atthat = atthat_new;
       }
       att.col(t) = atthat;
-      Ptt.slice(t) = Pt.slice(t) - Kt * Ft * Kt.t();
+      //Ptt.slice(t) = Pt.slice(t) - Kt * Ft * Kt.t();
+      // Switched to numerically better form
+      arma::mat tmp = arma::eye(m, m) - Kt * Zg;
+      Ptt.slice(t) = tmp * Pt.slice(t) * tmp.t() + Kt * HHt * Kt.t();
       
       arma::vec Fv = inv_cholF.t() * vt; 
       logLik -= 0.5 * arma::as_scalar((p - na_y.n_elem) * LOG2PI + 
@@ -375,7 +378,10 @@ double nlg_ssm::ekf_loglik(const unsigned int iekf_iter) const {
       }
       att = atthat;
       
-      Ptt -= Kt * Ft * Kt.t();
+      //Ptt -= Kt * Ft * Kt.t();
+      // Switched to numerically better form
+      arma::mat tmp = arma::eye(m, m) - Kt * Zg;
+      Ptt = tmp * Pt * tmp.t() + Kt * HHt * Kt.t();
       
       arma::vec Fv = inv_cholF.t() * vt; 
       logLik -= 0.5 * arma::as_scalar((p - na_y.n_elem) * LOG2PI + 
@@ -469,7 +475,10 @@ double nlg_ssm::ekf_smoother(arma::mat& at, arma::cube& Pt, const unsigned int i
         atthat = atthat_new;
       }
       att.col(t) = atthat;
-      Ptt = Pt.slice(t) - Kt.slice(t) * Ft * Kt.slice(t).t();
+      //Ptt = Pt.slice(t) - Kt.slice(t) * Ft * Kt.slice(t).t();
+      // Switched to numerically better form
+      arma::mat tmp = arma::eye(m, m) - Kt.slice(t) * Zg;
+      Ptt = tmp * Pt.slice(t) * tmp.t() + Kt.slice(t) * HHt * Kt.slice(t).t();
       arma::vec Fv = inv_cholF.t() * vt.col(t); 
       logLik -= 0.5 * arma::as_scalar((p - na_y.n_elem) * LOG2PI + 
         2.0 * arma::accu(arma::log(arma::diagvec(cholF))) + Fv.t() * Fv);
@@ -585,7 +594,10 @@ double nlg_ssm::ekf_fast_smoother(arma::mat& at, const unsigned int iekf_iter) c
         atthat = atthat_new;
       }
       att.col(t) = atthat;
-      Ptt = Pt.slice(t) - Kt.slice(t) * Ft * Kt.slice(t).t();
+      //Ptt = Pt.slice(t) - Kt.slice(t) * Ft * Kt.slice(t).t();
+      // Switched to numerically better form
+      arma::mat tmp = arma::eye(m, m) - Kt.slice(t) * Zg;
+      Ptt = tmp * Pt.slice(t) * tmp.t() + Kt.slice(t) * HHt * Kt.slice(t).t();
       
       arma::vec Fv = inv_cholF.t() * vt.col(t); 
       logLik -= 0.5 * arma::as_scalar((p - na_y.n_elem) * LOG2PI + 
@@ -1310,8 +1322,10 @@ void nlg_ssm::ekf_update_step(const unsigned int t, const arma::vec y,
     arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
     arma::mat Kt = Pt * Zg.t() * inv_cholF * inv_cholF.t();
     att = at + Kt * vt;
-    Ptt = Pt - Kt * Ft * Kt.t();
-    
+    //Ptt = Pt - Kt * Ft * Kt.t();
+    // Switched to numerically better form
+    arma::mat tmp = arma::eye(m, m) - Kt * Zg;
+    Ptt = tmp * Pt * tmp.t() + Kt * HHt * Kt.t();
   } else {
     att = at;
     Ptt = Pt;
