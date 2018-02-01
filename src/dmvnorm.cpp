@@ -6,13 +6,21 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
   
   double out = -std::numeric_limits<double>::infinity();
   
+  if (x.n_elem == 1) {
+    if (lwr) {
+      out = -0.5 * (std::log(2.0 * M_PI) + std::log(sigma(0)) + std::pow((x(0) - mean(0)) / sigma(0), 2));
+    } else {
+      out = -std::log(sigma(0)) - 0.5 * (std::log(2.0 * M_PI) + std::pow(x(0) - mean(0), 2) / sigma(0));
+    }
+  }
   
   arma::uvec finite_x = arma::find_finite(x);
   unsigned int p = finite_x.n_elem;
   
   if (lwr) {
-    // lazy, should never happen
+    // lazy, could we use previous cholesky?
     if (p < x.n_elem) {
+      
       arma::mat sigma2 = sigma * sigma.t();
       arma::mat U(p, p);
       arma::mat V(p, p);

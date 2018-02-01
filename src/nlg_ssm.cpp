@@ -883,8 +883,8 @@ arma::vec nlg_ssm::log_weights(const mgg_ssm& approx_model,
   arma::uvec na_y = arma::find_nonfinite(y.col(t));
   if (na_y.n_elem < p) {
     
-    // original H depends on time or state <=> approx H depends on time or state
-    if(Htv == 1) {
+    // original H depends on time or state <=> approx H depends on time or state, or missing values
+    if(Htv == 1 || na_y.n_elem > 0) {
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
         weights(i) = 
           dmvnorm(y.col(t), Z_fn(t, alpha.slice(i).col(t), theta, known_params, known_tv_params), 
