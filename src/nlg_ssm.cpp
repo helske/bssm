@@ -1119,7 +1119,6 @@ double nlg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
     alpha.slice(i).col(0) = a1 + L_P1 * um;
     
   }
-  
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec normalized_weights(nsim);
   double loglik = 0.0;
@@ -1164,7 +1163,7 @@ double nlg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
       alpha.slice(i).col(t + 1) = T_fn(t, alphatmp.col(i), theta, known_params, known_tv_params) + 
         R_fn(t, alphatmp.col(i), theta, known_params, known_tv_params) * uk;
     }
-
+    
     if (t < (n - 1) && arma::uvec(arma::find_nonfinite(y.col(t + 1))).n_elem < p) {
       weights.col(t + 1) = log_obs_density(t + 1, alpha);
       
@@ -1190,7 +1189,6 @@ double nlg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
 
 double nlg_ssm::ekf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
-  
   arma::vec a1 = a1_fn(theta, known_params);
   arma::mat P1 = P1_fn(theta, known_params);
   
@@ -1215,11 +1213,9 @@ double nlg_ssm::ekf_filter(const unsigned int nsim, arma::cube& alpha,
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec normalized_weights(nsim);
   double loglik = 0.0;
-  
   arma::uvec na_y = arma::find_nonfinite(y.col(0));
   if (na_y.n_elem < p) { 
     weights.col(0) = log_obs_density(0, alpha);
-    
     for (unsigned int i = 0; i < nsim; i++) {
       weights(i, 0) +=  dmvnorm(alpha.slice(i).col(0), a1, P1, false, true) -
         dmvnorm(alpha.slice(i).col(0), att1, L, true, true);
@@ -1240,7 +1236,6 @@ double nlg_ssm::ekf_filter(const unsigned int nsim, arma::cube& alpha,
     weights.col(0).ones();
     normalized_weights.fill(1.0 / nsim);
   }
-  
   for (unsigned int t = 0; t < n; t++) {
     
     arma::vec r(nsim);
@@ -1253,16 +1248,20 @@ double nlg_ssm::ekf_filter(const unsigned int nsim, arma::cube& alpha,
     arma::mat att(m, nsim);
     arma::cube Ptt(m, m, nsim);
     arma::mat alphatmp(m, nsim);
-    
     for (unsigned int i = 0; i < nsim; i++) {
       alphatmp.col(i) = alpha.slice(indices(i, t)).col(t);
       arma::mat Rt = R_fn(t,  alphatmp.col(i), theta, known_params, known_tv_params);
       arma::mat Pt = Rt * Rt.t();
       arma::vec at = T_fn(t, alphatmp.col(i), theta, known_params, known_tv_params);
       arma::vec tmp(m);
-      ekf_update_step(t + 1, y.col(t + 1), at, Pt, tmp, Ptt.slice(i));
-      att.col(i) = tmp;
-      Ptt.slice(i) = psd_chol(Ptt.slice(i));
+      if (t < (n - 1)) {
+        ekf_update_step(t + 1, y.col(t + 1), at, Pt, tmp, Ptt.slice(i));
+        att.col(i) = tmp;
+        Ptt.slice(i) = psd_chol(Ptt.slice(i));
+      } else {
+        att.col(i) = at;
+        Ptt.slice(i) = Pt;  
+      }
     }
     
     for (unsigned int i = 0; i < nsim; i++) {
@@ -1272,7 +1271,6 @@ double nlg_ssm::ekf_filter(const unsigned int nsim, arma::cube& alpha,
       }
       alpha.slice(i).col(t + 1) = att.col(i) + Ptt.slice(i) * um;
     } 
-    
     if (t < (n - 1) && arma::uvec(arma::find_nonfinite(y.col(t + 1))).n_elem < p) {
       weights.col(t + 1) = log_obs_density(t + 1, alpha);
       for (unsigned int i = 0; i < nsim; i++) {
