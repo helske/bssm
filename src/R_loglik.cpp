@@ -102,10 +102,8 @@ double nonlinear_loglik(const arma::mat& y, SEXP Z, SEXP H,
   unsigned int m = model.m;
   unsigned n = model.n;
   
-  arma::cube alpha(m, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
-  double loglik;
+  
+  double loglik = -std::numeric_limits<double>::infinity();
   
   switch (method) {
   case 1: {
@@ -115,15 +113,36 @@ double nonlinear_loglik(const arma::mat& y, SEXP Z, SEXP H,
     if(!arma::is_finite(mode_estimate)) {
       Rcpp::stop("Approximation did not converge. ");
     }
+    arma::cube alpha(m, n + 1, nsim_states);
+    arma::mat weights(nsim_states, n + 1);
+    arma::umat indices(nsim_states, n);
     double approx_loglik = approx_model.log_likelihood();
     loglik = model.psi_filter(approx_model, approx_loglik,
       nsim_states, alpha, weights, indices);
   } break;
   case 2: {
+    arma::cube alpha(m, n + 1, nsim_states);
+    arma::mat weights(nsim_states, n + 1);
+    arma::umat indices(nsim_states, n);
     loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
     
   } break;
-  default: loglik = -std::numeric_limits<double>::infinity();
+  case 3: {
+    if (nsim_states == 0) {
+      arma::mat mode_estimate(m, n);
+      mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol, 
+        iekf_iter);
+      if(!arma::is_finite(mode_estimate)) {
+        Rcpp::stop("Approximation did not converge. ");
+      }
+      loglik = approx_model.log_likelihood();
+    } else {
+      arma::cube alpha(m, n + 1, nsim_states);
+      arma::mat weights(nsim_states, n + 1);
+      arma::umat indices(nsim_states, n);
+      loglik = model.ekf_filter(nsim_states, alpha, weights, indices);
+    }
+  } break;
   }
   
   return loglik;

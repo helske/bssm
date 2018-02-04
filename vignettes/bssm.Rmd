@@ -184,15 +184,13 @@ Same model could also by built with `lgg_ssm`, by defining the small `C++` snipp
 ```{Rcpp lgg_ssm_template, code=readLines('lgg_ssm_template.cpp'), eval = FALSE, echo = TRUE}
 ```
   
-Note that most of this code is general and can be modified to specific models accordingly by changing the function bodies. Word of caution when using these `C++` snippets: Due to the use of pointers, users must recompile and construct the model objects in each `R` session, i.e. saving and later loading the model object is not sufficient. Also, using the `sourceCpp` function from the `Rcpp` package repeatedly for the recompilation of the external pointers from the same file can cause `R` crash unexpectedly, if the corresponding cache directory is not changed between compilations^[1].
+Note that most of this code is general and can be modified to specific models accordingly by changing the function bodies. Word of caution when using these `C++` snippets: Due to the use of pointers, users must recompile and construct the model objects in each `R` session, i.e. saving and later loading the model object is not sufficient. Also, using the `sourceCpp` function from the `Rcpp` package repeatedly for the recompilation of the external pointers from the same file can cause `R` crash unexpectedly, if the corresponding cache directory is not changed between compilations^[1]. Changing the cache directory (`cacheDir` argument of `sourceCpp`) between subsequent compilations is therefore recommended.
   
 [^1]: https://github.com/helske/crashtest/issues/1.
   
 We can then compile the file and construct the model as
 ```{r nhtemp_cpp}
-Rcpp::sourceCpp("lgg_ssm_template.cpp", rebuild = TRUE, 
-cacheDir = paste0(tempdir(), round(runif(1) * 1000)), 
-cleanupCacheDir = TRUE)
+Rcpp::sourceCpp("lgg_ssm_template.cpp", rebuild = TRUE, cleanupCacheDir = TRUE)
 pntrs <- create_xptrs()
 bsm_model2 <- lgg_ssm(y = nhtemp, Z = pntrs$Z, H = pntrs$H, T = pntrs$T, R = pntrs$R, 
 a1 = pntrs$a1, P1 = pntrs$P1, state_intercept = pntrs$C, obs_intercept = pntrs$D, 
@@ -228,9 +226,7 @@ y <- rpois(100, exp(x[-1]))
 ```
 We then compile and build the model as in the case of `lgg_ssm` model:
 ```{r}
-Rcpp::sourceCpp("sde_ssm_template.cpp", rebuild = TRUE, 
-  cacheDir = paste0(tempdir(), round(runif(1) * 1000)), 
-  cleanupCacheDir = TRUE)
+Rcpp::sourceCpp("sde_ssm_template.cpp", rebuild = TRUE, cleanupCacheDir = TRUE)
 pntrs <- create_xptrs()
 sde_model <- sde_ssm(y, pntrs$drift, pntrs$diffusion, 
   pntrs$ddiffusion, pntrs$obs_density, pntrs$prior, c(0.5, 2, 1), 1, FALSE)
