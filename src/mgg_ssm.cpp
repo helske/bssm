@@ -450,6 +450,7 @@ void mgg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
     at.col(t) += Pt.slice(t) * rt;
     Pt.slice(t) -= arma::symmatu(Pt.slice(t) * Nt * Pt.slice(t));
   }
+  ccov.slice(n).zeros();
 }
 
 
