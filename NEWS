@@ -1,3 +1,9 @@
+bssm 0.1.5 (Release date: )
+==============
+  * Fixed the Cholesky decomposition in filtering recursions of multivariate models.
+  * as_gssm now works for multivariate Gaussian models of KFAS as well.
+  * Fixed several issues regarding partially missing observations in multivariate models.
+  
 bssm 0.1.4-1 (Release date: 2018-02-04)
 ==============
   * Fixed the use of uninitialized values in psi-filter from version 0.1.3.
