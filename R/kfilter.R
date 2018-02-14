@@ -30,6 +30,17 @@ kfilter.gssm <- function(object, ...) {
   out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   out
 }
+#' @method kfilter mv_gssm
+#' @export
+kfilter.mv_gssm <- function(object, ...) {
+  
+  out <- gaussian_kfilter(object, model_type = -1L)
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
+  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
+  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
+  out
+}
 #' @method kfilter lgg_ssm
 #' @export
 kfilter.lgg_ssm <- function(object, ...) {

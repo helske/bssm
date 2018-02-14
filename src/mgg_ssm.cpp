@@ -156,7 +156,16 @@ double mgg_ssm::log_likelihood() const {
     arma::uvec obs_y = arma::find_finite(y_tmp.col(t));
     
     if (obs_y.n_elem > 0) {
+      // arma::mat Zt = Z.slice(t * Ztv);
+      // arma::mat HHt = HH.slice(t * Htv);
+      // if (na_y.n_elem > 0) {
+      //   Zt.rows(na_y).zeros();
+      //   HHt.rows(na_y).zeros();
+      //   HHt.cols(na_y).zeros();
+      //   HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+      // }
       arma::mat Zt = Z.slice(t * Ztv).rows(obs_y);
+      
       arma::mat F = Zt * Pt * Zt.t() + HH.slice(t * Htv).submat(obs_y, obs_y);
       // first check to avoid armadillo warnings
       bool chol_ok = F.is_finite();
@@ -168,15 +177,15 @@ double mgg_ssm::log_likelihood() const {
       arma::vec tmp = y_tmp.col(t) - D.col(t * Dtv);
       arma::vec v = tmp.rows(obs_y) - Zt * at;
       arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
-      arma::mat K = Pt * Zt.t() * inv_cholF.t() * inv_cholF;
+      arma::mat K = Pt * Zt.t() * inv_cholF * inv_cholF.t();
       at = C.col(t * Ctv) + T.slice(t * Ttv) * (at + K * v);
       //Pt = arma::symmatu(T.slice(t * Ttv) *
       //  (Pt - K * F * K.t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
       // Switched to numerically better form
-      arma::mat IKZ = arma::eye(m, m) - K * Z.slice(t * Ztv);
-      Pt = arma::symmatu(T.slice(t * Ttv) * (IKZ * Pt * IKZ.t() + K * HH.slice(t * Htv) * K.t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      arma::mat IKZ = arma::eye(m, m) - K * Zt;
+      Pt = arma::symmatu(T.slice(t * Ttv) * (IKZ * Pt * IKZ.t() + K * HH.slice(t * Htv).submat(obs_y, obs_y) * K.t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
       
-      arma::vec Fv = inv_cholF * v;
+      arma::vec Fv = inv_cholF.t() * v;
       logLik -= 0.5 * arma::as_scalar(obs_y.n_elem * LOG2PI +
         2.0 * arma::accu(arma::log(arma::diagvec(cholF))) + Fv.t() * Fv);
       
@@ -184,6 +193,7 @@ double mgg_ssm::log_likelihood() const {
       at = C.col(t * Ctv) + T.slice(t * Ttv) * at;
       Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     }
+   
   }
   return logLik;
 }
@@ -207,9 +217,13 @@ void mgg_ssm::smoother(arma::mat& at, arma::cube& Pt) const {
     arma::uvec na_y = arma::find_nonfinite(y_tmp.col(t));
     if (na_y.n_elem < p) {
       arma::mat Zt = Z.slice(t * Ztv);
-      Zt.rows(na_y).zeros();
       arma::mat HHt = HH.slice(t * Htv);
-      HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+      if (na_y.n_elem > 0) {
+        Zt.rows(na_y).zeros();
+        HHt.rows(na_y).zeros();
+        HHt.cols(na_y).zeros();
+        HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+      }
       arma::mat Ft = Zt * Pt.slice(t) * Zt.t() + HHt;
       // first check to avoid armadillo warnings
       bool chol_ok = Ft.is_finite() && arma::all(Ft.diag() > 0);
@@ -226,17 +240,19 @@ void mgg_ssm::smoother(arma::mat& at, arma::cube& Pt) const {
         return;
       }
       
-      vt.col(t) = y_tmp.col(t) - D.col(t * Dtv) - Zt * at.col(t);
+      arma::vec tmpv = y_tmp.col(t) - D.col(t * Dtv) - Zt * at.col(t);
+      tmpv(na_y).zeros();
+      vt.col(t) = tmpv;
       arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
-      ZFinv.slice(t) = Zt.t() * inv_cholF.t() * inv_cholF;
+      ZFinv.slice(t) = Zt.t() * inv_cholF* inv_cholF.t();
       Kt.slice(t) = Pt.slice(t) * ZFinv.slice(t);
       at.col(t + 1) = C.col(t * Ctv) +
         T.slice(t * Ttv) * (at.col(t) + Kt.slice(t) * vt.col(t));
       //Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) *
       //  (Pt.slice(t) - Kt.slice(t) * Ft * Kt.slice(t).t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
       // Switched to numerically better form
-      arma::mat tmp = arma::eye(m, m) - Kt.slice(t) * Z.slice(t * Ztv);
-      Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (tmp * Pt.slice(t) * tmp.t() + Kt.slice(t) * HH.slice(t * Htv) * Kt.slice(t).t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      arma::mat tmp = arma::eye(m, m) - Kt.slice(t) * Zt;
+      Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (tmp * Pt.slice(t) * tmp.t() + Kt.slice(t) * HHt * Kt.slice(t).t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     } else {
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * at.col(t);
       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) *
@@ -293,12 +309,14 @@ arma::mat mgg_ssm::fast_smoother() const {
     if (na_y.n_elem < p) {
       
       arma::mat Zt = Z.slice(t * Ztv);
-      Zt.rows(na_y).zeros();
       arma::mat HHt = HH.slice(t * Htv);
-      HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+      if (na_y.n_elem > 0) {
+        Zt.rows(na_y).zeros();
+        HHt.rows(na_y).zeros();
+        HHt.cols(na_y).zeros();
+        HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+      }
       arma::mat Ft = Zt * Pt * Zt.t() + HHt;
-      
-      
       bool chol_ok = Ft.is_finite() && arma::all(Ft.diag() > 0);
       if (!chol_ok) {
         at.fill(-std::numeric_limits<double>::infinity());
@@ -311,9 +329,11 @@ arma::mat mgg_ssm::fast_smoother() const {
         return at;
       }
       
-      vt.col(t) = y_tmp.col(t) - D.col(t * Dtv) - Zt * at.col(t);
+      arma::vec tmpv = y_tmp.col(t) - D.col(t * Dtv) - Zt * at.col(t);
+      tmpv(na_y).zeros();
+      vt.col(t) = tmpv;
       arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
-      ZFinv.slice(t) = Zt.t() * inv_cholF.t() * inv_cholF;
+      ZFinv.slice(t) = Zt.t() * inv_cholF * inv_cholF.t();
       Kt.slice(t) = Pt * ZFinv.slice(t);
       
       at.col(t + 1) = C.col(t * Ctv) +
@@ -322,8 +342,8 @@ arma::mat mgg_ssm::fast_smoother() const {
       //   (Pt - Kt.slice(t) * Ft * Kt.slice(t).t()) * T.slice(t * Ttv).t() +
       //   RR.slice(t * Rtv));
       // Switched to numerically better form
-      arma::mat tmp = arma::eye(m, m) - Kt.slice(t) * Z.slice(t * Ztv);
-      Pt = arma::symmatu(T.slice(t * Ttv) * (tmp * Pt * tmp.t() + Kt.slice(t) * HH.slice(t * Htv) * Kt.slice(t).t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      arma::mat tmp = arma::eye(m, m) - Kt.slice(t) * Zt;
+      Pt = arma::symmatu(T.slice(t * Ttv) * (tmp * Pt * tmp.t() + Kt.slice(t) * HHt * Kt.slice(t).t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
       
     } else {
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) *  at.col(t);
@@ -382,9 +402,13 @@ void mgg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
     arma::uvec na_y = arma::find_nonfinite(y_tmp.col(t));
     if (na_y.n_elem < p) {
       arma::mat Zt = Z.slice(t * Ztv);
-      Zt.rows(na_y).zeros();
       arma::mat HHt = HH.slice(t * Htv);
-      HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+      if (na_y.n_elem > 0) {
+        Zt.rows(na_y).zeros();
+        HHt.rows(na_y).zeros();
+        HHt.cols(na_y).zeros();
+        HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+      }
       arma::mat Ft = Zt * Pt.slice(t) * Zt.t() + HHt;
       // first check to avoid armadillo warnings
       bool chol_ok = Ft.is_finite() && arma::all(Ft.diag() > 0);
@@ -404,9 +428,11 @@ void mgg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
       }
       
       
-      vt.col(t) = y_tmp.col(t) - D.col(t * Dtv) - Zt * at.col(t);
+      arma::vec tmpv = y_tmp.col(t) - D.col(t * Dtv) - Zt * at.col(t);
+      tmpv(na_y).zeros();
+      vt.col(t) = tmpv;
       arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
-      ZFinv.slice(t) = Zt.t() * inv_cholF.t() * inv_cholF;
+      ZFinv.slice(t) = Zt.t() * inv_cholF * inv_cholF.t();
       Kt.slice(t) = Pt.slice(t) * ZFinv.slice(t);
       at.col(t + 1) = C.col(t * Ctv) +
         T.slice(t * Ttv) * (at.col(t) + Kt.slice(t) * vt.col(t));
@@ -414,8 +440,8 @@ void mgg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
       //   (Pt.slice(t) - Kt.slice(t) * Ft * Kt.slice(t).t()) * T.slice(t * Ttv).t() +
       //   RR.slice(t * Rtv));
       // Switched to numerically better form
-      arma::mat tmp = arma::eye(m, m) - Kt.slice(t) * Z.slice(t * Ztv);
-      Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (tmp * Pt.slice(t) * tmp.t() + Kt.slice(t) * HH.slice(t * Htv) * Kt.slice(t).t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      arma::mat tmp = arma::eye(m, m) - Kt.slice(t) * Zt;
+      Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (tmp * Pt.slice(t) * tmp.t() + Kt.slice(t) * HHt * Kt.slice(t).t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
       
       
     } else {
@@ -467,16 +493,21 @@ double mgg_ssm::filter(arma::mat& at, arma::mat& att,
   
   const double LOG2PI = std::log(2.0 * M_PI);
   double logLik = 0.0;
-  
   for (unsigned int t = 0; t < n; t++) {
     arma::uvec na_y = arma::find_nonfinite(y_tmp.col(t));
-    
+   
     if (na_y.n_elem < p) {
       arma::mat Zt = Z.slice(t * Ztv);
-      Zt.rows(na_y).zeros();
       arma::mat HHt = HH.slice(t * Htv);
-      HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+      if (na_y.n_elem > 0) {
+        Zt.rows(na_y).zeros();
+        HHt.rows(na_y).zeros();
+        HHt.cols(na_y).zeros();
+        HHt.submat(na_y, na_y) = arma::eye(na_y.n_elem, na_y.n_elem);
+      }
+   
       arma::mat Ft = Zt * Pt.slice(t) * Zt.t() + HHt;
+    
       bool chol_ok = Ft.is_finite() && arma::all(Ft.diag() > 0);
       if (!chol_ok) {
         at.fill(std::numeric_limits<double>::infinity()); 
@@ -487,6 +518,7 @@ double mgg_ssm::filter(arma::mat& at, arma::mat& att,
       }
       arma::mat cholF(p, p);
       chol_ok = arma::chol(cholF ,Ft);
+      
       if (!chol_ok) {
         at.fill(std::numeric_limits<double>::infinity()); 
         at.fill(std::numeric_limits<double>::infinity()); 
@@ -496,21 +528,22 @@ double mgg_ssm::filter(arma::mat& at, arma::mat& att,
         return -std::numeric_limits<double>::infinity();
       }
       arma::vec v = y_tmp.col(t) - D.col(t * Dtv) - Zt * at.col(t);
+      v(na_y).zeros();
       arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
-      arma::mat ZFinv = Zt.t() * inv_cholF.t() * inv_cholF;
+      arma::mat ZFinv = Zt.t() * inv_cholF * inv_cholF.t();
       arma::mat K = Pt.slice(t) * ZFinv;
       att.col(t) = at.col(t) + K * v;
       at.col(t + 1) = C.col(t * Ctv) +
         T.slice(t * Ttv) * att.col(t);
       //Ptt.slice(t) = Pt.slice(t) - K * Ft * K.t();
       // Switched to numerically better form
-      arma::mat tmp = arma::eye(m, m) - K * Z.slice(t * Ztv);
-      Ptt.slice(t) = tmp * Pt.slice(t) * tmp.t() + K * HH.slice(t * Htv) * K.t();
+      arma::mat tmp = arma::eye(m, m) - K * Zt;
+      Ptt.slice(t) = tmp * Pt.slice(t) * tmp.t() + K * HHt * K.t();
       
       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) *
         Ptt.slice(t) * T.slice(t * Ttv).t() +
         RR.slice(t * Rtv));
-      arma::vec Fv = inv_cholF * v;
+      arma::vec Fv = inv_cholF.t() * v;
       logLik -= 0.5 * arma::as_scalar((p - na_y.n_elem) * LOG2PI +
         2.0 * arma::accu(arma::log(arma::diagvec(cholF))) + Fv.t() * Fv);
     } else {

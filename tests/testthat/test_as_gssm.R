@@ -10,6 +10,8 @@ test_that("Test conversion from SSModel to gssm",{
     a1 = matrix(0, 2, 1), P1 = diag(2e3, 2)), NA)
   expect_error(conv_model_bssm <- as_gssm(model_KFAS), NA)
   expect_equivalent(model_bssm, conv_model_bssm)
+  expect_equivalent(logLik(conv_model_bssm), logLik(model_KFAS))
+  
 })
 
 

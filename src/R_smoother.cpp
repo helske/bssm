@@ -15,7 +15,7 @@ Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
     arma::vec y = Rcpp::as<arma::vec>(model_["y"]);
     n = y.n_elem;
   } else {
-    arma::vec y = Rcpp::as<arma::mat>(model_["y"]);
+    arma::mat y = Rcpp::as<arma::mat>(model_["y"]);
     n = y.n_rows;
   }
   

@@ -15,7 +15,7 @@ Rcpp::List gaussian_kfilter(const Rcpp::List& model_, const int model_type) {
     arma::vec y = Rcpp::as<arma::vec>(model_["y"]);
     n = y.n_elem;
   } else {
-    arma::vec y = Rcpp::as<arma::mat>(model_["y"]);
+    arma::mat y = Rcpp::as<arma::mat>(model_["y"]);
     n = y.n_rows;
   }
   
@@ -27,6 +27,10 @@ Rcpp::List gaussian_kfilter(const Rcpp::List& model_, const int model_type) {
   double loglik;
   
   switch (model_type) {
+  case -1: {
+    mgg_ssm model(clone(model_), 1);
+    loglik = model.filter(at, att, Pt, Ptt);
+  } break;
   case 1: {
     ugg_ssm model(clone(model_), 1);
     loglik = model.filter(at, att, Pt, Ptt);

@@ -19,6 +19,40 @@ test_that("results for gaussian model are comparable to KFAS",{
   expect_equivalent(out_KFAS$V, out_bssm$Vt)
 })
 
+test_that("results for multivariate gaussian model are comparable to KFAS",{
+  library("KFAS")
+  # From the help page of ?KFAS
+  data("Seatbelts", package = "datasets")
+  kfas_model <- SSModel(log(cbind(front, rear)) ~ -1 +
+      log(PetrolPrice) + log(kms) +
+      SSMregression(~law, data = Seatbelts, index = 1) +
+      SSMcustom(Z = diag(2), T = diag(2), R = matrix(1, 2, 1),
+        Q = matrix(1), P1inf = diag(2)) +
+      SSMseasonal(period = 12, sea.type = "trigonometric"),
+    data = Seatbelts, H = matrix(NA, 2, 2))
+  
+  diag(kfas_model$P1) <- 50
+  diag(kfas_model$P1inf) <- 0
+  kfas_model$H <- structure(c(0.00544500509177812, 0.00437558178720609, 0.00437558178720609, 
+    0.00885692410165593), .Dim = c(2L, 2L, 1L))
+  kfas_model$R <- structure(c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0152150188066314, 0.0144897116711475
+  ), .Dim = c(29L, 1L, 1L), .Dimnames = list(c("log(PetrolPrice).front", 
+    "log(kms).front", "log(PetrolPrice).rear", "log(kms).rear", "law.front", 
+    "sea_trig1.front", "sea_trig*1.front", "sea_trig2.front", "sea_trig*2.front", 
+    "sea_trig3.front", "sea_trig*3.front", "sea_trig4.front", "sea_trig*4.front", 
+    "sea_trig5.front", "sea_trig*5.front", "sea_trig6.front", "sea_trig1.rear", 
+    "sea_trig*1.rear", "sea_trig2.rear", "sea_trig*2.rear", "sea_trig3.rear", 
+    "sea_trig*3.rear", "sea_trig4.rear", "sea_trig*4.rear", "sea_trig5.rear", 
+    "sea_trig*5.rear", "sea_trig6.rear", "custom1", "custom2"), NULL, 
+    NULL))
+  
+  bssm_model <- as_gssm(kfas_model)
+  expect_equivalent(logLik(kfas_model),logLik(bssm_model))
+  expect_equivalent(KFS(kfas_model)$alphahat, smoother(bssm_model)$alphahat)
+  
+})
+
 test_that("different smoothers give identical results",{
   model_bssm <- bsm(log10(AirPassengers), P1 = diag(1e2,13), sd_slope = 0,
     sd_y = uniform(0.005, 0, 10), sd_level = uniform(0.01, 0, 10), 

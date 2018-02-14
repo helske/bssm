@@ -88,6 +88,18 @@ smoother.gssm <- function(object, ...) {
     start = start(object$y), frequency = frequency(object$y))
   out
 }
+#' @method smoother mv_gssm
+#' @export
+smoother.mv_gssm <- function(object, ...) {
+  
+  out <-  gaussian_smoother(object, model_type = -1L)
+  colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
+  
+  out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
+  out$alphahat <- ts(out$alphahat[-nrow(out$alphahat), , drop = FALSE], 
+    start = start(object$y), frequency = frequency(object$y))
+  out
+}
 #' @method smoother bsm
 #' @export
 smoother.bsm <- function(object, ...) {

@@ -47,7 +47,14 @@ as_gssm <- function(model, kappa = 1e5, ...) {
     out <- gssm(y = model$y, Z = Z, H = model$H, T = model$T, R = R, 
       a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
   } else {
-    out <- mv_gssm(y = model$y, Z = Z, H = model$H, T = model$T, R = R, 
+    H <- model$H
+    for (i in 1:dim(H)[3]) {
+      L <- KFAS::ldl(model$H[, , i])
+      D <- sqrt(diag(diag(L)))
+      diag(L) <- 1
+      H[, , i] <- L %*% D
+    }
+    out <- mv_gssm(y = model$y, Z = model$Z, H = H, T = model$T, R = R, 
       a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
   }
   
