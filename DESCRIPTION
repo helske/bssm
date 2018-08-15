@@ -2,7 +2,7 @@ Package: bssm
 Type: Package
 Title: Bayesian Inference of Non-Linear and Non-Gaussian State Space Models
 Version: 0.1.5
-Date: 2018-02-14
+Date: 2018-05-23
 Author: Jouni Helske, Matti Vihola
 Maintainer: Jouni Helske <jouni.helske@iki.fi>
 Description: Efficient methods for Bayesian inference of state space models 
@@ -15,14 +15,15 @@ Description: Efficient methods for Bayesian inference of state space models
 License: GPL (>= 2)
 Depends: R (>= 3.1.3)
 Suggests:
+    bayesplot,
     KFAS (>= 1.2.1),
     knitr (>= 1.11),
-    rmarkdown (>= 0.8.1),
-    testthat,
-    bayesplot,
-    sde,
+    MASS,
     ramcmc,
-    sitmo
+    rmarkdown (>= 0.8.1),
+    sde,
+    sitmo,
+    testthat
 Imports:
     coda (>= 0.18-1),
     diagis,

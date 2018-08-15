@@ -717,7 +717,7 @@ run_mcmc.sde_ssm <-  function(object, n_iter, nsim_states, type = "full",
       object$prior_pdf, object$obs_pdf, object$theta,
       nsim_states, L_c, L_f, seed,
       n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-      end_adaptive_phase)
+      end_adaptive_phase, type)
   } else {
     if(method == "pm") {
       if (missing(L_c)) L_c <- 0

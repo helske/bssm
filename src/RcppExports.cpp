@@ -990,29 +990,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sde_state_sampler_bsf_is2
-Rcpp::List sde_state_sampler_bsf_is2(const arma::vec& y, const double x0, const bool positive, SEXP drift_pntr, SEXP diffusion_pntr, SEXP ddiffusion_pntr, SEXP log_prior_pdf_pntr, SEXP log_obs_density_pntr, const unsigned int nsim_states, const unsigned int L_f, const unsigned int seed, const arma::vec& approx_loglik_storage, const arma::mat& theta);
-RcppExport SEXP _bssm_sde_state_sampler_bsf_is2(SEXP ySEXP, SEXP x0SEXP, SEXP positiveSEXP, SEXP drift_pntrSEXP, SEXP diffusion_pntrSEXP, SEXP ddiffusion_pntrSEXP, SEXP log_prior_pdf_pntrSEXP, SEXP log_obs_density_pntrSEXP, SEXP nsim_statesSEXP, SEXP L_fSEXP, SEXP seedSEXP, SEXP approx_loglik_storageSEXP, SEXP thetaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< const double >::type x0(x0SEXP);
-    Rcpp::traits::input_parameter< const bool >::type positive(positiveSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type drift_pntr(drift_pntrSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type diffusion_pntr(diffusion_pntrSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type ddiffusion_pntr(ddiffusion_pntrSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type log_prior_pdf_pntr(log_prior_pdf_pntrSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type log_obs_density_pntr(log_obs_density_pntrSEXP);
-    Rcpp::traits::input_parameter< const unsigned int >::type nsim_states(nsim_statesSEXP);
-    Rcpp::traits::input_parameter< const unsigned int >::type L_f(L_fSEXP);
-    Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type approx_loglik_storage(approx_loglik_storageSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type theta(thetaSEXP);
-    rcpp_result_gen = Rcpp::wrap(sde_state_sampler_bsf_is2(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, nsim_states, L_f, seed, approx_loglik_storage, theta));
-    return rcpp_result_gen;
-END_RCPP
-}
 // loglik_sde
 double loglik_sde(const arma::vec& y, const double x0, const bool positive, SEXP drift_pntr, SEXP diffusion_pntr, SEXP ddiffusion_pntr, SEXP log_prior_pdf_pntr, SEXP log_obs_density_pntr, const arma::vec& theta, const unsigned int nsim_states, const unsigned int L, const unsigned int seed);
 RcppExport SEXP _bssm_loglik_sde(SEXP ySEXP, SEXP x0SEXP, SEXP positiveSEXP, SEXP drift_pntrSEXP, SEXP diffusion_pntrSEXP, SEXP ddiffusion_pntrSEXP, SEXP log_prior_pdf_pntrSEXP, SEXP log_obs_density_pntrSEXP, SEXP thetaSEXP, SEXP nsim_statesSEXP, SEXP LSEXP, SEXP seedSEXP) {
@@ -1170,6 +1147,29 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const unsigned int >::type n_threads(n_threadsSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type type(typeSEXP);
     rcpp_result_gen = Rcpp::wrap(sde_is_mcmc(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim_states, L_c, L_f, seed, n_iter, n_burnin, n_thin, gamma, target_acceptance, S, end_ram, is_type, n_threads, type));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sde_state_sampler_bsf_is2
+Rcpp::List sde_state_sampler_bsf_is2(const arma::vec& y, const double x0, const bool positive, SEXP drift_pntr, SEXP diffusion_pntr, SEXP ddiffusion_pntr, SEXP log_prior_pdf_pntr, SEXP log_obs_density_pntr, const unsigned int nsim_states, const unsigned int L_f, const unsigned int seed, const arma::vec& approx_loglik_storage, const arma::mat& theta);
+RcppExport SEXP _bssm_sde_state_sampler_bsf_is2(SEXP ySEXP, SEXP x0SEXP, SEXP positiveSEXP, SEXP drift_pntrSEXP, SEXP diffusion_pntrSEXP, SEXP ddiffusion_pntrSEXP, SEXP log_prior_pdf_pntrSEXP, SEXP log_obs_density_pntrSEXP, SEXP nsim_statesSEXP, SEXP L_fSEXP, SEXP seedSEXP, SEXP approx_loglik_storageSEXP, SEXP thetaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const double >::type x0(x0SEXP);
+    Rcpp::traits::input_parameter< const bool >::type positive(positiveSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type drift_pntr(drift_pntrSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type diffusion_pntr(diffusion_pntrSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type ddiffusion_pntr(ddiffusion_pntrSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type log_prior_pdf_pntr(log_prior_pdf_pntrSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type log_obs_density_pntr(log_obs_density_pntrSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type L_f(L_fSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type approx_loglik_storage(approx_loglik_storageSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type theta(thetaSEXP);
+    rcpp_result_gen = Rcpp::wrap(sde_state_sampler_bsf_is2(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, nsim_states, L_f, seed, approx_loglik_storage, theta));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -1350,13 +1350,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bssm_nonlinear_predict_ekf", (DL_FUNC) &_bssm_nonlinear_predict_ekf, 21},
     {"_bssm_psi_smoother", (DL_FUNC) &_bssm_psi_smoother, 7},
     {"_bssm_psi_smoother_nlg", (DL_FUNC) &_bssm_psi_smoother_nlg, 21},
-    {"_bssm_sde_state_sampler_bsf_is2", (DL_FUNC) &_bssm_sde_state_sampler_bsf_is2, 13},
     {"_bssm_loglik_sde", (DL_FUNC) &_bssm_loglik_sde, 12},
     {"_bssm_bsf_sde", (DL_FUNC) &_bssm_bsf_sde, 12},
     {"_bssm_bsf_smoother_sde", (DL_FUNC) &_bssm_bsf_smoother_sde, 12},
     {"_bssm_sde_pm_mcmc", (DL_FUNC) &_bssm_sde_pm_mcmc, 20},
     {"_bssm_sde_da_mcmc", (DL_FUNC) &_bssm_sde_da_mcmc, 21},
     {"_bssm_sde_is_mcmc", (DL_FUNC) &_bssm_sde_is_mcmc, 23},
+    {"_bssm_sde_state_sampler_bsf_is2", (DL_FUNC) &_bssm_sde_state_sampler_bsf_is2, 13},
     {"_bssm_gaussian_smoother", (DL_FUNC) &_bssm_gaussian_smoother, 2},
     {"_bssm_general_gaussian_smoother", (DL_FUNC) &_bssm_general_gaussian_smoother, 16},
     {"_bssm_gaussian_ccov_smoother", (DL_FUNC) &_bssm_gaussian_ccov_smoother, 2},

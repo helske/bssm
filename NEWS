@@ -1,8 +1,10 @@
-bssm 0.1.5 (Release date: )
+bssm 0.1.5 (Release date: 2018-05-23)
 ==============
   * Fixed the Cholesky decomposition in filtering recursions of multivariate models.
   * as_gssm now works for multivariate Gaussian models of KFAS as well.
   * Fixed several issues regarding partially missing observations in multivariate models.
+  * Added the MASS package to Suggests as it is used in some unit tests.
+  * Added missing type argument to SDE MCMC call with delayed acceptance.
   
 bssm 0.1.4-1 (Release date: 2018-02-04)
 ==============

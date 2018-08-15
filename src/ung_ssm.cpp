@@ -296,8 +296,12 @@ double ung_ssm::psi_filter(const ugg_ssm& approx_model,
     
     arma::mat alphatmp(m, nsim);
     
+    // for (unsigned int i = 0; i < nsim; i++) {
+    //   alphatmp.col(i) = alpha.slice(i).col(t);
+    // }
     for (unsigned int i = 0; i < nsim; i++) {
       alphatmp.col(i) = alpha.slice(indices(i, t)).col(t);
+      //alpha.slice(i).col(t) = alphatmp.col(indices(i, t));
     }
     for (unsigned int i = 0; i < nsim; i++) {
       arma::vec um(m);
