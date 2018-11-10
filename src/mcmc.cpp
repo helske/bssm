@@ -1934,7 +1934,7 @@ void mcmc::pm_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
   arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
   arma::mat sampled_alpha = alpha.slice(sample0(model.engine));
-  arma::mat alphahat_i(n + 1, m);
+  arma::mat alphahat_i(m, n + 1);
   arma::cube Vt_i(m, m, n + 1);
   arma::cube Valphahat(m, m, n + 1, arma::fill::zeros);
   weighted_summary(alpha, alphahat_i, Vt_i, w);

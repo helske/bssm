@@ -1,3 +1,7 @@
+bssm 0.1.6
+==============
+  * Fixed wrong dimension declaration in pseudo-marginal MCMC for SDE models.
+  
 bssm 0.1.5 (Release date: 2018-05-23)
 ==============
   * Fixed the Cholesky decomposition in filtering recursions of multivariate models.

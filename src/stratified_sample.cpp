@@ -1,4 +1,4 @@
-// stratified sampling of indices from 0 to length(p)
+// stratified sampling of indices from 0 to length(p)-1
 // modified to armadillo compatible from C code by Matti Vihola
 #include "bssm.h"
 
