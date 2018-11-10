@@ -190,7 +190,7 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
       double approx_loglik_prop = gaussian_loglik + const_term + sum_scales;
       
       acceptance_prob = std::min(1.0, std::exp(approx_loglik_prop - approx_loglik +
-        logprior_prop - logprior));
+        logprior_prop - logprior + model.log_proposal_ratio(theta_prop, theta)));
       
       if (unif(model.engine) < acceptance_prob) {
         if (i > n_burnin) {
