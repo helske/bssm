@@ -1,22 +1,24 @@
 ---
-title: "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R"
-author: 
-  - Jouni Helske^[Linköping University, Department of Science and Technology, Sweden, University of Jyväskylä, Department of Mathematics and Statistics, Finland]
-  - Matti Vihola^[University of Jyväskylä, Department of Mathematics and Statistics, Finland]
+title: 'bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models
+  in R'
+author:
+- Jouni Helske^[LinkÃ¶ping University, Department of Science and Technology, Sweden,
+  University of JyvÃ¤skylÃ¤, Department of Mathematics and Statistics, Finland]
+- Matti Vihola^[University of JyvÃ¤skylÃ¤, Department of Mathematics and Statistics,
+  Finland]
 date: "January 31, 2017"
-link-citations: true
-output: 
+output:
+  html_document:
+    df_print: paged
   pdf_document:
     fig_caption: yes
     fig_crop: no
     fig_height: 6
     fig_width: 8
+link-citations: yes
 bibliography: bssm.bib
-vignette: >
-  %\VignetteIndexEntry{bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-  %\VignetteDepends{ggplot2, bayesplot, sde, ramcmc, sitmo}
+vignette: |
+  %\VignetteIndexEntry{bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8} %\VignetteDepends{ggplot2, bayesplot, sde, ramcmc, sitmo}
 ---
   
 ```{r setup, include=FALSE}
