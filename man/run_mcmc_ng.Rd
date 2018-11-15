@@ -10,44 +10,49 @@
 \title{Bayesian inference of non-Gaussian or non-linear state space models using MCMC}
 \usage{
 \method{run_mcmc}{ngssm}(object, n_iter, nsim_states, type = "full",
-  method = "da", simulation_method = "psi", n_burnin = floor(n_iter/2),
-  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
-  end_adaptive_phase = TRUE, local_approx = TRUE, n_threads = 1,
+  method = "da", simulation_method = "psi",
+  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  local_approx = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
   conv_tol = 1e-08, ...)
 
 \method{run_mcmc}{ng_bsm}(object, n_iter, nsim_states, type = "full",
-  method = "da", simulation_method = "psi", n_burnin = floor(n_iter/2),
-  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
-  end_adaptive_phase = TRUE, local_approx = TRUE, n_threads = 1,
+  method = "da", simulation_method = "psi",
+  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  local_approx = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
   conv_tol = 1e-08, ...)
 
 \method{run_mcmc}{ng_ar1}(object, n_iter, nsim_states, type = "full",
-  method = "da", simulation_method = "psi", n_burnin = floor(n_iter/2),
-  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
-  end_adaptive_phase = TRUE, local_approx = TRUE, n_threads = 1,
+  method = "da", simulation_method = "psi",
+  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  local_approx = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
   conv_tol = 1e-08, ...)
 
 \method{run_mcmc}{svm}(object, n_iter, nsim_states, type = "full",
-  method = "da", simulation_method = "psi", n_burnin = floor(n_iter/2),
-  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
-  end_adaptive_phase = TRUE, local_approx = TRUE, n_threads = 1,
+  method = "da", simulation_method = "psi",
+  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  local_approx = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
   conv_tol = 1e-08, ...)
 
 \method{run_mcmc}{nlg_ssm}(object, n_iter, nsim_states, type = "full",
-  method = "da", simulation_method = "psi", n_burnin = floor(n_iter/2),
-  n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S,
-  end_adaptive_phase = TRUE, n_threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
-  conv_tol = 1e-04, iekf_iter = 0, ...)
+  method = "da", simulation_method = "psi",
+  n_burnin = floor(n_iter/2), n_thin = 1, gamma = 2/3,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  n_threads = 1, seed = sample(.Machine$integer.max, size = 1),
+  max_iter = 100, conv_tol = 1e-04, iekf_iter = 0, ...)
 
 \method{run_mcmc}{sde_ssm}(object, n_iter, nsim_states, type = "full",
   method = "da", L_c, L_f, n_burnin = floor(n_iter/2), n_thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  n_threads = 1, seed = sample(.Machine$integer.max, size = 1), ...)
+  gamma = 2/3, target_acceptance = 0.234, S,
+  end_adaptive_phase = TRUE, n_threads = 1,
+  seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
 \item{object}{Model object.}

@@ -4,8 +4,9 @@
 \alias{ng_bsm}
 \title{Non-Gaussian Basic Structural (Time Series) Model}
 \usage{
-ng_bsm(y, sd_level, sd_slope, sd_seasonal, sd_noise, distribution, phi, u = 1,
-  beta, xreg = NULL, period = frequency(y), a1, P1, state_intercept)
+ng_bsm(y, sd_level, sd_slope, sd_seasonal, sd_noise, distribution, phi,
+  u = 1, beta, xreg = NULL, period = frequency(y), a1, P1,
+  state_intercept)
 }
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}

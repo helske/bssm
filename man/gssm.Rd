@@ -4,8 +4,8 @@
 \alias{gssm}
 \title{General univariate linear-Gaussian state space models}
 \usage{
-gssm(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names, H_prior, Z_prior,
-  T_prior, R_prior, obs_intercept, state_intercept)
+gssm(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names, H_prior,
+  Z_prior, T_prior, R_prior, obs_intercept, state_intercept)
 }
 \arguments{
 \item{y}{Observations as time series (or vector) of length \eqn{n}.}

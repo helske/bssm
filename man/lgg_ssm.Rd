@@ -6,8 +6,8 @@
 \usage{
 lgg_ssm(y, Z, H, T, R, a1, P1, theta, obs_intercept, state_intercept,
   known_params = NA, known_tv_params = matrix(NA), n_states, n_etas,
-  log_prior_pdf, time_varying = rep(TRUE, 6), state_names = paste0("state",
-  1:n_states))
+  log_prior_pdf, time_varying = rep(TRUE, 6),
+  state_names = paste0("state", 1:n_states))
 }
 \arguments{
 \item{y}{Observations as multivariate time series (or matrix) of length \eqn{n}.}

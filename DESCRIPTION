@@ -1,8 +1,8 @@
 Package: bssm
 Type: Package
 Title: Bayesian Inference of Non-Linear and Non-Gaussian State Space Models
-Version: 0.1.5
-Date: 2018-05-23
+Version: 0.1.6
+Date: 2018-11-12
 Author: Jouni Helske, Matti Vihola
 Maintainer: Jouni Helske <jouni.helske@iki.fi>
 Description: Efficient methods for Bayesian inference of state space models 
@@ -31,7 +31,8 @@ Imports:
     Rcpp (>= 0.12.3)
 LinkingTo: BH, Rcpp, RcppArmadillo, ramcmc, sitmo
 SystemRequirements: C++11
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 VignetteBuilder: knitr
 BugReports: https://github.com/helske/bssm/issues
 ByteCompile: true
+Encoding: UTF-8

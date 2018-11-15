@@ -24,12 +24,11 @@ double loglik_sde(const arma::vec& y, const double x0,
     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_prior, *xpfun_obs);
   
   unsigned int n = model.n;
-  arma::cube alpha(1, n, nsim_states);
-  arma::mat weights(nsim_states, n);
-  arma::umat indices(nsim_states, n - 1);
+  arma::cube alpha(1, n + 1, nsim_states);
+  arma::mat weights(nsim_states, n + 1);
+  arma::umat indices(nsim_states, n);
   return model.bsf_filter(nsim_states, L, alpha, weights, indices);
 }
-
 
 // [[Rcpp::export]]
 Rcpp::List bsf_sde(const arma::vec& y, const double x0, 

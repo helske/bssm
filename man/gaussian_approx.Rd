@@ -7,8 +7,8 @@
 \usage{
 gaussian_approx(object, max_iter, conv_tol, ...)
 
-\method{gaussian_approx}{ng_bsm}(object, max_iter = 100, conv_tol = 1e-08,
-  ...)
+\method{gaussian_approx}{ng_bsm}(object, max_iter = 100,
+  conv_tol = 1e-08, ...)
 }
 \arguments{
 \item{object}{model object.}
