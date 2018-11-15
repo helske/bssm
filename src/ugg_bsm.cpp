@@ -17,7 +17,7 @@ ugg_bsm::ugg_bsm(const Rcpp::List& model, const unsigned int seed) :
 
 // update the model given theta
 // standard deviation parameters sigma are sampled in a transformed space
-// with theta = log(1 + sigma) <=> sigma = exp(theta) - 1
+// with theta = log(sigma) <=> sigma = exp(theta)
 void ugg_bsm::update_model(const arma::vec& new_theta) {
   
   if (arma::accu(fixed) < 4) {
