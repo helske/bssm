@@ -409,19 +409,19 @@ run_mcmc.ng_ar1 <-  function(object, n_iter, nsim_states, type = "full",
     c("poisson", "binomial", "negative binomial"))
   
   if (method == "da") {
-    out <- nongaussian_da_mcmc(object, 
+    out <- nongaussian_da_mcmc(object, type, 
       nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
       seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
       max_iter, conv_tol, simulation_method, model_type = 4L, 0, 0, 0)
   } else {
     if(method == "pm") {
-      out <- nongaussian_pm_mcmc(object, 
+      out <- nongaussian_pm_mcmc(object, type,
         nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
         max_iter, conv_tol, simulation_method,
         model_type = 4L, 0, 0, 0)
     } else {
-      out <- nongaussian_is_mcmc(object, 
+      out <- nongaussian_is_mcmc(object, type,
         nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, n_threads, local_approx, object$initial_mode,
         max_iter, conv_tol, simulation_method,
