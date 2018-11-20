@@ -20,8 +20,6 @@ arma::uvec stratified_sample(arma::vec& p, const arma::vec& r, const unsigned in
       j++;
     }
   }
-  Rcpp::Rcout<<xp<<std::endl;
-  Rcpp::Rcout<<j<<std::endl;
   while (j < N) {
     xp(j) = N;
     j++;

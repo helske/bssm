@@ -554,6 +554,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' @examples
 #'
 #' data("exchange")
+#' exchange <- exchange[1:100] # faster CRAN check
 #' model <- svm(exchange, rho = uniform(0.98,-0.999,0.999),
 #'  sd_ar = halfnormal(0.15, 5), sigma = halfnormal(0.6, 2))
 #'

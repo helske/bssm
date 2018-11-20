@@ -156,10 +156,10 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
   double loglik = model.log_likelihood();
   
   if (!std::isfinite(logprior))
-    Rcpp::Rcout<<"Non-finite prior with initial values."<<std::endl;
+    Rcpp::stop("Initial prior probability is not finite.");
   
   if (!std::isfinite(loglik))
-    Rcpp::Rcout<<"Non-finite log-likelihood with initial values."<<std::endl;
+    Rcpp::stop("Initial log-likelihood is not finite.");
   
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
@@ -342,6 +342,8 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
   // compute the log-likelihood of the approximate model
   double gaussian_loglik = approx_model.log_likelihood();
   
+  if (!std::isfinite(gaussian_loglik))
+    Rcpp::stop("Initial gaussian log-likelihood is not finite.");
   
   // compute unnormalized mode-based correction terms
   // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
@@ -365,6 +367,8 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
   
   double ll_w = std::log(arma::accu(weights) / nsim_states);
   double loglik = gaussian_loglik + const_term + sum_scales + ll_w;
+  if (!std::isfinite(loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   double acceptance_prob = 0.0;
   bool new_value = true;
   unsigned int n_values = 0;
@@ -532,6 +536,8 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   arma::umat indices(nsim_states, n);
   double loglik = model.psi_filter(approx_model, approx_loglik, scales,
     nsim_states, alpha, weights, indices);
+  if (!std::isfinite(loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   
   filter_smoother(alpha, indices);
   arma::vec w = weights.col(n);
@@ -686,7 +692,8 @@ void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
   arma::mat weights(nsim_states, n + 1);
   arma::umat indices(nsim_states, n);
   double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
-  
+  if (!std::isfinite(loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   filter_smoother(alpha, indices);
   arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
@@ -852,7 +859,8 @@ void mcmc::da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
   
   double ll_w = std::log(arma::accu(weights) / nsim_states);
   double loglik = gaussian_loglik + const_term + sum_scales + ll_w;
-  
+  if (!std::isfinite(loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   double acceptance_prob = 0.0;
   bool new_value = true;
   unsigned int n_values = 0;
@@ -1026,6 +1034,8 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   arma::umat indices(nsim_states, n);
   double loglik = model.psi_filter(approx_model, approx_loglik, scales,
     nsim_states, alpha, weights, indices);
+  if (!std::isfinite(loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   filter_smoother(alpha, indices);
   arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
@@ -1204,7 +1214,8 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
   arma::mat weights(nsim_states, n + 1);
   arma::umat indices(nsim_states, n);
   double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
-  
+  if (!std::isfinite(loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   filter_smoother(alpha, indices);
   arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
@@ -1361,7 +1372,8 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   
   double loglik = model.psi_filter(approx_model0, gaussian_loglik,
     nsim_states, alpha, weights, indices);
-  
+  if (!std::isfinite(loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   filter_smoother(alpha, indices);
   arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
@@ -1498,7 +1510,8 @@ void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram,
   arma::mat weights(nsim_states, n + 1);
   arma::umat indices(nsim_states, n);
   double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
-  
+  if (!std::isfinite(loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   filter_smoother(alpha, indices);
   arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
@@ -1633,6 +1646,8 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   arma::umat indices(nsim_states, n);
   double loglik = model.psi_filter(approx_model0, approx_loglik,
     nsim_states, alpha, weights, indices);
+  if (!std::isfinite(loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   approx_loglik += arma::accu(model.scaling_factors(approx_model0, mode_estimate));
   filter_smoother(alpha, indices);
   arma::vec w = weights.col(n);
@@ -1784,7 +1799,8 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
   arma::mat weights(nsim_states, n + 1);
   arma::umat indices(nsim_states, n);
   double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
-  
+  if (!std::isfinite(loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   filter_smoother(alpha, indices);
   arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
@@ -1929,7 +1945,8 @@ void mcmc::pm_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
   arma::mat weights(nsim_states, n + 1);
   arma::umat indices(nsim_states, n);
   double loglik = model.bsf_filter(nsim_states, L, alpha, weights, indices);
-  
+  if (!std::isfinite(loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   filter_smoother(alpha, indices);
   arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());
@@ -2056,7 +2073,8 @@ void mcmc::da_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
   double loglik_c = model.bsf_filter(nsim_states, L_c, alpha, weights, indices);
   double loglik_f = 0.0;
   loglik_f = model.bsf_filter(nsim_states, L_f, alpha, weights, indices);
-  
+  if (!std::isfinite(loglik_f))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   filter_smoother(alpha, indices);
   arma::vec w = weights.col(n);
   std::discrete_distribution<unsigned int> sample0(w.begin(), w.end());

@@ -137,7 +137,8 @@ void ung_amcmc::approx_mcmc(T model, const bool end_ram, const bool local_approx
   double const_term = compute_const_term(model, approx_model);
   // log-likelihood approximation
   double approx_loglik = gaussian_loglik + const_term + sum_scales;
-  
+  if (!std::isfinite(approx_loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   double acceptance_prob = 0.0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);

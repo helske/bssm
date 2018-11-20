@@ -87,6 +87,8 @@ void sde_amcmc::approx_mcmc(sde_ssm model, const bool end_ram,
   arma::mat weights(nsim_states, n + 1);
   arma::umat indices(nsim_states, n);
   double loglik = model.bsf_filter(nsim_states, L, alpha, weights, indices);
+  if (!std::isfinite(loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
   
   double acceptance_prob = 0.0;
   bool new_value = true;
