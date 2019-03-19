@@ -13,9 +13,12 @@ sim_smoother(object, nsim, seed, use_antithetic = FALSE, ...)
 
 \item{seed}{Seed for the random number generator.}
 
-\item{use_antithetic}{Use an antithetic variable for location. Default is \code{FALSE}.}
+\item{use_antithetic}{Use an antithetic variable for location. Default is \code{FALSE}. Only used if \code{method} is "dk".}
 
 \item{...}{Ignored.}
+
+\item{method}{If \code{"dk"} (default), use simulation smoothing algorithm by Durbin and Koopman (2002). If \code{"psi"}, use twisted SMC. 
+Only used for Gaussian models of class \code{"gssm"}, \code{"bsm"}, and \code{"ar1"}.}
 }
 \value{
 An array containing the generated samples.

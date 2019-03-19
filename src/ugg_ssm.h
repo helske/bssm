@@ -64,6 +64,8 @@ public:
   void smoother(arma::mat& at, arma::cube& Pt) const;
   double bsf_filter(const unsigned int nsim, arma::cube& alpha,
     arma::mat& weights, arma::umat& indices);
+  // simulation smoothing usin twisted smc
+  void psi_filter(const unsigned int nsim, arma::cube& alpha);
  
   Rcpp::List predict_interval(const arma::vec& probs, const arma::mat& theta,
     const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type);

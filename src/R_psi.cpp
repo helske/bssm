@@ -1,5 +1,7 @@
 #include "mgg_ssm.h"
 #include "ugg_ssm.h"
+#include "ugg_bsm.h"
+#include "ugg_ar1.h"
 #include "ung_ssm.h"
 #include "ung_bsm.h"
 #include "ung_svm.h"
@@ -9,6 +11,36 @@
 #include "filter_smoother.h"
 #include "ng_psi_filter.h"
 #include "summary.h"
+
+// [[Rcpp::export]]
+arma::cube gaussian_psi_smoother(const Rcpp::List& model_,
+  const unsigned int nsim_states, const unsigned int seed,
+  const int model_type) {
+  
+  switch (model_type) {
+  case 1: {
+  ugg_ssm model(clone(model_), seed);
+  arma::cube alpha(model.m, model.n + 1, nsim_states);
+  model.psi_filter(nsim_states, alpha);
+  return alpha;
+} break;
+  case 2: {
+    ugg_bsm model(clone(model_), seed);
+    arma::cube alpha(model.m, model.n + 1, nsim_states);
+    model.psi_filter(nsim_states, alpha);
+    return alpha;
+  } break;
+  case 3: {
+    ugg_ar1 model(clone(model_), seed);
+    arma::cube alpha(model.m, model.n + 1, nsim_states);
+    model.psi_filter(nsim_states, alpha);
+    return alpha;
+  } break;
+  default:
+    return arma::cube(0,0,0);
+  break;
+  }
+}
 
 // [[Rcpp::export]]
 Rcpp::List psi_smoother(const Rcpp::List& model_, const arma::vec mode_estimate,

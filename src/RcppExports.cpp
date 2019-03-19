@@ -6,72 +6,6 @@
 
 using namespace Rcpp;
 
-// conditional_cov
-void conditional_cov(arma::cube& Vt, arma::cube& Ct, const bool use_svd);
-RcppExport SEXP _bssm_conditional_cov(SEXP VtSEXP, SEXP CtSEXP, SEXP use_svdSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::cube& >::type Vt(VtSEXP);
-    Rcpp::traits::input_parameter< arma::cube& >::type Ct(CtSEXP);
-    Rcpp::traits::input_parameter< const bool >::type use_svd(use_svdSEXP);
-    conditional_cov(Vt, Ct, use_svd);
-    return R_NilValue;
-END_RCPP
-}
-// dmvnorm
-double dmvnorm(const arma::vec& x, const arma::vec& mean, const arma::mat& sigma, bool lwr, bool logd);
-RcppExport SEXP _bssm_dmvnorm(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP lwrSEXP, SEXP logdSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type mean(meanSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< bool >::type lwr(lwrSEXP);
-    Rcpp::traits::input_parameter< bool >::type logd(logdSEXP);
-    rcpp_result_gen = Rcpp::wrap(dmvnorm(x, mean, sigma, lwr, logd));
-    return rcpp_result_gen;
-END_RCPP
-}
-// precompute_dmvnorm
-double precompute_dmvnorm(const arma::mat& sigma, arma::mat& Linv, const arma::uvec& nonzero);
-RcppExport SEXP _bssm_precompute_dmvnorm(SEXP sigmaSEXP, SEXP LinvSEXP, SEXP nonzeroSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type Linv(LinvSEXP);
-    Rcpp::traits::input_parameter< const arma::uvec& >::type nonzero(nonzeroSEXP);
-    rcpp_result_gen = Rcpp::wrap(precompute_dmvnorm(sigma, Linv, nonzero));
-    return rcpp_result_gen;
-END_RCPP
-}
-// fast_dmvnorm
-double fast_dmvnorm(const arma::vec& x, const arma::vec& mean, const arma::mat& Linv, const arma::uvec& nonzero, const double constant);
-RcppExport SEXP _bssm_fast_dmvnorm(SEXP xSEXP, SEXP meanSEXP, SEXP LinvSEXP, SEXP nonzeroSEXP, SEXP constantSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type mean(meanSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type Linv(LinvSEXP);
-    Rcpp::traits::input_parameter< const arma::uvec& >::type nonzero(nonzeroSEXP);
-    Rcpp::traits::input_parameter< const double >::type constant(constantSEXP);
-    rcpp_result_gen = Rcpp::wrap(fast_dmvnorm(x, mean, Linv, nonzero, constant));
-    return rcpp_result_gen;
-END_RCPP
-}
-// psd_chol
-arma::mat psd_chol(const arma::mat& x);
-RcppExport SEXP _bssm_psd_chol(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(psd_chol(x));
-    return rcpp_result_gen;
-END_RCPP
-}
 // gaussian_approx_model
 Rcpp::List gaussian_approx_model(const Rcpp::List& model_, arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol, const int model_type);
 RcppExport SEXP _bssm_gaussian_approx_model(SEXP model_SEXP, SEXP mode_estimateSEXP, SEXP max_iterSEXP, SEXP conv_tolSEXP, SEXP model_typeSEXP) {
@@ -941,6 +875,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// gaussian_psi_smoother
+arma::cube gaussian_psi_smoother(const Rcpp::List& model_, const unsigned int nsim_states, const unsigned int seed, const int model_type);
+RcppExport SEXP _bssm_gaussian_psi_smoother(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP seedSEXP, SEXP model_typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type model_(model_SEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type nsim_states(nsim_statesSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< const int >::type model_type(model_typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(gaussian_psi_smoother(model_, nsim_states, seed, model_type));
+    return rcpp_result_gen;
+END_RCPP
+}
 // psi_smoother
 Rcpp::List psi_smoother(const Rcpp::List& model_, const arma::vec mode_estimate, const unsigned int nsim_states, const unsigned int seed, const unsigned int max_iter, const double conv_tol, const int model_type);
 RcppExport SEXP _bssm_psi_smoother(SEXP model_SEXP, SEXP mode_estimateSEXP, SEXP nsim_statesSEXP, SEXP seedSEXP, SEXP max_iterSEXP, SEXP conv_tolSEXP, SEXP model_typeSEXP) {
@@ -1307,13 +1255,74 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// conditional_cov
+void conditional_cov(arma::cube& Vt, arma::cube& Ct, const bool use_svd);
+RcppExport SEXP _bssm_conditional_cov(SEXP VtSEXP, SEXP CtSEXP, SEXP use_svdSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::cube& >::type Vt(VtSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type Ct(CtSEXP);
+    Rcpp::traits::input_parameter< const bool >::type use_svd(use_svdSEXP);
+    conditional_cov(Vt, Ct, use_svd);
+    return R_NilValue;
+END_RCPP
+}
+// dmvnorm
+double dmvnorm(const arma::vec& x, const arma::vec& mean, const arma::mat& sigma, bool lwr, bool logd);
+RcppExport SEXP _bssm_dmvnorm(SEXP xSEXP, SEXP meanSEXP, SEXP sigmaSEXP, SEXP lwrSEXP, SEXP logdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< bool >::type lwr(lwrSEXP);
+    Rcpp::traits::input_parameter< bool >::type logd(logdSEXP);
+    rcpp_result_gen = Rcpp::wrap(dmvnorm(x, mean, sigma, lwr, logd));
+    return rcpp_result_gen;
+END_RCPP
+}
+// precompute_dmvnorm
+double precompute_dmvnorm(const arma::mat& sigma, arma::mat& Linv, const arma::uvec& nonzero);
+RcppExport SEXP _bssm_precompute_dmvnorm(SEXP sigmaSEXP, SEXP LinvSEXP, SEXP nonzeroSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type Linv(LinvSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type nonzero(nonzeroSEXP);
+    rcpp_result_gen = Rcpp::wrap(precompute_dmvnorm(sigma, Linv, nonzero));
+    return rcpp_result_gen;
+END_RCPP
+}
+// fast_dmvnorm
+double fast_dmvnorm(const arma::vec& x, const arma::vec& mean, const arma::mat& Linv, const arma::uvec& nonzero, const double constant);
+RcppExport SEXP _bssm_fast_dmvnorm(SEXP xSEXP, SEXP meanSEXP, SEXP LinvSEXP, SEXP nonzeroSEXP, SEXP constantSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Linv(LinvSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type nonzero(nonzeroSEXP);
+    Rcpp::traits::input_parameter< const double >::type constant(constantSEXP);
+    rcpp_result_gen = Rcpp::wrap(fast_dmvnorm(x, mean, Linv, nonzero, constant));
+    return rcpp_result_gen;
+END_RCPP
+}
+// psd_chol
+arma::mat psd_chol(const arma::mat& x);
+RcppExport SEXP _bssm_psd_chol(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(psd_chol(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_bssm_conditional_cov", (DL_FUNC) &_bssm_conditional_cov, 3},
-    {"_bssm_dmvnorm", (DL_FUNC) &_bssm_dmvnorm, 5},
-    {"_bssm_precompute_dmvnorm", (DL_FUNC) &_bssm_precompute_dmvnorm, 3},
-    {"_bssm_fast_dmvnorm", (DL_FUNC) &_bssm_fast_dmvnorm, 5},
-    {"_bssm_psd_chol", (DL_FUNC) &_bssm_psd_chol, 1},
     {"_bssm_gaussian_approx_model", (DL_FUNC) &_bssm_gaussian_approx_model, 5},
     {"_bssm_gaussian_approx_model_nlg", (DL_FUNC) &_bssm_gaussian_approx_model_nlg, 19},
     {"_bssm_bsf", (DL_FUNC) &_bssm_bsf, 5},
@@ -1347,6 +1356,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bssm_nongaussian_predict", (DL_FUNC) &_bssm_nongaussian_predict, 9},
     {"_bssm_nonlinear_predict", (DL_FUNC) &_bssm_nonlinear_predict, 22},
     {"_bssm_nonlinear_predict_ekf", (DL_FUNC) &_bssm_nonlinear_predict_ekf, 21},
+    {"_bssm_gaussian_psi_smoother", (DL_FUNC) &_bssm_gaussian_psi_smoother, 4},
     {"_bssm_psi_smoother", (DL_FUNC) &_bssm_psi_smoother, 7},
     {"_bssm_psi_smoother_nlg", (DL_FUNC) &_bssm_psi_smoother_nlg, 21},
     {"_bssm_loglik_sde", (DL_FUNC) &_bssm_loglik_sde, 12},
@@ -1363,6 +1373,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bssm_gaussian_sim_smoother", (DL_FUNC) &_bssm_gaussian_sim_smoother, 5},
     {"_bssm_general_gaussian_sim_smoother", (DL_FUNC) &_bssm_general_gaussian_sim_smoother, 19},
     {"_bssm_ukf_nlg", (DL_FUNC) &_bssm_ukf_nlg, 19},
+    {"_bssm_conditional_cov", (DL_FUNC) &_bssm_conditional_cov, 3},
+    {"_bssm_dmvnorm", (DL_FUNC) &_bssm_dmvnorm, 5},
+    {"_bssm_precompute_dmvnorm", (DL_FUNC) &_bssm_precompute_dmvnorm, 3},
+    {"_bssm_fast_dmvnorm", (DL_FUNC) &_bssm_fast_dmvnorm, 5},
+    {"_bssm_psd_chol", (DL_FUNC) &_bssm_psd_chol, 1},
     {NULL, NULL, 0}
 };
 

@@ -3,6 +3,7 @@
 #include "rep_mat.h"
 #include "sample.h"
 #include "distr_consts.h"
+#include "conditional_dist.h"
 #include "psd_chol.h"
 
 // General constructor of ugg_ssm object from Rcpp::List
@@ -819,4 +820,33 @@ double ugg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   }
   
   return loglik;
+}
+
+
+void ugg_ssm::psi_filter(const unsigned int nsim, arma::cube& alpha) {
+  
+  arma::mat alphahat(m, n + 1);
+  arma::cube Vt(m, m, n + 1);
+  arma::cube Ct(m, m, n + 1);
+  smoother_ccov(alphahat, Vt, Ct);
+  conditional_cov(Vt, Ct);
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  for (unsigned int i = 0; i < nsim; i++) {
+    arma::vec um(m);
+    for(unsigned int j = 0; j < m; j++) {
+      um(j) = normal(engine);
+    }
+    alpha.slice(i).col(0) = alphahat.col(0) + Vt.slice(0) * um;
+  }
+  
+  for (unsigned int t = 0; t < n; t++) {
+    for (unsigned int i = 0; i < nsim; i++) {
+      arma::vec um(m);
+      for(unsigned int j = 0; j < m; j++) {
+        um(j) = normal(engine);
+      }
+      alpha.slice(i).col(t + 1) = alphahat.col(t + 1) + Ct.slice(t + 1) * (alpha.slice(i).col(t) - alphahat.col(t)) + Vt.slice(t + 1) * um;
+    }
+  }
 }
