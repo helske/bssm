@@ -432,7 +432,7 @@ double nlg_ssm::ekf_smoother(arma::mat& at, arma::cube& Pt, const unsigned int i
   
   const double LOG2PI = std::log(2.0 * M_PI);
   double logLik = 0.0;
-  arma::uvec uvect  = {0};
+  arma::uvec uvect(1, arma::fill::zeros);
   for (unsigned int t = 0; t < n; t++) {
     arma::uvec na_y = arma::find_nonfinite(y.col(t));
     arma::mat Ptt = Pt.slice(t);
