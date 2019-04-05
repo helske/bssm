@@ -2,9 +2,44 @@
 % Please edit documentation in R/sim_smoother.R
 \name{sim_smoother}
 \alias{sim_smoother}
+\alias{sim_smoother.gssm}
+\alias{sim_smoother.bsm}
+\alias{sim_smoother.ar1}
+\alias{sim_smoother.ngssm}
+\alias{sim_smoother.ng_bsm}
+\alias{sim_smoother.svm}
+\alias{sim_smoother.ng_ar1}
 \title{Simulation Smoothing}
 \usage{
 sim_smoother(object, nsim, seed, use_antithetic = FALSE, ...)
+
+\method{sim_smoother}{gssm}(object, nsim = 1,
+  seed = sample(.Machine$integer.max, size = 1),
+  use_antithetic = FALSE, method = "dk", ...)
+
+\method{sim_smoother}{bsm}(object, nsim = 1,
+  seed = sample(.Machine$integer.max, size = 1),
+  use_antithetic = FALSE, method = "dk", ...)
+
+\method{sim_smoother}{ar1}(object, nsim = 1,
+  seed = sample(.Machine$integer.max, size = 1),
+  use_antithetic = FALSE, method = "dk", ...)
+
+\method{sim_smoother}{ngssm}(object, nsim = 1,
+  seed = sample(.Machine$integer.max, size = 1),
+  use_antithetic = FALSE, ...)
+
+\method{sim_smoother}{ng_bsm}(object, nsim = 1,
+  seed = sample(.Machine$integer.max, size = 1),
+  use_antithetic = FALSE, ...)
+
+\method{sim_smoother}{svm}(object, nsim = 1,
+  seed = sample(.Machine$integer.max, size = 1),
+  use_antithetic = FALSE, ...)
+
+\method{sim_smoother}{ng_ar1}(object, nsim = 1,
+  seed = sample(.Machine$integer.max, size = 1),
+  use_antithetic = FALSE, ...)
 }
 \arguments{
 \item{object}{Model object.}

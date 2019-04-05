@@ -24,6 +24,7 @@ sim_smoother <- function(object, nsim, seed, use_antithetic = FALSE, ...) {
   UseMethod("sim_smoother", object)
 }
 #' @method sim_smoother gssm
+#' @rdname sim_smoother
 #' @export
 sim_smoother.gssm <- function(object, nsim = 1, 
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, method = "dk", ...) {
@@ -38,6 +39,7 @@ sim_smoother.gssm <- function(object, nsim = 1,
   aperm(out, c(2, 1, 3))[-(length(object$y) + 1), , , drop = FALSE]
 }
 #' @method sim_smoother bsm
+#' @rdname sim_smoother
 #' @export
 sim_smoother.bsm <- function(object, nsim = 1, 
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, method = "dk", ...) {
@@ -53,6 +55,7 @@ sim_smoother.bsm <- function(object, nsim = 1,
   aperm(out, c(2, 1, 3))[-(length(object$y) + 1), , , drop = FALSE]
 }
 #' @method sim_smoother ar1
+#' @rdname sim_smoother
 #' @export
 sim_smoother.ar1 <- function(object, nsim = 1, 
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, method = "dk", ...) {
@@ -83,6 +86,7 @@ sim_smoother.lgg_ssm <- function(object, nsim = 1,
 }
 
 #' @method sim_smoother ngssm
+#' @rdname sim_smoother
 #' @export
 sim_smoother.ngssm <- function(object, nsim = 1,
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
@@ -90,6 +94,7 @@ sim_smoother.ngssm <- function(object, nsim = 1,
     use_antithetic = use_antithetic, seed = seed)
 }
 #' @method sim_smoother ng_bsm
+#' @rdname sim_smoother
 #' @export
 sim_smoother.ng_bsm <- function(object, nsim = 1,
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
@@ -97,6 +102,7 @@ sim_smoother.ng_bsm <- function(object, nsim = 1,
     use_antithetic = use_antithetic, seed = seed)
 }
 #' @method sim_smoother svm
+#' @rdname sim_smoother
 #' @export
 sim_smoother.svm <- function(object, nsim = 1, 
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
@@ -104,6 +110,7 @@ sim_smoother.svm <- function(object, nsim = 1,
     use_antithetic = use_antithetic, seed = seed)
 }
 #' @method sim_smoother ng_ar1
+#' @rdname sim_smoother
 #' @export
 sim_smoother.ng_ar1 <- function(object, nsim = 1,
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {

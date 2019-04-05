@@ -15,6 +15,7 @@ bootstrap_filter <- function(object, nsim, ...) {
   UseMethod("bootstrap_filter", object)
 }
 #' @method bootstrap_filter gssm
+#' @rdname bootstrap_filter
 #' @export
 bootstrap_filter.gssm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -29,6 +30,7 @@ bootstrap_filter.gssm <- function(object, nsim,
   out
 }
 #' @method bootstrap_filter bsm
+#' @rdname bootstrap_filter
 #' @export
 bootstrap_filter.bsm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -61,6 +63,7 @@ bootstrap_filter.ngssm <- function(object, nsim,
   out
 }
 #' @method bootstrap_filter ng_bsm
+#' @rdname bootstrap_filter
 #' @export
 bootstrap_filter.ng_bsm <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -92,6 +95,7 @@ bootstrap_filter.svm <- function(object, nsim,
   out
 }
 #' @method bootstrap_filter ng_ar1
+#' @rdname bootstrap_filter
 #' @export
 bootstrap_filter.ng_ar1 <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -129,7 +133,7 @@ bootstrap_filter.nlg_ssm <- function(object, nsim,
 
 #' @method bootstrap_filter sde_ssm
 #' @rdname bootstrap_filter
-#' @param L Integer defining the discretization level.
+#' @param L Integer defining the discretization level for SDE models.
 #' @export
 bootstrap_filter.sde_ssm <- function(object, nsim, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {

@@ -2,18 +2,34 @@
 % Please edit documentation in R/bootstrap_filter.R
 \name{bootstrap_filter}
 \alias{bootstrap_filter}
+\alias{bootstrap_filter.gssm}
+\alias{bootstrap_filter.bsm}
 \alias{bootstrap_filter.ngssm}
+\alias{bootstrap_filter.ng_bsm}
 \alias{bootstrap_filter.svm}
+\alias{bootstrap_filter.ng_ar1}
 \alias{bootstrap_filter.nlg_ssm}
 \alias{bootstrap_filter.sde_ssm}
 \title{Bootstrap Filtering}
 \usage{
 bootstrap_filter(object, nsim, ...)
 
+\method{bootstrap_filter}{gssm}(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...)
+
+\method{bootstrap_filter}{bsm}(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...)
+
 \method{bootstrap_filter}{ngssm}(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
+\method{bootstrap_filter}{ng_bsm}(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...)
+
 \method{bootstrap_filter}{svm}(object, nsim,
+  seed = sample(.Machine$integer.max, size = 1), ...)
+
+\method{bootstrap_filter}{ng_ar1}(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...)
 
 \method{bootstrap_filter}{nlg_ssm}(object, nsim,
@@ -31,7 +47,7 @@ bootstrap_filter(object, nsim, ...)
 
 \item{seed}{Seed for RNG.}
 
-\item{L}{Integer defining the discretization level.}
+\item{L}{Integer defining the discretization level for SDE models.}
 }
 \value{
 A list containing samples, weights from the last time point, and an
