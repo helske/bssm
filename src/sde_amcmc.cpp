@@ -168,7 +168,7 @@ void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states,
   double sum_w = 0.0;
   
 #ifdef _OPENMP
-#pragma omp parallel num_threads(n_threads) default(none) shared(Valpha, sum_w) firstprivate(model) 
+#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model) 
 {
   
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);

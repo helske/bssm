@@ -55,7 +55,7 @@ void mcmc::state_posterior(T model, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
-#pragma omp parallel num_threads(n_threads) default(none) firstprivate(model)
+#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
   unsigned thread_size =
