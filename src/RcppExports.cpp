@@ -1321,6 +1321,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// stratified_sample
+arma::uvec stratified_sample(arma::vec& p, const arma::vec& r, const unsigned int N);
+RcppExport SEXP _bssm_stratified_sample(SEXP pSEXP, SEXP rSEXP, SEXP NSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type r(rSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type N(NSEXP);
+    rcpp_result_gen = Rcpp::wrap(stratified_sample(p, r, N));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_bssm_gaussian_approx_model", (DL_FUNC) &_bssm_gaussian_approx_model, 5},
@@ -1378,6 +1391,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bssm_precompute_dmvnorm", (DL_FUNC) &_bssm_precompute_dmvnorm, 3},
     {"_bssm_fast_dmvnorm", (DL_FUNC) &_bssm_fast_dmvnorm, 5},
     {"_bssm_psd_chol", (DL_FUNC) &_bssm_psd_chol, 1},
+    {"_bssm_stratified_sample", (DL_FUNC) &_bssm_stratified_sample, 3},
     {NULL, NULL, 0}
 };
 

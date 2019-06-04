@@ -221,3 +221,7 @@ psd_chol <- function(x) {
     .Call('_bssm_psd_chol', PACKAGE = 'bssm', x)
 }
 
+stratified_sample <- function(p, r, N) {
+    .Call('_bssm_stratified_sample', PACKAGE = 'bssm', p, r, N)
+}
+

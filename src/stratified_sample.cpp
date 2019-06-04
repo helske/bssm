@@ -5,7 +5,7 @@
 // p is the target distribution
 // r are random number from U(0,1)
 // N is the number of samples
-
+//[[Rcpp::export()]]
 arma::uvec stratified_sample(arma::vec& p, const arma::vec& r, const unsigned int N) {
 
   arma::uvec xp(N);
@@ -21,7 +21,7 @@ arma::uvec stratified_sample(arma::vec& p, const arma::vec& r, const unsigned in
     }
   }
   while (j < N) {
-    xp(j) = N;
+    xp(j) = p.n_elem - 1;
     j++;
   }
   return xp;
