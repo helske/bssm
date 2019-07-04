@@ -1478,6 +1478,7 @@ sde_ssm <- function(y, drift, diffusion, ddiffusion, obs_pdf,
 #' @param obs_intercept,state_intercept Intercept terms for observation and
 #' state equations, given as a p times n and m times n matrices.
 #' @return Object of class \code{mv_gssm}.
+#' @export
 mv_gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
   H_prior, Z_prior, T_prior, R_prior, obs_intercept, state_intercept) {
   
