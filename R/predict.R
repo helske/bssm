@@ -123,7 +123,8 @@ predict.mcmc_output <- function(object, future_model, type = "response",
                   sum(dnorm(x = out$intervals[i, j], out$mean_pred[, i], out$sd_pred[, i]) / nsim)
               }
             }
-            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
+            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, 
+                                   end = end_ts, frequency = freq),
               intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
                 names = paste0(100*probs, "%")),
               MCSE = ts(ses, start = start_ts, end = end_ts, frequency = freq,
@@ -138,10 +139,12 @@ predict.mcmc_output <- function(object, future_model, type = "response",
             for (k in 1:m) {
               for (i in 1:n_ahead) {
                 for (j in 1:length(probs)) {
-                  pnorms <- pnorm(q = out$intervals[i, j, k], out$mean_pred[, i, k], out$sd_pred[, i, k])
+                  pnorms <- pnorm(q = out$intervals[i, j, k], 
+                                  out$mean_pred[, i, k], out$sd_pred[, i, k])
                   eff_n <-  effectiveSize(pnorms)
                   ses[[k]][i, j] <- sqrt((sum((probs[j] - pnorms) ^ 2) / nsim) / eff_n) /
-                    sum(dnorm(x = out$intervals[i, j, k], out$mean_pred[, i, k], out$sd_pred[, i, k]) / nsim)
+                    sum(dnorm(x = out$intervals[i, j, k], 
+                              out$mean_pred[, i, k], out$sd_pred[, i, k]) / nsim)
                 }
               }
             }
@@ -158,7 +161,8 @@ predict.mcmc_output <- function(object, future_model, type = "response",
           
         } else {
           if (type != "state") {
-            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
+            pred <- list(mean = ts(colMeans(out$mean_pred), 
+                                   start = start_ts, end = end_ts, frequency = freq),
               intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
                 names = paste0(100 * probs, "%"))) 
           } else {
@@ -181,10 +185,25 @@ predict.mcmc_output <- function(object, future_model, type = "response",
       
       future_model$distribution <- pmatch(future_model$distribution, 
         c("poisson", "binomial", "negative binomial"))
-      out <- nongaussian_predict(future_model, probs,
-        t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
-        pmatch(type, c("response", "mean", "state")), seed, 
-        pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm", "ng_ar1")))
+#      out <- bssm:::nongaussian_predict(future_model, probs,
+#        t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
+#        pmatch(type, c("response", "mean", "state")), seed, 
+#        pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm", "ng_ar1")), 
+#        nsim)
+#      Error in bssm:::nongaussian_predict(future_model, probs, t(object$theta),  : 
+#                                            Not a matrix.
+# PROBLEM:  
+#   object$alpha[nrow(object$alpha),,] dropped 2 dimensions to become a vector 
+# FIX: 
+      alpha_nrow. <- object$alpha[nrow(object$alpha),,]
+      nda <- dim(object$alpha)
+      alpha_nrow <- matrix(alpha_nrow., nda[2], nda[3])
+      out <- bssm:::nongaussian_predict(future_model, probs,
+          t(object$theta), alpha_nrow, object$counts, 
+          pmatch(type, c("response", "mean", "state")), seed, 
+          pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm", "ng_ar1")), 
+          nsim)
+      
       if (intervals) {
         if (type != "state") {
           pred <- list(mean = ts(rowMeans(out[1,,]),  start = start_ts, end = end_ts, 
