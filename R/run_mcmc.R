@@ -34,7 +34,7 @@ run_mcmc <- function(object, n_iter, ...) {
 #' @param n_burnin Length of the burn-in period which is disregarded from the
 #' results. Defaults to \code{n_iter / 2}. Note that all MCMC algorithms of \code{bssm}
 #'  used adaptive MCMC during the burn-in period in order to find good proposal.
-#' @param n_thin Thinning rate. All MCMC algoritms in \code{bssm} use the jump chain
+#' @param n_thin Thinning rate. All MCMC algorithms in \code{bssm} use the jump chain
 #' representation, and the thinning is applied to these blocks.
 #' Defaults to 1.
 #' @param gamma Tuning parameter for the adaptation of RAM algorithm. Must be

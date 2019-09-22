@@ -4,10 +4,10 @@
 #' (scaled) importance weights.
 #' @param object of class \code{ng_bsm}, \code{svm} or \code{ngssm}.
 #' @param nsim Number of samples.
-#' @param use_antithetic Logical. If \code{TRUE} (defualt), use antithetic 
+#' @param use_antithetic Logical. If \code{TRUE} (default), use antithetic 
 #' variable for location in simulation smoothing.
 #' @param max_iter Maximum number of iterations used for the approximation.
-#' @param conv_tol Convergence treshold for the approximation. Approximation is 
+#' @param conv_tol Convergence threshold for the approximation. Approximation is 
 #' claimed to be converged when the mean squared difference of the modes is 
 #' less than \code{conv_tol}.
 #' @param seed Seed for the random number generator.

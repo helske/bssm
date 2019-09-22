@@ -196,7 +196,7 @@ summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, .
 #'
 #' The MCMC algorithms of \code{bssm} use a jump chain representation where we 
 #' store the accepted values and the number of times we stayed in the current value.
-#' Although this saves bit memory and is especially convinient for IS-corrected 
+#' Although this saves bit memory and is especially convenient for IS-corrected 
 #' MCMC, sometimes we want to have the usual sample paths. Function \code{expand_sample} 
 #' returns the expanded sample based on the counts. Note that for IS-corrected output the expanded 
 #' sample corresponds to the approximate posterior.
