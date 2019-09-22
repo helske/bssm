@@ -9,31 +9,46 @@
   seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
-\item{object}{mcmc_output object obtained from \code{\link{run_mcmc}}}
+\item{object}{mcmc_output object obtained from 
+\code{\link{run_mcmc}}}
 
-\item{future_model}{Model for future observations. Should have same structure
-as the original model which was used in MCMC, in order to plug the posterior 
+\item{future_model}{Model for future observations. 
+Should have same structure
+as the original model which was used in MCMC, in order 
+to plug the posterior 
 samples of the model parameters to the right places.}
 
-\item{type}{Compute predictions on \code{"mean"} ("confidence interval"),
-\code{"response"} ("prediction interval"), or \code{"state"} level. 
+\item{type}{Compute predictions on \code{"mean"} 
+("confidence interval"),
+\code{"response"} ("prediction interval"), or 
+\code{"state"} level. 
 Defaults to \code{"response"}.}
 
-\item{intervals}{If \code{TRUE}, intervals are returned. Otherwise samples 
+\item{intervals}{If \code{TRUE}, intervals are returned.
+Otherwise samples 
 from the posterior predictive distribution are returned.}
 
-\item{probs}{Desired quantiles. Defaults to \code{c(0.05, 0.95)}. Always includes median 0.5.}
+\item{probs}{Desired quantiles. Defaults to 
+\code{c(0.05, 0.95)}. Always includes median 0.5.}
 
-\item{nsim}{Number of state samples to draw per MCMC iteration. 
+\item{nsim}{Number of state samples to draw per MCMC
+iteration. 
 Note that this has no effect for the time point $n+1$ 
-(where $n$ is the length of the original series) as this is directly obtained from the MCMC output.
-\code{nsim} defaults to 1 except for the EKF based MCMC output of non-linear Gaussian models (see below). 
-For linear-Gaussian models the intervals are computed based on Kalman filter so 
-this argument has no effect if \code{intervals} is \code{TRUE}. For non-linear Gaussian 
-models of class \code{nlg_ssm}, if \code{nsim} is 0 and \code{intervals} is \code{TRUE}, 
-EKF based approximation is used for computing the prediction intervals.}
+(where $n$ is the length of the original series) as this
+is directly obtained from the MCMC output.
+\code{nsim} defaults to 1 except for the EKF based MCMC
+output of non-linear Gaussian models (see below). 
+For linear-Gaussian models the intervals are computed
+based on Kalman filter so 
+this argument has no effect if \code{intervals} is
+\code{TRUE}. For non-linear Gaussian 
+models of class \code{nlg_ssm}, if \code{nsim} is 0 and
+\code{intervals} is \code{TRUE}, 
+EKF based approximation is used for computing the
+prediction intervals.}
 
-\item{return_MCSE}{For Gaussian models, if \code{TRUE}, the Monte Carlo
+\item{return_MCSE}{For Gaussian models, if \code{TRUE},
+the Monte Carlo
 standard errors of the intervals are also returned.}
 
 \item{seed}{Seed for RNG.}
@@ -41,22 +56,23 @@ standard errors of the intervals are also returned.}
 \item{...}{Ignored.}
 }
 \value{
-List containing the mean predictions, quantiles and Monte Carlo
-standard errors .
+List containing the mean predictions, 
+quantiles and Monte Carlo standard errors .
 }
 \description{
 Posterior intervals of future observations or their means
 (success probabilities in binomial case). These are
-computed using the quantile method where the intervals are computed
-as empirical quantiles the posterior sample, or using a 
-parametric method by Helske (2016) in a linear-Gaussian case.
+computed using the quantile method where the intervals 
+are computed as empirical quantiles the posterior sample,
+or using a parametric method by Helske (2016) in a 
+linear-Gaussian case.
 }
 \examples{
 require("graphics")
 y <- log10(JohnsonJohnson)
 prior <- uniform(0.01, 0, 1)
-model <- bsm(window(y, end = c(1974, 4)), sd_y = prior, sd_level = prior,
-  sd_slope = prior, sd_seasonal = prior)
+model <- bsm(window(y, end = c(1974, 4)), sd_y = prior,
+sd_level = prior, sd_slope = prior, sd_seasonal = prior)
 
 mcmc_results <- run_mcmc(model, n_iter = 5000)
 future_model <- model
@@ -71,11 +87,12 @@ head(pred_gaussian$intervals)
 head(pred_gaussian$MCSE)
 
 # Non-gaussian models
-\dontrun{
+#\dontrun{
 data("poisson_series")
 
-model <- ng_bsm(poisson_series, sd_level = halfnormal(0.1, 1),
-  sd_slope=halfnormal(0.01, 0.1), distribution = "poisson")
+model <- ng_bsm(poisson_series, sd_level = 
+  halfnormal(0.1, 1), sd_slope=halfnormal(0.01, 0.1),
+  distribution = "poisson")
 mcmc_poisson <- run_mcmc(model, n_iter = 5000, nsim = 10)
 
 future_model <- model
@@ -86,7 +103,8 @@ pred <- predict(mcmc_poisson, future_model,
   probs = seq(0.05,0.95, by = 0.05))
 
 library("ggplot2")
-fit <- ts(colMeans(exp(expand_sample(mcmc_poisson, "alpha")$level)))
+fit <- ts(colMeans(exp(expand_sample(mcmc_poisson, 
+    "alpha")$level)))
 autoplot(pred, y = model$y, fit = fit)
-}
+#}
 }

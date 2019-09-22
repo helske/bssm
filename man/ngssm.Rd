@@ -10,8 +10,8 @@ ngssm(y, Z, T, R, a1, P1, distribution, phi, u = 1, xreg = NULL, beta,
 \arguments{
 \item{y}{Observations as time series (or vector) of length \eqn{n}.}
 
-\item{Z}{System matrix Z of the observation equation. Either a p x m matrix
-or a p x m x n array, or object which can be coerced to such.}
+\item{Z}{System matrix Z of the observation equation. Either a vector of length m,
+a m x n matrix, or object which can be coerced to such.}
 
 \item{T}{System matrix T of the state equation. Either a m x m matrix or a
 m x m x n array, or object which can be coerced to such.}
