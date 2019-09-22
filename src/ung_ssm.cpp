@@ -26,7 +26,6 @@ ung_ssm::ung_ssm(const Rcpp::List& model, const unsigned int seed,
   prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
   prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
   Z_ind(Z_ind), T_ind(T_ind), R_ind(R_ind) {
-  
   if(xreg.n_cols > 0) {
     compute_xbeta();
   }
@@ -589,10 +588,16 @@ arma::cube ung_ssm::predict_sample(const arma::mat& theta_posterior,
   unsigned int d = 1;
   if (predict_type == 3) d = m;
   
+
   arma::mat expanded_theta = rep_mat(theta_posterior, counts);
+
   arma::mat expanded_alpha = rep_mat(alpha, counts);
+  
+
   unsigned int n_samples = expanded_theta.n_cols;
   arma::cube sample(d, n, nsim * n_samples);
+  
+ 
   for (unsigned int i = 0; i < n_samples; i++) {
     update_model(expanded_theta.col(i));
     a1 = expanded_alpha.col(i);
@@ -600,6 +605,7 @@ arma::cube ung_ssm::predict_sample(const arma::mat& theta_posterior,
       sample_model(predict_type, nsim);
     
   }
+  
   return sample;
 }
 

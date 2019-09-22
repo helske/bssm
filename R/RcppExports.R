@@ -117,12 +117,12 @@ R_milstein_joint <- function(x0, L_c, L_f, t, theta, drift_pntr, diffusion_pntr,
     .Call('_bssm_R_milstein_joint', PACKAGE = 'bssm', x0, L_c, L_f, t, theta, drift_pntr, diffusion_pntr, ddiffusion_pntr, positive, seed)
 }
 
-gaussian_predict <- function(model_, probs, theta, alpha, counts, predict_type, intervals, seed, model_type, nsim) {
-    .Call('_bssm_gaussian_predict', PACKAGE = 'bssm', model_, probs, theta, alpha, counts, predict_type, intervals, seed, model_type, nsim)
+gaussian_predict <- function(model_, probs, theta, alpha, counts, predict_type, intervals, seed, model_type, nsim, Z_ind, H_ind, T_ind, R_ind) {
+    .Call('_bssm_gaussian_predict', PACKAGE = 'bssm', model_, probs, theta, alpha, counts, predict_type, intervals, seed, model_type, nsim, Z_ind, H_ind, T_ind, R_ind)
 }
 
-nongaussian_predict <- function(model_, probs, theta, alpha, counts, predict_type, seed, model_type, nsim) {
-    .Call('_bssm_nongaussian_predict', PACKAGE = 'bssm', model_, probs, theta, alpha, counts, predict_type, seed, model_type, nsim)
+nongaussian_predict <- function(model_, probs, theta, alpha, counts, predict_type, seed, model_type, nsim, Z_ind, T_ind, R_ind) {
+    .Call('_bssm_nongaussian_predict', PACKAGE = 'bssm', model_, probs, theta, alpha, counts, predict_type, seed, model_type, nsim, Z_ind, T_ind, R_ind)
 }
 
 nonlinear_predict <- function(y, Z, H, T, R, Zg, Tg, a1, P1, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, probs, theta, alpha, counts, predict_type, seed, nsim) {

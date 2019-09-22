@@ -1087,8 +1087,8 @@ gssm <- function(y, Z, H, T, R, a1, P1, xreg = NULL, beta, state_names,
 #' is either Poisson, binomial or negative binomial distribution.
 #'
 #' @param y Observations as time series (or vector) of length \eqn{n}.
-#' @param Z System matrix Z of the observation equation. Either a p x m matrix
-#' or a p x m x n array, or object which can be coerced to such.
+#' @param Z System matrix Z of the observation equation. Either a vector of length m,
+#' a m x n matrix, or object which can be coerced to such.
 #' @param T System matrix T of the state equation. Either a m x m matrix or a
 #' m x m x n array, or object which can be coerced to such.
 #' @param R Lower triangular matrix R the state equation. Either a m x k matrix or a

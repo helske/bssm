@@ -392,5 +392,6 @@ This work has been supported by the Academy of Finland research grants 284513 an
 
 ## Stan model for Poisson local linear trend model
 
-<!-- ```{stan stan_model, eval = FALSE, code=readLines('stan_model.stan'), echo = TRUE, size = 'small'} -->
-<!-- ``` -->
+```{stan stan_model, eval = FALSE, code=readLines('stan_model.stan'), echo = TRUE, size = 'small'}
+```
+

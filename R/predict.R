@@ -120,11 +120,17 @@ predict.mcmc_output <- function(object, future_model, type = "response",
     gssm = ,
     bsm = ,
     ar1 = {
-      
+      if (attr(object, "model_type") != "gssm") {
+        future_model$Z_ind <- 
+          future_model$H_ind <- 
+          future_model$T_ind <- 
+          future_model$R_ind <- numeric(0)
+      }
       out <- gaussian_predict(future_model, probs,
         t(object$theta), matrix(object$alpha[nrow(object$alpha),,], nrow = ncol(object$alpha)), 
         object$counts, pmatch(type, c("response", "mean", "state")), intervals, 
-        seed, pmatch(attr(object, "model_type"), c("gssm", "bsm", "ar1")), nsim)
+        seed, pmatch(attr(object, "model_type"), c("gssm", "bsm", "ar1")), nsim,
+        future_model$Z_ind, future_model$H_ind, future_model$T_ind, future_model$R_ind)
      
       if (intervals) {
         
@@ -200,27 +206,23 @@ predict.mcmc_output <- function(object, future_model, type = "response",
     ngssm = , 
     ng_bsm = , 
     svm = {
-      
+      if (attr(object, "model_type") != "ngssm") {
+        future_model$Z_ind <- 
+          future_model$T_ind <- 
+          future_model$R_ind <- numeric(0)
+      }
       future_model$distribution <- pmatch(future_model$distribution, 
         c("poisson", "binomial", "negative binomial"))
-#      out <- bssm:::nongaussian_predict(future_model, probs,
-#        t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
-#        pmatch(type, c("response", "mean", "state")), seed, 
-#        pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm", "ng_ar1")), 
-#        nsim)
-#      Error in bssm:::nongaussian_predict(future_model, probs, t(object$theta),  : 
-#                                            Not a matrix.
-# PROBLEM:  
-#   object$alpha[nrow(object$alpha),,] dropped 2 dimensions to become a vector 
-# FIX: 
-      alpha_nrow. <- object$alpha[nrow(object$alpha),,]
+
       nda <- dim(object$alpha)
-      alpha_nrow <- matrix(alpha_nrow., nda[2], nda[3])
       out <- nongaussian_predict(future_model, probs,
-          t(object$theta), alpha_nrow, object$counts, 
+          t(object$theta), matrix(object$alpha[nrow(object$alpha),,], nda[2], nda[3]),
+          object$counts, 
           pmatch(type, c("response", "mean", "state")), seed, 
           pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm", "ng_ar1")), 
-          nsim)
+          nsim, future_model$Z_ind, future_model$T_ind, future_model$R_ind)
+      
+      if(anyNA(out)) stop("NA or NaN values in predictions, possible under/overflow?")
       
       if (intervals) {
         if (type != "state") {
