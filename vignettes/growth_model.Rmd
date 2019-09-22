@@ -19,6 +19,8 @@ vignette: |
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(tinytex.verbose = TRUE)
+```
 ```
 
 ## Logistic growth model

@@ -2,34 +2,50 @@
 #'
 #' Posterior intervals of future observations or their means
 #' (success probabilities in binomial case). These are
-#' computed using the quantile method where the intervals are computed
-#' as empirical quantiles the posterior sample, or using a 
-#' parametric method by Helske (2016) in a linear-Gaussian case.
+#' computed using the quantile method where the intervals 
+#' are computed as empirical quantiles the posterior sample,
+#' or using a parametric method by Helske (2016) in a 
+#' linear-Gaussian case.
 #'
-#' @param object mcmc_output object obtained from \code{\link{run_mcmc}}
-#' @param intervals If \code{TRUE}, intervals are returned. Otherwise samples 
+#' @param object mcmc_output object obtained from 
+#' \code{\link{run_mcmc}}
+#' @param intervals If \code{TRUE}, intervals are returned.
+#' Otherwise samples 
 #' from the posterior predictive distribution are returned.
-#' @param type Compute predictions on \code{"mean"} ("confidence interval"),
-#' \code{"response"} ("prediction interval"), or \code{"state"} level. 
+#' @param type Compute predictions on \code{"mean"} 
+#' ("confidence interval"),
+#' \code{"response"} ("prediction interval"), or 
+#' \code{"state"} level. 
 #' Defaults to \code{"response"}.
-#' @param probs Desired quantiles. Defaults to \code{c(0.05, 0.95)}. Always includes median 0.5.
-#' @param future_model Model for future observations. Should have same structure
-#' as the original model which was used in MCMC, in order to plug the posterior 
+#' @param probs Desired quantiles. Defaults to 
+#' \code{c(0.05, 0.95)}. Always includes median 0.5.
+#' @param future_model Model for future observations. 
+#' Should have same structure
+#' as the original model which was used in MCMC, in order 
+#' to plug the posterior 
 #' samples of the model parameters to the right places.
-#' @param nsim Number of state samples to draw per MCMC iteration. 
+#' @param nsim Number of state samples to draw per MCMC
+#' iteration. 
 #' Note that this has no effect for the time point $n+1$ 
-#' (where $n$ is the length of the original series) as this is directly obtained from the MCMC output.
-#' \code{nsim} defaults to 1 except for the EKF based MCMC output of non-linear Gaussian models (see below). 
-#' For linear-Gaussian models the intervals are computed based on Kalman filter so 
-#' this argument has no effect if \code{intervals} is \code{TRUE}. For non-linear Gaussian 
-#' models of class \code{nlg_ssm}, if \code{nsim} is 0 and \code{intervals} is \code{TRUE}, 
-#' EKF based approximation is used for computing the prediction intervals.
-#' @param return_MCSE For Gaussian models, if \code{TRUE}, the Monte Carlo
+#' (where $n$ is the length of the original series) as this
+#' is directly obtained from the MCMC output.
+#' \code{nsim} defaults to 1 except for the EKF based MCMC
+#' output of non-linear Gaussian models (see below). 
+#' For linear-Gaussian models the intervals are computed
+#' based on Kalman filter so 
+#' this argument has no effect if \code{intervals} is
+#' \code{TRUE}. For non-linear Gaussian 
+#' models of class \code{nlg_ssm}, if \code{nsim} is 0 and
+#' \code{intervals} is \code{TRUE}, 
+#' EKF based approximation is used for computing the
+#' prediction intervals.
+#' @param return_MCSE For Gaussian models, if \code{TRUE},
+#' the Monte Carlo
 #' standard errors of the intervals are also returned.
 #' @param seed Seed for RNG.
 #' @param ... Ignored.
-#' @return List containing the mean predictions, quantiles and Monte Carlo
-#' standard errors .
+#' @return List containing the mean predictions, 
+#' quantiles and Monte Carlo standard errors .
 #' @method predict mcmc_output
 #' @rdname predict
 #' @export
@@ -37,8 +53,8 @@
 #' require("graphics")
 #' y <- log10(JohnsonJohnson)
 #' prior <- uniform(0.01, 0, 1)
-#' model <- bsm(window(y, end = c(1974, 4)), sd_y = prior, sd_level = prior,
-#'   sd_slope = prior, sd_seasonal = prior)
+#' model <- bsm(window(y, end = c(1974, 4)), sd_y = prior,
+#' sd_level = prior, sd_slope = prior, sd_seasonal = prior)
 #' 
 #' mcmc_results <- run_mcmc(model, n_iter = 5000)
 #' future_model <- model
@@ -53,11 +69,12 @@
 #' head(pred_gaussian$MCSE)
 #' 
 #' # Non-gaussian models
-#' \dontrun{
+#' #\dontrun{
 #' data("poisson_series")
 #' 
-#' model <- ng_bsm(poisson_series, sd_level = halfnormal(0.1, 1),
-#'   sd_slope=halfnormal(0.01, 0.1), distribution = "poisson")
+#' model <- ng_bsm(poisson_series, sd_level = 
+#'   halfnormal(0.1, 1), sd_slope=halfnormal(0.01, 0.1),
+#'   distribution = "poisson")
 #' mcmc_poisson <- run_mcmc(model, n_iter = 5000, nsim = 10)
 #'
 #' future_model <- model
@@ -68,9 +85,10 @@
 #'   probs = seq(0.05,0.95, by = 0.05))
 #'
 #' library("ggplot2")
-#' fit <- ts(colMeans(exp(expand_sample(mcmc_poisson, "alpha")$level)))
+#' fit <- ts(colMeans(exp(expand_sample(mcmc_poisson, 
+#'     "alpha")$level)))
 #' autoplot(pred, y = model$y, fit = fit)
-#' }
+#' #}
 predict.mcmc_output <- function(object, future_model, type = "response",
   intervals = TRUE, probs = c(0.05, 0.95), nsim, return_MCSE = FALSE, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -123,7 +141,8 @@ predict.mcmc_output <- function(object, future_model, type = "response",
                   sum(dnorm(x = out$intervals[i, j], out$mean_pred[, i], out$sd_pred[, i]) / nsim)
               }
             }
-            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
+            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, 
+                                   end = end_ts, frequency = freq),
               intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
                 names = paste0(100*probs, "%")),
               MCSE = ts(ses, start = start_ts, end = end_ts, frequency = freq,
@@ -138,10 +157,12 @@ predict.mcmc_output <- function(object, future_model, type = "response",
             for (k in 1:m) {
               for (i in 1:n_ahead) {
                 for (j in 1:length(probs)) {
-                  pnorms <- pnorm(q = out$intervals[i, j, k], out$mean_pred[, i, k], out$sd_pred[, i, k])
+                  pnorms <- pnorm(q = out$intervals[i, j, k], 
+                                  out$mean_pred[, i, k], out$sd_pred[, i, k])
                   eff_n <-  effectiveSize(pnorms)
                   ses[[k]][i, j] <- sqrt((sum((probs[j] - pnorms) ^ 2) / nsim) / eff_n) /
-                    sum(dnorm(x = out$intervals[i, j, k], out$mean_pred[, i, k], out$sd_pred[, i, k]) / nsim)
+                    sum(dnorm(x = out$intervals[i, j, k], 
+                              out$mean_pred[, i, k], out$sd_pred[, i, k]) / nsim)
                 }
               }
             }
@@ -158,7 +179,8 @@ predict.mcmc_output <- function(object, future_model, type = "response",
           
         } else {
           if (type != "state") {
-            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
+            pred <- list(mean = ts(colMeans(out$mean_pred), 
+                                   start = start_ts, end = end_ts, frequency = freq),
               intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
                 names = paste0(100 * probs, "%"))) 
           } else {
@@ -181,10 +203,25 @@ predict.mcmc_output <- function(object, future_model, type = "response",
       
       future_model$distribution <- pmatch(future_model$distribution, 
         c("poisson", "binomial", "negative binomial"))
+#      out <- bssm:::nongaussian_predict(future_model, probs,
+#        t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
+#        pmatch(type, c("response", "mean", "state")), seed, 
+#        pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm", "ng_ar1")), 
+#        nsim)
+#      Error in bssm:::nongaussian_predict(future_model, probs, t(object$theta),  : 
+#                                            Not a matrix.
+# PROBLEM:  
+#   object$alpha[nrow(object$alpha),,] dropped 2 dimensions to become a vector 
+# FIX: 
+      alpha_nrow. <- object$alpha[nrow(object$alpha),,]
+      nda <- dim(object$alpha)
+      alpha_nrow <- matrix(alpha_nrow., nda[2], nda[3])
       out <- nongaussian_predict(future_model, probs,
-        t(object$theta), object$alpha[nrow(object$alpha),,], object$counts, 
-        pmatch(type, c("response", "mean", "state")), seed, 
-        pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm", "ng_ar1")))
+          t(object$theta), alpha_nrow, object$counts, 
+          pmatch(type, c("response", "mean", "state")), seed, 
+          pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm", "ng_ar1")), 
+          nsim)
+      
       if (intervals) {
         if (type != "state") {
           pred <- list(mean = ts(rowMeans(out[1,,]),  start = start_ts, end = end_ts, 
