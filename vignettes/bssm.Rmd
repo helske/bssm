@@ -1,5 +1,5 @@
-title: "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R"
 ---
+title: "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R"
 author: 
   - Jouni Helske^[Linköping University, Department of Science and Technology, Sweden, University of Jyväskylä, Department of Mathematics and Statistics, Finland]
   - Matti Vihola^[University of Jyväskylä, Department of Mathematics and Statistics, Finland]
@@ -377,21 +377,21 @@ This work has been supported by the Academy of Finland research grants 284513 an
 
 ## Template for general linear-Gaussian model
 
-```{Rcpp lgg_ssm_template, code=readLines('lgg_ssm_template.cpp'), eval = FALSE, echo = TRUE, size = 'small'}
+```{Rcpp, lgg_ssm_template, code=readLines('lgg_ssm_template.cpp'), eval = FALSE, echo = TRUE, size = 'small'}
 ```
 
 ## Template for non-linear Gaussian model
 
-```{Rcpp nlg_ssm_template, code=readLines('nlg_ssm_template.cpp'), eval = FALSE, echo = TRUE, size = 'small'}
+```{Rcpp, nlg_ssm_template, code=readLines('nlg_ssm_template.cpp'), eval = FALSE, echo = TRUE, size = 'small'}
 ```
 
 ## Template for SDE model
 
-```{Rcpp sde_ssm_template, code=readLines('sde_ssm_template.cpp'), eval = FALSE, echo = TRUE, size = 'small'}
+```{Rcpp, sde_ssm_template, code=readLines('sde_ssm_template.cpp'), eval = FALSE, echo = TRUE, size = 'small'}
 ```
 
 ## Stan model for Poisson local linear trend model
 
-```{stan stan_model, eval = FALSE, code=readLines('stan_model.stan'), echo = TRUE, size = 'small'}
+```{stan, output.var="tmp", stan_model, eval = FALSE, code=readLines('stan_model.stan'), echo = TRUE, size = 'small'}
 ```
 
