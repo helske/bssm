@@ -21,7 +21,7 @@ vignette: |
 knitr::opts_chunk$set(echo = TRUE)
 options(tinytex.verbose = TRUE)
 ```
-```
+
 
 ## Logistic growth model
 
@@ -148,6 +148,7 @@ ts.plot(cbind(y, summary_pm$states$Mean[, 2], summary_ekf$states$Mean[, 2]), col
 ```
 
 Let's make some predictions based on our MCMC run. We first build a model for future observations, and then call `predict` method. Note that for EKF based prediction (`nsim = 0`) the forecasting is based on the summary statistics obtained with EKF, which produces smoother but potentially biased results.
+
 ```{r pred}
 future_model <- model
 future_model$y <- ts(rep(NA, 100), start = end(model$y) + c(1, 0))

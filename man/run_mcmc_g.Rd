@@ -43,7 +43,7 @@ return samples from the marginal posterior of the hyperparameters \eqn{\theta}.}
 results. Defaults to \code{n_iter / 2}. Note that all MCMC algorithms of \code{bssm}
  used adaptive MCMC during the burn-in period in order to find good proposal.}
 
-\item{n_thin}{Thinning rate. All MCMC algoritms in \code{bssm} use the jump chain
+\item{n_thin}{Thinning rate. All MCMC algorithms in \code{bssm} use the jump chain
 representation, and the thinning is applied to these blocks.
 Defaults to 1.}
 
