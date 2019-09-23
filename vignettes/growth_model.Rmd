@@ -1,15 +1,10 @@
 ---
 title: "Logistic growth model with bssm"
 author: 
-  - Jouni Helske^[Linköping University, Department of Science and Technology, Sweden, University of Jyväskylä, Department of Mathematics and Statistics, Finland]
+  - Jouni Helske, University of Jyväskylä, Department of Mathematics and Statistics, Finland
 date: "21 November 2017"
 link-citations: true
-output: 
-  pdf_document:
-    fig_caption: yes
-    fig_crop: no
-    fig_height: 6
-    fig_width: 8
+output: html_document
 vignette: |
   %\VignetteIndexEntry{Logistic growth model with bssm}
   %\VignetteEngine{knitr::rmarkdown}

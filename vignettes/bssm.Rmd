@@ -1,16 +1,10 @@
 ---
 title: "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R"
 author: 
-  - Jouni Helske^[University of Jyväskylä, Department of Mathematics and Statistics, Finland]
-  - Matti Vihola^[University of Jyväskylä, Department of Mathematics and Statistics, Finland]
+  - Jouni Helske and Matti Vihola, University of Jyväskylä, Department of Mathematics and Statistics, Finland
 date: "September 23, 2019"
 link-citations: true
-output: 
-  pdf_document:
-    fig_caption: yes
-    fig_crop: no
-    fig_height: 6
-    fig_width: 8
+output: html_document
 bibliography: bssm.bib
 vignette: >
  %\VignetteIndexEntry{bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R}
