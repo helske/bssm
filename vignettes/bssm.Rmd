@@ -1,9 +1,9 @@
 ---
 title: "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R"
 author: 
-  - Jouni Helske^[Linköping University, Department of Science and Technology, Sweden, University of Jyväskylä, Department of Mathematics and Statistics, Finland]
+  - Jouni Helske^[University of Jyväskylä, Department of Mathematics and Statistics, Finland]
   - Matti Vihola^[University of Jyväskylä, Department of Mathematics and Statistics, Finland]
-date: "January 04, 2017"
+date: "September 23, 2019"
 link-citations: true
 output: 
   pdf_document:
@@ -186,9 +186,7 @@ Same model could also by built with `lgg_ssm`, by defining the small `C++` snipp
 ```{Rcpp lgg_ssm_template, code=readLines('lgg_ssm_template.cpp'), eval = FALSE, echo = TRUE}
 ```
 
-Note that most of this code is general and can be modified to specific models accordingly by changing the function bodies. Word of caution when using these `C++` snippets: Due to the use of pointers, users must recompile and construct the model objects in each `R` session, i.e. saving and later loading the model object is not sufficient. Also, using the `sourceCpp` function from the `Rcpp` package repeatedly for the recompilation of the external pointers from the same file can cause `R` crash unexpectedly, if the corresponding cache directory is not changed between compilations^[1].
-
-[^1]: https://github.com/helske/crashtest/issues/1.
+Note that most of this code is general and can be modified to specific models accordingly by changing the function bodies. Word of caution when using these `C++` snippets: Due to the use of pointers, users must recompile and construct the model objects in each `R` session, i.e. saving and later loading the model object is not sufficient. Also, using the `sourceCpp` function from the `Rcpp` package repeatedly for the recompilation of the external pointers from the same file can cause `R` crash unexpectedly, if the corresponding cache directory is not changed between compilations (https://github.com/helske/crashtest/issues/1).
 
 We can then compile the file and construct the model as
 ```{r nhtemp_cpp}

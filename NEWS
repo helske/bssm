@@ -2,6 +2,7 @@ bssm 0.1.8 (Release date: 2019-09-23)
 ==============
   * Fixed a bug in predict method which prevented the method working in case of ngssm models.
   * Fixed a bug in predict method which threw an error due to dimension drop of models with single state.
+  * Fixed issues with the vignette.
 
 bssm 0.1.7 (Release date: 2019-03-19)
 ==============
