@@ -1,3 +1,7 @@
+bssm 0.1.8-1 (Release date: 2019-12-20)
+==============
+  * Tweaked tests in order to pass MKL case at CRAN.
+
 bssm 0.1.8 (Release date: 2019-09-23)
 ==============
   * Fixed a bug in predict method which prevented the method working in case of ngssm models.

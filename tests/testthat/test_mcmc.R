@@ -9,16 +9,16 @@ test_that("MCMC results for Gaussian model are correct",{
   
   expect_error(mcmc_bsm <- run_mcmc(model_bssm, n_iter = 50, seed = 1), NA)
   
-  expect_equal(run_mcmc(model_bssm, n_iter = 10, seed = 1)[-14], 
-    run_mcmc(model_bssm, n_iter = 10, seed = 1)[-14])
-  expect_equal(run_mcmc(model_bssm, n_iter = 10, seed = 1, type = "summary")[-15], 
-    run_mcmc(model_bssm, n_iter = 10, seed = 1, type = "summary")[-15])
-  expect_equal(run_mcmc(model_bssm, n_iter = 10, seed = 1, type = "theta")[-13], 
-    run_mcmc(model_bssm, n_iter = 10, seed = 1, type = "theta")[-13])
-  expect_equal(run_mcmc(model_bssm, n_iter = 10, seed = 1, type = "theta")$theta, 
-    run_mcmc(model_bssm, n_iter = 10, seed = 1, type = "summary")$theta)
-  expect_equal(run_mcmc(model_bssm, n_iter = 10, seed = 1, type = "theta")$acceptance_rate, 
-    run_mcmc(model_bssm, n_iter = 10, seed = 1, type = "summary")$acceptance_rate)
+  expect_equal(run_mcmc(model_bssm, n_iter = 100, seed = 1)[-14], 
+    run_mcmc(model_bssm, n_iter = 100, seed = 1)[-14])
+  expect_equal(run_mcmc(model_bssm, n_iter = 100, seed = 1, type = "summary")[-15], 
+    run_mcmc(model_bssm, n_iter = 100, seed = 1, type = "summary")[-15])
+  expect_equal(run_mcmc(model_bssm, n_iter = 100, seed = 1, type = "theta")[-13], 
+    run_mcmc(model_bssm, n_iter = 100, seed = 1, type = "theta")[-13])
+  expect_equal(run_mcmc(model_bssm, n_iter = 100, seed = 1, type = "theta")$theta, 
+    run_mcmc(model_bssm, n_iter = 100, seed = 1, type = "summary")$theta)
+  expect_equal(run_mcmc(model_bssm, n_iter = 100, seed = 1, type = "theta")$acceptance_rate, 
+    run_mcmc(model_bssm, n_iter = 100, seed = 1, type = "summary")$acceptance_rate)
   
   expect_gt(mcmc_bsm$acceptance_rate, 0)
   expect_gte(min(mcmc_bsm$theta), 0)
@@ -33,14 +33,14 @@ test_that("MCMC results for Poisson model are correct",{
   model_bssm <- ng_bsm(rpois(10, exp(0.2) * (2:11)), P1 = diag(2, 2), sd_slope = 0,
     sd_level = uniform(2, 0, 10), u = 2:11, distribution = "poisson")
   
-  expect_error(mcmc_poisson <- run_mcmc(model_bssm, n_iter = 10, nsim_states = 5, seed = 42), NA)
+  expect_error(mcmc_poisson <- run_mcmc(model_bssm, n_iter = 100, nsim_states = 5, seed = 42), NA)
   
-  expect_equal(run_mcmc(model_bssm, n_iter = 10, seed = 1, nsim_states = 5)[-14], 
-    run_mcmc(model_bssm, n_iter = 10, seed = 1, nsim_states = 5)[-14])
-  expect_equal(run_mcmc(model_bssm, n_iter = 10, seed = 1, type = "summary", nsim_states = 5)[-15], 
-    run_mcmc(model_bssm, n_iter = 10, seed = 1, type = "summary", nsim_states = 5)[-15])
-  expect_equal(run_mcmc(model_bssm, n_iter = 10, seed = 1, type = "theta", nsim_states = 5)[-13], 
-    run_mcmc(model_bssm, n_iter = 10, seed = 1, type = "theta", nsim_states = 5)[-13])
+  expect_equal(run_mcmc(model_bssm, n_iter = 100, seed = 1, nsim_states = 5)[-14], 
+    run_mcmc(model_bssm, n_iter = 100, seed = 1, nsim_states = 5)[-14])
+  expect_equal(run_mcmc(model_bssm, n_iter = 100, seed = 1, type = "summary", nsim_states = 5)[-15], 
+    run_mcmc(model_bssm, n_iter = 100, seed = 1, type = "summary", nsim_states = 5)[-15])
+  expect_equal(run_mcmc(model_bssm, n_iter = 100, seed = 1, type = "theta", nsim_states = 5)[-13], 
+    run_mcmc(model_bssm, n_iter = 100, seed = 1, type = "theta", nsim_states = 5)[-13])
 
   expect_gt(mcmc_poisson$acceptance_rate, 0)
   expect_gte(min(mcmc_poisson$theta), 0)
