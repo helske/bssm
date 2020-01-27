@@ -583,6 +583,8 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "svm"
+  attr(out, "ts") <- 
+    list(start = start(object$y), end = end(object$y), frequency=frequency(object$y))
   out
 }
 
