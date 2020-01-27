@@ -20,6 +20,28 @@
 #' @export
 print.mcmc_output <- function(x, ...) {
   
+  
+  iact <- function(x) {
+    n <- length(x)
+    # Calculate centred & normalised X
+    x_ <- (x - mean(x)) / sd(x)
+    # ...and this gives then ACF at specified lag
+    C <- max(5.0, log10(n))
+    tau <- 1
+    for(k in 1:(n-1)) {
+      tau <- tau + 2.0 * (x_[1:(n-k)] %*% x_[(1+k):n]) / (n - k)
+      if(k > C * tau) break
+    }
+    max(0.0, tau)
+  }
+  
+  asymptotic_var <- function(x, w) {
+    estimate_c <- mean(w)
+    estimate_mean <- weighted.mean(x, w)
+    z <- w * (x - estimate_mean)
+    avar <- iact(z) * var(z) / length(z) / estimate_c^2
+  }
+  
   if (x$mcmc_type %in% paste0("is", 1:3)) {
     theta <- mcmc(x$theta)
     if(x$output_type == 1)
@@ -45,11 +67,9 @@ print.mcmc_output <- function(x, ...) {
     mean_theta <- weighted_mean(theta, w)
     sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
     se_theta_is <- weighted_se(theta, w)
-    spec <- sapply(1:ncol(theta), function(i) spectrum0.ar((theta[, i] - mean_theta[i]) * w)$spec)
-    se_theta_ar <- sqrt(spec / length(w)) / mean(w)
-    se_theta_total <- sqrt(se_theta_is^2 + se_theta_ar^2)
-    stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta_ar, se_theta_total), ncol = 5, 
-      dimnames = list(colnames(x$theta), c("Mean", "SD", "SE-IS", "SE-AR", "SE")))
+    se_theta <- sqrt(apply(theta, 2, function(x) asymptotic_var(x, w)))
+    stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta), ncol = 4, 
+      dimnames = list(colnames(x$theta), c("Mean", "SD", "SE-IS", "SE")))
   } else {
     mean_theta <- colMeans(theta)
     sd_theta <- apply(theta, 2, sd)
@@ -61,15 +81,8 @@ print.mcmc_output <- function(x, ...) {
   print(stats)
   
   cat("\nEffective sample sizes for theta:\n\n")
-  if (x$mcmc_type %in% paste0("is", 1:3)) {
-    ess_theta_is <- apply(theta, 2, function(z) ess(w, identity, z))
-    ess_theta_ar <- (sd_theta / se_theta_ar)^2
-    esss <- matrix(c(ess_theta_is, ess_theta_ar), ncol = 2, 
-      dimnames = list(colnames(x$theta), c("ESS-IS", "ESS-AR")))
-  } else {
-    esss <- matrix((sd_theta / se_theta)^2, ncol = 1, 
+  esss <- matrix((sd_theta / se_theta)^2, ncol = 1, 
       dimnames = list(colnames(x$theta), c("ESS")))
-  }
   print(esss)
   
   if(x$output_type != 3) {
@@ -81,12 +94,9 @@ print.mcmc_output <- function(x, ...) {
       if (x$mcmc_type %in% paste0("is", 1:3)) {
         mean_alpha <- weighted_mean(alpha, w)
         sd_alpha <- sqrt(diag(weighted_var(alpha, w, method = "moment")))
-        se_alpha_is <- weighted_se(alpha, w)
-        spec <- sapply(1:ncol(alpha), function(i) spectrum0.ar((alpha[, i] - mean_alpha[i]) * w)$spec)
-        se_alpha_ar <- sqrt(spec / length(w)) / mean(w)
-        se_alpha_total <- sqrt(se_alpha_is^2 + se_alpha_ar^2)
-        stats <- matrix(c(mean_alpha, sd_alpha, se_alpha_is, se_alpha_ar, se_alpha_total), ncol = 5, 
-          dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE-IS", "SE-AR", "SE")))
+        se_alpha <- sqrt(apply(alpha, 2, function(x) asymptotic_var(x, w)))
+        stats <- matrix(c(mean_alpha, sd_alpha, se_alpha_is, se_alpha), ncol = 4, 
+          dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE-IS", "SE")))
       } else {
         mean_alpha <- colMeans(alpha)
         sd_alpha <- apply(alpha, 2, sd)
@@ -98,15 +108,9 @@ print.mcmc_output <- function(x, ...) {
       
       
       cat(paste0("\nEffective sample sizes for alpha_", n), ":\n\n", sep = "")
-      if (x$mcmc_type %in% paste0("is", 1:3)) {
-        ess_alpha_is <- apply(alpha, 2, function(z) ess(w, identity, z))
-        ess_alpha_ar <- (sd_alpha / se_alpha_ar)^2
-        esss <- matrix(c(ess_alpha_is, ess_alpha_ar), ncol = 2, 
-          dimnames = list(colnames(x$alpha), c("ESS-IS", "ESS-AR")))
-      } else {
-        esss <- matrix((sd_alpha / se_alpha)^2, ncol = 1, 
+       esss <- matrix((sd_alpha / se_alpha)^2, ncol = 1, 
           dimnames = list(colnames(x$alpha), c("ESS")))
-      }
+     
       print(esss)
       
     } else {
@@ -139,6 +143,26 @@ print.mcmc_output <- function(x, ...) {
 #' @export
 summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, ...) {
   
+  iact <- function(x) {
+    n <- length(x)
+    # Calculate centred & normalised X
+    x_ <- (x - mean(x)) / sd(x)
+    # ...and this gives then ACF at specified lag
+    C <- max(5.0, log10(n))
+    tau <- 1
+    for(k in 1:(n-1)) {
+      tau <- tau + 2.0 * (x_[1:(n-k)] %*% x_[(1+k):n]) / (n - k)
+      if(k > C * tau) break
+    }
+    max(0.0, tau)
+  }
+  
+  asymptotic_var <- function(x, w) {
+    estimate_c <- mean(w)
+    estimate_mean <- weighted.mean(x, w)
+    z <- w * (x - estimate_mean)
+    avar <- iact(z) * var(z) / length(z) / estimate_c^2
+  }
   
   theta <- mcmc(object$theta)
   w <- object$counts * if (object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1
@@ -147,18 +171,14 @@ summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, .
   sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
   if(return_se) {
     se_theta_is <- weighted_se(theta, w)
-    spec <- sapply(1:ncol(theta), function(i) spectrum0.ar((theta[, i] - mean_theta[i]) * w)$spec)
-    se_theta_ar <- sqrt(spec / length(w)) / mean(w)
-    se_theta_total <- sqrt(se_theta_is^2 + se_theta_ar^2)
-    ess_theta_is <- apply(theta, 2, function(z) ess(w, identity, z))
-    ess_theta_ar <- (sd_theta / se_theta_ar)^2
+    se_theta <- sqrt(apply(theta, 2, function(x) asymptotic_var(x, w)))
+    ess_theta <- (sd_theta / se_theta)^2
     summary_theta <- matrix(c(
-      mean_theta, sd_theta, se_theta_is, se_theta_ar, se_theta_total,
-      ess_theta_is, ess_theta_ar), 
-      ncol = 7, 
+      mean_theta, sd_theta, se_theta_is, se_theta, ess_theta), 
+      ncol = 5, 
       dimnames = list(
         colnames(object$theta), 
-        c("Mean", "SD", "SE-IS", "SE-AR", "SE", "ESS-IS", "ESS-AR")))
+        c("Mean", "SD", "SE-IS", "SE", "ESS")))
   } else {
     summary_theta <- matrix(c(mean_theta, sd_theta), ncol = 2, 
       dimnames = list(colnames(object$theta), c("Mean", "SD")))
@@ -173,18 +193,13 @@ summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, .
     sd_alpha <- if(m > 1) sqrt(t(apply(sd_alpha, 3, diag))) else matrix(sqrt(sd_alpha), ncol = 1)
     if(return_se) {
       se_alpha_is <- apply(object$alpha, 2, function(x) weighted_se(t(x), w))
-      spec <- matrix(NA, ncol(object$alpha), nrow(object$alpha))
-      for(j in 1:nrow(object$alpha)) {
-        spec[, j] <- sapply(1:ncol(object$alpha), function(i) spectrum0.ar((object$alpha[j, i, ] - mean_alpha[j, i]) * w)$spec)
-      }
-      se_alpha_ar <- sqrt(t(spec) / length(w)) / mean(w)
-      se_alpha_total <- sqrt(se_alpha_is^2 + se_alpha_ar^2)
-      alpha_ess_is <- apply(object$alpha, 2, function(x) apply(t(x), 2, function(z) ess(w, identity, z)))
-      alpha_ess_ar <- (sd_alpha / se_alpha_ar)^2
+
+      se_alpha <- apply(object$alpha, 2, function(z) sqrt(apply(z, 1, function(x) asymptotic_var(x, w))))
+      alpha_ess <- (sd_alpha / se_alpha)^2
       summary_alpha <- list(
         "Mean" = mean_alpha, "SD" = sd_alpha, 
-        "SE-IS" = se_alpha_is, "SE-AR" = se_alpha_ar, 
-        "SE" = se_alpha_total, "ESS-IS" = alpha_ess_is, "ESS-AR" = alpha_ess_ar)
+        "SE-IS" = se_alpha_is,
+        "SE" = se_alpha, "ESS" = alpha_ess)
     } else {
       summary_alpha <- list("Mean" = mean_alpha, "SD" = sd_alpha)
     }
