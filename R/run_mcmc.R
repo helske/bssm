@@ -220,6 +220,7 @@ run_mcmc.ngssm <- function(object, n_iter, nsim_states, type = "full",
   
   if (nsim_states < 2) {
     method <- "is2"
+    simulation_method  <- "psi"
   }
   
   if (missing(S)) {
@@ -310,6 +311,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   if (nsim_states < 2) {
     #approximate inference
     method <- "is2"
+    simulation_method  <- "psi"
   }
   
   names_ind <-
@@ -398,6 +400,7 @@ run_mcmc.ng_ar1 <-  function(object, n_iter, nsim_states, type = "full",
   if (nsim_states < 2) {
     #approximate inference
     method <- "is2"
+    simulation_method  <- "psi"
   }
   
   if (missing(S)) {
@@ -528,6 +531,7 @@ run_mcmc.svm <-  function(object, n_iter, nsim_states, type = "full",
   if (nsim_states < 2) {
     #approximate inference
     method <- "is2"
+    simulation_method  <- "psi"
   }
   
   if (missing(S)) {
