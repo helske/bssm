@@ -69,7 +69,7 @@
 #' head(pred_gaussian$MCSE)
 #' 
 #' # Non-gaussian models
-#' #\dontrun{
+#' \dontrun{
 #' data("poisson_series")
 #' 
 #' model <- ng_bsm(poisson_series, sd_level = 
@@ -88,7 +88,7 @@
 #' fit <- ts(colMeans(exp(expand_sample(mcmc_poisson, 
 #'     "alpha")$level)))
 #' autoplot(pred, y = model$y, fit = fit)
-#' #}
+#' }
 predict.mcmc_output <- function(object, future_model, type = "response",
   intervals = TRUE, probs = c(0.05, 0.95), nsim, return_MCSE = FALSE, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
