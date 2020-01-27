@@ -411,6 +411,7 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List& model_,
   if (nsim_states <= 1) {
     mcmc_run.alpha_storage.zeros();
     mcmc_run.weight_storage.ones();
+    mcmc_run.posterior_storage.zeros();
   }
   switch (model_type) {
   case 1: {
