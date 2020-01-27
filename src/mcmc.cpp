@@ -358,8 +358,7 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
   arma::vec weights = arma::exp(model.importance_weights(approx_model, alpha) - sum_scales);
   // bit extra space used...
   std::discrete_distribution<unsigned int> sample(weights.begin(), weights.end());
-  unsigned int ind = sample(model.engine);
-  arma::mat sampled_alpha = alpha.slice(ind);
+  arma::mat sampled_alpha = alpha.slice(sample(model.engine));
   arma::mat alphahat_i(m, n + 1);
   arma::cube Vt_i(m, m, n + 1);
   arma::cube Valphahat(m, m, n + 1, arma::fill::zeros);
@@ -429,10 +428,11 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
           acceptance_rate++;
           n_values++;
         }
+        
         if (output_type != 3) {
           if (output_type == 1) {
             std::discrete_distribution<unsigned int> sample(weights.begin(), weights.end());
-            sampled_alpha = alpha.slice(ind);
+            sampled_alpha = alpha.slice(sample(model.engine));
           } else {
             //summary statistics for single iteration
             weighted_summary(alpha, alphahat_i, Vt_i, weights);
@@ -850,8 +850,7 @@ void mcmc::da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
   arma::cube alpha = approx_model.simulate_states(nsim_states, true);
   arma::vec weights = arma::exp(model.importance_weights(approx_model, alpha) - sum_scales);
   std::discrete_distribution<unsigned int> sample(weights.begin(), weights.end());
-  unsigned int ind = sample(model.engine);
-  arma::mat sampled_alpha = alpha.slice(ind);
+  arma::mat sampled_alpha = alpha.slice(sample(model.engine));
   arma::mat alphahat_i(m, n + 1);
   arma::cube Vt_i(m, m, n + 1);
   arma::cube Valphahat(m, m, n + 1, arma::fill::zeros);
