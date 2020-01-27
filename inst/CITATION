@@ -5,7 +5,7 @@ c(
     author = "Jouni Helske and Matti Vihola",
     year = sub("-.*", "", meta$Date),
     note = sprintf("R package version %s", meta$Version),
-    url = "https://CRAN.R-project.org/package=bssm/vignettes/bssm.pdf",
+    url = "https://CRAN.R-project.org/package=bssm/vignettes/bssm.html",
     key = "bssm"
   ),
   bibentry(
