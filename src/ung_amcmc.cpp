@@ -603,6 +603,7 @@ for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
   arma::cube alpha_i = approx_model.simulate_states(nsim, true);
   arma::vec weights_i = model.importance_weights(approx_model, alpha_i);
   weights_i = arma::exp(weights_i - arma::accu(scales_storage.col(i)));
+  weight_storage(i) = arma::mean(weights_i);
   if (output_type != 3) {
     if (output_type == 1) {
       std::discrete_distribution<unsigned int> sample(weights_i.begin(), weights_i.end());
