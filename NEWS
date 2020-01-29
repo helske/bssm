@@ -1,3 +1,9 @@
+bssm 0.1.9 (Release date: 2020-01-27)
+==============
+  * Fixed states sampling for PM-MCMC with SPDK.
+  * Added ts attribute for svm model.
+  * Corrected asymptotic variance for summary methods.
+  
 bssm 0.1.8-1 (Release date: 2019-12-20)
 ==============
   * Tweaked tests in order to pass MKL case at CRAN.

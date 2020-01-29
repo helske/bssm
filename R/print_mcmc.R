@@ -1,3 +1,23 @@
+iact <- function(x) {
+  n <- length(x)
+  x_ <- (x - mean(x)) / sd(x)
+  # Sokal: Monte Carlo Methods in Statistical Mechanics: Foundations and New Algorithms
+  C <- max(5.0, log10(n))
+  tau <- 1
+  for(k in 1:(n-1)) {
+    tau <- tau + 2.0 * (x_[1:(n-k)] %*% x_[(1+k):n]) / (n - k)
+    if(k > C * tau) break
+  }
+  max(0.0, tau)
+}
+
+asymptotic_var <- function(x, w) {
+  estimate_c <- mean(w)
+  estimate_mean <- weighted_mean(x, w)
+  z <- w * (x - estimate_mean)
+  avar <- iact(z) * var(z) / length(z) / estimate_c^2
+}
+
 #' Print Results from MCMC Run
 #'
 #' Prints some basic summaries from the MCMC run by  \code{\link{run_mcmc}}.
@@ -15,32 +35,11 @@
 #' @method print mcmc_output
 #' @importFrom diagis weighted_mean weighted_var weighted_se ess
 #' @importFrom coda mcmc spectrum0.ar
+#' @importFrom stats var
 #' @param x Output from \code{\link{run_mcmc}}.
 #' @param ... Ignored.
 #' @export
 print.mcmc_output <- function(x, ...) {
-  
-  
-  iact <- function(x) {
-    n <- length(x)
-    # Calculate centred & normalised X
-    x_ <- (x - mean(x)) / sd(x)
-    # ...and this gives then ACF at specified lag
-    C <- max(5.0, log10(n))
-    tau <- 1
-    for(k in 1:(n-1)) {
-      tau <- tau + 2.0 * (x_[1:(n-k)] %*% x_[(1+k):n]) / (n - k)
-      if(k > C * tau) break
-    }
-    max(0.0, tau)
-  }
-  
-  asymptotic_var <- function(x, w) {
-    estimate_c <- mean(w)
-    estimate_mean <- weighted.mean(x, w)
-    z <- w * (x - estimate_mean)
-    avar <- iact(z) * var(z) / length(z) / estimate_c^2
-  }
   
   if (x$mcmc_type %in% paste0("is", 1:3)) {
     theta <- mcmc(x$theta)
@@ -94,6 +93,7 @@ print.mcmc_output <- function(x, ...) {
       if (x$mcmc_type %in% paste0("is", 1:3)) {
         mean_alpha <- weighted_mean(alpha, w)
         sd_alpha <- sqrt(diag(weighted_var(alpha, w, method = "moment")))
+        se_alpha_is <- weighted_se(alpha, w)
         se_alpha <- sqrt(apply(alpha, 2, function(x) asymptotic_var(x, w)))
         stats <- matrix(c(mean_alpha, sd_alpha, se_alpha_is, se_alpha), ncol = 4, 
           dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE-IS", "SE")))
@@ -142,27 +142,6 @@ print.mcmc_output <- function(x, ...) {
 #' @param ... Ignored.
 #' @export
 summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, ...) {
-  
-  iact <- function(x) {
-    n <- length(x)
-    # Calculate centred & normalised X
-    x_ <- (x - mean(x)) / sd(x)
-    # ...and this gives then ACF at specified lag
-    C <- max(5.0, log10(n))
-    tau <- 1
-    for(k in 1:(n-1)) {
-      tau <- tau + 2.0 * (x_[1:(n-k)] %*% x_[(1+k):n]) / (n - k)
-      if(k > C * tau) break
-    }
-    max(0.0, tau)
-  }
-  
-  asymptotic_var <- function(x, w) {
-    estimate_c <- mean(w)
-    estimate_mean <- weighted.mean(x, w)
-    z <- w * (x - estimate_mean)
-    avar <- iact(z) * var(z) / length(z) / estimate_c^2
-  }
   
   theta <- mcmc(object$theta)
   w <- object$counts * if (object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1
