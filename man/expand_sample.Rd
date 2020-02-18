@@ -16,8 +16,6 @@ expand_sample(x, variable = "theta", times, states, by_states = TRUE)
 \item{states}{Vector of indices. In case of states, what states to expand? Default is all.}
 
 \item{by_states}{If \code{TRUE} (default), return list by states. Otherwise by time.}
-
-\item{...}{Ignored.}
 }
 \description{
 The MCMC algorithms of \code{bssm} use a jump chain representation where we 

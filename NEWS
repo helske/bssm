@@ -1,6 +1,11 @@
+bssm 0.1.10 (Release date: 2020-02-04)
+==============
+  * Fixed missing weight update for IS-SPDK without OPENMP flag.
+  * Removed unused usage argument ... from expand_sample.
+  
 bssm 0.1.9 (Release date: 2020-01-27)
 ==============
-  * Fixed states sampling for PM-MCMC with SPDK.
+  * Fixed state sampling for PM-MCMC with SPDK.
   * Added ts attribute for svm model.
   * Corrected asymptotic variance for summary methods.
   

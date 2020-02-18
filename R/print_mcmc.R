@@ -200,7 +200,6 @@ summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, .
 #' @param times Vector of indices. In case of states, what time points to expand? Default is all.
 #' @param states Vector of indices. In case of states, what states to expand? Default is all.
 #' @param by_states If \code{TRUE} (default), return list by states. Otherwise by time.
-#' @param ... Ignored.
 #' @export
 expand_sample <- function(x, variable = "theta", times, states, by_states = TRUE) {
   

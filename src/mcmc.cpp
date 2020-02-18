@@ -364,7 +364,7 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
   arma::cube Valphahat(m, m, n + 1, arma::fill::zeros);
   weighted_summary(alpha, alphahat_i, Vt_i, weights);
   
-  double ll_w = std::log(arma::accu(weights) / nsim_states);
+  double ll_w = std::log(arma::mean(weights));
   double loglik = gaussian_loglik + const_term + sum_scales + ll_w;
   if (!std::isfinite(loglik))
     Rcpp::stop("Initial log-likelihood is not finite.");
@@ -411,7 +411,7 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
       
       alpha = approx_model.simulate_states(nsim_states, true);
       weights = arma::exp(model.importance_weights(approx_model, alpha) - sum_scales);
-      ll_w = std::log(arma::accu(weights) / nsim_states);
+      ll_w = std::log(arma::mean(weights));
       
       double loglik_prop =
         approx_model.log_likelihood() + const_term + sum_scales + ll_w;
@@ -856,7 +856,7 @@ void mcmc::da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
   arma::cube Valphahat(m, m, n + 1, arma::fill::zeros);
   weighted_summary(alpha, alphahat_i, Vt_i, weights);
   
-  double ll_w = std::log(arma::accu(weights) / nsim_states);
+  double ll_w = std::log(arma::mean(weights));
   double loglik = gaussian_loglik + const_term + sum_scales + ll_w;
   if (!std::isfinite(loglik))
     Rcpp::stop("Initial log-likelihood is not finite.");
@@ -913,7 +913,7 @@ void mcmc::da_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
         
         alpha = approx_model.simulate_states(nsim_states, true);
         weights = arma::exp(model.importance_weights(approx_model, alpha) - sum_scales);
-        double ll_w_prop = std::log(arma::accu(weights) / nsim_states);
+        double ll_w_prop = std::log(arma::mean(weights));
         
         //just in case
         if(std::isfinite(ll_w_prop)) {
