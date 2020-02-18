@@ -1,3 +1,9 @@
+bssm 0.1.11 (Release date: 2020-02-04)
+==============
+  * Switched (back) to approximate posterior in RAM for PM-SPDK and PM-PSI, 
+    as it seems to work better with noisy likelihood estimates.
+  * Print and summary methods for MCMC output are now coherent in their output.
+  
 bssm 0.1.10 (Release date: 2020-02-04)
 ==============
   * Fixed missing weight update for IS-SPDK without OPENMP flag.
