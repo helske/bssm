@@ -326,7 +326,7 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
   const double conv_tol) {
   
   unsigned int m = model.m;
-  unsigned n = model.n;
+  unsigned int n = model.n;
   
   // get the current values of theta
   arma::vec theta = model.theta;
@@ -412,7 +412,7 @@ void mcmc::pm_mcmc_spdk(T model, const bool end_ram, const unsigned int nsim_sta
       alpha = approx_model.simulate_states(nsim_states, true);
       weights = arma::exp(model.importance_weights(approx_model, alpha) - sum_scales);
       ll_w = std::log(arma::mean(weights));
-      
+  
       double loglik_prop =
         approx_model.log_likelihood() + const_term + sum_scales + ll_w;
       
@@ -505,7 +505,7 @@ void mcmc::pm_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   const double conv_tol) {
   
   unsigned int m = model.m;
-  unsigned n = model.n;
+  unsigned int n = model.n;
   
   // get the current values of theta
   arma::vec theta = model.theta;
@@ -678,7 +678,7 @@ template<class T>
 void mcmc::pm_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_states) {
   
   unsigned int m = model.m;
-  unsigned n = model.n;
+  unsigned int n = model.n;
   
   // get the current values of theta
   arma::vec theta = model.theta;
@@ -1003,7 +1003,7 @@ void mcmc::da_mcmc_psi(T model, const bool end_ram, const unsigned int nsim_stat
   const double conv_tol) {
   
   unsigned int m = model.m;
-  unsigned n = model.n;
+  unsigned int n = model.n;
   
   // get the current values of theta
   arma::vec theta = model.theta;
@@ -1184,7 +1184,7 @@ void mcmc::da_mcmc_bsf(T model, const bool end_ram, const unsigned int nsim_stat
   const double conv_tol) {
   
   unsigned int m = model.m;
-  unsigned n = model.n;
+  unsigned int n = model.n;
   
   // get the current values of theta
   arma::vec theta = model.theta;
@@ -1350,7 +1350,7 @@ void mcmc::pm_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   const double conv_tol, const unsigned int iekf_iter) {
   
   unsigned int m = model.m;
-  unsigned n = model.n;
+  unsigned int n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
   if (!arma::is_finite(logprior)) {
@@ -1498,7 +1498,7 @@ void mcmc::pm_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram,
   const unsigned int nsim_states) {
   
   unsigned int m = model.m;
-  unsigned n = model.n;
+  unsigned int n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
   if (!arma::is_finite(logprior)) {
@@ -1625,7 +1625,7 @@ void mcmc::da_mcmc_psi_nlg(nlg_ssm model, const bool end_ram,
   const double conv_tol, const unsigned int iekf_iter) {
   
   unsigned int m = model.m;
-  unsigned n = model.n;
+  unsigned int n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
   if (!arma::is_finite(logprior)) {
@@ -1778,7 +1778,7 @@ void mcmc::da_mcmc_bsf_nlg(nlg_ssm model, const bool end_ram, const unsigned int
   const unsigned int max_iter, const double conv_tol, const unsigned int iekf_iter) {
   
   unsigned int m = model.m;
-  unsigned n = model.n;
+  unsigned int n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
   if (!arma::is_finite(logprior)) {
@@ -1933,7 +1933,7 @@ void mcmc::pm_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
   const unsigned int nsim_states, const unsigned int L) {
   
   unsigned int m = 1;
-  unsigned n = model.n;
+  unsigned int n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
   if (!arma::is_finite(logprior)) {
@@ -2059,7 +2059,7 @@ void mcmc::da_mcmc_bsf_sde(sde_ssm model, const bool end_ram,
   const unsigned int L_f, const bool target_full) {
   
   unsigned int m = 1;
-  unsigned n = model.n;
+  unsigned int n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
   if (!arma::is_finite(logprior)) {
