@@ -143,44 +143,85 @@ print.mcmc_output <- function(x, ...) {
 #' @export
 summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, ...) {
   
-  theta <- mcmc(object$theta)
-  w <- object$counts * if (object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1
-  
-  mean_theta <- weighted_mean(theta, w)
-  sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
-  if(return_se) {
-    se_theta_is <- weighted_se(theta, w)
-    se_theta <- sqrt(apply(theta, 2, function(x) asymptotic_var(x, w)))
-    ess_theta <- (sd_theta / se_theta)^2
-    summary_theta <- matrix(c(
-      mean_theta, sd_theta, se_theta_is, se_theta, ess_theta), 
-      ncol = 5, 
-      dimnames = list(
-        colnames(object$theta), 
-        c("Mean", "SD", "SE-IS", "SE", "ESS")))
+  if (object$mcmc_type %in% paste0("is", 1:3)) {
+    theta <- mcmc(object$theta)
+    w <- object$counts * object$weights
+    mean_theta <- weighted_mean(theta, w)
+    sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
+    
+    if(return_se) {
+      mean_theta <- weighted_mean(theta, w)
+      sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
+      se_theta_is <- weighted_se(theta, w)
+      se_theta <- sqrt(apply(theta, 2, function(x) asymptotic_var(x, w)))
+      ess_theta <- (sd_theta / se_theta)^2
+      summary_theta <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta), ncol = 4, 
+                      dimnames = list(colnames(object$theta), c("Mean", "SD", "SE-IS", "SE", "ESS")))
+    } else {
+      summary_theta <- matrix(c(mean_theta, sd_theta), ncol = 2, 
+                              dimnames = list(colnames(object$theta), c("Mean", "SD")))
+    }
   } else {
-    summary_theta <- matrix(c(mean_theta, sd_theta), ncol = 2, 
-      dimnames = list(colnames(object$theta), c("Mean", "SD")))
+    theta <- expand_sample(object, "theta")
+    mean_theta <- colMeans(theta)
+    sd_theta <- apply(theta, 2, sd)
+    
+    if(return_se) {
+      mean_theta <- colMeans(theta)
+      sd_theta <- apply(theta, 2, sd)
+      se_theta <-  sqrt(spectrum0.ar(theta)$spec/nrow(theta))
+      ess_theta <- (sd_theta / se_theta)^2
+      summary_theta <- matrix(c(mean_theta, sd_theta, se_theta, ess_theta), ncol = 4, 
+                      dimnames = list(colnames(object$theta), c("Mean", "SD", "SE", "ESS")))
+    } else {
+      summary_theta <- matrix(c(mean_theta, sd_theta), ncol = 2, 
+                              dimnames = list(colnames(object$theta), c("Mean", "SD")))
+    }
   }
   
   if (!only_theta && object$output_type == 1) {
     
     m <- ncol(object$alpha)
-    mean_alpha <- ts(weighted_mean(object$alpha, w), start = attr(object, "ts")$start,
-      frequency = attr(object, "ts")$frequency, names = colnames(object$alpha))
-    sd_alpha <- weighted_var(object$alpha, w, method = "moment")
-    sd_alpha <- if(m > 1) sqrt(t(apply(sd_alpha, 3, diag))) else matrix(sqrt(sd_alpha), ncol = 1)
-    if(return_se) {
-      se_alpha_is <- apply(object$alpha, 2, function(x) weighted_se(t(x), w))
-
-      se_alpha <- apply(object$alpha, 2, function(z) sqrt(apply(z, 1, function(x) asymptotic_var(x, w))))
-      alpha_ess <- (sd_alpha / se_alpha)^2
-      summary_alpha <- list(
-        "Mean" = mean_alpha, "SD" = sd_alpha, 
-        "SE-IS" = se_alpha_is,
-        "SE" = se_alpha, "ESS" = alpha_ess)
+    
+    if (object$mcmc_type %in% paste0("is", 1:3)) {
+      mean_alpha <- ts(weighted_mean(object$alpha, w), start = attr(object, "ts")$start,
+                       frequency = attr(object, "ts")$frequency, names = colnames(object$alpha))
+      sd_alpha <- weighted_var(object$alpha, w, method = "moment")
+      sd_alpha <- if(m > 1) sqrt(t(apply(sd_alpha, 3, diag))) else matrix(sqrt(sd_alpha), ncol = 1)
+      
+      
+      if(return_se) {
+        se_alpha_is <- apply(object$alpha, 2, function(x) weighted_se(t(x), w))
+        
+        se_alpha <- apply(object$alpha, 2, function(z) sqrt(apply(z, 1, function(x) asymptotic_var(x, w))))
+        alpha_ess <- (sd_alpha / se_alpha)^2
+        summary_alpha <- list(
+          "Mean" = mean_alpha, "SD" = sd_alpha, 
+          "SE-IS" = se_alpha_is,
+          "SE" = se_alpha, "ESS" = alpha_ess)
+      } else {
+        summary_alpha <- list("Mean" = mean_alpha, "SD" = sd_alpha)
+      }
+      
     } else {
-      summary_alpha <- list("Mean" = mean_alpha, "SD" = sd_alpha)
+      alpha <- expand_sample(object, "alpha")
+      mean_alpha <- ts(sapply(alpha, colMeans),
+                       start = attr(object, "ts")$start,
+                       frequency = attr(object, "ts")$frequency, names = colnames(object$alpha))
+      sd_alpha <- sapply(alpha, function(x) apply(x, 2, sd))
+      
+      if(return_se) {
+        
+        se_alpha <- sapply(alpha, function(x) 
+          apply(x, 2, function(z) 
+            sqrt(spectrum0.ar(z)$spec / length(z))))
+        ess_alpha <- (sd_alpha / se_alpha)^2
+        summary_alpha <- list(
+          "Mean" = mean_alpha, "SD" = sd_alpha, 
+          "SE" = se_alpha, "ESS" = ess_alpha)
+      } else {
+        summary_alpha <- list("Mean" = mean_alpha, "SD" = sd_alpha)
+      }
     }
     return(list(theta = summary_theta, states = summary_alpha))
   } else summary_theta
