@@ -1,4 +1,8 @@
-bssm 0.1.11 (Release date: 2020-02-04)
+bssm 0.1.12 (Release date: 2020-04-15)
+==============
+  * Fixed a bug in initializing run_mcmc for negative binomial model. 
+  
+bssm 0.1.11 (Release date: 2020-02-25)
 ==============
   * Switched (back) to approximate posterior in RAM for PM-SPDK and PM-PSI, 
     as it seems to work better with noisy likelihood estimates.

@@ -317,7 +317,7 @@ run_mcmc.ng_bsm <-  function(object, n_iter, nsim_states, type = "full",
   names_ind <-
     c(!object$fixed & c(TRUE, object$slope, object$seasonal), object$noise)
   transformed <- c(c("sd_level", "sd_slope", "sd_seasonal", "sd_noise")[names_ind], 
-    if (object$distribution == "negative binomial") "nb_dispersion")
+    if (object$distribution == "negative binomial") "phi")
   object$theta[transformed] <- log(object$theta[transformed])
   
   if (missing(S)) {

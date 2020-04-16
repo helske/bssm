@@ -155,7 +155,7 @@ summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, .
       se_theta_is <- weighted_se(theta, w)
       se_theta <- sqrt(apply(theta, 2, function(x) asymptotic_var(x, w)))
       ess_theta <- (sd_theta / se_theta)^2
-      summary_theta <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta), ncol = 4, 
+      summary_theta <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta, ess_theta), ncol = 5, 
                       dimnames = list(colnames(object$theta), c("Mean", "SD", "SE-IS", "SE", "ESS")))
     } else {
       summary_theta <- matrix(c(mean_theta, sd_theta), ncol = 2, 
