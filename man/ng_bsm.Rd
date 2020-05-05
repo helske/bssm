@@ -26,7 +26,7 @@ If missing, the seasonal component is omitted from the model.}
 See \link[=uniform]{priors} for details. If missing, no additional noise term is used.}
 
 \item{distribution}{distribution of the observation. Possible choices are
-\code{"poisson"} and \code{"binomial"}.}
+\code{"poisson"}, \code{"binomial"}, \code{"negative binomial"}.}
 
 \item{phi}{Additional parameter relating to the non-Gaussian distribution.
 For Negative binomial distribution this is the dispersion term, and for other

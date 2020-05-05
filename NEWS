@@ -1,5 +1,8 @@
 bssm 0.1.12 (Release date: 2020-04-15)
 ==============
+  * Added the function as.data.frame for mcmc output which converts the MCMC samples 
+    to data.frame format for easier post-processing.
+  * Small changes to summary method which can now return also only summaries of the states.
   * Fixed a bug in initializing run_mcmc for negative binomial model. 
   
 bssm 0.1.11 (Release date: 2020-02-25)

@@ -53,6 +53,13 @@ double ugg_ar1::log_prior_pdf(const arma::vec& x) const {
     case 2  :
       log_prior -= 0.5 * std::pow((x(i) - prior_parameters(0, i)) / prior_parameters(1, i), 2);
       break;
+    case 3 : // truncated normal
+      if (x(i) < prior_parameters(2, i) || x(i) > prior_parameters(3, i)) {
+        return -std::numeric_limits<double>::infinity(); 
+      } else {
+        log_prior -= 0.5 * std::pow((x(i) - prior_parameters(0, i)) / prior_parameters(1, i), 2);
+      }
+      break;
     }
   }
   return log_prior;

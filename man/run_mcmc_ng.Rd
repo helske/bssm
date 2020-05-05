@@ -139,5 +139,5 @@ poisson_model <- ng_bsm(y,
   sd_slope = halfnormal(0.01, 0.1), 
   P1 = diag(c(10, 0.1)), distribution = "poisson")
 mcmc_is <- run_mcmc(poisson_model, n_iter = 1000, nsim_states = 10, method = "is2")
-summary(mcmc_is, only_theta = TRUE, return_se = TRUE)
+summary(mcmc_is, what = "theta", return_se = TRUE)
 }

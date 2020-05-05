@@ -98,20 +98,27 @@ double mgg_ssm::log_prior_pdf(const arma::vec& x) const {
   
   for(unsigned int i = 0; i < x.n_elem; i++) {
     switch(prior_distributions(i)) {
-    case 0  :
+    case 0  : // uniform
       if (x(i) < prior_parameters(0, i) || x(i) > prior_parameters(1, i)) {
         return -std::numeric_limits<double>::infinity(); 
       }
       break;
-    case 1  :
+    case 1  : // half-normal
       if (x(i) < 0) {
         return -std::numeric_limits<double>::infinity();
       } else {
         log_prior -= 0.5 * std::pow(x(i) / prior_parameters(0, i), 2);
       }
       break;
-    case 2  :
+    case 2  : // normal
       log_prior -= 0.5 * std::pow((x(i) - prior_parameters(0, i)) / prior_parameters(1, i), 2);
+      break;
+    case 3 : // truncated normal
+      if (x(i) < prior_parameters(2, i) || x(i) > prior_parameters(3, i)) {
+        return -std::numeric_limits<double>::infinity(); 
+      } else {
+        log_prior -= 0.5 * std::pow((x(i) - prior_parameters(0, i)) / prior_parameters(1, i), 2);
+      }
       break;
     }
   }

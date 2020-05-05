@@ -4,6 +4,7 @@
 \alias{uniform}
 \alias{halfnormal}
 \alias{normal}
+\alias{tnormal}
 \title{Prior objects for bssm models}
 \usage{
 uniform(init, min, max)
@@ -11,14 +12,16 @@ uniform(init, min, max)
 halfnormal(init, sd)
 
 normal(init, mean, sd)
+
+tnormal(init, mean, sd, min = -Inf, max = Inf)
 }
 \arguments{
 \item{init}{Initial value for the parameter, used in initializing the model components and as a starting value
 in MCMC.}
 
-\item{min}{Lower bound of the uniform prior .}
+\item{min}{Lower bound of the uniform and truncated normal prior.}
 
-\item{max}{Upper bound of the uniform prior.}
+\item{max}{Upper bound of the uniform and truncated normal prior.}
 
 \item{sd}{Standard deviation of the half-Normal and Normal priors.}
 
@@ -29,9 +32,5 @@ object of class \code{bssm_prior}.
 }
 \description{
 These simple objects of class \code{bssm_prior} are used to construct a prior distributions for the 
-MCMC runs of \code{bssm} package. Currently supported priors are uniform, half-Normal and Normal distribution.
-}
-\note{
-Use Normal prior with care: currently there is no checks of non-negativity of standard deviation or stationarity of 
-autoregressive coefficient in case Normal prior is used.
+MCMC runs of \code{bssm} package. Currently supported priors are uniform, half-normal, normal, and truncated normal distribution.
 }

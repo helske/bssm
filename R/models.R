@@ -257,7 +257,7 @@ bsm <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' @param sd_noise Prior for the standard error of the additional noise term.
 #' See \link[=uniform]{priors} for details. If missing, no additional noise term is used.
 #' @param distribution distribution of the observation. Possible choices are
-#' \code{"poisson"} and \code{"binomial"}.
+#' \code{"poisson"}, \code{"binomial"}, \code{"negative binomial"}.
 #' @param phi Additional parameter relating to the non-Gaussian distribution.
 #' For Negative binomial distribution this is the dispersion term, and for other
 #' distributions this is ignored.
@@ -473,7 +473,7 @@ ng_bsm <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   distribution <- match.arg(distribution, c("poisson", "binomial",
     "negative binomial"))
   
-  use_phi <- distribution %in% c("negative binomial", "gamma")
+  use_phi <- distribution %in% c("negative binomial")
   phi_est <- FALSE
   if (use_phi) {
     if (is_prior(phi)) {

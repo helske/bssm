@@ -5,7 +5,7 @@
 \title{Summary of MCMC object}
 \usage{
 \method{summary}{mcmc_output}(object, return_se = FALSE,
-  only_theta = FALSE, ...)
+  variable = "theta", only_theta = FALSE, ...)
 }
 \arguments{
 \item{object}{Output from \code{run_mcmc}}
@@ -15,7 +15,10 @@ errors and effective sample sizes is omitted.
 This saves time, as computing the spectral densities (by \code{coda}) can be slow for 
 large models.}
 
-\item{only_theta}{If \code{TRUE}, summaries are computed only for hyperparameters theta.}
+\item{variable}{Are the summary statistics computed for either \code{"theta"} (default), 
+\code{"states"}, or \code{"both"}?}
+
+\item{only_theta}{Deprecated. If \code{TRUE}, summaries are computed only for hyperparameters theta.}
 
 \item{...}{Ignored.}
 }

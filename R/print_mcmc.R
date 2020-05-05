@@ -45,7 +45,7 @@ print.mcmc_output <- function(x, ...) {
     theta <- mcmc(x$theta)
     if(x$output_type == 1)
       alpha <- mcmc(matrix(x$alpha[nrow(x$alpha),,], ncol = ncol(x$alpha), byrow = TRUE, 
-        dimnames = list(NULL, colnames(x$alpha))))
+                           dimnames = list(NULL, colnames(x$alpha))))
     w <- x$counts * x$weights
   } else {
     theta <- expand_sample(x, "theta")
@@ -54,7 +54,7 @@ print.mcmc_output <- function(x, ...) {
   }
   
   cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"), 
-    "\n", sep = "")
+      "\n", sep = "")
   
   cat("\n", "Iterations = ", x$n_burnin + 1, ":", x$n_iter, "\n", sep = "")
   cat("Thinning interval = ",x$n_thin, "\n", sep = "")
@@ -68,20 +68,20 @@ print.mcmc_output <- function(x, ...) {
     se_theta_is <- weighted_se(theta, w)
     se_theta <- sqrt(apply(theta, 2, function(x) asymptotic_var(x, w)))
     stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta), ncol = 4, 
-      dimnames = list(colnames(x$theta), c("Mean", "SD", "SE-IS", "SE")))
+                    dimnames = list(colnames(x$theta), c("Mean", "SD", "SE-IS", "SE")))
   } else {
     mean_theta <- colMeans(theta)
     sd_theta <- apply(theta, 2, sd)
     se_theta <-  sqrt(spectrum0.ar(theta)$spec/nrow(theta))
     stats <- matrix(c(mean_theta, sd_theta, se_theta), ncol = 3, 
-      dimnames = list(colnames(x$theta), c("Mean", "SD", "SE")))
+                    dimnames = list(colnames(x$theta), c("Mean", "SD", "SE")))
   }
   
   print(stats)
   
   cat("\nEffective sample sizes for theta:\n\n")
   esss <- matrix((sd_theta / se_theta)^2, ncol = 1, 
-      dimnames = list(colnames(x$theta), c("ESS")))
+                 dimnames = list(colnames(x$theta), c("ESS")))
   print(esss)
   
   if(x$output_type != 3) {
@@ -96,21 +96,21 @@ print.mcmc_output <- function(x, ...) {
         se_alpha_is <- weighted_se(alpha, w)
         se_alpha <- sqrt(apply(alpha, 2, function(x) asymptotic_var(x, w)))
         stats <- matrix(c(mean_alpha, sd_alpha, se_alpha_is, se_alpha), ncol = 4, 
-          dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE-IS", "SE")))
+                        dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE-IS", "SE")))
       } else {
         mean_alpha <- colMeans(alpha)
         sd_alpha <- apply(alpha, 2, sd)
         se_alpha <-  sqrt(spectrum0.ar(alpha)$spec / nrow(alpha))
         stats <- matrix(c(mean_alpha, sd_alpha, se_alpha), ncol = 3, 
-          dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE")))
+                        dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE")))
       }
       print(stats)
       
       
       cat(paste0("\nEffective sample sizes for alpha_", n), ":\n\n", sep = "")
-       esss <- matrix((sd_alpha / se_alpha)^2, ncol = 1, 
-          dimnames = list(colnames(x$alpha), c("ESS")))
-     
+      esss <- matrix((sd_alpha / se_alpha)^2, ncol = 1, 
+                     dimnames = list(colnames(x$alpha), c("ESS")))
+      
       print(esss)
       
     } else {
@@ -138,48 +138,60 @@ print.mcmc_output <- function(x, ...) {
 #' errors and effective sample sizes is omitted. 
 #' This saves time, as computing the spectral densities (by \code{coda}) can be slow for 
 #' large models.
-#' @param only_theta If \code{TRUE}, summaries are computed only for hyperparameters theta. 
+#' @param variable Are the summary statistics computed for either \code{"theta"} (default), 
+#' \code{"states"}, or \code{"both"}?
+#' @param only_theta Deprecated. If \code{TRUE}, summaries are computed only for hyperparameters theta.
 #' @param ... Ignored.
 #' @export
-summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, ...) {
+summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta", 
+                                only_theta = FALSE, ...) {
   
-  if (object$mcmc_type %in% paste0("is", 1:3)) {
-    theta <- mcmc(object$theta)
-    w <- object$counts * object$weights
-    mean_theta <- weighted_mean(theta, w)
-    sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
-    
-    if(return_se) {
+  if (only_theta) {
+    parameters <- "theta"
+    warning("Argument 'only_theta' is deprecated. Use argument 'variable' instead. ")
+  }
+  variable <- match.arg(variable, c("theta", "states", "both"))
+  
+  if(variable %in% c("theta", "both")) {
+    if (object$mcmc_type %in% paste0("is", 1:3)) {
+      theta <- mcmc(object$theta)
+      w <- object$counts * object$weights
       mean_theta <- weighted_mean(theta, w)
       sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
-      se_theta_is <- weighted_se(theta, w)
-      se_theta <- sqrt(apply(theta, 2, function(x) asymptotic_var(x, w)))
-      ess_theta <- (sd_theta / se_theta)^2
-      summary_theta <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta, ess_theta), ncol = 5, 
-                      dimnames = list(colnames(object$theta), c("Mean", "SD", "SE-IS", "SE", "ESS")))
+      
+      if(return_se) {
+        mean_theta <- weighted_mean(theta, w)
+        sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
+        se_theta_is <- weighted_se(theta, w)
+        se_theta <- sqrt(apply(theta, 2, function(x) asymptotic_var(x, w)))
+        ess_theta <- (sd_theta / se_theta)^2
+        summary_theta <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta, ess_theta), ncol = 5, 
+                                dimnames = list(colnames(object$theta), c("Mean", "SD", "SE-IS", "SE", "ESS")))
+      } else {
+        summary_theta <- matrix(c(mean_theta, sd_theta), ncol = 2, 
+                                dimnames = list(colnames(object$theta), c("Mean", "SD")))
+      }
     } else {
-      summary_theta <- matrix(c(mean_theta, sd_theta), ncol = 2, 
-                              dimnames = list(colnames(object$theta), c("Mean", "SD")))
-    }
-  } else {
-    theta <- expand_sample(object, "theta")
-    mean_theta <- colMeans(theta)
-    sd_theta <- apply(theta, 2, sd)
-    
-    if(return_se) {
+      theta <- expand_sample(object, "theta")
       mean_theta <- colMeans(theta)
       sd_theta <- apply(theta, 2, sd)
-      se_theta <-  sqrt(spectrum0.ar(theta)$spec/nrow(theta))
-      ess_theta <- (sd_theta / se_theta)^2
-      summary_theta <- matrix(c(mean_theta, sd_theta, se_theta, ess_theta), ncol = 4, 
-                      dimnames = list(colnames(object$theta), c("Mean", "SD", "SE", "ESS")))
-    } else {
-      summary_theta <- matrix(c(mean_theta, sd_theta), ncol = 2, 
-                              dimnames = list(colnames(object$theta), c("Mean", "SD")))
+      
+      if(return_se) {
+        mean_theta <- colMeans(theta)
+        sd_theta <- apply(theta, 2, sd)
+        se_theta <-  sqrt(spectrum0.ar(theta)$spec/nrow(theta))
+        ess_theta <- (sd_theta / se_theta)^2
+        summary_theta <- matrix(c(mean_theta, sd_theta, se_theta, ess_theta), ncol = 4, 
+                                dimnames = list(colnames(object$theta), c("Mean", "SD", "SE", "ESS")))
+      } else {
+        summary_theta <- matrix(c(mean_theta, sd_theta), ncol = 2, 
+                                dimnames = list(colnames(object$theta), c("Mean", "SD")))
+      }
     }
   }
   
-  if (!only_theta && object$output_type == 1) {
+  if (variable %in% c("states", "both")) {
+    if (object$output_type != 1) stop("Cannot return summary of states as the MCMC type was not 'full'. ")
     
     m <- ncol(object$alpha)
     
@@ -223,8 +235,12 @@ summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, .
         summary_alpha <- list("Mean" = mean_alpha, "SD" = sd_alpha)
       }
     }
-    return(list(theta = summary_theta, states = summary_alpha))
-  } else summary_theta
+  }
+  switch(variable,
+         "both" = return(list(theta = summary_theta, states = summary_alpha)),
+         "theta" = return(summary_theta),
+         "states" = return(summary_alpha)
+  )
 }
 
 #' Expand the Jump Chain representation
@@ -237,13 +253,14 @@ summary.mcmc_output <- function(object, return_se = FALSE, only_theta = FALSE, .
 #' sample corresponds to the approximate posterior.
 #' 
 #' @param x Output from \code{\link{run_mcmc}}.
-#' @param variable Expand parameters \code{"theta"} or states \code{"state"}.
+#' @param variable Expand parameters \code{"theta"} or states \code{"states"}.
 #' @param times Vector of indices. In case of states, what time points to expand? Default is all.
 #' @param states Vector of indices. In case of states, what states to expand? Default is all.
 #' @param by_states If \code{TRUE} (default), return list by states. Otherwise by time.
 #' @export
 expand_sample <- function(x, variable = "theta", times, states, by_states = TRUE) {
   
+  variable <- match.arg(variable, c("theta", "states"))
   if (x$mcmc_type %in% paste0("is", 1:3)) 
     warning("Input is based on a IS-weighted MCMC, the results correspond to the approximate posteriors.")
   if(variable == "theta") {
