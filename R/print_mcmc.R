@@ -59,7 +59,7 @@ print.mcmc_output <- function(x, ...) {
   cat("\n", "Iterations = ", x$n_burnin + 1, ":", x$n_iter, "\n", sep = "")
   cat("Thinning interval = ",x$n_thin, "\n", sep = "")
   cat("Length of the final jump chain = ", length(x$counts), "\n", sep = "")
-  cat("\nAcceptance rate after the burn-in period: ", paste(x$acceptance_rate,"\n", sep = ""))
+  cat("\nAcceptance rate after the burn-in period: ", paste(round(x$acceptance_rate,3),"\n", sep = ""))
   
   cat("\nSummary for theta:\n\n")
   if (x$mcmc_type %in% paste0("is", 1:3)) {
