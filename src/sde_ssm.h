@@ -5,9 +5,9 @@
 #include <sitmo.h>
 #include "bssm.h"
 
-typedef double (*funcPtr)(const double x, const arma::vec& theta);
-typedef double (*prior_funcPtr)(const arma::vec& theta);
-typedef arma::vec (*obs_funcPtr)(const double y, 
+typedef double (*fnPtr)(const double x, const arma::vec& theta);
+typedef double (*prior_fnPtr)(const arma::vec& theta);
+typedef arma::vec (*obs_fnPtr)(const double y, 
   const arma::vec& alpha, const arma::vec& theta);
 
 class sde_ssm {
@@ -19,8 +19,8 @@ public:
     const arma::vec& theta, 
     const double x0, 
     bool positive, 
-    funcPtr drift_, funcPtr diffusion_, funcPtr ddiffusion_,
-    obs_funcPtr log_obs_density_, prior_funcPtr log_prior_pdf_, 
+    fnPtr drift_, fnPtr diffusion_, fnPtr ddiffusion_,
+    obs_fnPtr log_obs_density_, prior_fnPtr log_prior_pdf_, 
     const unsigned int seed = 1);
   
   arma::vec y;
@@ -32,13 +32,13 @@ public:
   static const unsigned int m = 1; // number of states
   bool positive;
   
-  funcPtr drift;
-  funcPtr diffusion;
-  funcPtr ddiffusion;
+  fnPtr drift;
+  fnPtr diffusion;
+  fnPtr ddiffusion;
   //log-pdf for observational level
-  obs_funcPtr log_obs_density;
+  obs_fnPtr log_obs_density;
   //prior log-pdf
-  prior_funcPtr log_prior_pdf;
+  prior_fnPtr log_prior_pdf;
   
   // PRNG used for simulating Brownian motion on coarse scale
   sitmo::prng_engine coarse_engine;

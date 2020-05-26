@@ -14,11 +14,11 @@
 //   const unsigned int L, const unsigned int seed) {
 //   
 //   
-//   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
-//   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);
-//   Rcpp::XPtr<funcPtr> xpfun_ddiffusion(ddiffusion_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_drift(drift_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_diffusion(diffusion_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_ddiffusion(ddiffusion_pntr);
 //   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf_pntr);
-//   Rcpp::XPtr<obs_funcPtr> xpfun_obs(log_obs_density_pntr);
+//   Rcpp::XPtr<obs_fnPtr> xpfun_obs(log_obs_density_pntr);
 //   
 //   sde_ssm model(y, theta, x0, positive,*xpfun_drift,
 //     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_obs, *xpfun_prior,
@@ -38,11 +38,11 @@
 //   const arma::vec& theta, const unsigned int nsim_states, 
 //   const unsigned int L, const unsigned int seed) {
 //   
-//   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
-//   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);
-//   Rcpp::XPtr<funcPtr> xpfun_ddiffusion(ddiffusion_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_drift(drift_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_diffusion(diffusion_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_ddiffusion(ddiffusion_pntr);
 //   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf_pntr);
-//   Rcpp::XPtr<obs_funcPtr> xpfun_obs(log_obs_density_pntr);
+//   Rcpp::XPtr<obs_fnPtr> xpfun_obs(log_obs_density_pntr);
 //   
 //   sde_ssm model(y, theta, x0, positive,*xpfun_drift,
 //     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_obs, *xpfun_prior,
@@ -76,11 +76,11 @@
 //   const arma::vec& theta, const unsigned int nsim_states, 
 //   const unsigned int L, const unsigned int seed) {
 //   
-//   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
-//   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);
-//   Rcpp::XPtr<funcPtr> xpfun_ddiffusion(ddiffusion_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_drift(drift_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_diffusion(diffusion_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_ddiffusion(ddiffusion_pntr);
 //   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf_pntr);
-//   Rcpp::XPtr<obs_funcPtr> xpfun_obs(log_obs_density_pntr);
+//   Rcpp::XPtr<obs_fnPtr> xpfun_obs(log_obs_density_pntr);
 //   
 //   sde_ssm model(y, theta, x0, positive,*xpfun_drift,
 //     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_obs, *xpfun_prior,
@@ -117,11 +117,11 @@
 //   const double gamma, const double target_acceptance, const arma::mat S,
 //   const bool end_ram, const unsigned int type) {
 //   
-//   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
-//   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);
-//   Rcpp::XPtr<funcPtr> xpfun_ddiffusion(ddiffusion_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_drift(drift_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_diffusion(diffusion_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_ddiffusion(ddiffusion_pntr);
 //   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf_pntr);
-//   Rcpp::XPtr<obs_funcPtr> xpfun_obs(log_obs_density_pntr);
+//   Rcpp::XPtr<obs_fnPtr> xpfun_obs(log_obs_density_pntr);
 //   
 //   sde_ssm model(y, theta, x0, positive,*xpfun_drift,
 //     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_obs, *xpfun_prior,
@@ -171,11 +171,11 @@
 //   const double gamma, const double target_acceptance, const arma::mat S,
 //   const bool end_ram, const unsigned int type) {
 //   
-//   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
-//   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);
-//   Rcpp::XPtr<funcPtr> xpfun_ddiffusion(ddiffusion_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_drift(drift_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_diffusion(diffusion_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_ddiffusion(ddiffusion_pntr);
 //   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf_pntr);
-//   Rcpp::XPtr<obs_funcPtr> xpfun_obs(log_obs_density_pntr);
+//   Rcpp::XPtr<obs_fnPtr> xpfun_obs(log_obs_density_pntr);
 //   
 //   sde_ssm model(y, theta, x0, positive,*xpfun_drift,
 //     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_obs, *xpfun_prior,
@@ -225,11 +225,11 @@
 //   const bool end_ram, const unsigned int is_type, const unsigned int n_threads,
 //   const unsigned int type) {
 //   
-//   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
-//   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);
-//   Rcpp::XPtr<funcPtr> xpfun_ddiffusion(ddiffusion_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_drift(drift_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_diffusion(diffusion_pntr);
+//   Rcpp::XPtr<fnPtr> xpfun_ddiffusion(ddiffusion_pntr);
 //   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf_pntr);
-//   Rcpp::XPtr<obs_funcPtr> xpfun_obs(log_obs_density_pntr);
+//   Rcpp::XPtr<obs_fnPtr> xpfun_obs(log_obs_density_pntr);
 //   
 //   sde_ssm model(y, theta, x0, positive,*xpfun_drift,
 //     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_obs, *xpfun_prior,

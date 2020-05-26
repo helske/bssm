@@ -5,7 +5,7 @@
 #include "sitmo.h"
 
 // typedef for a pointer of drift/diffusion functions
-typedef double (*funcPtr)(const double x, const arma::vec&);
+typedef double (*fnPtr)(const double x, const arma::vec&);
 
 // Functions for the Milstein scheme
 
@@ -24,13 +24,13 @@ typedef double (*funcPtr)(const double x, const arma::vec&);
 
 double milstein(const double x0, const unsigned int L, const double t,
   const arma::vec& theta,
-  funcPtr drift, funcPtr diffusion, funcPtr ddiffusion,
+  fnPtr drift, fnPtr diffusion, fnPtr ddiffusion,
   bool positive, sitmo::prng_engine& eng);
 
 // A worker which uses simulated Brownian differences
 double milstein_worker(double x, arma::vec& dB, double dt, unsigned int n,
-  const arma::vec& theta, funcPtr drift, funcPtr diffusion,
-  funcPtr ddiffusion, bool positive);
+  const arma::vec& theta, fnPtr drift, fnPtr diffusion,
+  fnPtr ddiffusion, bool positive);
 
 arma::vec brownian_bridge(const double t, const double sd, const unsigned int n,
   const double X_t, sitmo::prng_engine& eng);
@@ -38,7 +38,7 @@ arma::vec brownian_bridge(const double t, const double sd, const unsigned int n,
 double milstein_joint(const double x0,
   const unsigned int L_c, const unsigned int L_f, const double t,
   const arma::vec& theta,
-  funcPtr drift, funcPtr diffusion, funcPtr ddiffusion,
+  fnPtr drift, fnPtr diffusion, fnPtr ddiffusion,
   bool positive, sitmo::prng_engine& eng_c, sitmo::prng_engine& eng_f);
 
 

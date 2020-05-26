@@ -8,14 +8,14 @@
 // 
 //   sitmo::prng_engine eng(seed);
 // 
-//   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
-//   funcPtr drift = *xpfun_drift;
+//   Rcpp::XPtr<fnPtr> xpfun_drift(drift_pntr);
+//   fnPtr drift = *xpfun_drift;
 // 
-//   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);
-//   funcPtr diffusion= *xpfun_diffusion;
+//   Rcpp::XPtr<fnPtr> xpfun_diffusion(diffusion_pntr);
+//   fnPtr diffusion= *xpfun_diffusion;
 // 
-//   Rcpp::XPtr<funcPtr> xpfun_ddiffusion(ddiffusion_pntr);
-//   funcPtr ddiffusion = *xpfun_ddiffusion;
+//   Rcpp::XPtr<fnPtr> xpfun_ddiffusion(ddiffusion_pntr);
+//   fnPtr ddiffusion = *xpfun_ddiffusion;
 // 
 //   return milstein(x0, L, t, theta,
 //     drift, diffusion, ddiffusion, positive, eng);
@@ -31,14 +31,14 @@
 //   sitmo::prng_engine eng_c(seed);
 //   sitmo::prng_engine eng_f(seed + 1);
 //   
-//   Rcpp::XPtr<funcPtr> xpfun_drift(drift_pntr);
-//   funcPtr drift = *xpfun_drift;
+//   Rcpp::XPtr<fnPtr> xpfun_drift(drift_pntr);
+//   fnPtr drift = *xpfun_drift;
 // 
-//   Rcpp::XPtr<funcPtr> xpfun_diffusion(diffusion_pntr);
-//   funcPtr diffusion= *xpfun_diffusion;
+//   Rcpp::XPtr<fnPtr> xpfun_diffusion(diffusion_pntr);
+//   fnPtr diffusion= *xpfun_diffusion;
 // 
-//   Rcpp::XPtr<funcPtr> xpfun_ddiffusion(ddiffusion_pntr);
-//   funcPtr ddiffusion = *xpfun_ddiffusion;
+//   Rcpp::XPtr<fnPtr> xpfun_ddiffusion(ddiffusion_pntr);
+//   fnPtr ddiffusion = *xpfun_ddiffusion;
 // 
 //   return milstein_joint(x0, L_c, L_f, t, theta,
 //     drift, diffusion, ddiffusion,

@@ -7,8 +7,8 @@ sde_ssm::sde_ssm(
   const arma::vec& theta, 
   const double x0, 
   bool positive, 
-  funcPtr drift_, funcPtr diffusion_, funcPtr ddiffusion_,
-  obs_funcPtr log_obs_density_, prior_funcPtr log_prior_pdf_,
+  fnPtr drift_, fnPtr diffusion_, fnPtr ddiffusion_,
+  obs_fnPtr log_obs_density_, prior_fnPtr log_prior_pdf_,
   const unsigned int seed) 
   :
     y(y), theta(theta), x0(x0), n(y.n_elem), positive(positive),

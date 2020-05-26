@@ -6,27 +6,14 @@
 #include "psd_chol.h"
 #include "interval.h"
 
-nlg_ssm::nlg_ssm(
-  const arma::mat& y, 
-  nvec_fnPtr Z_fn_, 
-  nmat_fnPtr H_fn_, 
-  nvec_fnPtr T_fn_, 
-  nmat_fnPtr R_fn_, 
-  nmat_fnPtr Z_gn_, 
-  nmat_fnPtr T_gn_, 
-  a1_fnPtr a1_fn_, 
-  P1_fnPtr P1_fn_,
-  const arma::vec& theta, 
-  prior_fnPtr log_prior_pdf_, 
-  const arma::vec& known_params,
-  const arma::mat& known_tv_params, 
-  const unsigned int m, 
-  const unsigned int k,
-  const arma::uvec& time_varying, 
-  const unsigned int seed,
-  const unsigned int iekf_iter,
-  const unsigned int max_iter,
-  const double conv_tol) 
+nlg_ssm::nlg_ssm(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_, 
+  nvec_fnPtr T_fn_, nmat_fnPtr R_fn_, nmat_fnPtr Z_gn_, nmat_fnPtr T_gn_, 
+  a1_fnPtr a1_fn_, P1_fnPtr P1_fn_, const arma::vec& theta, 
+  prior_fnPtr log_prior_pdf_, const arma::vec& known_params,
+  const arma::mat& known_tv_params, const unsigned int m, 
+  const unsigned int k, const arma::uvec& time_varying, 
+  const unsigned int seed, const unsigned int iekf_iter, 
+  const unsigned int max_iter, const double conv_tol) 
   :
     y(y), Z_fn(Z_fn_), H_fn(H_fn_), T_fn(T_fn_), 
     R_fn(R_fn_), Z_gn(Z_gn_), T_gn(T_gn_),

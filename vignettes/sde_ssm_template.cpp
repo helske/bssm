@@ -64,17 +64,17 @@ arma::vec log_obs_density(const double y,
 // [[Rcpp::export]]
 Rcpp::List create_xptrs() {
   // typedef for a pointer of drift/volatility function
-  typedef double (*funcPtr)(const double x, const arma::vec& theta);
+  typedef double (*fnPtr)(const double x, const arma::vec& theta);
   // typedef for log_prior_pdf
-  typedef double (*prior_funcPtr)(const arma::vec& theta);
+  typedef double (*prior_fnPtr)(const arma::vec& theta);
   // typedef for log_obs_density
-  typedef arma::vec (*obs_funcPtr)(const double y, 
+  typedef arma::vec (*obs_fnPtr)(const double y, 
     const arma::vec& alpha, const arma::vec& theta);
   
   return Rcpp::List::create(
-    Rcpp::Named("drift") = Rcpp::XPtr<funcPtr>(new funcPtr(&drift)),
-    Rcpp::Named("diffusion") = Rcpp::XPtr<funcPtr>(new funcPtr(&diffusion)),
-    Rcpp::Named("ddiffusion") = Rcpp::XPtr<funcPtr>(new funcPtr(&ddiffusion)),
-    Rcpp::Named("prior") = Rcpp::XPtr<prior_funcPtr>(new prior_funcPtr(&log_prior_pdf)),
-    Rcpp::Named("obs_density") = Rcpp::XPtr<obs_funcPtr>(new obs_funcPtr(&log_obs_density)));
+    Rcpp::Named("drift") = Rcpp::XPtr<fnPtr>(new fnPtr(&drift)),
+    Rcpp::Named("diffusion") = Rcpp::XPtr<fnPtr>(new fnPtr(&diffusion)),
+    Rcpp::Named("ddiffusion") = Rcpp::XPtr<fnPtr>(new fnPtr(&ddiffusion)),
+    Rcpp::Named("prior") = Rcpp::XPtr<prior_fnPtr>(new prior_fnPtr(&log_prior_pdf)),
+    Rcpp::Named("obs_density") = Rcpp::XPtr<obs_fnPtr>(new obs_fnPtr(&log_obs_density)));
 }

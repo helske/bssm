@@ -17,7 +17,7 @@
 
 double milstein(const double x0, const unsigned int L, const double t,
   const arma::vec& theta,
-  funcPtr drift, funcPtr diffusion, funcPtr ddiffusion,
+  fnPtr drift, fnPtr diffusion, fnPtr ddiffusion,
   bool positive, sitmo::prng_engine& eng) {
 
   unsigned int n = std::pow(2, L);
@@ -36,8 +36,8 @@ double milstein(const double x0, const unsigned int L, const double t,
 
 // A worker which uses simulated Brownian differences
 double milstein_worker(double x, arma::vec& dB, double dt, unsigned int n,
-  const arma::vec& theta, funcPtr drift, funcPtr diffusion,
-  funcPtr ddiffusion, bool positive) {
+  const arma::vec& theta, fnPtr drift, fnPtr diffusion,
+  fnPtr ddiffusion, bool positive) {
 
   for(unsigned int k = 0; k < n; k++) {
     x += drift(x, theta) * dt + diffusion(x, theta) * dB(k) +
@@ -76,7 +76,7 @@ arma::vec brownian_bridge(const double t, const double sd, const unsigned int n,
 double milstein_joint(const double x0,
   const unsigned int L_c, const unsigned int L_f, const double t,
   const arma::vec& theta,
-  funcPtr drift, funcPtr diffusion, funcPtr ddiffusion,
+  fnPtr drift, fnPtr diffusion, fnPtr ddiffusion,
   bool positive, sitmo::prng_engine& eng_c, sitmo::prng_engine& eng_f) {
 
   unsigned int n_c = std::pow(2, L_c);
