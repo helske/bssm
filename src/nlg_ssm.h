@@ -1,12 +1,10 @@
-// arbitrary nonlinear gaussian state space model with time-invariant functions
-
+// arbitrary nonlinear gaussian state space model with time-varying functions
 #ifndef NLG_SSM_H
 #define NLG_SSM_H
 
 #include <sitmo.h>
 #include "bssm.h"
 #include "mgg_ssm.h"
-
 
 // typedef for a pointer of nonlinear function of model equation returning vec (T, Z)
 typedef arma::vec (*nvec_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
@@ -22,77 +20,31 @@ typedef arma::mat (*P1_fnPtr)(const arma::vec& theta, const arma::vec& known_par
 // typedef for a pointer of log-prior function
 typedef double (*prior_fnPtr)(const arma::vec&);
 
-
 class nlg_ssm {
   
 public:
   
-  nlg_ssm(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_, nvec_fnPtr T_fn_, 
-    nmat_fnPtr R_fn_, nmat_fnPtr Z_gn_, nmat_fnPtr T_gn_, a1_fnPtr a1_fn_, P1_fnPtr P1_fn_,
-    const arma::vec& theta, prior_fnPtr log_prior_pdf_, const arma::vec& known_params, 
-    const arma::mat& known_tv_params, const unsigned int m, const unsigned int k,
-    const arma::uvec& time_varying, const unsigned int seed);
-  
-  // find the approximating Gaussian model
-  mgg_ssm approximate(arma::mat& mode_estimate, 
-    const unsigned int max_iter, const double conv_tol, 
-    const unsigned int iekf_iter) const;
-  // update the approximating Gaussian model
-  arma::mat approximate(mgg_ssm& approx_model, const unsigned int max_iter, 
-    const double conv_tol) const;
-  
-  Rcpp::List predict_interval(const arma::vec& probs, const arma::mat& thetasim,
-    const arma::mat& alpha_last, const arma::cube& P_last, 
-    const arma::uvec& counts, const unsigned int predict_type);
-  
-  arma::cube predict_sample(const arma::mat& thetasim, const arma::mat& alpha, 
-    const arma::uvec& counts, const unsigned int predict_type, 
-    const unsigned int nsim);
-  
-  arma::cube sample_model(const arma::vec& a1_sim, 
-    const unsigned int predict_type, const unsigned int nsim);
-  
-  double ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, 
-    arma::cube& Ptt, const unsigned int iekf_iter) const;
-  
-  double ekf_loglik(const unsigned int iekf_iter) const;
-  
-  double ekf_smoother(arma::mat& att, arma::cube& Ptt, const unsigned int iekf_iter) const;
-  double ekf_fast_smoother(arma::mat& at, const unsigned int iekf_iter) const;
-  
-  double ukf(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& Ptt, 
-    const double alpha = 1.0, const double beta = 0.0, const double kappa = 2.0) const;
-  
-    // bootstrap filter  
-  double bsf_filter(const unsigned int nsim, arma::cube& alpha, 
-    arma::mat& weights, arma::umat& indices);
-  
-  // psi-particle filter
-  double psi_filter(const mgg_ssm& approx_model, const double approx_loglik,
-    const unsigned int nsim, arma::cube& alpha, arma::mat& weights,
-    arma::umat& indices);
-  
-  // extended Kalman particle filter
-  double ekf_filter(const unsigned int nsim, arma::cube& alpha,
-    arma::mat& weights, arma::umat& indices);
-  
-  // compute logarithms of _unnormalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
-  arma::vec log_weights(const mgg_ssm& approx_model, 
-    const unsigned int t, const arma::cube& alpha, const arma::mat& alpha_prev) const;
-
-  // compute unnormalized mode-based scaling terms
-  // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
-  arma::vec scaling_factors(const mgg_ssm& approx_model, const arma::mat& mode_estimate) const;
-  
-  // compute logarithms of _unnormalized_ densities g(y_t | alpha_t)
-  arma::vec log_obs_density(const unsigned int t, const arma::cube& alpha) const;
-  // compute logarithms of _unnormalized_ densities g(y_t | alpha_t)
-  double log_obs_density(const unsigned int t, const arma::vec& alpha) const;
-  
-  void ekf_update_step(const unsigned int t, const arma::vec y, 
-    const arma::vec& at, const arma::mat& Pt, arma::vec& att, arma::mat& Ptt) const;
-    
-  double log_signal_pdf(const arma::mat& alpha) const;
+  nlg_ssm(
+    const arma::mat& y, 
+    nvec_fnPtr Z_fn_, 
+    nmat_fnPtr H_fn_, 
+    nvec_fnPtr T_fn_, 
+    nmat_fnPtr R_fn_, 
+    nmat_fnPtr Z_gn_, 
+    nmat_fnPtr T_gn_, 
+    a1_fnPtr a1_fn_, 
+    P1_fnPtr P1_fn_,
+    const arma::vec& theta, 
+    prior_fnPtr log_prior_pdf_, 
+    const arma::vec& known_params, 
+    const arma::mat& known_tv_params, 
+    const unsigned int m, 
+    const unsigned int k,
+    const arma::uvec& time_varying, 
+    const unsigned int seed = 1,
+    const unsigned int iekf_iter = 0,
+    const unsigned int max_iter = 100,
+    const double conv_tol = 1e-8);
   
   arma::mat y;
   // nonlinear functions of 
@@ -133,6 +85,81 @@ public:
   sitmo::prng_engine engine;
   const double zero_tol;
   
+  unsigned int iekf_iter;
+  unsigned int max_iter;
+  double conv_tol;
+  
+  arma::mat initial_mode; // initial estimate of the mode
+  arma::mat mode_estimate; // current estimate of the mode
+  // -1 = no approx, 0 = theta doesn't match, 1 = proper approx 
+  int approx_state; 
+  // store the current approx_loglik in order to avoid computing it again
+  double approx_loglik; 
+  // store the current scaling factors for psi-APF
+  arma::vec scales;
+  mgg_ssm approx_model;
+  
+  void update_model(const arma::vec& new_theta);
+  // update the approximating Gaussian model
+  void approximate();
+  
+  arma::vec log_likelihood(
+      const unsigned int method, 
+      const unsigned int nsim_states, 
+      arma::cube& alpha, 
+      arma::mat& weights, 
+      arma::umat& indices);
+
+  Rcpp::List predict_interval(const arma::vec& probs, const arma::mat& thetasim,
+    const arma::mat& alpha_last, const arma::cube& P_last, 
+    const arma::uvec& counts, const unsigned int predict_type);
+  
+  arma::cube predict_sample(const arma::mat& thetasim, const arma::mat& alpha, 
+    const arma::uvec& counts, const unsigned int predict_type, 
+    const unsigned int nsim);
+  
+  arma::cube sample_model(const arma::vec& a1_sim, 
+    const unsigned int predict_type, const unsigned int nsim);
+  
+  double ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, 
+    arma::cube& Ptt) const;
+  
+  double ekf_loglik() const;
+  
+  double ekf_smoother(arma::mat& att, arma::cube& Ptt) const;
+  double ekf_fast_smoother(arma::mat& at) const;
+  
+  double ukf(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& Ptt, 
+    const double alpha = 1.0, const double beta = 0.0, const double kappa = 2.0) const;
+  
+    // bootstrap filter  
+  double bsf_filter(const unsigned int nsim, arma::cube& alpha, 
+    arma::mat& weights, arma::umat& indices);
+  
+  // psi-particle filter
+  double psi_filter(const unsigned int nsim, arma::cube& alpha, arma::mat& weights,
+    arma::umat& indices);
+  
+  // extended Kalman particle filter
+  double ekf_filter(const unsigned int nsim, arma::cube& alpha,
+    arma::mat& weights, arma::umat& indices);
+  
+  void update_scales();
+    
+  // compute logarithms of _unnormalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
+  arma::vec log_weights(const unsigned int t, const arma::cube& alpha, const arma::mat& alpha_prev) const;
+
+  // compute logarithms of _unnormalized_ densities g(y_t | alpha_t)
+  arma::vec log_obs_density(const unsigned int t, const arma::cube& alpha) const;
+  // compute logarithms of _unnormalized_ densities g(y_t | alpha_t)
+  double log_obs_density(const unsigned int t, const arma::vec& alpha) const;
+  
+  void ekf_update_step(const unsigned int t, const arma::vec y, 
+    const arma::vec& at, const arma::mat& Pt, arma::vec& att, arma::mat& Ptt) const;
+    
+  double log_signal_pdf(const arma::mat& alpha) const;
+  
+
 };
 
 

@@ -2,14 +2,32 @@
 #include "milstein_functions.h"
 #include "sample.h"
 
-sde_ssm::sde_ssm(const arma::vec& y, const arma::vec& theta, 
-  const double x0, bool positive, const unsigned int seed,
+sde_ssm::sde_ssm(
+  const arma::vec& y, 
+  const arma::vec& theta, 
+  const double x0, 
+  bool positive, 
   funcPtr drift_, funcPtr diffusion_, funcPtr ddiffusion_,
-  prior_funcPtr log_prior_pdf_, obs_funcPtr log_obs_density_) :
-  y(y), theta(theta), x0(x0), n(y.n_elem),
-  positive(positive), seed(seed), coarse_engine(seed), engine(seed + 1),
-  drift(drift_), diffusion(diffusion_), ddiffusion(ddiffusion_), 
-  log_prior_pdf(log_prior_pdf_), log_obs_density(log_obs_density_) {
+  obs_funcPtr log_obs_density_, prior_funcPtr log_prior_pdf_,
+  const unsigned int seed) 
+  :
+    y(y), theta(theta), x0(x0), n(y.n_elem), positive(positive),
+    drift(drift_), diffusion(diffusion_), ddiffusion(ddiffusion_), 
+    log_obs_density(log_obs_density_), log_prior_pdf(log_prior_pdf_),
+    coarse_engine(seed), engine(seed + 1){
+}
+
+arma::vec sde_ssm::log_likelihood(
+    const unsigned int method, 
+    const unsigned int nsim_states, 
+    arma::cube& alpha, 
+    arma::mat& weights, 
+    arma::umat& indices) {
+  
+  arma::vec ll(2);
+  ll(0) = bsf_filter(nsim_states, method, alpha, weights, indices);
+  ll(1) = ll(0);
+  return ll;
 }
 
 double sde_ssm::bsf_filter(const unsigned int nsim, const unsigned int L, 
@@ -19,11 +37,11 @@ double sde_ssm::bsf_filter(const unsigned int nsim, const unsigned int L,
     alpha(0, 0, i) = milstein(x0, L, 1, theta, drift, diffusion, ddiffusion,
       positive, coarse_engine);
   }
-
+  
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec normalized_weights(nsim);
   double loglik = 0.0;
-
+  
   if(arma::is_finite(y(0))) {
     weights.col(0) = log_obs_density(y(0), alpha.tube(0, 0), theta);
     double max_weight = weights.col(0).max();

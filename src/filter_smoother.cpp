@@ -1,6 +1,6 @@
 // back-tracking for filter smoother
 
-#include "bssm.h"
+#include "filter_smoother.h"
 
 void filter_smoother(arma::cube& alpha, const arma::umat& indices) {
   

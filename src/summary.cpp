@@ -1,4 +1,5 @@
-#include "bssm.h"
+#include "summary.h"
+
 
 void running_summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x) {
   
@@ -74,3 +75,26 @@ void filter_summary(const arma::cube& alpha, arma::mat& at, arma::mat& att,
   Pt /= alpha.n_slices;
 }
 
+
+void sample_or_summarise(
+    bool sample,
+    const unsigned int method, 
+    arma::cube& alpha, 
+    const arma::vec& weights, 
+    const arma::umat& indices,
+    arma::mat& sampled_alpha, 
+    arma::mat& alphahat, 
+    arma::cube& Vt,  
+    sitmo::prng_engine& engine) {
+  
+  if (method != 3) { // SPDK does not use this
+    filter_smoother(alpha, indices);
+  }
+  if (sample) {
+    std::discrete_distribution<unsigned int> sample(weights.begin(), weights.end());
+    sampled_alpha = alpha.slice(sample(engine));
+  } else {
+    weighted_summary(alpha, alphahat, Vt, weights);
+  }
+  
+}

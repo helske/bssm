@@ -59,6 +59,3 @@ double ung_svm::log_prior_pdf(const arma::vec& x) const {
   return log_prior;
 }
 
-double ung_svm::log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const {
-  return 0.0;
-}

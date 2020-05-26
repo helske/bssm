@@ -1,4 +1,4 @@
-#include "bssm.h"
+#include "dmvnorm.h"
 
 //[[Rcpp::export]]
 double dmvnorm(const arma::vec& x, const arma::vec& mean,  

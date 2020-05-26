@@ -2,7 +2,11 @@
 #'
 #' Converts \code{SSModel} object of \code{KFAS} package to 
 #' \code{gssm} or \code{ngssm} object.
-#'
+#' 
+#' @note These functions are included mostly in order to compare some of 
+#' the implementations between \code{KFAS} and \code{bssm}, and thus they
+#' might become deprecated in the future.
+#' 
 #' @param model Object of class \code{SSModel}.
 #' @param kappa For \code{SSModel} object, a prior variance for initial state
 #' used to replace exact diffuse elements of the original model.

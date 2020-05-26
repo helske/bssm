@@ -1,4 +1,4 @@
-// arbitrary linear gaussian state space model with time-invariant functions
+// arbitrary linear gaussian state space model with time-varying functions
 
 #ifndef LGG_SSM_H
 #define LGG_SSM_H
@@ -6,7 +6,6 @@
 #include <sitmo.h>
 #include "bssm.h"
 #include "mgg_ssm.h"
-
 
 // typedef for a pointer of linear function of lgg-model equation returning Z, H, T, and R
 typedef arma::mat (*lmat_fnPtr)(const unsigned int t, const arma::vec& theta, 
@@ -22,19 +21,17 @@ typedef arma::mat (*P1_fnPtr)(const arma::vec& theta, const arma::vec& known_par
 // typedef for a pointer of log-prior function
 typedef double (*prior_fnPtr)(const arma::vec&);
 
-
 class lgg_ssm {
   
 public:
   
-  lgg_ssm(const arma::mat& y, lmat_fnPtr Z_fn_, lmat_fnPtr H_fn_, lmat_fnPtr T_fn_, lmat_fnPtr R_fn_, 
-    a1_fnPtr a1_fn_, P1_fnPtr P1_fn_, lvec_fnPtr D_fn_, lvec_fnPtr C_fn_, 
-    const arma::vec& theta, prior_fnPtr log_prior_pdf_, const arma::vec& known_params, 
-    const arma::mat& known_tv_params, const arma::uvec& time_varying, 
-    const unsigned int m, const unsigned int k,  const unsigned int seed);
+  lgg_ssm(const arma::mat& y, lmat_fnPtr Z_fn_, lmat_fnPtr H_fn_, lmat_fnPtr T_fn_, 
+    lmat_fnPtr R_fn_, a1_fnPtr a1_fn_, P1_fnPtr P1_fn_, lvec_fnPtr D_fn_, 
+    lvec_fnPtr C_fn_, const arma::vec& theta, prior_fnPtr log_prior_pdf_, 
+    const arma::vec& known_params, const arma::mat& known_tv_params, 
+    const arma::uvec& time_varying, const unsigned int m, const unsigned int k, 
+    const unsigned int seed);
   
-  mgg_ssm build_mgg();
-  void update_mgg(mgg_ssm& model);
   // linear functions of 
   // y_t = Z(alpha_t, theta,t) + H(theta,t)*eps_t, 
   // alpha_t+1 = T(alpha_t, theta,t) + R(theta, t)*eta_t
@@ -44,10 +41,8 @@ public:
   lmat_fnPtr H_fn;
   lmat_fnPtr T_fn;
   lmat_fnPtr R_fn;
-  //initial value
   a1_fnPtr a1_fn;
   P1_fnPtr P1_fn;
-  
   lvec_fnPtr D_fn;
   lvec_fnPtr C_fn;
   
@@ -66,11 +61,24 @@ public:
   const unsigned int k;
   const unsigned int n;
   const unsigned int p;
-
+  
   sitmo::prng_engine engine;
   const double zero_tol;
   
+  mgg_ssm mgg_model;
+  
+  void update_model(const arma::vec& new_theta);
+  
+  // compute the log-likelihood using Kalman filter
+  double log_likelihood() const;
+  arma::cube simulate_states(const unsigned int nsim_states);
+  
+  double filter(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& Ptt) const;
+  void smoother(arma::mat& alphahat, arma::cube& Vt) const; 
+  // perform fast state smoothing
+  arma::mat fast_smoother() const;
+  // smoothing which also returns covariances cov(alpha_t, alpha_t-1)
+  void smoother_ccov(arma::mat& alphahat, arma::cube& Vt, arma::cube& ccov) const;
 };
-
 
 #endif

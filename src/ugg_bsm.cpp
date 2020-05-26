@@ -80,11 +80,8 @@ double ugg_bsm::log_prior_pdf(const arma::vec& x) const {
       break;
     }
   }
+  // add jacobian
+  log_prior += arma::accu(x.subvec(0, x.n_elem - xreg.n_cols - 1));
   return log_prior;
 }
 
-double ugg_bsm::log_proposal_ratio(const arma::vec& new_theta, const arma::vec& old_theta) const {
-  
-  return arma::accu(new_theta.subvec(0, new_theta.n_elem - xreg.n_cols - 1)) -
-    arma::accu(old_theta.subvec(0, old_theta.n_elem - xreg.n_cols - 1));
-}
