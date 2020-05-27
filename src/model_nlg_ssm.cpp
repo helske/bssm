@@ -1,4 +1,4 @@
-#include "nlg_ssm.h"
+#include "model_nlg_ssm.h"
 #include "sample.h"
 #include "dmvnorm.h"
 #include "conditional_dist.h"

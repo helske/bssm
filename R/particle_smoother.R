@@ -24,10 +24,10 @@
 particle_smoother <- function(object, nsim, ...) {
   UseMethod("particle_smoother", object)
 }
-#' @method particle_smoother gssm
+#' @method particle_smoother ssm_ulg
 #' @rdname particle_smoother
 #' @export
-particle_smoother.gssm <- function(object, nsim,
+particle_smoother.ssm_ulg <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   out <- bsf_smoother(object, nsim, seed, TRUE, 1L)
@@ -42,9 +42,9 @@ particle_smoother.gssm <- function(object, nsim,
   out
 }
 
-#' @method particle_smoother bsm
+#' @method particle_smoother bsm_lg
 #' @export
-particle_smoother.bsm <- function(object, nsim, 
+particle_smoother.bsm_lg <- function(object, nsim, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   out <- bsf_smoother(object, nsim, seed, TRUE, 2L)
@@ -59,9 +59,9 @@ particle_smoother.bsm <- function(object, nsim,
   out
 }
 #' @rdname particle_smoother
-#' @method particle_smoother ngssm
+#' @method particle_smoother ssm_ung
 #' @export
-particle_smoother.ngssm <- function(object, nsim, 
+particle_smoother.ssm_ung <- function(object, nsim, 
   filter_type = "bsf", 
   seed = sample(.Machine$integer.max, size = 1), 
   max_iter = 100, conv_tol = 1e-8, ...) {
@@ -84,9 +84,9 @@ particle_smoother.ngssm <- function(object, nsim,
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
-#' @method particle_smoother ng_bsm
+#' @method particle_smoother bsm_ng
 #' @export
-particle_smoother.ng_bsm <- function(object, nsim, filter_type = "psi", 
+particle_smoother.bsm_ng <- function(object, nsim, filter_type = "psi", 
   seed = sample(.Machine$integer.max, size = 1), 
   max_iter = 100, conv_tol = 1e-8, ...) {
   
@@ -107,9 +107,9 @@ particle_smoother.ng_bsm <- function(object, nsim, filter_type = "psi",
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
-#' @method particle_smoother ng_ar1
+#' @method particle_smoother ar1_ng
 #' @export
-particle_smoother.ng_ar1 <- function(object, nsim, filter_type = "psi", 
+particle_smoother.ar1_ng <- function(object, nsim, filter_type = "psi", 
   seed = sample(.Machine$integer.max, size = 1), 
   max_iter = 100, conv_tol = 1e-8, ...) {
   

@@ -1,8 +1,8 @@
-// #include "ugg_ssm.h"
-// #include "ung_ssm.h"
-// #include "ung_bsm.h"
-// #include "ung_svm.h"
-// #include "ung_ar1.h"
+// #include "model_ugg_ssm.h"
+// #include "model_ung_ssm.h"
+// #include "model_ung_bsm.h"
+// #include "model_ung_svm.h"
+// #include "model_ung_ar1.h"
 // 
 // // [[Rcpp::export]]
 // Rcpp::List importance_sample_ung(const Rcpp::List& model_, 

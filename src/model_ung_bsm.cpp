@@ -1,12 +1,16 @@
-#include "ung_bsm.h"
+#include "model_ung_bsm.h"
 
 // from Rcpp::List
 ung_bsm::ung_bsm(const Rcpp::List& model, const unsigned int seed) :
-  ung_ssm(model, seed), slope(Rcpp::as<bool>(model["slope"])),
+  ung_ssm(model, seed), 
+  prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
+  prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
+  slope(Rcpp::as<bool>(model["slope"])),
   seasonal(Rcpp::as<bool>(model["seasonal"])),
   noise(Rcpp::as<bool>(model["noise"])),
   fixed(Rcpp::as<arma::uvec>(model["fixed"])), level_est(fixed(0) == 0),
-  slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0) {
+  slope_est(slope && fixed(1) == 0), seasonal_est(seasonal && fixed(2) == 0),
+  phi_est(Rcpp::as<bool>(model["phi_est"])) {
 }
 
 void ung_bsm::update_model(const arma::vec& new_theta) {

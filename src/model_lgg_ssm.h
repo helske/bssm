@@ -5,7 +5,7 @@
 
 #include <sitmo.h>
 #include "bssm.h"
-#include "mgg_ssm.h"
+#include "model_mgg_ssm.h"
 
 // typedef for a pointer of linear function of lgg-model equation returning Z, H, T, and R
 typedef arma::mat (*lmat_fnPtr)(const unsigned int t, const arma::vec& theta, 

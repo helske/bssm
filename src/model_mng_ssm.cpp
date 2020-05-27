@@ -1,4 +1,4 @@
-#include "mng_ssm.h"
+#include "model_mng_ssm.h"
 #include "conditional_dist.h"
 #include "distr_consts.h"
 #include "sample.h"

@@ -53,7 +53,7 @@
 #' require("graphics")
 #' y <- log10(JohnsonJohnson)
 #' prior <- uniform(0.01, 0, 1)
-#' model <- bsm(window(y, end = c(1974, 4)), sd_y = prior,
+#' model <- bsm_lg(window(y, end = c(1974, 4)), sd_y = prior,
 #' sd_level = prior, sd_slope = prior, sd_seasonal = prior)
 #' 
 #' mcmc_results <- run_mcmc(model, n_iter = 5000)
@@ -72,7 +72,7 @@
 #' \dontrun{
 #' data("poisson_series")
 #' 
-#' model <- ng_bsm(poisson_series, sd_level = 
+#' model <- bsm_ng(poisson_series, sd_level = 
 #'   halfnormal(0.1, 1), sd_slope=halfnormal(0.01, 0.1),
 #'   distribution = "poisson")
 #' mcmc_poisson <- run_mcmc(model, n_iter = 5000, nsim = 10)
@@ -111,26 +111,19 @@ predict.mcmc_output <- function(object, future_model, type = "response",
   end_ts <- end(future_model$y)
   freq <- frequency(future_model$y)
   
-  if (attr(object, "model_type") %in% c("bsm", "ng_bsm")) {
-    object$theta[,1:(ncol(object$theta) - length(future_model$coefs))] <- 
-      log(object$theta[,1:(ncol(object$theta) - length(future_model$coefs))])
+  if (attr(object, "model_type") %in% c("bsm", "bsm_ng")) {
+    object$theta[,1:(ncol(object$theta) - length(future_model$beta))] <- 
+      log(object$theta[,1:(ncol(object$theta) - length(future_model$beta))])
   }
   
   switch(attr(object, "model_type"),
-    gssm = ,
-    bsm = ,
-    ar1 = {
-      if (attr(object, "model_type") != "gssm") {
-        future_model$Z_ind <- 
-          future_model$H_ind <- 
-          future_model$T_ind <- 
-          future_model$R_ind <- numeric(0)
-      }
+    ssm_ulg = ,
+    bsm_lg = ,
+    ar1_lg = {
       out <- gaussian_predict(future_model, probs,
         t(object$theta), matrix(object$alpha[nrow(object$alpha),,], nrow = ncol(object$alpha)), 
         object$counts, pmatch(type, c("response", "mean", "state")), intervals, 
-        seed, pmatch(attr(object, "model_type"), c("gssm", "bsm", "ar1")), nsim,
-        future_model$Z_ind, future_model$H_ind, future_model$T_ind, future_model$R_ind)
+        seed, pmatch(attr(object, "model_type"), c("ssm_ulg", "bsm_lg", "ar1_lg")), nsim)
      
       if (intervals) {
         
@@ -203,10 +196,10 @@ predict.mcmc_output <- function(object, future_model, type = "response",
         pred <- aperm(out[[1]], c(2, 1, 3))
       }
     },
-    ngssm = , 
-    ng_bsm = , 
+    ssm_ung = , 
+    bsm_ng = , 
     svm = {
-      if (attr(object, "model_type") != "ngssm") {
+      if (attr(object, "model_type") != "ssm_ung") {
         future_model$Z_ind <- 
           future_model$T_ind <- 
           future_model$R_ind <- numeric(0)
@@ -219,7 +212,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
           t(object$theta), matrix(object$alpha[nrow(object$alpha),,], nda[2], nda[3]),
           object$counts, 
           pmatch(type, c("response", "mean", "state")), seed, 
-          pmatch(attr(object, "model_type"), c("ngssm", "ng_bsm", "svm", "ng_ar1")), 
+          pmatch(attr(object, "model_type"), c("ssm_ung", "bsm_ng", "svm", "ar1_ng")), 
           nsim, future_model$Z_ind, future_model$T_ind, future_model$R_ind)
       
       if(anyNA(out)) stop("NA or NaN values in predictions, possible under/overflow?")

@@ -8,19 +8,19 @@
 #include "filter_smoother.h"
 #include "summary.h"
 
-#include "ugg_ssm.h"
-#include "ugg_bsm.h"
-#include "ugg_ar1.h"
+#include "model_ugg_ssm.h"
+#include "model_ugg_bsm.h"
+#include "model_ugg_ar1.h"
 
-#include "ung_ssm.h"
-#include "ung_bsm.h"
-#include "ung_ar1.h"
-#include "ung_svm.h"
+#include "model_ung_ssm.h"
+#include "model_ung_bsm.h"
+#include "model_ung_ar1.h"
+#include "model_ung_svm.h"
 
-#include "nlg_ssm.h"
-#include "sde_ssm.h"
-#include "mng_ssm.h"
-#include "lgg_ssm.h"
+#include "model_nlg_ssm.h"
+#include "model_sde_ssm.h"
+#include "model_mng_ssm.h"
+#include "model_lgg_ssm.h"
 
 mcmc::mcmc(
   const unsigned int n_iter, 
@@ -53,7 +53,6 @@ void mcmc::trim_storage() {
   if (output_type == 1)
     alpha_storage.resize(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
 }
-
 
 template void mcmc::state_posterior(ugg_ssm model, const unsigned int n_threads);
 template void mcmc::state_posterior(ugg_bsm model, const unsigned int n_threads);
@@ -154,7 +153,7 @@ template<class T>
 void mcmc::mcmc_gaussian(T& model, const bool end_ram) {
 
   arma::vec theta = model.theta;
-  double logprior = model.log_prior_pdf(theta);
+  double logprior = model.log_prior_pdf(theta); 
   double loglik = model.log_likelihood();
 
   if (!std::isfinite(logprior))
@@ -183,11 +182,13 @@ void mcmc::mcmc_gaussian(T& model, const bool end_ram) {
     // propose new theta
     arma::vec theta_prop = theta + S * u;
     // compute prior
-    double logprior_prop = model.log_prior_pdf(theta_prop);
-
+    double logprior_prop;
+    logprior_prop = model.log_prior_pdf(theta_prop); 
+    
     if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update model based on the proposal
       model.update_model(theta_prop);
+      
       // compute log-likelihood with proposed theta
       double loglik_prop = model.log_likelihood();
       //compute the acceptance probability

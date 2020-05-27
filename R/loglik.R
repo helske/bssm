@@ -16,26 +16,21 @@
 #' @param conv_tol Tolerance parameter.
 #' @param ... Ignored.
 #' @importFrom stats logLik
-#' @method logLik gssm
+#' @method logLik ssm_ulg
 #' @rdname logLik
 #' @export
-logLik.gssm <- function(object, ...) {
+logLik.ssm_ulg <- function(object, ...) {
   gaussian_loglik(object, model_type = 1L)
 }
-#' @method logLik bsm
+#' @method logLik bsm_lg
 #' @export
-logLik.bsm <- function(object, ...) {
+logLik.bsm_lg <- function(object, ...) {
   gaussian_loglik(object, model_type = 2L)
 }
-#' @method logLik mv_gssm
-#' @export
-logLik.mv_gssm <- function(object, ...) {
-  gaussian_loglik(object, model_type = -1L)
-}
-#' @method logLik ngssm
+#' @method logLik ssm_ung
 #' @rdname logLik
 #' @export
-logLik.ngssm <- function(object, nsim_states, method = "psi", seed = 1, 
+logLik.ssm_ung <- function(object, nsim_states, method = "psi", seed = 1, 
   max_iter = 100, conv_tol = 1e-8, ...) {
   
   method <- match.arg(method,  c("psi", "bsf", "spdk"))
@@ -46,9 +41,9 @@ logLik.ngssm <- function(object, nsim_states, method = "psi", seed = 1,
   nongaussian_loglik(object, object$initial_mode, nsim_states, 
     pmatch(method,  c("psi", "bsf", "spdk")), seed, max_iter, conv_tol, model_type = 1L)
 }
-#' @method logLik ng_bsm
+#' @method logLik bsm_ng
 #' @export
-logLik.ng_bsm <- function(object, nsim_states, method = "psi", seed = 1,
+logLik.bsm_ng <- function(object, nsim_states, method = "psi", seed = 1,
   max_iter = 100, conv_tol = 1e-8, ...) {
   
   method <- match.arg(method,  c("psi", "bsf", "spdk"))
@@ -68,9 +63,9 @@ logLik.svm <- function(object, nsim_states, method = "psi", seed = 1,
   nongaussian_loglik(object, object$initial_mode, nsim_states, 
     pmatch(method,  c("psi", "bsf", "spdk")), seed, max_iter, conv_tol, model_type = 3L)
 }
-#' @method logLik ng_ar1
+#' @method logLik ar1_ng
 #' @export
-logLik.ng_ar1 <- function(object, nsim_states, method = "psi", seed = 1,
+logLik.ar1_ng <- function(object, nsim_states, method = "psi", seed = 1,
   max_iter = 100, conv_tol = 1e-8, ...) {
   
   method <- match.arg(method,  c("psi", "bsf", "spdk"))

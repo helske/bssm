@@ -1,32 +1,38 @@
-#include "ung_svm.h"
+#include "model_ung_ar1.h"
 
-// construct SV model from Rcpp::List
-ung_svm::ung_svm(const Rcpp::List& model, const unsigned int seed) :
-  ung_ssm(model, seed), svm_type(model["svm_type"]) {
+// from Rcpp::List
+ung_ar1::ung_ar1(const Rcpp::List& model, const unsigned int seed) :
+  ung_ssm(model, seed), 
+  prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
+  prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
+  mu_est(Rcpp::as<bool>(model["mu_est"])), 
+  phi_est(Rcpp::as<bool>(model["phi_est"])) {
 }
 
-// update model given the parameters theta
-void ung_svm::update_model(const arma::vec& new_theta) {
-
-  if(svm_type == 0) {
-    phi = new_theta(2);
-  } else {
+void ung_ar1::update_model(const arma::vec& new_theta) {
+  
+  T(0, 0, 0) = new_theta(0);
+  R(0, 0, 0) = new_theta(1);
+  if (mu_est) {
     a1(0) = new_theta(2);
     C.fill(new_theta(2) * (1.0 - new_theta(0)));
   }
-
-  T(0, 0, 0) = new_theta(0);
-  R(0, 0, 0) = new_theta(1);
+  P1(0, 0) = std::pow(new_theta(1), 2) / (1.0 - std::pow(new_theta(0), 2));
+  
   compute_RR();
-  P1(0, 0) = new_theta(1) * new_theta(1) / (1 - new_theta(0) * new_theta(0));
-
+  
+  if(phi_est) {
+    phi = new_theta(2 + mu_est);
+  }
+  
   if(xreg.n_cols > 0) {
     beta = new_theta.subvec(new_theta.n_elem - xreg.n_cols, new_theta.n_elem - 1);
     compute_xbeta();
   }
   theta = new_theta;
 }
-double ung_svm::log_prior_pdf(const arma::vec& x) const {
+
+double ung_ar1::log_prior_pdf(const arma::vec& x) const {
   
   double log_prior = 0.0;
   

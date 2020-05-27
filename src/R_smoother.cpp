@@ -1,8 +1,8 @@
-#include "ugg_ssm.h"
-#include "ugg_bsm.h"
-#include "ugg_ar1.h"
-#include "mgg_ssm.h"
-#include "lgg_ssm.h"
+#include "model_ugg_ssm.h"
+#include "model_ugg_bsm.h"
+#include "model_ugg_ar1.h"
+#include "model_mgg_ssm.h"
+#include "model_lgg_ssm.h"
 
 // [[Rcpp::export]]
 Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {

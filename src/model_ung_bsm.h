@@ -1,7 +1,7 @@
 #ifndef UNG_BSM_H
 #define UNG_BSM_H
 
-#include "ung_ssm.h"
+#include "model_ung_ssm.h"
 
 class ung_bsm: public ung_ssm {
 
@@ -14,6 +14,8 @@ public:
   double log_prior_pdf(const arma::vec& x) const;
   
 private:
+  const arma::uvec prior_distributions;
+  const arma::mat prior_parameters;
   const bool slope;
   const bool seasonal;
   const bool noise;
@@ -21,6 +23,7 @@ private:
   const bool level_est;
   const bool slope_est;
   const bool seasonal_est;
+  const bool phi_est;
 };
 
 #endif

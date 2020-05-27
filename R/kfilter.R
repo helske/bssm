@@ -19,9 +19,9 @@ kfilter <- function(object, ...) {
   UseMethod("kfilter", object)
 }
 
-#' @method kfilter gssm
+#' @method kfilter ssm_ulg
 #' @export
-kfilter.gssm <- function(object, ...) {
+kfilter.ssm_ulg <- function(object, ...) {
   
   out <- gaussian_kfilter(object, model_type = 1L)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
@@ -30,37 +30,10 @@ kfilter.gssm <- function(object, ...) {
   out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
   out
 }
-#' @method kfilter mv_gssm
-#' @export
-kfilter.mv_gssm <- function(object, ...) {
-  
-  out <- gaussian_kfilter(object, model_type = -1L)
-  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
-    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
-  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
-  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
-  out
-}
-#' @method kfilter lgg_ssm
-#' @export
-kfilter.lgg_ssm <- function(object, ...) {
-  
-  out <- general_gaussian_kfilter(t(object$y), object$Z, object$H, object$T, 
-    object$R, object$a1, object$P1, 
-    object$theta, object$obs_intercept, object$state_intercept,
-    object$log_prior_pdf, object$known_params, 
-    object$known_tv_params, as.integer(object$time_varying), 
-    object$n_states, object$n_etas)
-  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
-    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- object$state_names
-  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
-  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
-  out
-}
 
-#' @method kfilter bsm
+#' @method kfilter bsm_lg
 #' @export
-kfilter.bsm <- function(object, ...) {
+kfilter.bsm_lg <- function(object, ...) {
   
   out <- gaussian_kfilter(object, model_type = 2L)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
@@ -70,15 +43,15 @@ kfilter.bsm <- function(object, ...) {
   out
 }
 
-#' @method kfilter ngssm
+#' @method kfilter ssm_ung
 #' @export
-kfilter.ngssm <- function(object, ...) {
+kfilter.ssm_ung <- function(object, ...) {
   kfilter(gaussian_approx(object))
 }
 
-#' @method kfilter ng_bsm
+#' @method kfilter bsm_ng
 #' @export
-kfilter.ng_bsm <- function(object, ...) {
+kfilter.bsm_ng <- function(object, ...) {
   kfilter(gaussian_approx(object))
 }
 
@@ -87,9 +60,9 @@ kfilter.ng_bsm <- function(object, ...) {
 kfilter.svm <- function(object, ...) {
   kfilter(gaussian_approx(object))
 }
-#' @method kfilter ng_ar1
+#' @method kfilter ar1_ng
 #' @export
-kfilter.ng_ar1 <- function(object, ...) {
+kfilter.ar1_ng <- function(object, ...) {
   kfilter(gaussian_approx(object))
 }
 

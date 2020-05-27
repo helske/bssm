@@ -1,23 +1,22 @@
-// #include "ugg_ssm.h"
-// #include "ugg_bsm.h"
-// #include "ung_ssm.h"
-// #include "ung_bsm.h"
-// #include "ung_svm.h"
-// #include "nlg_ssm.h"
-// #include "ung_ar1.h"
-// #include "ugg_ar1.h"
+// #include "model_ugg_ssm.h"
+// #include "model_ugg_bsm.h"
+// #include "model_ung_ssm.h"
+// #include "model_ung_bsm.h"
+// #include "model_ung_svm.h"
+// #include "model_nlg_ssm.h"
+// #include "model_ung_ar1.h"
+// #include "model_ugg_ar1.h"
 // 
 // // [[Rcpp::export]]
 // Rcpp::List gaussian_predict(const Rcpp::List& model_,
 //   const arma::vec& probs, const arma::mat theta, const arma::mat alpha, 
 //   const arma::uvec& counts, const unsigned int predict_type,
 //   const bool intervals, const unsigned int seed, const int model_type, 
-//   const unsigned int nsim, const arma::uvec& Z_ind,
-//   const arma::uvec& H_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) {
+//   const unsigned int nsim) {
 //   
 //   switch (model_type) {
 //   case 1: {
-//   ugg_ssm model(Rcpp::clone(model_), seed, Z_ind, H_ind, T_ind, R_ind);
+//   ugg_ssm model(Rcpp::clone(model_), seed);
 //   if (intervals) {
 //     return model.predict_interval(probs, theta, alpha, counts, predict_type);
 //   } else {
@@ -51,12 +50,11 @@
 // arma::cube nongaussian_predict(const Rcpp::List& model_,
 //   const arma::vec& probs, const arma::mat& theta, const arma::mat& alpha, 
 //   const arma::uvec& counts, const unsigned int predict_type, 
-//   const unsigned int seed, const unsigned int model_type, const unsigned int nsim,
-//   const arma::uvec& Z_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) {
+//   const unsigned int seed, const unsigned int model_type, const unsigned int nsim) {
 //   
 //   switch (model_type) {
 //   case 1: {
-//   ung_ssm model(Rcpp::clone(model_), seed, Z_ind, T_ind, R_ind);
+//   ung_ssm model(Rcpp::clone(model_), seed);
 //   
 //   return model.predict_sample(theta, alpha, counts, predict_type, nsim);
 // } break;

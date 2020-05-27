@@ -1,44 +1,39 @@
-#include "ung_ssm.h"
-#include "ugg_ssm.h"
+#include "model_ung_ssm.h"
+#include "model_ugg_ssm.h"
 #include "conditional_dist.h"
 #include "distr_consts.h"
 #include "sample.h"
 #include "rep_mat.h"
 
 // General constructor of ung_ssm object from Rcpp::List
-ung_ssm::ung_ssm(const Rcpp::List& model, const unsigned int seed, 
-  const arma::uvec& Z_ind, const arma::uvec& T_ind, 
-  const arma::uvec& R_ind, const double zero_tol) 
+ung_ssm::ung_ssm(const Rcpp::List& model, const unsigned int seed, const double zero_tol) 
   : y(Rcpp::as<arma::vec>(model["y"])), Z(Rcpp::as<arma::mat>(model["Z"])),
     T(Rcpp::as<arma::cube>(model["T"])), R(Rcpp::as<arma::cube>(model["R"])),
     a1(Rcpp::as<arma::vec>(model["a1"])), P1(Rcpp::as<arma::mat>(model["P1"])),
     D(Rcpp::as<arma::vec>(model["obs_intercept"])),
     C(Rcpp::as<arma::mat>(model["state_intercept"])),
-    xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(Rcpp::as<arma::vec>(model["coefs"])),
+    xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(Rcpp::as<arma::vec>(model["beta"])),
     n(y.n_elem), m(a1.n_elem), k(R.n_cols), Ztv(Z.n_cols > 1), Ttv(T.n_slices > 1), 
-    Rtv(R.n_slices > 1), Dtv(D.n_elem > 1),
-    Ctv(C.n_cols > 1),
+    Rtv(R.n_slices > 1), Dtv(D.n_elem > 1),  Ctv(C.n_cols > 1),
     phi(model["phi"]),
     u(Rcpp::as<arma::vec>(model["u"])), 
     distribution(model["distribution"]),
-    phi_est(Rcpp::as<bool>(model["phi_est"])), 
     max_iter(model["max_iter"]), conv_tol(model["conv_tol"]), 
     local_approx(model["local_approx"]),
     theta(Rcpp::as<arma::vec>(model["theta"])), 
     engine(seed), zero_tol(zero_tol),
-    prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
-    prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
-    Z_ind(Z_ind), T_ind(T_ind), R_ind(R_ind),
     RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
     xbeta(arma::vec(n, arma::fill::zeros)),
     initial_mode(Rcpp::as<arma::vec>(model["initial_mode"])),
     mode_estimate(initial_mode),
     approx_state(-1),
     approx_loglik(0.0), scales(arma::vec(n, arma::fill::zeros)),
+    update_fn(Rcpp::as<Rcpp::Function>(model["update_fn"])), 
+    prior_fn(Rcpp::as<Rcpp::Function>(model["prior_fn"])),
     approx_model(arma::vec(n, arma::fill::zeros),
       Z, arma::vec(n, arma::fill::zeros),
       T, R, a1, P1, D, C, xreg, beta, theta, 
-      prior_distributions, prior_parameters, seed + 1) {
+      update_fn, prior_fn, seed + 1) {
   
   if(xreg.n_cols > 0) {
     compute_xbeta();
@@ -53,29 +48,35 @@ void ung_ssm::compute_RR(){
   }
 }
 
-// update system matrices given theta
 void ung_ssm::update_model(const arma::vec& new_theta) {
-  
-  if (Z_ind.n_elem > 0) {
-    Z.elem(Z_ind) = new_theta.subvec(0, Z_ind.n_elem - 1);
+  Rcpp::List model_list = update_fn(new_theta);
+  if (model_list.containsElementNamed("Z")) {
+    Z = Rcpp::as<arma::mat>(model_list["Z"]);
   }
-  if (T_ind.n_elem > 0) {
-    T.elem(T_ind) = new_theta.subvec(Z_ind.n_elem, Z_ind.n_elem + T_ind.n_elem - 1);
+  if (model_list.containsElementNamed("T")) {
+    T = Rcpp::as<arma::cube>(model_list["T"]);
   }
-  if (R_ind.n_elem > 0) {
-    R.elem(R_ind) = new_theta.subvec(Z_ind.n_elem + T_ind.n_elem,
-      Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem - 1);
-  }
-  
-  if (R_ind.n_elem  > 0) {
+  if (model_list.containsElementNamed("R")) {
+    R = Rcpp::as<arma::cube>(model_list["R"]);
     compute_RR();
   }
-  
-  if(phi_est) {
-    phi = new_theta(Z_ind.n_elem + T_ind.n_elem + R_ind.n_elem);
+  if (model_list.containsElementNamed("a1")) {
+    a1 = Rcpp::as<arma::vec>(model_list["a1"]);
   }
-  if(xreg.n_cols > 0) {
-    beta = new_theta.subvec(new_theta.n_elem - xreg.n_cols, new_theta.n_elem - 1);
+  if (model_list.containsElementNamed("P1")) {
+    P1 = Rcpp::as<arma::mat>(model_list["P1"]);
+  }
+  if (model_list.containsElementNamed("D")) {
+    D = Rcpp::as<arma::vec>(model_list["D"]);
+  }
+  if (model_list.containsElementNamed("C")) {
+    C = Rcpp::as<arma::mat>(model_list["C"]);
+  }
+  if (model_list.containsElementNamed("phi")) {
+    phi = Rcpp::as<double>(model_list["phi"]);
+  }
+  if (model_list.containsElementNamed("beta")) {
+    beta = Rcpp::as<arma::vec>(model_list["beta"]);
     compute_xbeta();
   }
   theta = new_theta;
@@ -84,36 +85,7 @@ void ung_ssm::update_model(const arma::vec& new_theta) {
 }
 
 double ung_ssm::log_prior_pdf(const arma::vec& x) const {
-  
-  double log_prior = 0.0;
-  
-  for(unsigned int i = 0; i < x.n_elem; i++) {
-    switch(prior_distributions(i)) {
-    case 0  :
-      if (x(i) < prior_parameters(0, i) || x(i) > prior_parameters(1, i)) {
-        return -std::numeric_limits<double>::infinity(); 
-      }
-      break;
-    case 1  :
-      if (x(i) < 0) {
-        return -std::numeric_limits<double>::infinity();
-      } else {
-        log_prior -= 0.5 * std::pow(x(i) / prior_parameters(0, i), 2);
-      }
-      break;
-    case 2  :
-      log_prior -= 0.5 * std::pow((x(i) - prior_parameters(0, i)) / prior_parameters(1, i), 2);
-      break;
-    case 3 : // truncated normal
-      if (x(i) < prior_parameters(2, i) || x(i) > prior_parameters(3, i)) {
-        return -std::numeric_limits<double>::infinity(); 
-      } else {
-        log_prior -= 0.5 * std::pow((x(i) - prior_parameters(0, i)) / prior_parameters(1, i), 2);
-      }
-      break;
-    }
-  }
-  return log_prior;
+  return Rcpp::as<double>(prior_fn(x));
 }
 
 // update the approximating Gaussian model

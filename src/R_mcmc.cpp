@@ -2,15 +2,15 @@
 // #include "ung_amcmc.h"
 // #include "nlg_amcmc.h"
 
-#include "ugg_bsm.h"
-#include "ugg_bsm.h"
-#include "ugg_ar1.h"
-#include "ung_bsm.h"
-#include "ung_svm.h"
-#include "ung_ar1.h"
-#include "nlg_ssm.h"
-#include "lgg_ssm.h"
-#include "mng_ssm.h"
+#include "model_ugg_bsm.h"
+#include "model_ugg_bsm.h"
+#include "model_ugg_ar1.h"
+#include "model_ung_bsm.h"
+#include "model_ung_svm.h"
+#include "model_ung_ar1.h"
+#include "model_nlg_ssm.h"
+#include "model_lgg_ssm.h"
+#include "model_mng_ssm.h"
 //#include "summary.h"
 
 // [[Rcpp::export]]
@@ -18,8 +18,7 @@ Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
   const unsigned int type, const unsigned int n_iter, const unsigned int n_burnin,
   const unsigned int n_thin, const double gamma, const double target_acceptance,
   const arma::mat S, const unsigned int seed, const bool end_ram,
-  const unsigned int n_threads, const int model_type, const arma::uvec& Z_ind,
-  const arma::uvec& H_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) {
+  const unsigned int n_threads, const int model_type) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -38,7 +37,7 @@ Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
   
   switch (model_type) {
   case 1: {
-    ugg_ssm model(Rcpp::clone(model_), seed, Z_ind, H_ind, T_ind, R_ind);
+    ugg_ssm model(Rcpp::clone(model_), seed);
     mcmc_run.mcmc_gaussian(model, end_ram);
     switch (type) {
     case 1: {
@@ -191,8 +190,7 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
   const unsigned int n_burnin, const unsigned int n_thin,
   const double gamma, const double target_acceptance, const arma::mat S,
   const unsigned int seed, const bool end_ram, const unsigned int n_threads,
-  const unsigned int simulation_method, const int model_type,
-  const arma::uvec& Z_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) {
+  const unsigned int simulation_method, const int model_type) {
 
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -211,7 +209,7 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
 
   switch (model_type) {
   case 1: {
-    ung_ssm model(Rcpp::clone(model_), seed, Z_ind, T_ind, R_ind);
+    ung_ssm model(Rcpp::clone(model_), seed);
     mcmc_run.pm_mcmc(model, simulation_method, nsim_states, end_ram);
   } break;
   case 2: {
@@ -263,8 +261,7 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
   const unsigned int n_burnin, const unsigned int n_thin, const double gamma,
   const double target_acceptance, const arma::mat S, const unsigned int seed,
   const bool end_ram, const unsigned int n_threads,
-  const unsigned int simulation_method, const int model_type,
-  const arma::uvec& Z_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) {
+  const unsigned int simulation_method, const int model_type) {
 
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -282,7 +279,7 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
 
   switch (model_type) {
   case 1: {
-    ung_ssm model(Rcpp::clone(model_), seed, Z_ind, T_ind, R_ind);
+    ung_ssm model(Rcpp::clone(model_), seed);
     mcmc_run.da_mcmc(model, simulation_method, nsim_states, end_ram);
   } break;
   case 2: {
@@ -337,8 +334,8 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
 // //   const double target_acceptance, const arma::mat S, const unsigned int seed,
 // //   const bool end_ram, const unsigned int n_threads, const bool local_approx,
 // //   const arma::vec initial_mode, const unsigned int max_iter, const double conv_tol,
-// //   const unsigned int simulation_method, const unsigned int is_type, const int model_type,
-// //   const arma::uvec& Z_ind, const arma::uvec& T_ind, const arma::uvec& R_ind) {
+// //   const unsigned int simulation_method, const unsigned int is_type, 
+// //   const int model_type) {
 // //   
 // //   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
 // //   unsigned int m = a1.n_elem;
@@ -361,7 +358,7 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
 // //   }
 // //   switch (model_type) {
 // //   case 1: {
-// //     ung_ssm model(Rcpp::clone(model_), seed, Z_ind, T_ind, R_ind);
+// //     ung_ssm model(Rcpp::clone(model_), seed);
 // //     mcmc_run.approx_mcmc(model, end_ram);
 // //     if(nsim_states > 1) {
 // //       if(is_type == 3) {

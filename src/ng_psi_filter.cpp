@@ -1,9 +1,9 @@
 // #include "ng_psi_filter.h"
 // 
-// #include "ung_ssm.h"
-// #include "ung_bsm.h"
-// #include "ung_svm.h"
-// #include "ung_ar1.h"
+// #include "model_ung_ssm.h"
+// #include "model_ung_bsm.h"
+// #include "model_ung_svm.h"
+// #include "model_ung_ar1.h"
 // #include "distr_consts.h"
 // 
 // template double compute_ung_psi_filter(ung_ssm model, const unsigned int nsim_states, 

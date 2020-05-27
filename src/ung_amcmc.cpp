@@ -3,12 +3,12 @@
 // #endif
 // #include <ramcmc.h>
 // #include "ung_amcmc.h"
-// #include "ugg_ssm.h"
-// #include "ung_ssm.h"
-// #include "ugg_bsm.h"
-// #include "ung_bsm.h"
-// #include "ung_svm.h"
-// #include "ung_ar1.h"
+// #include "model_ugg_ssm.h"
+// #include "model_ung_ssm.h"
+// #include "model_ugg_bsm.h"
+// #include "model_ung_bsm.h"
+// #include "model_ung_svm.h"
+// #include "model_ung_ar1.h"
 // 
 // #include "rep_mat.h"
 // #include "distr_consts.h"

@@ -4,7 +4,7 @@
 
 #include <sitmo.h>
 #include "bssm.h"
-#include "mgg_ssm.h"
+#include "model_mgg_ssm.h"
 
 // typedef for a pointer of nonlinear function of model equation returning vec (T, Z)
 typedef arma::vec (*nvec_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 

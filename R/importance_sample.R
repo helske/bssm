@@ -2,7 +2,7 @@
 #'
 #' Returns \code{nsim} samples from the approximating Gaussian model with corresponding
 #' (scaled) importance weights.
-#' @param object of class \code{ng_bsm}, \code{svm} or \code{ngssm}.
+#' @param object of class \code{bsm_ng}, \code{svm} or \code{ssm_ung}.
 #' @param nsim Number of samples.
 #' @param use_antithetic Logical. If \code{TRUE} (default), use antithetic 
 #' variable for location in simulation smoothing.
@@ -18,10 +18,10 @@ importance_sample <- function(object, nsim, use_antithetic,
   max_iter, conv_tol, seed, ...) {
   UseMethod("importance_sample", object)
 }
-#' @method importance_sample ngssm
+#' @method importance_sample ssm_ung
 #' @rdname importance_sample
 #' @export
-importance_sample.ngssm <- function(object, nsim, use_antithetic = TRUE, 
+importance_sample.ssm_ung <- function(object, nsim, use_antithetic = TRUE, 
   max_iter = 100, conv_tol = 1e-8, seed = sample(.Machine$integer.max, size = 1), ...) {
 
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
@@ -31,10 +31,10 @@ importance_sample.ngssm <- function(object, nsim, use_antithetic = TRUE,
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
-#' @method importance_sample ng_bsm
+#' @method importance_sample bsm_ng
 #' @rdname importance_sample
 #' @export
-importance_sample.ng_bsm <- function(object, nsim, use_antithetic = TRUE, 
+importance_sample.bsm_ng <- function(object, nsim, use_antithetic = TRUE, 
   max_iter = 100, conv_tol = 1e-8, seed = sample(.Machine$integer.max, size = 1), ...) {
   
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
@@ -56,10 +56,10 @@ importance_sample.svm <- function(object, nsim, use_antithetic = TRUE,
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
-#' @method importance_sample ung_ar1
+#' @method importance_sample uar1_ng
 #' @rdname importance_sample
 #' @export
-importance_sample.ung_ar1 <- function(object, nsim, use_antithetic = TRUE, 
+importance_sample.uar1_ng <- function(object, nsim, use_antithetic = TRUE, 
   max_iter = 100, conv_tol = 1e-8, seed = sample(.Machine$integer.max, size = 1), ...) {
   
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))

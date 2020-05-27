@@ -4,7 +4,7 @@
 // #include <sitmo.h>
 // #include <ramcmc.h>
 // #include "nlg_amcmc.h"
-// #include "nlg_ssm.h"
+// #include "model_nlg_ssm.h"
 // 
 // #include "rep_mat.h"
 // #include "filter_smoother.h"

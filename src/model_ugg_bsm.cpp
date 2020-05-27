@@ -1,17 +1,20 @@
 // Gaussian structural time series model
 
-#include "ugg_bsm.h"
+#include "model_ugg_bsm.h"
 
 // Construct bsm model from Rcpp::List
 ugg_bsm::ugg_bsm(const Rcpp::List& model, const unsigned int seed) :
-  ugg_ssm(model, seed),
+  ugg_ssm(model, seed),  
+  prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
+  prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
   slope(Rcpp::as<bool>(model["slope"])),
   seasonal(Rcpp::as<bool>(model["seasonal"])),
   fixed(Rcpp::as<arma::uvec>(model["fixed"])),
   y_est(fixed(0) == 0),
   level_est(fixed(1) == 0),
   slope_est(slope && fixed(2) == 0),
-  seasonal_est(seasonal && fixed(3) == 0) {
+  seasonal_est(seasonal && fixed(3) == 0)
+  {
   
 }
 

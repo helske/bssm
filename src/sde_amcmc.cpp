@@ -4,7 +4,7 @@
 // #include <sitmo.h>
 // #include <ramcmc.h>
 // #include "sde_amcmc.h"
-// #include "sde_ssm.h"
+// #include "model_sde_ssm.h"
 // #include "rep_mat.h"
 // 
 // #include "filter_smoother.h"

@@ -1,7 +1,7 @@
 #ifndef UGG_BSM_H
 #define UGG_BSM_H
 
-#include "ugg_ssm.h"
+#include "model_ugg_ssm.h"
 
 class ugg_bsm: public ugg_ssm {
 
@@ -14,6 +14,8 @@ public:
   double log_prior_pdf(const arma::vec& x) const;
 
 private:
+  const arma::uvec prior_distributions;
+  const arma::mat prior_parameters;
   const bool slope;
   const bool seasonal;
   const arma::uvec fixed;

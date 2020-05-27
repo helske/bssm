@@ -1,4 +1,4 @@
-#include "lgg_ssm.h"
+#include "model_lgg_ssm.h"
 
 lgg_ssm::lgg_ssm(
   const arma::mat& y_, 

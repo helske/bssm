@@ -3,7 +3,7 @@
 #' Function \code{bootstrap_filter} performs a bootstrap filtering with stratification
 #' resampling.
 #'
-#' @param object of class \code{bsm}, \code{ng_bsm} or \code{svm}.
+#' @param object of class \code{bsm_lg}, \code{bsm_ng} or \code{svm}.
 #' @param nsim Number of samples.
 #' @param seed Seed for RNG.
 #' @param ... Ignored.
@@ -14,10 +14,10 @@
 bootstrap_filter <- function(object, nsim, ...) {
   UseMethod("bootstrap_filter", object)
 }
-#' @method bootstrap_filter gssm
+#' @method bootstrap_filter ssm_ulg
 #' @rdname bootstrap_filter
 #' @export
-bootstrap_filter.gssm <- function(object, nsim,
+bootstrap_filter.ssm_ulg <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
   out <- bsf(object, nsim, seed, TRUE, 1L)
@@ -29,10 +29,10 @@ bootstrap_filter.gssm <- function(object, nsim,
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
-#' @method bootstrap_filter bsm
+#' @method bootstrap_filter bsm_lg
 #' @rdname bootstrap_filter
 #' @export
-bootstrap_filter.bsm <- function(object, nsim,
+bootstrap_filter.bsm_lg <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
   out <- bsf(object, nsim, seed, TRUE, 2L)
@@ -45,10 +45,10 @@ bootstrap_filter.bsm <- function(object, nsim,
   out
 }
 
-#' @method bootstrap_filter ngssm
+#' @method bootstrap_filter ssm_ung
 #' @rdname bootstrap_filter
 #' @export
-bootstrap_filter.ngssm <- function(object, nsim,
+bootstrap_filter.ssm_ung <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
@@ -62,10 +62,10 @@ bootstrap_filter.ngssm <- function(object, nsim,
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
-#' @method bootstrap_filter ng_bsm
+#' @method bootstrap_filter bsm_ng
 #' @rdname bootstrap_filter
 #' @export
-bootstrap_filter.ng_bsm <- function(object, nsim,
+bootstrap_filter.bsm_ng <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
@@ -94,10 +94,10 @@ bootstrap_filter.svm <- function(object, nsim,
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
-#' @method bootstrap_filter ng_ar1
+#' @method bootstrap_filter ar1_ng
 #' @rdname bootstrap_filter
 #' @export
-bootstrap_filter.ng_ar1 <- function(object, nsim,
+bootstrap_filter.ar1_ng <- function(object, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))

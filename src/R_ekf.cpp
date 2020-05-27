@@ -1,4 +1,4 @@
-#include "nlg_ssm.h"
+#include "model_nlg_ssm.h"
 
 // [[Rcpp::export]]
 Rcpp::List ekf_nlg(const arma::mat& y, SEXP Z, SEXP H,

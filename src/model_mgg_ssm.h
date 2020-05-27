@@ -2,6 +2,8 @@
 // defined directly via matrices
 // used by snippet models
 
+
+// CAN BE USED DIRECTLY, DEFINE UPDATE and PRIOR via R! NOT DONE YET!!!
 #ifndef MGG_H
 #define MGG_H
 
@@ -11,23 +13,6 @@
 class mgg_ssm {
   
 public:
-  
-  // default constructor 
-  // mgg_ssm(
-  //   arma::mat y = arma::mat(),
-  //   arma::cube Z = arma::cube(),
-  //   arma::cube H = arma::cube(),
-  //   arma::cube T = arma::cube(),
-  //   arma::cube R = arma::cube(),
-  //   arma::vec a1 = arma::vec(),
-  //   arma::mat P1 = arma::mat(),
-  //   arma::mat D = arma::mat(),
-  //   arma::mat C = arma::mat(),
-  //   arma::cube HH = arma::cube(),
-  //   arma::cube RR = arma::cube(),  
-  //   const unsigned int seed = 1,
-  //   const double zero_tol = 1e-8);
-  
   // constructor from Rcpp::List
   mgg_ssm(
     const Rcpp::List& model, 

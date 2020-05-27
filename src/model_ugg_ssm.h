@@ -14,10 +14,6 @@ public:
   // constructor from Rcpp::List
   ugg_ssm(const Rcpp::List& model, 
     const unsigned int seed = 1,
-    const arma::uvec& Z_ind_ = arma::uvec(), 
-    const arma::uvec& H_ind_ = arma::uvec(), 
-    const arma::uvec& T_ind_ = arma::uvec(), 
-    const arma::uvec& R_ind_ = arma::uvec(),
     const double zero_tol = 1e-8);
   
   // constructor from armadillo objects
@@ -32,14 +28,10 @@ public:
     const arma::mat& C, 
     const arma::mat& xreg, 
     const arma::vec& beta, 
-    const arma::vec& theta = arma::vec(),
-    const arma::uvec& prior_distributions = arma::uvec(),
-    const arma::mat& prior_parameters = arma::mat(), 
-    const unsigned int seed = 1, 
-    const arma::uvec& Z_ind_ = arma::uvec(), 
-    const arma::uvec& H_ind_ = arma::uvec(), 
-    const arma::uvec& T_ind_ = arma::uvec(), 
-    const arma::uvec& R_ind_ = arma::uvec(),
+    const arma::vec& theta,
+    const Rcpp::Function update_fn,
+    const Rcpp::Function prior_fn,
+    const unsigned int seed = 1,
     const double zero_tol = 1e-8);
   
   arma::vec y;
@@ -75,22 +67,19 @@ public:
   // zero-tolerance
   const double zero_tol;
   
-  // prior definitions
-  const arma::uvec prior_distributions;
-  const arma::mat prior_parameters;
-  
-  arma::uvec Z_ind;
-  arma::uvec H_ind; 
-  arma::uvec T_ind; 
-  arma::uvec R_ind;
-  
   arma::vec HH;
   arma::cube RR;
   arma::vec xbeta;
   
+  // R functions
+  const Rcpp::Function update_fn;
+  const Rcpp::Function prior_fn;
   
   double log_prior_pdf(const arma::vec& new_theta) const;
   void update_model(const arma::vec& new_theta);
+  
+
+  
   void compute_RR();
   void compute_HH() { HH = square(H); }
   void compute_xbeta() { xbeta = xreg * beta; }

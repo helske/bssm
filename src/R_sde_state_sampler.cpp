@@ -1,4 +1,4 @@
-#include "sde_ssm.h"
+#include "model_sde_ssm.h"
 
 #include "sitmo.h"
 #include "filter_smoother.h"

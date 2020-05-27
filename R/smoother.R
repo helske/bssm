@@ -15,50 +15,42 @@
 fast_smoother <- function(object, ...) {
   UseMethod("fast_smoother", object)
 }
-#' @method fast_smoother gssm
+#' @method fast_smoother ssm_ulg
 #' @export
-fast_smoother.gssm <- function(object, ...) {
+fast_smoother.ssm_ulg <- function(object, ...) {
   
   out <- gaussian_fast_smoother(object, model_type = 1L)
   colnames(out) <- names(object$a1)
   ts(out[-nrow(out), , drop = FALSE], start = start(object$y), 
     frequency = frequency(object$y))
 }
-#' @method fast_smoother bsm
+#' @method fast_smoother bsm_lg
 #' @export
-fast_smoother.bsm <- function(object, ...) {
+fast_smoother.bsm_lg <- function(object, ...) {
   
   out <- gaussian_fast_smoother(object, model_type = 2L)
   colnames(out) <- names(object$a1)
   ts(out[-nrow(out), , drop = FALSE], start = start(object$y), 
     frequency = frequency(object$y))
 }
-#' @method fast_smoother ar1
+#' @method fast_smoother ar1_lg
 #' @export
-fast_smoother.ar1 <- function(object, ...) {
+fast_smoother.ar1_lg <- function(object, ...) {
   
   out <- gaussian_fast_smoother(object, model_type = 3L)
   colnames(out) <- names(object$a1)
   ts(out[-nrow(out), , drop = FALSE], start = start(object$y), 
     frequency = frequency(object$y))
 }
-#' @method fast_smoother mv_gssm
+
+#' @method fast_smoother ssm_ung
 #' @export
-fast_smoother.mv_gssm <- function(object, ...) {
-  
-  out <- gaussian_fast_smoother(object, model_type = -1L)
-  colnames(out) <- names(object$a1)
-  ts(out[-nrow(out), , drop = FALSE], start = start(object$y), 
-    frequency = frequency(object$y))
-}
-#' @method fast_smoother ngssm
-#' @export
-fast_smoother.ngssm <- function(object, ...) {
+fast_smoother.ssm_ung <- function(object, ...) {
   fast_smoother(gaussian_approx(object))
 }
-#' @method fast_smoother ng_bsm
+#' @method fast_smoother bsm_ng
 #' @export
-fast_smoother.ng_bsm <- function(object, ...) {
+fast_smoother.bsm_ng <- function(object, ...) {
   fast_smoother(gaussian_approx(object))
 }
 #' @method fast_smoother svm
@@ -66,9 +58,9 @@ fast_smoother.ng_bsm <- function(object, ...) {
 fast_smoother.svm <- function(object, ...) {
   fast_smoother(gaussian_approx(object))
 }
-#' @method fast_smoother ng_ar1
+#' @method fast_smoother ar1_ng
 #' @export
-fast_smoother.ng_ar1 <- function(object, ...) {
+fast_smoother.ar1_ng <- function(object, ...) {
   fast_smoother(gaussian_approx(object))
 }
 #' @export
@@ -76,9 +68,9 @@ fast_smoother.ng_ar1 <- function(object, ...) {
 smoother <- function(object, ...) {
   UseMethod("smoother", object)
 }
-#' @method smoother gssm
+#' @method smoother ssm_ulg
 #' @export
-smoother.gssm <- function(object, ...) {
+smoother.ssm_ulg <- function(object, ...) {
   
   out <-  gaussian_smoother(object, model_type = 1L)
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
@@ -88,21 +80,10 @@ smoother.gssm <- function(object, ...) {
     start = start(object$y), frequency = frequency(object$y))
   out
 }
-#' @method smoother mv_gssm
+
+#' @method smoother bsm_lg
 #' @export
-smoother.mv_gssm <- function(object, ...) {
-  
-  out <-  gaussian_smoother(object, model_type = -1L)
-  colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
-  
-  out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
-  out$alphahat <- ts(out$alphahat[-nrow(out$alphahat), , drop = FALSE], 
-    start = start(object$y), frequency = frequency(object$y))
-  out
-}
-#' @method smoother bsm
-#' @export
-smoother.bsm <- function(object, ...) {
+smoother.bsm_lg <- function(object, ...) {
   
   out <- gaussian_smoother(object, model_type = 2L)
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
@@ -111,9 +92,9 @@ smoother.bsm <- function(object, ...) {
     start = start(object$y), frequency = frequency(object$y))
   out
 }
-#' @method smoother ar1
+#' @method smoother ar1_lg
 #' @export
-smoother.ar1 <- function(object, ...) {
+smoother.ar1_lg <- function(object, ...) {
   
   out <- gaussian_smoother(object, model_type = 3L)
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(object$a1)
@@ -138,15 +119,15 @@ smoother.lgg_ssm <- function(object, ...) {
     start = start(object$y), frequency = frequency(object$y))
   out
 }
-#' @method smoother ngssm
+#' @method smoother ssm_ung
 #' @export
-smoother.ngssm <- function(object, ...) {
+smoother.ssm_ung <- function(object, ...) {
   smoother(gaussian_approx(object))
 }
 
-#' @method smoother ng_bsm
+#' @method smoother bsm_ng
 #' @export
-smoother.ng_bsm <- function(object, ...) {
+smoother.bsm_ng <- function(object, ...) {
   smoother(gaussian_approx(object))
 }
 
@@ -156,9 +137,9 @@ smoother.svm <- function(object, ...) {
   smoother(gaussian_approx(object))
 }
 
-#' @method smoother ng_ar1
+#' @method smoother ar1_ng
 #' @export
-smoother.ng_ar1 <- function(object, ...) {
+smoother.ar1_ng <- function(object, ...) {
   smoother(gaussian_approx(object))
 }
 #' Extended Kalman Smoothing

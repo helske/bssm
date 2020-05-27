@@ -1,9 +1,9 @@
-#include "ung_ssm.h"
-#include "ung_bsm.h"
-#include "ung_svm.h"
-#include "ung_ar1.h"
-#include "mng_ssm.h"
-#include "nlg_ssm.h"
+#include "model_ung_ssm.h"
+#include "model_ung_bsm.h"
+#include "model_ung_svm.h"
+#include "model_ung_ar1.h"
+#include "model_mng_ssm.h"
+#include "model_nlg_ssm.h"
 
 // [[Rcpp::export]]
 Rcpp::List gaussian_approx_model(const Rcpp::List& model_, const int model_type) {

@@ -7,7 +7,7 @@
 #include "bssm.h"
 #include <sitmo.h>
 
-#include "ugg_ssm.h"
+#include "model_ugg_ssm.h"
 
 class ung_ssm {
   
@@ -16,9 +16,6 @@ public:
   // constructor from Rcpp::List
   ung_ssm(const Rcpp::List& model, 
     const unsigned int seed = 1,
-    const arma::uvec& Z_ind = arma::uvec(),
-    const arma::uvec& T_ind = arma::uvec(), 
-    const arma::uvec& R_ind = arma::uvec(),
     const double zero_tol = 1e-8);
   
   arma::vec y;
@@ -48,7 +45,6 @@ public:
   double phi;
   arma::vec u;
   const unsigned int distribution;
-  const bool phi_est;
   unsigned int max_iter;
   double conv_tol;
   const bool local_approx;
@@ -59,13 +55,6 @@ public:
   sitmo::prng_engine engine;
   // zero-tolerance
   const double zero_tol;
-  
-  const arma::uvec prior_distributions;
-  const arma::mat prior_parameters;
-  arma::uvec Z_ind;
-  arma::uvec H_ind; 
-  arma::uvec T_ind; 
-  arma::uvec R_ind;
   
   arma::cube RR;
   arma::vec xbeta;
@@ -78,13 +67,17 @@ public:
   double approx_loglik; 
   // store the current scaling factors for PF/IS
   arma::vec scales;
+  
+  // R functions
+  const Rcpp::Function update_fn;
+  const Rcpp::Function prior_fn;
+  
   ugg_ssm approx_model;
   
   void update_model(const arma::vec& new_theta);
   double log_prior_pdf(const arma::vec& x) const;
   void compute_RR();
   void compute_xbeta() { xbeta = xreg * beta; }
-  
   
   arma::vec log_likelihood(
       const unsigned int method, 

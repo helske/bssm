@@ -1,7 +1,7 @@
-#' Convert SSModel Object to gssm or ngssm Object
+#' Convert SSModel Object to ssm_mlg or ssm_mng Object
 #'
 #' Converts \code{SSModel} object of \code{KFAS} package to 
-#' \code{gssm} or \code{ngssm} object.
+#' \code{ssm_mlg} or \code{ssm_mng} object.
 #' 
 #' @note These functions are included mostly in order to compare some of 
 #' the implementations between \code{KFAS} and \code{bssm}, and thus they
@@ -10,19 +10,19 @@
 #' @param model Object of class \code{SSModel}.
 #' @param kappa For \code{SSModel} object, a prior variance for initial state
 #' used to replace exact diffuse elements of the original model.
-#' @param phi_prior For non-Gaussian model, prior for parameter phi.
-#' @param ... Additional arguments to \code{gssm} and \code{ngssm}.
-#' @return Object of class \code{gssm} or \code{ngssm}.
-#' @rdname as_gssm
+#' @param ... Additional arguments to \code{ssm_mlg} and \code{ssm_mng} 
+#' (such as prior and updating functions).
+#' @return Object of class \code{ssm_mlg} or \code{ssm_mng}.
+#' @rdname as_ssm_ulg
 #' @export
-as_gssm <- function(model, kappa = 1e5, ...) {
+as_ssm_mlg <- function(model, kappa = 1e5, ...) {
   
   if (!requireNamespace("KFAS", quietly = TRUE)) {
     stop("This function depends on the KFAS package. ", call. = FALSE)
   }
   
   if (any(model$distribution != "gaussian")) {
-    stop("SSModel object contains non-Gaussian series.")
+    stop("SSModel object contains non-Gaussian series. Call as_ssm_mng instead")
   }
   
   model$P1[model$P1inf > 0] <- kappa
@@ -48,7 +48,7 @@ as_gssm <- function(model, kappa = 1e5, ...) {
     model$H <- sqrt(c(model$H))
     Z <- aperm(model$Z, c(2, 3, 1))
     dim(Z) <- dim(Z)[1:2]
-    out <- gssm(y = model$y, Z = Z, H = model$H, T = model$T, R = R, 
+    out <- ssm_ulg(y = model$y, Z = Z, H = model$H, T = model$T, R = R, 
       a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
   } else {
     H <- model$H
@@ -58,26 +58,24 @@ as_gssm <- function(model, kappa = 1e5, ...) {
       diag(L) <- 1
       H[, , i] <- L %*% D
     }
-    out <- mv_gssm(y = model$y, Z = model$Z, H = H, T = model$T, R = R, 
+    out <- ssm_mlg(y = model$y, Z = model$Z, H = H, T = model$T, R = R, 
       a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
   }
   
   out
 }
 
-#' @rdname as_gssm
-#' @inheritParams as_gssm
+#' @rdname as_ssm_mlg
+#' @inheritParams as_ssm_mlg
 #' @export
-as_ngssm <- function(model, kappa = 1e5, phi_prior, ...) {
+as_ssm_ung <- function(model, kappa = 1e5, ...) {
   
   if (!requireNamespace("KFAS", quietly = TRUE)) {
     stop("This function depends on the KFAS package. ", call. = FALSE)
   }
-  if (attr(model, "p") > 1) {
-    stop("Only univariate time series are supported.")
-  }
+
   if (model$distribution == "gaussian") {
-    stop("SSModel object is Gaussian, call as_gssm instead.")
+    stop("SSModel object is Gaussian, call as_ssm_mlg instead.")
   }
   if (model$distribution == "gamma") {
     stop("Gamma distribution is not yet supported.")
@@ -124,7 +122,7 @@ as_ngssm <- function(model, kappa = 1e5, phi_prior, ...) {
       u <- rep(1, length(model$u))
     })
   if(!missing(phi_prior)) phi <- phi_prior
-  ngssm(y = model$y, Z = Z, T = model$T, R = R, a1 = c(model$a1), 
+  ssm_ung(y = model$y, Z = Z, T = model$T, R = R, a1 = c(model$a1), 
     P1 = model$P1, phi = phi, u = u, 
     distribution = model$distribution, state_names = rownames(model$a1), 
     ...)

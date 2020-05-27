@@ -1,5 +1,12 @@
-bssm 0.2.0 (Release date: 2020-05-05)
+bssm 1.0.0 (Release date: -)
 ==============
+Major update
+
+  * Major changes for model definitions, now model updating and priors 
+    can be defined via R functions.
+  * Added support for multivariate non-Gaussian models.
+  * Some argument names have been changed for clarity.
+  * Major overhaul of C++ internals which can bring minor efficiency gains.
   * Added the function as.data.frame for mcmc output which converts the MCMC samples 
     to data.frame format for easier post-processing.
   * Added truncated normal prior.

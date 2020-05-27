@@ -1,14 +1,14 @@
-#include "mgg_ssm.h"
-#include "ugg_ssm.h"
-#include "ung_ssm.h"
-#include "ugg_bsm.h"
-#include "ugg_ar1.h"
-#include "ung_bsm.h"
-#include "ung_svm.h"
-#include "ung_ar1.h"
-#include "mng_ssm.h"
-#include "nlg_ssm.h"
-#include "lgg_ssm.h"
+#include "model_mgg_ssm.h"
+#include "model_ugg_ssm.h"
+#include "model_ung_ssm.h"
+#include "model_ugg_bsm.h"
+#include "model_ugg_ar1.h"
+#include "model_ung_bsm.h"
+#include "model_ung_svm.h"
+#include "model_ung_ar1.h"
+#include "model_mng_ssm.h"
+#include "model_nlg_ssm.h"
+#include "model_lgg_ssm.h"
 
 // [[Rcpp::export]]
 double gaussian_loglik(const Rcpp::List& model_, const int model_type) {
@@ -144,8 +144,6 @@ double nonlinear_loglik(const arma::mat& y, SEXP Z, SEXP H,
   model.max_iter = max_iter;
   model.conv_tol = conv_tol;
   model.iekf_iter = iekf_iter;
-  unsigned int m = model.m;
-  unsigned n = model.n;
   arma::cube alpha(model.m, model.n + 1, nsim_states);
   arma::mat weights(nsim_states, model.n + 1);
   arma::umat indices(nsim_states, model.n);

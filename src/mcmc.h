@@ -3,13 +3,13 @@
 
 #include "bssm.h"
 
-#include "ugg_ssm.h"
-#include "ung_ssm.h"
+#include "model_ugg_ssm.h"
+#include "model_ung_ssm.h"
 
-#include "nlg_ssm.h"
-#include "sde_ssm.h"
-#include "mng_ssm.h"
-#include "lgg_ssm.h"
+#include "model_nlg_ssm.h"
+#include "model_sde_ssm.h"
+#include "model_mng_ssm.h"
+#include "model_lgg_ssm.h"
 
 class mcmc {
   
