@@ -8,7 +8,11 @@
 #' @param iekf_iter For non-linear models, number of iterations in iterated EKF (defaults to 0).
 #' @param ... Ignored.
 #' @export
-#' @rdname gaussian_approx
+#' @examples 
+#' data("poisson_series")
+#' model <- bsm_ng(y = poisson_series, sd_slope = 0.01, sd_level = 0.1,
+#'   distribution = "poisson")
+#' out <- gaussian_approx(model)
 gaussian_approx <- function(model, max_iter, conv_tol, ...) {
   UseMethod("gaussian_approx", model)
 }
@@ -18,13 +22,14 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100, conv_tol = 1e-8, 
   
   model$max_iter <- max_iter
   model$conv_tol <- conv_tol
-  
+  model$distribution <- pmatch(model$distribution,
+    c("svm", "poisson", "binomial", "negative binomial")) - 1
   out <- gaussian_approx_model(model, model_type(model))
   out$y <- ts(out$y, start = start(model$y), end = end(model$y), frequency = frequency(model$y))
   if(ncol(model$y) == 1) {
   approx_model <- ssm_ulg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
     R = model$R, a1 = model$a1, P1 = model$P1, init_theta = model$theta,
-    xreg = model$xreg, beta = model$beta, D = model$D, C = model$C, 
+    xreg = model$xreg, D = model$D, C = model$C, 
     state_names = names(model$a1), update_fn = model$update_fn, prior_fn = model$prior_fn)
   } else {
     approx_model <- ssm_mlg(y = out$y, Z = model$Z, H = out$H, T = model$T, 

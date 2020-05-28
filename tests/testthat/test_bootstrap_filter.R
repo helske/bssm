@@ -7,7 +7,7 @@ test_that("Test that bsm gives identical results with ssm_mlg",{
     T = array(c(1, 0, 1, 1), c(2, 2, 1)), R = array(diag(2, 2), c(2, 2, 1)), 
     a1 = matrix(0, 2, 1), P1 = diag(2, 2), state_names = c("level", "slope")), NA)
   expect_error(bsf_ssm_mlg <- bootstrap_filter(model_ssm_mlg, 10, seed = 1), NA)
-  expect_error(model_bsm <- bsm(1:10, sd_level = 2, sd_slope = 2, sd_y = 2, 
+  expect_error(model_bsm <- bsm_lg1:10, sd_level = 2, sd_slope = 2, sd_y = 2, 
     P1 = diag(2, 2)), NA)
   expect_error(bsf_bsm <- bootstrap_filter(model_bsm, 10, seed = 1), NA)
   expect_equal(bsf_bsm, bsf_ssm_mlg, tolerance = 1e-8)
@@ -28,9 +28,9 @@ test_that("Test that gaussian bsf still works",{
   expect_true(is.finite(sum(bsf_ssm_mlg$Ptt)))
 })
 
-test_that("Test that poisson ng_bsm still works",{
+test_that("Test that poisson bsm_ng still works",{
   
-  expect_error(model <- ng_bsm(1:10, sd_level = 2, sd_slope = 2, P1 = diag(2, 2), 
+  expect_error(model <- bsm_ng(1:10, sd_level = 2, sd_slope = 2, P1 = diag(2, 2), 
     distribution = "poisson"), NA)
   expect_error(bsf_poisson <- bootstrap_filter(model, 10, seed = 1), NA)
 
@@ -41,9 +41,9 @@ test_that("Test that poisson ng_bsm still works",{
   expect_true(is.finite(sum(bsf_poisson$Ptt)))
 })
 
-test_that("Test that binomial ng_bsm still works",{
+test_that("Test that binomial bsm_ng still works",{
   
-  expect_error(model <- ng_bsm(c(1,0,1,1,1,0,0,0), sd_level = 2, sd_slope = 2, P1 = diag(2, 2), 
+  expect_error(model <- bsm_ng(c(1,0,1,1,1,0,0,0), sd_level = 2, sd_slope = 2, P1 = diag(2, 2), 
     distribution = "binomial"), NA)
   expect_error(bsf_binomial <- bootstrap_filter(model, 10, seed = 1), NA)
   
@@ -57,9 +57,9 @@ test_that("Test that binomial ng_bsm still works",{
 
 
 
-test_that("Test that negative binomial ng_bsm still works",{
+test_that("Test that negative binomial bsm_ng still works",{
   
-  expect_error(model <- ng_bsm(c(1,0,1,1,1,0,0,0), sd_level = 2, sd_slope = 2, P1 = diag(2, 2), 
+  expect_error(model <- bsm_ng(c(1,0,1,1,1,0,0,0), sd_level = 2, sd_slope = 2, P1 = diag(2, 2), 
     distribution = "negative binomial", phi = 0.1, u = 2), NA)
   expect_error(bsf_nbinomial <- bootstrap_filter(model, 10, seed = 1), NA)
   

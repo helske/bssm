@@ -31,8 +31,9 @@ logLik.nongaussian <- function(object, nsim_states, method = "psi", seed = 1,
   
   object$max_iter <- max_iter
   object$conv_tol <- conv_tol
-  method <- match.arg(method, c("psi", "bsf", "spdk"))
-  if (method == "bsf" & nsim_states == 0) stop("'nsim_state' must be positive for bootstrap filter.")
+  method <- pmatch(method, c("psi", "bsf", "spdk"))
+  if (method == 2 & nsim_states == 0) stop("'nsim_state' must be positive for bootstrap filter.")
+  
   object$distribution <- pmatch(object$distribution,
     c("svm", "poisson", "binomial", "negative binomial")) - 1
   
@@ -44,8 +45,8 @@ logLik.nongaussian <- function(object, nsim_states, method = "psi", seed = 1,
 logLik.nlg_ssm <- function(object, nsim_states, method = "bsf", seed = 1, 
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0, ...) {
   
-  method <- match.arg(method,  c("psi", "bsf", "ekf"))
-  if (method != "ekf" & nsim_states == 0) 
+  method <- pmatch(method,  c("psi", "bsf", "ekf"))
+  if (method != 3 & nsim_states == 0) 
     stop("'nsim_states' must be positive for particle filter based log-likelihood estimation.")
   nonlinear_loglik(t(object$y), object$Z, object$H, object$T, 
     object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 

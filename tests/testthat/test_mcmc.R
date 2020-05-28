@@ -3,7 +3,7 @@ context("Test MCMC")
 tol <- 1e-8
 test_that("MCMC results for Gaussian model are correct",{
   set.seed(123)
-  model_bssm <- bsm(rnorm(10,3), P1 = diag(2,2), sd_slope = 0,
+  model_bssm <- bsm_lgrnorm(10,3), P1 = diag(2,2), sd_slope = 0,
     sd_y = uniform(1, 0, 10), 
     sd_level = uniform(1, 0, 10))
   
@@ -30,7 +30,7 @@ test_that("MCMC results for Gaussian model are correct",{
 
 test_that("MCMC results for Poisson model are correct",{
   set.seed(123)
-  model_bssm <- ng_bsm(rpois(10, exp(0.2) * (2:11)), P1 = diag(2, 2), sd_slope = 0,
+  model_bssm <- bsm_ng(rpois(10, exp(0.2) * (2:11)), P1 = diag(2, 2), sd_slope = 0,
     sd_level = uniform(2, 0, 10), u = 2:11, distribution = "poisson")
   
   expect_error(mcmc_poisson <- run_mcmc(model_bssm, n_iter = 100, nsim_states = 5, seed = 42), NA)

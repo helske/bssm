@@ -2,69 +2,37 @@
 % Please edit documentation in R/bootstrap_filter.R
 \name{bootstrap_filter}
 \alias{bootstrap_filter}
-\alias{bootstrap_filter.ssm_ulg}
-\alias{bootstrap_filter.bsm_lg}
-\alias{bootstrap_filter.ssm_ung}
-\alias{bootstrap_filter.bsm_ng}
-\alias{bootstrap_filter.svm}
-\alias{bootstrap_filter.ar1_ng}
+\alias{bootstrap_filter.gaussian}
+\alias{bootstrap_filter.nongaussian}
 \alias{bootstrap_filter.nlg_ssm}
 \alias{bootstrap_filter.sde_ssm}
 \title{Bootstrap Filtering}
 \usage{
-bootstrap_filter(object, nsim, ...)
+bootstrap_filter(model, nsim, ...)
 
-\method{bootstrap_filter}{ssm_ulg}(
-  object,
+\method{bootstrap_filter}{gaussian}(
+  model,
   nsim,
   seed = sample(.Machine$integer.max, size = 1),
   ...
 )
 
-\method{bootstrap_filter}{bsm_lg}(
-  object,
-  nsim,
-  seed = sample(.Machine$integer.max, size = 1),
-  ...
-)
-
-\method{bootstrap_filter}{ssm_ung}(
-  object,
-  nsim,
-  seed = sample(.Machine$integer.max, size = 1),
-  ...
-)
-
-\method{bootstrap_filter}{bsm_ng}(
-  object,
-  nsim,
-  seed = sample(.Machine$integer.max, size = 1),
-  ...
-)
-
-\method{bootstrap_filter}{svm}(
-  object,
-  nsim,
-  seed = sample(.Machine$integer.max, size = 1),
-  ...
-)
-
-\method{bootstrap_filter}{ar1_ng}(
-  object,
+\method{bootstrap_filter}{nongaussian}(
+  model,
   nsim,
   seed = sample(.Machine$integer.max, size = 1),
   ...
 )
 
 \method{bootstrap_filter}{nlg_ssm}(
-  object,
+  model,
   nsim,
   seed = sample(.Machine$integer.max, size = 1),
   ...
 )
 
 \method{bootstrap_filter}{sde_ssm}(
-  object,
+  model,
   nsim,
   L,
   seed = sample(.Machine$integer.max, size = 1),
@@ -72,7 +40,7 @@ bootstrap_filter(object, nsim, ...)
 )
 }
 \arguments{
-\item{object}{of class \code{bsm_lg}, \code{bsm_ng} or \code{svm}.}
+\item{model}{of class \code{bsm_lg}, \code{bsm_ng} or \code{svm}.}
 
 \item{nsim}{Number of samples.}
 

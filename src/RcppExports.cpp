@@ -239,8 +239,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // nongaussian_loglik
-double nongaussian_loglik(const Rcpp::List& model_, const unsigned int nsim_states, const unsigned int simulation_method, const unsigned int seed, const unsigned int max_iter, const double conv_tol, const int model_type);
-RcppExport SEXP _bssm_nongaussian_loglik(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP simulation_methodSEXP, SEXP seedSEXP, SEXP max_iterSEXP, SEXP conv_tolSEXP, SEXP model_typeSEXP) {
+double nongaussian_loglik(const Rcpp::List& model_, const unsigned int nsim_states, const unsigned int simulation_method, const unsigned int seed, const int model_type);
+RcppExport SEXP _bssm_nongaussian_loglik(SEXP model_SEXP, SEXP nsim_statesSEXP, SEXP simulation_methodSEXP, SEXP seedSEXP, SEXP model_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -248,10 +248,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const unsigned int >::type nsim_states(nsim_statesSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type simulation_method(simulation_methodSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
-    Rcpp::traits::input_parameter< const unsigned int >::type max_iter(max_iterSEXP);
-    Rcpp::traits::input_parameter< const double >::type conv_tol(conv_tolSEXP);
     Rcpp::traits::input_parameter< const int >::type model_type(model_typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(nongaussian_loglik(model_, nsim_states, simulation_method, seed, max_iter, conv_tol, model_type));
+    rcpp_result_gen = Rcpp::wrap(nongaussian_loglik(model_, nsim_states, simulation_method, seed, model_type));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -552,7 +550,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bssm_ekf_fast_smoother_nlg", (DL_FUNC) &_bssm_ekf_fast_smoother_nlg, 17},
     {"_bssm_gaussian_kfilter", (DL_FUNC) &_bssm_gaussian_kfilter, 2},
     {"_bssm_gaussian_loglik", (DL_FUNC) &_bssm_gaussian_loglik, 2},
-    {"_bssm_nongaussian_loglik", (DL_FUNC) &_bssm_nongaussian_loglik, 7},
+    {"_bssm_nongaussian_loglik", (DL_FUNC) &_bssm_nongaussian_loglik, 5},
     {"_bssm_nonlinear_loglik", (DL_FUNC) &_bssm_nonlinear_loglik, 22},
     {"_bssm_gaussian_mcmc", (DL_FUNC) &_bssm_gaussian_mcmc, 12},
     {"_bssm_nongaussian_pm_mcmc", (DL_FUNC) &_bssm_nongaussian_pm_mcmc, 14},

@@ -40,16 +40,13 @@ double gaussian_loglik(const Rcpp::List& model_, const int model_type) {
 // [[Rcpp::export]]
 double nongaussian_loglik(const Rcpp::List& model_,
   const unsigned int nsim_states, const unsigned int simulation_method,
-  const unsigned int seed, const unsigned int max_iter, const double conv_tol,
-  const int model_type) {
+  const unsigned int seed, const int model_type) {
   
   arma::vec loglik(2);
 
   switch (model_type) {
   case 1: {
     ssm_ung model(Rcpp::clone(model_), seed);
-    model.max_iter = max_iter;
-    model.conv_tol = conv_tol;
     arma::cube alpha(model.m, model.n + 1, nsim_states);
     arma::mat weights(nsim_states, model.n + 1);
     arma::umat indices(nsim_states, model.n);
@@ -57,8 +54,6 @@ double nongaussian_loglik(const Rcpp::List& model_,
   } break;
   case 2: {
     bsm_ng model(Rcpp::clone(model_), seed);
-    model.max_iter = max_iter;
-    model.conv_tol = conv_tol;
     arma::cube alpha(model.m, model.n + 1, nsim_states);
     arma::mat weights(nsim_states, model.n + 1);
     arma::umat indices(nsim_states, model.n);
@@ -66,8 +61,6 @@ double nongaussian_loglik(const Rcpp::List& model_,
   } break;
   case 3: {
     svm model(Rcpp::clone(model_), seed);
-    model.max_iter = max_iter;
-    model.conv_tol = conv_tol;
     arma::cube alpha(model.m, model.n + 1, nsim_states);
     arma::mat weights(nsim_states, model.n + 1);
     arma::umat indices(nsim_states, model.n);
@@ -75,8 +68,6 @@ double nongaussian_loglik(const Rcpp::List& model_,
   } break;
   case 4: {
     ar1_ng model(Rcpp::clone(model_), seed);
-    model.max_iter = max_iter;
-    model.conv_tol = conv_tol;
     arma::cube alpha(model.m, model.n + 1, nsim_states);
     arma::mat weights(nsim_states, model.n + 1);
     arma::umat indices(nsim_states, model.n);

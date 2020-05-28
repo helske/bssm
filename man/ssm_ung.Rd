@@ -19,8 +19,8 @@ ssm_ung(
   D,
   C,
   state_names,
-  update_fn = empty,
-  prior_fn = empty
+  update_fn = default_update_fn,
+  prior_fn = default_prior_fn
 )
 }
 \arguments{

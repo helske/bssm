@@ -22,8 +22,10 @@
 
 \item{states}{Vector of indices. In case of states, what states to expand? Default is all.}
 
-\item{expand}{Should the jump-chain be expanded? Defaults to \code{TRUE} for non-IS-MCMC, and \code{FALSE} for IS-MCMC. 
-For \code{expand = FALSE} and always for IS-MCMC, the resulting data.frame contains variable weight (= counts times IS-weights).}
+\item{expand}{Should the jump-chain be expanded? 
+Defaults to \code{TRUE} for non-IS-MCMC, and \code{FALSE} for IS-MCMC. 
+For \code{expand = FALSE} and always for IS-MCMC, 
+the resulting data.frame contains variable weight (= counts times IS-weights).}
 
 \item{...}{Ignored.}
 }

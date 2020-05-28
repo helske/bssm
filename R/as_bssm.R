@@ -44,13 +44,15 @@ as_bssm <- function(model, kappa = 1e5, ...) {
   }
   
   if (any(model$distribution != "gaussian")) {
-    if (model$distribution == "negative binomial" && length(unique(model$u)) > 1) {
-      stop("Time-varying dispersion parameter for negative binomial is not supported in 'bssm'.")
-    } 
-    if (model$distribution == "gamma" && length(unique(model$u)) > 1) {
-      stop("Time-varying shape parameter for gamma is not supported in 'bssm'.")
-    }
     if (attr(model, "p") == 1) {
+      
+      if (model$distribution == "negative binomial" && length(unique(model$u)) > 1) {
+        stop("Time-varying dispersion parameter for negative binomial is not supported in 'bssm'.")
+      } 
+      if (model$distribution == "gamma" && length(unique(model$u)) > 1) {
+        stop("Time-varying shape parameter for gamma is not supported in 'bssm'.")
+      }
+      
       switch(model$distribution,
         poisson = {
           phi <- 1
@@ -117,8 +119,8 @@ as_bssm <- function(model, kappa = 1e5, ...) {
     
   } else {
     if (attr(model, "p") == 1) {
-      H = model$H
-      out <- ssm_ulg(y = model$y, Z = model$Z, H = H, T = model$T, R = R, 
+      H = sqrt(c(model$H))
+      out <- ssm_ulg(y = model$y, Z =Z, H = H, T = model$T, R = R, 
         a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
     } else {
       H <- model$H
@@ -128,9 +130,10 @@ as_bssm <- function(model, kappa = 1e5, ...) {
         diag(L) <- 1
         H[, , i] <- L %*% D
       }
+      
+      out <- ssm_mlg(y = model$y, Z = Z, H = H, T = model$T, R = R, 
+        a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
     }
-    out <- ssm_mlg(y = model$y, Z = model$Z, H = H, T = model$T, R = R, 
-      a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
   }
   
   out

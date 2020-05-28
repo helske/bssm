@@ -45,8 +45,8 @@ gaussian_loglik <- function(model_, model_type) {
     .Call('_bssm_gaussian_loglik', PACKAGE = 'bssm', model_, model_type)
 }
 
-nongaussian_loglik <- function(model_, nsim_states, simulation_method, seed, max_iter, conv_tol, model_type) {
-    .Call('_bssm_nongaussian_loglik', PACKAGE = 'bssm', model_, nsim_states, simulation_method, seed, max_iter, conv_tol, model_type)
+nongaussian_loglik <- function(model_, nsim_states, simulation_method, seed, model_type) {
+    .Call('_bssm_nongaussian_loglik', PACKAGE = 'bssm', model_, nsim_states, simulation_method, seed, model_type)
 }
 
 nonlinear_loglik <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, nsim_states, seed, max_iter, conv_tol, iekf_iter, method) {

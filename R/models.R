@@ -276,7 +276,7 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
     xreg = xreg, D = D, C = C, distribution = distribution,
     initial_mode = initial_mode, theta = init_theta,
-    max_iter = 100, conv_tol = 1e-8), 
+    max_iter = 100, conv_tol = 1e-8, local_approx = TRUE), 
     class = c("ssm_ung", "nongaussian"))
 }
 
@@ -536,9 +536,10 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   }
   
   if(length(phi) == 1) phi <- rep(phi, p)
+  if(length(distribution) == 1) distribution <- rep(distribution, p)
   for(i in 1:p) {
     distribution[i] <- match.arg(distribution[i], 
-      c("poisson", "binomial", "negative binomial", "gamma"))
+      c("poisson", "binomial", "negative binomial", "gamma", "gaussian"))
     check_phi(phi[i])
   }
   
@@ -564,7 +565,7 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
     xreg = xreg, D = D, C = C, distribution = distribution,
     initial_mode = initial_mode, theta = init_theta,
-    max_iter = 100, conv_tol = 1e-8), 
+    max_iter = 100, conv_tol = 1e-8, local_approx = TRUE), 
     class = c("ng_ssm", "nongaussian"))
 }
 #' Basic Structural (Time Series) Model
@@ -1106,7 +1107,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
     theta = theta, phi_est = phi_est, 
     prior_fn = default_prior_fn, update_fn = default_update_fn,
-    max_iter = 100, conv_tol = 1e-8), 
+    max_iter = 100, conv_tol = 1e-8, local_approx = TRUE), 
     class = c("bsm_ng", "ssm_ung", "nongaussian"))
 }
 
@@ -1200,7 +1201,7 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
     svm_type = svm_type, distribution = "svm", u = 1, phi_est = !as.logical(svm_type),
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
     theta = theta, prior_fn = default_prior_fn, update_fn = default_update_fn,
-    max_iter = 100, conv_tol = 1e-8),
+    max_iter = 100, conv_tol = 1e-8, local_approx = TRUE),
     class = c("svm", "ssm_ung", "nongaussian"))
 }
 #' Non-Gaussian model with AR(1) latent process
@@ -1333,7 +1334,7 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
     distribution = distribution, mu_est = mu_est, phi_est = phi_est,
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
     theta = theta, prior_fn = default_prior_fn, update_fn = default_update_fn,
-    max_iter = 100, conv_tol = 1e-8),
+    max_iter = 100, conv_tol = 1e-8, local_approx = TRUE),
     class = c("ar1_ng", "ssm_ung", "nongaussian"))
 }
 #' Univariate Gaussian model with AR(1) latent process

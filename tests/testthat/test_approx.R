@@ -6,7 +6,7 @@ test_that("Gaussian approximation results of bssm and KFAS coincide",{
   set.seed(123)
   model_KFAS <- SSModel(rpois(10, exp(2)) ~ SSMtrend(2, Q = list(1, 1), 
     P1 = diag(1e3, 2)), distribution = "poisson")
-  expect_error(model_bssm <- ng_bsm(model_KFAS$y, sd_level = 1, sd_slope = 1, distribution = "poisson"), NA)
+  expect_error(model_bssm <- bsm_ng(model_KFAS$y, sd_level = 1, sd_slope = 1, distribution = "poisson"), NA)
   approx_KFAS <- approxSSM(model_KFAS)
   expect_error(approx_bssm <- gaussian_approx(model_bssm, conv_tol = 1e-8), NA)
   
@@ -41,7 +41,7 @@ test_that("results for poisson GLM are equal to glm function",{
   expect_equal(sm$V[,,1], vcov(glm_poisson))
   
   xreg <- model.matrix(~ outcome + treatment, data = d)[, -1]
-  expect_error(model_poisson <- ng_bsm(d$counts, sd_level = 0, xreg = xreg, P1=matrix(1e7),
+  expect_error(model_poisson <- bsm_ng(d$counts, sd_level = 0, xreg = xreg, P1=matrix(1e7),
     beta = normal(coef(glm_poisson)[-1], 0, 10), distribution = 'poisson'), NA)
   expect_equivalent(smoother(model_poisson)$alphahat[1,], coef(glm_poisson)[1])
 })
@@ -69,7 +69,7 @@ test_that("results for negative binomial GLM are equal to glm function",{
   set.seed(123)
   offs <- quine$Days + sample(10:20, size = nrow(quine), replace = TRUE)
   glm_nb <- glm.nb(Days ~ 1 + offset(log(offs)), data = quine)
-  expect_error(model_nb <- ng_bsm(quine$Days, u = offs, sd_level = 0,
+  expect_error(model_nb <- bsm_ng(quine$Days, u = offs, sd_level = 0,
     P1 = matrix(1e7), phi = glm_nb$theta,
     distribution = 'negative binomial'), NA)
   
