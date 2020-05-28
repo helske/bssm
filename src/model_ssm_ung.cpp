@@ -1,18 +1,17 @@
-#include "model_ung_ssm.h"
-#include "model_ugg_ssm.h"
+#include "model_ssm_ung.h"
+#include "model_ssm_ulg.h"
 #include "conditional_dist.h"
 #include "distr_consts.h"
 #include "sample.h"
 #include "rep_mat.h"
 
-// General constructor of ung_ssm object from Rcpp::List
-ung_ssm::ung_ssm(const Rcpp::List& model, const unsigned int seed, const double zero_tol) 
+// General constructor of ssm_ung object from Rcpp::List
+ssm_ung::ssm_ung(const Rcpp::List& model, const unsigned int seed, const double zero_tol) 
   : y(Rcpp::as<arma::vec>(model["y"])), Z(Rcpp::as<arma::mat>(model["Z"])),
     T(Rcpp::as<arma::cube>(model["T"])), R(Rcpp::as<arma::cube>(model["R"])),
     a1(Rcpp::as<arma::vec>(model["a1"])), P1(Rcpp::as<arma::mat>(model["P1"])),
-    D(Rcpp::as<arma::vec>(model["obs_intercept"])),
-    C(Rcpp::as<arma::mat>(model["state_intercept"])),
-    xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(Rcpp::as<arma::vec>(model["beta"])),
+    D(Rcpp::as<arma::vec>(model["D"])), C(Rcpp::as<arma::mat>(model["C"])),
+    xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(arma::vec(xreg.n_cols, arma::fill::zeros)),
     n(y.n_elem), m(a1.n_elem), k(R.n_cols), Ztv(Z.n_cols > 1), Ttv(T.n_slices > 1), 
     Rtv(R.n_slices > 1), Dtv(D.n_elem > 1),  Ctv(C.n_cols > 1),
     phi(model["phi"]),
@@ -32,8 +31,8 @@ ung_ssm::ung_ssm(const Rcpp::List& model, const unsigned int seed, const double 
     prior_fn(Rcpp::as<Rcpp::Function>(model["prior_fn"])),
     approx_model(arma::vec(n, arma::fill::zeros),
       Z, arma::vec(n, arma::fill::zeros),
-      T, R, a1, P1, D, C, xreg, beta, theta, 
-      update_fn, prior_fn, seed + 1) {
+      T, R, a1, P1, D, C, xreg, beta, theta, seed + 1,
+      update_fn, prior_fn) {
   
   if(xreg.n_cols > 0) {
     compute_xbeta();
@@ -42,13 +41,13 @@ ung_ssm::ung_ssm(const Rcpp::List& model, const unsigned int seed, const double 
   
 }
 
-void ung_ssm::compute_RR(){
+inline void ssm_ung::compute_RR(){
   for (unsigned int t = 0; t < R.n_slices; t++) {
     RR.slice(t) = R.slice(t * Rtv) * R.slice(t * Rtv).t();
   }
 }
 
-void ung_ssm::update_model(const arma::vec& new_theta) {
+void ssm_ung::update_model(const arma::vec& new_theta) {
   Rcpp::List model_list = update_fn(new_theta);
   if (model_list.containsElementNamed("Z")) {
     Z = Rcpp::as<arma::mat>(model_list["Z"]);
@@ -84,14 +83,14 @@ void ung_ssm::update_model(const arma::vec& new_theta) {
   if (approx_state == 1) approx_state = 0;
 }
 
-double ung_ssm::log_prior_pdf(const arma::vec& x) const {
+double ssm_ung::log_prior_pdf(const arma::vec& x) {
   return Rcpp::as<double>(prior_fn(x));
 }
 
 // update the approximating Gaussian model
 // Note that the convergence is assessed only
 // by checking the changes in mode, not the actual function values
-void ung_ssm::approximate() {
+void ssm_ung::approximate() {
   
   // check if there is need to update the approximation
   if (approx_state < 1) {
@@ -144,7 +143,7 @@ void ung_ssm::approximate() {
 }
 
 // method = 1 psi-APF, 2 = BSF, 3 = SPDK, 4 = IEKF (not applicable)
-arma::vec ung_ssm::log_likelihood(
+arma::vec ssm_ung::log_likelihood(
     const unsigned int method, 
     const unsigned int nsim_states, 
     arma::cube& alpha, 
@@ -216,7 +215,7 @@ arma::vec ung_ssm::log_likelihood(
 
 // compute unnormalized mode-based scaling terms
 // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
-void ung_ssm::update_scales() {
+void ssm_ung::update_scales() {
   
   switch(distribution) {
   case 0  :
@@ -267,7 +266,7 @@ void ung_ssm::update_scales() {
  * 2 = Binomial
  * 3 = Negative binomial
  */
-void ung_ssm::laplace_iter(const arma::vec& signal, arma::vec& approx_y,
+void ssm_ung::laplace_iter(const arma::vec& signal, arma::vec& approx_y,
   arma::vec& approx_H) const {
   
   //note: using the variable approx_H to store approx_HH first
@@ -291,8 +290,7 @@ void ung_ssm::laplace_iter(const arma::vec& signal, arma::vec& approx_y,
     approx_y = y % approx_H + signal + xbeta - 1.0 - exptmp;
   } break;
   case 3: {
-    arma::vec exptmp = 1.0 / (arma::exp(signal + xbeta) % u);
-    approx_H = 1.0 / phi + exptmp;
+    arma::vec exptmp = 1.0 / (arma::exp(signal + xbeta) % u); // FIX?
     approx_y = signal + xbeta + y % exptmp - 1.0;
   } break;
   }
@@ -301,7 +299,30 @@ void ung_ssm::laplace_iter(const arma::vec& signal, arma::vec& approx_y,
 
 
 
-arma::vec ung_ssm::importance_weights(const arma::cube& alpha) const {
+// these are really not constant in all cases (note phi)
+double ssm_ung::compute_const_term() {
+  
+  double const_term = 0.0;
+  
+  arma::uvec y_ind(find_finite(y));
+  switch(distribution) {
+  case 0 :
+    const_term = y_ind.n_elem * norm_log_const(phi);
+    break;
+  case 1 : 
+    const_term = poisson_log_const(y(y_ind), u(y_ind));
+    break;
+  case 2 : 
+    const_term = binomial_log_const(y(y_ind), u(y_ind));
+    break;
+  case 3 :
+    const_term = negbin_log_const(y(y_ind), u(y_ind), phi);
+    break;
+  }
+  return const_term - norm_log_const(approx_model.y(y_ind), approx_model.H(y_ind));
+}
+
+arma::vec ssm_ung::importance_weights(const arma::cube& alpha) const {
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
   for(unsigned int t = 0; t < n; t++) {
     weights += log_weights(t, alpha);
@@ -314,7 +335,7 @@ arma::vec ung_ssm::importance_weights(const arma::cube& alpha) const {
  * t:             Time point where the weights are computed
  * alpha:         Simulated particles
  */
-arma::vec ung_ssm::log_weights(
+arma::vec ssm_ung::log_weights(
     const unsigned int t, 
     const arma::cube& alpha) const {
   
@@ -324,14 +345,14 @@ arma::vec ung_ssm::log_weights(
     switch(distribution) {
     case 0  :
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
-        double simsignal = alpha(0, t, i);
+        double simsignal = alpha(0, t, i); // D and xbeta always zero
         weights(i) = -0.5 * (simsignal + std::pow(y(t) / phi, 2.0) * std::exp(-simsignal)) +
           0.5 * std::pow((approx_model.y(t) - simsignal) / approx_model.H(t), 2.0);
       }
       break;
     case 1  :
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
-        double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+        double simsignal = arma::as_scalar(D(t * Dtv) + Z.col(t * Ztv).t() *
           alpha.slice(i).col(t) + xbeta(t));
         weights(i) = y(t) * simsignal  - u(t) * std::exp(simsignal) +
           0.5 * std::pow((approx_model.y(t) - simsignal) / approx_model.H(t), 2.0);
@@ -339,7 +360,7 @@ arma::vec ung_ssm::log_weights(
       break;
     case 2  :
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
-        double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+        double simsignal = arma::as_scalar(D(t * Dtv) + Z.col(t * Ztv).t() *
           alpha.slice(i).col(t) + xbeta(t));
         weights(i) = y(t) * simsignal - u(t) * std::log1p(std::exp(simsignal)) +
           0.5 * std::pow((approx_model.y(t) - simsignal) / approx_model.H(t), 2.0);
@@ -347,7 +368,7 @@ arma::vec ung_ssm::log_weights(
       break;
     case 3  :
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
-        double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+        double simsignal = arma::as_scalar(D(t * Dtv) + Z.col(t * Ztv).t() *
           alpha.slice(i).col(t) + xbeta(t));
         weights(i) = y(t) * simsignal - (y(t) + phi) *
           std::log(phi + u(t) * std::exp(simsignal)) +
@@ -365,7 +386,7 @@ arma::vec ung_ssm::log_weights(
  * t:             Time point where the densities are computed
  * alpha:         Simulated particles
  */
-arma::vec ung_ssm::log_obs_density(const unsigned int t, 
+arma::vec ssm_ung::log_obs_density(const unsigned int t, 
   const arma::cube& alpha) const {
   
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
@@ -380,21 +401,21 @@ arma::vec ung_ssm::log_obs_density(const unsigned int t,
       break;
     case 1  :
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
-        double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+        double simsignal = arma::as_scalar(D(t * Dtv) + Z.col(t * Ztv).t() *
           alpha.slice(i).col(t) + xbeta(t));
         weights(i) = y(t) * simsignal  - u(t) * std::exp(simsignal);
       }
       break;
     case 2  :
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
-        double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+        double simsignal = arma::as_scalar(D(t * Dtv) + Z.col(t * Ztv).t() *
           alpha.slice(i).col(t) + xbeta(t));
         weights(i) = y(t) * simsignal - u(t) * std::log1p(std::exp(simsignal));
       }
       break;
     case 3  :
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
-        double simsignal = arma::as_scalar(Z.col(t * Ztv).t() *
+        double simsignal = arma::as_scalar(D(t * Dtv) + Z.col(t * Ztv).t() *
           alpha.slice(i).col(t) + xbeta(t));
         weights(i) = y(t) * simsignal - (y(t) + phi) *
           std::log(phi + u(t) * std::exp(simsignal));
@@ -421,7 +442,7 @@ arma::vec ung_ssm::log_obs_density(const unsigned int t,
  *                the ancestor of alpha.slice(i).col(t + 1)
  */
 
-double ung_ssm::psi_filter(const unsigned int nsim, arma::cube& alpha, 
+double ssm_ung::psi_filter(const unsigned int nsim, arma::cube& alpha, 
   arma::mat& weights, arma::umat& indices) {
   
   arma::mat alphahat(m, n + 1);
@@ -497,7 +518,7 @@ double ung_ssm::psi_filter(const unsigned int nsim, arma::cube& alpha,
   return loglik;
 }
 
-double ung_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
+double ssm_ung::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
   
   arma::uvec nonzero = arma::find(P1.diag() > 0);
@@ -596,7 +617,7 @@ double ung_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   return loglik;
 }
 
-arma::cube ung_ssm::predict_sample(const arma::mat& theta_posterior,
+arma::cube ssm_ung::predict_sample(const arma::mat& theta_posterior,
   const arma::mat& alpha, const arma::uvec& counts,
   const unsigned int predict_type, const unsigned int nsim) {
   
@@ -625,7 +646,7 @@ arma::cube ung_ssm::predict_sample(const arma::mat& theta_posterior,
 }
 
 
-arma::mat ung_ssm::sample_model(
+arma::mat ssm_ung::sample_model(
     const unsigned int predict_type,
     const unsigned int nsim) {
   
@@ -722,26 +743,3 @@ arma::mat ung_ssm::sample_model(
   return alpha;
 }
 
-
-// these are really not constant in all cases (note phi)
-double ung_ssm::compute_const_term() {
-  
-  double const_term = 0.0;
-  
-  arma::uvec y_ind(find_finite(y));
-  switch(distribution) {
-  case 0 :
-    const_term = y_ind.n_elem * norm_log_const(phi);
-    break;
-  case 1 : 
-    const_term = poisson_log_const(y(y_ind), u(y_ind));
-    break;
-  case 2 : 
-    const_term = binomial_log_const(y(y_ind), u(y_ind));
-    break;
-  case 3 :
-    const_term = negbin_log_const(y(y_ind), u(y_ind), phi);
-    break;
-  }
-  return const_term - norm_log_const(approx_model.y(y_ind), approx_model.H(y_ind));
-}

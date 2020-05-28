@@ -2,30 +2,30 @@
 context("Test that bootstrap_filter works")
 
 
-test_that("Test that bsm gives identical results with gssm",{
-  expect_error(model_gssm <- gssm(y = 1:10, Z = matrix(c(1, 0), 2, 1), H = 2, 
+test_that("Test that bsm gives identical results with ssm_mlg",{
+  expect_error(model_ssm_mlg <- ssm_mlg(y = 1:10, Z = matrix(c(1, 0), 2, 1), H = 2, 
     T = array(c(1, 0, 1, 1), c(2, 2, 1)), R = array(diag(2, 2), c(2, 2, 1)), 
     a1 = matrix(0, 2, 1), P1 = diag(2, 2), state_names = c("level", "slope")), NA)
-  expect_error(bsf_gssm <- bootstrap_filter(model_gssm, 10, seed = 1), NA)
+  expect_error(bsf_ssm_mlg <- bootstrap_filter(model_ssm_mlg, 10, seed = 1), NA)
   expect_error(model_bsm <- bsm(1:10, sd_level = 2, sd_slope = 2, sd_y = 2, 
     P1 = diag(2, 2)), NA)
   expect_error(bsf_bsm <- bootstrap_filter(model_bsm, 10, seed = 1), NA)
-  expect_equal(bsf_bsm, bsf_gssm, tolerance = 1e-8)
+  expect_equal(bsf_bsm, bsf_ssm_mlg, tolerance = 1e-8)
 })
 
 
 tol <- 1e-8
 test_that("Test that gaussian bsf still works",{
   
-  expect_error(model_gssm <- gssm(y = 1:10, Z = matrix(c(1, 0), 2, 1), H = 2, 
+  expect_error(model_ssm_mlg <- ssm_mlg(y = 1:10, Z = matrix(c(1, 0), 2, 1), H = 2, 
     T = array(c(1, 0, 1, 1), c(2, 2, 1)), R = array(diag(2, 2), c(2, 2, 1)), 
     a1 = matrix(0, 2, 1), P1 = diag(2, 2), state_names = c("level", "slope")), NA)
-  expect_error(bsf_gssm <- bootstrap_filter(model_gssm, 10, seed = 1), NA)
-  expect_gte(min(bsf_gssm$weights), 0)
-  expect_lt(max(bsf_gssm$weights), Inf)
-  expect_true(is.finite(bsf_gssm$logLik))
-  expect_true(is.finite(sum(bsf_gssm$att)))
-  expect_true(is.finite(sum(bsf_gssm$Ptt)))
+  expect_error(bsf_ssm_mlg <- bootstrap_filter(model_ssm_mlg, 10, seed = 1), NA)
+  expect_gte(min(bsf_ssm_mlg$weights), 0)
+  expect_lt(max(bsf_ssm_mlg$weights), Inf)
+  expect_true(is.finite(bsf_ssm_mlg$logLik))
+  expect_true(is.finite(sum(bsf_ssm_mlg$att)))
+  expect_true(is.finite(sum(bsf_ssm_mlg$Ptt)))
 })
 
 test_that("Test that poisson ng_bsm still works",{

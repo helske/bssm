@@ -1,26 +1,22 @@
 // multivariate linear Gaussian state space model
-// defined directly via matrices
-// used by snippet models
 
-
-// CAN BE USED DIRECTLY, DEFINE UPDATE and PRIOR via R! NOT DONE YET!!!
 #ifndef MGG_H
 #define MGG_H
 
 #include "bssm.h"
 #include <sitmo.h>
 
-class mgg_ssm {
+class ssm_mlg {
   
 public:
   // constructor from Rcpp::List
-  mgg_ssm(
+  ssm_mlg(
     const Rcpp::List& model, 
     const unsigned int seed = 1,
     const double zero_tol = 1e-8);
   
   // constructor from armadillo objects
-  mgg_ssm(
+  ssm_mlg(
     const arma::mat& y, 
     const arma::cube& Z,
     const arma::cube& H,
@@ -30,7 +26,11 @@ public:
     const arma::mat& P1,
     const arma::mat& D,
     const arma::mat& C,
-    const unsigned int seed = 1,
+    const arma::mat& xreg, 
+    const arma::vec& theta,
+    const unsigned int seed,
+    const Rcpp::Nullable<Rcpp::Function> update_fn = R_NilValue,
+    const Rcpp::Nullable<Rcpp::Function> prior_fn = R_NilValue,
     const double zero_tol = 1e-8);
   
   arma::mat y;
@@ -42,6 +42,7 @@ public:
   arma::mat P1;
   arma::mat D;
   arma::mat C;
+  arma::mat xreg;
   
   const unsigned int n; // number of time points
   const unsigned int m; // number of states
@@ -56,6 +57,8 @@ public:
   const unsigned int Dtv;
   const unsigned int Ctv;
   
+  arma::vec theta; 
+  
   // random number engine
   sitmo::prng_engine engine;
   // zero-tolerance
@@ -63,8 +66,15 @@ public:
   arma::cube HH;
   arma::cube RR;
   
+  // R functions
+  const Rcpp::Function update_fn;
+  const Rcpp::Function prior_fn;
+  
   void compute_RR();
   void compute_HH();
+  
+  void update_model(const arma::vec& new_theta);
+  double log_prior_pdf(const arma::vec& x);
   
   // compute the log-likelihood using Kalman filter
   double log_likelihood() const;

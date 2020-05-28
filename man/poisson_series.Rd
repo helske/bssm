@@ -4,7 +4,9 @@
 \name{poisson_series}
 \alias{poisson_series}
 \title{Simulated Poisson time series data}
-\format{A vector of length 100}
+\format{
+A vector of length 100
+}
 \description{
 See example for code for reproducing the data.
 }

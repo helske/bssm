@@ -8,19 +8,19 @@
 #include "filter_smoother.h"
 #include "summary.h"
 
-#include "model_ugg_ssm.h"
-#include "model_ugg_bsm.h"
-#include "model_ugg_ar1.h"
+#include "model_ssm_mlg.h"
+#include "model_ssm_ulg.h"
+#include "model_bsm_lg.h"
+#include "model_ar1_lg.h"
 
-#include "model_ung_ssm.h"
-#include "model_ung_bsm.h"
-#include "model_ung_ar1.h"
-#include "model_ung_svm.h"
+#include "model_ssm_mng.h"
+#include "model_ssm_ung.h"
+#include "model_bsm_ng.h"
+#include "model_ar1_ng.h"
+#include "model_svm.h"
 
 #include "model_nlg_ssm.h"
 #include "model_sde_ssm.h"
-#include "model_mng_ssm.h"
-#include "model_lgg_ssm.h"
 
 mcmc::mcmc(
   const unsigned int n_iter, 
@@ -54,10 +54,10 @@ void mcmc::trim_storage() {
     alpha_storage.resize(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
 }
 
-template void mcmc::state_posterior(ugg_ssm model, const unsigned int n_threads);
-template void mcmc::state_posterior(ugg_bsm model, const unsigned int n_threads);
-template void mcmc::state_posterior(ugg_ar1 model, const unsigned int n_threads);
-template void mcmc::state_posterior(lgg_ssm model, const unsigned int n_threads);
+template void mcmc::state_posterior(ssm_ulg model, const unsigned int n_threads);
+template void mcmc::state_posterior(bsm_lg model, const unsigned int n_threads);
+template void mcmc::state_posterior(ar1_lg model, const unsigned int n_threads);
+template void mcmc::state_posterior(ssm_mlg model, const unsigned int n_threads);
 
 template <class T>
 void mcmc::state_posterior(T model, const unsigned int n_threads) {
@@ -89,10 +89,10 @@ void mcmc::state_posterior(T model, const unsigned int n_threads) {
 
 
 // should parallelize at some point
-template void mcmc::state_summary(ugg_ssm& model, arma::mat& alphahat, arma::cube& Vt);
-template void mcmc::state_summary(ugg_bsm& model, arma::mat& alphahat, arma::cube& Vt);
-template void mcmc::state_summary(ugg_ar1& model, arma::mat& alphahat, arma::cube& Vt);
-template void mcmc::state_summary(lgg_ssm& model, arma::mat& alphahat, arma::cube& Vt);
+template void mcmc::state_summary(ssm_ulg& model, arma::mat& alphahat, arma::cube& Vt);
+template void mcmc::state_summary(bsm_lg& model, arma::mat& alphahat, arma::cube& Vt);
+template void mcmc::state_summary(ar1_lg& model, arma::mat& alphahat, arma::cube& Vt);
+template void mcmc::state_summary(ssm_mlg& model, arma::mat& alphahat, arma::cube& Vt);
 
 template <class T>
 void mcmc::state_summary(T& model, arma::mat& alphahat, arma::cube& Vt) {
@@ -125,10 +125,10 @@ void mcmc::state_summary(T& model, arma::mat& alphahat, arma::cube& Vt) {
   Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
 
-template void mcmc::state_sampler(ugg_ssm& model, const arma::mat& theta, arma::cube& alpha);
-template void mcmc::state_sampler(ugg_bsm& model, const arma::mat& theta, arma::cube& alpha);
-template void mcmc::state_sampler(ugg_ar1& model, const arma::mat& theta, arma::cube& alpha);
-template void mcmc::state_sampler(lgg_ssm& model, const arma::mat& theta, arma::cube& alpha);
+template void mcmc::state_sampler(ssm_ulg& model, const arma::mat& theta, arma::cube& alpha);
+template void mcmc::state_sampler(bsm_lg& model, const arma::mat& theta, arma::cube& alpha);
+template void mcmc::state_sampler(ar1_lg& model, const arma::mat& theta, arma::cube& alpha);
+template void mcmc::state_sampler(ssm_mlg& model, const arma::mat& theta, arma::cube& alpha);
 template <class T>
 
 void mcmc::state_sampler(T& model, const arma::mat& theta, arma::cube& alpha) {
@@ -144,10 +144,10 @@ void mcmc::state_sampler(T& model, const arma::mat& theta, arma::cube& alpha) {
 // run MCMC for linear-Gaussian state space model
 // target the marginal p(theta | y)
 // sample states separately given the posterior sample of theta
-template void mcmc::mcmc_gaussian(ugg_ssm& model, const bool end_ram);
-template void mcmc::mcmc_gaussian(ugg_bsm& model, const bool end_ram);
-template void mcmc::mcmc_gaussian(ugg_ar1& model, const bool end_ram);
-template void mcmc::mcmc_gaussian(lgg_ssm& model, const bool end_ram);
+template void mcmc::mcmc_gaussian(ssm_ulg& model, const bool end_ram);
+template void mcmc::mcmc_gaussian(bsm_lg& model, const bool end_ram);
+template void mcmc::mcmc_gaussian(ar1_lg& model, const bool end_ram);
+template void mcmc::mcmc_gaussian(ssm_mlg& model, const bool end_ram);
 
 template<class T>
 void mcmc::mcmc_gaussian(T& model, const bool end_ram) {
@@ -232,21 +232,21 @@ void mcmc::mcmc_gaussian(T& model, const bool end_ram) {
 }
 
 // run pseudo-marginal MCMC
-template void mcmc::pm_mcmc(ung_ssm& model,
+template void mcmc::pm_mcmc(ssm_ung& model,
   const unsigned int method,
   const unsigned int nsim_states,
   const bool end_ram);
-template void mcmc::pm_mcmc(ung_bsm& model,
-  const unsigned int method,
-  const unsigned int nsim_states,
-  const bool end_ram);
-
-template void mcmc::pm_mcmc(ung_ar1& model,
+template void mcmc::pm_mcmc(bsm_ng& model,
   const unsigned int method,
   const unsigned int nsim_states,
   const bool end_ram);
 
-template void mcmc::pm_mcmc(ung_svm& model,
+template void mcmc::pm_mcmc(ar1_ng& model,
+  const unsigned int method,
+  const unsigned int nsim_states,
+  const bool end_ram);
+
+template void mcmc::pm_mcmc(svm& model,
   const unsigned int method,
   const unsigned int nsim_states,
   const bool end_ram);
@@ -256,7 +256,7 @@ template void mcmc::pm_mcmc(nlg_ssm& model,
   const unsigned int nsim_states,
   const bool end_ram);
 
-template void mcmc::pm_mcmc(mng_ssm& model,
+template void mcmc::pm_mcmc(ssm_mng& model,
   const unsigned int method,
   const unsigned int nsim_states,
   const bool end_ram);
@@ -399,22 +399,22 @@ void mcmc::pm_mcmc(
 }
 
 // delayed acceptance pseudo-marginal MCMC
-template void mcmc::da_mcmc(ung_ssm& model,
+template void mcmc::da_mcmc(ssm_ung& model,
   const unsigned int method,
   const unsigned int nsim_states,
   const bool end_ram);
 
-template void mcmc::da_mcmc(ung_bsm& model,
+template void mcmc::da_mcmc(bsm_ng& model,
   const unsigned int method,
   const unsigned int nsim_states,
   const bool end_ram);
 
-template void mcmc::da_mcmc(ung_ar1& model,
+template void mcmc::da_mcmc(ar1_ng& model,
   const unsigned int method,
   const unsigned int nsim_states,
   const bool end_ram);
 
-template void mcmc::da_mcmc(ung_svm& model,
+template void mcmc::da_mcmc(svm& model,
   const unsigned int method,
   const unsigned int nsim_states,
   const bool end_ram);
@@ -424,7 +424,7 @@ template void mcmc::da_mcmc(nlg_ssm& model,
   const unsigned int nsim_states,
   const bool end_ram);
 
-template void mcmc::da_mcmc(mng_ssm& model,
+template void mcmc::da_mcmc(ssm_mng& model,
   const unsigned int method,
   const unsigned int nsim_states,
   const bool end_ram);

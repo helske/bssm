@@ -2,22 +2,20 @@
 % Please edit documentation in R/approx.R
 \name{gaussian_approx}
 \alias{gaussian_approx}
-\alias{gaussian_approx.ng_bsm}
-\title{Gaussian approximation of non-Gaussian state space model}
+\title{Gaussian Approximation of Non-Gaussian/Non-linear State Space Model}
 \usage{
-gaussian_approx(object, max_iter, conv_tol, ...)
-
-\method{gaussian_approx}{ng_bsm}(object, max_iter = 100,
-  conv_tol = 1e-08, ...)
+gaussian_approx(model, max_iter, conv_tol, ...)
 }
 \arguments{
-\item{object}{model object.}
+\item{model}{Model to be approximated.}
 
 \item{max_iter}{Maximum number of iterations.}
 
 \item{conv_tol}{Tolerance parameter.}
 
 \item{...}{Ignored.}
+
+\item{iekf_iter}{For non-linear models, number of iterations in iterated EKF (defaults to 0).}
 }
 \description{
 Returns the approximating Gaussian model.

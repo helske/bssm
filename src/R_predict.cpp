@@ -1,11 +1,11 @@
-// #include "model_ugg_ssm.h"
-// #include "model_ugg_bsm.h"
-// #include "model_ung_ssm.h"
-// #include "model_ung_bsm.h"
-// #include "model_ung_svm.h"
+// #include "model_ssm_ulg.h"
+// #include "model_bsm_lg.h"
+// #include "model_ssm_ung.h"
+// #include "model_bsm_ng.h"
+// #include "model_svm.h"
 // #include "model_nlg_ssm.h"
-// #include "model_ung_ar1.h"
-// #include "model_ugg_ar1.h"
+// #include "model_ar1_ng.h"
+// #include "model_ar1_lg.h"
 // 
 // // [[Rcpp::export]]
 // Rcpp::List gaussian_predict(const Rcpp::List& model_,
@@ -16,7 +16,7 @@
 //   
 //   switch (model_type) {
 //   case 1: {
-//   ugg_ssm model(Rcpp::clone(model_), seed);
+//   ssm_ulg model(Rcpp::clone(model_), seed);
 //   if (intervals) {
 //     return model.predict_interval(probs, theta, alpha, counts, predict_type);
 //   } else {
@@ -25,7 +25,7 @@
 //   }
 // } break;
 //   case 2: {
-//     ugg_bsm model(Rcpp::clone(model_), seed);
+//     bsm_lg model(Rcpp::clone(model_), seed);
 //     if (intervals) {
 //       return model.predict_interval(probs, theta, alpha, counts, predict_type);
 //     } else {
@@ -34,7 +34,7 @@
 //     }
 //   } break;
 //   case 3: {
-//     ugg_ar1 model(Rcpp::clone(model_), seed);
+//     ar1_lg model(Rcpp::clone(model_), seed);
 //     if (intervals) {
 //       return model.predict_interval(probs, theta, alpha, counts, predict_type);
 //     } else {
@@ -54,20 +54,20 @@
 //   
 //   switch (model_type) {
 //   case 1: {
-//   ung_ssm model(Rcpp::clone(model_), seed);
+//   ssm_ung model(Rcpp::clone(model_), seed);
 //   
 //   return model.predict_sample(theta, alpha, counts, predict_type, nsim);
 // } break;
 //   case 2: {
-//     ung_bsm model(Rcpp::clone(model_), seed);
+//     bsm_ng model(Rcpp::clone(model_), seed);
 //     return model.predict_sample(theta, alpha, counts, predict_type, nsim);
 //   } break;
 //   case 3: {
-//     ung_svm model(Rcpp::clone(model_), seed);
+//     svm model(Rcpp::clone(model_), seed);
 //     return model.predict_sample(theta, alpha, counts, predict_type, nsim);
 //   } break;
 //   case 4: {
-//     ung_ar1 model(Rcpp::clone(model_), seed);
+//     ar1_ng model(Rcpp::clone(model_), seed);
 //     return model.predict_sample(theta, alpha, counts, predict_type, nsim);
 //   } break;
 //   }

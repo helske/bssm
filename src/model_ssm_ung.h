@@ -1,20 +1,20 @@
 // univariate state space model with non-Gaussian or non-linear observation equation
 // and linear Gaussian states
 
-#ifndef UNG_SSM_H
-#define UNG_SSM_H
+#ifndef ssm_ung_H
+#define ssm_ung_H
 
 #include "bssm.h"
 #include <sitmo.h>
 
-#include "model_ugg_ssm.h"
+#include "model_ssm_ulg.h"
 
-class ung_ssm {
+class ssm_ung {
   
 public:
   
   // constructor from Rcpp::List
-  ung_ssm(const Rcpp::List& model, 
+  ssm_ung(const Rcpp::List& model, 
     const unsigned int seed = 1,
     const double zero_tol = 1e-8);
   
@@ -42,14 +42,14 @@ public:
   const unsigned int Dtv;
   const unsigned int Ctv;
   
+  arma::vec theta;  
+  
   double phi;
   arma::vec u;
   const unsigned int distribution;
   unsigned int max_iter;
   double conv_tol;
   const bool local_approx;
-  // model parameters
-  arma::vec theta;  
   
   // random number engine
   sitmo::prng_engine engine;
@@ -72,12 +72,12 @@ public:
   const Rcpp::Function update_fn;
   const Rcpp::Function prior_fn;
   
-  ugg_ssm approx_model;
+  ssm_ulg approx_model;
   
   void update_model(const arma::vec& new_theta);
-  double log_prior_pdf(const arma::vec& x) const;
+  double log_prior_pdf(const arma::vec& x);
   void compute_RR();
-  void compute_xbeta() { xbeta = xreg * beta; }
+  inline void compute_xbeta() { xbeta = xreg * beta; }
   
   arma::vec log_likelihood(
       const unsigned int method, 

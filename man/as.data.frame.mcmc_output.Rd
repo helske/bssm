@@ -4,8 +4,14 @@
 \alias{as.data.frame.mcmc_output}
 \title{Convert MCMC chain to data.frame}
 \usage{
-\method{as.data.frame}{mcmc_output}(x, variable = c("theta", "states"),
-  times, states, expand = !(x$mcmc_type \%in\% paste0("is", 1:3)), ...)
+\method{as.data.frame}{mcmc_output}(
+  x,
+  variable = c("theta", "states"),
+  times,
+  states,
+  expand = !(x$mcmc_type \%in\% paste0("is", 1:3)),
+  ...
+)
 }
 \arguments{
 \item{x}{Output from \code{\link{run_mcmc}}.}

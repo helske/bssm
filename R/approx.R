@@ -1,87 +1,57 @@
-#' Gaussian approximation of non-Gaussian state space model
+#' Gaussian Approximation of Non-Gaussian/Non-linear State Space Model
 #'
 #' Returns the approximating Gaussian model.
-#' @param object model object.
+#' 
+#' @param model Model to be approximated.
 #' @param max_iter Maximum number of iterations.
 #' @param conv_tol Tolerance parameter.
+#' @param iekf_iter For non-linear models, number of iterations in iterated EKF (defaults to 0).
 #' @param ... Ignored.
 #' @export
 #' @rdname gaussian_approx
-gaussian_approx <- function(object, max_iter, conv_tol, ...) {
-  UseMethod("gaussian_approx", object)
+gaussian_approx <- function(model, max_iter, conv_tol, ...) {
+  UseMethod("gaussian_approx", model)
 }
-#' @method gaussian_approx ssm_ung
+#' @method gaussian_approx nongaussian
 #' @export
-gaussian_approx.ssm_ung<- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
+gaussian_approx.nongaussian <- function(model, max_iter = 100, conv_tol = 1e-8, ...) {
   
-  object$distribution <- 
-    pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  out <- 
-    gaussian_approx_model(object, object$initial_mode, max_iter, conv_tol, model_type = 1L)
-  out$y <- ts(out$y, start = start(object$y), end = end(object$y), frequency = frequency(object$y))
-  model <- ssm_ulg(y = out$y, Z = object$Z, H = out$H, T = object$T, R = object$R, a1 = object$a1, P1 = object$P1,
-    obs_intercept = object$obs_intercept, state_intercept = object$state_intercept, 
-    state_names = names(object$a1))
-  model$xreg <- object$xreg
-  model$beta <- object$beta
-  model
+  model$max_iter <- max_iter
+  model$conv_tol <- conv_tol
+  
+  out <- gaussian_approx_model(model, model_type(model))
+  out$y <- ts(out$y, start = start(model$y), end = end(model$y), frequency = frequency(model$y))
+  if(ncol(model$y) == 1) {
+  approx_model <- ssm_ulg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
+    R = model$R, a1 = model$a1, P1 = model$P1, init_theta = model$theta,
+    xreg = model$xreg, beta = model$beta, D = model$D, C = model$C, 
+    state_names = names(model$a1), update_fn = model$update_fn, prior_fn = model$prior_fn)
+  } else {
+    approx_model <- ssm_mlg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
+      R = model$R, a1 = model$a1, P1 = model$P1, init_theta = model$theta,
+      xreg = model$xreg, D = model$D, C = model$C, 
+      state_names = names(model$a1), update_fn = model$update_fn, prior_fn = model$prior_fn)
   }
-#' @method gaussian_approx bsm_ng
-#' @rdname gaussian_approx
-#' @export
-gaussian_approx.bsm_ng <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
-  
-  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  out <- gaussian_approx_model(object, object$initial_mode, max_iter, conv_tol, model_type = 2L)
-  out$y <- ts(out$y, start = start(object$y), end = end(object$y), frequency = frequency(object$y))
-  model <- ssm_ulg(y = out$y, Z = object$Z, H = out$H, T = object$T, R = object$R, a1 = object$a1, P1 = object$P1,
-    obs_intercept = object$obs_intercept, state_intercept = object$state_intercept, 
-    state_names = names(object$a1))
-  model$xreg <- object$xreg
-  model$beta <- object$beta
-  model
-}
-#' @method gaussian_approx svm
-#' @export
-gaussian_approx.svm <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
-  
-  out <- gaussian_approx_model(object, object$initial_mode, max_iter, conv_tol, model_type = 3L)
-  out$y <- ts(out$y, start = start(object$y), end = end(object$y), frequency = frequency(object$y))
-  model <- ssm_ulg(y = out$y, Z = object$Z, H = out$H, T = object$T, R = object$R, a1 = object$a1, P1 = object$P1,
-    obs_intercept = object$obs_intercept, state_intercept = object$state_intercept, 
-    state_names = names(object$a1))
-  model$xreg <- object$xreg
-  model$beta <- object$beta
-  model
-}
-#' @method gaussian_approx ar1_ng
-#' @export
-gaussian_approx.ar1_ng <- function(object, max_iter = 100, conv_tol = 1e-8, ...) {
-  
-  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  out <- gaussian_approx_model(object, object$initial_mode, max_iter, conv_tol, model_type = 4L)
-  out$y <- ts(out$y, start = start(object$y), end = end(object$y), frequency = frequency(object$y))
-  model <- ssm_ulg(y = out$y, Z = object$Z, H = out$H, T = object$T, R = object$R, a1 = object$a1, P1 = object$P1,
-    obs_intercept = object$obs_intercept, state_intercept = object$state_intercept, 
-    state_names = names(object$a1))
-  model$xreg <- object$xreg
-  model$beta <- object$beta
-  model
+  approx_model
 }
 
 #' @method gaussian_approx nlg_ssm
 #' @export
-gaussian_approx.nlg_ssm <- function(object, max_iter = 100, 
+gaussian_approx.nlg_ssm <- function(model, max_iter = 100, 
   conv_tol = 1e-8, iekf_iter = 0, ...) {
   
-  out <- gaussian_approx_model_nlg(t(object$y), object$Z, object$H, object$T, 
-    object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
-    object$theta, object$log_prior_pdf, object$known_params, 
-    object$known_tv_params, object$n_states, object$n_etas,
-    as.integer(object$time_varying),
+  model$max_iter <- max_iter
+  model$conv_tol <- conv_tol
+  model$iekf_iter <- iekf_iter
+  
+  out <- gaussian_approx_model_nlg(t(model$y), model$Z, model$H, model$T, 
+    model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
+    model$theta, model$log_prior_pdf, model$known_params, 
+    model$known_tv_params, model$n_states, model$n_etas,
+    as.integer(model$time_varying),
     max_iter, conv_tol, iekf_iter)
-  out$y <- ts(c(out$y), start = start(object$y), end = end(object$y), frequency = frequency(object$y))
-  ssm_ulg(y = out$y, Z = matrix(out$Z, nrow=length(out$a1)), 
-    H = c(out$H), T = out$T, R = out$R, a1 = c(out$a1), 
-    P1 = out$P1, obs_intercept = out$D, state_intercept = out$C)
+  out$y <- ts(c(out$y), start = start(model$y), end = end(model$y), frequency = frequency(model$y))
+  ssm_mlg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
+    R = model$R, a1 = model$a1, P1 = model$P1,
+    init_theta = model$theta, D = model$D, C = model$C)
 }

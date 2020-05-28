@@ -2,33 +2,56 @@
 % Please edit documentation in R/importance_sample.R
 \name{importance_sample}
 \alias{importance_sample}
-\alias{importance_sample.ngssm}
-\alias{importance_sample.ng_bsm}
+\alias{importance_sample.ssm_ung}
+\alias{importance_sample.bsm_ng}
 \alias{importance_sample.svm}
-\alias{importance_sample.ung_ar1}
+\alias{importance_sample.ar1_ng}
 \title{Importance Sampling from non-Gaussian State Space Model}
 \usage{
-importance_sample(object, nsim, use_antithetic, max_iter, conv_tol, seed,
-  ...)
+importance_sample(object, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
 
-\method{importance_sample}{ngssm}(object, nsim, use_antithetic = TRUE,
-  max_iter = 100, conv_tol = 1e-08,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+\method{importance_sample}{ssm_ung}(
+  object,
+  nsim,
+  use_antithetic = TRUE,
+  max_iter = 100,
+  conv_tol = 1e-08,
+  seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
 
-\method{importance_sample}{ng_bsm}(object, nsim, use_antithetic = TRUE,
-  max_iter = 100, conv_tol = 1e-08,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+\method{importance_sample}{bsm_ng}(
+  object,
+  nsim,
+  use_antithetic = TRUE,
+  max_iter = 100,
+  conv_tol = 1e-08,
+  seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
 
-\method{importance_sample}{svm}(object, nsim, use_antithetic = TRUE,
-  max_iter = 100, conv_tol = 1e-08,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+\method{importance_sample}{svm}(
+  object,
+  nsim,
+  use_antithetic = TRUE,
+  max_iter = 100,
+  conv_tol = 1e-08,
+  seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
 
-\method{importance_sample}{ung_ar1}(object, nsim, use_antithetic = TRUE,
-  max_iter = 100, conv_tol = 1e-08,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+\method{importance_sample}{ar1_ng}(
+  object,
+  nsim,
+  use_antithetic = TRUE,
+  max_iter = 100,
+  conv_tol = 1e-08,
+  seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
 }
 \arguments{
-\item{object}{of class \code{ng_bsm}, \code{svm} or \code{ngssm}.}
+\item{object}{of class \code{bsm_ng}, \code{svm} or \code{ssm_ung}.}
 
 \item{nsim}{Number of samples.}
 

@@ -34,13 +34,15 @@ nlg_ssm::nlg_ssm(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_,
       arma::cube(p, p, (n - 1) * Htv + 1),
       arma::cube(m, m, n),
       arma::cube(m, k, (n - 1) * Rtv + 1),
+      a1_fn(theta, known_params),
+      P1_fn(theta, known_params),
       arma::mat(p, n, arma::fill::zeros),
       arma::mat(m, n, arma::fill::zeros),
-      a1_fn(theta, known_params),
-      P1_fn(theta, known_params), seed + 1) {
+      arma::mat(), 
+      theta,
+      seed + 1) {
   update_model(theta);
 }
-
 // update system matrices given theta
 void nlg_ssm::update_model(const arma::vec& new_theta) {
   

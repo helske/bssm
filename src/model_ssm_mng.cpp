@@ -1,59 +1,94 @@
-#include "model_mng_ssm.h"
+#include "model_ssm_mng.h"
 #include "conditional_dist.h"
 #include "distr_consts.h"
 #include "sample.h"
 #include "rep_mat.h"
 
-mng_ssm::mng_ssm(const arma::mat& y, lmat_fnPtr Z_fn_, lmat_fnPtr T_fn_,
-  lmat_fnPtr R_fn_, a1_fnPtr a1_fn_, P1_fnPtr P1_fn_,
-  const arma::vec& theta, prior_fnPtr log_prior_pdf_, const arma::vec& known_params,
-  const arma::mat& known_tv_params, const unsigned int m, const unsigned int k,
-  const arma::uvec& time_varying, const arma::vec& phi, const arma::mat& u,
-  const arma::uvec& distribution, const arma::uvec& phi_est,
-  const arma::mat& initial_mode, const bool local_approx, 
-  const unsigned int seed, const double zero_tol) :
-  y(y), Z_fn(Z_fn_), T_fn(T_fn_), R_fn(R_fn_),
-  a1_fn(a1_fn_), P1_fn(P1_fn_), theta(theta), 
-  log_prior_pdf(log_prior_pdf_), known_params(known_params),
-  known_tv_params(known_tv_params), m(m), k(k), n(y.n_cols), p(y.n_rows),
-  Ztv(time_varying(0)), Ttv(time_varying(1)), Rtv(time_varying(2)), 
-  phi(phi), u(u), distribution(distribution), phi_est(phi_est),
-  engine(seed), zero_tol(zero_tol), 
-  initial_mode(initial_mode), mode_estimate(initial_mode), 
-  max_iter(100), conv_tol(1.0e-8), local_approx(local_approx), approx_state(-1),
-  approx_loglik(0.0), scales(arma::vec(n, arma::fill::zeros)),
-  approx_model(y, 
-    arma::cube(p, m, (n - 1) * Ztv + 1),
-    arma::cube(p, p, n),
-    arma::cube(m, m, (n - 1) * Ttv + 1),
-    arma::cube(m, k, (n - 1) * Rtv + 1),
-    a1_fn(theta, known_params),
-    P1_fn(theta, known_params), 
-    arma::mat(p, 1, arma::fill::zeros),
-    arma::mat(m, 1, arma::fill::zeros), seed + 1){
+ssm_mng::ssm_mng(const Rcpp::List& model, const unsigned int seed, const double zero_tol) 
+  :  y((Rcpp::as<arma::mat>(model["y"])).t()), Z(Rcpp::as<arma::cube>(model["Z"])),
+    T(Rcpp::as<arma::cube>(model["T"])),
+    R(Rcpp::as<arma::cube>(model["R"])), a1(Rcpp::as<arma::vec>(model["a1"])),
+    P1(Rcpp::as<arma::mat>(model["P1"])), D(Rcpp::as<arma::mat>(model["D"])),
+    C(Rcpp::as<arma::mat>(model["C"])), xreg(Rcpp::as<arma::mat>(model["xreg"])),
+    n(y.n_cols), m(a1.n_elem), k(R.n_cols), p(y.n_rows), 
+    Ztv(Z.n_slices > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
+    Dtv(D.n_cols > 1), Ctv(C.n_cols > 1), 
+    theta(Rcpp::as<arma::vec>(model["theta"])), 
+    phi(Rcpp::as<arma::vec>(model["phi"])), u(Rcpp::as<arma::vec>(model["u"])), 
+    distribution(Rcpp::as<arma::uvec>(model["distribution"])),
+    max_iter(model["max_iter"]), conv_tol(model["conv_tol"]), 
+    local_approx(model["local_approx"]),
+    initial_mode(Rcpp::as<arma::vec>(model["initial_mode"])),
+    mode_estimate(initial_mode),
+    approx_state(-1),
+    approx_loglik(0.0), scales(arma::vec(n, arma::fill::zeros)),
+    engine(seed), zero_tol(zero_tol),
+    RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
+    update_fn(Rcpp::as<Rcpp::Function>(model["update_fn"])), 
+    prior_fn(Rcpp::as<Rcpp::Function>(model["prior_fn"])),
+    approx_model(y, Z, arma::cube(p, p, n), T, R, a1, P1, 
+      D, C, xreg, theta, seed + 1){
+}
+inline void ssm_mng::compute_RR(){
+  for (unsigned int t = 0; t < R.n_slices; t++) {
+    RR.slice(t) = R.slice(t * Rtv) * R.slice(t * Rtv).t();
+  }
+}
+
+void ssm_mng::update_model(const arma::vec& new_theta) {
+  Rcpp::List model_list = update_fn(new_theta);
+  if (model_list.containsElementNamed("Z")) {
+    Z = Rcpp::as<arma::cube>(model_list["Z"]);
+  }
+  if (model_list.containsElementNamed("T")) {
+    T = Rcpp::as<arma::cube>(model_list["T"]);
+  }
+  if (model_list.containsElementNamed("R")) {
+    R = Rcpp::as<arma::cube>(model_list["R"]);
+    compute_RR();
+  }
+  if (model_list.containsElementNamed("a1")) {
+    a1 = Rcpp::as<arma::vec>(model_list["a1"]);
+  }
+  if (model_list.containsElementNamed("P1")) {
+    P1 = Rcpp::as<arma::mat>(model_list["P1"]);
+  }
+  if (model_list.containsElementNamed("D")) {
+    D = Rcpp::as<arma::mat>(model_list["D"]);
+  }
+  if (model_list.containsElementNamed("C")) {
+    C = Rcpp::as<arma::mat>(model_list["C"]);
+  }
+  if (model_list.containsElementNamed("phi")) {
+    phi = Rcpp::as<arma::vec>(model_list["phi"]);
+  }
+  
+  theta = new_theta;
+  // approximation does not match theta anymore (keep as -1 if so)
+  if (approx_state == 1) approx_state = 0;
+}
+
+double ssm_mng::log_prior_pdf(const arma::vec& x) {
+  return Rcpp::as<double>(prior_fn(x));
 }
 
 // update the approximating Gaussian model
 // Note that the convergence is assessed only
 // by checking the changes in mode, not the actual function values
-void mng_ssm::approximate() {
+void ssm_mng::approximate() {
   
   // check if there is need to update the approximation
   if (approx_state < 1) {
     //update model
     
-    arma::vec a1 = a1_fn(theta, known_params);
-    arma::mat P1 = P1_fn(theta, known_params);
-    
-    for (unsigned int t = 0; t < approx_model.Z.n_slices; t++) {
-      approx_model.Z.slice(t) = Z_fn(t, theta, known_params, known_tv_params);
-    }
-    for (unsigned int t = 0; t < approx_model.T.n_slices; t++) {
-      approx_model.T.slice(t) = T_fn(t, theta, known_params, known_tv_params);
-    }
-    for (unsigned int t = 0; t < approx_model.R.n_slices; t++) {
-      approx_model.R.slice(t) = R_fn(t, theta, known_params, known_tv_params);
-    }
+    approx_model.Z = Z;
+    approx_model.T = T;
+    approx_model.R = R;
+    approx_model.a1 = a1;
+    approx_model.P1 = P1;
+    approx_model.D = D;
+    approx_model.C = C;
+    approx_model.RR = RR;
     
     // don't update y and H if using global approximation and we have updated them already
     if(!local_approx & (approx_state == 0)) {
@@ -86,7 +121,7 @@ void mng_ssm::approximate() {
 
 
 // method = 1 psi-APF, 2 = BSF, 3 = SPDK (not applicable), 4 = IEKF (not applicable)
-arma::vec mng_ssm::log_likelihood(
+arma::vec ssm_mng::log_likelihood(
     const unsigned int method, 
     const unsigned int nsim_states, 
     arma::cube& alpha, 
@@ -158,7 +193,7 @@ arma::vec mng_ssm::log_likelihood(
 
 // compute unnormalized mode-based scaling terms
 // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
-void mng_ssm::update_scales() {
+void ssm_mng::update_scales() {
   
   for(unsigned int t = 0; t < n; t++) {
     for(unsigned int i = 0; i < p; i++) {
@@ -196,7 +231,7 @@ void mng_ssm::update_scales() {
  * 2 = Binomial
  * 3 = Negative binomial
  */
-void mng_ssm::laplace_iter(const arma::mat& signal, arma::mat& approx_y,
+void ssm_mng::laplace_iter(const arma::mat& signal, arma::mat& approx_y,
   arma::cube& approx_H) const {
   
   //note: using the variable approx_H to store approx_HH first
@@ -229,7 +264,7 @@ void mng_ssm::laplace_iter(const arma::mat& signal, arma::mat& approx_y,
   approx_H = arma::sqrt(approx_H);
 }
 // these are really not constant in all cases (note phi)
-double mng_ssm::compute_const_term() const {
+double ssm_mng::compute_const_term() const {
   
   double const_term = 0.0;
   for(unsigned int i = 0; i < p; i++) {
@@ -261,13 +296,12 @@ double mng_ssm::compute_const_term() const {
   return const_term;
 }
 
-arma::vec mng_ssm::log_weights(const unsigned int t,  const arma::cube& alpha) const {
+arma::vec ssm_mng::log_weights(const unsigned int t,  const arma::cube& alpha) const {
   
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
   
-  arma::mat Z = Z_fn(t, theta, known_params, known_tv_params);
   for (unsigned int i = 0; i < alpha.n_slices; i++) {
-    arma::vec simsignal = Z * alpha.slice(i).col(t);
+    arma::vec simsignal = D.col(t * Dtv) + Z.slice(t) * alpha.slice(i).col(t);
     for(unsigned int j = 0; j < p; j++) {
       if (arma::is_finite(y(j, t))) {
         switch(distribution(j)) {
@@ -299,14 +333,13 @@ arma::vec mng_ssm::log_weights(const unsigned int t,  const arma::cube& alpha) c
  * t:             Time point where the densities are computed
  * alpha:         Simulated particles
  */
-arma::vec mng_ssm::log_obs_density(const unsigned int t, 
+arma::vec ssm_mng::log_obs_density(const unsigned int t, 
   const arma::cube& alpha) const {
   
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
   
-  arma::mat Z = Z_fn(t, theta, known_params, known_tv_params);
   for (unsigned int i = 0; i < alpha.n_slices; i++) {
-    arma::vec simsignal = Z * alpha.slice(i).col(t);
+    arma::vec simsignal = D.col(t * Dtv) + Z.slice(t) * alpha.slice(i).col(t);
     for(unsigned int j = 0; j < p; j++) {
       if (arma::is_finite(y(j, t))) {
         switch(distribution(j)) {
@@ -348,7 +381,7 @@ arma::vec mng_ssm::log_obs_density(const unsigned int t,
  *                the ancestor of alpha.slice(i).col(t + 1)
  */
 
-double mng_ssm::psi_filter(const unsigned int nsim, arma::cube& alpha, 
+double ssm_mng::psi_filter(const unsigned int nsim, arma::cube& alpha, 
   arma::mat& weights, arma::umat& indices) {
   
   arma::mat alphahat(m, n + 1);
@@ -426,10 +459,9 @@ double mng_ssm::psi_filter(const unsigned int nsim, arma::cube& alpha,
 }
 
 
-double mng_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
+double ssm_mng::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
   
-  arma::mat P1 = P1_fn(theta, known_params);
   arma::uvec nonzero = arma::find(P1.diag() > 0);
   arma::mat L_P1(m, m, arma::fill::zeros);
   if (nonzero.n_elem > 0) {
@@ -442,7 +474,7 @@ double mng_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
     for(unsigned int j = 0; j < m; j++) {
       um(j) = normal(engine);
     }
-    alpha.slice(i).col(0) = a1_fn(theta, known_params) + L_P1 * um;
+    alpha.slice(i).col(0) = a1 + L_P1 * um;
   }
   
   std::uniform_real_distribution<> unif(0.0, 1.0);
@@ -485,9 +517,7 @@ double mng_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
       for(unsigned int j = 0; j < k; j++) {
         uk(j) = normal(engine);
       }
-      alpha.slice(i).col(t + 1) = 
-        T_fn(t, theta, known_params, known_tv_params) * alphatmp.col(i) + 
-        R_fn(t, theta, known_params, known_tv_params) * uk;
+      alpha.slice(i).col(t + 1) = C.col(t * Ctv) + T.slice(t) * alphatmp.col(i) + R.slice(t) * uk;
     }
     
     if ((t < (n - 1)) && arma::uvec(arma::find_nonfinite(y.col(t + 1))).n_elem < p) {

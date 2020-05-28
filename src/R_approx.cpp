@@ -1,8 +1,8 @@
-#include "model_ung_ssm.h"
-#include "model_ung_bsm.h"
-#include "model_ung_svm.h"
-#include "model_ung_ar1.h"
-#include "model_mng_ssm.h"
+#include "model_ssm_ung.h"
+#include "model_bsm_ng.h"
+#include "model_svm.h"
+#include "model_ar1_ng.h"
+#include "model_ssm_mng.h"
 #include "model_nlg_ssm.h"
 
 // [[Rcpp::export]]
@@ -10,25 +10,25 @@ Rcpp::List gaussian_approx_model(const Rcpp::List& model_, const int model_type)
 
   switch (model_type) {
   case 1: {
-    ung_ssm model(Rcpp::clone(model_), 1);
+    ssm_ung model(Rcpp::clone(model_), 1);
     model.approximate();
     return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,
       Rcpp::Named("H") = model.approx_model.H);
   } break;
   case 2: {
-    ung_bsm model(Rcpp::clone(model_), 1);
+    bsm_ng model(Rcpp::clone(model_), 1);
     model.approximate();
     return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,
       Rcpp::Named("H") = model.approx_model.H);
   } break;
   case 3: {
-    ung_svm model(Rcpp::clone(model_), 1);
+    svm model(Rcpp::clone(model_), 1);
     model.approximate();
     return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,
       Rcpp::Named("H") = model.approx_model.H);
   } break;
   case 4: {
-    ung_ar1 model(Rcpp::clone(model_), 1);
+    ar1_ng model(Rcpp::clone(model_), 1);
     model.approximate();
     return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,
       Rcpp::Named("H") = model.approx_model.H);

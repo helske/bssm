@@ -3,7 +3,6 @@
 \docType{package}
 \name{bssm}
 \alias{bssm}
-\alias{bssm-package}
 \title{Bayesian Inference of State Space Models}
 \description{
 This package contains functions for Bayesian inference of basic stochastic volatility model

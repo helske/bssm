@@ -32,5 +32,6 @@ object of class \code{bssm_prior}.
 }
 \description{
 These simple objects of class \code{bssm_prior} are used to construct a prior distributions for the 
-MCMC runs of \code{bssm} package. Currently supported priors are uniform, half-normal, normal, and truncated normal distribution.
+MCMC runs of \code{bssm} package. Currently supported priors are uniform (\code{uniform()}), 
+half-normal (\code{halfnormal()}), normal  (\code{normal()}), and truncated normal distribution  (\code{tnormal()}).
 }

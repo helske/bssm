@@ -15,10 +15,7 @@ default_update_fn <- function(theta) {}
 #' where \eqn{\epsilon_t \sim N(0, 1)}, \eqn{\eta_t \sim N(0, I_k)} and
 #' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, \eqn{X_t} are
 #'  fixed covariates and \eqn{beta} contains the corresponding (known) coefficients.
-#' 
-#' The priors are defined for each NA value of the system matrices, in the same order as 
-#' these values are naturally read in R. For more flexibility, see \code{\link{lgg_ssm}}.
-#' 
+#'
 #' @param y Observations as time series (or vector) of length \eqn{n}.
 #' @param Z System matrix Z of the observation equation as m x 1 or m x n matrix.
 #' @param H Vector of standard deviations. Either a scalar or a vector of length n.
@@ -29,8 +26,9 @@ default_update_fn <- function(theta) {}
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param init_theta Initial values for the unknown hyperparameters theta.
-#' @param xreg Matrix containing covariates.
-#' @param beta Regression coefficients. Defaults to vector of zeros.
+#' @param xreg Matrix of n rows and arbitrary number of columns containing covariates. 
+#' This matrix is not used by default, but can be used to supply additional data to 
+#' \code{update_fn} (where you can, e.g. input the regression part to D).
 #' @param D Intercept terms for observation equation, given as a length n vector.
 #' @param C Intercept terms for state equation, given as m x n matrix.
 #' @param update_fn Function which returns list of updated model 
@@ -40,9 +38,8 @@ default_update_fn <- function(theta) {}
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_ulg}.
 #' @export
-ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL, beta, 
-  D, C, state_names, update_fn = empty, prior_fn = empty) {
-  
+ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL,
+  D, C, state_names, update_fn = default_update_fn, prior_fn = default_prior_fn) {
   
   check_y(y)
   n <- length(y)
@@ -69,14 +66,16 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL, beta,
     m <- dim(Z)[1]
     dim(Z) <- c(m, (n - 1) * (max(dim(Z)[2], 0, na.rm = TRUE) > 1) + 1)
   }
+  # create T
   if (length(T) == 1 && m == 1) {
     dim(T) <- c(1, 1, 1)
   } else {
-    if ((length(T) == 1) || any(dim(T)[1:2] != m) || !dim(T)[3] %in% c(1, NA, n))
+    if ((length(T) == 1) || any(dim(T)[1:2] != m) || !(dim(T)[3] %in% c(1, NA, n)))
       stop("Argument T must be a (m x m) matrix, (m x m x 1) or (m x m x n) array, where m is the number of states. ")
     dim(T) <- c(m, m, (n - 1) * (max(dim(T)[3], 0, na.rm = TRUE) > 1) + 1)
   }
   
+  # create R
   if (length(R) == m) {
     dim(R) <- c(m, 1, 1)
     k <- 1
@@ -87,6 +86,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL, beta,
     dim(R) <- c(m, k, (n - 1) * (max(dim(R)[3], 0, na.rm = TRUE) > 1) + 1)
   }
   
+  # create a1
   if (missing(a1)) {
     a1 <- rep(0, m)
   } else {
@@ -94,6 +94,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL, beta,
       a1 <- rep(a1, length.out = m)
     } else stop("Misspecified a1, argument a1 must be a vector of length m, where m is the number of state_names and 1<=t<=m.")
   }
+  # create P1
   if (missing(P1)) {
     P1 <- matrix(0, m, m)
   } else {
@@ -104,38 +105,35 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL, beta,
         stop("Argument P1 must be (m x m) matrix, where m is the number of states. ")
     }
   }
+  if (!missing(D)) {
+    check_D(D, 1L, n)
+  } else {
+    D <- matrix(0, 1, 1)
+  }
+  if (!missing(C)) {
+    check_C(C, m, n)
+  } else {
+    C <- matrix(0, m, 1)
+  }
+  
   if (length(H)[3] %in% c(1, n))
     stop("Argument H must be a scalar or a vector of length n, where n is the length of the time series y.")
   
+  
   if (missing(state_names)) {
-    state_names <- paste("State", 1:m)
+    state_names <- paste("state", 1:m)
   }
   rownames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
     rownames(P1) <- colnames(P1) <- state_names
   
+  if(is.null(names(init_theta))) 
+    names(init_theta) <- paste0("theta_", 1:length(init_theta))
   
-  if (!missing(obs_intercept)) {
-    check_obs_intercept(obs_intercept, 1L, n)
-  } else {
-    obs_intercept <- matrix(0)
-  }
-  if (!missing(state_intercept)) {
-    check_state_intercept(state_intercept, m, n)
-  } else {
-    state_intercept <- matrix(0, m, 1)
-  }
-  if(missing(beta)) {
-    beta <- numeric(ncol(xreg))
-  } else {
-    if(length(beta) != ncol(xreg)) 
-      stop("Number of coefficients in 'beta' does not match the number of columns in 'xreg'.")
-  }
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
-    xreg = xreg, beta = beta, obs_intercept = obs_intercept,
-    state_intercept = state_intercept, update_fn = update_fn,
-    prior_fn = prior_fn, theta = init_theta), class = "ssm_ulg")
+    xreg = xreg, D = D, C = C, update_fn = update_fn,
+    prior_fn = prior_fn, theta = init_theta), class = c("ssm_ulg", "gaussian"))
 }
-#' General univariate non-Gaussian/non-linear state space model
+#' General univariate non-Gaussian state space model
 #'
 #' Construct an object of class \code{ssm_ung} by defining the corresponding terms
 #' of the observation and state equation:
@@ -164,17 +162,18 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL, beta,
 #' distributions this is ignored.
 #' @param u Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
 #' term. For binomial, this is the number of trials.
-#' @param xreg Matrix containing covariates.
-#' @param beta Regression coefficients. Used as an initial
-#' value in MCMC. Defaults to vector of zeros.
+#' @param xreg Matrix of n rows and arbitrary number of columns containing covariates. 
+#' This matrix is not used by default, but can be used to supply additional data to 
+#' \code{update_fn} (where you can, e.g. input the regression part to D).
 #' @param state_names Names for the states.
 #' @param Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
-#' @param state_intercept Intercept terms \eqn{C_t} for the state equation, given as a
+#' @param C Intercept terms \eqn{C_t} for the state equation, given as a
 #'  m times n matrix.
 #' @return Object of class \code{ssm_ung}.
 #' @export
-ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, xreg = NULL,
-  beta, state_names, state_intercept, update_fn = empty, prior_fn = empty) {
+ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, 
+  init_theta, xreg = NULL, D, C, state_names, update_fn = default_update_fn,
+  prior_fn = default_prior_fn) {
   
   check_y(y)
   n <- length(y)
@@ -182,14 +181,11 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, xreg = NUL
   if (is.null(xreg)) {
     xreg <- matrix(0, 0, 0)
   } else {
-    
     if (is.null(dim(xreg)) && length(xreg) == n) {
       xreg <- matrix(xreg, n, 1)
     }
-    
     check_xreg(xreg, n)
     nx <- ncol(xreg)
-    
     if (is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
@@ -205,14 +201,16 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, xreg = NUL
     m <- dim(Z)[1]
     dim(Z) <- c(m, (n - 1) * (max(dim(Z)[2], 0, na.rm = TRUE) > 1) + 1)
   }
+  # create T
   if (length(T) == 1 && m == 1) {
     dim(T) <- c(1, 1, 1)
   } else {
-    if ((length(T) == 1) || any(dim(T)[1:2] != m) || !dim(T)[3] %in% c(1, NA, n))
+    if ((length(T) == 1) || any(dim(T)[1:2] != m) || !(dim(T)[3] %in% c(1, NA, n)))
       stop("Argument T must be a (m x m) matrix, (m x m x 1) or (m x m x n) array, where m is the number of states. ")
     dim(T) <- c(m, m, (n - 1) * (max(dim(T)[3], 0, na.rm = TRUE) > 1) + 1)
   }
   
+  # create R
   if (length(R) == m) {
     dim(R) <- c(m, 1, 1)
     k <- 1
@@ -223,6 +221,7 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, xreg = NUL
     dim(R) <- c(m, k, (n - 1) * (max(dim(R)[3], 0, na.rm = TRUE) > 1) + 1)
   }
   
+  # create a1
   if (missing(a1)) {
     a1 <- rep(0, m)
   } else {
@@ -230,6 +229,7 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, xreg = NUL
       a1 <- rep(a1, length.out = m)
     } else stop("Misspecified a1, argument a1 must be a vector of length m, where m is the number of state_names and 1<=t<=m.")
   }
+  # create P1
   if (missing(P1)) {
     P1 <- matrix(0, m, m)
   } else {
@@ -241,45 +241,43 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, xreg = NUL
     }
   }
   
-  
-  distribution <- match.arg(distribution, c("poisson", "binomial",
-    "negative binomial"))
-  
-  use_u <- distribution %in% c("poisson", "binomial", "negative binomial")
-  if (use_u) {
-    check_u(u)
-    if (length(u) != n) {
-      u <- rep(u, length.out = n)
-    }
+  if (!missing(D)) {
+    check_D(D, 1L, n)
+  } else {
+    D <- matrix(0, 1, 1)
   }
+  if (!missing(C)) {
+    check_C(C, m, n)
+  } else {
+    C <- matrix(0, m, 1)
+  }
+  
+  check_phi(phi)
+  
+  distribution <- match.arg(distribution, 
+    c("poisson", "binomial", "negative binomial", "gamma"))
+  
+  if (length(u) == 1) {
+    u <- rep(u, length.out = n)
+  }
+  check_u(u)
   
   initial_mode <- init_mode(y, u, distribution, NULL)
   
   if (missing(state_names)) {
-    state_names <- paste("State", 1:m)
+    state_names <- paste("state", 1:m)
   }
   rownames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
     rownames(P1) <- colnames(P1) <- state_names
   
-  obs_intercept <- matrix(0)
+  if(is.null(names(init_theta))) 
+    names(init_theta) <- paste0("theta_", 1:length(init_theta))
   
-  if (!missing(state_intercept)) {
-    check_state_intercept(state_intercept, m, n)
-  } else {
-    state_intercept <- matrix(0, m, 1)
-  }
-  
-  if(missing(beta)) {
-    beta <- numeric(ncol(xreg))
-  } else {
-    if(length(beta) != ncol(xreg)) 
-      stop("Number of coefficients in 'beta' does not match the number of columns in 'xreg'.")
-  }
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
-    xreg = xreg, beta = beta, obs_intercept = obs_intercept,
-    state_intercept = state_intercept, distribution = distribution,
-    initial_mode = initial_mode,
-    theta = initial_theta), class = "ssm_ung")
+    xreg = xreg, D = D, C = C, distribution = distribution,
+    initial_mode = initial_mode, theta = init_theta,
+    max_iter = 100, conv_tol = 1e-8), 
+    class = c("ssm_ung", "nongaussian"))
 }
 
 #' General multivariate linear Gaussian state space models
@@ -303,8 +301,9 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, xreg = NUL
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param init_theta Initial values for the unknown hyperparameters theta.
-#' @param xreg Matrix containing covariates.
-#' @param beta Regression coefficients. Defaults to vector of zeros.
+#' @param xreg Matrix of n rows and arbitrary number of columns containing covariates. 
+#' This matrix is not used by default, but can be used to supply additional data to 
+#' \code{update_fn} (where you can, e.g. input the regression part to D).
 #' @param D Intercept terms for observation equation, given as a length n vector.
 #' @param C Intercept terms for state equation, given as m x n matrix.
 #' @param update_fn Function which returns list of updated model 
@@ -314,26 +313,103 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, xreg = NUL
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_mlg}.
 #' @export
-ssm_mlg <- function(y, Z, H, T, R, a1, P1, theta,
-  obs_intercept, state_intercept,
-  known_params = NA, known_tv_params = matrix(NA), n_states, n_etas,
-  log_prior_pdf, time_varying = rep(TRUE, 6), 
-  state_names = paste0("state",1:n_states)) {
+ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL,
+  D, C, state_names, update_fn = default_update_fn, prior_fn = default_prior_fn) {
   
-  if (is.null(dim(y))) {
-    dim(y) <- c(length(y), 1)
+  # create y
+  check_y(y, multivariate = TRUE)
+  n <- nrow(y)
+  p <- ncol(y)
+  
+  # create xreg
+  if (is.null(xreg)) {
+    xreg <- matrix(0, 0, 0)
+  } else {
+    if (is.null(dim(xreg)) && length(xreg) == n) {
+      xreg <- matrix(xreg, n, 1)
+    }
+    check_xreg(xreg, n)
+    nx <- ncol(xreg)
+    if (is.null(colnames(xreg))) {
+      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    }
+  }
+  # create Z
+  if (dim(Z)[1] != p || !(dim(Z)[3] %in% c(1, NA, n)))
+    stop("Argument Z must be a (p x m) matrix or (p x m x n) array
+      where p is the number of series, m is the number of states, and n is the length of the series. ")
+  m <- dim(Z)[2]
+  dim(Z) <- c(p, m, (n - 1) * (max(dim(Z)[3], 0, na.rm = TRUE) > 1) + 1)
+  
+  # create T
+  if (length(T) == 1 && m == 1) {
+    dim(T) <- c(1, 1, 1)
+  } else {
+    if ((length(T) == 1) || any(dim(T)[1:2] != m) || !(dim(T)[3] %in% c(1, NA, n)))
+      stop("Argument T must be a (m x m) matrix, (m x m x 1) or (m x m x n) array, where m is the number of states. ")
+    dim(T) <- c(m, m, (n - 1) * (max(dim(T)[3], 0, na.rm = TRUE) > 1) + 1)
   }
   
-  if(missing(n_etas)) {
-    n_etas <- n_states
+  # create R
+  if (length(R) == m) {
+    dim(R) <- c(m, 1, 1)
+    k <- 1
+  } else {
+    if (!(dim(R)[1] == m) || dim(R)[2] > m || !dim(R)[3] %in% c(1, NA, n))
+      stop("Argument R must be a (m x k) matrix, (m x k x 1) or (m x k x n) array, where k<=m is the number of disturbances eta, and m is the number of states. ")
+    k <- dim(R)[2]
+    dim(R) <- c(m, k, (n - 1) * (max(dim(R)[3], 0, na.rm = TRUE) > 1) + 1)
   }
-  structure(list(y = as.ts(y), Z = Z, H = H, T = T,
-    R = R, a1 = a1, P1 = P1, theta = theta,
-    obs_intercept = obs_intercept, state_intercept = state_intercept,
-    log_prior_pdf = log_prior_pdf, known_params = known_params,
-    known_tv_params = known_tv_params, time_varying = time_varying,
-    n_states = n_states, n_etas = n_etas,
-    state_names = state_names), class = "lgg_ssm")
+  
+  # create a1
+  if (missing(a1)) {
+    a1 <- rep(0, m)
+  } else {
+    if (length(a1) <= m) {
+      a1 <- rep(a1, length.out = m)
+    } else stop("Misspecified a1, argument a1 must be a vector of length m, where m is the number of state_names and 1<=t<=m.")
+  }
+  # create P1
+  if (missing(P1)) {
+    P1 <- matrix(0, m, m)
+  } else {
+    if (length(P1) == 1 && m == 1) {
+      dim(P1) <- c(1, 1)
+    } else {
+      if (any(dim(P1)[1:2] != m))
+        stop("Argument P1 must be (m x m) matrix, where m is the number of states. ")
+    }
+  }
+  
+  if (!missing(D)) {
+    check_D(D, p, n)
+  } else {
+    D <- matrix(0, p, 1)
+  }
+  if (!missing(C)) {
+    check_C(C, m, n)
+  } else {
+    C <- matrix(0, m, 1)
+  }
+  
+  # create H
+  if (any(dim(H)[1:2] != p) || !(dim(H)[3] %in% c(1, n, NA)))
+    stop("Argument H must be a p x p matrix or a p x p x n array.")
+  dim(H) <- c(p, p, (n - 1) * (max(dim(H)[3], 0, na.rm = TRUE) > 1) + 1)
+  
+  
+  if (missing(state_names)) {
+    state_names <- paste("state", 1:m)
+  }
+  colnames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
+    rownames(P1) <- colnames(P1) <- state_names
+  
+  if(is.null(names(init_theta))) 
+    names(init_theta) <- paste0("theta_", 1:length(init_theta))
+  
+  structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1, 
+    theta = init_theta, D = D, C = C,
+    state_names = state_names), class = c("ssm_mlg", "gaussian"))
 }
 
 #' General Non-Gaussian/Non-linear State Space Model
@@ -366,8 +442,9 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, theta,
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param init_theta Initial values for the unknown hyperparameters theta.
-#' @param xreg Matrix containing covariates.
-#' @param beta Regression coefficients. Defaults to vector of zeros.
+#' @param xreg Matrix of n rows and arbitrary number of columns containing covariates. 
+#' This matrix is not used by default, but can be used to supply additional data to 
+#' \code{update_fn} (where you can, e.g. input the regression part to D).
 #' @param D Intercept terms for observation equation, given as a length n vector.
 #' @param C Intercept terms for state equation, given as m x n matrix.
 #' @param update_fn Function which returns list of updated model 
@@ -377,25 +454,118 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, theta,
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_mng}. UDPATE!!
 #' @export
-ssm_mng <- function(y, Z, T, R, a1, P1, theta,
-  known_params = NA, known_tv_params = matrix(NA), 
-  n_states, n_etas,
-  log_prior_pdf, time_varying = rep(TRUE, 3), 
-  state_names = paste0("state",1:n_states)) {
+ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, 
+  init_theta, xreg = NULL, D, C, state_names, update_fn = default_update_fn,
+  prior_fn = default_prior_fn) {
   
-  if (is.null(dim(y))) {
-    dim(y) <- c(length(y), 1)
+  
+  # create y
+  check_y(y, multivariate = TRUE)
+  n <- nrow(y)
+  p <- ncol(y)
+  
+  # create xreg
+  if (is.null(xreg)) {
+    xreg <- matrix(0, 0, 0)
+  } else {
+    if (is.null(dim(xreg)) && length(xreg) == n) {
+      xreg <- matrix(xreg, n, 1)
+    }
+    check_xreg(xreg, n)
+    nx <- ncol(xreg)
+    if (is.null(colnames(xreg))) {
+      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+    }
+  }
+  # create Z
+  if (dim(Z)[1] != p || !(dim(Z)[3] %in% c(1, NA, n)))
+    stop("Argument Z must be a (p x m) matrix or (p x m x n) array
+      where p is the number of series, m is the number of states, and n is the length of the series. ")
+  m <- dim(Z)[2]
+  dim(Z) <- c(p, m, (n - 1) * (max(dim(Z)[3], 0, na.rm = TRUE) > 1) + 1)
+  
+  # create T
+  if (length(T) == 1 && m == 1) {
+    dim(T) <- c(1, 1, 1)
+  } else {
+    if ((length(T) == 1) || any(dim(T)[1:2] != m) || !(dim(T)[3] %in% c(1, NA, n)))
+      stop("Argument T must be a (m x m) matrix, (m x m x 1) or (m x m x n) array, where m is the number of states. ")
+    dim(T) <- c(m, m, (n - 1) * (max(dim(T)[3], 0, na.rm = TRUE) > 1) + 1)
   }
   
-  if(missing(n_etas)) {
-    n_etas <- n_states
+  # create R
+  if (length(R) == m) {
+    dim(R) <- c(m, 1, 1)
+    k <- 1
+  } else {
+    if (!(dim(R)[1] == m) || dim(R)[2] > m || !dim(R)[3] %in% c(1, NA, n))
+      stop("Argument R must be a (m x k) matrix, (m x k x 1) or (m x k x n) array, where k<=m is the number of disturbances eta, and m is the number of states. ")
+    k <- dim(R)[2]
+    dim(R) <- c(m, k, (n - 1) * (max(dim(R)[3], 0, na.rm = TRUE) > 1) + 1)
   }
-  structure(list(y = as.ts(y), Z = Z, T = T,
-    R = R, a1 = a1, P1 = P1, theta = theta,
-    log_prior_pdf = log_prior_pdf, known_params = known_params,
-    known_tv_params = known_tv_params, time_varying = time_varying,
-    n_states = n_states, n_etas = n_etas,
-    state_names = state_names), class = "ng_ssm")
+  
+  # create a1
+  if (missing(a1)) {
+    a1 <- rep(0, m)
+  } else {
+    if (length(a1) <= m) {
+      a1 <- rep(a1, length.out = m)
+    } else stop("Misspecified a1, argument a1 must be a vector of length m, where m is the number of state_names and 1<=t<=m.")
+  }
+  # create P1
+  if (missing(P1)) {
+    P1 <- matrix(0, m, m)
+  } else {
+    if (length(P1) == 1 && m == 1) {
+      dim(P1) <- c(1, 1)
+    } else {
+      if (any(dim(P1)[1:2] != m))
+        stop("Argument P1 must be (m x m) matrix, where m is the number of states. ")
+    }
+  }
+  
+  if (!missing(D)) {
+    check_D(D, p, n)
+  } else {
+    D <- matrix(0, p, 1)
+  }
+  if (!missing(C)) {
+    check_C(C, m, n)
+  } else {
+    C <- matrix(0, m, 1)
+  }
+  
+  if(length(phi) == 1) phi <- rep(phi, p)
+  for(i in 1:p) {
+    distribution[i] <- match.arg(distribution[i], 
+      c("poisson", "binomial", "negative binomial", "gamma"))
+    check_phi(phi[i])
+  }
+  
+  if (length(u) == 1) {
+    u <- matrix(u, n, p)
+  }
+  check_u(u)
+  if(!identical(dim(y), dim(u))) stop("Dimensions of 'y' and 'u' do not match. ")
+  initial_mode <- y
+  for(i in 1:p) {
+    initial_mode[, i] <- init_mode(y[, i], u[, i], distribution[i], NULL)
+  }
+  
+  if (missing(state_names)) {
+    state_names <- paste("state", 1:m)
+  }
+  colnames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
+    rownames(P1) <- colnames(P1) <- state_names
+  
+  if(is.null(names(init_theta))) 
+    names(init_theta) <- paste0("theta_", 1:length(init_theta))
+  
+  structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
+    xreg = xreg, D = D, C = C, distribution = distribution,
+    initial_mode = initial_mode, theta = init_theta,
+    max_iter = 100, conv_tol = 1e-8), 
+    class = c("ng_ssm", "nongaussian"))
 }
 #' Basic Structural (Time Series) Model
 #'
@@ -420,7 +590,7 @@ ssm_mng <- function(y, Z, T, R, a1, P1, theta,
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
 #' Default is diagonal matrix with 1000 on the diagonal.
-#' @param obs_intercept,state_intercept Intercept terms for observation and
+#' @param D,C Intercept terms for observation and
 #' state equations, given as a length n vector and m times n matrix respectively.
 #' @return Object of class \code{bsm_lg}.
 #' @export
@@ -436,7 +606,7 @@ ssm_mng <- function(y, Z, T, R, a1, P1, theta,
 #' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
 #'
 bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
-  beta, xreg = NULL, period = frequency(y), a1, P1, obs_intercept, state_intercept) {
+  beta, xreg = NULL, period = frequency(y), a1, P1, D, C) {
   
   check_y(y)
   n <- length(y)
@@ -615,28 +785,28 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   names(priors) <- c("sd_y", "sd_level", "sd_slope", "sd_seasonal", names(coefs))
   priors <- priors[sapply(priors, is_prior)]
   
-  if (!missing(obs_intercept)) {
-    check_obs_intercept(obs_intercept, 1L, n)
+  if (!missing(D)) {
+    check_D(D, 1L, n)
   } else {
-    obs_intercept <- matrix(0)
+    D <- matrix(0)
   }
-  if (!missing(state_intercept)) {
-    check_state_intercept(state_intercept, m, n)
+  if (!missing(C)) {
+    check_C(C, m, n)
   } else {
-    state_intercept <- matrix(0, m, 1)
+    C <- matrix(0, m, 1)
   }
   theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
     a1 = a1, P1 = P1, xreg = xreg, beta = coefs,
-    obs_intercept = obs_intercept,
-    state_intercept = state_intercept,
+    D = D,
+    C = C,
     slope = slope, seasonal = seasonal, period = period, 
     fixed = as.integer(!notfixed), 
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
     theta = theta, prior_fn = default_prior_fn, 
-    update_fn = default_update_fn), class = c("bsm_lg", "ssm_ulg"))
+    update_fn = default_update_fn), class = c("bsm_lg", "ssm_ulg", "gaussian"))
 }
 
 #' Non-Gaussian Basic Structural (Time Series) Model
@@ -671,7 +841,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
 #' Default is diagonal matrix with 1e5 on the diagonal.
-#' @param state_intercept Intercept terms for state equation, given as a
+#' @param C Intercept terms for state equation, given as a
 #'  m times n matrix.
 #' @return Object of class \code{bsm_ng}.
 #' @export
@@ -702,7 +872,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' }
 bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), a1, P1,
-  state_intercept) {
+  C) {
   
   
   check_y(y)
@@ -916,26 +1086,28 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     phi <- phi$init
   }
   
-  obs_intercept <- matrix(0)
+  D <- matrix(0)
   
-  if (!missing(state_intercept)) {
-    check_state_intercept(state_intercept, m, n)
+  if (!missing(C)) {
+    check_C(C, m, n)
   } else {
-    state_intercept <- matrix(0, m, 1)
+    C <- matrix(0, m, 1)
   }
   theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, phi = phi, u = u, xreg = xreg, beta = coefs, 
-    obs_intercept = obs_intercept,
-    state_intercept = state_intercept,
+    D = D,
+    C = C,
     slope = slope, seasonal = seasonal, noise = noise,
     period = period, fixed = as.integer(!notfixed),
     distribution = distribution, initial_mode = initial_mode, 
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
     theta = theta, phi_est = phi_est, 
-    prior_fn = default_prior_fn, update_fn = default_update_fn), class = c("bsm_ng", "ssm_ung"))
+    prior_fn = default_prior_fn, update_fn = default_update_fn,
+    max_iter = 100, conv_tol = 1e-8), 
+    class = c("bsm_ng", "ssm_ung", "nongaussian"))
 }
 
 #' Stochastic Volatility Model
@@ -1015,20 +1187,21 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
   names(priors) <-
     c("rho", "sd_ar", if(svm_type==0) "sigma" else "mu", names(coefs))
   
-  state_intercept <- if (svm_type) matrix(mu$init * (1 - T[1])) else matrix(0)
-  obs_intercept <- matrix(0)
+  C <- if (svm_type) matrix(mu$init * (1 - T[1])) else matrix(0)
+  D <- matrix(0)
   
   theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, phi = if (svm_type == 0) sigma$init else 1, xreg = xreg, 
-    beta = coefs, obs_intercept = obs_intercept, state_intercept = state_intercept, 
+    beta = coefs, D = D, C = C, 
     initial_mode = initial_mode, 
-    svm_type = svm_type, distribution = 0L, u = 1, phi_est = !as.logical(svm_type),
+    svm_type = svm_type, distribution = "svm", u = 1, phi_est = !as.logical(svm_type),
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
-    theta = theta, prior_fn = default_prior_fn, update_fn = default_update_fn),
-    class = c("svm", "ssm_ung"))
+    theta = theta, prior_fn = default_prior_fn, update_fn = default_update_fn,
+    max_iter = 100, conv_tol = 1e-8),
+    class = c("svm", "ssm_ung", "nongaussian"))
 }
 #' Non-Gaussian model with AR(1) latent process
 #'
@@ -1095,12 +1268,12 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
     check_mu(mu$init)
     mu_est <- TRUE
     a1 <- mu$init
-    state_intercept <- matrix(mu$init * (1 - rho$init))
+    C <- matrix(mu$init * (1 - rho$init))
   } else {
     mu_est <- FALSE
     check_mu(mu)
     a1 <- mu
-    state_intercept <- matrix(mu * (1 - rho$init))
+    C <- matrix(mu * (1 - rho$init))
   }
   distribution <- match.arg(distribution, c("poisson", "binomial",
     "negative binomial"))
@@ -1148,19 +1321,20 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
   if (phi_est) {
     phi <- phi$init
   }
-  obs_intercept <- matrix(0)
+  D <- matrix(0)
   
   theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
     a1 = a1, P1 = P1, phi = phi, u = u, xreg = xreg, beta = coefs,
-    obs_intercept = obs_intercept, state_intercept = state_intercept,
+    D = D, C = C,
     initial_mode = initial_mode,
     distribution = distribution, mu_est = mu_est, phi_est = phi_est,
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
-    theta = theta, prior_fn = default_prior_fn, update_fn = default_update_fn),
-    class = c("ar1_ng", "ssm_ung"))
+    theta = theta, prior_fn = default_prior_fn, update_fn = default_update_fn,
+    max_iter = 100, conv_tol = 1e-8),
+    class = c("ar1_ng", "ssm_ung", "nongaussian"))
 }
 #' Univariate Gaussian model with AR(1) latent process
 #'
@@ -1221,14 +1395,14 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
     check_mu(mu$init)
     mu_est <- TRUE
     a1 <- mu$init
-    state_intercept <- matrix(mu$init * (1 - rho$init))
+    C <- matrix(mu$init * (1 - rho$init))
   } else {
     mu_est <- FALSE
     check_mu(mu)
     a1 <- mu
-    state_intercept <- matrix(mu * (1 - rho$init))
+    C <- matrix(mu * (1 - rho$init))
   }
- 
+  
   if (is_prior(sd_y)) {
     check_sd(sd_y$init, "y")
     sd_y_est <- TRUE
@@ -1239,7 +1413,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
     H <- matrix(sd_y)
   }
   
- 
+  
   P1 <- matrix(sigma$init^2 / (1 - rho$init^2))
   
   Z <- matrix(1)
@@ -1258,19 +1432,20 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
   names(priors) <-
     c("rho", "sigma", "mu", "sd_y", names(coefs))
   priors <- priors[sapply(priors, is_prior)]
-
-  obs_intercept <- matrix(0)
+  
+  D <- matrix(0)
   
   theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
     a1 = a1, P1 = P1, xreg = xreg, beta = coefs,
-    obs_intercept = obs_intercept, state_intercept = state_intercept,
+    D = D, C = C,
     mu_est = mu_est, sd_y_est = sd_y_est,
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
-    theta = theta, prior_fn = default_prior_fn, update_fn = default_update_fn),
-    class = c("ar1_lg", "ssm_ulg"))
+    theta = theta, prior_fn = default_prior_fn, update_fn = default_update_fn,
+    max_iter = 100, conv_tol = 1e-8),
+    class = c("ar1_lg", "ssm_ulg", "gaussian"))
 }
 
 #'
@@ -1316,7 +1491,7 @@ nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
   if (is.null(dim(y))) {
     dim(y) <- c(length(y), 1)
   }
- 
+  
   if(missing(n_etas)) {
     n_etas <- n_states
   }
@@ -1326,7 +1501,8 @@ nlg_ssm <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
     known_tv_params = known_tv_params,
     n_states = n_states, n_etas = n_etas,
     time_varying = time_varying,
-    state_names = state_names), class = "nlg_ssm")
+    state_names = state_names,
+    max_iter = 100, conv_tol = 1e-8), class = "nlg_ssm")
 }
 
 #'

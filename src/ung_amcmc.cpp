@@ -3,12 +3,12 @@
 // #endif
 // #include <ramcmc.h>
 // #include "ung_amcmc.h"
-// #include "model_ugg_ssm.h"
-// #include "model_ung_ssm.h"
-// #include "model_ugg_bsm.h"
-// #include "model_ung_bsm.h"
-// #include "model_ung_svm.h"
-// #include "model_ung_ar1.h"
+// #include "model_ssm_ulg.h"
+// #include "model_ssm_ung.h"
+// #include "model_bsm_lg.h"
+// #include "model_bsm_ng.h"
+// #include "model_svm.h"
+// #include "model_ar1_ng.h"
 // 
 // #include "rep_mat.h"
 // #include "distr_consts.h"
@@ -98,10 +98,10 @@
 // 
 // // run approximate MCMC for
 // // non-linear and/or non-Gaussian state space model with linear-Gaussian states
-// template void ung_amcmc::approx_mcmc(ung_ssm model, const bool end_ram);
-// template void ung_amcmc::approx_mcmc(ung_bsm model, const bool end_ram);
-// template void ung_amcmc::approx_mcmc(ung_svm model, const bool end_ram);
-// template void ung_amcmc::approx_mcmc(ung_ar1 model, const bool end_ram);
+// template void ung_amcmc::approx_mcmc(ssm_ung model, const bool end_ram);
+// template void ung_amcmc::approx_mcmc(bsm_ng model, const bool end_ram);
+// template void ung_amcmc::approx_mcmc(svm model, const bool end_ram);
+// template void ung_amcmc::approx_mcmc(ar1_ng model, const bool end_ram);
 // 
 // template<class T>
 // void ung_amcmc::approx_mcmc(T model, const bool end_ram) {
@@ -115,7 +115,7 @@
 //   }
 //   // construct the approximate Gaussian model
 //   arma::vec mode_estimate = initial_mode;
-//   ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
+//   ssm_ulg approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
 //   
 //   // compute the log-likelihood of the approximate model
 //   double gaussian_loglik = approx_model.log_likelihood();
@@ -230,13 +230,13 @@
 // 
 // // approximate MCMC
 // 
-// template void ung_amcmc::is_correction_psi(ung_ssm model, const unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_psi(ssm_ung model, const unsigned int nsim_states, 
 //   const unsigned int is_type, const unsigned int n_threads);
-// template void ung_amcmc::is_correction_psi(ung_bsm model, const unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_psi(bsm_ng model, const unsigned int nsim_states, 
 //   const unsigned int is_type, const unsigned int n_threads);
-// template void ung_amcmc::is_correction_psi(ung_svm model, const unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_psi(svm model, const unsigned int nsim_states, 
 //   const unsigned int is_type, const unsigned int n_threads);
-// template void ung_amcmc::is_correction_psi(ung_ar1 model, const unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_psi(ar1_ng model, const unsigned int nsim_states, 
 //   const unsigned int is_type, const unsigned int n_threads);
 // 
 // template <class T>
@@ -253,7 +253,7 @@
 //   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
 //   
 //   arma::vec tmp(1);
-//   ugg_ssm approx_model = model.approximate(tmp, 0, 0);
+//   ssm_ulg approx_model = model.approximate(tmp, 0, 0);
 //   
 // #pragma omp for schedule(dynamic)
 //   for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
@@ -313,7 +313,7 @@
 // }
 // #else
 // arma::vec tmp(1);
-// ugg_ssm approx_model = model.approximate(tmp, 0, 0);
+// ssm_ulg approx_model = model.approximate(tmp, 0, 0);
 // 
 // for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
 //   
@@ -375,16 +375,16 @@
 //   arma::log(weight_storage);
 // }
 // 
-// template void ung_amcmc::is_correction_bsf(ung_ssm model, 
+// template void ung_amcmc::is_correction_bsf(ssm_ung model, 
 //   const unsigned int nsim_states, const unsigned int is_type, 
 //   const unsigned int n_threads);
-// template void ung_amcmc::is_correction_bsf(ung_bsm model, 
+// template void ung_amcmc::is_correction_bsf(bsm_ng model, 
 //   const unsigned int nsim_states, const unsigned int is_type, 
 //   const unsigned int n_threads);
-// template void ung_amcmc::is_correction_bsf(ung_svm model, 
+// template void ung_amcmc::is_correction_bsf(svm model, 
 //   const unsigned int nsim_states, const unsigned int is_type, 
 //   const unsigned int n_threads);
-// template void ung_amcmc::is_correction_bsf(ung_ar1 model, 
+// template void ung_amcmc::is_correction_bsf(ar1_ng model, 
 //   const unsigned int nsim_states, const unsigned int is_type, 
 //   const unsigned int n_threads);
 // 
@@ -489,13 +489,13 @@
 // posterior_storage = prior_storage + arma::log(weight_storage);
 // }
 // 
-// template void ung_amcmc::is_correction_spdk(ung_ssm model, unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_spdk(ssm_ung model, unsigned int nsim_states, 
 //   unsigned int is_type, const unsigned int n_threads);
-// template void ung_amcmc::is_correction_spdk(ung_bsm model, unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_spdk(bsm_ng model, unsigned int nsim_states, 
 //   unsigned int is_type, const unsigned int n_threads);
-// template void ung_amcmc::is_correction_spdk(ung_svm model, unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_spdk(svm model, unsigned int nsim_states, 
 //   unsigned int is_type, const unsigned int n_threads);
-// template void ung_amcmc::is_correction_spdk(ung_ar1 model, unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_spdk(ar1_ng model, unsigned int nsim_states, 
 //   unsigned int is_type, const unsigned int n_threads);
 // 
 // template <class T>
@@ -512,7 +512,7 @@
 //   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
 //   
 //   arma::vec tmp(1);
-//   ugg_ssm approx_model = model.approximate(tmp, 0, 0);
+//   ssm_ulg approx_model = model.approximate(tmp, 0, 0);
 //   
 // #pragma omp for schedule(dynamic)
 //   for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
@@ -567,7 +567,7 @@
 // }
 // #else
 // arma::vec tmp(1);
-// ugg_ssm approx_model = model.approximate(tmp, 0, 0);
+// ssm_ulg approx_model = model.approximate(tmp, 0, 0);
 // 
 // for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
 //   
@@ -623,10 +623,10 @@
 //   arma::log(weight_storage);
 // }
 // 
-// template void ung_amcmc::approx_state_posterior(ung_ssm model, const unsigned int n_threads);
-// template void ung_amcmc::approx_state_posterior(ung_bsm model, const unsigned int n_threads);
-// template void ung_amcmc::approx_state_posterior(ung_svm model, const unsigned int n_threads);
-// template void ung_amcmc::approx_state_posterior(ung_ar1 model, const unsigned int n_threads);
+// template void ung_amcmc::approx_state_posterior(ssm_ung model, const unsigned int n_threads);
+// template void ung_amcmc::approx_state_posterior(bsm_ng model, const unsigned int n_threads);
+// template void ung_amcmc::approx_state_posterior(svm model, const unsigned int n_threads);
+// template void ung_amcmc::approx_state_posterior(ar1_ng model, const unsigned int n_threads);
 // 
 // template <class T>
 // void ung_amcmc::approx_state_posterior(T model, const unsigned int n_threads) {
@@ -638,7 +638,7 @@
 //   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
 //   
 //   arma::vec tmp(1);
-//   ugg_ssm approx_model = model.approximate(tmp, 0, 0);
+//   ssm_ulg approx_model = model.approximate(tmp, 0, 0);
 //   
 // #pragma omp for schedule(dynamic)
 //   for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
@@ -662,7 +662,7 @@
 // }
 // #else
 // arma::vec tmp(1);
-// ugg_ssm approx_model = model.approximate(tmp, 0, 0);
+// ssm_ulg approx_model = model.approximate(tmp, 0, 0);
 // 
 // for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
 //   

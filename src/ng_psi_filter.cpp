@@ -1,21 +1,21 @@
 // #include "ng_psi_filter.h"
 // 
-// #include "model_ung_ssm.h"
-// #include "model_ung_bsm.h"
-// #include "model_ung_svm.h"
-// #include "model_ung_ar1.h"
+// #include "model_ssm_ung.h"
+// #include "model_bsm_ng.h"
+// #include "model_svm.h"
+// #include "model_ar1_ng.h"
 // #include "distr_consts.h"
 // 
-// template double compute_ung_psi_filter(ung_ssm model, const unsigned int nsim_states, 
+// template double compute_ung_psi_filter(ssm_ung model, const unsigned int nsim_states, 
 //   arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
 //   arma::cube& alpha, arma::mat& weights, arma::umat& indices);
-// template double compute_ung_psi_filter(ung_bsm model, const unsigned int nsim_states, 
+// template double compute_ung_psi_filter(bsm_ng model, const unsigned int nsim_states, 
 //   arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
 //   arma::cube& alpha, arma::mat& weights, arma::umat& indices);
-// template double compute_ung_psi_filter(ung_svm model, const unsigned int nsim_states, 
+// template double compute_ung_psi_filter(svm model, const unsigned int nsim_states, 
 //   arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
 //   arma::cube& alpha, arma::mat& weights, arma::umat& indices);
-// template double compute_ung_psi_filter(ung_ar1 model, const unsigned int nsim_states, 
+// template double compute_ung_psi_filter(ar1_ng model, const unsigned int nsim_states, 
 //   arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
 //   arma::cube& alpha, arma::mat& weights, arma::umat& indices);
 // 
@@ -24,7 +24,7 @@
 //   arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
 //   arma::cube& alpha, arma::mat& weights, arma::umat& indices) {
 //   
-//   ugg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
+//   ssm_ulg approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
 //   // compute the log-likelihood of the approximate model
 //   
 //   double gaussian_loglik = approx_model.log_likelihood();

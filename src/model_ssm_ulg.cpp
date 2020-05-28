@@ -1,4 +1,4 @@
-#include "model_ugg_ssm.h"
+#include "model_ssm_ulg.h"
 #include "interval.h"
 #include "rep_mat.h"
 #include "sample.h"
@@ -6,9 +6,9 @@
 #include "conditional_dist.h"
 #include "psd_chol.h"
 
-// General constructor of ugg_ssm object from Rcpp::List
+// General constructor of ssm_ulg object from Rcpp::List
 // with parameter indices
-ugg_ssm::ugg_ssm(const Rcpp::List& model,
+ssm_ulg::ssm_ulg(const Rcpp::List& model,
   const unsigned int seed,
   const double zero_tol) 
   :
@@ -19,10 +19,10 @@ ugg_ssm::ugg_ssm(const Rcpp::List& model,
     R(Rcpp::as<arma::cube>(model["R"])), 
     a1(Rcpp::as<arma::vec>(model["a1"])),
     P1(Rcpp::as<arma::mat>(model["P1"])), 
-    D(Rcpp::as<arma::vec>(model["obs_intercept"])),
-    C(Rcpp::as<arma::mat>(model["state_intercept"])),
+    D(Rcpp::as<arma::vec>(model["D"])),
+    C(Rcpp::as<arma::mat>(model["C"])),
     xreg(Rcpp::as<arma::mat>(model["xreg"])),
-    beta(Rcpp::as<arma::vec>(model["beta"])),
+    beta(arma::vec(xreg.n_cols, arma::fill::zeros)),
     n(y.n_elem), m(a1.n_elem), k(R.n_cols),
     Ztv(Z.n_cols > 1), Htv(H.n_elem > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
     Dtv(D.n_elem > 1), Ctv(C.n_cols > 1),
@@ -40,16 +40,15 @@ ugg_ssm::ugg_ssm(const Rcpp::List& model,
   compute_RR();
 }
 
-// General constructor of ugg_ssm object using arma objects for ng-models
-ugg_ssm::ugg_ssm(
+// General constructor of ssm_ulg object using arma objects for ng-models
+ssm_ulg::ssm_ulg(
   const arma::vec& y, const arma::mat& Z, const arma::vec& H,
   const arma::cube& T, const arma::cube& R, 
   const arma::vec& a1, const arma::mat& P1,
   const arma::vec& D, const arma::mat& C, 
   const arma::mat& xreg, const arma::vec& beta,
-  const arma::vec& theta, const Rcpp::Function update_fn,
-  const Rcpp::Function prior_fn,
-  const unsigned int seed,
+  const arma::vec& theta, const unsigned int seed,
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn,
   const double zero_tol) :
   y(y), Z(Z), H(H), T(T), R(R), a1(a1), P1(P1), D(D), C(C), 
   xreg(xreg), beta(beta), n(y.n_elem), m(a1.n_elem), k(R.n_cols),
@@ -67,8 +66,13 @@ ugg_ssm::ugg_ssm(
   compute_RR();
 }
 
+inline void ssm_ulg::compute_RR(){
+  for (unsigned int t = 0; t < R.n_slices; t++) {
+    RR.slice(t) = R.slice(t * Rtv) * R.slice(t * Rtv).t();
+  }
+}
 
-void ugg_ssm::update_model(const arma::vec& new_theta) {
+void ssm_ulg::update_model(const arma::vec& new_theta) {
   
   Rcpp::List model_list = update_fn(new_theta);
   if (model_list.containsElementNamed("Z")) {
@@ -105,19 +109,12 @@ void ugg_ssm::update_model(const arma::vec& new_theta) {
   theta = new_theta;
 }
 
-double ugg_ssm::log_prior_pdf(const arma::vec& x) const {
+double ssm_ulg::log_prior_pdf(const arma::vec& x) {
   
   return Rcpp::as<double>(prior_fn(x));
 }
 
-
-void ugg_ssm::compute_RR(){
-  for (unsigned int t = 0; t < R.n_slices; t++) {
-    RR.slice(t) = R.slice(t * Rtv) * R.slice(t * Rtv).t();
-  }
-}
-
-double ugg_ssm::log_likelihood() const {
+double ssm_ulg::log_likelihood() const {
   
   double logLik = 0;
   arma::vec at = a1;
@@ -148,7 +145,7 @@ double ugg_ssm::log_likelihood() const {
 }
 
 
-arma::cube ugg_ssm::simulate_states(const unsigned int nsim, const bool use_antithetic) {
+arma::cube ssm_ulg::simulate_states(const unsigned int nsim, const bool use_antithetic) {
   
   arma::vec y_tmp = y;
   
@@ -259,7 +256,7 @@ arma::cube ugg_ssm::simulate_states(const unsigned int nsim, const bool use_anti
 /* Fast state smoothing, only returns smoothed estimates of states
  * which are needed in simulation smoother and Laplace approximation
  */
-arma::mat ugg_ssm::fast_smoother() const {
+arma::mat ssm_ulg::fast_smoother() const {
   
   arma::mat at(m, n + 1);
   arma::mat Pt(m, m);
@@ -321,7 +318,7 @@ arma::mat ugg_ssm::fast_smoother() const {
 
 /* Fast state smoothing which uses precomputed Ft, Kt and Lt.
  */
-arma::mat ugg_ssm::fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
+arma::mat ssm_ulg::fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
   const arma::cube& Lt) const {
   
   arma::mat at(m, n + 1);
@@ -370,7 +367,7 @@ arma::mat ugg_ssm::fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
   return at;
 }
 
-arma::mat ugg_ssm::fast_precomputing_smoother(arma::vec& Ft, arma::mat& Kt,
+arma::mat ssm_ulg::fast_precomputing_smoother(arma::vec& Ft, arma::mat& Kt,
   arma::cube& Lt) const {
   
   arma::mat at(m, n + 1);
@@ -426,7 +423,7 @@ arma::mat ugg_ssm::fast_precomputing_smoother(arma::vec& Ft, arma::mat& Kt,
 
 // smoother which returns also cov(alpha_t, alpha_t-1)
 // used in psi particle filter
-void ugg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) const {
+void ssm_ulg::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) const {
   
   at.col(0) = a1;
   Pt.slice(0) = P1;
@@ -482,7 +479,7 @@ void ugg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
   ccov.slice(n).zeros();
 }
 
-double ugg_ssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
+double ssm_ulg::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
   arma::cube& Ptt) const {
   
   double logLik = 0;
@@ -520,7 +517,7 @@ double ugg_ssm::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
   return logLik;
 }
 
-void ugg_ssm::smoother(arma::mat& at, arma::cube& Pt) const {
+void ssm_ulg::smoother(arma::mat& at, arma::cube& Pt) const {
   
   at.col(0) = a1;
   Pt.slice(0) = P1;
@@ -569,7 +566,7 @@ void ugg_ssm::smoother(arma::mat& at, arma::cube& Pt) const {
   }
 }
 
-Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& theta_posterior,
+Rcpp::List ssm_ulg::predict_interval(const arma::vec& probs, const arma::mat& theta_posterior,
   const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type) {
   
   update_model(theta_posterior.col(0));
@@ -588,7 +585,7 @@ Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
     arma::mat var_pred(n, n_samples);
     
     for(unsigned int t = 0; t < n; t++) {
-      mean_pred(t, 0) = arma::as_scalar(xbeta(t) +
+      mean_pred(t, 0) = arma::as_scalar(D(t * Dtv) + xbeta(t) +
         Z.col(Ztv * t).t() * at.col(t));
       var_pred(t, 0) = arma::as_scalar(Z.col(Ztv * t).t() * Pt.slice(t) * Z.col(Ztv * t));
     }
@@ -606,7 +603,7 @@ Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
       filter(at, att, Pt, Ptt);
       
       for(unsigned int t = 0; t < n; t++) {
-        mean_pred(t, i) = arma::as_scalar(xbeta(t) +
+        mean_pred(t, i) = arma::as_scalar(D(t * Dtv) + xbeta(t) +
           Z.col(Ztv * t).t() * at.col(t));
         var_pred(t, i) = arma::as_scalar(Z.col(Ztv * t).t() * Pt.slice(t) * Z.col(Ztv * t));
       }
@@ -666,7 +663,7 @@ Rcpp::List ugg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
       Rcpp::Named("sd_pred") = expanded_sd);
   }
 }
-arma::cube ugg_ssm::predict_sample(const arma::mat& theta_posterior,
+arma::cube ssm_ulg::predict_sample(const arma::mat& theta_posterior,
   const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type, 
   const unsigned int nsim) {
   
@@ -688,7 +685,7 @@ arma::cube ugg_ssm::predict_sample(const arma::mat& theta_posterior,
 }
 
 
-arma::mat ugg_ssm::sample_model(const unsigned int predict_type, const unsigned int nsim) {
+arma::mat ssm_ulg::sample_model(const unsigned int predict_type, const unsigned int nsim) {
   
   arma::cube alpha(m, n, nsim);
   
@@ -723,7 +720,7 @@ arma::mat ugg_ssm::sample_model(const unsigned int predict_type, const unsigned 
 }
 
 
-double ugg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
+double ssm_ulg::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
   
   arma::mat L_P1 = psd_chol(P1);
@@ -812,7 +809,7 @@ double ugg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
 }
 
 
-void ugg_ssm::psi_filter(const unsigned int nsim, arma::cube& alpha) {
+void ssm_ulg::psi_filter(const unsigned int nsim, arma::cube& alpha) {
   
   arma::mat alphahat(m, n + 1);
   arma::cube Vt(m, m, n + 1);

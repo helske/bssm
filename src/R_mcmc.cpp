@@ -2,15 +2,15 @@
 // #include "ung_amcmc.h"
 // #include "nlg_amcmc.h"
 
-#include "model_ugg_bsm.h"
-#include "model_ugg_bsm.h"
-#include "model_ugg_ar1.h"
-#include "model_ung_bsm.h"
-#include "model_ung_svm.h"
-#include "model_ung_ar1.h"
+
+#include "model_ssm_mlg.h"
+#include "model_ssm_mng.h"
+#include "model_bsm_lg.h"
+#include "model_bsm_ng.h"
+#include "model_ar1_lg.h"
+#include "model_ar1_ng.h"
+#include "model_svm.h"
 #include "model_nlg_ssm.h"
-#include "model_lgg_ssm.h"
-#include "model_mng_ssm.h"
 //#include "summary.h"
 
 // [[Rcpp::export]]
@@ -37,7 +37,7 @@ Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
   
   switch (model_type) {
   case 1: {
-    ugg_ssm model(Rcpp::clone(model_), seed);
+    ssm_ulg model(Rcpp::clone(model_), seed);
     mcmc_run.mcmc_gaussian(model, end_ram);
     switch (type) {
     case 1: {
@@ -69,7 +69,7 @@ Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
     }
   }break;
   case 2: {
-    ugg_bsm model(Rcpp::clone(model_), seed);
+    bsm_lg model(Rcpp::clone(model_), seed);
     mcmc_run.mcmc_gaussian(model, end_ram);
     switch (type) {
     case 1: {
@@ -101,7 +101,7 @@ Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
     }
   } break;
   case 3: {
-    ugg_ar1 model(Rcpp::clone(model_), seed);
+    ar1_lg model(Rcpp::clone(model_), seed);
     mcmc_run.mcmc_gaussian(model, end_ram);
     switch (type) {
     case 1: {
@@ -136,53 +136,7 @@ Rcpp::List gaussian_mcmc(const Rcpp::List& model_,
   return Rcpp::List::create(Rcpp::Named("error") = "error");
 }
 
-// [[Rcpp::export]]
-Rcpp::List general_gaussian_mcmc(const arma::mat& y, SEXP Z, SEXP H,
-  SEXP T, SEXP R, SEXP a1, SEXP P1,
-  const arma::vec& theta,
-  SEXP D, SEXP C,
-  SEXP log_prior_pdf, const arma::vec& known_params,
-  const arma::mat& known_tv_params, const arma::uvec& time_varying,
-  const unsigned int n_states, const unsigned int n_etas,
-  const unsigned int seed, const unsigned int n_iter,
-  const unsigned int n_burnin, const unsigned int n_thin,
-  const double gamma, const double target_acceptance, const arma::mat S,
-  const bool end_ram, const unsigned int n_threads, const unsigned int type) {
 
-  Rcpp::XPtr<lmat_fnPtr> xpfun_Z(Z);
-  Rcpp::XPtr<lmat_fnPtr> xpfun_H(H);
-  Rcpp::XPtr<lmat_fnPtr> xpfun_T(T);
-  Rcpp::XPtr<lmat_fnPtr> xpfun_R(R);
-  Rcpp::XPtr<a1_fnPtr> xpfun_a1(a1);
-  Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
-  Rcpp::XPtr<lvec_fnPtr> xpfun_D(D);
-  Rcpp::XPtr<lvec_fnPtr> xpfun_C(C);
-  Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
-
-  lgg_ssm model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_a1, *xpfun_P1,
-    *xpfun_D, *xpfun_C, theta, *xpfun_prior, known_params, known_tv_params,
-    time_varying, n_states, n_etas, seed);
-
-  mcmc mcmc_run(n_iter, n_burnin, n_thin,
-    model.n, model.m, target_acceptance, gamma, S, type);
-
-  // mcmc_run.mcmc_gaussian(model, end_ram);
-  // if(type == 1) mcmc_run.state_posterior(model, n_threads);
-
-  if(type == 1) {
-    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
-      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
-      Rcpp::Named("counts") = mcmc_run.count_storage,
-      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
-  } else {
-    return Rcpp::List::create(Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
-      Rcpp::Named("counts") = mcmc_run.count_storage,
-      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
-  }
-  return Rcpp::List::create(Rcpp::Named("theta") = 1);
-}
 // [[Rcpp::export]]
 Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
   const unsigned int type,
@@ -209,19 +163,19 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List& model_,
 
   switch (model_type) {
   case 1: {
-    ung_ssm model(Rcpp::clone(model_), seed);
+    ssm_ung model(Rcpp::clone(model_), seed);
     mcmc_run.pm_mcmc(model, simulation_method, nsim_states, end_ram);
   } break;
   case 2: {
-    ung_bsm model(Rcpp::clone(model_), seed);
+    bsm_ng model(Rcpp::clone(model_), seed);
     mcmc_run.pm_mcmc(model, simulation_method, nsim_states, end_ram);
   } break;
   case 3: {
-    ung_svm model(Rcpp::clone(model_), seed);
+    svm model(Rcpp::clone(model_), seed);
     mcmc_run.pm_mcmc(model, simulation_method, nsim_states, end_ram);
   } break;
   case 4: {
-    ung_ar1 model(Rcpp::clone(model_), seed);
+    ar1_ng model(Rcpp::clone(model_), seed);
     mcmc_run.pm_mcmc(model, simulation_method, nsim_states, end_ram);
   }
   }
@@ -279,19 +233,19 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
 
   switch (model_type) {
   case 1: {
-    ung_ssm model(Rcpp::clone(model_), seed);
+    ssm_ung model(Rcpp::clone(model_), seed);
     mcmc_run.da_mcmc(model, simulation_method, nsim_states, end_ram);
   } break;
   case 2: {
-    ung_bsm model(Rcpp::clone(model_), seed);
+    bsm_ng model(Rcpp::clone(model_), seed);
     mcmc_run.da_mcmc(model, simulation_method, nsim_states, end_ram);
   } break;
   case 3: {
-    ung_svm model(Rcpp::clone(model_), seed);
+    svm model(Rcpp::clone(model_), seed);
     mcmc_run.da_mcmc(model, simulation_method, nsim_states, end_ram);
   } break;
   case 4: {
-    ung_ar1 model(Rcpp::clone(model_), seed);
+    ar1_ng model(Rcpp::clone(model_), seed);
     mcmc_run.da_mcmc(model, simulation_method, nsim_states, end_ram);
   } break;
   }
@@ -358,7 +312,7 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
 // //   }
 // //   switch (model_type) {
 // //   case 1: {
-// //     ung_ssm model(Rcpp::clone(model_), seed);
+// //     ssm_ung model(Rcpp::clone(model_), seed);
 // //     mcmc_run.approx_mcmc(model, end_ram);
 // //     if(nsim_states > 1) {
 // //       if(is_type == 3) {
@@ -380,7 +334,7 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
 // //     }
 // //   } break;
 // //   case 2: {
-// //     ung_bsm model(Rcpp::clone(model_), seed);
+// //     bsm_ng model(Rcpp::clone(model_), seed);
 // //     mcmc_run.approx_mcmc(model, end_ram);
 // //     if(nsim_states > 1) {
 // //       if(is_type == 3) {
@@ -402,7 +356,7 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
 // //     }
 // //   } break;
 // //   case 3: {
-// //     ung_svm model(Rcpp::clone(model_), seed);
+// //     svm model(Rcpp::clone(model_), seed);
 // //     mcmc_run.approx_mcmc(model, end_ram);
 // //     if(nsim_states > 1) {
 // //       if(is_type == 3) {
@@ -424,7 +378,7 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List& model_,
 // //     }
 // //   } break;  
 // //   case 4: {
-// //     ung_ar1 model(Rcpp::clone(model_), seed);
+// //     ar1_ng model(Rcpp::clone(model_), seed);
 // //     mcmc_run.approx_mcmc(model, end_ram);
 // //     if(nsim_states > 1) {
 // //       if(is_type == 3) {

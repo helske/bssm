@@ -99,7 +99,7 @@
 //     Rcpp::stop("Initial prior probability is not finite.");
 //   }
 //   arma::mat mode_estimate(m, n);
-//   mgg_ssm approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
+//   ssm_mlg approx_model0 = model.approximate(mode_estimate, max_iter, conv_tol, iekf_iter);
 //   if (!arma::is_finite(mode_estimate)) {
 //     Rcpp::stop("Approximation based on initial theta failed.");
 //   }
@@ -138,7 +138,7 @@
 //       // update parameters
 //       model.theta = theta_prop;
 //       arma::mat mode_estimate_prop(m, n);
-//       mgg_ssm approx_model = model.approximate(mode_estimate_prop, max_iter, 
+//       ssm_mlg approx_model = model.approximate(mode_estimate_prop, max_iter, 
 //         conv_tol, iekf_iter);
 //       double loglik_prop;
 //       double sum_scales_prop = 0.0; // initialize in order to get rid of false warning
@@ -410,7 +410,7 @@
 //   arma::mat D(p, n);
 //   arma::mat C(m, n);
 //   
-//   mgg_ssm approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
+//   ssm_mlg approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
 //     arma::mat(0,0), D, C, model.seed);
 //   
 // #pragma omp for schedule(dynamic)
@@ -489,7 +489,7 @@
 // arma::mat D(p, n);
 // arma::mat C(m, n);
 // 
-// mgg_ssm approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
+// ssm_mlg approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
 //   arma::mat(0,0), D, C, model.seed);
 // 
 // for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
@@ -580,7 +580,7 @@
 //   arma::mat D(p, n);
 //   arma::mat C(m, n);
 //   
-//   mgg_ssm approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
+//   ssm_mlg approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
 //     arma::mat(0,0), D, C, model.seed);
 //   
 // #pragma omp for schedule(dynamic)
@@ -630,7 +630,7 @@
 // arma::mat D(p, n);
 // arma::mat C(m, n);
 // 
-// mgg_ssm approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
+// ssm_mlg approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
 //   arma::mat(0,0), D, C, model.seed);
 // 
 // #pragma omp for schedule(dynamic)

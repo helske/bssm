@@ -4,7 +4,7 @@
 
 #include <sitmo.h>
 #include "bssm.h"
-#include "model_mgg_ssm.h"
+#include "model_ssm_mlg.h"
 
 // typedef for a pointer of nonlinear function of model equation returning vec (T, Z)
 typedef arma::vec (*nvec_fnPtr)(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
@@ -97,7 +97,7 @@ public:
   double approx_loglik; 
   // store the current scaling factors for psi-APF
   arma::vec scales;
-  mgg_ssm approx_model;
+  ssm_mlg approx_model;
   
   void update_model(const arma::vec& new_theta);
   // update the approximating Gaussian model

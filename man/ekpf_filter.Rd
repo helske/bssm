@@ -7,8 +7,7 @@
 \usage{
 ekpf_filter(object, nsim, ...)
 
-\method{ekpf_filter}{nlg_ssm}(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+\method{ekpf_filter}{nlg_ssm}(object, nsim, seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
 \item{object}{of class \code{nlg_ssm}.}

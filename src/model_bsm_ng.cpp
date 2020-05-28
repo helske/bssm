@@ -1,8 +1,8 @@
-#include "model_ung_bsm.h"
+#include "model_bsm_ng.h"
 
 // from Rcpp::List
-ung_bsm::ung_bsm(const Rcpp::List& model, const unsigned int seed) :
-  ung_ssm(model, seed), 
+bsm_ng::bsm_ng(const Rcpp::List& model, const unsigned int seed) :
+  ssm_ung(model, seed), 
   prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
   prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
   slope(Rcpp::as<bool>(model["slope"])),
@@ -13,7 +13,7 @@ ung_bsm::ung_bsm(const Rcpp::List& model, const unsigned int seed) :
   phi_est(Rcpp::as<bool>(model["phi_est"])) {
 }
 
-void ung_bsm::update_model(const arma::vec& new_theta) {
+void bsm_ng::update_model(const arma::vec& new_theta) {
 
   if (arma::accu(fixed) < 3 || noise || phi_est) {
 
@@ -48,7 +48,7 @@ void ung_bsm::update_model(const arma::vec& new_theta) {
   theta = new_theta;
 }
 
-double ung_bsm::log_prior_pdf(const arma::vec& x) const {
+double bsm_ng::log_prior_pdf(const arma::vec& x) {
   
   double log_prior = 0.0;
   arma::vec pars = x;

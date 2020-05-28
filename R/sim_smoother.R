@@ -70,20 +70,6 @@ sim_smoother.ar1_lg <- function(object, nsim = 1,
   rownames(out) <- names(object$a1)
   aperm(out, c(2, 1, 3))[-(length(object$y) + 1), , , drop = FALSE]
 }
-#' @method sim_smoother lgg_ssm
-#' @export
-sim_smoother.lgg_ssm <- function(object, nsim = 1, 
-  seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
-  
-  out <- general_gaussian_sim_smoother(t(object$y), object$Z, object$H, object$T, 
-    object$R, object$a1, object$P1, 
-    object$theta, object$obs_intercept, object$state_intercept,
-    object$log_prior_pdf, object$known_params, 
-    object$known_tv_params, as.integer(object$time_varying), 
-    object$n_states, object$n_etas, nsim, use_antithetic, seed)
-  rownames(out) <- names(object$a1)
-  aperm(out, c(2, 1, 3))[-(length(object$y) + 1), , , drop = FALSE]
-}
 
 #' @method sim_smoother ssm_ung
 #' @rdname sim_smoother

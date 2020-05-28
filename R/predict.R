@@ -111,7 +111,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
   end_ts <- end(future_model$y)
   freq <- frequency(future_model$y)
   
-  if (attr(object, "model_type") %in% c("bsm", "bsm_ng")) {
+  if (attr(object, "model_type") %in% c("bsm_lg", "bsm_ng")) {
     object$theta[,1:(ncol(object$theta) - length(future_model$beta))] <- 
       log(object$theta[,1:(ncol(object$theta) - length(future_model$beta))])
   }
@@ -306,7 +306,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
           pred <- out
         }
       }
-    }, stop("Not yet implemented for sde_ssm and lgg_ssm. "))
+    }, stop("Not yet implemented for multivariate models and sde_ssm. "))
   class(pred) <- "predict_bssm"
   pred
 }

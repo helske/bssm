@@ -4,8 +4,7 @@
 \alias{summary.mcmc_output}
 \title{Summary of MCMC object}
 \usage{
-\method{summary}{mcmc_output}(object, return_se = FALSE,
-  variable = "theta", only_theta = FALSE, ...)
+\method{summary}{mcmc_output}(object, return_se = FALSE, variable = "theta", only_theta = FALSE, ...)
 }
 \arguments{
 \item{object}{Output from \code{run_mcmc}}

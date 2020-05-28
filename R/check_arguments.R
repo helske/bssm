@@ -1,7 +1,13 @@
-check_y <- function(x) {
+check_y <- function(x, multivariate = FALSE) {
   
-  if ((!is.numeric(x) && !all(is.na(x))) || (!is.null(dim(x)[2]) && dim(x)[2] > 1)) {
-    stop("Argument y must be a numeric vector or a univariate time series object.")
+  if(multivariate) {
+    if (!is.matrix(x) && !is.numeric(x)) {
+      stop("Argument y must be a numeric matrix or multivariate ts object.")
+    }
+  } else {
+    if (!(is.vector(x) && !is.list(x)) && !is.numeric(x)) {
+      stop("Argument y must be a numeric vector or ts object.")
+    }
   }
   if (any(is.infinite(x))) {
     stop("Argument y must contain only finite or NA values.")
@@ -81,9 +87,21 @@ check_phi <- function(x, distribution) {
     stop("Parameter 'phi' must be non-negative.")
   }
 }
-check_u <- function(x) {
+check_u <- function(x, multivariate = FALSE) {
   if (any(x < 0)) {
     stop("All values of 'u' must be non-negative.")
+  }
+  if(multivariate) {
+    if (!is.matrix(x) && !is.numeric(x)) {
+      stop("Argument 'u' must be a numeric matrix or multivariate ts object.")
+    }
+  } else {
+    if (!(is.vector(x) && !is.list(x)) && !is.numeric(x)) {
+      stop("Argument 'u' must be a numeric vector or ts object.")
+    }
+  }
+  if (any(is.infinite(x))) {
+    stop("Argument 'u' must contain only finite values.")
   }
 }
 check_prior <- function(x, name) {
@@ -98,14 +116,14 @@ check_target <- function(target) {
   }
 }
 
-check_obs_intercept <- function(x, p, n) {
+check_D <- function(x, p, n) {
   if (is.null(dim(x)) || nrow(x) != p || !(ncol(x) %in% c(1,n))) {
-    stop("'obs_intercept' must be p x 1 or p x n matrix, where p is the number of series.")
+    stop("'D' must be p x 1 or p x n matrix, where p is the number of series.")
   } 
 }
 
-check_state_intercept <- function(x, m, n) {
+check_C <- function(x, m, n) {
   if (is.null(dim(x)) || nrow(x) != m || !(ncol(x) %in% c(1,n))) {
-    stop("'state_intercept' must be m x 1 or m x n matrix, where m is the number of states.")
+    stop("'C' must be m x 1 or m x n matrix, where m is the number of states.")
   } 
 }

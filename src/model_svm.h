@@ -1,17 +1,17 @@
-#ifndef UNG_SVM_H
-#define UNG_SVM_H
+#ifndef svm_H
+#define svm_H
 
-#include "model_ung_ssm.h"
+#include "model_ssm_ung.h"
 
-class ung_svm: public ung_ssm {
+class svm: public ssm_ung {
   
 public:
 
-  ung_svm(const Rcpp::List& model, unsigned int seed = 1);
+  svm(const Rcpp::List& model, unsigned int seed = 1);
 
   // update model given the parameters theta
   void update_model(const arma::vec& new_theta);
-  double log_prior_pdf(const arma::vec& x) const;  
+  double log_prior_pdf(const arma::vec& x);  
 
 private:
   const arma::uvec prior_distributions;

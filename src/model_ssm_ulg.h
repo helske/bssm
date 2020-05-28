@@ -1,23 +1,23 @@
 // univariate linear Gaussian state space model
 
-#ifndef UGG_SSM_H
-#define UGG_SSM_H
+#ifndef ssm_ulg_H
+#define ssm_ulg_H
 
 
 #include "bssm.h"
 #include <sitmo.h>
 
-class ugg_ssm {
+class ssm_ulg {
   
 public:
   
   // constructor from Rcpp::List
-  ugg_ssm(const Rcpp::List& model, 
+  ssm_ulg(const Rcpp::List& model, 
     const unsigned int seed = 1,
     const double zero_tol = 1e-8);
   
   // constructor from armadillo objects
-  ugg_ssm(const arma::vec& y, 
+  ssm_ulg(const arma::vec& y, 
     const arma::mat& Z, 
     const arma::vec& H, 
     const arma::cube& T, 
@@ -29,9 +29,9 @@ public:
     const arma::mat& xreg, 
     const arma::vec& beta, 
     const arma::vec& theta,
+    const unsigned int seed,   
     const Rcpp::Function update_fn,
     const Rcpp::Function prior_fn,
-    const unsigned int seed = 1,
     const double zero_tol = 1e-8);
   
   arma::vec y;
@@ -44,7 +44,7 @@ public:
   arma::vec D;
   arma::mat C;
   arma::mat xreg;
-  arma::vec beta;
+  arma::vec beta; 
   
   const unsigned int n; // number of time points
   const unsigned int m; // number of states
@@ -59,8 +59,7 @@ public:
   const unsigned int Dtv;
   const unsigned int Ctv;
   
-  // model parameters
-  arma::vec theta;  
+  arma::vec theta; 
   
   // random number engine
   sitmo::prng_engine engine;
@@ -75,14 +74,12 @@ public:
   const Rcpp::Function update_fn;
   const Rcpp::Function prior_fn;
   
-  double log_prior_pdf(const arma::vec& new_theta) const;
+  double log_prior_pdf(const arma::vec& new_theta);
   void update_model(const arma::vec& new_theta);
   
-
-  
   void compute_RR();
-  void compute_HH() { HH = square(H); }
-  void compute_xbeta() { xbeta = xreg * beta; }
+  inline void compute_HH() { HH = square(H); }
+  inline void compute_xbeta() { xbeta = xreg * beta; }
   
   
   // compute the log-likelihood

@@ -2,27 +2,49 @@
 % Please edit documentation in R/particle_smoother.R
 \name{particle_smoother}
 \alias{particle_smoother}
-\alias{particle_smoother.gssm}
-\alias{particle_smoother.ngssm}
+\alias{particle_smoother.ssm_ulg}
+\alias{particle_smoother.ssm_ung}
 \alias{particle_smoother.nlg_ssm}
 \alias{particle_smoother.sde_ssm}
 \title{Particle Smoothing}
 \usage{
 particle_smoother(object, nsim, ...)
 
-\method{particle_smoother}{gssm}(object, nsim,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+\method{particle_smoother}{ssm_ulg}(
+  object,
+  nsim,
+  seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
 
-\method{particle_smoother}{ngssm}(object, nsim, filter_type = "bsf",
-  seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
-  conv_tol = 1e-08, ...)
+\method{particle_smoother}{ssm_ung}(
+  object,
+  nsim,
+  filter_type = "bsf",
+  seed = sample(.Machine$integer.max, size = 1),
+  max_iter = 100,
+  conv_tol = 1e-08,
+  ...
+)
 
-\method{particle_smoother}{nlg_ssm}(object, nsim, filter_type = "psi",
-  seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
-  conv_tol = 1e-08, iekf_iter = 0, ...)
+\method{particle_smoother}{nlg_ssm}(
+  object,
+  nsim,
+  filter_type = "psi",
+  seed = sample(.Machine$integer.max, size = 1),
+  max_iter = 100,
+  conv_tol = 1e-08,
+  iekf_iter = 0,
+  ...
+)
 
-\method{particle_smoother}{sde_ssm}(object, nsim, L,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+\method{particle_smoother}{sde_ssm}(
+  object,
+  nsim,
+  L,
+  seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
 }
 \arguments{
 \item{object}{Model.}

@@ -1,49 +1,40 @@
-#include "model_mgg_ssm.h"
+#include "model_ssm_mlg.h"
 #include "psd_chol.h"
 
-// General constructor of mgg_ssm object from Rcpp::List
-mgg_ssm::mgg_ssm(
+// General constructor of ssm_mlg object from Rcpp::List
+ssm_mlg::ssm_mlg(
   const Rcpp::List& model, 
   const unsigned int seed,
   const double zero_tol) 
   :
-    y((Rcpp::as<arma::mat>(model["y"])).t()), 
-    Z(Rcpp::as<arma::cube>(model["Z"])),
-    H(Rcpp::as<arma::cube>(model["H"])), 
-    T(Rcpp::as<arma::cube>(model["T"])),
-    R(Rcpp::as<arma::cube>(model["R"])), 
-    a1(Rcpp::as<arma::vec>(model["a1"])),
-    P1(Rcpp::as<arma::mat>(model["P1"])), 
-    D(Rcpp::as<arma::mat>(model["obs_intercept"])),
-    C(Rcpp::as<arma::mat>(model["state_intercept"])), 
+    y((Rcpp::as<arma::mat>(model["y"])).t()), Z(Rcpp::as<arma::cube>(model["Z"])),
+    H(Rcpp::as<arma::cube>(model["H"])), T(Rcpp::as<arma::cube>(model["T"])),
+    R(Rcpp::as<arma::cube>(model["R"])), a1(Rcpp::as<arma::vec>(model["a1"])),
+    P1(Rcpp::as<arma::mat>(model["P1"])), D(Rcpp::as<arma::mat>(model["D"])),
+    C(Rcpp::as<arma::mat>(model["C"])), xreg(Rcpp::as<arma::mat>(model["xreg"])),
     n(y.n_cols), m(a1.n_elem), k(R.n_cols), p(y.n_rows), 
-    Ztv(Z.n_slices > 1), 
-    Htv(H.n_slices > 1), 
-    Ttv(T.n_slices > 1), 
-    Rtv(R.n_slices > 1),
-    Dtv(D.n_cols > 1), 
-    Ctv(C.n_cols > 1), 
+    Ztv(Z.n_slices > 1), Htv(H.n_slices > 1), Ttv(T.n_slices > 1), 
+    Rtv(R.n_slices > 1), Dtv(D.n_cols > 1), Ctv(C.n_cols > 1), 
+    theta(Rcpp::as<arma::vec>(model["theta"])), 
     engine(seed), zero_tol(zero_tol),
-    HH(arma::cube(p, p, Htv * (n - 1) + 1)),
-    RR(arma::cube(m, m, Rtv * (n - 1) + 1)) {
+    HH(arma::cube(p, p, Htv * (n - 1) + 1)), RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
+    update_fn(Rcpp::as<Rcpp::Function>(model["update_fn"])), 
+    prior_fn(Rcpp::as<Rcpp::Function>(model["prior_fn"])) {
   
   compute_HH();
   compute_RR();
   
 }
 
-// General constructor of mgg_ssm object for snippet models
-mgg_ssm::mgg_ssm(
-  const arma::mat& y, 
-  const arma::cube& Z, 
-  const arma::cube& H,
-  const arma::cube& T, 
-  const arma::cube& R, 
-  const arma::vec& a1,
-  const arma::mat& P1, 
-  const arma::mat& D, 
-  const arma::mat& C, 
-  const unsigned int seed,
+// General constructor of ssm_mlg
+ssm_mlg::ssm_mlg(const arma::mat& y, const arma::cube& Z, 
+  const arma::cube& H, const arma::cube& T, 
+  const arma::cube& R, const arma::vec& a1,
+  const arma::mat& P1, const arma::mat& D, 
+  const arma::mat& C, const arma::mat& xreg,
+  const arma::vec& theta, const unsigned int seed, 
+  const Rcpp::Nullable<Rcpp::Function> update_fn, 
+  const Rcpp::Nullable<Rcpp::Function> prior_fn,
   const double zero_tol) 
   :
     y(y), Z(Z), H(H), T(T), R(R), a1(a1), P1(P1), D(D), C(C),
@@ -51,27 +42,67 @@ mgg_ssm::mgg_ssm(
     Ztv(Z.n_slices > 1), Htv(H.n_slices > 1), 
     Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
     Dtv(D.n_cols > 1), Ctv(C.n_cols > 1), 
-    engine(seed), zero_tol(zero_tol),
-    HH(arma::cube(p, p, Htv * (n - 1) + 1)),
-    RR(arma::cube(m, m, Rtv * (n - 1) + 1)) {
+    theta(theta), engine(seed), zero_tol(zero_tol), 
+    HH(arma::cube(p, p, Htv * (n - 1) + 1)), 
+    RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
+    update_fn(update_fn),
+    prior_fn(prior_fn) {
   
   compute_HH();
   compute_RR();
 }
 
-void mgg_ssm::compute_RR(){
+inline void ssm_mlg::compute_RR(){
   for (unsigned int t = 0; t < R.n_slices; t++) {
     RR.slice(t) = R.slice(t * Rtv) * R.slice(t * Rtv).t();
   }
 }
 
-void mgg_ssm::compute_HH(){
+inline void ssm_mlg::compute_HH(){
   for (unsigned int t = 0; t < H.n_slices; t++) {
     HH.slice(t) = H.slice(t * Htv) * H.slice(t * Htv).t();
   }
 }
 
-double mgg_ssm::log_likelihood() const {
+void ssm_mlg::update_model(const arma::vec& new_theta) {
+  
+  Rcpp::List model_list = update_fn(new_theta);
+  if (model_list.containsElementNamed("Z")) {
+    Z = Rcpp::as<arma::cube>(model_list["Z"]);
+  }
+  if (model_list.containsElementNamed("H")) {
+    H = Rcpp::as<arma::cube>(model_list["H"]);
+    compute_HH();
+  }
+  if (model_list.containsElementNamed("T")) {
+    T = Rcpp::as<arma::cube>(model_list["T"]);
+  }
+  if (model_list.containsElementNamed("R")) {
+    R = Rcpp::as<arma::cube>(model_list["R"]);
+    compute_RR();
+  }
+  if (model_list.containsElementNamed("a1")) {
+    a1 = Rcpp::as<arma::vec>(model_list["a1"]);
+  }
+  if (model_list.containsElementNamed("P1")) {
+    P1 = Rcpp::as<arma::mat>(model_list["P1"]);
+  }
+  if (model_list.containsElementNamed("D")) {
+    D = Rcpp::as<arma::mat>(model_list["D"]);
+  }
+  if (model_list.containsElementNamed("C")) {
+    C = Rcpp::as<arma::mat>(model_list["C"]);
+  }
+
+  theta = new_theta;
+}
+
+double ssm_mlg::log_prior_pdf(const arma::vec& x) {
+  
+  return Rcpp::as<double>(prior_fn(x));
+}
+
+double ssm_mlg::log_likelihood() const {
   
   double logLik = 0;
   arma::vec at = a1;
@@ -117,7 +148,7 @@ double mgg_ssm::log_likelihood() const {
 }
 
 // Kalman smoother
-void mgg_ssm::smoother(arma::mat& at, arma::cube& Pt) const {
+void ssm_mlg::smoother(arma::mat& at, arma::cube& Pt) const {
   
   
   at.col(0) = a1;
@@ -197,7 +228,7 @@ void mgg_ssm::smoother(arma::mat& at, arma::cube& Pt) const {
 /* Fast state smoothing, only returns smoothed estimates of states
  * which are needed in simulation smoother and Laplace approximation
  */
-arma::mat mgg_ssm::fast_smoother() const {
+arma::mat ssm_mlg::fast_smoother() const {
   
   arma::mat at(m, n + 1);
   arma::mat Pt(m, m);
@@ -287,7 +318,7 @@ arma::mat mgg_ssm::fast_smoother() const {
 
 // smoother which returns also cov(alpha_t, alpha_t-1)
 // used in psi particle filter
-void mgg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) const {
+void ssm_mlg::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) const {
   
   
   at.col(0) = a1;
@@ -376,7 +407,7 @@ void mgg_ssm::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
 }
 
 
-double mgg_ssm::filter(arma::mat& at, arma::mat& att,
+double ssm_mlg::filter(arma::mat& at, arma::mat& att,
   arma::cube& Pt, arma::cube& Ptt) const {
   
   at.col(0) = a1;
@@ -450,8 +481,8 @@ double mgg_ssm::filter(arma::mat& at, arma::mat& att,
 
 
 // simulate states from smoothing distribution
-// Note: not optimized at all for multiple replications (compare with ugg_ssm implementation)
-arma::cube mgg_ssm::simulate_states(const unsigned int nsim_states) {
+// Note: not optimized at all for multiple replications (compare with ssm_ulg implementation)
+arma::cube ssm_mlg::simulate_states(const unsigned int nsim_states) {
   
   arma::mat L_P1 = psd_chol(P1);
   std::normal_distribution<> normal(0.0, 1.0);

@@ -1,11 +1,11 @@
-// #include "model_mgg_ssm.h"
-// #include "model_ugg_ssm.h"
-// #include "model_ugg_bsm.h"
-// #include "model_ugg_ar1.h"
-// #include "model_ung_ssm.h"
-// #include "model_ung_bsm.h"
-// #include "model_ung_svm.h"
-// #include "model_ung_ar1.h"
+// #include "model_ssm_mlg.h"
+// #include "model_ssm_ulg.h"
+// #include "model_bsm_lg.h"
+// #include "model_ar1_lg.h"
+// #include "model_ssm_ung.h"
+// #include "model_bsm_ng.h"
+// #include "model_svm.h"
+// #include "model_ar1_ng.h"
 // #include "model_nlg_ssm.h"
 // #include "distr_consts.h"
 // #include "filter_smoother.h"
@@ -19,19 +19,19 @@
 // 
 //   switch (model_type) {
 //   case 1: {
-//   ugg_ssm model(Rcpp::clone(model_), seed);
+//   ssm_ulg model(Rcpp::clone(model_), seed);
 //   arma::cube alpha(model.m, model.n + 1, nsim_states);
 //   model.psi_filter(nsim_states, alpha);
 //   return alpha;
 // } break;
 //   case 2: {
-//     ugg_bsm model(Rcpp::clone(model_), seed);
+//     bsm_lg model(Rcpp::clone(model_), seed);
 //     arma::cube alpha(model.m, model.n + 1, nsim_states);
 //     model.psi_filter(nsim_states, alpha);
 //     return alpha;
 //   } break;
 //   case 3: {
-//     ugg_ar1 model(Rcpp::clone(model_), seed);
+//     ar1_lg model(Rcpp::clone(model_), seed);
 //     arma::cube alpha(model.m, model.n + 1, nsim_states);
 //     model.psi_filter(nsim_states, alpha);
 //     return alpha;
@@ -50,7 +50,7 @@
 // 
 //   switch (model_type) {
 //   case 1: {
-//   ung_ssm model(Rcpp::clone(model_), seed);
+//   ssm_ung model(Rcpp::clone(model_), seed);
 // 
 //   arma::cube alpha(model.m, model.n + 1, nsim_states);
 //   arma::mat weights(nsim_states, model.n + 1);
@@ -72,7 +72,7 @@
 //     Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
 // } break;
 //   case 2: {
-//     ung_bsm model(Rcpp::clone(model_), seed);
+//     bsm_ng model(Rcpp::clone(model_), seed);
 //     arma::cube alpha(model.m, model.n + 1, nsim_states);
 //     arma::mat weights(nsim_states, model.n + 1);
 //     arma::umat indices(nsim_states, model.n);
@@ -93,7 +93,7 @@
 //       Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
 //   } break;
 //   case 3: {
-//     ung_svm model(Rcpp::clone(model_), seed);
+//     svm model(Rcpp::clone(model_), seed);
 //     arma::cube alpha(model.m, model.n + 1, nsim_states);
 //     arma::mat weights(nsim_states, model.n + 1);
 //     arma::umat indices(nsim_states, model.n);
@@ -114,7 +114,7 @@
 //       Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
 //   } break;
 //   case 4: {
-//     ung_ar1 model(Rcpp::clone(model_), seed);
+//     ar1_ng model(Rcpp::clone(model_), seed);
 //     arma::cube alpha(model.m, model.n + 1, nsim_states);
 //     arma::mat weights(nsim_states, model.n + 1);
 //     arma::umat indices(nsim_states, model.n);
@@ -166,7 +166,7 @@
 //   unsigned n = model.n;
 // 
 //   arma::mat mode_estimate(m, n);
-//   mgg_ssm approx_model = model.approximate(mode_estimate, max_iter, conv_tol,
+//   ssm_mlg approx_model = model.approximate(mode_estimate, max_iter, conv_tol,
 //     iekf_iter);
 //   if(!arma::is_finite(mode_estimate)) {
 //     Rcpp::stop("Approximation did not converge. ");

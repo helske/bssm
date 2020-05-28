@@ -34,7 +34,7 @@ test_that("results for poisson GLM are equal to glm function",{
   d <- data.frame(treatment = gl(3,3), outcome = gl(3,1,9), counts = c(18,17,15,20,10,20,25,13,12))
   glm_poisson <- glm(counts ~ outcome + treatment, data = d, family = poisson())
   xreg <- model.matrix(~ outcome + treatment, data = d)
-  expect_error(model_poisson <- ngssm(d$counts, Z = t(xreg), T = diag(5), R = diag(0, 5), 
+  expect_error(model_poisson <- ssm_mng(d$counts, Z = t(xreg), T = diag(5), R = diag(0, 5), 
     P1 = diag(1e7, 5), distribution = 'poisson', state_names = colnames(xreg)), NA)
   expect_error(sm <- smoother(model_poisson), NA)
   expect_equal(sm$alphahat[1,], coef(glm_poisson))
@@ -54,7 +54,7 @@ test_that("results for binomial GLM are equal to glm function",{
   SF <- cbind(numdead, numalive = 20-numdead)
   glm_binomial <- glm(SF ~ sex * ldose, family = binomial)
   xreg <- model.matrix(~  sex * ldose)
-  expect_error(model_binomial <- ngssm(numdead, Z = t(xreg), T = diag(4), R = diag(0, 4), P1 = diag(1e5, 4), 
+  expect_error(model_binomial <- ssm_mng(numdead, Z = t(xreg), T = diag(4), R = diag(0, 4), P1 = diag(1e5, 4), 
     distribution = 'binomial', u = 20, state_names = colnames(xreg)), NA)
   expect_error(sm <- smoother(model_binomial), NA)
   # non-exact diffuse initialization is numerically difficult...

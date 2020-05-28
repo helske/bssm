@@ -1,10 +1,10 @@
 // Gaussian structural time series model
 
-#include "model_ugg_bsm.h"
+#include "model_bsm_lg.h"
 
 // Construct bsm model from Rcpp::List
-ugg_bsm::ugg_bsm(const Rcpp::List& model, const unsigned int seed) :
-  ugg_ssm(model, seed),  
+bsm_lg::bsm_lg(const Rcpp::List& model, const unsigned int seed) :
+  ssm_ulg(model, seed),  
   prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
   prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
   slope(Rcpp::as<bool>(model["slope"])),
@@ -21,7 +21,7 @@ ugg_bsm::ugg_bsm(const Rcpp::List& model, const unsigned int seed) :
 // update the model given theta
 // standard deviation parameters sigma are sampled in a transformed space
 // with theta = log(sigma) <=> sigma = exp(theta)
-void ugg_bsm::update_model(const arma::vec& new_theta) {
+void bsm_lg::update_model(const arma::vec& new_theta) {
   
   if (arma::accu(fixed) < 4) {
     if (y_est) {
@@ -50,7 +50,7 @@ void ugg_bsm::update_model(const arma::vec& new_theta) {
   theta = new_theta;
 }
 
-double ugg_bsm::log_prior_pdf(const arma::vec& x) const {
+double bsm_lg::log_prior_pdf(const arma::vec& x) {
   
   double log_prior = 0.0;
   arma::vec pars = x;

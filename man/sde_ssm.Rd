@@ -4,8 +4,17 @@
 \alias{sde_ssm}
 \title{Univariate state space model with continuous SDE dynamics}
 \usage{
-sde_ssm(y, drift, diffusion, ddiffusion, obs_pdf, prior_pdf, theta, x0,
-  positive)
+sde_ssm(
+  y,
+  drift,
+  diffusion,
+  ddiffusion,
+  obs_pdf,
+  prior_pdf,
+  theta,
+  x0,
+  positive
+)
 }
 \arguments{
 \item{y}{Observations as univariate time series (or vector) of length \eqn{n}.}

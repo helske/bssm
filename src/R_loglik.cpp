@@ -1,14 +1,13 @@
-#include "model_mgg_ssm.h"
-#include "model_ugg_ssm.h"
-#include "model_ung_ssm.h"
-#include "model_ugg_bsm.h"
-#include "model_ugg_ar1.h"
-#include "model_ung_bsm.h"
-#include "model_ung_svm.h"
-#include "model_ung_ar1.h"
-#include "model_mng_ssm.h"
+#include "model_ssm_mlg.h"
+#include "model_ssm_ulg.h"
+#include "model_ssm_ung.h"
+#include "model_bsm_lg.h"
+#include "model_ar1_lg.h"
+#include "model_bsm_ng.h"
+#include "model_svm.h"
+#include "model_ar1_ng.h"
+#include "model_ssm_mng.h"
 #include "model_nlg_ssm.h"
-#include "model_lgg_ssm.h"
 
 // [[Rcpp::export]]
 double gaussian_loglik(const Rcpp::List& model_, const int model_type) {
@@ -16,19 +15,19 @@ double gaussian_loglik(const Rcpp::List& model_, const int model_type) {
   double loglik = 0;
   switch (model_type) {
   case -1: {
-    mgg_ssm model(Rcpp::clone(model_), 1);
+    ssm_mlg model(Rcpp::clone(model_), 1);
     loglik = model.log_likelihood();
   } break;
   case 1: {
-    ugg_ssm model(Rcpp::clone(model_), 1);
+    ssm_ulg model(Rcpp::clone(model_), 1);
     loglik = model.log_likelihood();
   } break;
   case 2: {
-    ugg_bsm model(Rcpp::clone(model_), 1);
+    bsm_lg model(Rcpp::clone(model_), 1);
     loglik = model.log_likelihood();
   } break;
   case 3: {
-    ugg_ar1 model(Rcpp::clone(model_), 1);
+    ar1_lg model(Rcpp::clone(model_), 1);
     loglik = model.log_likelihood();
   } break;
   default: loglik = -std::numeric_limits<double>::infinity();
@@ -37,33 +36,6 @@ double gaussian_loglik(const Rcpp::List& model_, const int model_type) {
   return loglik;
 }
 
-
-// [[Rcpp::export]]
-double general_gaussian_loglik(const arma::mat& y, SEXP Z, SEXP H,
-  SEXP T, SEXP R, SEXP a1, SEXP P1,
-  const arma::vec& theta,
-  SEXP D, SEXP C,
-  SEXP log_prior_pdf, const arma::vec& known_params,
-  const arma::mat& known_tv_params, const arma::uvec& time_varying,
-  const unsigned int n_states, const unsigned int n_etas) {
-  
-  Rcpp::XPtr<lmat_fnPtr> xpfun_Z(Z);
-  Rcpp::XPtr<lmat_fnPtr> xpfun_H(H);
-  Rcpp::XPtr<lmat_fnPtr> xpfun_T(T);
-  Rcpp::XPtr<lmat_fnPtr> xpfun_R(R);
-  Rcpp::XPtr<a1_fnPtr> xpfun_a1(a1);
-  Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
-  Rcpp::XPtr<lvec_fnPtr> xpfun_D(D);
-  Rcpp::XPtr<lvec_fnPtr> xpfun_C(C);
-  Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
-  
-  lgg_ssm model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_a1, *xpfun_P1,
-    *xpfun_D, *xpfun_C, theta, *xpfun_prior, known_params, known_tv_params,
-    time_varying, n_states, n_etas, 1);
-  
-  return model.mgg_model.log_likelihood();
-  
-}
 
 // [[Rcpp::export]]
 double nongaussian_loglik(const Rcpp::List& model_,
@@ -75,7 +47,7 @@ double nongaussian_loglik(const Rcpp::List& model_,
 
   switch (model_type) {
   case 1: {
-    ung_ssm model(Rcpp::clone(model_), seed);
+    ssm_ung model(Rcpp::clone(model_), seed);
     model.max_iter = max_iter;
     model.conv_tol = conv_tol;
     arma::cube alpha(model.m, model.n + 1, nsim_states);
@@ -84,7 +56,7 @@ double nongaussian_loglik(const Rcpp::List& model_,
     loglik = model.log_likelihood(simulation_method, nsim_states, alpha, weights, indices);
   } break;
   case 2: {
-    ung_bsm model(Rcpp::clone(model_), seed);
+    bsm_ng model(Rcpp::clone(model_), seed);
     model.max_iter = max_iter;
     model.conv_tol = conv_tol;
     arma::cube alpha(model.m, model.n + 1, nsim_states);
@@ -93,7 +65,7 @@ double nongaussian_loglik(const Rcpp::List& model_,
     loglik = model.log_likelihood(simulation_method, nsim_states, alpha, weights, indices);
   } break;
   case 3: {
-    ung_svm model(Rcpp::clone(model_), seed);
+    svm model(Rcpp::clone(model_), seed);
     model.max_iter = max_iter;
     model.conv_tol = conv_tol;
     arma::cube alpha(model.m, model.n + 1, nsim_states);
@@ -102,7 +74,7 @@ double nongaussian_loglik(const Rcpp::List& model_,
     loglik = model.log_likelihood(simulation_method, nsim_states, alpha, weights, indices);
   } break;
   case 4: {
-    ung_ar1 model(Rcpp::clone(model_), seed);
+    ar1_ng model(Rcpp::clone(model_), seed);
     model.max_iter = max_iter;
     model.conv_tol = conv_tol;
     arma::cube alpha(model.m, model.n + 1, nsim_states);

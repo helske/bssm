@@ -1,18 +1,18 @@
-#ifndef UGG_AR1_H
-#define UGG_AR1_H
+#ifndef ar1_lg_H
+#define ar1_lg_H
 
-#include "model_ugg_ssm.h"
+#include "model_ssm_ulg.h"
 
-class ugg_ar1: public ugg_ssm {
+class ar1_lg: public ssm_ulg {
   
 public:
   
-  ugg_ar1(const Rcpp::List& model, const unsigned int seed);
+  ar1_lg(const Rcpp::List& model, const unsigned int seed);
   
   // update model given the parameters theta
   void update_model(const arma::vec& new_theta);
   
-  double log_prior_pdf(const arma::vec& x) const;
+  double log_prior_pdf(const arma::vec& x);
   
 private:
   const arma::uvec prior_distributions;

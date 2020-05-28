@@ -2,7 +2,7 @@
 #'
 #' Computes the log-likelihood of the state space model of \code{bssm} package.
 #' 
-#' @param object Model object.
+#' @param object Model model.
 #' @param nsim_states Number of samples for importance sampling. If 0, approximate log-likelihood is returned.
 #' See vignette for details.
 #' @param method Method for computing the log-likelihood of non-Gaussian/non-linear model. 
@@ -16,65 +16,29 @@
 #' @param conv_tol Tolerance parameter.
 #' @param ... Ignored.
 #' @importFrom stats logLik
-#' @method logLik ssm_ulg
+#' @method logLik gaussian
 #' @rdname logLik
 #' @export
-logLik.ssm_ulg <- function(object, ...) {
-  gaussian_loglik(object, model_type = 1L)
+logLik.gaussian <- function(object, ...) {
+  gaussian_loglik(object, model_type(object))
 }
-#' @method logLik bsm_lg
-#' @export
-logLik.bsm_lg <- function(object, ...) {
-  gaussian_loglik(object, model_type = 2L)
-}
-#' @method logLik ssm_ung
+
+#' @method logLik nongaussian
 #' @rdname logLik
 #' @export
-logLik.ssm_ung <- function(object, nsim_states, method = "psi", seed = 1, 
+logLik.nongaussian <- function(object, nsim_states, method = "psi", seed = 1, 
   max_iter = 100, conv_tol = 1e-8, ...) {
   
-  method <- match.arg(method,  c("psi", "bsf", "spdk"))
+  object$max_iter <- max_iter
+  object$conv_tol <- conv_tol
+  method <- match.arg(method, c("psi", "bsf", "spdk"))
   if (method == "bsf" & nsim_states == 0) stop("'nsim_state' must be positive for bootstrap filter.")
   object$distribution <- pmatch(object$distribution,
-    c("poisson", "binomial", "negative binomial"))
+    c("svm", "poisson", "binomial", "negative binomial")) - 1
   
-  nongaussian_loglik(object, object$initial_mode, nsim_states, 
-    pmatch(method,  c("psi", "bsf", "spdk")), seed, max_iter, conv_tol, model_type = 1L)
+  nongaussian_loglik(object, nsim_states, method, seed, model_type(object))
 }
-#' @method logLik bsm_ng
-#' @export
-logLik.bsm_ng <- function(object, nsim_states, method = "psi", seed = 1,
-  max_iter = 100, conv_tol = 1e-8, ...) {
-  
-  method <- match.arg(method,  c("psi", "bsf", "spdk"))
-  if (method == "bsf" & nsim_states == 0) stop("'nsim_state' must be positive for bootstrap filter.")
-  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  
-  nongaussian_loglik(object, object$initial_mode, nsim_states, 
-    pmatch(method,  c("psi", "bsf", "spdk")), seed, max_iter, conv_tol, model_type = 2L)
-}
-#' @method logLik svm
-#' @export
-logLik.svm <- function(object, nsim_states, method = "psi", seed = 1,
-  max_iter = 100, conv_tol = 1e-8, ...) {
-  
-  method <- match.arg(method,  c("psi", "bsf", "spdk"))
-  if (method == "bsf" & nsim_states == 0) stop("'nsim_states' must be positive for bootstrap filter.")
-  nongaussian_loglik(object, object$initial_mode, nsim_states, 
-    pmatch(method,  c("psi", "bsf", "spdk")), seed, max_iter, conv_tol, model_type = 3L)
-}
-#' @method logLik ar1_ng
-#' @export
-logLik.ar1_ng <- function(object, nsim_states, method = "psi", seed = 1,
-  max_iter = 100, conv_tol = 1e-8, ...) {
-  
-  method <- match.arg(method,  c("psi", "bsf", "spdk"))
-  if (method == "bsf" & nsim_states == 0) stop("'nsim_state' must be positive for bootstrap filter.")
-  object$distribution <- pmatch(object$distribution, c("poisson", "binomial", "negative binomial"))
-  
-  nongaussian_loglik(object, object$initial_mode, nsim_states, 
-    pmatch(method,  c("psi", "bsf", "spdk")), seed, max_iter, conv_tol, model_type = 4L)
-}
+
 #' @method logLik nlg_ssm
 #' @export
 logLik.nlg_ssm <- function(object, nsim_states, method = "bsf", seed = 1, 
@@ -103,14 +67,3 @@ logLik.sde_ssm <- function(object, nsim_states, L, seed = 1, ...) {
 }
 
 
-#' @method logLik lgg_ssm
-#' @export
-logLik.lgg_ssm <- function(object, ...) {
-  
-  general_gaussian_loglik(t(object$y), object$Z, object$H, object$T, 
-    object$R, object$a1, object$P1, 
-    object$theta, object$obs_intercept, object$state_intercept, 
-    object$log_prior_pdf, object$known_params, 
-    object$known_tv_params, as.integer(object$time_varying), 
-    object$n_states, object$n_etas)
-}

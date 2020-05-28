@@ -4,7 +4,9 @@
 \name{exchange}
 \alias{exchange}
 \title{Pound/Dollar daily exchange rates}
-\format{A vector of length 945.}
+\format{
+A vector of length 945.
+}
 \source{
 \url{http://www.ssfpack.com/DKbook.html}.
 }

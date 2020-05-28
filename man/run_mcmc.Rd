@@ -4,15 +4,15 @@
 \alias{run_mcmc}
 \title{Bayesian Inference of State Space Models}
 \usage{
-run_mcmc(object, n_iter, ...)
+run_mcmc(model, n_iter, ...)
 }
 \arguments{
-\item{object}{State space model object of \code{bssm} package.}
+\item{model}{State space model model of \code{bssm} package.}
 
 \item{n_iter}{Number of MCMC iterations.}
 
-\item{...}{Parameters to specific methods. See \code{\link{run_mcmc.gssm}} and
-\code{\link{run_mcmc.ngssm}} for details.}
+\item{...}{Parameters to specific methods. See \code{\link{run_mcmc.gaussian}} and
+\code{\link{run_mcmc.nongaussian}} for details.}
 }
 \description{
 Adaptive Markov chain Monte Carlo simulation of state space models using

@@ -2,14 +2,12 @@
 #define MCMC_H
 
 #include "bssm.h"
-
-#include "model_ugg_ssm.h"
-#include "model_ung_ssm.h"
-
-#include "model_nlg_ssm.h"
-#include "model_sde_ssm.h"
-#include "model_mng_ssm.h"
-#include "model_lgg_ssm.h"
+// #include "model_ssm_mlg.h"
+// #include "model_ssm_mng.h"
+// #include "model_ssm_ulg.h"
+// #include "model_ssm_ung.h"
+// #include "model_nlg_ssm.h"
+// #include "model_sde_ssm.h"
 
 class mcmc {
   

@@ -1,71 +1,49 @@
-// multivariate nongaussian state space model with time-varying functions
+// multivariate  state space model with non-Gaussian or non-linear observation equation
+// and linear Gaussian states
 
-#ifndef MNG_SSM_H
-#define MNG_SSM_H
+#ifndef ssm_mng_H
+#define ssm_mng_H
 
 #include <sitmo.h>
 #include "bssm.h"
-#include "model_mgg_ssm.h"
+#include "model_ssm_mlg.h"
 
-// typedef for a pointer of linear function of ng-model equation returning Z, T, and R
-typedef arma::mat (*lmat_fnPtr)(const unsigned int t, const arma::vec& theta, 
-                   const arma::vec& known_params, const arma::mat& known_tv_params);
-// typedef for a pointer returning a1
-typedef arma::vec (*a1_fnPtr)(const arma::vec& theta, const arma::vec& known_params);
-// typedef for a pointer returning P1
-typedef arma::mat (*P1_fnPtr)(const arma::vec& theta, const arma::vec& known_params);
-// typedef for a pointer of log-prior function
-typedef double (*prior_fnPtr)(const arma::vec&);
-
-
-
-class mng_ssm {
+class ssm_mng {
   
 public:
   
-  mng_ssm(const arma::mat& y, lmat_fnPtr Z_fn_, lmat_fnPtr T_fn_, 
-    lmat_fnPtr R_fn_, a1_fnPtr a1_fn_, P1_fnPtr P1_fn_,
-    const arma::vec& theta, prior_fnPtr log_prior_pdf_, const arma::vec& known_params, 
-    const arma::mat& known_tv_params, const unsigned int m, const unsigned int k,
-    const arma::uvec& time_varying, const arma::vec& phi, const arma::mat& u,
-    const arma::uvec& distribution, const arma::uvec& phi_est, const arma::mat& initial_mode, 
-    const bool local_approx = true, const unsigned int seed = 1, 
+  ssm_mng(const Rcpp::List& model, 
+    const unsigned int seed = 1,
     const double zero_tol = 1e-8);
   
   arma::mat y;
-  // functions of Z, T, R, a1 and P1
-  lmat_fnPtr Z_fn;
-  lmat_fnPtr T_fn;
-  lmat_fnPtr R_fn;
-  //initial value
-  a1_fnPtr a1_fn;
-  P1_fnPtr P1_fn;
+  arma::cube Z;
+  arma::cube T;
+  arma::cube R;
+  arma::vec a1;
+  arma::mat P1;
+  arma::mat D;
+  arma::mat C;
+  arma::mat xreg;
   
-  // Parameter vector used in _all_ linear functions
-  arma::vec theta;
-  //prior log-pdf
-  prior_fnPtr log_prior_pdf;
-  // vector of known parameters
-  arma::vec known_params;
-  // matrix of known (time-varying) parameters
-  arma::mat known_tv_params;
+  const unsigned int n; // number of time points
+  const unsigned int m; // number of states
+  const unsigned int k; // number of etas
+  const unsigned int p; // number of series
   
-  const unsigned int m;
-  const unsigned int k;
-  const unsigned int n;
-  const unsigned int p;
-  
+  // is the matrix/vector time-varying?
   const unsigned int Ztv;
   const unsigned int Ttv;
   const unsigned int Rtv;
+  const unsigned int Dtv;
+  const unsigned int Ctv;
+  
+  arma::vec theta; 
   
   arma::vec phi;
   arma::mat u;
   const arma::uvec distribution;
   const arma::uvec phi_est;
-  
-  sitmo::prng_engine engine;
-  const double zero_tol;
   
   const arma::mat initial_mode; // creating approx always starts from here
   arma::mat mode_estimate; // current estimate of mode
@@ -78,7 +56,20 @@ public:
   double approx_loglik; 
   // store the current scaling factors for PF/IS
   arma::vec scales;
-  mgg_ssm approx_model;
+  
+  sitmo::prng_engine engine;
+  const double zero_tol;
+  arma::cube RR;
+  
+  // R functions
+  const Rcpp::Function update_fn;
+  const Rcpp::Function prior_fn;
+  
+  ssm_mlg approx_model;
+  
+
+  
+  void compute_RR();
   
   arma::vec log_likelihood(
       const unsigned int method, 
@@ -87,10 +78,9 @@ public:
       arma::mat& weights, 
       arma::umat& indices);
   
-  void update_model(const arma::vec& new_theta) {
-    theta = new_theta;
-    approx_state = 0;
-  };
+  void update_model(const arma::vec& new_theta);
+  double log_prior_pdf(const arma::vec& x);
+  
   // update the approximating Gaussian model
   void approximate();
   

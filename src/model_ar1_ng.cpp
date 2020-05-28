@@ -1,15 +1,15 @@
-#include "model_ung_ar1.h"
+#include "model_ar1_ng.h"
 
 // from Rcpp::List
-ung_ar1::ung_ar1(const Rcpp::List& model, const unsigned int seed) :
-  ung_ssm(model, seed), 
+ar1_ng::ar1_ng(const Rcpp::List& model, const unsigned int seed) :
+  ssm_ung(model, seed), 
   prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
   prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
   mu_est(Rcpp::as<bool>(model["mu_est"])), 
   phi_est(Rcpp::as<bool>(model["phi_est"])) {
 }
 
-void ung_ar1::update_model(const arma::vec& new_theta) {
+void ar1_ng::update_model(const arma::vec& new_theta) {
   
   T(0, 0, 0) = new_theta(0);
   R(0, 0, 0) = new_theta(1);
@@ -32,7 +32,7 @@ void ung_ar1::update_model(const arma::vec& new_theta) {
   theta = new_theta;
 }
 
-double ung_ar1::log_prior_pdf(const arma::vec& x) const {
+double ar1_ng::log_prior_pdf(const arma::vec& x) {
   
   double log_prior = 0.0;
   

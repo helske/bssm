@@ -4,9 +4,17 @@
 \alias{predict.mcmc_output}
 \title{Predictions for State Space Models}
 \usage{
-\method{predict}{mcmc_output}(object, future_model, type = "response",
-  intervals = TRUE, probs = c(0.05, 0.95), nsim, return_MCSE = FALSE,
-  seed = sample(.Machine$integer.max, size = 1), ...)
+\method{predict}{mcmc_output}(
+  object,
+  future_model,
+  type = "response",
+  intervals = TRUE,
+  probs = c(0.05, 0.95),
+  nsim,
+  return_MCSE = FALSE,
+  seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
 }
 \arguments{
 \item{object}{mcmc_output object obtained from 
@@ -71,7 +79,7 @@ linear-Gaussian case.
 require("graphics")
 y <- log10(JohnsonJohnson)
 prior <- uniform(0.01, 0, 1)
-model <- bsm(window(y, end = c(1974, 4)), sd_y = prior,
+model <- bsm_lg(window(y, end = c(1974, 4)), sd_y = prior,
 sd_level = prior, sd_slope = prior, sd_seasonal = prior)
 
 mcmc_results <- run_mcmc(model, n_iter = 5000)
@@ -90,7 +98,7 @@ head(pred_gaussian$MCSE)
 \dontrun{
 data("poisson_series")
 
-model <- ng_bsm(poisson_series, sd_level = 
+model <- bsm_ng(poisson_series, sd_level = 
   halfnormal(0.1, 1), sd_slope=halfnormal(0.01, 0.1),
   distribution = "poisson")
 mcmc_poisson <- run_mcmc(model, n_iter = 5000, nsim = 10)
