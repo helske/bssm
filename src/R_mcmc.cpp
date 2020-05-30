@@ -2,7 +2,6 @@
 // #include "ung_amcmc.h"
 // #include "nlg_amcmc.h"
 
-
 #include "model_ssm_mlg.h"
 #include "model_ssm_mng.h"
 #include "model_bsm_lg.h"
