@@ -230,17 +230,17 @@
 // 
 // // approximate MCMC
 // 
-// template void ung_amcmc::is_correction_psi(ssm_ung model, const unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_psi(ssm_ung model, const unsigned int nsim, 
 //   const unsigned int is_type, const unsigned int n_threads);
-// template void ung_amcmc::is_correction_psi(bsm_ng model, const unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_psi(bsm_ng model, const unsigned int nsim, 
 //   const unsigned int is_type, const unsigned int n_threads);
-// template void ung_amcmc::is_correction_psi(svm model, const unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_psi(svm model, const unsigned int nsim, 
 //   const unsigned int is_type, const unsigned int n_threads);
-// template void ung_amcmc::is_correction_psi(ar1_ng model, const unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_psi(ar1_ng model, const unsigned int nsim, 
 //   const unsigned int is_type, const unsigned int n_threads);
 // 
 // template <class T>
-// void ung_amcmc::is_correction_psi(T model, const unsigned int nsim_states, 
+// void ung_amcmc::is_correction_psi(T model, const unsigned int nsim, 
 //   const unsigned int is_type, const unsigned int n_threads) {
 //   
 //   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
@@ -273,11 +273,11 @@
 //     approx_model.H = H_storage.col(i);
 //     approx_model.compute_HH();
 //     
-//     unsigned int nsim = nsim_states;
+//     unsigned int nsimc = nsim;
 //     if (is_type == 1) {
-//       nsim *= count_storage(i);
+//       nsimc *= count_storage(i);
 //     }
-//     
+//     errrror, korjaa nsimc vanhasta
 //     arma::cube alpha_i(model.m, model.n + 1, nsim);
 //     arma::mat weights_i(nsim, model.n + 1);
 //     arma::umat indices(nsim, model.n);
@@ -332,7 +332,7 @@
 //   approx_model.H = H_storage.col(i);
 //   approx_model.compute_HH();
 //   
-//   unsigned int nsim = nsim_states;
+//   unsigned int nsim = nsim;
 //   if (is_type == 1) {
 //     nsim *= count_storage(i);
 //   }
@@ -376,20 +376,20 @@
 // }
 // 
 // template void ung_amcmc::is_correction_bsf(ssm_ung model, 
-//   const unsigned int nsim_states, const unsigned int is_type, 
+//   const unsigned int nsim, const unsigned int is_type, 
 //   const unsigned int n_threads);
 // template void ung_amcmc::is_correction_bsf(bsm_ng model, 
-//   const unsigned int nsim_states, const unsigned int is_type, 
+//   const unsigned int nsim, const unsigned int is_type, 
 //   const unsigned int n_threads);
 // template void ung_amcmc::is_correction_bsf(svm model, 
-//   const unsigned int nsim_states, const unsigned int is_type, 
+//   const unsigned int nsim, const unsigned int is_type, 
 //   const unsigned int n_threads);
 // template void ung_amcmc::is_correction_bsf(ar1_ng model, 
-//   const unsigned int nsim_states, const unsigned int is_type, 
+//   const unsigned int nsim, const unsigned int is_type, 
 //   const unsigned int n_threads);
 // 
 // template <class T>
-// void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim_states, 
+// void ung_amcmc::is_correction_bsf(T model, const unsigned int nsim, 
 //   const unsigned int is_type, const unsigned int n_threads) {
 //   
 //   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
@@ -406,11 +406,12 @@
 //     
 //     model.update_model(theta_storage.col(i));
 //     
-//     unsigned int nsim = nsim_states;
+//     unsigned int nsim = nsim;
 //     if (is_type == 1) {
 //       nsim *= count_storage(i);
 //     }
 //     
+//     errrror, korjaa nsimc vanhasta
 //     arma::cube alpha_i(model.m, model.n + 1, nsim);
 //     arma::mat weights_i(nsim, model.n + 1);
 //     arma::umat indices(nsim, model.n);
@@ -448,7 +449,7 @@
 //   
 //   model.update_model(theta_storage.col(i));
 //   
-//   unsigned int nsim = nsim_states;
+//   unsigned int nsim = nsim;
 //   if (is_type == 1) {
 //     nsim *= count_storage(i);
 //   }
@@ -489,17 +490,17 @@
 // posterior_storage = prior_storage + arma::log(weight_storage);
 // }
 // 
-// template void ung_amcmc::is_correction_spdk(ssm_ung model, unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_spdk(ssm_ung model, unsigned int nsim, 
 //   unsigned int is_type, const unsigned int n_threads);
-// template void ung_amcmc::is_correction_spdk(bsm_ng model, unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_spdk(bsm_ng model, unsigned int nsim, 
 //   unsigned int is_type, const unsigned int n_threads);
-// template void ung_amcmc::is_correction_spdk(svm model, unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_spdk(svm model, unsigned int nsim, 
 //   unsigned int is_type, const unsigned int n_threads);
-// template void ung_amcmc::is_correction_spdk(ar1_ng model, unsigned int nsim_states, 
+// template void ung_amcmc::is_correction_spdk(ar1_ng model, unsigned int nsim, 
 //   unsigned int is_type, const unsigned int n_threads);
 // 
 // template <class T>
-// void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim_states, 
+// void ung_amcmc::is_correction_spdk(T model, const unsigned int nsim, 
 //   const unsigned int is_type, const unsigned int n_threads) {
 //   
 //   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
@@ -532,7 +533,7 @@
 //     approx_model.H = H_storage.col(i);
 //     approx_model.compute_HH();
 //     
-//     unsigned int nsim = nsim_states;
+//     unsigned int nsim = nsim;
 //     if (is_type == 1) {
 //       nsim *= count_storage(i);
 //     }
@@ -586,11 +587,12 @@
 //   approx_model.H = H_storage.col(i);
 //   approx_model.compute_HH();
 //   
-//   unsigned int nsim = nsim_states;
+//   unsigned int nsim = nsim;
 //   if (is_type == 1) {
 //     nsim *= count_storage(i);
 //   }
 //   
+//     errrror, korjaa nsimc vanhasta
 //   arma::cube alpha_i = approx_model.simulate_states(nsim, true);
 //   arma::vec weights_i = model.importance_weights(approx_model, alpha_i);
 //   weights_i = arma::exp(weights_i - arma::accu(scales_storage.col(i)));

@@ -3,7 +3,7 @@
 
 // General constructor of ssm_mlg object from Rcpp::List
 ssm_mlg::ssm_mlg(
-  const Rcpp::List& model, 
+  const Rcpp::List model, 
   const unsigned int seed,
   const double zero_tol) 
   :
@@ -97,7 +97,7 @@ void ssm_mlg::update_model(const arma::vec& new_theta) {
   theta = new_theta;
 }
 
-double ssm_mlg::log_prior_pdf(const arma::vec& x) {
+double ssm_mlg::log_prior_pdf(const arma::vec& x) const {
   
   return Rcpp::as<double>(prior_fn(x));
 }
@@ -482,14 +482,14 @@ double ssm_mlg::filter(arma::mat& at, arma::mat& att,
 
 // simulate states from smoothing distribution
 // Note: not optimized at all for multiple replications (compare with ssm_ulg implementation)
-arma::cube ssm_mlg::simulate_states(const unsigned int nsim_states) {
+arma::cube ssm_mlg::simulate_states(const unsigned int nsim) {
   
   arma::mat L_P1 = psd_chol(P1);
   std::normal_distribution<> normal(0.0, 1.0);
   
-  arma::cube asim(m, n + 1, nsim_states);
+  arma::cube asim(m, n + 1, nsim);
   arma::mat y_tmp = y;
-  for(unsigned int i = 0; i < nsim_states; i++) {
+  for(unsigned int i = 0; i < nsim; i++) {
     
     arma::vec um(m);
     for(unsigned int j = 0; j < m; j++) {

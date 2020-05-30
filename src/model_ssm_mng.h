@@ -1,8 +1,8 @@
 // multivariate  state space model with non-Gaussian or non-linear observation equation
 // and linear Gaussian states
 
-#ifndef ssm_mng_H
-#define ssm_mng_H
+#ifndef SSM_MNG_H
+#define SSM_MNG_H
 
 #include <sitmo.h>
 #include "bssm.h"
@@ -12,7 +12,7 @@ class ssm_mng {
   
 public:
   
-  ssm_mng(const Rcpp::List& model, 
+  ssm_mng(const Rcpp::List model, 
     const unsigned int seed = 1,
     const double zero_tol = 1e-8);
   
@@ -45,11 +45,12 @@ public:
   const arma::uvec distribution;
   const arma::uvec phi_est;
   
-  const arma::mat initial_mode; // creating approx always starts from here
-  arma::mat mode_estimate; // current estimate of mode
   unsigned int max_iter;
   double conv_tol;
   const bool local_approx;
+  const arma::mat initial_mode; // creating approx always starts from here
+  arma::mat mode_estimate; // current estimate of mode
+  
   // -1 = no approx, 0 = theta doesn't match, 1 = proper local/global approx 
   int approx_state; 
   // store the current approx_loglik in order to avoid computing it again
@@ -73,13 +74,13 @@ public:
   
   arma::vec log_likelihood(
       const unsigned int method, 
-      const unsigned int nsim_states, 
+      const unsigned int nsim, 
       arma::cube& alpha, 
       arma::mat& weights, 
       arma::umat& indices);
   
   void update_model(const arma::vec& new_theta);
-  double log_prior_pdf(const arma::vec& x);
+  double log_prior_pdf(const arma::vec& x) const;
   
   // update the approximating Gaussian model
   void approximate();

@@ -208,21 +208,21 @@ void nlg_ssm::approximate() {
 // method = 1 psi-APF, 2 = BSF, 3 = SPDK (not applicable), 4 = IEKF (either approx or IEKF-PF)
 arma::vec nlg_ssm::log_likelihood(
     const unsigned int method, 
-    const unsigned int nsim_states, 
+    const unsigned int nsim, 
     arma::cube& alpha, 
     arma::mat& weights, 
     arma::umat& indices) {
   
   arma::vec loglik(2);
   
-  if(nsim_states > 0) {
+  if(nsim > 0) {
     
     if (method == 2) {
-      loglik(0) = bsf_filter(nsim_states, alpha, weights, indices);
+      loglik(0) = bsf_filter(nsim, alpha, weights, indices);
       loglik(1) = loglik(0);
     } else {
       if (method == 4) {
-        loglik(0) = ekf_filter(nsim_states, alpha, weights, indices);
+        loglik(0) = ekf_filter(nsim, alpha, weights, indices);
         loglik(1) = loglik(0);
       } else { // note does not check if method == 3...
         // check that approx_model matches theta
@@ -236,7 +236,7 @@ arma::vec nlg_ssm::log_likelihood(
           // log-likelihood approximation
           approx_loglik = gaussian_loglik + arma::accu(scales);
         }
-        loglik(0) = psi_filter(nsim_states, alpha, weights, indices);
+        loglik(0) = psi_filter(nsim, alpha, weights, indices);
         loglik(1) = approx_loglik;
       }
     }

@@ -3,7 +3,7 @@
 #' Computes the log-likelihood of the state space model of \code{bssm} package.
 #' 
 #' @param object Model model.
-#' @param nsim_states Number of samples for importance sampling. If 0, approximate log-likelihood is returned.
+#' @param nsim Number of samples for importance sampling. If 0, approximate log-likelihood is returned.
 #' See vignette for details.
 #' @param method Method for computing the log-likelihood of non-Gaussian/non-linear model. 
 #' Method \code{"spdk"} uses the importance sampling approach by 
@@ -19,6 +19,9 @@
 #' @method logLik gaussian
 #' @rdname logLik
 #' @export
+#' @examples
+#' model <- ssm_ulg(y = c(1,4,3), Z = 1, H = 1, T = 1, R = 1)
+#' logLik(model)
 logLik.gaussian <- function(object, ...) {
   gaussian_loglik(object, model_type(object))
 }
@@ -26,45 +29,55 @@ logLik.gaussian <- function(object, ...) {
 #' @method logLik nongaussian
 #' @rdname logLik
 #' @export
-logLik.nongaussian <- function(object, nsim_states, method = "psi", seed = 1, 
+#' @examples 
+#' model <- ssm_ung(y = c(1,4,3), Z = 1, T = 1, R = 0.5, P1 = 2,
+#'   distribution = "poisson")
+#'   
+#' model2 <- bsm_ng(y = c(1,4,3), sd_level = 0.5, P1 = 2,
+#'   distribution = "poisson")
+#' logLik(model, nsim = 0)
+#' logLik(model2, nsim = 0)
+#' logLik(model, nsim = 10)
+#' logLik(model2, nsim = 10)
+logLik.nongaussian <- function(object, nsim, method = "psi", seed = 1, 
   max_iter = 100, conv_tol = 1e-8, ...) {
   
   object$max_iter <- max_iter
   object$conv_tol <- conv_tol
   method <- pmatch(method, c("psi", "bsf", "spdk"))
-  if (method == 2 & nsim_states == 0) stop("'nsim_state' must be positive for bootstrap filter.")
+  if (method == 2 & nsim == 0) stop("'nsim' must be positive for bootstrap filter.")
   
   object$distribution <- pmatch(object$distribution,
     c("svm", "poisson", "binomial", "negative binomial")) - 1
   
-  nongaussian_loglik(object, nsim_states, method, seed, model_type(object))
+  nongaussian_loglik(object, nsim, method, seed, model_type(object))
 }
 
 #' @method logLik nlg_ssm
 #' @export
-logLik.nlg_ssm <- function(object, nsim_states, method = "bsf", seed = 1, 
+logLik.nlg_ssm <- function(object, nsim, method = "bsf", seed = 1, 
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0, ...) {
   
   method <- pmatch(method,  c("psi", "bsf", "ekf"))
-  if (method != 3 & nsim_states == 0) 
-    stop("'nsim_states' must be positive for particle filter based log-likelihood estimation.")
+  if (method != 3 & nsim == 0) 
+    stop("'nsim' must be positive for particle filter based log-likelihood estimation.")
   nonlinear_loglik(t(object$y), object$Z, object$H, object$T, 
     object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
     object$theta, object$log_prior_pdf, object$known_params, 
     object$known_tv_params, object$n_states, object$n_etas, 
-    as.integer(object$time_varying), nsim_states, seed,
+    as.integer(object$time_varying), nsim, seed,
     max_iter, conv_tol, iekf_iter, pmatch(method, c("psi", "bsf", "ekf")))
 }
 
 
 #' @method logLik sde_ssm
 #' @export
-logLik.sde_ssm <- function(object, nsim_states, L, seed = 1, ...) {
+logLik.sde_ssm <- function(object, nsim, L, seed = 1, ...) {
   if(L <= 0) stop("Discretization level L must be larger than 0.")
   loglik_sde(object$y, object$x0, object$positive, 
     object$drift, object$diffusion, object$ddiffusion, 
     object$prior_pdf, object$obs_pdf, object$theta, 
-    nsim_states, L, seed)
+    nsim, L, seed)
 }
 
 

@@ -5,12 +5,12 @@
 \alias{smoother}
 \title{Kalman Smoothing}
 \usage{
-fast_smoother(object, ...)
+fast_smoother(model, ...)
 
-smoother(object, ...)
+smoother(model, ...)
 }
 \arguments{
-\item{object}{Model object.}
+\item{model}{Model model.}
 
 \item{...}{Ignored.}
 }

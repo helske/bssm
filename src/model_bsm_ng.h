@@ -1,5 +1,5 @@
-#ifndef bsm_ng_H
-#define bsm_ng_H
+#ifndef BSM_NG_H
+#define BSM_NG_H
 
 #include "model_ssm_ung.h"
 
@@ -7,11 +7,11 @@ class bsm_ng: public ssm_ung {
 
 public:
 
-  bsm_ng(const Rcpp::List& model, const unsigned int seed);
+  bsm_ng(const Rcpp::List model, const unsigned int seed);
 
   // update model given the parameters theta
   void update_model(const arma::vec& new_theta);
-  double log_prior_pdf(const arma::vec& x);
+  double log_prior_pdf(const arma::vec& x) const;
   
 private:
   const arma::uvec prior_distributions;

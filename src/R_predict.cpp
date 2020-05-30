@@ -8,7 +8,7 @@
 // #include "model_ar1_lg.h"
 // 
 // // [[Rcpp::export]]
-// Rcpp::List gaussian_predict(const Rcpp::List& model_,
+// Rcpp::List gaussian_predict(const Rcpp::List model_,
 //   const arma::vec& probs, const arma::mat theta, const arma::mat alpha, 
 //   const arma::uvec& counts, const unsigned int predict_type,
 //   const bool intervals, const unsigned int seed, const int model_type, 
@@ -16,7 +16,7 @@
 //   
 //   switch (model_type) {
 //   case 1: {
-//   ssm_ulg model(Rcpp::clone(model_), seed);
+//   ssm_ulg model(model_, seed);
 //   if (intervals) {
 //     return model.predict_interval(probs, theta, alpha, counts, predict_type);
 //   } else {
@@ -25,7 +25,7 @@
 //   }
 // } break;
 //   case 2: {
-//     bsm_lg model(Rcpp::clone(model_), seed);
+//     bsm_lg model(model_, seed);
 //     if (intervals) {
 //       return model.predict_interval(probs, theta, alpha, counts, predict_type);
 //     } else {
@@ -34,7 +34,7 @@
 //     }
 //   } break;
 //   case 3: {
-//     ar1_lg model(Rcpp::clone(model_), seed);
+//     ar1_lg model(model_, seed);
 //     if (intervals) {
 //       return model.predict_interval(probs, theta, alpha, counts, predict_type);
 //     } else {
@@ -47,27 +47,27 @@
 // }
 // 
 // // [[Rcpp::export]]
-// arma::cube nongaussian_predict(const Rcpp::List& model_,
+// arma::cube nongaussian_predict(const Rcpp::List model_,
 //   const arma::vec& probs, const arma::mat& theta, const arma::mat& alpha, 
 //   const arma::uvec& counts, const unsigned int predict_type, 
 //   const unsigned int seed, const unsigned int model_type, const unsigned int nsim) {
 //   
 //   switch (model_type) {
 //   case 1: {
-//   ssm_ung model(Rcpp::clone(model_), seed);
+//   ssm_ung model(model_, seed);
 //   
 //   return model.predict_sample(theta, alpha, counts, predict_type, nsim);
 // } break;
 //   case 2: {
-//     bsm_ng model(Rcpp::clone(model_), seed);
+//     bsm_ng model(model_, seed);
 //     return model.predict_sample(theta, alpha, counts, predict_type, nsim);
 //   } break;
 //   case 3: {
-//     svm model(Rcpp::clone(model_), seed);
+//     svm model(model_, seed);
 //     return model.predict_sample(theta, alpha, counts, predict_type, nsim);
 //   } break;
 //   case 4: {
-//     ar1_ng model(Rcpp::clone(model_), seed);
+//     ar1_ng model(model_, seed);
 //     return model.predict_sample(theta, alpha, counts, predict_type, nsim);
 //   } break;
 //   }

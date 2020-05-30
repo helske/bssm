@@ -9,7 +9,7 @@
 
 \method{logLik}{nongaussian}(
   object,
-  nsim_states,
+  nsim,
   method = "psi",
   seed = 1,
   max_iter = 100,
@@ -22,7 +22,7 @@
 
 \item{...}{Ignored.}
 
-\item{nsim_states}{Number of samples for importance sampling. If 0, approximate log-likelihood is returned.
+\item{nsim}{Number of samples for importance sampling. If 0, approximate log-likelihood is returned.
 See vignette for details.}
 
 \item{method}{Method for computing the log-likelihood of non-Gaussian/non-linear model. 
@@ -40,4 +40,17 @@ default seed is fixed (as 1) in order to work properly in numerical optimization
 }
 \description{
 Computes the log-likelihood of the state space model of \code{bssm} package.
+}
+\examples{
+model <- ssm_ulg(y = c(1,4,3), Z = 1, H = 1, T = 1, R = 1)
+logLik(model)
+model <- ssm_ung(y = c(1,4,3), Z = 1, T = 1, R = 0.5, P1 = 2,
+  distribution = "poisson")
+  
+model2 <- bsm_ng(y = c(1,4,3), sd_level = 0.5, P1 = 2,
+  distribution = "poisson")
+logLik(model, nsim = 0)
+logLik(model2, nsim = 0)
+logLik(model, nsim = 10)
+logLik(model2, nsim = 10)
 }

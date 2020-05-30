@@ -2,46 +2,13 @@
 % Please edit documentation in R/importance_sample.R
 \name{importance_sample}
 \alias{importance_sample}
-\alias{importance_sample.ssm_ung}
-\alias{importance_sample.bsm_ng}
-\alias{importance_sample.svm}
-\alias{importance_sample.ar1_ng}
+\alias{importance_sample.nongaussian}
 \title{Importance Sampling from non-Gaussian State Space Model}
 \usage{
-importance_sample(object, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
+importance_sample(model, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
 
-\method{importance_sample}{ssm_ung}(
-  object,
-  nsim,
-  use_antithetic = TRUE,
-  max_iter = 100,
-  conv_tol = 1e-08,
-  seed = sample(.Machine$integer.max, size = 1),
-  ...
-)
-
-\method{importance_sample}{bsm_ng}(
-  object,
-  nsim,
-  use_antithetic = TRUE,
-  max_iter = 100,
-  conv_tol = 1e-08,
-  seed = sample(.Machine$integer.max, size = 1),
-  ...
-)
-
-\method{importance_sample}{svm}(
-  object,
-  nsim,
-  use_antithetic = TRUE,
-  max_iter = 100,
-  conv_tol = 1e-08,
-  seed = sample(.Machine$integer.max, size = 1),
-  ...
-)
-
-\method{importance_sample}{ar1_ng}(
-  object,
+\method{importance_sample}{nongaussian}(
+  model,
   nsim,
   use_antithetic = TRUE,
   max_iter = 100,
@@ -51,7 +18,7 @@ importance_sample(object, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
 )
 }
 \arguments{
-\item{object}{of class \code{bsm_ng}, \code{svm} or \code{ssm_ung}.}
+\item{model}{of class \code{bsm_ng}, \code{ar1_ng} \code{svm} or \code{ssm_ung}.}
 
 \item{nsim}{Number of samples.}
 

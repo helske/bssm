@@ -1,7 +1,7 @@
 // univariate linear Gaussian state space model
 
-#ifndef ssm_ulg_H
-#define ssm_ulg_H
+#ifndef SSM_ULG_H
+#define SSM_ULG_H
 
 
 #include "bssm.h"
@@ -12,9 +12,9 @@ class ssm_ulg {
 public:
   
   // constructor from Rcpp::List
-  ssm_ulg(const Rcpp::List& model, 
+  ssm_ulg(const Rcpp::List model, 
     const unsigned int seed = 1,
-    const double zero_tol = 1e-8);
+    const double zero_tol = 1.0e-8);
   
   // constructor from armadillo objects
   ssm_ulg(const arma::vec& y, 
@@ -32,7 +32,7 @@ public:
     const unsigned int seed,   
     const Rcpp::Function update_fn,
     const Rcpp::Function prior_fn,
-    const double zero_tol = 1e-8);
+    const double zero_tol = 1.0e-8);
   
   arma::vec y;
   arma::mat Z;
@@ -74,7 +74,7 @@ public:
   const Rcpp::Function update_fn;
   const Rcpp::Function prior_fn;
   
-  double log_prior_pdf(const arma::vec& new_theta);
+  double log_prior_pdf(const arma::vec& x) const;
   void update_model(const arma::vec& new_theta);
   
   void compute_RR();
@@ -84,7 +84,7 @@ public:
   
   // compute the log-likelihood
   double log_likelihood() const;
-  arma::cube simulate_states(const unsigned int nsim_states, 
+  arma::cube simulate_states(const unsigned int nsim, 
     const bool use_antithetic = true);
   
   double filter(arma::mat& at, arma::mat& att, arma::cube& Pt,

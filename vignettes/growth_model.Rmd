@@ -133,7 +133,7 @@ ts.plot(cbind(out_filter$att[, 1], out_smoother$alphahat[, 1]), col = 1:2)
 For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use $\psi$-PF based pseudo-marginal MCMC with delayed acceptance (note that in case of multimodal state density, it is typically better to use bootstrap filter). Let us compare this approach with EKF-based approximate MCMC (note that the number of MCMC iterations is rather small):
 
 ```{r mcmc}
-out_mcmc_pm <- run_mcmc(model, n_iter = 5000, nsim_states = 10, method = "da", 
+out_mcmc_pm <- run_mcmc(model, n_iter = 5000, nsim = 10, method = "da", 
   simulation_method = "psi")
 out_mcmc_ekf <- run_mcmc(model, n_iter = 5000, method = "ekf")
 summary_pm <- summary(out_mcmc_pm)

@@ -36,21 +36,21 @@ public:
   template <class T>
   void state_posterior(T model, const unsigned int n_threads);
   template <class T>
-  void state_summary(T& model, arma::mat& alphahat, arma::cube& Vt);
+  void state_summary(T model, arma::mat& alphahat, arma::cube& Vt);
   template <class T>
-  void state_sampler(T& model, const arma::mat& theta, arma::cube& alpha);
+  void state_sampler(T model, const arma::mat& theta, arma::cube& alpha);
 
   // gaussian mcmc
   template<class T>
-  void mcmc_gaussian(T& model, const bool end_ram);
+  void mcmc_gaussian(T model, const bool end_ram);
 
   // pseudo-marginal mcmc
   template<class T>
-  void pm_mcmc(T& model, const unsigned int method, const unsigned int nsim_states, const bool end_ram);
+  void pm_mcmc(T model, const unsigned int method, const unsigned int nsim, const bool end_ram);
 
   // delayed acceptance mcmc
   template<class T>
-  void da_mcmc(T& model, const unsigned int method, const unsigned int nsim_states, const bool end_ram);
+  void da_mcmc(T model, const unsigned int method, const unsigned int nsim, const bool end_ram);
 
   arma::vec posterior_storage;
   arma::mat theta_storage;

@@ -14,7 +14,7 @@ ssm_mng(
   distribution,
   phi = 1,
   u = 1,
-  init_theta,
+  init_theta = numeric(0),
   xreg = NULL,
   D,
   C,

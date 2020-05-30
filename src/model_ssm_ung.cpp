@@ -6,7 +6,7 @@
 #include "rep_mat.h"
 
 // General constructor of ssm_ung object from Rcpp::List
-ssm_ung::ssm_ung(const Rcpp::List& model, const unsigned int seed, const double zero_tol) 
+ssm_ung::ssm_ung(const Rcpp::List model, const unsigned int seed, const double zero_tol) 
   : y(Rcpp::as<arma::vec>(model["y"])), Z(Rcpp::as<arma::mat>(model["Z"])),
     T(Rcpp::as<arma::cube>(model["T"])), R(Rcpp::as<arma::cube>(model["R"])),
     a1(Rcpp::as<arma::vec>(model["a1"])), P1(Rcpp::as<arma::mat>(model["P1"])),
@@ -14,19 +14,19 @@ ssm_ung::ssm_ung(const Rcpp::List& model, const unsigned int seed, const double 
     xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(arma::vec(xreg.n_cols, arma::fill::zeros)),
     n(y.n_elem), m(a1.n_elem), k(R.n_cols), Ztv(Z.n_cols > 1), Ttv(T.n_slices > 1), 
     Rtv(R.n_slices > 1), Dtv(D.n_elem > 1),  Ctv(C.n_cols > 1),
+    theta(Rcpp::as<arma::vec>(model["theta"])), 
     phi(model["phi"]),
     u(Rcpp::as<arma::vec>(model["u"])), 
     distribution(model["distribution"]),
     max_iter(model["max_iter"]), conv_tol(model["conv_tol"]), 
     local_approx(model["local_approx"]),
-    theta(Rcpp::as<arma::vec>(model["theta"])), 
-    engine(seed), zero_tol(zero_tol),
-    RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
-    xbeta(arma::vec(n, arma::fill::zeros)),
     initial_mode(Rcpp::as<arma::vec>(model["initial_mode"])),
     mode_estimate(initial_mode),
     approx_state(-1),
     approx_loglik(0.0), scales(arma::vec(n, arma::fill::zeros)),
+    engine(seed), zero_tol(zero_tol),
+    RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
+    xbeta(arma::vec(n, arma::fill::zeros)),
     update_fn(Rcpp::as<Rcpp::Function>(model["update_fn"])), 
     prior_fn(Rcpp::as<Rcpp::Function>(model["prior_fn"])),
     approx_model(arma::vec(n, arma::fill::zeros),
@@ -48,7 +48,10 @@ inline void ssm_ung::compute_RR(){
 }
 
 void ssm_ung::update_model(const arma::vec& new_theta) {
-  Rcpp::List model_list = update_fn(new_theta);
+
+  Rcpp::List model_list =
+    update_fn(Rcpp::NumericVector(new_theta.begin(), new_theta.end()));
+  
   if (model_list.containsElementNamed("Z")) {
     Z = Rcpp::as<arma::mat>(model_list["Z"]);
   }
@@ -83,8 +86,8 @@ void ssm_ung::update_model(const arma::vec& new_theta) {
   if (approx_state == 1) approx_state = 0;
 }
 
-double ssm_ung::log_prior_pdf(const arma::vec& x) {
-  return Rcpp::as<double>(prior_fn(x));
+double ssm_ung::log_prior_pdf(const arma::vec& x) const {
+  return Rcpp::as<double>(prior_fn(Rcpp::NumericVector(x.begin(), x.end())));
 }
 
 // update the approximating Gaussian model
@@ -145,22 +148,22 @@ void ssm_ung::approximate() {
 // method = 1 psi-APF, 2 = BSF, 3 = SPDK, 4 = IEKF (not applicable)
 arma::vec ssm_ung::log_likelihood(
     const unsigned int method, 
-    const unsigned int nsim_states, 
+    const unsigned int nsim, 
     arma::cube& alpha, 
     arma::mat& weights, 
     arma::umat& indices) {
   
   arma::vec loglik(2);
   
-  if (nsim_states > 0) {
+  if (nsim > 0) {
     // bootstrap filter
     if(method == 2) {
-      loglik(0) = bsf_filter(nsim_states, alpha, weights, indices);
+      loglik(0) = bsf_filter(nsim, alpha, weights, indices);
       loglik(1) = loglik(0);
     } else {
       // check that approx_model matches theta
       if(approx_state != 1) {
-        mode_estimate = initial_mode;
+        mode_estimate = initial_mode; //always start from the same value
         approximate(); 
         
         // compute the log-likelihood of the approximate model
@@ -175,11 +178,11 @@ arma::vec ssm_ung::log_likelihood(
       }
       // psi-PF
       if (method == 1) {
-        loglik(0) = psi_filter(nsim_states, alpha, weights, indices);
+        loglik(0) = psi_filter(nsim, alpha, weights, indices);
       } else {
         //SPDK
-        alpha = approx_model.simulate_states(nsim_states, true);
-        arma::vec w(n, arma::fill::zeros);
+        alpha = approx_model.simulate_states(nsim, true);
+        arma::vec w(nsim, arma::fill::zeros);
         for (unsigned int t = 0; t < n; t++) {
           w += log_weights(t, alpha);
         }
@@ -216,6 +219,8 @@ arma::vec ssm_ung::log_likelihood(
 // compute unnormalized mode-based scaling terms
 // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
 void ssm_ung::update_scales() {
+  
+  scales.zeros();
   
   switch(distribution) {
   case 0  :
@@ -444,6 +449,21 @@ arma::vec ssm_ung::log_obs_density(const unsigned int t,
 
 double ssm_ung::psi_filter(const unsigned int nsim, arma::cube& alpha, 
   arma::mat& weights, arma::umat& indices) {
+  
+  if(approx_state != 1) {
+    mode_estimate = initial_mode;
+    approximate(); 
+    
+    // compute the log-likelihood of the approximate model
+    double gaussian_loglik = approx_model.log_likelihood();
+    // compute unnormalized mode-based correction terms 
+    // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
+    update_scales();
+    // compute the constant term
+    double const_term = compute_const_term(); 
+    // log-likelihood approximation
+    approx_loglik = gaussian_loglik + const_term + arma::accu(scales);
+  }
   
   arma::mat alphahat(m, n + 1);
   arma::cube Vt(m, m, n + 1);

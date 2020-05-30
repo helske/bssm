@@ -6,21 +6,21 @@
 // #include "model_ar1_ng.h"
 // #include "distr_consts.h"
 // 
-// template double compute_ung_psi_filter(ssm_ung model, const unsigned int nsim_states, 
+// template double compute_ung_psi_filter(ssm_ung model, const unsigned int nsim, 
 //   arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
 //   arma::cube& alpha, arma::mat& weights, arma::umat& indices);
-// template double compute_ung_psi_filter(bsm_ng model, const unsigned int nsim_states, 
+// template double compute_ung_psi_filter(bsm_ng model, const unsigned int nsim, 
 //   arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
 //   arma::cube& alpha, arma::mat& weights, arma::umat& indices);
-// template double compute_ung_psi_filter(svm model, const unsigned int nsim_states, 
+// template double compute_ung_psi_filter(svm model, const unsigned int nsim, 
 //   arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
 //   arma::cube& alpha, arma::mat& weights, arma::umat& indices);
-// template double compute_ung_psi_filter(ar1_ng model, const unsigned int nsim_states, 
+// template double compute_ung_psi_filter(ar1_ng model, const unsigned int nsim, 
 //   arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
 //   arma::cube& alpha, arma::mat& weights, arma::umat& indices);
 // 
 // template<class T>
-// double compute_ung_psi_filter(T model, const unsigned int nsim_states, 
+// double compute_ung_psi_filter(T model, const unsigned int nsim, 
 //   arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
 //   arma::cube& alpha, arma::mat& weights, arma::umat& indices) {
 //   
@@ -37,7 +37,7 @@
 //   double approx_loglik = gaussian_loglik + const_term + arma::accu(scales);
 //   
 //   double loglik = model.psi_filter(approx_model, approx_loglik, scales, 
-//     nsim_states, alpha, weights, indices);
+//     nsim, alpha, weights, indices);
 //   return loglik;
 // }
 // 

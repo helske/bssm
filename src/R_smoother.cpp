@@ -4,7 +4,7 @@
 #include "model_ssm_mlg.h"
 
 // [[Rcpp::export]]
-Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
+Rcpp::List gaussian_smoother(const Rcpp::List model_, const int model_type) {
 
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -23,19 +23,19 @@ Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
 
   switch (model_type) {
   case -1: {
-    ssm_mlg model(Rcpp::clone(model_), 1);
+    ssm_mlg model(model_, 1);
     model.smoother(alphahat, Vt);
   } break;
   case 1: {
-    ssm_ulg model(Rcpp::clone(model_), 1);
+    ssm_ulg model(model_, 1);
     model.smoother(alphahat, Vt);
   } break;
   case 2: {
-    bsm_lg model(Rcpp::clone(model_), 1);
+    bsm_lg model(model_, 1);
     model.smoother(alphahat, Vt);
   } break;
   case 3: {
-    ar1_lg model(Rcpp::clone(model_), 1);
+    ar1_lg model(model_, 1);
     model.smoother(alphahat, Vt);
   } break;
   }
@@ -48,7 +48,7 @@ Rcpp::List gaussian_smoother(const Rcpp::List& model_, const int model_type) {
 }
 
 // [[Rcpp::export]]
-Rcpp::List gaussian_ccov_smoother(const Rcpp::List& model_, const int model_type) {
+Rcpp::List gaussian_ccov_smoother(const Rcpp::List model_, const int model_type) {
 
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -58,7 +58,7 @@ Rcpp::List gaussian_ccov_smoother(const Rcpp::List& model_, const int model_type
     arma::vec y = Rcpp::as<arma::vec>(model_["y"]);
     n = y.n_elem;
   } else {
-    arma::vec y = Rcpp::as<arma::mat>(model_["y"]);
+    arma::mat y = Rcpp::as<arma::mat>(model_["y"]);
     n = y.n_rows;
   }
 
@@ -67,18 +67,18 @@ Rcpp::List gaussian_ccov_smoother(const Rcpp::List& model_, const int model_type
   arma::cube Ct(m, m, n + 1);
   switch (model_type) {
   case -1: {
-    ssm_mlg model(Rcpp::clone(model_), 1);
+    ssm_mlg model(model_, 1);
   } break;
   case 1: {
-    ssm_ulg model(Rcpp::clone(model_), 1);
+    ssm_ulg model(model_, 1);
     model.smoother_ccov(alphahat, Vt, Ct);
   } break;
   case 2: {
-    bsm_lg model(Rcpp::clone(model_), 1);
+    bsm_lg model(model_, 1);
     model.smoother_ccov(alphahat, Vt, Ct);
   } break;
   case 3: {
-    ar1_lg model(Rcpp::clone(model_), 1);
+    ar1_lg model(model_, 1);
     model.smoother_ccov(alphahat, Vt, Ct);
   } break;
   }
@@ -94,23 +94,23 @@ Rcpp::List gaussian_ccov_smoother(const Rcpp::List& model_, const int model_type
 
 
 // [[Rcpp::export]]
-arma::mat gaussian_fast_smoother(const Rcpp::List& model_, const int model_type) {
+arma::mat gaussian_fast_smoother(const Rcpp::List model_, const int model_type) {
 
   switch (model_type) {
   case -1: {
-  ssm_mlg model(Rcpp::clone(model_), 1);
+  ssm_mlg model(model_, 1);
   return model.fast_smoother().t();
 } break;
   case 1: {
-    ssm_ulg model(Rcpp::clone(model_), 1);
+    ssm_ulg model(model_, 1);
     return model.fast_smoother().t();
   } break;
   case 2: {
-    bsm_lg model(Rcpp::clone(model_), 1);
+    bsm_lg model(model_, 1);
     return model.fast_smoother().t();
   } break;
   case 3: {
-    ar1_lg model(Rcpp::clone(model_), 1);
+    ar1_lg model(model_, 1);
     return model.fast_smoother().t();
   } break;
   default:
@@ -120,20 +120,20 @@ arma::mat gaussian_fast_smoother(const Rcpp::List& model_, const int model_type)
 }
 
 // [[Rcpp::export]]
-arma::cube gaussian_sim_smoother(const Rcpp::List& model_, const unsigned int nsim,
+arma::cube gaussian_sim_smoother(const Rcpp::List model_, const unsigned int nsim,
   bool use_antithetic, const unsigned int seed, const int model_type) {
 
   switch (model_type) {
   case 1: {
-  ssm_ulg model(Rcpp::clone(model_), seed);
+  ssm_ulg model(model_, seed);
   return model.simulate_states(nsim, use_antithetic);
 } break;
   case 2: {
-    bsm_lg model(Rcpp::clone(model_), seed);
+    bsm_lg model(model_, seed);
     return model.simulate_states(nsim, use_antithetic);
   } break;
   case 3: {
-    ar1_lg model(Rcpp::clone(model_), seed);
+    ar1_lg model(model_, seed);
     return model.simulate_states(nsim, use_antithetic);
   } break;
   default:

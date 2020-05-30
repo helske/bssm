@@ -17,9 +17,9 @@
 //   void expand();
 //   
 //   void approx_mcmc(sde_ssm model, const bool end_ram, 
-//     const unsigned int nsim_states, const unsigned int L_c);
+//     const unsigned int nsim, const unsigned int L_c);
 //   
-//   void is_correction_bsf(sde_ssm model, const unsigned int nsim_states, 
+//   void is_correction_bsf(sde_ssm model, const unsigned int nsim, 
 //     const unsigned int L_c, const unsigned int L_f, 
 //     const unsigned int is_type, const unsigned int n_threads);
 //   

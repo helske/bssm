@@ -38,7 +38,7 @@ default_update_fn <- function(theta) {}
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_ulg}.
 #' @export
-ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL,
+ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0), xreg = NULL,
   D, C, state_names, update_fn = default_update_fn, prior_fn = default_prior_fn) {
   
   check_y(y)
@@ -126,7 +126,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL,
   rownames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
     rownames(P1) <- colnames(P1) <- state_names
   
-  if(is.null(names(init_theta))) 
+  if(is.null(names(init_theta)) && length(init_theta) > 0) 
     names(init_theta) <- paste0("theta_", 1:length(init_theta))
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
@@ -172,7 +172,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL,
 #' @return Object of class \code{ssm_ung}.
 #' @export
 ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, 
-  init_theta, xreg = NULL, D, C, state_names, update_fn = default_update_fn,
+  init_theta = numeric(0), xreg = NULL, D, C, state_names, update_fn = default_update_fn,
   prior_fn = default_prior_fn) {
   
   check_y(y)
@@ -270,12 +270,13 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   rownames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
     rownames(P1) <- colnames(P1) <- state_names
   
-  if(is.null(names(init_theta))) 
+  if(is.null(names(init_theta)) && length(init_theta) > 0) 
     names(init_theta) <- paste0("theta_", 1:length(init_theta))
   
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
     xreg = xreg, D = D, C = C, distribution = distribution,
-    initial_mode = initial_mode, theta = init_theta,
+    initial_mode = initial_mode, update_fn = update_fn,
+    prior_fn = prior_fn, theta = init_theta,
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE), 
     class = c("ssm_ung", "nongaussian"))
 }
@@ -313,7 +314,7 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_mlg}.
 #' @export
-ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL,
+ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0), xreg = NULL,
   D, C, state_names, update_fn = default_update_fn, prior_fn = default_prior_fn) {
   
   # create y
@@ -404,11 +405,12 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL,
   colnames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
     rownames(P1) <- colnames(P1) <- state_names
   
-  if(is.null(names(init_theta))) 
+  if(is.null(names(init_theta)) && length(init_theta) > 0)
     names(init_theta) <- paste0("theta_", 1:length(init_theta))
   
-  structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1, 
-    theta = init_theta, D = D, C = C,
+  structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, 
+    P1 = P1, D = D, C = C, update_fn = update_fn,
+    prior_fn = prior_fn, theta = init_theta, 
     state_names = state_names), class = c("ssm_mlg", "gaussian"))
 }
 
@@ -455,9 +457,8 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta, xreg = NULL,
 #' @return Object of class \code{ssm_mng}. UDPATE!!
 #' @export
 ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, 
-  init_theta, xreg = NULL, D, C, state_names, update_fn = default_update_fn,
+  init_theta = numeric(0), xreg = NULL, D, C, state_names, update_fn = default_update_fn,
   prior_fn = default_prior_fn) {
-  
   
   # create y
   check_y(y, multivariate = TRUE)
@@ -559,12 +560,13 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   colnames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
     rownames(P1) <- colnames(P1) <- state_names
   
-  if(is.null(names(init_theta))) 
+  if(is.null(names(init_theta)) && length(init_theta) > 0)
     names(init_theta) <- paste0("theta_", 1:length(init_theta))
   
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
     xreg = xreg, D = D, C = C, distribution = distribution,
-    initial_mode = initial_mode, theta = init_theta,
+    initial_mode = initial_mode, update_fn = update_fn,
+    prior_fn = prior_fn, theta = init_theta,
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE), 
     class = c("ng_ssm", "nongaussian"))
 }
@@ -716,7 +718,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     }
   }
   if (missing(P1)) {
-    P1 <- diag(1e3, m)
+    P1 <- diag(100, m)
   } else {
     if (is.null(dim(P1)) && length(P1) == 1L) {
       P1 <- matrix(P1)
@@ -866,7 +868,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'   geom = "polygon") + scale_fill_continuous(low = "green",high = "blue") +
 #'   guides(alpha = "none")
 #'
-# pred <- predict(model, n_iter = 5000, nsim_states = 10, n_ahead = 36,
+# pred <- predict(model, n_iter = 5000, nsim = 10, n_ahead = 36,
 #   probs = seq(0.05, 0.95, by = 0.05), newdata = matrix(1, 36, 1),
 #   newphi = rep(1, 36))
 # autoplot(pred)
@@ -979,7 +981,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     }
   }
   if (missing(P1)) {
-    P1 <- diag(1e3, m)
+    P1 <- diag(100, m)
   } else {
     if (is.null(dim(P1)) && length(P1) == 1L) {
       P1 <- matrix(P1)
@@ -1135,7 +1137,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' obj <- function(pars) {
 #'    -logLik(svm(exchange, rho = uniform(pars[1],-0.999,0.999),
 #'    sd_ar = halfnormal(pars[2],sd=5),
-#'    sigma = halfnormal(pars[3],sd=2)), nsim_states = 0)
+#'    sigma = halfnormal(pars[3],sd=2)), nsim = 0)
 #' }
 #' opt <- nlminb(c(0.98, 0.15, 0.6), obj, lower = c(-0.999, 1e-4, 1e-4), upper = c(0.999,10,10))
 #' pars <- opt$par

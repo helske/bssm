@@ -12,7 +12,7 @@ ssm_ulg(
   R,
   a1,
   P1,
-  init_theta,
+  init_theta = numeric(0),
   xreg = NULL,
   D,
   C,

@@ -4,10 +4,10 @@
 \alias{kfilter}
 \title{Kalman Filtering}
 \usage{
-kfilter(object, ...)
+kfilter(model, ...)
 }
 \arguments{
-\item{object}{Model object}
+\item{model}{Model Model object.}
 
 \item{...}{Ignored.}
 }

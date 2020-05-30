@@ -9,7 +9,7 @@
 \method{run_mcmc}{nongaussian}(
   model,
   n_iter,
-  nsim_states,
+  nsim,
   type = "full",
   method = "da",
   simulation_method = "psi",
@@ -30,7 +30,7 @@
 \method{run_mcmc}{nlg_ssm}(
   model,
   n_iter,
-  nsim_states,
+  nsim,
   type = "full",
   method = "da",
   simulation_method = "bsf",
@@ -51,7 +51,7 @@
 \method{run_mcmc}{sde_ssm}(
   model,
   n_iter,
-  nsim_states,
+  nsim,
   type = "full",
   method = "da",
   L_c,
@@ -72,7 +72,7 @@
 
 \item{n_iter}{Number of MCMC iterations.}
 
-\item{nsim_states}{Number of state samples per MCMC iteration.
+\item{nsim}{Number of state samples per MCMC iteration.
 If <2, approximate inference based on Gaussian approximation is performed.}
 
 \item{type}{Either \code{"full"} (default), or \code{"summary"}. The
@@ -138,7 +138,7 @@ poisson_model <- bsm_ng(y,
   sd_level = halfnormal(0.01, 1), 
   sd_slope = halfnormal(0.01, 0.1), 
   P1 = diag(c(10, 0.1)), distribution = "poisson")
-mcmc_is <- run_mcmc(poisson_model, n_iter = 1000, nsim_states = 10, method = "is2")
+mcmc_is <- run_mcmc(poisson_model, n_iter = 1000, nsim = 10, method = "is2")
 summary(mcmc_is, what = "theta", return_se = TRUE)}
 
 \item{iekf_iter}{If zero (default), first approximation for non-linear

@@ -2,25 +2,17 @@
 % Please edit documentation in R/particle_smoother.R
 \name{particle_smoother}
 \alias{particle_smoother}
-\alias{particle_smoother.ssm_ulg}
-\alias{particle_smoother.ssm_ung}
+\alias{particle_smoother.nongaussian}
 \alias{particle_smoother.nlg_ssm}
 \alias{particle_smoother.sde_ssm}
 \title{Particle Smoothing}
 \usage{
 particle_smoother(object, nsim, ...)
 
-\method{particle_smoother}{ssm_ulg}(
+\method{particle_smoother}{nongaussian}(
   object,
   nsim,
-  seed = sample(.Machine$integer.max, size = 1),
-  ...
-)
-
-\method{particle_smoother}{ssm_ung}(
-  object,
-  nsim,
-  filter_type = "bsf",
+  method = "bsf",
   seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100,
   conv_tol = 1e-08,
@@ -30,7 +22,7 @@ particle_smoother(object, nsim, ...)
 \method{particle_smoother}{nlg_ssm}(
   object,
   nsim,
-  filter_type = "psi",
+  method = "psi",
   seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100,
   conv_tol = 1e-08,
@@ -53,18 +45,18 @@ particle_smoother(object, nsim, ...)
 
 \item{...}{Ignored.}
 
-\item{seed}{Seed for RNG.}
-
-\item{filter_type}{Choice of particle filter algorithm. For Gaussian models, 
-only option is \code{"bsf"} (bootstrap particle filter). 
-In addition, for non-Gaussian or 
-non-linear models, \code{"psi"} uses psi-particle filter, and 
+\item{method}{Choice of particle filter algorithm. 
+For Gaussian and non-Gaussian models with linear dynamics,
+options are \code{"bsf"} (bootstrap particle filter) 
+and \code{"psi"} (psi-APF), and 
 for non-linear models options \code{"ekf"} (extended Kalman particle filter) 
 is also available.}
 
-\item{max_iter}{Maximum number of iterations used in Gaussian approximation. Used psi-PF.}
+\item{seed}{Seed for RNG.}
 
-\item{conv_tol}{Tolerance parameter used in Gaussian approximation. Used psi-PF.}
+\item{max_iter}{Maximum number of iterations used in Gaussian approximation. Used psi-APF.}
+
+\item{conv_tol}{Tolerance parameter used in Gaussian approximation. Used psi-APF.}
 
 \item{iekf_iter}{If zero (default), first approximation for non-linear 
 Gaussian models is obtained from extended Kalman filter. If 

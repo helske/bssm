@@ -4,10 +4,10 @@
 \alias{ukf}
 \title{Unscented Kalman Filtering}
 \usage{
-ukf(object, alpha = 1, beta = 0, kappa = 2)
+ukf(model, alpha = 1, beta = 0, kappa = 2)
 }
 \arguments{
-\item{object}{Model object}
+\item{model}{Model model}
 
 \item{alpha, beta, kappa}{Tuning parameters for the UKF.}
 }

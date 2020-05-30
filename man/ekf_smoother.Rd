@@ -4,10 +4,10 @@
 \alias{ekf_smoother}
 \title{Extended Kalman Smoothing}
 \usage{
-ekf_smoother(object, iekf_iter = 0)
+ekf_smoother(model, iekf_iter = 0)
 }
 \arguments{
-\item{object}{Model object}
+\item{model}{Model model}
 
 \item{iekf_iter}{If \code{iekf_iter > 0}, iterated extended Kalman filter is 
 used with \code{iekf_iter} iterations.}

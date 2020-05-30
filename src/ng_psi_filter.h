@@ -4,7 +4,7 @@
 // #include "bssm.h"
 // 
 // template<class T>
-// double compute_ung_psi_filter(T model, const unsigned int nsim_states, 
+// double compute_ung_psi_filter(T model, const unsigned int nsim, 
 //   arma::vec mode_estimate, const unsigned int max_iter, const double conv_tol,
 //   arma::cube& alpha, arma::mat& weights, arma::umat& indices);
 // 

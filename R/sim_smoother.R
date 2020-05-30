@@ -9,8 +9,6 @@
 #' @param object Model object.
 #' @param nsim Number of independent samples.
 #' @param use_antithetic Use an antithetic variable for location. Default is \code{FALSE}. Only used if \code{method} is "dk".
-#' @param method If \code{"dk"} (default), use simulation smoothing algorithm by Durbin and Koopman (2002). If \code{"psi"}, use twisted SMC. 
-#' Only used for Gaussian models of class \code{"ssm_ulg"}, \code{"bsm"}, and \code{"ar1_lg"}.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @return An array containing the generated samples.
@@ -20,86 +18,25 @@
 #' model <- bsm_lg(rep(NA, 50), sd_level = uniform(1,0,5), sd_y = uniform(1,0,5))
 #' sim <- sim_smoother(model, 12)
 #' ts.plot(sim[, 1, ])
-sim_smoother <- function(object, nsim, seed, use_antithetic = FALSE, ...) {
+sim_smoother <- function(object, nsim, use_antithetic = FALSE, seed, ...) {
   UseMethod("sim_smoother", object)
 }
-#' @method sim_smoother ssm_ulg
+#' @method sim_smoother gaussian
 #' @rdname sim_smoother
 #' @export
-sim_smoother.ssm_ulg <- function(object, nsim = 1, 
-  seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, method = "dk", ...) {
-  
-  method <- match.arg(method, c("psi", "dk"))
-  if (method == "dk") {
-  out <- gaussian_sim_smoother(object, nsim, use_antithetic, seed, model_type = 1L)
-  } else {
-    out <- gaussian_psi_smoother(object, nsim, seed, 1L)
-  }
+sim_smoother.gaussian <- function(object, nsim = 1, use_antithetic = FALSE,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+
+  out <- gaussian_sim_smoother(object, nsim, use_antithetic, seed, model_type(model))
   rownames(out) <- names(object$a1)
   aperm(out, c(2, 1, 3))[-(length(object$y) + 1), , , drop = FALSE]
 }
-#' @method sim_smoother bsm_lg
+#' @method sim_smoother nongaussian
 #' @rdname sim_smoother
 #' @export
-sim_smoother.bsm_lg <- function(object, nsim = 1, 
-  seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, method = "dk", ...) {
-
-  method <- match.arg(method, c("psi", "dk"))
-  if (method == "dk") {
-    out <- gaussian_sim_smoother(object, nsim, use_antithetic, seed, model_type = 2L)
-  } else {
-    out <- gaussian_psi_smoother(object, nsim, seed, 2L)
-  }
-
-  rownames(out) <- names(object$a1)
-  aperm(out, c(2, 1, 3))[-(length(object$y) + 1), , , drop = FALSE]
-}
-#' @method sim_smoother ar1_lg
-#' @rdname sim_smoother
-#' @export
-sim_smoother.ar1_lg <- function(object, nsim = 1, 
-  seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, method = "dk", ...) {
-  
-  method <- match.arg(method, c("psi", "dk"))
-  if (method == "dk") {
-    out <- gaussian_sim_smoother(object, nsim, use_antithetic, seed, model_type = 3L)
-  } else {
-    out <- gaussian_psi_smoother(object, nsim, seed, 2L)
-  }
-  
-  rownames(out) <- names(object$a1)
-  aperm(out, c(2, 1, 3))[-(length(object$y) + 1), , , drop = FALSE]
+sim_smoother.nongaussian <- function(object, nsim = 1,
+  seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
+  sim_smoother(gaussian_approx(object), nsim = nsim, 
+    use_antithetic = use_antithetic, seed = seed)
 }
 
-#' @method sim_smoother ssm_ung
-#' @rdname sim_smoother
-#' @export
-sim_smoother.ssm_ung <- function(object, nsim = 1,
-  seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
-  sim_smoother(gaussian_approx(object), nsim = nsim, 
-    use_antithetic = use_antithetic, seed = seed)
-}
-#' @method sim_smoother bsm_ng
-#' @rdname sim_smoother
-#' @export
-sim_smoother.bsm_ng <- function(object, nsim = 1,
-  seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
-  sim_smoother(gaussian_approx(object), nsim = nsim, 
-    use_antithetic = use_antithetic, seed = seed)
-}
-#' @method sim_smoother svm
-#' @rdname sim_smoother
-#' @export
-sim_smoother.svm <- function(object, nsim = 1, 
-  seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
-  sim_smoother(gaussian_approx(object), nsim = nsim, 
-    use_antithetic = use_antithetic, seed = seed)
-}
-#' @method sim_smoother ar1_ng
-#' @rdname sim_smoother
-#' @export
-sim_smoother.ar1_ng <- function(object, nsim = 1,
-  seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
-  sim_smoother(gaussian_approx(object), nsim = nsim, 
-    use_antithetic = use_antithetic, seed = seed)
-}

@@ -7,8 +7,7 @@
 #include "psd_chol.h"
 
 // General constructor of ssm_ulg object from Rcpp::List
-// with parameter indices
-ssm_ulg::ssm_ulg(const Rcpp::List& model,
+ssm_ulg::ssm_ulg(const Rcpp::List model,
   const unsigned int seed,
   const double zero_tol) 
   :
@@ -73,8 +72,9 @@ inline void ssm_ulg::compute_RR(){
 }
 
 void ssm_ulg::update_model(const arma::vec& new_theta) {
-  
-  Rcpp::List model_list = update_fn(new_theta);
+
+  Rcpp::List model_list =
+  update_fn(Rcpp::NumericVector(new_theta.begin(), new_theta.end()));
   if (model_list.containsElementNamed("Z")) {
     Z = Rcpp::as<arma::mat>(model_list["Z"]);
   }
@@ -109,9 +109,8 @@ void ssm_ulg::update_model(const arma::vec& new_theta) {
   theta = new_theta;
 }
 
-double ssm_ulg::log_prior_pdf(const arma::vec& x) {
-  
-  return Rcpp::as<double>(prior_fn(x));
+double ssm_ulg::log_prior_pdf(const arma::vec& x) const {
+  return Rcpp::as<double>(prior_fn(Rcpp::NumericVector(x.begin(), x.end())));
 }
 
 double ssm_ulg::log_likelihood() const {
@@ -501,8 +500,6 @@ double ssm_ulg::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
       arma::vec K = Pt.slice(t) * Z.col(t * Ztv) / F;
       att.col(t) = at.col(t) + K * v;
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (att.col(t));
-      // Ptt.slice(t) = Pt.slice(t) - K * K.t() * F;
-      // Switched to numerically better form
       arma::mat tmp = arma::eye(m, m) - K * Z.col(t * Ztv).t();
       Ptt.slice(t) = tmp * Pt.slice(t) * tmp.t() + K * HH(t * Htv) * K.t();
       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * Ptt.slice(t) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
@@ -537,9 +534,6 @@ void ssm_ulg::smoother(arma::mat& at, arma::cube& Pt) const {
       Kt.col(t) = Pt.slice(t) * Z.col(t * Ztv) / Ft(t);
       vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
-      //Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (Pt.slice(t) -
-      //  Kt.col(t) * Kt.col(t).t() * Ft(t)) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
-      // Switched to numerically better form
       arma::mat tmp = arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t();
       Pt.slice(t + 1) = arma::symmatu(T.slice(t * Ttv) * (tmp * Pt.slice(t) * tmp.t() + Kt.col(t) * HH(t * Htv) * Kt.col(t).t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     } else {

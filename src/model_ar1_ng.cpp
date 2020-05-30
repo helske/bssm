@@ -1,7 +1,7 @@
 #include "model_ar1_ng.h"
 
 // from Rcpp::List
-ar1_ng::ar1_ng(const Rcpp::List& model, const unsigned int seed) :
+ar1_ng::ar1_ng(const Rcpp::List model, const unsigned int seed) :
   ssm_ung(model, seed), 
   prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
   prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
@@ -29,10 +29,12 @@ void ar1_ng::update_model(const arma::vec& new_theta) {
     beta = new_theta.subvec(new_theta.n_elem - xreg.n_cols, new_theta.n_elem - 1);
     compute_xbeta();
   }
-  theta = new_theta;
+  theta = new_theta;  
+  // approximation does not match theta anymore (keep as -1 if so)
+  if (approx_state == 1) approx_state = 0;
 }
 
-double ar1_ng::log_prior_pdf(const arma::vec& x) {
+double ar1_ng::log_prior_pdf(const arma::vec& x) const {
   
   double log_prior = 0.0;
   

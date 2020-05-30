@@ -17,6 +17,16 @@ bootstrap_filter <- function(model, nsim, ...) {
 #' @method bootstrap_filter gaussian
 #' @rdname bootstrap_filter
 #' @export
+#' @examples 
+#' set.seed(1)
+#' x <- cumsum(rnorm(50))
+#' y <- rnorm(50, x, 0.5) 
+#' model <- bsm_lg(y, sd_y = 0.5, sd_level = 1, P1 = 1)
+#'   
+#' out <- bootstrap_filter(model, nsim = 1000)
+#' ts.plot(cbind(y, x, out$att), col = 1:3)
+#' ts.plot(cbind(kfilter(model)$att, out$att), col = 1:3)
+#' 
 bootstrap_filter.gaussian <- function(model, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
@@ -30,10 +40,17 @@ bootstrap_filter.gaussian <- function(model, nsim,
   out
 }
 
-
 #' @method bootstrap_filter nongaussian
 #' @rdname bootstrap_filter
 #' @export
+#' @examples 
+#' data("poisson_series")
+#' model <- bsm_ng(poisson_series, sd_level = 0.1, sd_slope = 0.01, 
+#'   P1 = diag(1, 2), distribution = "poisson")
+#'   
+#' out <- bootstrap_filter(model, nsim = 100)
+#' ts.plot(cbind(poisson_series, exp(out$att[, 1])), col = 1:2)
+#' 
 bootstrap_filter.nongaussian <- function(model, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 

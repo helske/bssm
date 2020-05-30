@@ -1,7 +1,7 @@
 // multivariate linear Gaussian state space model
 
-#ifndef MGG_H
-#define MGG_H
+#ifndef SSM_MLG_H
+#define SSM_MLG_H
 
 #include "bssm.h"
 #include <sitmo.h>
@@ -11,7 +11,7 @@ class ssm_mlg {
 public:
   // constructor from Rcpp::List
   ssm_mlg(
-    const Rcpp::List& model, 
+    const Rcpp::List model, 
     const unsigned int seed = 1,
     const double zero_tol = 1e-8);
   
@@ -74,11 +74,11 @@ public:
   void compute_HH();
   
   void update_model(const arma::vec& new_theta);
-  double log_prior_pdf(const arma::vec& x);
+  double log_prior_pdf(const arma::vec& x) const;
   
   // compute the log-likelihood using Kalman filter
   double log_likelihood() const;
-  arma::cube simulate_states(const unsigned int nsim_states);
+  arma::cube simulate_states(const unsigned int nsim);
   
   double filter(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& Ptt) const;
   void smoother(arma::mat& at, arma::cube& Pt) const; 

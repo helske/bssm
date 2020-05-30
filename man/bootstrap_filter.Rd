@@ -58,3 +58,21 @@ estimate of log-likelihood.
 Function \code{bootstrap_filter} performs a bootstrap filtering with stratification
 resampling.
 }
+\examples{
+set.seed(1)
+x <- cumsum(rnorm(50))
+y <- rnorm(50, x, 0.5) 
+model <- bsm_lg(y, sd_y = 0.5, sd_level = 1, P1 = 1)
+  
+out <- bootstrap_filter(model, nsim = 1000)
+ts.plot(cbind(y, x, out$att), col = 1:3)
+ts.plot(cbind(kfilter(model)$att, out$att), col = 1:3)
+
+data("poisson_series")
+model <- bsm_ng(poisson_series, sd_level = 0.1, sd_slope = 0.01, 
+  P1 = diag(1, 2), distribution = "poisson")
+  
+out <- bootstrap_filter(model, nsim = 100)
+ts.plot(cbind(poisson_series, exp(out$att[, 1])), col = 1:2)
+
+}

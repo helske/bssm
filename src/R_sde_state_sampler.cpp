@@ -8,7 +8,7 @@
 Rcpp::List sde_state_sampler_bsf_is2(const arma::vec& y, const double x0,
   const bool positive, SEXP drift_pntr, SEXP diffusion_pntr,
   SEXP ddiffusion_pntr, SEXP log_prior_pdf_pntr, SEXP log_obs_density_pntr,
-  const unsigned int nsim_states,
+  const unsigned int nsim,
   const unsigned int L_f, const unsigned int seed,
   const arma::vec& approx_loglik_storage, const arma::mat& theta) {
 
@@ -28,10 +28,10 @@ Rcpp::List sde_state_sampler_bsf_is2(const arma::vec& y, const double x0,
 
     model.theta = theta.col(i);
 
-    arma::cube alpha_i(1, model.n + 1, nsim_states);
-    arma::mat weights_i(nsim_states, model.n + 1);
-    arma::umat indices(nsim_states, model.n);
-    double loglik = model.bsf_filter(nsim_states, L_f, alpha_i, weights_i, indices);
+    arma::cube alpha_i(1, model.n + 1, nsim);
+    arma::mat weights_i(nsim, model.n + 1);
+    arma::umat indices(nsim, model.n);
+    double loglik = model.bsf_filter(nsim, L_f, alpha_i, weights_i, indices);
     // if(arma::is_finite(loglik)) {
       weights(i) = std::exp(loglik - approx_loglik_storage(i));
 

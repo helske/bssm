@@ -51,7 +51,7 @@ public:
   
   arma::vec log_likelihood(
       const unsigned int method, 
-      const unsigned int nsim_states, 
+      const unsigned int nsim, 
       arma::cube& alpha, 
       arma::mat& weights, 
       arma::umat& indices);

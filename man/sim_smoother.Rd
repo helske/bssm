@@ -2,69 +2,21 @@
 % Please edit documentation in R/sim_smoother.R
 \name{sim_smoother}
 \alias{sim_smoother}
-\alias{sim_smoother.ssm_ulg}
-\alias{sim_smoother.bsm_lg}
-\alias{sim_smoother.ar1_lg}
-\alias{sim_smoother.ssm_ung}
-\alias{sim_smoother.bsm_ng}
-\alias{sim_smoother.svm}
-\alias{sim_smoother.ar1_ng}
+\alias{sim_smoother.gaussian}
+\alias{sim_smoother.nongaussian}
 \title{Simulation Smoothing}
 \usage{
-sim_smoother(object, nsim, seed, use_antithetic = FALSE, ...)
+sim_smoother(object, nsim, use_antithetic = FALSE, seed, ...)
 
-\method{sim_smoother}{ssm_ulg}(
+\method{sim_smoother}{gaussian}(
   object,
   nsim = 1,
-  seed = sample(.Machine$integer.max, size = 1),
   use_antithetic = FALSE,
-  method = "dk",
+  seed = sample(.Machine$integer.max, size = 1),
   ...
 )
 
-\method{sim_smoother}{bsm_lg}(
-  object,
-  nsim = 1,
-  seed = sample(.Machine$integer.max, size = 1),
-  use_antithetic = FALSE,
-  method = "dk",
-  ...
-)
-
-\method{sim_smoother}{ar1_lg}(
-  object,
-  nsim = 1,
-  seed = sample(.Machine$integer.max, size = 1),
-  use_antithetic = FALSE,
-  method = "dk",
-  ...
-)
-
-\method{sim_smoother}{ssm_ung}(
-  object,
-  nsim = 1,
-  seed = sample(.Machine$integer.max, size = 1),
-  use_antithetic = FALSE,
-  ...
-)
-
-\method{sim_smoother}{bsm_ng}(
-  object,
-  nsim = 1,
-  seed = sample(.Machine$integer.max, size = 1),
-  use_antithetic = FALSE,
-  ...
-)
-
-\method{sim_smoother}{svm}(
-  object,
-  nsim = 1,
-  seed = sample(.Machine$integer.max, size = 1),
-  use_antithetic = FALSE,
-  ...
-)
-
-\method{sim_smoother}{ar1_ng}(
+\method{sim_smoother}{nongaussian}(
   object,
   nsim = 1,
   seed = sample(.Machine$integer.max, size = 1),
@@ -77,14 +29,11 @@ sim_smoother(object, nsim, seed, use_antithetic = FALSE, ...)
 
 \item{nsim}{Number of independent samples.}
 
-\item{seed}{Seed for the random number generator.}
-
 \item{use_antithetic}{Use an antithetic variable for location. Default is \code{FALSE}. Only used if \code{method} is "dk".}
 
-\item{...}{Ignored.}
+\item{seed}{Seed for the random number generator.}
 
-\item{method}{If \code{"dk"} (default), use simulation smoothing algorithm by Durbin and Koopman (2002). If \code{"psi"}, use twisted SMC. 
-Only used for Gaussian models of class \code{"ssm_ulg"}, \code{"bsm"}, and \code{"ar1_lg"}.}
+\item{...}{Ignored.}
 }
 \value{
 An array containing the generated samples.

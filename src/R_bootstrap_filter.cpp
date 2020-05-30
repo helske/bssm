@@ -11,21 +11,21 @@
 #include "filter_smoother.h"
 #include "summary.h"
 // [[Rcpp::export]]
-Rcpp::List bsf(const Rcpp::List& model_,
-  const unsigned int nsim_states, const unsigned int seed,
+Rcpp::List bsf(const Rcpp::List model_,
+  const unsigned int nsim, const unsigned int seed,
   bool gaussian, const int model_type) {
 
   if (gaussian) {
     switch (model_type) {
     case 1: {
-  ssm_ulg model(Rcpp::clone(model_), seed);
+  ssm_ulg model(model_, seed);
   unsigned int m = model.m;
   unsigned n = model.n;
 
-  arma::cube alpha(m, n + 1, nsim_states);
-  arma::mat weights(nsim_states, n + 1);
-  arma::umat indices(nsim_states, n);
-  double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+  arma::cube alpha(m, n + 1, nsim);
+  arma::mat weights(nsim, n + 1);
+  arma::umat indices(nsim, n);
+  double loglik = model.bsf_filter(nsim, alpha, weights, indices);
 
   arma::mat at(m, n + 1);
   arma::mat att(m, n);
@@ -42,14 +42,14 @@ Rcpp::List bsf(const Rcpp::List& model_,
     Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
 } break;
     case 2: {
-      bsm_lg model(Rcpp::clone(model_), seed);
+      bsm_lg model(model_, seed);
       unsigned int m = model.m;
       unsigned n = model.n;
 
-      arma::cube alpha(m, n + 1, nsim_states);
-      arma::mat weights(nsim_states, n + 1);
-      arma::umat indices(nsim_states, n);
-      double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+      arma::cube alpha(m, n + 1, nsim);
+      arma::mat weights(nsim, n + 1);
+      arma::umat indices(nsim, n);
+      double loglik = model.bsf_filter(nsim, alpha, weights, indices);
 
       arma::mat at(m, n + 1);
       arma::mat att(m, n);
@@ -66,14 +66,14 @@ Rcpp::List bsf(const Rcpp::List& model_,
         Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
     } break;
     case 3: {
-      ar1_lg model(Rcpp::clone(model_), seed);
+      ar1_lg model(model_, seed);
       unsigned int m = model.m;
       unsigned n = model.n;
 
-      arma::cube alpha(m, n + 1, nsim_states);
-      arma::mat weights(nsim_states, n + 1);
-      arma::umat indices(nsim_states, n);
-      double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+      arma::cube alpha(m, n + 1, nsim);
+      arma::mat weights(nsim, n + 1);
+      arma::umat indices(nsim, n);
+      double loglik = model.bsf_filter(nsim, alpha, weights, indices);
 
       arma::mat at(m, n + 1);
       arma::mat att(m, n);
@@ -93,14 +93,14 @@ Rcpp::List bsf(const Rcpp::List& model_,
   } else {
     switch (model_type) {
     case 1: {
-    ssm_ung model(Rcpp::clone(model_), seed);
+    ssm_ung model(model_, seed);
     unsigned int m = model.m;
     unsigned n = model.n;
 
-    arma::cube alpha(m, n + 1, nsim_states);
-    arma::mat weights(nsim_states, n + 1);
-    arma::umat indices(nsim_states, n);
-    double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+    arma::cube alpha(m, n + 1, nsim);
+    arma::mat weights(nsim, n + 1);
+    arma::umat indices(nsim, n);
+    double loglik = model.bsf_filter(nsim, alpha, weights, indices);
 
     arma::mat at(m, n + 1);
     arma::mat att(m, n);
@@ -117,14 +117,14 @@ Rcpp::List bsf(const Rcpp::List& model_,
       Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
   } break;
     case 2: {
-      bsm_ng model(Rcpp::clone(model_), seed);
+      bsm_ng model(model_, seed);
       unsigned int m = model.m;
       unsigned n = model.n;
 
-      arma::cube alpha(m, n + 1, nsim_states);
-      arma::mat weights(nsim_states, n + 1);
-      arma::umat indices(nsim_states, n);
-      double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+      arma::cube alpha(m, n + 1, nsim);
+      arma::mat weights(nsim, n + 1);
+      arma::umat indices(nsim, n);
+      double loglik = model.bsf_filter(nsim, alpha, weights, indices);
       arma::mat at(m, n + 1);
       arma::mat att(m, n);
       arma::cube Pt(m, m, n + 1);
@@ -141,14 +141,14 @@ Rcpp::List bsf(const Rcpp::List& model_,
 
     } break;
     case 3: {
-      svm model(Rcpp::clone(model_), seed);
+      svm model(model_, seed);
       unsigned int m = model.m;
       unsigned n = model.n;
 
-      arma::cube alpha(m, n + 1, nsim_states);
-      arma::mat weights(nsim_states, n + 1);
-      arma::umat indices(nsim_states, n);
-      double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+      arma::cube alpha(m, n + 1, nsim);
+      arma::mat weights(nsim, n + 1);
+      arma::umat indices(nsim, n);
+      double loglik = model.bsf_filter(nsim, alpha, weights, indices);
       arma::mat at(m, n + 1);
       arma::mat att(m, n);
       arma::cube Pt(m, m, n + 1);
@@ -165,14 +165,14 @@ Rcpp::List bsf(const Rcpp::List& model_,
 
     } break;
     case 4: {
-      ar1_ng model(Rcpp::clone(model_), seed);
+      ar1_ng model(model_, seed);
       unsigned int m = model.m;
       unsigned n = model.n;
 
-      arma::cube alpha(m, n + 1, nsim_states);
-      arma::mat weights(nsim_states, n + 1);
-      arma::umat indices(nsim_states, n);
-      double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+      arma::cube alpha(m, n + 1, nsim);
+      arma::mat weights(nsim, n + 1);
+      arma::umat indices(nsim, n);
+      double loglik = model.bsf_filter(nsim, alpha, weights, indices);
       arma::mat at(m, n + 1);
       arma::mat att(m, n);
       arma::cube Pt(m, m, n + 1);
@@ -195,21 +195,21 @@ Rcpp::List bsf(const Rcpp::List& model_,
 
 
 // [[Rcpp::export]]
-Rcpp::List bsf_smoother(const Rcpp::List& model_,
-  const unsigned int nsim_states, const unsigned int seed,
+Rcpp::List bsf_smoother(const Rcpp::List model_,
+  const unsigned int nsim, const unsigned int seed,
   bool gaussian, const int model_type) {
 
   if (gaussian) {
     switch (model_type) {
     case 1: {
-      ssm_ulg model(Rcpp::clone(model_), seed);
+      ssm_ulg model(model_, seed);
       unsigned int m = model.m;
       unsigned n = model.n;
 
-    arma::cube alpha(m, n + 1, nsim_states);
-    arma::mat weights(nsim_states, n + 1);
-    arma::umat indices(nsim_states, n);
-    double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+    arma::cube alpha(m, n + 1, nsim);
+    arma::mat weights(nsim, n + 1);
+    arma::umat indices(nsim, n);
+    double loglik = model.bsf_filter(nsim, alpha, weights, indices);
 
     arma::mat alphahat(model.m, model.n + 1);
     arma::cube Vt(model.m, model.m, model.n + 1);
@@ -224,14 +224,14 @@ Rcpp::List bsf_smoother(const Rcpp::List& model_,
       Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
   } break;
       case 2: {
-        bsm_lg model(Rcpp::clone(model_), seed);
+        bsm_lg model(model_, seed);
         unsigned int m = model.m;
         unsigned n = model.n;
 
-        arma::cube alpha(m, n + 1, nsim_states);
-        arma::mat weights(nsim_states, n + 1);
-        arma::umat indices(nsim_states, n);
-        double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+        arma::cube alpha(m, n + 1, nsim);
+        arma::mat weights(nsim, n + 1);
+        arma::umat indices(nsim, n);
+        double loglik = model.bsf_filter(nsim, alpha, weights, indices);
         arma::mat alphahat(model.m, model.n + 1);
         arma::cube Vt(model.m, model.m, model.n + 1);
 
@@ -246,14 +246,14 @@ Rcpp::List bsf_smoother(const Rcpp::List& model_,
 
       } break;
     case 3: {
-        ar1_lg model(Rcpp::clone(model_), seed);
+        ar1_lg model(model_, seed);
         unsigned int m = model.m;
         unsigned n = model.n;
 
-        arma::cube alpha(m, n + 1, nsim_states);
-        arma::mat weights(nsim_states, n + 1);
-        arma::umat indices(nsim_states, n);
-        double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+        arma::cube alpha(m, n + 1, nsim);
+        arma::mat weights(nsim, n + 1);
+        arma::umat indices(nsim, n);
+        double loglik = model.bsf_filter(nsim, alpha, weights, indices);
         arma::mat alphahat(model.m, model.n + 1);
         arma::cube Vt(model.m, model.m, model.n + 1);
 
@@ -271,14 +271,14 @@ Rcpp::List bsf_smoother(const Rcpp::List& model_,
   } else {
       switch (model_type) {
       case 1: {
-      ssm_ung model(Rcpp::clone(model_), seed);
+      ssm_ung model(model_, seed);
       unsigned int m = model.m;
       unsigned n = model.n;
 
-      arma::cube alpha(m, n + 1, nsim_states);
-      arma::mat weights(nsim_states, n + 1);
-      arma::umat indices(nsim_states, n);
-      double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+      arma::cube alpha(m, n + 1, nsim);
+      arma::mat weights(nsim, n + 1);
+      arma::umat indices(nsim, n);
+      double loglik = model.bsf_filter(nsim, alpha, weights, indices);
 
       arma::mat alphahat(model.m, model.n + 1);
       arma::cube Vt(model.m, model.m, model.n + 1);
@@ -293,14 +293,14 @@ Rcpp::List bsf_smoother(const Rcpp::List& model_,
         Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
     } break;
       case 2: {
-        bsm_ng model(Rcpp::clone(model_), seed);
+        bsm_ng model(model_, seed);
         unsigned int m = model.m;
         unsigned n = model.n;
 
-        arma::cube alpha(m, n + 1, nsim_states);
-        arma::mat weights(nsim_states, n + 1);
-        arma::umat indices(nsim_states, n);
-        double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+        arma::cube alpha(m, n + 1, nsim);
+        arma::mat weights(nsim, n + 1);
+        arma::umat indices(nsim, n);
+        double loglik = model.bsf_filter(nsim, alpha, weights, indices);
         arma::mat alphahat(model.m, model.n + 1);
         arma::cube Vt(model.m, model.m, model.n + 1);
 
@@ -315,14 +315,14 @@ Rcpp::List bsf_smoother(const Rcpp::List& model_,
 
     } break;
     case 3: {
-      svm model(Rcpp::clone(model_), seed);
+      svm model(model_, seed);
       unsigned int m = model.m;
       unsigned n = model.n;
 
-      arma::cube alpha(m, n + 1, nsim_states);
-      arma::mat weights(nsim_states, n + 1);
-      arma::umat indices(nsim_states, n);
-      double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+      arma::cube alpha(m, n + 1, nsim);
+      arma::mat weights(nsim, n + 1);
+      arma::umat indices(nsim, n);
+      double loglik = model.bsf_filter(nsim, alpha, weights, indices);
       arma::mat alphahat(model.m, model.n + 1);
       arma::cube Vt(model.m, model.m, model.n + 1);
 
@@ -337,14 +337,14 @@ Rcpp::List bsf_smoother(const Rcpp::List& model_,
 
     } break;
       case 4: {
-      ar1_ng model(Rcpp::clone(model_), seed);
+      ar1_ng model(model_, seed);
       unsigned int m = model.m;
       unsigned n = model.n;
 
-      arma::cube alpha(m, n + 1, nsim_states);
-      arma::mat weights(nsim_states, n + 1);
-      arma::umat indices(nsim_states, n);
-      double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+      arma::cube alpha(m, n + 1, nsim);
+      arma::mat weights(nsim, n + 1);
+      arma::umat indices(nsim, n);
+      double loglik = model.bsf_filter(nsim, alpha, weights, indices);
       arma::mat alphahat(model.m, model.n + 1);
       arma::cube Vt(model.m, model.m, model.n + 1);
 
@@ -370,7 +370,7 @@ Rcpp::List bsf_nlg(const arma::mat& y, SEXP Z, SEXP H,
   const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params, const unsigned int n_states,
   const unsigned int n_etas,  const arma::uvec& time_varying,
-  const unsigned int nsim_states,
+  const unsigned int nsim,
   const unsigned int seed) {
 
 
@@ -391,10 +391,10 @@ Rcpp::List bsf_nlg(const arma::mat& y, SEXP Z, SEXP H,
   unsigned int m = model.m;
   unsigned n = model.n;
 
-  arma::cube alpha(m, n + 1, nsim_states);
-  arma::mat weights(nsim_states, n + 1);
-  arma::umat indices(nsim_states, n);
-  double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+  arma::cube alpha(m, n + 1, nsim);
+  arma::mat weights(nsim, n + 1);
+  arma::umat indices(nsim, n);
+  double loglik = model.bsf_filter(nsim, alpha, weights, indices);
 
   arma::mat at(m, n);
   arma::mat att(m, n);
@@ -416,7 +416,7 @@ Rcpp::List bsf_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
   const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params, const unsigned int n_states,
   const unsigned int n_etas,  const arma::uvec& time_varying,
-  const unsigned int nsim_states,
+  const unsigned int nsim,
   const unsigned int seed) {
 
 
@@ -437,10 +437,10 @@ Rcpp::List bsf_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
   unsigned int m = model.m;
   unsigned n = model.n;
 
-  arma::cube alpha(m, n + 1, nsim_states);
-  arma::mat weights(nsim_states, n + 1);
-  arma::umat indices(nsim_states, n);
-  double loglik = model.bsf_filter(nsim_states, alpha, weights, indices);
+  arma::cube alpha(m, n + 1, nsim);
+  arma::mat weights(nsim, n + 1);
+  arma::umat indices(nsim, n);
+  double loglik = model.bsf_filter(nsim, alpha, weights, indices);
 
   arma::mat alphahat(model.m, model.n + 1);
   arma::cube Vt(model.m, model.m, model.n + 1);

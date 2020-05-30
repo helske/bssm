@@ -19,13 +19,13 @@ sde_ssm::sde_ssm(
 
 arma::vec sde_ssm::log_likelihood(
     const unsigned int method, 
-    const unsigned int nsim_states, 
+    const unsigned int nsim, 
     arma::cube& alpha, 
     arma::mat& weights, 
     arma::umat& indices) {
   
   arma::vec ll(2);
-  ll(0) = bsf_filter(nsim_states, method, alpha, weights, indices);
+  ll(0) = bsf_filter(nsim, method, alpha, weights, indices);
   ll(1) = ll(0);
   return ll;
 }

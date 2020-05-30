@@ -1,7 +1,7 @@
 #include "model_svm.h"
 
 // construct SV model from Rcpp::List
-svm::svm(const Rcpp::List& model, const unsigned int seed) :
+svm::svm(const Rcpp::List model, const unsigned int seed) :
   ssm_ung(model, seed), 
   prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
   prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
@@ -28,10 +28,12 @@ void svm::update_model(const arma::vec& new_theta) {
     compute_xbeta();
   }
   theta = new_theta;
+  // approximation does not match theta anymore (keep as -1 if so)
+  if (approx_state == 1) approx_state = 0;
 }
 
 
-double svm::log_prior_pdf(const arma::vec& x) {
+double svm::log_prior_pdf(const arma::vec& x) const {
   
   double log_prior = 0.0;
   

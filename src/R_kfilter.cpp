@@ -4,7 +4,7 @@
 #include "model_ssm_mlg.h"
 
 // [[Rcpp::export]]
-Rcpp::List gaussian_kfilter(const Rcpp::List& model_, const unsigned int model_type) {
+Rcpp::List gaussian_kfilter(const Rcpp::List model_, const unsigned int model_type) {
 
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -14,7 +14,7 @@ Rcpp::List gaussian_kfilter(const Rcpp::List& model_, const unsigned int model_t
     arma::vec y = Rcpp::as<arma::vec>(model_["y"]);
     n = y.n_elem;
   } else {
-    arma::vec y = Rcpp::as<arma::mat>(model_["y"]);
+    arma::mat y = Rcpp::as<arma::mat>(model_["y"]);
     n = y.n_rows;
   }
 
@@ -27,19 +27,19 @@ Rcpp::List gaussian_kfilter(const Rcpp::List& model_, const unsigned int model_t
 
   switch (model_type) {
   case 0: {
-    ssm_mlg model(Rcpp::clone(model_), 1);
+    ssm_mlg model(model_, 1);
     loglik = model.filter(at, att, Pt, Ptt);
   } break;
   case 1: {
-    ssm_ulg model(Rcpp::clone(model_), 1);
+    ssm_ulg model(model_, 1);
     loglik = model.filter(at, att, Pt, Ptt);
   } break;
   case 2: {
-    bsm_lg model(Rcpp::clone(model_), 1);
+    bsm_lg model(model_, 1);
     loglik = model.filter(at, att, Pt, Ptt);
   } break;
   case 3: {
-    ar1_lg model(Rcpp::clone(model_), 1);
+    ar1_lg model(model_, 1);
     loglik = model.filter(at, att, Pt, Ptt);
   } break;
   default:

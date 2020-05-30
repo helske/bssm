@@ -283,7 +283,7 @@
 //   acceptance_rate /= (n_iter - n_burnin);
 // }
 // 
-// void nlg_amcmc::is_correction_bsf(nlg_ssm model, const unsigned int nsim_states, 
+// void nlg_amcmc::is_correction_bsf(nlg_ssm model, const unsigned int nsim, 
 //   const unsigned int is_type, const unsigned int n_threads) {
 //   
 //   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
@@ -300,7 +300,7 @@
 //     
 //     model.theta = theta_storage.col(i);
 //     
-//     unsigned int nsim = nsim_states;
+//     unsigned int nsim = nsim;
 //     if (is_type == 1) {
 //       nsim *= count_storage(i);
 //     }
@@ -342,7 +342,7 @@
 //   
 //   model.theta = theta_storage.col(i);
 //   
-//   unsigned int nsim = nsim_states;
+//   unsigned int nsim = nsim;
 //   if (is_type == 1) {
 //     nsim *= count_storage(i);
 //   }
@@ -385,7 +385,7 @@
 // }
 // 
 // 
-// void nlg_amcmc::is_correction_psi(nlg_ssm model, const unsigned int nsim_states, 
+// void nlg_amcmc::is_correction_psi(nlg_ssm model, const unsigned int nsim, 
 //   const unsigned int is_type, const unsigned int n_threads) {
 //   
 //   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
@@ -437,7 +437,7 @@
 //     approx_model.compute_HH();
 //     approx_model.compute_RR();
 //     
-//     unsigned int nsim = nsim_states;
+//     unsigned int nsim = nsim;
 //     if (is_type == 1) {
 //       nsim *= count_storage(i);
 //     }
@@ -514,8 +514,8 @@
 //   }
 //   approx_model.compute_HH();
 //   approx_model.compute_RR();
-//   
-//   unsigned int nsim = nsim_states;
+//   error korjaa nsim = nsim
+//   unsigned int nsim = nsim;
 //   if (is_type == 1) {
 //     nsim *= count_storage(i);
 //   }

@@ -5,16 +5,16 @@
 // #include "model_ar1_ng.h"
 // 
 // // [[Rcpp::export]]
-// Rcpp::List importance_sample_ung(const Rcpp::List& model_, 
-//   unsigned int nsim_states, bool use_antithetic,
+// Rcpp::List importance_sample_ung(const Rcpp::List model_, 
+//   unsigned int nsim, bool use_antithetic,
 //   arma::vec mode_estimate, const unsigned int max_iter, 
 //   const double conv_tol, const unsigned int seed, const int model_type) {
 //   
 //   switch (model_type) {
 //   case 1: {
-//     ssm_ung model(Rcpp::clone(model_), seed);
+//     ssm_ung model(model_, seed);
 //     ssm_ulg approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
-//     arma::cube alpha = approx_model.simulate_states(nsim_states, use_antithetic);
+//     arma::cube alpha = approx_model.simulate_states(nsim, use_antithetic);
 //     arma::vec scales = model.update_scales();
 //     arma::vec weights = model.importance_weights(approx_model, alpha);
 //     weights = arma::exp(weights - arma::accu(scales));
@@ -23,9 +23,9 @@
 //       Rcpp::Named("weights") = weights);
 //   } break;
 //   case 2: {
-//     bsm_ng model(Rcpp::clone(model_), seed);
+//     bsm_ng model(model_, seed);
 //     ssm_ulg approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
-//     arma::cube alpha = approx_model.simulate_states(nsim_states, use_antithetic);
+//     arma::cube alpha = approx_model.simulate_states(nsim, use_antithetic);
 //     arma::vec scales = model.update_scales();
 //     arma::vec weights = model.importance_weights(approx_model, alpha);
 //     weights = arma::exp(weights - arma::accu(scales));
@@ -33,9 +33,9 @@
 //       Rcpp::Named("weights") = weights);
 //   } break;
 //   case 3: {
-//     svm model(Rcpp::clone(model_), seed);
+//     svm model(model_, seed);
 //     ssm_ulg approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
-//     arma::cube alpha = approx_model.simulate_states(nsim_states, use_antithetic);
+//     arma::cube alpha = approx_model.simulate_states(nsim, use_antithetic);
 //      arma::vec scales = model.update_scales();
 //      arma::vec weights = model.importance_weights(approx_model, alpha);
 //      weights = arma::exp(weights - arma::accu(scales));
@@ -43,9 +43,9 @@
 //       Rcpp::Named("weights") = weights);
 //   } break;
 //   case 4: {
-//     ar1_ng model(Rcpp::clone(model_), seed);
+//     ar1_ng model(model_, seed);
 //     ssm_ulg approx_model = model.approximate(mode_estimate, max_iter, conv_tol);
-//     arma::cube alpha = approx_model.simulate_states(nsim_states, use_antithetic);
+//     arma::cube alpha = approx_model.simulate_states(nsim, use_antithetic);
 //     arma::vec scales = model.update_scales();
 //     arma::vec weights = model.importance_weights(approx_model, alpha);
 //     weights = arma::exp(weights - arma::accu(scales));

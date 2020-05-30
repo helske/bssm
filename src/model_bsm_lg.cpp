@@ -3,7 +3,7 @@
 #include "model_bsm_lg.h"
 
 // Construct bsm model from Rcpp::List
-bsm_lg::bsm_lg(const Rcpp::List& model, const unsigned int seed) :
+bsm_lg::bsm_lg(const Rcpp::List model, const unsigned int seed) :
   ssm_ulg(model, seed),  
   prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
   prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
@@ -50,7 +50,7 @@ void bsm_lg::update_model(const arma::vec& new_theta) {
   theta = new_theta;
 }
 
-double bsm_lg::log_prior_pdf(const arma::vec& x) {
+double bsm_lg::log_prior_pdf(const arma::vec& x) const {
   
   double log_prior = 0.0;
   arma::vec pars = x;

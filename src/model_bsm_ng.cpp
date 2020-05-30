@@ -1,7 +1,7 @@
 #include "model_bsm_ng.h"
 
 // from Rcpp::List
-bsm_ng::bsm_ng(const Rcpp::List& model, const unsigned int seed) :
+bsm_ng::bsm_ng(const Rcpp::List model, const unsigned int seed) :
   ssm_ung(model, seed), 
   prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
   prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
@@ -46,9 +46,11 @@ void bsm_ng::update_model(const arma::vec& new_theta) {
     compute_xbeta();
   }
   theta = new_theta;
+  // approximation does not match theta anymore (keep as -1 if so)
+  if (approx_state == 1) approx_state = 0;
 }
 
-double bsm_ng::log_prior_pdf(const arma::vec& x) {
+double bsm_ng::log_prior_pdf(const arma::vec& x) const {
   
   double log_prior = 0.0;
   arma::vec pars = x;

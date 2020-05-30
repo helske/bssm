@@ -55,6 +55,8 @@ run_mcmc.gaussian <- function(model, n_iter, type = "full",
   target_acceptance = 0.234, S, end_adaptive_phase = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  
+  if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   
   check_target(target_acceptance)
@@ -118,7 +120,7 @@ run_mcmc.gaussian <- function(model, n_iter, type = "full",
 #' @export
 #' @param model Model model.
 #' @param n_iter Number of MCMC iterations.
-#' @param nsim_states Number of state samples per MCMC iteration.
+#' @param nsim Number of state samples per MCMC iteration.
 #' If <2, approximate inference based on Gaussian approximation is performed.
 #' @param type Either \code{"full"} (default), or \code{"summary"}. The
 #' former produces samples of states whereas the latter gives the mean and
@@ -173,30 +175,30 @@ run_mcmc.gaussian <- function(model, n_iter, type = "full",
 #'   sd_level = halfnormal(0.01, 1), 
 #'   sd_slope = halfnormal(0.01, 0.1), 
 #'   P1 = diag(c(10, 0.1)), distribution = "poisson")
-#' mcmc_is <- run_mcmc(poisson_model, n_iter = 1000, nsim_states = 10, method = "is2")
+#' mcmc_is <- run_mcmc(poisson_model, n_iter = 1000, nsim = 10, method = "is2")
 #' summary(mcmc_is, what = "theta", return_se = TRUE)
 #' 
-run_mcmc.nongaussian <- function(model, n_iter, nsim_states, type = "full",
+run_mcmc.nongaussian <- function(model, n_iter, nsim, type = "full",
   method = "da", simulation_method = "psi", n_burnin = floor(n_iter/2),
   n_thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   local_approx  = TRUE, n_threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100, conv_tol = 1e-8, ...) {
   
+  if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   check_target(target_acceptance)
   
   type <- pmatch(type, c("full", "summary", "theta"))
   method <- match.arg(method, c("pm", "da", paste0("is", 1:3)))
+  if (nsim < 2) {
+    method <- "is2"
+    simulation_method  <- "psi"
+  }
   simulation_method <- pmatch(simulation_method, c("psi", "bsf", "spdk"))
   
   model$max_iter <- max_iter
   model$conv_tol <- conv_tol
   model$local_approx <- local_approx
-  
-  if (nsim_states < 2) {
-    method <- "is2"
-    simulation_method  <- "psi"
-  }
   
   if(inherits(model, "bsm_ng")) {
     names_ind <-
@@ -214,22 +216,22 @@ run_mcmc.nongaussian <- function(model, n_iter, nsim_states, type = "full",
     c("svm", "poisson", "binomial", "negative binomial")) - 1
   
   if (method == "da") {
-    out <- nongaussian_da_mcmc(model, type,
-      nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
-      seed, end_adaptive_phase, n_threads, 
-      simulation_method, model_type(model_type))
+    out <- nongaussian_da_mcmc(model, 
+      type, nsim, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+      seed, end_adaptive_phase, n_threads,
+      simulation_method, model_type(model))
   } else {
     if(method == "pm"){
       out <- nongaussian_pm_mcmc(model, type,
-        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        nsim, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, n_threads, 
-        simulation_method, model_type(model_type))
+        simulation_method, model_type(model))
     } else {
       out <- nongaussian_is_mcmc(model, type,
-        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        nsim, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, n_threads, 
         simulation_method,
-        pmatch(method, paste0("is", 1:3)), model_type(model_type))
+        pmatch(method, paste0("is", 1:3)), model_type(model))
     }
   }
   if (type == 1) {
@@ -265,13 +267,15 @@ run_mcmc.nongaussian <- function(model, n_iter, nsim_states, type = "full",
 #' @method run_mcmc nlg_ssm
 #' @rdname run_mcmc_ng
 #' @export
-run_mcmc.nlg_ssm <-  function(model, n_iter, nsim_states, type = "full",
+run_mcmc.nlg_ssm <-  function(model, n_iter, nsim, type = "full",
   method = "da", simulation_method = "bsf",
   n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
   n_threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
   conv_tol = 1e-4, iekf_iter = 0, ...) {
   
+  
+  if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   check_target(target_acceptance)
   
@@ -288,7 +292,7 @@ run_mcmc.nlg_ssm <-  function(model, n_iter, nsim_states, type = "full",
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(model$theta)), length(model$theta))
   }
-  if (nsim_states < 2) {
+  if (nsim < 2) {
     #approximate inference
     method <- "approx"
     if(simulation_method == "bsf") stop("Approximate inference needs simulation_method 'psi' or 'ekf'.")
@@ -301,7 +305,7 @@ run_mcmc.nlg_ssm <-  function(model, n_iter, nsim_states, type = "full",
         model$theta, model$log_prior_pdf, model$known_params,
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
-        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        nsim, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
         end_adaptive_phase, n_threads,
         simulation_method,iekf_iter, type)
     },
@@ -311,7 +315,7 @@ run_mcmc.nlg_ssm <-  function(model, n_iter, nsim_states, type = "full",
         model$theta, model$log_prior_pdf, model$known_params,
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
-        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        nsim, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
         end_adaptive_phase, n_threads,
         
         simulation_method,iekf_iter, type)
@@ -322,7 +326,7 @@ run_mcmc.nlg_ssm <-  function(model, n_iter, nsim_states, type = "full",
         model$theta, model$log_prior_pdf, model$known_params,
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
-        nsim_states, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
+        nsim, n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
         end_adaptive_phase, n_threads, pmatch(method, paste0("is", 1:3)),
         simulation_method,
         iekf_iter, type)
@@ -375,7 +379,7 @@ run_mcmc.nlg_ssm <-  function(model, n_iter, nsim_states, type = "full",
 #' @param L_c,L_f Integer values defining the discretization levels for first and second stages. 
 #' For PM methods, maximum of these is used.
 #' @export
-run_mcmc.sde_ssm <-  function(model, n_iter, nsim_states, type = "full",
+run_mcmc.sde_ssm <-  function(model, n_iter, nsim, type = "full",
   method = "da", L_c, L_f,
   n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
@@ -386,9 +390,10 @@ run_mcmc.sde_ssm <-  function(model, n_iter, nsim_states, type = "full",
     stop("NULL pointer detected, please recompile the pointer file and reconstruct the model.")
   }
   
+  if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   check_target(target_acceptance)
-  if(nsim_states <= 0) stop("nsim_states should be positive integer.")
+  if(nsim <= 0) stop("nsim should be positive integer.")
   
   type <- pmatch(type, c("full", "summary", "theta"))
   method <- match.arg(method, c("pm", "da", paste0("is", 1:3)))
@@ -403,7 +408,7 @@ run_mcmc.sde_ssm <-  function(model, n_iter, nsim_states, type = "full",
     out <- sde_da_mcmc(model$y, model$x0, model$positive,
       model$drift, model$diffusion, model$ddiffusion,
       model$prior_pdf, model$obs_pdf, model$theta,
-      nsim_states, L_c, L_f, seed,
+      nsim, L_c, L_f, seed,
       n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
       end_adaptive_phase, type)
   } else {
@@ -415,7 +420,7 @@ run_mcmc.sde_ssm <-  function(model, n_iter, nsim_states, type = "full",
       out <- sde_pm_mcmc(model$y, model$x0, model$positive,
         model$drift, model$diffusion, model$ddiffusion,
         model$prior_pdf, model$obs_pdf, model$theta,
-        nsim_states, L, seed,
+        nsim, L, seed,
         n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
         end_adaptive_phase, type)
     } else {
@@ -425,7 +430,7 @@ run_mcmc.sde_ssm <-  function(model, n_iter, nsim_states, type = "full",
       out <- sde_is_mcmc(model$y, model$x0, model$positive,
         model$drift, model$diffusion, model$ddiffusion,
         model$prior_pdf, model$obs_pdf, model$theta,
-        nsim_states, L_c, L_f, seed,
+        nsim, L_c, L_f, seed,
         n_iter, n_burnin, n_thin, gamma, target_acceptance, S,
         end_adaptive_phase, pmatch(method, paste0("is", 1:3)), 
         n_threads, type)

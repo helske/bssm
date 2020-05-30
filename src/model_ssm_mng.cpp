@@ -4,7 +4,7 @@
 #include "sample.h"
 #include "rep_mat.h"
 
-ssm_mng::ssm_mng(const Rcpp::List& model, const unsigned int seed, const double zero_tol) 
+ssm_mng::ssm_mng(const Rcpp::List model, const unsigned int seed, const double zero_tol) 
   :  y((Rcpp::as<arma::mat>(model["y"])).t()), Z(Rcpp::as<arma::cube>(model["Z"])),
     T(Rcpp::as<arma::cube>(model["T"])),
     R(Rcpp::as<arma::cube>(model["R"])), a1(Rcpp::as<arma::vec>(model["a1"])),
@@ -68,7 +68,7 @@ void ssm_mng::update_model(const arma::vec& new_theta) {
   if (approx_state == 1) approx_state = 0;
 }
 
-double ssm_mng::log_prior_pdf(const arma::vec& x) {
+double ssm_mng::log_prior_pdf(const arma::vec& x) const {
   return Rcpp::as<double>(prior_fn(x));
 }
 
@@ -123,17 +123,17 @@ void ssm_mng::approximate() {
 // method = 1 psi-APF, 2 = BSF, 3 = SPDK (not applicable), 4 = IEKF (not applicable)
 arma::vec ssm_mng::log_likelihood(
     const unsigned int method, 
-    const unsigned int nsim_states, 
+    const unsigned int nsim, 
     arma::cube& alpha, 
     arma::mat& weights, 
     arma::umat& indices) {
   
   arma::vec loglik(2);
   
-  if (nsim_states > 0) {
+  if (nsim > 0) {
     // bootstrap filter
     if(method == 2) {
-      loglik(0) = bsf_filter(nsim_states, alpha, weights, indices);
+      loglik(0) = bsf_filter(nsim, alpha, weights, indices);
       loglik(1) = loglik(0);
     } else {
       // check that approx_model matches theta
@@ -153,11 +153,11 @@ arma::vec ssm_mng::log_likelihood(
       }
       // psi-PF
       if (method == 1) {
-        loglik(0) = psi_filter(nsim_states, alpha, weights, indices);
+        loglik(0) = psi_filter(nsim, alpha, weights, indices);
       } else {
         //SPDK
-        alpha = approx_model.simulate_states(nsim_states);
-        arma::vec w(n, arma::fill::zeros);
+        alpha = approx_model.simulate_states(nsim);
+        arma::vec w(nsim, arma::fill::zeros);
         for (unsigned int t = 0; t < n; t++) {
           w += log_weights(t, alpha);
         }
@@ -194,6 +194,8 @@ arma::vec ssm_mng::log_likelihood(
 // compute unnormalized mode-based scaling terms
 // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
 void ssm_mng::update_scales() {
+  
+  scales.zeros();
   
   for(unsigned int t = 0; t < n; t++) {
     for(unsigned int i = 0; i < p; i++) {
@@ -383,6 +385,21 @@ arma::vec ssm_mng::log_obs_density(const unsigned int t,
 
 double ssm_mng::psi_filter(const unsigned int nsim, arma::cube& alpha, 
   arma::mat& weights, arma::umat& indices) {
+  
+  if(approx_state != 1) {
+    mode_estimate = initial_mode;
+    approximate(); 
+    
+    // compute the log-likelihood of the approximate model
+    double gaussian_loglik = approx_model.log_likelihood();
+    // compute unnormalized mode-based correction terms 
+    // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
+    update_scales();
+    // compute the constant term
+    double const_term = compute_const_term(); 
+    // log-likelihood approximation
+    approx_loglik = gaussian_loglik + const_term + arma::accu(scales);
+  }
   
   arma::mat alphahat(m, n + 1);
   arma::cube Vt(m, m, n + 1);

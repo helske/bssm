@@ -21,15 +21,15 @@
 //   void approx_mcmc(T model, const bool end_ram);
 //   
 //   template <class T>
-//   void is_correction_psi(T model, const unsigned int nsim_states, 
+//   void is_correction_psi(T model, const unsigned int nsim, 
 //     const unsigned int is_type, const unsigned int n_threads);
 //   
 //   template <class T>
-//   void is_correction_bsf(T model, const unsigned int nsim_states, 
+//   void is_correction_bsf(T model, const unsigned int nsim, 
 //     const unsigned int is_type, const unsigned int n_threads);
 //   
 //   template <class T>
-//   void is_correction_spdk(T model, const unsigned int nsim_states, 
+//   void is_correction_spdk(T model, const unsigned int nsim, 
 //     const unsigned int is_type, const unsigned int n_threads);
 // 
 //   

@@ -1,5 +1,5 @@
-#ifndef bsm_lg_H
-#define bsm_lg_H
+#ifndef BSM_LG_H
+#define BSM_LG_H
 
 #include "model_ssm_ulg.h"
 
@@ -7,11 +7,11 @@ class bsm_lg: public ssm_ulg {
 
 public:
 
-  bsm_lg(const Rcpp::List& model, const unsigned int seed);
+  bsm_lg(const Rcpp::List model, const unsigned int seed);
 
   // update model given the parameters theta
   void update_model(const arma::vec& new_theta);
-  double log_prior_pdf(const arma::vec& x);
+  double log_prior_pdf(const arma::vec& x) const;
 
 private:
   const arma::uvec prior_distributions;

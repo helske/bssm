@@ -9,7 +9,7 @@
 //   const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params, 
 //   const arma::mat& known_tv_params, const unsigned int n_states, 
 //   const unsigned int n_etas,  const arma::uvec& time_varying,
-//   const unsigned int nsim_states, 
+//   const unsigned int nsim, 
 //   const unsigned int seed) {
 //   
 //   
@@ -30,10 +30,10 @@
 //   unsigned int m = model.m;
 //   unsigned n = model.n;
 //   
-//   arma::cube alpha(m, n, nsim_states + 1);
-//   arma::mat weights(nsim_states + 1, n);
-//   arma::umat indices(nsim_states, n);
-//   double loglik = model.ekf_filter(nsim_states, alpha, weights, indices);
+//   arma::cube alpha(m, n+1, nsim);
+//   arma::mat weights(nsim, n+1);
+//   arma::umat indices(nsim, n);
+//   double loglik = model.ekf_filter(nsim, alpha, weights, indices);
 //   
 //   
 //   arma::mat at(m, n + 1);
@@ -56,7 +56,7 @@
 //   const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params, 
 //   const arma::mat& known_tv_params, const unsigned int n_states, 
 //   const unsigned int n_etas,  const arma::uvec& time_varying,
-//   const unsigned int nsim_states, 
+//   const unsigned int nsim, 
 //   const unsigned int seed) {
 //   
 //   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
@@ -76,10 +76,10 @@
 //   unsigned int m = model.m;
 //   unsigned n = model.n;
 //   
-//   arma::cube alpha(m, n + 1, nsim_states);
-//   arma::mat weights(nsim_states, n + 1);
-//   arma::umat indices(nsim_states, n);
-//   double loglik = model.ekf_filter(nsim_states, alpha, weights, indices);
+//   arma::cube alpha(m, n + 1, nsim);
+//   arma::mat weights(nsim, n + 1);
+//   arma::umat indices(nsim, n);
+//   double loglik = model.ekf_filter(nsim, alpha, weights, indices);
 // 
 //   
 //   arma::mat alphahat(model.m, model.n);

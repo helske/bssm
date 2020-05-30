@@ -4,10 +4,10 @@
 \alias{ekf}
 \title{(Iterated) Extended Kalman Filtering}
 \usage{
-ekf(object, iekf_iter = 0)
+ekf(model, iekf_iter = 0)
 }
 \arguments{
-\item{object}{Model object}
+\item{model}{Model model}
 
 \item{iekf_iter}{If \code{iekf_iter > 0}, iterated extended Kalman filter 
 is used with \code{iekf_iter} iterations.}

@@ -22,11 +22,11 @@
 //   
 //   void ekf_mcmc(nlg_ssm model, const bool end_ram);
 //   
-//   void is_correction_bsf(nlg_ssm model, const unsigned int nsim_states, 
+//   void is_correction_bsf(nlg_ssm model, const unsigned int nsim, 
 //     const unsigned int is_type, const unsigned int n_threads);
 //   
 //  
-//   void is_correction_psi(nlg_ssm model, const unsigned int nsim_states, 
+//   void is_correction_psi(nlg_ssm model, const unsigned int nsim, 
 //     const unsigned int is_type, const unsigned int n_threads);
 //   
 //   void state_ekf_sample(nlg_ssm model, const unsigned int n_threads, const unsigned int iekf_iter);

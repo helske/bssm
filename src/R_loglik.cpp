@@ -10,24 +10,24 @@
 #include "model_nlg_ssm.h"
 
 // [[Rcpp::export]]
-double gaussian_loglik(const Rcpp::List& model_, const int model_type) {
+double gaussian_loglik(const Rcpp::List model_, const int model_type) {
   
   double loglik = 0;
   switch (model_type) {
   case -1: {
-    ssm_mlg model(Rcpp::clone(model_), 1);
+    ssm_mlg model(model_, 1);
     loglik = model.log_likelihood();
   } break;
   case 1: {
-    ssm_ulg model(Rcpp::clone(model_), 1);
+    ssm_ulg model(model_, 1);
     loglik = model.log_likelihood();
   } break;
   case 2: {
-    bsm_lg model(Rcpp::clone(model_), 1);
+    bsm_lg model(model_, 1);
     loglik = model.log_likelihood();
   } break;
   case 3: {
-    ar1_lg model(Rcpp::clone(model_), 1);
+    ar1_lg model(model_, 1);
     loglik = model.log_likelihood();
   } break;
   default: loglik = -std::numeric_limits<double>::infinity();
@@ -38,40 +38,40 @@ double gaussian_loglik(const Rcpp::List& model_, const int model_type) {
 
 
 // [[Rcpp::export]]
-double nongaussian_loglik(const Rcpp::List& model_,
-  const unsigned int nsim_states, const unsigned int simulation_method,
+double nongaussian_loglik(const Rcpp::List model_,
+  const unsigned int nsim, const unsigned int simulation_method,
   const unsigned int seed, const int model_type) {
   
   arma::vec loglik(2);
 
   switch (model_type) {
   case 1: {
-    ssm_ung model(Rcpp::clone(model_), seed);
-    arma::cube alpha(model.m, model.n + 1, nsim_states);
-    arma::mat weights(nsim_states, model.n + 1);
-    arma::umat indices(nsim_states, model.n);
-    loglik = model.log_likelihood(simulation_method, nsim_states, alpha, weights, indices);
+    ssm_ung model(model_, seed);
+    arma::cube alpha(model.m, model.n + 1, nsim);
+    arma::mat weights(nsim, model.n + 1);
+    arma::umat indices(nsim, model.n);
+    loglik = model.log_likelihood(simulation_method, nsim, alpha, weights, indices);
   } break;
   case 2: {
-    bsm_ng model(Rcpp::clone(model_), seed);
-    arma::cube alpha(model.m, model.n + 1, nsim_states);
-    arma::mat weights(nsim_states, model.n + 1);
-    arma::umat indices(nsim_states, model.n);
-    loglik = model.log_likelihood(simulation_method, nsim_states, alpha, weights, indices);
+    bsm_ng model(model_, seed);
+    arma::cube alpha(model.m, model.n + 1, nsim);
+    arma::mat weights(nsim, model.n + 1);
+    arma::umat indices(nsim, model.n);
+    loglik = model.log_likelihood(simulation_method, nsim, alpha, weights, indices);
   } break;
   case 3: {
-    svm model(Rcpp::clone(model_), seed);
-    arma::cube alpha(model.m, model.n + 1, nsim_states);
-    arma::mat weights(nsim_states, model.n + 1);
-    arma::umat indices(nsim_states, model.n);
-    loglik = model.log_likelihood(simulation_method, nsim_states, alpha, weights, indices);
+    svm model(model_, seed);
+    arma::cube alpha(model.m, model.n + 1, nsim);
+    arma::mat weights(nsim, model.n + 1);
+    arma::umat indices(nsim, model.n);
+    loglik = model.log_likelihood(simulation_method, nsim, alpha, weights, indices);
   } break;
   case 4: {
-    ar1_ng model(Rcpp::clone(model_), seed);
-    arma::cube alpha(model.m, model.n + 1, nsim_states);
-    arma::mat weights(nsim_states, model.n + 1);
-    arma::umat indices(nsim_states, model.n);
-    loglik = model.log_likelihood(simulation_method, nsim_states, alpha, weights, indices);
+    ar1_ng model(model_, seed);
+    arma::cube alpha(model.m, model.n + 1, nsim);
+    arma::mat weights(nsim, model.n + 1);
+    arma::umat indices(nsim, model.n);
+    loglik = model.log_likelihood(simulation_method, nsim, alpha, weights, indices);
   } break;
   }
   
@@ -85,7 +85,7 @@ double nonlinear_loglik(const arma::mat& y, SEXP Z, SEXP H,
   const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params, const unsigned int n_states,
   const unsigned int n_etas,  const arma::uvec& time_varying,
-  const unsigned int nsim_states,
+  const unsigned int nsim,
   const unsigned int seed, const unsigned int max_iter,
   const double conv_tol, const unsigned int iekf_iter, const unsigned int method) {
   
@@ -107,10 +107,10 @@ double nonlinear_loglik(const arma::mat& y, SEXP Z, SEXP H,
   model.max_iter = max_iter;
   model.conv_tol = conv_tol;
   model.iekf_iter = iekf_iter;
-  arma::cube alpha(model.m, model.n + 1, nsim_states);
-  arma::mat weights(nsim_states, model.n + 1);
-  arma::umat indices(nsim_states, model.n);
-  arma::vec loglik = model.log_likelihood(method, nsim_states, alpha, weights, indices);
+  arma::cube alpha(model.m, model.n + 1, nsim);
+  arma::mat weights(nsim, model.n + 1);
+  arma::umat indices(nsim, model.n);
+  arma::vec loglik = model.log_likelihood(method, nsim, alpha, weights, indices);
   
   return loglik(0);
 }

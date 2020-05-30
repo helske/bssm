@@ -1,7 +1,7 @@
 #include "model_ar1_lg.h"
 
 // from Rcpp::List
-ar1_lg::ar1_lg(const Rcpp::List& model, const unsigned int seed) :
+ar1_lg::ar1_lg(const Rcpp::List model, const unsigned int seed) :
   ssm_ulg(model, seed), 
   prior_distributions(Rcpp::as<arma::uvec>(model["prior_distributions"])), 
   prior_parameters(Rcpp::as<arma::mat>(model["prior_parameters"])),
@@ -34,7 +34,7 @@ void ar1_lg::update_model(const arma::vec& new_theta) {
   theta = new_theta;
 }
 
-double ar1_lg::log_prior_pdf(const arma::vec& x) {
+double ar1_lg::log_prior_pdf(const arma::vec& x) const {
   
   double log_prior = 0.0;
   

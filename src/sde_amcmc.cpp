@@ -73,7 +73,7 @@
 // // non-linear Gaussian state space model
 // 
 // void sde_amcmc::approx_mcmc(sde_ssm model, const bool end_ram, 
-//   const unsigned int nsim_states, const unsigned int L) {
+//   const unsigned int nsim, const unsigned int L) {
 //   
 //   unsigned int m = 1;
 //   unsigned n = model.n;
@@ -83,10 +83,10 @@
 //     Rcpp::stop("Initial prior probability is not finite.");
 //   }
 //   
-//   arma::cube alpha(m, n + 1, nsim_states);
-//   arma::mat weights(nsim_states, n + 1);
-//   arma::umat indices(nsim_states, n);
-//   double loglik = model.bsf_filter(nsim_states, L, alpha, weights, indices);
+//   arma::cube alpha(m, n + 1, nsim);
+//   arma::mat weights(nsim, n + 1);
+//   arma::umat indices(nsim, n);
+//   double loglik = model.bsf_filter(nsim, L, alpha, weights, indices);
 //   if (!std::isfinite(loglik))
 //     Rcpp::stop("Initial log-likelihood is not finite.");
 //   
@@ -117,7 +117,7 @@
 //       // update parameters
 //       model.theta = theta_prop;
 //       
-//       double loglik_prop = model.bsf_filter(nsim_states, L, alpha, weights, indices);
+//       double loglik_prop = model.bsf_filter(nsim, L, alpha, weights, indices);
 //       
 //       //compute the acceptance probability
 //       // use explicit min(...) as we need this value later
@@ -160,7 +160,7 @@
 //   acceptance_rate /= (n_iter - n_burnin);
 // }
 // 
-// void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim_states, 
+// void sde_amcmc::is_correction_bsf(sde_ssm model, const unsigned int nsim, 
 //   const unsigned int L_c, const unsigned int L_f, 
 //   const unsigned int is_type, const unsigned int n_threads) {
 //   
@@ -177,10 +177,11 @@
 // #pragma omp for schedule(dynamic)
 //   for (unsigned int i = 0; i < n_stored; i++) {
 //     model.theta = theta_storage.col(i);
-//     unsigned int nsim = nsim_states;
+//     unsigned int nsim = nsim;
 //     if (is_type == 1) {
 //       nsim *= count_storage(i);
 //     }
+////error korjaa nsim = nsim
 //     arma::cube alpha_i(1, model.n + 1, nsim);
 //     arma::mat weights_i(nsim, model.n + 1);
 //     arma::umat indices(nsim, model.n);
@@ -215,7 +216,7 @@
 // #else
 // for (unsigned int i = 0; i < n_stored; i++) {
 //   model.theta = theta_storage.col(i);
-//   unsigned int nsim = nsim_states;
+//   unsigned int nsim = nsim;
 //   if (is_type == 1) {
 //     nsim *= count_storage(i);
 //   }

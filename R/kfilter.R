@@ -6,7 +6,7 @@
 #'
 #' For non-Gaussian models, the Kalman filtering is based on the approximate Gaussian model.
 #'
-#' @param object Model object
+#' @param model Model Model object.
 #' @param ... Ignored.
 #' @return List containing the log-likelihood (approximate in non-Gaussian case),
 #' one-step-ahead predictions \code{at} and filtered
@@ -15,55 +15,26 @@
 #' @seealso \code{\link{bootstrap_filter}}
 #' @export
 #' @rdname kfilter
-kfilter <- function(object, ...) {
-  UseMethod("kfilter", object)
+kfilter <- function(model, ...) {
+  UseMethod("kfilter", model)
 }
 
-#' @method kfilter ssm_ulg
+#' @method kfilter gaussian
 #' @export
-kfilter.ssm_ulg <- function(object, ...) {
+kfilter.gaussian <- function(model, ...) {
   
-  out <- gaussian_kfilter(object, model_type = 1L)
+  out <- gaussian_kfilter(model, model_type = model_type(model))
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
-    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
-  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
-  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(model$a1)
+  out$at <- ts(out$at, start = start(model$y), frequency = frequency(model$y))
+  out$att <- ts(out$att, start = start(model$y), frequency = frequency(model$y))
   out
 }
 
-#' @method kfilter bsm_lg
+#' @method kfilter nongaussian
 #' @export
-kfilter.bsm_lg <- function(object, ...) {
-  
-  out <- gaussian_kfilter(object, model_type = 2L)
-  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
-    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(object$a1)
-  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
-  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
-  out
-}
-
-#' @method kfilter ssm_ung
-#' @export
-kfilter.ssm_ung <- function(object, ...) {
-  kfilter(gaussian_approx(object))
-}
-
-#' @method kfilter bsm_ng
-#' @export
-kfilter.bsm_ng <- function(object, ...) {
-  kfilter(gaussian_approx(object))
-}
-
-#' @method kfilter svm
-#' @export
-kfilter.svm <- function(object, ...) {
-  kfilter(gaussian_approx(object))
-}
-#' @method kfilter ar1_ng
-#' @export
-kfilter.ar1_ng <- function(object, ...) {
-  kfilter(gaussian_approx(object))
+kfilter.nongaussian <- function(model, ...) {
+  kfilter(gaussian_approx(model))
 }
 
 #' (Iterated) Extended Kalman Filtering
@@ -73,7 +44,7 @@ kfilter.ar1_ng <- function(object, ...) {
 #' and returns the filtered estimates and one-step-ahead predictions of the 
 #' states \eqn{\alpha_t} given the data up to time \eqn{t}.
 #'
-#' @param object Model object
+#' @param model Model model
 #' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter 
 #' is used with \code{iekf_iter} iterations.
 #' @return List containing the log-likelihood,
@@ -83,16 +54,16 @@ kfilter.ar1_ng <- function(object, ...) {
 #' @export
 #' @rdname ekf
 #' @export
-ekf <- function(object, iekf_iter = 0) {
+ekf <- function(model, iekf_iter = 0) {
   
-  out <- ekf_nlg(t(object$y), object$Z, object$H, object$T, 
-  object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
-  object$theta, object$log_prior_pdf, object$known_params, 
-  object$known_tv_params, object$n_states, object$n_etas, 
-  as.integer(object$time_varying), iekf_iter)
+  out <- ekf_nlg(t(model$y), model$Z, model$H, model$T, 
+  model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
+  model$theta, model$log_prior_pdf, model$known_params, 
+  model$known_tv_params, model$n_states, model$n_etas, 
+  as.integer(model$time_varying), iekf_iter)
   
-  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
-  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
+  out$at <- ts(out$at, start = start(model$y), frequency = frequency(model$y))
+  out$att <- ts(out$att, start = start(model$y), frequency = frequency(model$y))
   out
 }
 #' Unscented Kalman Filtering
@@ -102,7 +73,7 @@ ekf <- function(object, iekf_iter = 0) {
 #' and returns the filtered estimates and one-step-ahead predictions of the 
 #' states \eqn{\alpha_t} given the data up to time \eqn{t}.
 #'
-#' @param object Model object
+#' @param model Model model
 #' @param alpha,beta,kappa Tuning parameters for the UKF.
 #' @return List containing the log-likelihood,
 #' one-step-ahead predictions \code{at} and filtered
@@ -112,16 +83,16 @@ ekf <- function(object, iekf_iter = 0) {
 #' @rdname ukf
 #' @export
 #' @export
-ukf <- function(object, alpha = 1, beta = 0, kappa = 2) {
+ukf <- function(model, alpha = 1, beta = 0, kappa = 2) {
   
-  out <- ukf_nlg(t(object$y), object$Z, object$H, object$T, 
-    object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
-    object$theta, object$log_prior_pdf, object$known_params, 
-    object$known_tv_params, object$n_states, object$n_etas, 
-    as.integer(object$time_varying),
+  out <- ukf_nlg(t(model$y), model$Z, model$H, model$T, 
+    model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
+    model$theta, model$log_prior_pdf, model$known_params, 
+    model$known_tv_params, model$n_states, model$n_etas, 
+    as.integer(model$time_varying),
     alpha, beta, kappa)
   
-  out$at <- ts(out$at, start = start(object$y), frequency = frequency(object$y))
-  out$att <- ts(out$att, start = start(object$y), frequency = frequency(object$y))
+  out$at <- ts(out$at, start = start(model$y), frequency = frequency(model$y))
+  out$att <- ts(out$att, start = start(model$y), frequency = frequency(model$y))
   out
 }
