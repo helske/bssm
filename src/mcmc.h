@@ -6,8 +6,8 @@
 // #include "model_ssm_mng.h"
 // #include "model_ssm_ulg.h"
 // #include "model_ssm_ung.h"
-// #include "model_nlg_ssm.h"
-// #include "model_sde_ssm.h"
+// #include "model_ssm_nlg.h"
+// #include "model_ssm_sde.h"
 
 class mcmc {
   

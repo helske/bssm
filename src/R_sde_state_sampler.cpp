@@ -1,4 +1,4 @@
-#include "model_sde_ssm.h"
+#include "model_ssm_sde.h"
 
 #include "sitmo.h"
 #include "filter_smoother.h"
@@ -18,8 +18,8 @@ Rcpp::List sde_state_sampler_bsf_is2(const arma::vec& y, const double x0,
   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf_pntr);
   Rcpp::XPtr<obs_fnPtr> xpfun_obs(log_obs_density_pntr);
 
-  sde_ssm model(y, theta.col(0), x0, positive, *xpfun_drift,
-    *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_obs, *xpfun_prior, seed);
+  ssm_sde model(y, theta.col(0), x0, positive, *xpfun_drift,
+    *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_obs, *xpfun_prior, L_f, L_f, seed);
 
   arma::vec weights(theta.n_cols);
   arma::cube alpha(model.n + 1, 1, theta.n_cols);

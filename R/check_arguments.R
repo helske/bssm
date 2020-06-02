@@ -1,12 +1,21 @@
-check_y <- function(x, multivariate = FALSE) {
+
+check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
   
   if(multivariate) {
     if (!is.matrix(x) && !is.numeric(x)) {
       stop("Argument y must be a numeric matrix or multivariate ts object.")
     }
+    for(i in 1:ncol(y)) {
+      if(distribution[i] != "gaussian" && any(y[,i] < 0)) {
+        stop(paste0("Negative values not allowed for ", distribution[i], " distribution. "))
+      }
+    }
   } else {
     if (!(is.vector(x) && !is.list(x)) && !is.numeric(x)) {
       stop("Argument y must be a numeric vector or ts object.")
+    }
+    if(distribution != "gaussian" && any(y < 0)) {
+      stop(paste0("Negative values not allowed for ", distribution, " distribution. "))
     }
   }
   if (any(is.infinite(x))) {
@@ -15,6 +24,7 @@ check_y <- function(x, multivariate = FALSE) {
   if (length(x) < 2) {
     stop("Length of argument y must be at least two.")
   }
+  
   
 }
 

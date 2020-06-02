@@ -3,7 +3,7 @@
 #' Function \code{ekpf_filter} performs a extended Kalman particle filtering with stratification
 #' resampling, based on Van Der Merwe et al (2001).
 #'
-#' @param object of class \code{nlg_ssm}.
+#' @param object of class \code{ssm_nlg}.
 #' @param nsim Number of samples.
 #' @param seed Seed for RNG.
 #' @param ... Ignored.
@@ -15,10 +15,10 @@
 ekpf_filter <- function(object, nsim, ...) {
   UseMethod("ekpf_filter", object)
 }
-#' @method ekpf_filter nlg_ssm
+#' @method ekpf_filter ssm_nlg
 #' @export
 #' @rdname ekpf_filter
-ekpf_filter.nlg_ssm <- function(object, nsim, seed = sample(.Machine$integer.max, size = 1), ...) {
+ekpf_filter.ssm_nlg <- function(object, nsim, seed = sample(.Machine$integer.max, size = 1), ...) {
   
   out <- ekpf(t(object$y), object$Z, object$H, object$T, 
     object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 

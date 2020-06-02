@@ -19,6 +19,6 @@ smoothed state estimates \code{alphahat}, and the corresponding variances \code{
 }
 \description{
 Function \code{ekf_smoother} runs the (iterated) extended Kalman smoother for 
-the given non-linear Gaussian model of class \code{nlg_ssm}, 
+the given non-linear Gaussian model of class \code{ssm_nlg}, 
 and returns the smoothed estimates of the states and the corresponding variances.
 }

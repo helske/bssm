@@ -35,7 +35,7 @@
 #' based on Kalman filter so 
 #' this argument has no effect if \code{intervals} is
 #' \code{TRUE}. For non-linear Gaussian 
-#' models of class \code{nlg_ssm}, if \code{nsim} is 0 and
+#' models of class \code{ssm_nlg}, if \code{nsim} is 0 and
 #' \code{intervals} is \code{TRUE}, 
 #' EKF based approximation is used for computing the
 #' prediction intervals.
@@ -199,11 +199,6 @@ predict.mcmc_output <- function(object, future_model, type = "response",
     ssm_ung = , 
     bsm_ng = , 
     svm = {
-      if (attr(object, "model_type") != "ssm_ung") {
-        future_model$Z_ind <- 
-          future_model$T_ind <- 
-          future_model$R_ind <- numeric(0)
-      }
       future_model$distribution <- pmatch(future_model$distribution, 
         c("poisson", "binomial", "negative binomial"))
 
@@ -213,7 +208,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
           object$counts, 
           pmatch(type, c("response", "mean", "state")), seed, 
           pmatch(attr(object, "model_type"), c("ssm_ung", "bsm_ng", "svm", "ar1_ng")), 
-          nsim, future_model$Z_ind, future_model$T_ind, future_model$R_ind)
+          nsim)
       
       if(anyNA(out)) stop("NA or NaN values in predictions, possible under/overflow?")
       
@@ -239,7 +234,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
         pred <- out
       }
     },
-    nlg_ssm = {
+    ssm_nlg = {
       if (nsim == 0 && intervals) {
         out <- nonlinear_predict_ekf(t(future_model$y), future_model$Z, 
           future_model$H, future_model$T, future_model$R, future_model$Z_gn, 
@@ -306,7 +301,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
           pred <- out
         }
       }
-    }, stop("Not yet implemented for multivariate models and sde_ssm. "))
+    }, stop("Not yet implemented for multivariate models and ssm_sde. "))
   class(pred) <- "predict_bssm"
   pred
 }

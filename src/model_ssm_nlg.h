@@ -1,6 +1,6 @@
 // arbitrary nonlinear gaussian state space model with time-varying functions
-#ifndef NLG_SSM_H
-#define NLG_SSM_H
+#ifndef SSM_NLG_H
+#define SSM_NLG_H
 
 #include <sitmo.h>
 #include "bssm.h"
@@ -20,11 +20,11 @@ typedef arma::mat (*P1_fnPtr)(const arma::vec& theta, const arma::vec& known_par
 // typedef for a pointer of log-prior function
 typedef double (*prior_fnPtr)(const arma::vec&);
 
-class nlg_ssm {
+class ssm_nlg {
   
 public:
   
-  nlg_ssm(
+  ssm_nlg(
     const arma::mat& y, 
     nvec_fnPtr Z_fn_, 
     nmat_fnPtr H_fn_, 
@@ -102,6 +102,7 @@ public:
   void update_model(const arma::vec& new_theta);
   // update the approximating Gaussian model
   void approximate();
+  void approximate_for_is(const arma::mat& mode_estimate);
   
   arma::vec log_likelihood(
       const unsigned int method, 

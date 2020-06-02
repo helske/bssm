@@ -1,23 +1,24 @@
-#include "model_sde_ssm.h"
+#include "model_ssm_sde.h"
 #include "milstein_functions.h"
 #include "sample.h"
 
-sde_ssm::sde_ssm(
+ssm_sde::ssm_sde(
   const arma::vec& y, 
   const arma::vec& theta, 
   const double x0, 
   bool positive, 
   fnPtr drift_, fnPtr diffusion_, fnPtr ddiffusion_,
   obs_fnPtr log_obs_density_, prior_fnPtr log_prior_pdf_,
+  const unsigned int L_f, const unsigned int L_c,
   const unsigned int seed) 
   :
     y(y), theta(theta), x0(x0), n(y.n_elem), positive(positive),
     drift(drift_), diffusion(diffusion_), ddiffusion(ddiffusion_), 
     log_obs_density(log_obs_density_), log_prior_pdf(log_prior_pdf_),
-    coarse_engine(seed), engine(seed + 1){
+    coarse_engine(seed), engine(seed + 1), L_f(L_f), L_c(L_c){
 }
 
-arma::vec sde_ssm::log_likelihood(
+arma::vec ssm_sde::log_likelihood(
     const unsigned int method, 
     const unsigned int nsim, 
     arma::cube& alpha, 
@@ -30,8 +31,9 @@ arma::vec sde_ssm::log_likelihood(
   return ll;
 }
 
-double sde_ssm::bsf_filter(const unsigned int nsim, const unsigned int L, 
-  arma::cube& alpha, arma::mat& weights, arma::umat& indices) {
+double ssm_sde::bsf_filter(const unsigned int nsim, 
+  const unsigned int L,  arma::cube& alpha, 
+  arma::mat& weights, arma::umat& indices) {
   // alpha is  n x 1 x nsim
   for (unsigned int i = 0; i < nsim; i++) {
     alpha(0, 0, i) = milstein(x0, L, 1, theta, drift, diffusion, ddiffusion,

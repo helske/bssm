@@ -4,8 +4,8 @@
 \alias{bootstrap_filter}
 \alias{bootstrap_filter.gaussian}
 \alias{bootstrap_filter.nongaussian}
-\alias{bootstrap_filter.nlg_ssm}
-\alias{bootstrap_filter.sde_ssm}
+\alias{bootstrap_filter.ssm_nlg}
+\alias{bootstrap_filter.ssm_sde}
 \title{Bootstrap Filtering}
 \usage{
 bootstrap_filter(model, nsim, ...)
@@ -24,14 +24,14 @@ bootstrap_filter(model, nsim, ...)
   ...
 )
 
-\method{bootstrap_filter}{nlg_ssm}(
+\method{bootstrap_filter}{ssm_nlg}(
   model,
   nsim,
   seed = sample(.Machine$integer.max, size = 1),
   ...
 )
 
-\method{bootstrap_filter}{sde_ssm}(
+\method{bootstrap_filter}{ssm_sde}(
   model,
   nsim,
   L,

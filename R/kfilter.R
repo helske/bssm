@@ -40,7 +40,7 @@ kfilter.nongaussian <- function(model, ...) {
 #' (Iterated) Extended Kalman Filtering
 #'
 #' Function \code{ekf} runs the (iterated) extended Kalman filter for the given 
-#' non-linear Gaussian model of class \code{nlg_ssm}, 
+#' non-linear Gaussian model of class \code{ssm_nlg}, 
 #' and returns the filtered estimates and one-step-ahead predictions of the 
 #' states \eqn{\alpha_t} given the data up to time \eqn{t}.
 #'
@@ -69,7 +69,7 @@ ekf <- function(model, iekf_iter = 0) {
 #' Unscented Kalman Filtering
 #'
 #' Function \code{ukf} runs the unscented Kalman filter for the given 
-#' non-linear Gaussian model of class \code{nlg_ssm}, 
+#' non-linear Gaussian model of class \code{ssm_nlg}, 
 #' and returns the filtered estimates and one-step-ahead predictions of the 
 #' states \eqn{\alpha_t} given the data up to time \eqn{t}.
 #'

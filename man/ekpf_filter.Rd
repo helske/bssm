@@ -2,15 +2,15 @@
 % Please edit documentation in R/ekpf_filter.R
 \name{ekpf_filter}
 \alias{ekpf_filter}
-\alias{ekpf_filter.nlg_ssm}
+\alias{ekpf_filter.ssm_nlg}
 \title{Extended Kalman Particle Filtering}
 \usage{
 ekpf_filter(object, nsim, ...)
 
-\method{ekpf_filter}{nlg_ssm}(object, nsim, seed = sample(.Machine$integer.max, size = 1), ...)
+\method{ekpf_filter}{ssm_nlg}(object, nsim, seed = sample(.Machine$integer.max, size = 1), ...)
 }
 \arguments{
-\item{object}{of class \code{nlg_ssm}.}
+\item{object}{of class \code{ssm_nlg}.}
 
 \item{nsim}{Number of samples.}
 

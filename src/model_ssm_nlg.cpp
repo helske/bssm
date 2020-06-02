@@ -1,4 +1,4 @@
-#include "model_nlg_ssm.h"
+#include "model_ssm_nlg.h"
 #include "sample.h"
 #include "dmvnorm.h"
 #include "conditional_dist.h"
@@ -6,7 +6,7 @@
 #include "psd_chol.h"
 #include "interval.h"
 
-nlg_ssm::nlg_ssm(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_, 
+ssm_nlg::ssm_nlg(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_, 
   nvec_fnPtr T_fn_, nmat_fnPtr R_fn_, nmat_fnPtr Z_gn_, nmat_fnPtr T_gn_, 
   a1_fnPtr a1_fn_, P1_fnPtr P1_fn_, const arma::vec& theta, 
   prior_fnPtr log_prior_pdf_, const arma::vec& known_params,
@@ -44,7 +44,7 @@ nlg_ssm::nlg_ssm(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_,
   update_model(theta);
 }
 // update system matrices given theta
-void nlg_ssm::update_model(const arma::vec& new_theta) {
+void ssm_nlg::update_model(const arma::vec& new_theta) {
   
   for (unsigned int t = 0; t < approx_model.Z.n_slices; t++) {
     approx_model.Z.slice(t) = 
@@ -81,7 +81,7 @@ void nlg_ssm::update_model(const arma::vec& new_theta) {
 }
 
 
-void nlg_ssm::approximate() {
+void ssm_nlg::approximate() {
   
   if(approx_state == -1) {
     
@@ -114,10 +114,11 @@ void nlg_ssm::approximate() {
       approx_model.C.col(t) =  T_fn(t, att.col(t), theta, known_params, known_tv_params) -
         approx_model.T.slice(t) * att.col(t);
     }
+   
   }
   if (approx_state < 1) {
     mode_estimate = approx_model.fast_smoother().head_cols(n);
-    if(approx_state == -1) initial_mode = mode_estimate;
+    initial_mode = mode_estimate;
     if (!arma::is_finite(mode_estimate)) {
       return;
     }
@@ -205,8 +206,43 @@ void nlg_ssm::approximate() {
   }
 }
 
+void ssm_nlg::approximate_for_is(const arma::mat& mode_estimate) {
+  
+  approx_model.a1 = a1_fn(theta, known_params);
+  approx_model.P1 = P1_fn(theta, known_params);
+  for (unsigned int t = 0; t < approx_model.Z.n_slices; t++) {
+    approx_model.Z.slice(t) = 
+      Z_gn(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+  }
+  
+  for (unsigned int t = 0; t < approx_model.T.n_slices; t++) {
+    approx_model.T.slice(t) = 
+      T_gn(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+  }
+  
+  for (unsigned int t = 0; t < n; t++) {
+    approx_model.D.col(t) = 
+      Z_fn(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
+      approx_model.Z.slice(t * Zgtv) * mode_estimate.col(t);
+    approx_model.C.col(t) =  
+      T_fn(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
+      approx_model.T.slice(t * Tgtv) * mode_estimate.col(t);
+  }
+  for (unsigned int t = 0; t < approx_model.H.n_slices; t++) {
+    approx_model.H.slice(t) = 
+      H_fn(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+  }
+  for (unsigned int t = 0; t < approx_model.R.n_slices; t++) {
+    approx_model.R.slice(t) = 
+      R_fn(t, mode_estimate.col(t), theta, known_params, known_tv_params);
+  }
+  approx_model.compute_HH();
+  approx_model.compute_RR();
+  approx_model.engine = engine;
+}
+
 // method = 1 psi-APF, 2 = BSF, 3 = SPDK (not applicable), 4 = IEKF (either approx or IEKF-PF)
-arma::vec nlg_ssm::log_likelihood(
+arma::vec ssm_nlg::log_likelihood(
     const unsigned int method, 
     const unsigned int nsim, 
     arma::cube& alpha, 
@@ -265,7 +301,7 @@ arma::vec nlg_ssm::log_likelihood(
 }
 
 
-Rcpp::List nlg_ssm::predict_interval(const arma::vec& probs, const arma::mat& thetasim,
+Rcpp::List ssm_nlg::predict_interval(const arma::vec& probs, const arma::mat& thetasim,
   const arma::mat& alpha_last, const arma::cube& P_last, 
   const arma::uvec& counts, const unsigned int predict_type) {
   
@@ -391,7 +427,7 @@ Rcpp::List nlg_ssm::predict_interval(const arma::vec& probs, const arma::mat& th
   }
 }
 
-arma::cube nlg_ssm::predict_sample(const arma::mat& thetasim, 
+arma::cube ssm_nlg::predict_sample(const arma::mat& thetasim, 
   const arma::mat& alpha, const arma::uvec& counts, 
   const unsigned int predict_type, const unsigned int nsim) {
   
@@ -412,7 +448,7 @@ arma::cube nlg_ssm::predict_sample(const arma::mat& thetasim,
   return sample;
 }
 
-arma::cube nlg_ssm::sample_model(const arma::vec& a1_sim,
+arma::cube ssm_nlg::sample_model(const arma::vec& a1_sim,
   const unsigned int predict_type, const unsigned int nsim) {
   
   arma::cube alpha(m, n, nsim);
@@ -461,7 +497,7 @@ arma::cube nlg_ssm::sample_model(const arma::vec& a1_sim,
   
 }
 
-double nlg_ssm::ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& Ptt) const {
+double ssm_nlg::ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& Ptt) const {
   
   at.col(0) = a1_fn(theta, known_params);
   Pt.slice(0) = P1_fn(theta, known_params);
@@ -560,7 +596,7 @@ double nlg_ssm::ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& P
 }
 
 
-double nlg_ssm::ekf_loglik() const {
+double ssm_nlg::ekf_loglik() const {
   
   
   arma::vec at = a1_fn(theta, known_params);
@@ -660,7 +696,7 @@ double nlg_ssm::ekf_loglik() const {
   return logLik;
 }
 
-double nlg_ssm::ekf_smoother(arma::mat& at, arma::cube& Pt) const {
+double ssm_nlg::ekf_smoother(arma::mat& at, arma::cube& Pt) const {
   
   at.col(0) = a1_fn(theta, known_params);
   
@@ -786,7 +822,7 @@ double nlg_ssm::ekf_smoother(arma::mat& at, arma::cube& Pt) const {
   return logLik;
 }
 
-double nlg_ssm::ekf_fast_smoother(arma::mat& at) const {
+double ssm_nlg::ekf_fast_smoother(arma::mat& at) const {
   
   at.col(0) = a1_fn(theta, known_params);
   
@@ -916,7 +952,7 @@ double nlg_ssm::ekf_fast_smoother(arma::mat& at) const {
 // Unscented Kalman filter, Särkkä (2013) p.107 (UKF) and
 // Note that the initial distribution is given for alpha_1
 // so we first do update instead of prediction
-double nlg_ssm::ukf(arma::mat& at, arma::mat& att, arma::cube& Pt, 
+double ssm_nlg::ukf(arma::mat& at, arma::mat& att, arma::cube& Pt, 
   arma::cube& Ptt, const double alpha, const double beta, const double kappa) const {
   
   // // Parameters of UKF, currently fixed for simplicity
@@ -1024,7 +1060,7 @@ double nlg_ssm::ukf(arma::mat& at, arma::mat& att, arma::cube& Pt,
 // compute _normalized_ mode-based scaling terms
 // log[g(y_t | ^alpha_t) f(^alpha_t | ^alpha_t-1) / 
 // ~g(y_t | ^alpha_t)] ~f(^alpha_t | ^alpha_t-1)
-void nlg_ssm::update_scales()  {
+void ssm_nlg::update_scales()  {
   
   for(unsigned int t = 0; t < n; t++) { 
     arma::uvec na_y = arma::find_nonfinite(y.col(t));
@@ -1049,7 +1085,7 @@ void nlg_ssm::update_scales()  {
   }
   
 }
-arma::vec nlg_ssm::log_weights(const unsigned int t, const arma::cube& alpha, 
+arma::vec ssm_nlg::log_weights(const unsigned int t, const arma::cube& alpha, 
   const arma::mat& alpha_prev) const {
   
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
@@ -1112,7 +1148,7 @@ arma::vec nlg_ssm::log_weights(const unsigned int t, const arma::cube& alpha,
  * t:             Time point where the densities are computed
  * alpha:         Simulated particles
  */
-arma::vec nlg_ssm::log_obs_density(const unsigned int t, 
+arma::vec ssm_nlg::log_obs_density(const unsigned int t, 
   const arma::cube& alpha) const {
   
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
@@ -1127,7 +1163,7 @@ arma::vec nlg_ssm::log_obs_density(const unsigned int t,
   return weights;
 }
 
-double nlg_ssm::log_obs_density(const unsigned int t, 
+double ssm_nlg::log_obs_density(const unsigned int t, 
   const arma::vec& alpha) const {
   
   double weight = 0.0;
@@ -1141,7 +1177,7 @@ double nlg_ssm::log_obs_density(const unsigned int t,
 }
 
 // as ung_filter but without scales
-double nlg_ssm::psi_filter(const unsigned int nsim, arma::cube& alpha, 
+double ssm_nlg::psi_filter(const unsigned int nsim, arma::cube& alpha, 
   arma::mat& weights, arma::umat& indices) {
   
   arma::mat alphahat(m, n + 1);
@@ -1226,7 +1262,7 @@ double nlg_ssm::psi_filter(const unsigned int nsim, arma::cube& alpha,
 }
 
 
-double nlg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
+double ssm_nlg::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
   
   arma::vec a1 = a1_fn(theta, known_params);
@@ -1311,7 +1347,7 @@ double nlg_ssm::bsf_filter(const unsigned int nsim, arma::cube& alpha,
 
 // EKF-based particle filter (van der Merwe et al)
 
-double nlg_ssm::ekf_filter(const unsigned int nsim, arma::cube& alpha,
+double ssm_nlg::ekf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
   
   arma::vec a1 = a1_fn(theta, known_params);
@@ -1423,7 +1459,7 @@ double nlg_ssm::ekf_filter(const unsigned int nsim, arma::cube& alpha,
   
 }
 
-void nlg_ssm::ekf_update_step(const unsigned int t, const arma::vec y, 
+void ssm_nlg::ekf_update_step(const unsigned int t, const arma::vec y, 
   const arma::vec& at, const arma::mat& Pt, arma::vec& att, arma::mat& Ptt) const {
   
   arma::uvec na_y = arma::find_nonfinite(y);
@@ -1455,7 +1491,7 @@ void nlg_ssm::ekf_update_step(const unsigned int t, const arma::vec y,
   } 
 }
 
-double nlg_ssm::log_signal_pdf(const arma::mat& alpha) const {
+double ssm_nlg::log_signal_pdf(const arma::mat& alpha) const {
   
   double ll = dmvnorm(alpha.col(0), a1_fn(theta, known_params), 
     P1_fn(theta, known_params), false, true);

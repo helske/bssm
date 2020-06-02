@@ -1,4 +1,4 @@
-#include "model_nlg_ssm.h"
+#include "model_ssm_nlg.h"
 
 // [[Rcpp::export]]
 Rcpp::List ukf_nlg(const arma::mat& y, SEXP Z, SEXP H,
@@ -19,7 +19,7 @@ Rcpp::List ukf_nlg(const arma::mat& y, SEXP Z, SEXP H,
   Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
 
-  nlg_ssm model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
+  ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     time_varying, 1);
     

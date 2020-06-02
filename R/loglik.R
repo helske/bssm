@@ -53,9 +53,9 @@ logLik.nongaussian <- function(object, nsim, method = "psi", seed = 1,
   nongaussian_loglik(object, nsim, method, seed, model_type(object))
 }
 
-#' @method logLik nlg_ssm
+#' @method logLik ssm_nlg
 #' @export
-logLik.nlg_ssm <- function(object, nsim, method = "bsf", seed = 1, 
+logLik.ssm_nlg <- function(object, nsim, method = "bsf", seed = 1, 
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0, ...) {
   
   method <- pmatch(method,  c("psi", "bsf", "ekf"))
@@ -70,9 +70,9 @@ logLik.nlg_ssm <- function(object, nsim, method = "bsf", seed = 1,
 }
 
 
-#' @method logLik sde_ssm
+#' @method logLik ssm_sde
 #' @export
-logLik.sde_ssm <- function(object, nsim, L, seed = 1, ...) {
+logLik.ssm_sde <- function(object, nsim, L, seed = 1, ...) {
   if(L <= 0) stop("Discretization level L must be larger than 0.")
   loglik_sde(object$y, object$x0, object$positive, 
     object$drift, object$diffusion, object$ddiffusion, 

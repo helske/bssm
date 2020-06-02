@@ -66,10 +66,10 @@ bootstrap_filter.nongaussian <- function(model, nsim,
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
-#' @method bootstrap_filter nlg_ssm
+#' @method bootstrap_filter ssm_nlg
 #' @rdname bootstrap_filter
 #' @export
-bootstrap_filter.nlg_ssm <- function(model, nsim,
+bootstrap_filter.ssm_nlg <- function(model, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
   out <- bsf_nlg(t(model$y), model$Z, model$H, model$T,
@@ -86,11 +86,11 @@ bootstrap_filter.nlg_ssm <- function(model, nsim,
   out
 }
 
-#' @method bootstrap_filter sde_ssm
+#' @method bootstrap_filter ssm_sde
 #' @rdname bootstrap_filter
 #' @param L Integer defining the discretization level for SDE models.
 #' @export
-bootstrap_filter.sde_ssm <- function(model, nsim, L,
+bootstrap_filter.ssm_sde <- function(model, nsim, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   if(L < 1) stop("Discretization level L must be larger than 0.")
   out <- bsf_sde(model$y, model$x0, model$positive,

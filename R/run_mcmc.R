@@ -135,7 +135,7 @@ run_mcmc.gaussian <- function(model, n_iter, type = "full",
 #' weight computations is proportional to the length of the jump chain block.
 #' @param simulation_method If \code{"spdk"}, non-sequential importance sampling based
 #' on Gaussian approximation is used. If \code{"bsf"}, bootstrap filter
-#' is used (default for \code{"nlg_ssm"} and only option for \code{"sde_ssm"}),
+#' is used (default for \code{"ssm_nlg"} and only option for \code{"ssm_sde"}),
 #' and if \code{"psi"}, psi-auxiliary particle filter is used
 #' (default for models with linear-Gaussian state equation).
 #' @param n_burnin Length of the burn-in period which is disregarded from the
@@ -264,10 +264,10 @@ run_mcmc.nongaussian <- function(model, n_iter, nsim, type = "full",
   out
 }
 
-#' @method run_mcmc nlg_ssm
+#' @method run_mcmc ssm_nlg
 #' @rdname run_mcmc_ng
 #' @export
-run_mcmc.nlg_ssm <-  function(model, n_iter, nsim, type = "full",
+run_mcmc.ssm_nlg <-  function(model, n_iter, nsim, type = "full",
   method = "da", simulation_method = "bsf",
   n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
@@ -368,18 +368,18 @@ run_mcmc.nlg_ssm <-  function(model, n_iter, nsim, type = "full",
   out$seed <- seed
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
-  attr(out, "model_type") <- "nlg_ssm"
+  attr(out, "model_type") <- "ssm_nlg"
   attr(out, "ts") <- 
     list(start = start(model$y), end = end(model$y), frequency=frequency(model$y))
   out
 }
 
-#' @method run_mcmc sde_ssm
+#' @method run_mcmc ssm_sde
 #' @rdname run_mcmc_ng
 #' @param L_c,L_f Integer values defining the discretization levels for first and second stages. 
 #' For PM methods, maximum of these is used.
 #' @export
-run_mcmc.sde_ssm <-  function(model, n_iter, nsim, type = "full",
+run_mcmc.ssm_sde <-  function(model, n_iter, nsim, type = "full",
   method = "da", L_c, L_f,
   n_burnin = floor(n_iter/2), n_thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
@@ -450,7 +450,7 @@ run_mcmc.sde_ssm <-  function(model, n_iter, nsim, type = "full",
   out$seed <- seed
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
-  attr(out, "model_type") <- "sde_ssm"
+  attr(out, "model_type") <- "ssm_sde"
   attr(out, "ts") <- 
     list(start = start(model$y), end = end(model$y), frequency=frequency(model$y))
   out

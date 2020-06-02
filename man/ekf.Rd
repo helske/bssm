@@ -20,7 +20,7 @@ estimates \code{att} of states, and the corresponding variances \code{Pt} and
 }
 \description{
 Function \code{ekf} runs the (iterated) extended Kalman filter for the given 
-non-linear Gaussian model of class \code{nlg_ssm}, 
+non-linear Gaussian model of class \code{ssm_nlg}, 
 and returns the filtered estimates and one-step-ahead predictions of the 
 states \eqn{\alpha_t} given the data up to time \eqn{t}.
 }

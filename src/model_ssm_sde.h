@@ -1,6 +1,6 @@
 
-#ifndef SDE_SSM_H
-#define SDE_SSM_H
+#ifndef SSM_SDE_H
+#define SSM_SDE_H
 
 #include <sitmo.h>
 #include "bssm.h"
@@ -10,17 +10,19 @@ typedef double (*prior_fnPtr)(const arma::vec& theta);
 typedef arma::vec (*obs_fnPtr)(const double y, 
   const arma::vec& alpha, const arma::vec& theta);
 
-class sde_ssm {
+class ssm_sde {
   
 public:
   
-  sde_ssm( 
+  ssm_sde( 
     const arma::vec& y, 
     const arma::vec& theta, 
     const double x0, 
     bool positive, 
     fnPtr drift_, fnPtr diffusion_, fnPtr ddiffusion_,
     obs_fnPtr log_obs_density_, prior_fnPtr log_prior_pdf_, 
+    const unsigned int L_f,
+    const unsigned int L_c,
     const unsigned int seed = 1);
   
   arma::vec y;
@@ -57,10 +59,12 @@ public:
       arma::umat& indices);
   
   // bootstrap filter  
-  double bsf_filter(const unsigned int nsim, const unsigned int L, 
+  double bsf_filter(const unsigned int nsim, const unsigned int L,
     arma::cube& alpha, arma::mat& weights, arma::umat& indices);
   
- 
+  const unsigned int L_f;
+  const unsigned int L_c; 
+  
 };
 
 

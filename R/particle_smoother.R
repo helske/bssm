@@ -75,9 +75,9 @@ particle_smoother.nongaussian <- function(object, nsim,
 }
 
 #' @rdname particle_smoother
-#' @method particle_smoother nlg_ssm
+#' @method particle_smoother ssm_nlg
 #' @export
-particle_smoother.nlg_ssm <- function(object, nsim, 
+particle_smoother.ssm_nlg <- function(object, nsim, 
   method = "psi", 
   seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0, ...) {
@@ -115,10 +115,10 @@ particle_smoother.nlg_ssm <- function(object, nsim,
 
 
 #' @rdname particle_smoother
-#' @method particle_smoother sde_ssm
+#' @method particle_smoother ssm_sde
 #' @param L Integer defining the discretization level.
 #' @export
-particle_smoother.sde_ssm <- function(object, nsim, L, 
+particle_smoother.ssm_sde <- function(object, nsim, L, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   if(L < 1) stop("Discretization level L must be larger than 0.")

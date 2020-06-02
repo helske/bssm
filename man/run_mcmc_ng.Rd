@@ -2,8 +2,8 @@
 % Please edit documentation in R/run_mcmc.R
 \name{run_mcmc.nongaussian}
 \alias{run_mcmc.nongaussian}
-\alias{run_mcmc.nlg_ssm}
-\alias{run_mcmc.sde_ssm}
+\alias{run_mcmc.ssm_nlg}
+\alias{run_mcmc.ssm_sde}
 \title{Bayesian inference of non-Gaussian or non-linear state space models using MCMC}
 \usage{
 \method{run_mcmc}{nongaussian}(
@@ -27,7 +27,7 @@
   ...
 )
 
-\method{run_mcmc}{nlg_ssm}(
+\method{run_mcmc}{ssm_nlg}(
   model,
   n_iter,
   nsim,
@@ -48,7 +48,7 @@
   ...
 )
 
-\method{run_mcmc}{sde_ssm}(
+\method{run_mcmc}{ssm_sde}(
   model,
   n_iter,
   nsim,
@@ -90,7 +90,7 @@ weight computations is proportional to the length of the jump chain block.}
 
 \item{simulation_method}{If \code{"spdk"}, non-sequential importance sampling based
 on Gaussian approximation is used. If \code{"bsf"}, bootstrap filter
-is used (default for \code{"nlg_ssm"} and only option for \code{"sde_ssm"}),
+is used (default for \code{"ssm_nlg"} and only option for \code{"ssm_sde"}),
 and if \code{"psi"}, psi-auxiliary particle filter is used
 (default for models with linear-Gaussian state equation).}
 

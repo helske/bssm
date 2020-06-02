@@ -40,9 +40,9 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100, conv_tol = 1e-8, 
   approx_model
 }
 
-#' @method gaussian_approx nlg_ssm
+#' @method gaussian_approx ssm_nlg
 #' @export
-gaussian_approx.nlg_ssm <- function(model, max_iter = 100, 
+gaussian_approx.ssm_nlg <- function(model, max_iter = 100, 
   conv_tol = 1e-8, iekf_iter = 0, ...) {
   
   model$max_iter <- max_iter

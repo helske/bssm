@@ -125,8 +125,8 @@ void ssm_ung::approximate() {
       while(i < max_iter && diff > conv_tol) {
         i++;
         //Construct y and H for the Gaussian model
-        laplace_iter(mode_estimate, approx_model.y, approx_model.H);
-        approx_model.compute_HH();
+        laplace_iter(mode_estimate, approx_model.y, approx_model.HH);
+        approx_model.H = sqrt(approx_model.HH);
         // compute new guess of mode
         arma::vec mode_estimate_new(n);
         if (distribution == 0) {
@@ -143,6 +143,28 @@ void ssm_ung::approximate() {
     }
     approx_state = 1;
   }
+}
+// construct approximating model from fixed mode estimate, no iterations
+// used in IS-correction
+void ssm_ung::approximate_for_is(const arma::mat& mode_estimate) {
+
+    approx_model.Z = Z;
+    approx_model.T = T;
+    approx_model.R = R;
+    approx_model.a1 = a1;
+    approx_model.P1 = P1;
+    approx_model.beta = beta;
+    approx_model.D = D;
+    approx_model.C = C;
+    approx_model.RR = RR;
+    approx_model.xbeta = xbeta;
+    //Construct y and H for the Gaussian model
+    laplace_iter(mode_estimate.col(0), approx_model.y, approx_model.HH);
+    approx_model.H = sqrt(approx_model.HH);
+    update_scales();
+    approx_loglik = 0.0;
+    approx_model.engine = engine;
+    approx_state = 1;
 }
 
 // method = 1 psi-APF, 2 = BSF, 3 = SPDK, 4 = IEKF (not applicable)
@@ -272,34 +294,33 @@ void ssm_ung::update_scales() {
  * 3 = Negative binomial
  */
 void ssm_ung::laplace_iter(const arma::vec& signal, arma::vec& approx_y,
-  arma::vec& approx_H) const {
+  arma::vec& approx_HH) const {
   
-  //note: using the variable approx_H to store approx_HH first
-  
+ 
   switch(distribution) {
   case 0: {
   arma::vec tmp = y;
   // avoid dividing by zero
   tmp(arma::find(arma::abs(tmp) < 1e-4)).fill(1e-4);
-  approx_H = 2.0 * arma::exp(signal) / arma::square(tmp/phi);
-  approx_y = signal + 1.0 - 0.5 * approx_H;
+  approx_HH = 2.0 * arma::exp(signal) / arma::square(tmp/phi);
+  approx_y = signal + 1.0 - 0.5 * approx_HH;
 } break;
   case 1: {
     arma::vec tmp = signal + xbeta;
-    approx_H = 1.0 / (arma::exp(tmp) % u);
-    approx_y = y % approx_H + tmp - 1.0;
+    approx_HH = 1.0 / (arma::exp(tmp) % u);
+    approx_y = y % approx_HH + tmp - 1.0;
   } break;
   case 2: {
     arma::vec exptmp = arma::exp(signal + xbeta);
-    approx_H = arma::square(1.0 + exptmp) / (u % exptmp);
-    approx_y = y % approx_H + signal + xbeta - 1.0 - exptmp;
+    approx_HH = arma::square(1.0 + exptmp) / (u % exptmp);
+    approx_y = y % approx_HH + signal + xbeta - 1.0 - exptmp;
   } break;
   case 3: {
     arma::vec exptmp = 1.0 / (arma::exp(signal + xbeta) % u); // FIX?
+    approx_HH = 1.0 / phi + exptmp;
     approx_y = signal + xbeta + y % exptmp - 1.0;
   } break;
   }
-  approx_H = arma::sqrt(approx_H);
 }
 
 

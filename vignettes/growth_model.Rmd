@@ -27,7 +27,7 @@ y_t = Z(t, \alpha_t, \theta) + H(t, \alpha_t, \theta)\epsilon_t,\\
 \alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \alpha_t, \theta)\eta_t,\\
 \alpha_1 \sim N(a_1(\theta), P_1(\theta)),
 $$
-with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions, which can sound intimidating at first, but is actually pretty simple, as this vignette illustrates. All of these functions can also depend on some known parameters, defined as `known_params` (vector) and `known_tv_params` (matrix) arguments to `nlg_ssm` functions.
+with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions, which can sound intimidating at first, but is actually pretty simple, as this vignette illustrates. All of these functions can also depend on some known parameters, defined as `known_params` (vector) and `known_tv_params` (matrix) arguments to `ssm_nlg` functions.
 
 As an example, consider a noisy logistic growth model
 $$
@@ -89,7 +89,7 @@ The name of this function does not matter, but it should always return Armadillo
 After creating the file for `C++` functions, you need to compile the file using `Rcpp`:
 
 ```{r pointers}
-Rcpp::sourceCpp("nlg_ssm_template.cpp")
+Rcpp::sourceCpp("ssm_nlg_template.cpp")
 pntrs <- create_xptrs()
 ```
 
@@ -108,11 +108,11 @@ If you have used line `// [[Rcpp::export]]` before the model functions, you can 
 T_fn(0, c(100, 200), initial_theta, psi, matrix(1))
 ```
 
-Now the actual model object using `nlg_ssm`:
+Now the actual model object using `ssm_nlg`:
 
 ```{r model}
 library("bssm")
-model <- nlg_ssm(y = y, a1=pntrs$a1, P1 = pntrs$P1, 
+model <- ssm_nlg(y = y, a1=pntrs$a1, P1 = pntrs$P1, 
   Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
   Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
   theta = initial_theta, log_prior_pdf = pntrs$log_prior_pdf,
@@ -156,7 +156,7 @@ autoplot(out_pred_ekf, y = model$y, plot_median = FALSE)
 
 ## Appendix
 
-This is the full `nlg_ssm_template.cpp` file:
+This is the full `ssm_nlg_template.cpp` file:
 
-```{Rcpp nlg_ssm_template, code=readLines('nlg_ssm_template.cpp'), eval = FALSE, echo = TRUE}
+```{Rcpp ssm_nlg_template, code=readLines('ssm_nlg_template.cpp'), eval = FALSE, echo = TRUE}
 ```

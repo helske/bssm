@@ -135,7 +135,7 @@ y_t = Z(t, \alpha_t, \theta) + H(t, \alpha_t, \theta)\epsilon_t,\\
 \alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \alpha_t, \theta)\eta_t,\\
 \alpha_1 \sim N(a_1(\theta), P_1(\theta)),
 $$
-with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ needed by the EKF and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions. All of these functions can also depend on some known parameters, defined as `known_params` (vector) and `known_tv_params` (matrix with $n$ columns) arguments to `nlg_ssm` function. Note that while using the Laplace approximation as intermediate step is typically always more efficient that standard BSF based particle MCMC, the EKF approximation can be very unstable, and thus the the methods using EKF in the approximation phase can have poor performance in some cases.
+with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ needed by the EKF and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions. All of these functions can also depend on some known parameters, defined as `known_params` (vector) and `known_tv_params` (matrix with $n$ columns) arguments to `ssm_nlg` function. Note that while using the Laplace approximation as intermediate step is typically always more efficient that standard BSF based particle MCMC, the EKF approximation can be very unstable, and thus the the methods using EKF in the approximation phase can have poor performance in some cases.
 
 ## Time-discretised diffusion models
 
@@ -203,9 +203,9 @@ logLik(bsm_model2)
 
 For non-Gaussian models, function `ng_bsm` can be used for constructing an BSM model where the observations are assumed to be distributed according to Poisson, binomial or negative binomial distribution. The syntax is nearly identical as in case of `bsm`, but we now define also the distribution via argument `distribution`, and depending on the model, we can also define parameters `u` and `phi`. For Poisson and negative binomial models, the known parameter `u` corresponds to the offset term, whereas in case of binomial model `u` defines the number of trials. For negative binomial model, argument `phi` defines the dispersion term, which can be given as a fixed value, or as a prior function. For same observational densities, a model where the state equation follows a first order autoregressive process can be defined using the function `ng_ar1`. Finally, a stochastic volatility model can be defined using a function `svm`, and an arbitrary linear-Gaussian state model with Poisson, binomial or negative binomial distributed observations can be defined with `ngssm`.
 
-For models where the state equation is now longer linear-Gaussian, we can again use our pointer-based interface. General non-linear Gaussian model can be defined with the function `nlg_ssm`, with similar fashion as in case of `lgg_ssm`. A template for `nlg_ssm` can be found in the Appendix.
+For models where the state equation is now longer linear-Gaussian, we can again use our pointer-based interface. General non-linear Gaussian model can be defined with the function `ssm_nlg`, with similar fashion as in case of `lgg_ssm`. A template for `ssm_nlg` can be found in the Appendix.
 
-As a relatively new feature, `bssm` now supports also discretely observed diffusion models where the state process is assumed to be continuous stochastic process These can be constructed using the `sde_ssm` function, which takes pointers to C++ functions defining the drift, diffusion, the derivative of the diffusion function, and the log-densities of the observations and the prior. As an example, let us consider an Ornstein–Uhlenbeck process
+As a relatively new feature, `bssm` now supports also discretely observed diffusion models where the state process is assumed to be continuous stochastic process These can be constructed using the `ssm_sde` function, which takes pointers to C++ functions defining the drift, diffusion, the derivative of the diffusion function, and the log-densities of the observations and the prior. As an example, let us consider an Ornstein–Uhlenbeck process
 $$
 \textrm{d} \alpha_t = \rho (\nu - \alpha_t) \textrm{d} t + \sigma \textrm{d} B_t,
 $$
@@ -221,18 +221,18 @@ y <- rpois(100, exp(x[-1]))
 ```
 We then compile and build the model as in the case of `lgg_ssm` model:
 ```{r}
-Rcpp::sourceCpp("sde_ssm_template.cpp", 
+Rcpp::sourceCpp("ssm_sde_template.cpp", 
                 cacheDir = paste0(tempdir(), "/", sample(1e8, 1)))
 pntrs <- create_xptrs()
-sde_model <- sde_ssm(y, pntrs$drift, pntrs$diffusion, 
+sde_model <- ssm_sde(y, pntrs$drift, pntrs$diffusion, 
   pntrs$ddiffusion, pntrs$obs_density, pntrs$prior, c(0.5, 2, 1), 1, FALSE)
 ```
 
 ## Filtering and smoothing
 
-Filtering refers to estimating the conditional densities of the hidden states at time $t$, given the observations up to that point. For linear-Gaussian models, these densities can be efficiently computed using the Kalman filter recursions. The `bssm` has a method `kfilter` for this task. For models defined with the `ssm_mng` ,`ng_bsm`, `ar1_ng`, and `svm` functions, `kfilter` will first construct an approximating Gaussian model for which the Kalman filter is then used. For details of this approximation, see @durbin-koopman1997 and @vihola-helske-franks. For non-linear models defined by `nlg_ssm` it is possible to perform filtering using extended Kalman filter (EKF) with the function `ekf`, or unscented Kalman filter with the function `ukf`. It is also possible to use iterated EKF (IEKF) by changing the argument `iekf_iter` of the `ekf` function. Compared to EKF, in IEKF the observation equation is linearized iteratively within each time step.
+Filtering refers to estimating the conditional densities of the hidden states at time $t$, given the observations up to that point. For linear-Gaussian models, these densities can be efficiently computed using the Kalman filter recursions. The `bssm` has a method `kfilter` for this task. For models defined with the `ssm_mng` ,`ng_bsm`, `ar1_ng`, and `svm` functions, `kfilter` will first construct an approximating Gaussian model for which the Kalman filter is then used. For details of this approximation, see @durbin-koopman1997 and @vihola-helske-franks. For non-linear models defined by `ssm_nlg` it is possible to perform filtering using extended Kalman filter (EKF) with the function `ekf`, or unscented Kalman filter with the function `ukf`. It is also possible to use iterated EKF (IEKF) by changing the argument `iekf_iter` of the `ekf` function. Compared to EKF, in IEKF the observation equation is linearized iteratively within each time step.
 
-While Kalman filter solves the filtering problem exactly in case of linear-Gaussian models, EKF, UKF, and the filtering based on the approximating Gaussian models produce only approximate, possibly biased filtering estimates for general models. This problem can be solved by the use of particle filters (PF). These sequential Monte Carlo methods are computationally more expensive, but can in principle deal with almost arbitrary state space models. The `bssm` supports general bootstrap particle filter (BSF) for all model classes of the `bssm`. For `ssm_mng` ,`ng_bsm`, `ar1_ng`, and `svm` models we recommend the particle filter called $\psi$-APF [@vihola-helske-franks] which makes use of the previously mentioned approximating Gaussian model in order to produce more efficient filter. It is also available for `nlg_ssm` models but in case of severe non-linearities, it is not necessarily best option.
+While Kalman filter solves the filtering problem exactly in case of linear-Gaussian models, EKF, UKF, and the filtering based on the approximating Gaussian models produce only approximate, possibly biased filtering estimates for general models. This problem can be solved by the use of particle filters (PF). These sequential Monte Carlo methods are computationally more expensive, but can in principle deal with almost arbitrary state space models. The `bssm` supports general bootstrap particle filter (BSF) for all model classes of the `bssm`. For `ssm_mng` ,`ng_bsm`, `ar1_ng`, and `svm` models we recommend the particle filter called $\psi$-APF [@vihola-helske-franks] which makes use of the previously mentioned approximating Gaussian model in order to produce more efficient filter. It is also available for `ssm_nlg` models but in case of severe non-linearities, it is not necessarily best option.
 
 Compared to filtering problem, in smoothing problems we are interested in the conditional densities of the hidden states at certain time point $t$ given all the observations $y_1,\ldots,y_t,\ldots,y_n$. Again for linear-Gaussian models we can use so called Kalman smoothing recursions, where as in case of more general models we can rely on approximating methods, or smoothing algorithms based on the output of particle filters. Currently only filter-smoother approach [@kitagawa] for particle smoothing is fully supported.
 
@@ -304,12 +304,12 @@ This work has been supported by the Academy of Finland research grants 284513 an
 
 ## Template for non-linear Gaussian model
 
-```{Rcpp, nlg_ssm_template, code=readLines('nlg_ssm_template.cpp'), eval = FALSE, echo = TRUE, size = 'small'}
+```{Rcpp, ssm_nlg_template, code=readLines('ssm_nlg_template.cpp'), eval = FALSE, echo = TRUE, size = 'small'}
 ```
 
 ## Template for SDE model
 
-```{Rcpp, sde_ssm_template, code=readLines('sde_ssm_template.cpp'), eval = FALSE, echo = TRUE, size = 'small'}
+```{Rcpp, ssm_sde_template, code=readLines('ssm_sde_template.cpp'), eval = FALSE, echo = TRUE, size = 'small'}
 ```
 
 ## Stan model for Poisson local linear trend model

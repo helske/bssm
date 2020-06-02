@@ -3,8 +3,8 @@
 \name{particle_smoother}
 \alias{particle_smoother}
 \alias{particle_smoother.nongaussian}
-\alias{particle_smoother.nlg_ssm}
-\alias{particle_smoother.sde_ssm}
+\alias{particle_smoother.ssm_nlg}
+\alias{particle_smoother.ssm_sde}
 \title{Particle Smoothing}
 \usage{
 particle_smoother(object, nsim, ...)
@@ -19,7 +19,7 @@ particle_smoother(object, nsim, ...)
   ...
 )
 
-\method{particle_smoother}{nlg_ssm}(
+\method{particle_smoother}{ssm_nlg}(
   object,
   nsim,
   method = "psi",
@@ -30,7 +30,7 @@ particle_smoother(object, nsim, ...)
   ...
 )
 
-\method{particle_smoother}{sde_ssm}(
+\method{particle_smoother}{ssm_sde}(
   object,
   nsim,
   L,

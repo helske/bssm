@@ -19,8 +19,8 @@
 #include "model_ar1_ng.h"
 #include "model_svm.h"
 
-#include "model_nlg_ssm.h"
-#include "model_sde_ssm.h"
+#include "model_ssm_nlg.h"
+#include "model_ssm_sde.h"
 
 mcmc::mcmc(
   const unsigned int n_iter, 
@@ -152,6 +152,7 @@ template void mcmc::mcmc_gaussian(ssm_mlg model, const bool end_ram);
 template<class T>
 void mcmc::mcmc_gaussian(T model, const bool end_ram) {
   arma::vec theta = model.theta;
+  model.update_model(theta); // just in case
   double logprior = model.log_prior_pdf(theta); 
   double loglik = model.log_likelihood();
   
@@ -256,7 +257,7 @@ template void mcmc::pm_mcmc(svm model,
   const unsigned int nsim,
   const bool end_ram);
 
-template void mcmc::pm_mcmc(nlg_ssm model,
+template void mcmc::pm_mcmc(ssm_nlg model,
   const unsigned int method,
   const unsigned int nsim,
   const bool end_ram);
@@ -266,7 +267,7 @@ template void mcmc::pm_mcmc(ssm_mng model,
   const unsigned int nsim,
   const bool end_ram);
 
-template void mcmc::pm_mcmc(sde_ssm model,
+template void mcmc::pm_mcmc(ssm_sde model,
   const unsigned int method,
   const unsigned int nsim,
   const bool end_ram);
@@ -283,6 +284,7 @@ void mcmc::pm_mcmc(
   
   // get the current values of theta
   arma::vec theta = model.theta;
+  model.update_model(theta); // just in case
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(theta);
   if (!arma::is_finite(logprior)) {
@@ -295,7 +297,7 @@ void mcmc::pm_mcmc(
   
   // compute the log-likelihood (unbiased and approximate)
   arma::vec ll = model.log_likelihood(method, nsim, alpha, weights, indices);
-  
+
   if (!std::isfinite(ll(0)))
     Rcpp::stop("Initial log-likelihood is not finite.");
   
@@ -308,6 +310,7 @@ void mcmc::pm_mcmc(
       output_type == 1, method, alpha, weights.col(n), indices,
       sampled_alpha, alphahat_i, Vt_i, model.engine);
   }
+
   double acceptance_prob = 0.0;
   bool new_value = true;
   unsigned int n_values = 0;
@@ -329,7 +332,7 @@ void mcmc::pm_mcmc(
     arma::vec theta_prop = theta + S * u;
     // compute prior
     double logprior_prop = model.log_prior_pdf(theta_prop);
-    
+
     if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       
       // update parameters
@@ -337,7 +340,7 @@ void mcmc::pm_mcmc(
       
       // compute the log-likelihood (unbiased and approximate)
       arma::vec ll_prop = model.log_likelihood(method, nsim, alpha, weights, indices);
-      
+
       //compute the acceptance probability for RAM using the approximate ll
       acceptance_prob = std::min(1.0, std::exp(
         ll_prop(1) - ll(1) +
@@ -424,17 +427,12 @@ template void mcmc::da_mcmc(svm model,
   const unsigned int nsim,
   const bool end_ram);
 
-template void mcmc::da_mcmc(nlg_ssm model,
+template void mcmc::da_mcmc(ssm_nlg model,
   const unsigned int method,
   const unsigned int nsim,
   const bool end_ram);
 
 template void mcmc::da_mcmc(ssm_mng model,
-  const unsigned int method,
-  const unsigned int nsim,
-  const bool end_ram);
-
-template void mcmc::da_mcmc(sde_ssm model,
   const unsigned int method,
   const unsigned int nsim,
   const bool end_ram);
@@ -552,6 +550,140 @@ void mcmc::da_mcmc(T model,
       //new block
       if (new_value) {
         posterior_storage(n_stored) = logprior + ll(0);
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        if (output_type == 1) {
+          alpha_storage.slice(n_stored) = sampled_alpha.t();
+        }
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
+      }
+    }
+    
+    if (!end_ram || i <= n_burnin) {
+      ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
+    }
+  }
+  if (output_type == 2) {
+    Vt += Valphahat / (n_iter - n_burnin); // Var[E(alpha)] + E[Var(alpha)]
+  }
+  trim_storage();
+  acceptance_rate /= (n_iter - n_burnin);
+}
+
+template <>
+void mcmc::da_mcmc<ssm_sde>(ssm_sde model, const unsigned int method,
+  const unsigned int nsim, const bool end_ram){
+  
+  // get the current values of theta
+  arma::vec theta = model.theta;
+  model.update_model(theta); // just in case
+  // compute the log[p(theta)]
+  double logprior = model.log_prior_pdf(theta);
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
+  
+  unsigned int m = model.m;
+  unsigned int n = model.n;
+  
+  arma::cube alpha(m, n + 1, nsim);
+  arma::mat weights(nsim, n + 1);
+  arma::umat indices(nsim, n + 1);
+  
+  double ll_c = model.bsf_filter(nsim, model.L_c, alpha, weights, indices);
+  double ll_f = model.bsf_filter(nsim, model.L_f, alpha, weights, indices);
+  
+  if (!std::isfinite(ll_f))
+    Rcpp::stop("Initial log-likelihood is not finite.");
+  
+  arma::mat alphahat_i(m, (output_type != 3) * n + 1);
+  arma::cube Vt_i(m, m, (output_type != 3) * n + 1);
+  arma::cube Valphahat(m, m, (output_type != 3) * n + 1, arma::fill::zeros);
+  arma::mat sampled_alpha(m, (output_type != 3) * n + 1);
+  
+  if (output_type != 3) {
+    sample_or_summarise(
+      output_type == 1, method, alpha, weights.col(n), indices,
+      sampled_alpha, alphahat_i, Vt_i, model.engine);
+  }
+  
+  double acceptance_prob = 0.0;
+  bool new_value = true;
+  unsigned int n_values = 0;
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+  for (unsigned int i = 1; i <= n_iter; i++) {
+    
+    if (i % 16 == 0) {
+      Rcpp::checkUserInterrupt();
+    }
+    
+    // sample from standard normal distribution
+    arma::vec u(n_par);
+    for(unsigned int j = 0; j < n_par; j++) {
+      u(j) = normal(model.engine);
+    }
+    
+    // propose new theta
+    arma::vec theta_prop = theta + S * u;
+    // compute prior
+    double logprior_prop = model.log_prior_pdf(theta_prop);
+    
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
+      
+      // update parameters
+      model.update_model(theta_prop);
+      double ll_c_prop = model.bsf_filter(nsim, model.L_c, alpha, weights, indices);
+    
+      // initial acceptance probability, also used in RAM
+      acceptance_prob = std::min(1.0, std::exp(ll_c_prop - ll_c +
+        logprior_prop - logprior));
+      // initial acceptance
+      if (unif(model.engine) < acceptance_prob) {
+        
+        // compute the log-likelihood estimate using finer mesh
+        double ll_f_prop = model.bsf_filter(nsim, model.L_f, alpha, weights, indices);
+        
+        // second stage acceptance log-probability
+        double log_alpha = ll_f_prop + ll_c - ll_f - ll_c_prop;
+        
+        if (log(unif(model.engine)) < log_alpha) {
+          if (i > n_burnin) {
+            acceptance_rate++;
+            n_values++;
+          }
+          if (output_type != 3) {
+            sample_or_summarise(
+              output_type == 1, method, alpha, weights.col(n), indices,
+              sampled_alpha, alphahat_i, Vt_i, model.engine);
+          }
+          ll_f = ll_f_prop;
+          ll_c = ll_c_prop;
+          logprior = logprior_prop;
+          theta = theta_prop;
+          new_value = true;
+        }
+        
+      }
+    } else acceptance_prob = 0.0;
+    
+    // note: thinning does not affect this
+    if (i > n_burnin && output_type == 2) {
+      arma::mat diff = alphahat_i - alphahat;
+      alphahat = (alphahat * (i - n_burnin - 1) + alphahat_i) / (i - n_burnin);
+      Vt = (Vt * (i - n_burnin - 1) + Vt_i) / (i - n_burnin);
+      for (unsigned int t = 0; t < model.n + 1; t++) {
+        Valphahat.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+      }
+    }
+    
+    if (i > n_burnin && n_values % n_thin == 0) {
+      //new block
+      if (new_value) {
+        posterior_storage(n_stored) = logprior + ll_f;
         theta_storage.col(n_stored) = theta;
         count_storage(n_stored) = 1;
         if (output_type == 1) {

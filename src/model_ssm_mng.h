@@ -68,8 +68,6 @@ public:
   
   ssm_mlg approx_model;
   
-
-  
   void compute_RR();
   
   arma::vec log_likelihood(
@@ -84,6 +82,7 @@ public:
   
   // update the approximating Gaussian model
   void approximate();
+  void approximate_for_is(const arma::mat& mode_estimate);
   
   double compute_const_term() const;
   

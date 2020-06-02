@@ -50,7 +50,7 @@ For linear-Gaussian models the intervals are computed
 based on Kalman filter so 
 this argument has no effect if \code{intervals} is
 \code{TRUE}. For non-linear Gaussian 
-models of class \code{nlg_ssm}, if \code{nsim} is 0 and
+models of class \code{ssm_nlg}, if \code{nsim} is 0 and
 \code{intervals} is \code{TRUE}, 
 EKF based approximation is used for computing the
 prediction intervals.}

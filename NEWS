@@ -93,14 +93,14 @@ bssm 0.1.2 (Release date: 2017-11-21)
   * summary method for MCMC output now omits the computation of SE and ESS in order 
     to speed up the function.
   * Added new model class lgg_ssm, which is a linear-Gaussian model defined 
-    directly via C++ like non-linear nlg_ssm models. This allows more flexible
+    directly via C++ like non-linear ssm_nlg models. This allows more flexible
     prior definitions and complex system matrix constructions.
-  * Added another new model class, sde_ssm, which is a model with continuous 
+  * Added another new model class, ssm_sde, which is a model with continuous 
     state dynamics defined as SDE. These too are defined via couple 
     simple C++ functions.
   * Added non-gaussian AR(1) model class.
   * Added argument nsim for predict method, which allows multiple draws per MCMC iteration.
-  * The noise multiplier matrices H and R in nlg_ssm models can now depend on states.
+  * The noise multiplier matrices H and R in ssm_nlg models can now depend on states.
   
 bssm 0.1.1-1 (Release date: 2017-06-27)
 ==============
