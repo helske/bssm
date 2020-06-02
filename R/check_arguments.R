@@ -5,11 +5,6 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
     if (!is.matrix(x) && !is.numeric(x)) {
       stop("Argument y must be a numeric matrix or multivariate ts object.")
     }
-    for(i in 1:ncol(x)) {
-      if(distribution[i] != "gaussian" && any(x[,i] < 0)) {
-        stop(paste0("Negative values not allowed for ", distribution[i], " distribution. "))
-      }
-    }
   } else {
     if (!(is.vector(x) && !is.list(x)) && !is.numeric(x)) {
       stop("Argument y must be a numeric vector or ts object.")
@@ -28,6 +23,13 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
   
 }
 
+check_distribution <- function(x, distribution) {
+  for(i in 1:ncol(x)) {
+    if(distribution[i] != "gaussian" && any(x[,i] < 0)) {
+      stop(paste0("Negative values not allowed for ", distribution[i], " distribution. "))
+    }
+  }
+}
 check_sd <- function(x, type, add_prefix = TRUE) {
   
   if (add_prefix) {

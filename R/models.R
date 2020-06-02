@@ -420,16 +420,19 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   prior_fn = default_prior_fn) {
   
   # create y
-  if(length(phi) == 1) phi <- rep(phi, p)
+  
+  check_y(y, multivariate = TRUE)
+  n <- nrow(y)
+  p <- ncol(y)
   if(length(distribution) == 1) distribution <- rep(distribution, p)
+  check_distribution(y, distribution)
+  if(length(phi) == 1) phi <- rep(phi, p)
   for(i in 1:p) {
     distribution[i] <- match.arg(distribution[i], 
       c("poisson", "binomial", "negative binomial", "gamma", "gaussian"))
     check_phi(phi[i])
   }
-  check_y(y, multivariate = TRUE, distribution)
-  n <- nrow(y)
-  p <- ncol(y)
+
   
   # create Z
   if (dim(Z)[1] != p || !(dim(Z)[3] %in% c(1, NA, n)))
