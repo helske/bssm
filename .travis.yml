@@ -10,19 +10,11 @@ matrix:
     - os: linux
       language: r
       compiler: gcc
-      r_binary_packages:
-        covr
-      after_success:
-        - Rscript -e 'library(covr);codecov()'
       env: TRAVIS_LANG=R     
     
     - os: linux
       language: r
       compiler: clang
-      r_binary_packages:
-        covr
-      after_success:
-        - Rscript -e 'library(covr);codecov()'
       env: TRAVIS_LANG=R     
  
  
