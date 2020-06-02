@@ -39,7 +39,6 @@ ssm_nlg::ssm_nlg(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_,
       P1_fn(theta, known_params),
       arma::mat(p, n, arma::fill::zeros),
       arma::mat(m, n, arma::fill::zeros),
-      arma::mat(), 
       theta,
       seed + 1,
       update_fn, prior_fn) {

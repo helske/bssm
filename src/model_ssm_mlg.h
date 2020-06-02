@@ -26,7 +26,6 @@ public:
     const arma::mat& P1,
     const arma::mat& D,
     const arma::mat& C,
-    const arma::mat& xreg, 
     const arma::vec& theta,
     const unsigned int seed,
     const Rcpp::Function update_fn,
@@ -42,7 +41,6 @@ public:
   arma::mat P1;
   arma::mat D;
   arma::mat C;
-  arma::mat xreg;
   
   const unsigned int n; // number of time points
   const unsigned int m; // number of states

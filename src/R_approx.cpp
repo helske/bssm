@@ -10,6 +10,7 @@ Rcpp::List gaussian_approx_model(const Rcpp::List model_, const int model_type) 
 
   switch (model_type) {
   case 0: {
+  
   ssm_mng model(model_, 1);
   model.approximate();
   return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,

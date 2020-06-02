@@ -9,16 +9,16 @@ ssm_mng::ssm_mng(const Rcpp::List model, const unsigned int seed, const double z
     T(Rcpp::as<arma::cube>(model["T"])),
     R(Rcpp::as<arma::cube>(model["R"])), a1(Rcpp::as<arma::vec>(model["a1"])),
     P1(Rcpp::as<arma::mat>(model["P1"])), D(Rcpp::as<arma::mat>(model["D"])),
-    C(Rcpp::as<arma::mat>(model["C"])), xreg(Rcpp::as<arma::mat>(model["xreg"])),
+    C(Rcpp::as<arma::mat>(model["C"])), 
     n(y.n_cols), m(a1.n_elem), k(R.n_cols), p(y.n_rows), 
     Ztv(Z.n_slices > 1), Ttv(T.n_slices > 1), Rtv(R.n_slices > 1),
     Dtv(D.n_cols > 1), Ctv(C.n_cols > 1), 
     theta(Rcpp::as<arma::vec>(model["theta"])), 
-    phi(Rcpp::as<arma::vec>(model["phi"])), u(Rcpp::as<arma::vec>(model["u"])), 
+    phi(Rcpp::as<arma::vec>(model["phi"])), u((Rcpp::as<arma::mat>(model["u"])).t()), 
     distribution(Rcpp::as<arma::uvec>(model["distribution"])),
     max_iter(model["max_iter"]), conv_tol(model["conv_tol"]), 
     local_approx(model["local_approx"]),
-    initial_mode(Rcpp::as<arma::vec>(model["initial_mode"])),
+    initial_mode((Rcpp::as<arma::mat>(model["initial_mode"])).t()),
     mode_estimate(initial_mode),
     approx_state(-1),
     approx_loglik(0.0), scales(arma::vec(n, arma::fill::zeros)),
@@ -27,8 +27,10 @@ ssm_mng::ssm_mng(const Rcpp::List model, const unsigned int seed, const double z
     update_fn(Rcpp::as<Rcpp::Function>(model["update_fn"])), 
     prior_fn(Rcpp::as<Rcpp::Function>(model["prior_fn"])),
     approx_model(y, Z, arma::cube(p, p, n), T, R, a1, P1, 
-      D, C, xreg, theta, seed + 1, update_fn, prior_fn){
+      D, C, theta, seed + 1, update_fn, prior_fn){
 }
+
+
 inline void ssm_mng::compute_RR(){
   for (unsigned int t = 0; t < R.n_slices; t++) {
     RR.slice(t) = R.slice(t * Rtv) * R.slice(t * Rtv).t();
@@ -76,11 +78,9 @@ double ssm_mng::log_prior_pdf(const arma::vec& x) const {
 // Note that the convergence is assessed only
 // by checking the changes in mode, not the actual function values
 void ssm_mng::approximate() {
-  
   // check if there is need to update the approximation
   if (approx_state < 1) {
     //update model
-    
     approx_model.Z = Z;
     approx_model.T = T;
     approx_model.R = R;
@@ -100,23 +100,27 @@ void ssm_mng::approximate() {
     } else {
       unsigned int i = 0;
       double diff = conv_tol + 1;
+      
       while(i < max_iter && diff > conv_tol) {
         i++;
         //Construct y and H for the Gaussian model
         laplace_iter(mode_estimate);
+        
         // compute new guess of mode
-        arma::vec mode_estimate_new(n);
+        arma::mat mode_estimate_new(p, n);
         arma::mat alpha = approx_model.fast_smoother().head_cols(n);
         for (unsigned int t = 0; t < n; t++) {
           mode_estimate_new.col(t) = D.col(Dtv * t) + 
             approx_model.Z.slice(Ztv * t) * alpha.col(t);
         }
-        diff = arma::mean(arma::square(mode_estimate_new - mode_estimate));
+        
+        diff = arma::accu(arma::square(mode_estimate_new - mode_estimate)) / (n * p);
         mode_estimate = mode_estimate_new;
       }
     }
     approx_state = 1;
   }
+  
 }
 // construct approximating model from fixed mode estimate, no iterations
 // used in IS-correction
@@ -252,7 +256,7 @@ void ssm_mng::update_scales() {
  * 3 = Negative binomial
  */
 void ssm_mng::laplace_iter(const arma::mat& signal) {
-  
+
   for(unsigned int i = 0; i < p; i++) {
     switch(distribution(i)) {
     case 0: {

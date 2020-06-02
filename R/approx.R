@@ -26,8 +26,10 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100, conv_tol = 1e-8, 
   model$distribution <- pmatch(model$distribution,
     c("svm", "poisson", "binomial", "negative binomial")) - 1
   out <- gaussian_approx_model(model, model_type(model))
-  out$y <- ts(out$y, start = start(model$y), end = end(model$y), frequency = frequency(model$y))
+  
   if(ncol(out$y) == 1) {
+    out$y <- ts(out$y, start = start(model$y), end = end(model$y), 
+                frequency = frequency(model$y))
     D <- model$D
     if(length(model$beta) > 0) D <- as.numeric(D) + t(model$xreg %*% model$beta)
     approx_model <- ssm_ulg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
@@ -35,6 +37,8 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100, conv_tol = 1e-8, 
       D = D, C = model$C, state_names = names(model$a1), update_fn = model$update_fn,
       prior_fn = model$prior_fn)
   } else {
+    out$y <- ts(t(out$y), start = start(model$y), end = end(model$y), 
+                frequency = frequency(model$y))
     approx_model <- ssm_mlg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
       R = model$R, a1 = model$a1, P1 = model$P1, init_theta = model$theta,
       D = model$D, C = model$C, state_names = names(model$a1), 

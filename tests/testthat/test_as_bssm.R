@@ -28,12 +28,19 @@ test_that("Test conversion from SSModel to ssm_ung",{
 
 test_that("Test conversion from SSModel to ssm_mng",{
   library(KFAS)
-  model_KFAS <- SSModel(cbind(1:10, 1:10) ~ SSMtrend(1, Q = 2,
-    P1 = diag(2e3, 2)), u = 2, distribution = "negative binomial")
-  expect_error(model_bssm <- ssm_mng(y = cbind(1:10, 1:10), Z = diag(2), phi = 2, 
-    T = diag(2), R = array(diag(sqrt(2), 2), c(2, 2, 1)), 
-    a1 = matrix(0, 2, 1), P1 = diag(2e3, 2), distribution = "negative binomial", 
-    state_names = c("level", "slope"), init_theta = c(0,0)), NA)
+  set.seed(1)
+  y <- matrix(rbinom(20, size = 10, prob = plogis(rnorm(20, sd = 0.2))), 10, 2)
+  model_KFAS <- SSModel(y ~ SSMtrend(1, Q = diag(sqrt(0.2), 2),
+    P1 = diag(2)), u = 10, distribution = "binomial")
+  logLik(model_KFAS, nsim = 0)
+  expect_error(model_bssm <- ssm_mng(y, Z = diag(2), u = 10, 
+    T = diag(2), R = array(diag(0.2, 2), c(2, 2, 1)), 
+    a1 = matrix(0, 2, 1), P1 = diag(2), distribution = "binomial", 
+    init_theta = c(0,0)), NA)
+  # to make the attributes match
+  model_bssm$u <- as.ts(model_bssm$u)
+  model_bssm$initial_mode <- as.ts(model_bssm$initial_mode)
   expect_error(conv_model_bssm <- as_bssm(model_KFAS, init_theta = c(0,0)), NA)
   expect_equivalent(model_bssm, conv_model_bssm)
+  
 })

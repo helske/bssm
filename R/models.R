@@ -247,8 +247,8 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
     names(init_theta) <- paste0("theta_", 1:length(init_theta))
   
   # xreg and beta are need in C++ side in order to combine constructors 
-  structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
-    D = D, C = C, distribution = distribution,
+  structure(list(y = as.ts(y), Z = Z, T = T, R = R, a1 = a1, P1 = P1, 
+    phi = phi, u = u, D = D, C = C, distribution = distribution,
     initial_mode = initial_mode, update_fn = update_fn,
     prior_fn = prior_fn, theta = init_theta,
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE,
@@ -513,12 +513,12 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
     names(init_theta) <- paste0("theta_", 1:length(init_theta))
   
   
-  structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
+  structure(list(y = as.ts(y), Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
     D = D, C = C, distribution = distribution,
     initial_mode = initial_mode, update_fn = update_fn,
     prior_fn = prior_fn, theta = init_theta,
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE), 
-    class = c("ng_ssm", "nongaussian"))
+    class = c("ssm_mng", "nongaussian"))
 }
 #' Basic Structural (Time Series) Model
 #'
