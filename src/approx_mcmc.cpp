@@ -16,12 +16,12 @@
 #include "filter_smoother.h"
 #include "summary.h"
 
-approx_mcmc::approx_mcmc(const unsigned int n_iter,
-  const unsigned int n_burnin, const unsigned int n_thin, const unsigned int n,
+approx_mcmc::approx_mcmc(const unsigned int iter,
+  const unsigned int burnin, const unsigned int thin, const unsigned int n,
   const unsigned int m, const unsigned int p, const double target_acceptance, 
   const double gamma, const arma::mat& S, const unsigned int output_type, 
   const bool store_modes) :
-  mcmc(n_iter, n_burnin, n_thin, n, m,
+  mcmc(iter, burnin, thin, n, m,
     target_acceptance, gamma, S, output_type),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
     mode_storage(arma::cube(n, p, n_samples * store_modes)),
@@ -114,8 +114,8 @@ void approx_mcmc::amcmc(T model, const bool end_ram) {
   double approx_loglik = ll(0);
   if (!std::isfinite(approx_loglik))
     Rcpp::stop("Initial log-likelihood is not finite.");
- 
- 
+  
+  
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::mat mode(model.n, model.p);
@@ -125,7 +125,7 @@ void approx_mcmc::amcmc(T model, const bool end_ram) {
   unsigned int n_values = 0;
   double acceptance_prob = 0.0;
   
-  for (unsigned int i = 1; i <= n_iter; i++) {
+  for (unsigned int i = 1; i <= iter; i++) {
     
     if (i % 16 == 0) {
       Rcpp::checkUserInterrupt();
@@ -148,12 +148,12 @@ void approx_mcmc::amcmc(T model, const bool end_ram) {
       
       arma::vec ll = model.log_likelihood(1, 0, alpha, weights, indices);
       double approx_loglik_prop = ll(0);
-
+      
       acceptance_prob = std::min(1.0, std::exp(approx_loglik_prop - approx_loglik +
         logprior_prop - logprior));
       
       if (unif(model.engine) < acceptance_prob) {
-        if (i > n_burnin) {
+        if (i > burnin) {
           acceptance_rate++;
           n_values++;
         }
@@ -165,7 +165,7 @@ void approx_mcmc::amcmc(T model, const bool end_ram) {
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin && n_values % n_thin == 0) {
+    if (i > burnin && n_values % thin == 0) {
       //new block
       if (new_value) {
         approx_loglik_storage(n_stored) = approx_loglik;
@@ -183,13 +183,13 @@ void approx_mcmc::amcmc(T model, const bool end_ram) {
     }
     
     
-    if (!end_ram || i <= n_burnin) {
+    if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
     }
   }
   
   trim_storage();
-  acceptance_rate /= (n_iter - n_burnin);
+  acceptance_rate /= (iter - burnin);
 }
 
 // approximate MCMC
@@ -558,6 +558,7 @@ template void approx_mcmc::approx_state_posterior(ssm_ung model, const unsigned 
 template void approx_mcmc::approx_state_posterior(bsm_ng model, const unsigned int n_threads);
 template void approx_mcmc::approx_state_posterior(svm model, const unsigned int n_threads);
 template void approx_mcmc::approx_state_posterior(ar1_ng model, const unsigned int n_threads);
+template void approx_mcmc::approx_state_posterior(ssm_nlg model, const unsigned int n_threads);
 
 template <class T>
 void approx_mcmc::approx_state_posterior(T model, const unsigned int n_threads) {
@@ -589,6 +590,42 @@ for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
 
 }
 
+template void approx_mcmc::approx_state_summary(ssm_ung model);
+template void approx_mcmc::approx_state_summary(bsm_ng model);
+template void approx_mcmc::approx_state_summary(svm model);
+template void approx_mcmc::approx_state_summary(ar1_ng model);
+template void approx_mcmc::approx_state_summary(ssm_nlg model);
+
+template <class T>
+void approx_mcmc::approx_state_summary(T model) {
+  
+  arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
+  
+  model.update_model(theta_storage.col(0));
+  model.approximate_for_is(mode_storage.slice(0));
+  model.approx_model.smoother(alphahat, Vt);
+  
+  double sum_w = count_storage(0);
+  arma::mat alphahat_i = alphahat;
+  arma::cube Vt_i = Vt;
+  
+  for (unsigned int i = 1; i < n_stored; i++) {
+    model.update_model(theta_storage.col(i));
+    model.approximate_for_is(mode_storage.slice(i));
+    model.approx_model.smoother(alphahat_i, Vt_i);
+    
+    arma::mat diff = alphahat_i - alphahat;
+    double tmp = count_storage(i) + sum_w;
+    alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+    
+    for (unsigned int t = 0; t < model.n + 1; t++) {
+      Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+    }
+    Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
+    sum_w = tmp;
+  }
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
+}
 
 void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
   
@@ -609,7 +646,7 @@ void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
   bool new_value = true;
   unsigned int n_values = 0;
   
-  for (unsigned int i = 1; i <= n_iter; i++) {
+  for (unsigned int i = 1; i <= iter; i++) {
     if (i % 16 == 0) {
       Rcpp::checkUserInterrupt();
     }
@@ -640,7 +677,7 @@ void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
       }
       
       if (unif(model.engine) < acceptance_prob) {
-        if (i > n_burnin) {
+        if (i > burnin) {
           acceptance_rate++;
           n_values++;
         }
@@ -651,7 +688,7 @@ void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin && n_values % n_thin == 0) {
+    if (i > burnin && n_values % thin == 0) {
       //new block
       if (new_value) {
         approx_loglik_storage(n_stored) = loglik;
@@ -665,17 +702,17 @@ void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
       }
     }
     
-    if (!end_ram || i <= n_burnin) {
+    if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
     }
   }
   
   trim_storage();
-  acceptance_rate /= (n_iter - n_burnin);
+  acceptance_rate /= (iter - burnin);
 }
 
 
-void approx_mcmc::state_ekf_sample(ssm_nlg model, const unsigned int n_threads) {
+void approx_mcmc::ekf_state_sample(ssm_nlg model, const unsigned int n_threads) {
   
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
@@ -686,7 +723,7 @@ void approx_mcmc::state_ekf_sample(ssm_nlg model, const unsigned int n_threads) 
   for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
 #pragma omp critical
 {
-    model.update_model(theta_storage.col(i));
+  model.update_model(theta_storage.col(i));
 }  
     model.approximate_for_is(mode_storage.slice(i));
     alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
@@ -711,8 +748,7 @@ for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
 posterior_storage = prior_storage + approx_loglik_storage;
 }
 
-void approx_mcmc::state_ekf_summary(ssm_nlg model,
-  arma::mat& alphahat, arma::cube& Vt) {
+void approx_mcmc::ekf_state_summary(ssm_nlg model) {
   
   // first iteration
   model.update_model(theta_storage.col(0));
@@ -767,7 +803,7 @@ void approx_mcmc::amcmc(ssm_sde model, const unsigned int nsim, const bool end_r
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec theta = model.theta;
   
-  for (unsigned int i = 1; i <= n_iter; i++) {
+  for (unsigned int i = 1; i <= iter; i++) {
     if (i % 4 == 0) {
       Rcpp::checkUserInterrupt();
     }
@@ -796,7 +832,7 @@ void approx_mcmc::amcmc(ssm_sde model, const unsigned int nsim, const bool end_r
       
       //accept
       if (unif(model.engine) < acceptance_prob) {
-        if (i > n_burnin) {
+        if (i > burnin) {
           acceptance_rate++;
           n_values++;
         }
@@ -807,7 +843,7 @@ void approx_mcmc::amcmc(ssm_sde model, const unsigned int nsim, const bool end_r
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin && n_values % n_thin == 0) {
+    if (i > burnin && n_values % thin == 0) {
       //new block
       if (new_value) {
         approx_loglik_storage(n_stored) = loglik;
@@ -821,13 +857,13 @@ void approx_mcmc::amcmc(ssm_sde model, const unsigned int nsim, const bool end_r
       }
     }
     
-    if (!end_ram || i <= n_burnin) {
+    if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
     }
   }
   
   trim_storage();
-  acceptance_rate /= (n_iter - n_burnin);
+  acceptance_rate /= (iter - burnin);
 }
 
 template<>

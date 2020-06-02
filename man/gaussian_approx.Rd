@@ -18,7 +18,8 @@ gaussian_approx(model, max_iter, conv_tol, ...)
 \item{iekf_iter}{For non-linear models, number of iterations in iterated EKF (defaults to 0).}
 }
 \description{
-Returns the approximating Gaussian model.
+Returns the approximating Gaussian model. This function is rarely needed itself, 
+and is mainly available for testing and debugging purposes.
 }
 \examples{
 data("poisson_series")

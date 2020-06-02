@@ -1,6 +1,6 @@
 
 #' @importFrom stats qlogis
-init_mode <- function(y, u, distribution, xbeta = NULL) {
+init_mode <- function(y, u, distribution) {
 
   switch(distribution,
     poisson = {
@@ -21,6 +21,5 @@ init_mode <- function(y, u, distribution, xbeta = NULL) {
     },
     stop("Argument distribution must be 'poisson', 'binomial', 'gamma' or 'negative binomial'.")
   )
-  if (!is.null(xbeta)) y <- y - xbeta
   y
 }

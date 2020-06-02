@@ -80,7 +80,7 @@ model <- bsm_ng(Seatbelts[, "VanKilled"], distribution = "poisson",
   xreg = Seatbelts[, "law"])
 \dontrun{
 set.seed(123)
-mcmc_out <- run_mcmc(model, n_iter = 5000, nsim = 10)
+mcmc_out <- run_mcmc(model, iter = 5000, nsim = 10)
 mcmc_out$acceptance_rate
 theta <- expand_sample(mcmc_out, "theta")
 plot(theta)

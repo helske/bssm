@@ -5,8 +5,8 @@ Major update
   * Major changes for model definitions, now model updating and priors 
     can be defined via R functions.
   * Added support for multivariate non-Gaussian models.
-  * Some argument names have been changed for clarity.
-  * Major overhaul of C++ internals which can bring minor efficiency gains.
+  * Many argument names and model building functions have been changed for clarity and consistency.
+  * Major overhaul of C++ internals which can bring minor efficiency gains and smaller installation size.
   * Added the function as.data.frame for mcmc output which converts the MCMC samples 
     to data.frame format for easier post-processing.
   * Added truncated normal prior.

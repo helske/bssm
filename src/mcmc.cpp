@@ -23,17 +23,17 @@
 #include "model_ssm_sde.h"
 
 mcmc::mcmc(
-  const unsigned int n_iter, 
-  const unsigned int n_burnin,
-  const unsigned int n_thin, 
+  const unsigned int iter, 
+  const unsigned int burnin,
+  const unsigned int thin, 
   const unsigned int n, 
   const unsigned int m,
   const double target_acceptance, 
   const double gamma, 
   const arma::mat& S,
   const unsigned int output_type) :
-  n_iter(n_iter), n_burnin(n_burnin), n_thin(n_thin),
-  n_samples(std::floor(double(n_iter - n_burnin) / double(n_thin))),
+  iter(iter), burnin(burnin), thin(thin),
+  n_samples(std::floor(double(iter - burnin) / double(thin))),
   n_par(S.n_rows),
   target_acceptance(target_acceptance), gamma(gamma), n_stored(0),
   posterior_storage(arma::vec(n_samples)),
@@ -88,14 +88,13 @@ void mcmc::state_posterior(T model, const unsigned int n_threads) {
 }
 
 
-// should parallelize at some point
-template void mcmc::state_summary(ssm_ulg model, arma::mat& alphahat, arma::cube& Vt);
-template void mcmc::state_summary(bsm_lg model, arma::mat& alphahat, arma::cube& Vt);
-template void mcmc::state_summary(ar1_lg model, arma::mat& alphahat, arma::cube& Vt);
-template void mcmc::state_summary(ssm_mlg model, arma::mat& alphahat, arma::cube& Vt);
+template void mcmc::state_summary(ssm_ulg model);
+template void mcmc::state_summary(bsm_lg model);
+template void mcmc::state_summary(ar1_lg model);
+template void mcmc::state_summary(ssm_mlg model);
 
 template <class T>
-void mcmc::state_summary(T model, arma::mat& alphahat, arma::cube& Vt) {
+void mcmc::state_summary(T model) {
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   
@@ -169,7 +168,7 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
   bool new_value = true;
   unsigned int n_values = 0;
 
-  for (unsigned int i = 1; i <= n_iter; i++) {
+  for (unsigned int i = 1; i <= iter; i++) {
     
     if (i % 16 == 0) {
       Rcpp::checkUserInterrupt();
@@ -201,7 +200,7 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
         std::min(1.0, std::exp(loglik_prop - loglik + logprior_prop - logprior));
       //accept
       if (unif(model.engine) < acceptance_prob) {
-        if (i > n_burnin) {
+        if (i > burnin) {
           acceptance_rate++;
           n_values++;
         }
@@ -213,7 +212,7 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
       }
     } else acceptance_prob = 0.0;
     
-    if (i > n_burnin && n_values % n_thin == 0) {
+    if (i > burnin && n_values % thin == 0) {
       //new block
       if (new_value) {
         posterior_storage(n_stored) = logprior + loglik;
@@ -225,14 +224,14 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
         count_storage(n_stored - 1)++;
       }
     }
-    if (!end_ram || i <= n_burnin) {
+    if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
     }
     
   }
   
   trim_storage();
-  acceptance_rate /= (n_iter - n_burnin);
+  acceptance_rate /= (iter - burnin);
   
 }
 
@@ -316,7 +315,7 @@ void mcmc::pm_mcmc(
   unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
-  for (unsigned int i = 1; i <= n_iter; i++) {
+  for (unsigned int i = 1; i <= iter; i++) {
     
     if (i % 16 == 0) {
       Rcpp::checkUserInterrupt();
@@ -352,7 +351,7 @@ void mcmc::pm_mcmc(
       
       //accept
       if (log(unif(model.engine)) < log_alpha) {
-        if (i > n_burnin) {
+        if (i > burnin) {
           acceptance_rate++;
           n_values++;
         }
@@ -370,16 +369,16 @@ void mcmc::pm_mcmc(
     } else acceptance_prob = 0.0;
     
     // note: thinning does not affect this
-    if (i > n_burnin && output_type == 2) {
+    if (i > burnin && output_type == 2) {
       arma::mat diff = alphahat_i - alphahat;
-      alphahat = (alphahat * (i - n_burnin - 1) + alphahat_i) / (i - n_burnin);
-      Vt = (Vt * (i - n_burnin - 1) + Vt_i) / (i - n_burnin);
+      alphahat = (alphahat * (i - burnin - 1) + alphahat_i) / (i - burnin);
+      Vt = (Vt * (i - burnin - 1) + Vt_i) / (i - burnin);
       for (unsigned int t = 0; t < model.n + 1; t++) {
         Valphahat.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
       }
     }
     
-    if (i > n_burnin && n_values % n_thin == 0) {
+    if (i > burnin && n_values % thin == 0) {
       //new block
       if (new_value) {
         posterior_storage(n_stored) = logprior + ll(0);
@@ -395,15 +394,15 @@ void mcmc::pm_mcmc(
       }
     }
     
-    if (!end_ram || i <= n_burnin) {
+    if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
     }
   }
   if (output_type == 2) {
-    Vt += Valphahat / (n_iter - n_burnin); // Var[E(alpha)] + E[Var(alpha)]
+    Vt += Valphahat / (iter - burnin); // Var[E(alpha)] + E[Var(alpha)]
   }
   trim_storage();
-  acceptance_rate /= (n_iter - n_burnin);
+  acceptance_rate /= (iter - burnin);
 }
 
 // delayed acceptance pseudo-marginal MCMC
@@ -481,7 +480,7 @@ void mcmc::da_mcmc(T model,
   unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
-  for (unsigned int i = 1; i <= n_iter; i++) {
+  for (unsigned int i = 1; i <= iter; i++) {
     
     if (i % 16 == 0) {
       Rcpp::checkUserInterrupt();
@@ -518,7 +517,7 @@ void mcmc::da_mcmc(T model,
         double log_alpha = ll_prop(0) + ll(1) - ll(0) - ll_prop(1);
         
         if (log(unif(model.engine)) < log_alpha) {
-          if (i > n_burnin) {
+          if (i > burnin) {
             acceptance_rate++;
             n_values++;
           }
@@ -537,16 +536,16 @@ void mcmc::da_mcmc(T model,
     } else acceptance_prob = 0.0;
     
     // note: thinning does not affect this
-    if (i > n_burnin && output_type == 2) {
+    if (i > burnin && output_type == 2) {
       arma::mat diff = alphahat_i - alphahat;
-      alphahat = (alphahat * (i - n_burnin - 1) + alphahat_i) / (i - n_burnin);
-      Vt = (Vt * (i - n_burnin - 1) + Vt_i) / (i - n_burnin);
+      alphahat = (alphahat * (i - burnin - 1) + alphahat_i) / (i - burnin);
+      Vt = (Vt * (i - burnin - 1) + Vt_i) / (i - burnin);
       for (unsigned int t = 0; t < model.n + 1; t++) {
         Valphahat.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
       }
     }
     
-    if (i > n_burnin && n_values % n_thin == 0) {
+    if (i > burnin && n_values % thin == 0) {
       //new block
       if (new_value) {
         posterior_storage(n_stored) = logprior + ll(0);
@@ -562,15 +561,15 @@ void mcmc::da_mcmc(T model,
       }
     }
     
-    if (!end_ram || i <= n_burnin) {
+    if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
     }
   }
   if (output_type == 2) {
-    Vt += Valphahat / (n_iter - n_burnin); // Var[E(alpha)] + E[Var(alpha)]
+    Vt += Valphahat / (iter - burnin); // Var[E(alpha)] + E[Var(alpha)]
   }
   trim_storage();
-  acceptance_rate /= (n_iter - n_burnin);
+  acceptance_rate /= (iter - burnin);
 }
 
 template <>
@@ -615,7 +614,7 @@ void mcmc::da_mcmc<ssm_sde>(ssm_sde model, const unsigned int method,
   unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
-  for (unsigned int i = 1; i <= n_iter; i++) {
+  for (unsigned int i = 1; i <= iter; i++) {
     
     if (i % 16 == 0) {
       Rcpp::checkUserInterrupt();
@@ -651,7 +650,7 @@ void mcmc::da_mcmc<ssm_sde>(ssm_sde model, const unsigned int method,
         double log_alpha = ll_f_prop + ll_c - ll_f - ll_c_prop;
         
         if (log(unif(model.engine)) < log_alpha) {
-          if (i > n_burnin) {
+          if (i > burnin) {
             acceptance_rate++;
             n_values++;
           }
@@ -671,16 +670,16 @@ void mcmc::da_mcmc<ssm_sde>(ssm_sde model, const unsigned int method,
     } else acceptance_prob = 0.0;
     
     // note: thinning does not affect this
-    if (i > n_burnin && output_type == 2) {
+    if (i > burnin && output_type == 2) {
       arma::mat diff = alphahat_i - alphahat;
-      alphahat = (alphahat * (i - n_burnin - 1) + alphahat_i) / (i - n_burnin);
-      Vt = (Vt * (i - n_burnin - 1) + Vt_i) / (i - n_burnin);
+      alphahat = (alphahat * (i - burnin - 1) + alphahat_i) / (i - burnin);
+      Vt = (Vt * (i - burnin - 1) + Vt_i) / (i - burnin);
       for (unsigned int t = 0; t < model.n + 1; t++) {
         Valphahat.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
       }
     }
     
-    if (i > n_burnin && n_values % n_thin == 0) {
+    if (i > burnin && n_values % thin == 0) {
       //new block
       if (new_value) {
         posterior_storage(n_stored) = logprior + ll_f;
@@ -696,13 +695,13 @@ void mcmc::da_mcmc<ssm_sde>(ssm_sde model, const unsigned int method,
       }
     }
     
-    if (!end_ram || i <= n_burnin) {
+    if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
     }
   }
   if (output_type == 2) {
-    Vt += Valphahat / (n_iter - n_burnin); // Var[E(alpha)] + E[Var(alpha)]
+    Vt += Valphahat / (iter - burnin); // Var[E(alpha)] + E[Var(alpha)]
   }
   trim_storage();
-  acceptance_rate /= (n_iter - n_burnin);
+  acceptance_rate /= (iter - burnin);
 }

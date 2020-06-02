@@ -87,8 +87,7 @@ public:
   double compute_const_term() const;
   
   // given the mode_estimate, compute y and H of the approximating Gaussian model
-  void laplace_iter(const arma::mat& signal, arma::mat& approx_y, 
-    arma::cube& approx_H) const;
+  void laplace_iter(const arma::mat& signal);
   
   Rcpp::List predict_interval(const arma::vec& probs, const arma::mat& thetasim,
     const arma::mat& alpha_last, const arma::cube& P_last,

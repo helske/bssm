@@ -27,7 +27,7 @@ ssm_mng::ssm_mng(const Rcpp::List model, const unsigned int seed, const double z
     update_fn(Rcpp::as<Rcpp::Function>(model["update_fn"])), 
     prior_fn(Rcpp::as<Rcpp::Function>(model["prior_fn"])),
     approx_model(y, Z, arma::cube(p, p, n), T, R, a1, P1, 
-      D, C, xreg, theta, seed + 1){
+      D, C, xreg, theta, seed + 1, update_fn, prior_fn){
 }
 inline void ssm_mng::compute_RR(){
   for (unsigned int t = 0; t < R.n_slices; t++) {
@@ -94,7 +94,7 @@ void ssm_mng::approximate() {
     if(!local_approx & (approx_state == 0)) {
       arma::mat alpha = approx_model.fast_smoother().head_cols(n);
       for (unsigned int t = 0; t < n; t++) {
-        mode_estimate.col(t) = approx_model.Z.slice(Ztv * t) * alpha.col(t);
+        mode_estimate.col(t) = D.col(Dtv * t) + approx_model.Z.slice(Ztv * t) * alpha.col(t);
       }
       
     } else {
@@ -103,13 +103,13 @@ void ssm_mng::approximate() {
       while(i < max_iter && diff > conv_tol) {
         i++;
         //Construct y and H for the Gaussian model
-        laplace_iter(mode_estimate, approx_model.y, approx_model.HH);
-        approx_model.H = sqrt(approx_model.HH);  // diagonal
+        laplace_iter(mode_estimate);
         // compute new guess of mode
         arma::vec mode_estimate_new(n);
         arma::mat alpha = approx_model.fast_smoother().head_cols(n);
         for (unsigned int t = 0; t < n; t++) {
-          mode_estimate_new.col(t) = approx_model.Z.slice(Ztv * t) * alpha.col(t);
+          mode_estimate_new.col(t) = D.col(Dtv * t) + 
+            approx_model.Z.slice(Ztv * t) * alpha.col(t);
         }
         diff = arma::mean(arma::square(mode_estimate_new - mode_estimate));
         mode_estimate = mode_estimate_new;
@@ -131,8 +131,7 @@ void ssm_mng::approximate_for_is(const arma::mat& mode_estimate) {
   approx_model.C = C;
   approx_model.RR = RR;
   //Construct y and H for the Gaussian model
-  laplace_iter(mode_estimate, approx_model.y, approx_model.HH);
-  approx_model.H = sqrt(approx_model.HH);
+  laplace_iter(mode_estimate);
   update_scales();
   approx_loglik = 0.0;
   approx_model.engine = engine;
@@ -252,35 +251,38 @@ void ssm_mng::update_scales() {
  * 2 = Binomial
  * 3 = Negative binomial
  */
-void ssm_mng::laplace_iter(const arma::mat& signal, arma::mat& approx_y,
-  arma::cube& approx_HH) const {
+void ssm_mng::laplace_iter(const arma::mat& signal) {
   
   for(unsigned int i = 0; i < p; i++) {
-    arma::rowvec Hvec = approx_HH.tube(i, i);
     switch(distribution(i)) {
     case 0: {
       arma::rowvec tmp = y.row(i);
       // avoid dividing by zero
       tmp(arma::find(arma::abs(tmp) < 1e-4)).fill(1e-4);
-      approx_HH.tube(i, i) = 2.0 * arma::exp(signal.row(i)) / arma::square(tmp/phi(i));
-      approx_y.row(i) = signal.row(i) + 1.0 - 0.5 * Hvec;
+      approx_model.HH.tube(i, i) = 2.0 * arma::exp(signal.row(i)) / arma::square(tmp/phi(i));
+      arma::rowvec Hvec = approx_model.HH.tube(i, i);
+      approx_model.y.row(i) = signal.row(i) + 1.0 - 0.5 * Hvec;
     } break;
     case 1: {
-      approx_HH.tube(i, i) = 1.0 / (arma::exp(signal.row(i)) % u.row(i));
-      approx_y.row(i) = y.row(i) % Hvec + signal.row(i) - 1.0;
+      approx_model.HH.tube(i, i) = 1.0 / (arma::exp(signal.row(i)) % u.row(i));
+      arma::rowvec Hvec = approx_model.HH.tube(i, i);
+      approx_model.y.row(i) = y.row(i) % Hvec + signal.row(i) - 1.0;
     } break;
     case 2: {
       arma::rowvec exptmp = arma::exp(signal.row(i));
-      approx_HH.tube(i, i) = arma::square(1.0 + exptmp) / (u.row(i) % exptmp);
-      approx_y.row(i) = y.row(i) % Hvec + signal.row(i) - 1.0 - exptmp;
+      approx_model.HH.tube(i, i) = arma::square(1.0 + exptmp) / (u.row(i) % exptmp);
+      arma::rowvec Hvec = approx_model.HH.tube(i, i);
+      approx_model.y.row(i) = y.row(i) % Hvec + signal.row(i) - 1.0 - exptmp;
     } break;
     case 3: {
       arma::vec exptmp = 1.0 / (arma::exp(signal.row(i)) % u.row(i));
-      approx_HH.tube(i, i) = 1.0 / phi(i) + exptmp;
-      approx_y.row(i) = signal.row(i) + y.row(i) % exptmp - 1.0;
+      approx_model.HH.tube(i, i) = 1.0 / phi(i) + exptmp;
+      arma::rowvec Hvec = approx_model.HH.tube(i, i);
+      approx_model.y.row(i) = signal.row(i) + y.row(i) % exptmp - 1.0;
     } break;
     }
   }
+  approx_model.H = sqrt(approx_model.HH);  // diagonal
 }
 // these are really not constant in all cases (note phi)
 double ssm_mng::compute_const_term() const {

@@ -56,7 +56,7 @@
 #' model <- bsm_lg(window(y, end = c(1974, 4)), sd_y = prior,
 #' sd_level = prior, sd_slope = prior, sd_seasonal = prior)
 #' 
-#' mcmc_results <- run_mcmc(model, n_iter = 5000)
+#' mcmc_results <- run_mcmc(model, iter = 5000)
 #' future_model <- model
 #' future_model$y <- ts(rep(NA, 25), start = end(model$y), 
 #'   frequency = frequency(model$y))
@@ -75,7 +75,7 @@
 #' model <- bsm_ng(poisson_series, sd_level = 
 #'   halfnormal(0.1, 1), sd_slope=halfnormal(0.01, 0.1),
 #'   distribution = "poisson")
-#' mcmc_poisson <- run_mcmc(model, n_iter = 5000, nsim = 10)
+#' mcmc_poisson <- run_mcmc(model, iter = 5000, nsim = 10)
 #'
 #' future_model <- model
 #' future_model$y <- ts(rep(NA, 25), start = end(model$y), 
@@ -244,7 +244,8 @@ predict.mcmc_output <- function(object, future_model, type = "response",
           future_model$n_states, future_model$n_etas, probs,
           t(object$theta), matrix(object$alpha[nrow(object$alpha),,], nrow = ncol(object$alpha)), 
           array(0, c(future_model$n_states, future_model$n_states, nrow(object$theta))), 
-          object$counts, pmatch(type, c("response", "mean", "state")))
+          object$counts, pmatch(type, c("response", "mean", "state")), 
+          default_update_fn, default_prior_fn)
         
         
         if (type != "state") {

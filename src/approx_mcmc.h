@@ -11,7 +11,7 @@ class approx_mcmc: public mcmc {
 public:
 
   // constructor
-  approx_mcmc(const unsigned int n_iter, const unsigned int n_burnin, const unsigned int n_thin,
+  approx_mcmc(const unsigned int iter, const unsigned int burnin, const unsigned int thin,
     const unsigned int n, const unsigned int m, const unsigned int p, 
     const double target_acceptance, const double gamma, const arma::mat& S, 
     const unsigned int output_type = 1, const bool store_modes = true);
@@ -38,11 +38,13 @@ public:
   
   template <class T>
   void approx_state_posterior(T model, const unsigned int n_threads);
-
-  void state_ekf_summary(ssm_nlg model,
-    arma::mat& alphahat, arma::cube& Vt);
   
-  void state_ekf_sample(ssm_nlg model, const unsigned int n_threads);
+  template <class T>
+  void approx_state_summary(T model);
+    
+  void ekf_state_summary(ssm_nlg model);
+  
+  void ekf_state_sample(ssm_nlg model, const unsigned int n_threads);
     
   void ekf_mcmc(ssm_nlg model, const bool end_ram);
   

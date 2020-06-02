@@ -23,10 +23,6 @@ void svm::update_model(const arma::vec& new_theta) {
   compute_RR();
   P1(0, 0) = new_theta(1) * new_theta(1) / (1 - new_theta(0) * new_theta(0));
 
-  if(xreg.n_cols > 0) {
-    beta = new_theta.subvec(new_theta.n_elem - xreg.n_cols, new_theta.n_elem - 1);
-    compute_xbeta();
-  }
   theta = new_theta;
   // approximation does not match theta anymore (keep as -1 if so)
   if (approx_state == 1) approx_state = 0;

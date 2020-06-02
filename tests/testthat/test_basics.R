@@ -6,7 +6,7 @@ test_that("results for gaussian model are comparable to KFAS",{
   model_KFAS$P1inf[] <- 0
   diag(model_KFAS$P1) <- 1e2
   
-  model_bssm <- bsm_lg1:10, P1 = diag(1e2,2), sd_slope = 0,
+  model_bssm <- bsm_lg(1:10, P1 = diag(1e2,2), sd_slope = 0,
     sd_level = 0.01, sd_y = sqrt(2))
   
   expect_equal(logLik(model_KFAS,convtol = 1e-12), logLik(model_bssm,0))
@@ -54,7 +54,7 @@ test_that("results for multivariate gaussian model are comparable to KFAS",{
 })
 
 test_that("different smoothers give identical results",{
-  model_bssm <- bsm_lglog10(AirPassengers), P1 = diag(1e2,13), sd_slope = 0,
+  model_bssm <- bsm_lg(log10(AirPassengers), P1 = diag(1e2,13), sd_slope = 0,
     sd_y = uniform(0.005, 0, 10), sd_level = uniform(0.01, 0, 10), 
     sd_seasonal = uniform(0.005, 0, 1))
   

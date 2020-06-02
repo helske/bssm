@@ -12,7 +12,7 @@ particle_smoother(object, nsim, ...)
 \method{particle_smoother}{nongaussian}(
   object,
   nsim,
-  method = "bsf",
+  method = "psi",
   seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100,
   conv_tol = 1e-08,
@@ -48,7 +48,7 @@ particle_smoother(object, nsim, ...)
 \item{method}{Choice of particle filter algorithm. 
 For Gaussian and non-Gaussian models with linear dynamics,
 options are \code{"bsf"} (bootstrap particle filter) 
-and \code{"psi"} (psi-APF), and 
+and \code{"psi"} (psi-APF, the default), and 
 for non-linear models options \code{"ekf"} (extended Kalman particle filter) 
 is also available.}
 

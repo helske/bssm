@@ -40,7 +40,9 @@ public:
     const arma::mat& known_tv_params, 
     const unsigned int m, 
     const unsigned int k,
-    const arma::uvec& time_varying, 
+    const arma::uvec& time_varying,
+    const Rcpp::Function update_fn, 
+    const Rcpp::Function prior_fn,
     const unsigned int seed = 1,
     const unsigned int iekf_iter = 0,
     const unsigned int max_iter = 100,
@@ -77,8 +79,8 @@ public:
   const unsigned int p;
   
   const unsigned int Zgtv;
-  const unsigned int Tgtv;
   const unsigned int Htv;
+  const unsigned int Tgtv;
   const unsigned int Rtv;
   
   unsigned int seed;
@@ -89,7 +91,6 @@ public:
   unsigned int max_iter;
   double conv_tol;
   
-  arma::mat initial_mode; // initial estimate of the mode
   arma::mat mode_estimate; // current estimate of the mode
   // -1 = no approx, 0 = theta doesn't match, 1 = proper approx 
   int approx_state; 
@@ -110,7 +111,7 @@ public:
       arma::cube& alpha, 
       arma::mat& weights, 
       arma::umat& indices);
-
+  
   Rcpp::List predict_interval(const arma::vec& probs, const arma::mat& thetasim,
     const arma::mat& alpha_last, const arma::cube& P_last, 
     const arma::uvec& counts, const unsigned int predict_type);
@@ -133,7 +134,7 @@ public:
   double ukf(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& Ptt, 
     const double alpha = 1.0, const double beta = 0.0, const double kappa = 2.0) const;
   
-    // bootstrap filter  
+  // bootstrap filter  
   double bsf_filter(const unsigned int nsim, arma::cube& alpha, 
     arma::mat& weights, arma::umat& indices);
   
@@ -146,10 +147,10 @@ public:
     arma::mat& weights, arma::umat& indices);
   
   void update_scales();
-    
+  
   // compute logarithms of _unnormalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
   arma::vec log_weights(const unsigned int t, const arma::cube& alpha, const arma::mat& alpha_prev) const;
-
+  
   // compute logarithms of _unnormalized_ densities g(y_t | alpha_t)
   arma::vec log_obs_density(const unsigned int t, const arma::cube& alpha) const;
   // compute logarithms of _unnormalized_ densities g(y_t | alpha_t)
@@ -157,10 +158,10 @@ public:
   
   void ekf_update_step(const unsigned int t, const arma::vec y, 
     const arma::vec& at, const arma::mat& Pt, arma::vec& att, arma::mat& Ptt) const;
-    
+  
   double log_signal_pdf(const arma::mat& alpha) const;
   
-
+  
 };
 
 

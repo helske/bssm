@@ -66,7 +66,8 @@ logLik.ssm_nlg <- function(object, nsim, method = "bsf", seed = 1,
     object$theta, object$log_prior_pdf, object$known_params, 
     object$known_tv_params, object$n_states, object$n_etas, 
     as.integer(object$time_varying), nsim, seed,
-    max_iter, conv_tol, iekf_iter, pmatch(method, c("psi", "bsf", "ekf")))
+    max_iter, conv_tol, iekf_iter, pmatch(method, c("psi", "bsf", "ekf")),
+    default_update_fn, default_prior_fn)
 }
 
 

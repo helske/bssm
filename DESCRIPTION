@@ -2,7 +2,7 @@ Package: bssm
 Type: Package
 Title: Bayesian Inference of Non-Linear and Non-Gaussian State Space Models
 Version: 1.0.0
-Date: 2020-06-01
+Date: 2020-06-14
 Authors@R: 
     c(person(given = "Jouni",
            family = "Helske",

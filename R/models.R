@@ -26,9 +26,6 @@ default_update_fn <- function(theta) {}
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param init_theta Initial values for the unknown hyperparameters theta.
-#' @param xreg Matrix of n rows and arbitrary number of columns containing covariates. 
-#' This matrix is not used by default, but can be used to supply additional data to 
-#' \code{update_fn} (where you can, e.g. input the regression part to D).
 #' @param D Intercept terms for observation equation, given as a length n vector.
 #' @param C Intercept terms for state equation, given as m x n matrix.
 #' @param update_fn Function which returns list of updated model 
@@ -38,24 +35,12 @@ default_update_fn <- function(theta) {}
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_ulg}.
 #' @export
-ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0), xreg = NULL,
+ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
   D, C, state_names, update_fn = default_update_fn, prior_fn = default_prior_fn) {
   
   check_y(y)
   n <- length(y)
   
-  if (is.null(xreg)) {
-    xreg <- matrix(0, 0, 0)
-  } else {
-    if (is.null(dim(xreg)) && length(xreg) == n) {
-      xreg <- matrix(xreg, n, 1)
-    }
-    check_xreg(xreg, n)
-    nx <- ncol(xreg)
-    if (is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
-    }
-  }
   if (length(Z) == 1) {
     dim(Z) <- c(1, 1)
     m <- 1
@@ -129,22 +114,24 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0), xreg = NULL,
   if(is.null(names(init_theta)) && length(init_theta) > 0) 
     names(init_theta) <- paste0("theta_", 1:length(init_theta))
   
+  
+  # xreg and beta are need in C++ side in order to combine constructors 
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
-    xreg = xreg, D = D, C = C, update_fn = update_fn,
-    prior_fn = prior_fn, theta = init_theta), class = c("ssm_ulg", "gaussian"))
+     D = D, C = C, update_fn = update_fn,
+    prior_fn = prior_fn, theta = init_theta,
+    xreg = matrix(0,0,0), beta = numeric(0)), class = c("ssm_ulg", "gaussian"))
 }
 #' General univariate non-Gaussian state space model
 #'
 #' Construct an object of class \code{ssm_ung} by defining the corresponding terms
 #' of the observation and state equation:
 #'
-#' \deqn{p(y_t | X_t beta + Z_t \alpha_t), (\textrm{observation equation})}
+#' \deqn{p(y_t | D_t + Z_t \alpha_t), (\textrm{observation equation})}
 #' \deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
 #'
 #' where \eqn{\eta_t \sim N(0, I_k)} and
 #' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other,
-#' , \eqn{X_t} are fixed covariates and \eqn{beta} contains the corresponding (known) coefficients,
-#' and  \eqn{p(y_t | .)} is either Poisson, binomial or negative binomial distribution.
+#' and \eqn{p(y_t | .)} is either Poisson, binomial or negative binomial distribution.
 #'
 #' @param y Observations as time series (or vector) of length \eqn{n}.
 #' @param Z System matrix Z of the observation equation. Either a vector of length m,
@@ -162,17 +149,15 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0), xreg = NULL,
 #' distributions this is ignored.
 #' @param u Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
 #' term. For binomial, this is the number of trials.
-#' @param xreg Matrix of n rows and arbitrary number of columns containing covariates. 
-#' This matrix is not used by default, but can be used to supply additional data to 
-#' \code{update_fn} (where you can, e.g. input the regression part to D).
 #' @param state_names Names for the states.
-#' @param Z_prior,T_prior,R_prior Priors for the NA values in system matrices.
 #' @param C Intercept terms \eqn{C_t} for the state equation, given as a
-#'  m times n matrix.
+#'  m times 1 or m times n matrix.
+#' @param D Intercept terms \eqn{D_t} for the observations equation, given as a
+#' 1 x 1 or 1 x n matrix.
 #' @return Object of class \code{ssm_ung}.
 #' @export
 ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, 
-  init_theta = numeric(0), xreg = NULL, D, C, state_names, update_fn = default_update_fn,
+  init_theta = numeric(0), D, C, state_names, update_fn = default_update_fn,
   prior_fn = default_prior_fn) {
   
   
@@ -181,20 +166,7 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   
   check_y(y, distribution = distribution)
   n <- length(y)
-  
-  if (is.null(xreg)) {
-    xreg <- matrix(0, 0, 0)
-  } else {
-    if (is.null(dim(xreg)) && length(xreg) == n) {
-      xreg <- matrix(xreg, n, 1)
-    }
-    check_xreg(xreg, n)
-    nx <- ncol(xreg)
-    if (is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
-    }
-  }
-  
+ 
   if (length(Z) == 1) {
     dim(Z) <- c(1, 1)
     m <- 1
@@ -263,7 +235,7 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   }
   check_u(u)
   
-  initial_mode <- init_mode(y, u, distribution, NULL)
+  initial_mode <- init_mode(y, u, distribution)
   
   if (missing(state_names)) {
     state_names <- paste("state", 1:m)
@@ -274,11 +246,13 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   if(is.null(names(init_theta)) && length(init_theta) > 0) 
     names(init_theta) <- paste0("theta_", 1:length(init_theta))
   
+  # xreg and beta are need in C++ side in order to combine constructors 
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
-    xreg = xreg, D = D, C = C, distribution = distribution,
+    D = D, C = C, distribution = distribution,
     initial_mode = initial_mode, update_fn = update_fn,
     prior_fn = prior_fn, theta = init_theta,
-    max_iter = 100, conv_tol = 1e-8, local_approx = TRUE), 
+    max_iter = 100, conv_tol = 1e-8, local_approx = TRUE,
+    xreg = matrix(0,0,0), beta = numeric(0)),
     class = c("ssm_ung", "nongaussian"))
 }
 
@@ -315,7 +289,7 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_mlg}.
 #' @export
-ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0), xreg = NULL,
+ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
   D, C, state_names, update_fn = default_update_fn, prior_fn = default_prior_fn) {
   
   # create y
@@ -323,19 +297,6 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0), xreg = NULL,
   n <- nrow(y)
   p <- ncol(y)
   
-  # create xreg
-  if (is.null(xreg)) {
-    xreg <- matrix(0, 0, 0)
-  } else {
-    if (is.null(dim(xreg)) && length(xreg) == n) {
-      xreg <- matrix(xreg, n, 1)
-    }
-    check_xreg(xreg, n)
-    nx <- ncol(xreg)
-    if (is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
-    }
-  }
   # create Z
   if (dim(Z)[1] != p || !(dim(Z)[3] %in% c(1, NA, n)))
     stop("Argument Z must be a (p x m) matrix or (p x m x n) array
@@ -445,9 +406,6 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0), xreg = NULL,
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param init_theta Initial values for the unknown hyperparameters theta.
-#' @param xreg Matrix of n rows and arbitrary number of columns containing covariates. 
-#' This matrix is not used by default, but can be used to supply additional data to 
-#' \code{update_fn} (where you can, e.g. input the regression part to D).
 #' @param D Intercept terms for observation equation, given as a length n vector.
 #' @param C Intercept terms for state equation, given as m x n matrix.
 #' @param update_fn Function which returns list of updated model 
@@ -458,7 +416,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0), xreg = NULL,
 #' @return Object of class \code{ssm_mng}. UDPATE!!
 #' @export
 ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, 
-  init_theta = numeric(0), xreg = NULL, D, C, state_names, update_fn = default_update_fn,
+  init_theta = numeric(0), D, C, state_names, update_fn = default_update_fn,
   prior_fn = default_prior_fn) {
   
   # create y
@@ -473,19 +431,6 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   n <- nrow(y)
   p <- ncol(y)
   
-  # create xreg
-  if (is.null(xreg)) {
-    xreg <- matrix(0, 0, 0)
-  } else {
-    if (is.null(dim(xreg)) && length(xreg) == n) {
-      xreg <- matrix(xreg, n, 1)
-    }
-    check_xreg(xreg, n)
-    nx <- ncol(xreg)
-    if (is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
-    }
-  }
   # create Z
   if (dim(Z)[1] != p || !(dim(Z)[3] %in% c(1, NA, n)))
     stop("Argument Z must be a (p x m) matrix or (p x m x n) array
@@ -544,7 +489,7 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
     C <- matrix(0, m, 1)
   }
   
-
+  
   if (length(u) == 1) {
     u <- matrix(u, n, p)
   }
@@ -552,7 +497,7 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   if(!identical(dim(y), dim(u))) stop("Dimensions of 'y' and 'u' do not match. ")
   initial_mode <- y
   for(i in 1:p) {
-    initial_mode[, i] <- init_mode(y[, i], u[, i], distribution[i], NULL)
+    initial_mode[, i] <- init_mode(y[, i], u[, i], distribution[i])
   }
   
   if (missing(state_names)) {
@@ -564,8 +509,9 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   if(is.null(names(init_theta)) && length(init_theta) > 0)
     names(init_theta) <- paste0("theta_", 1:length(init_theta))
   
+  
   structure(list(y = y, Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
-    xreg = xreg, D = D, C = C, distribution = distribution,
+    D = D, C = C, distribution = distribution,
     initial_mode = initial_mode, update_fn = update_fn,
     prior_fn = prior_fn, theta = init_theta,
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE), 
@@ -604,7 +550,7 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
 #' model <- bsm_lg(log10(UKgas), sd_y = prior, sd_level =  prior,
 #'   sd_slope =  prior, sd_seasonal =  prior)
 #'
-#' mcmc_out <- run_mcmc(model, n_iter = 5000)
+#' mcmc_out <- run_mcmc(model, iter = 5000)
 #' summary(expand_sample(mcmc_out, "theta"))$stat
 #' mcmc_out$theta[which.max(mcmc_out$posterior), ]
 #' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
@@ -641,7 +587,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
       coefs <- beta$init
     }
     check_beta(coefs, nx)
-    if (is.null(colnames(xreg))) {
+    if (nx > 0 && is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
     names(coefs) <- colnames(xreg)
@@ -857,7 +803,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'   xreg = Seatbelts[, "law"])
 #' \dontrun{
 #' set.seed(123)
-#' mcmc_out <- run_mcmc(model, n_iter = 5000, nsim = 10)
+#' mcmc_out <- run_mcmc(model, iter = 5000, nsim = 10)
 #' mcmc_out$acceptance_rate
 #' theta <- expand_sample(mcmc_out, "theta")
 #' plot(theta)
@@ -869,7 +815,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'   geom = "polygon") + scale_fill_continuous(low = "green",high = "blue") +
 #'   guides(alpha = "none")
 #'
-# pred <- predict(model, n_iter = 5000, nsim = 10, n_ahead = 36,
+# pred <- predict(model, iter = 5000, nsim = 10, n_ahead = 36,
 #   probs = seq(0.05, 0.95, by = 0.05), newdata = matrix(1, 36, 1),
 #   newphi = rep(1, 36))
 # autoplot(pred)
@@ -912,7 +858,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     }
     check_beta(coefs, nx)
     
-    if (is.null(colnames(xreg))) {
+    if (nx > 0 && is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
     names(coefs) <- colnames(xreg)
@@ -1068,7 +1014,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     }
   }
   
-  initial_mode <- init_mode(y, u, distribution, if (ncol(xreg) > 0) xreg %*% coefs else NULL)
+  initial_mode <- init_mode(y, u, distribution)
   
   
   dim(T) <- c(m, m, 1)
@@ -1154,11 +1100,6 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
   
   check_y(y)
   
-  xreg <- matrix(0, 0, 0)
-  coefs <- numeric(0)
-  beta <- NULL
-  
-  
   check_rho(rho$init)
   check_sd(sd_ar$init, "rho")
   if(missing(sigma)) {
@@ -1177,19 +1118,13 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
   T <- array(rho$init, c(1, 1, 1))
   R <- array(sd_ar$init, c(1, 1, 1))
   
-  
-  
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- "signal"
   
-  if(ncol(xreg) > 1) {
-    priors <- c(list(rho, sd_ar, if(svm_type==0) sigma else mu), beta)
-  } else {
-    priors <- list(rho, sd_ar, if(svm_type==0) sigma else mu, beta)
-  }
+  priors <- list(rho, sd_ar, if(svm_type==0) sigma else mu)
   priors <- priors[!sapply(priors, is.null)]
   names(priors) <-
-    c("rho", "sd_ar", if(svm_type==0) "sigma" else "mu", names(coefs))
+    c("rho", "sd_ar", if(svm_type==0) "sigma" else "mu")
   
   C <- if (svm_type) matrix(mu$init * (1 - T[1])) else matrix(0)
   D <- matrix(0)
@@ -1198,8 +1133,8 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
-    a1 = a1, P1 = P1, phi = if (svm_type == 0) sigma$init else 1, xreg = xreg, 
-    beta = coefs, D = D, C = C, 
+    a1 = a1, P1 = P1, phi = if (svm_type == 0) sigma$init else 1, xreg = matrix(0, 0, 0), 
+    beta = numeric(0), D = D, C = C, 
     initial_mode = initial_mode, 
     svm_type = svm_type, distribution = "svm", u = 1, phi_est = !as.logical(svm_type),
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
@@ -1261,7 +1196,7 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
     }
     check_beta(coefs, nx)
     
-    if (is.null(colnames(xreg))) {
+    if (nx > 0 && is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
     names(coefs) <- colnames(xreg)
@@ -1306,7 +1241,7 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
       u <- rep(u, length.out = n)
     }
   }
-  initial_mode <- init_mode(y, u, distribution, if (ncol(xreg) > 0) xreg %*% coefs else NULL)
+  initial_mode <- init_mode(y, u, distribution)
   P1 <- matrix(sigma$init^2 / (1 - rho$init^2))
   
   Z <- matrix(1)
@@ -1388,7 +1323,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
     }
     check_beta(coefs, nx)
     
-    if (is.null(colnames(xreg))) {
+    if (nx > 0 && is.null(colnames(xreg))) {
       colnames(xreg) <- paste0("coef_",1:ncol(xreg))
     }
     names(coefs) <- colnames(xreg)
@@ -1510,7 +1445,8 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
     n_states = n_states, n_etas = n_etas,
     time_varying = time_varying,
     state_names = state_names,
-    max_iter = 100, conv_tol = 1e-8), class = "ssm_nlg")
+    max_iter = 100, conv_tol = 1e-8), 
+    class = "ssm_nlg")
 }
 
 #'

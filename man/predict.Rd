@@ -82,7 +82,7 @@ prior <- uniform(0.01, 0, 1)
 model <- bsm_lg(window(y, end = c(1974, 4)), sd_y = prior,
 sd_level = prior, sd_slope = prior, sd_seasonal = prior)
 
-mcmc_results <- run_mcmc(model, n_iter = 5000)
+mcmc_results <- run_mcmc(model, iter = 5000)
 future_model <- model
 future_model$y <- ts(rep(NA, 25), start = end(model$y), 
   frequency = frequency(model$y))
@@ -101,7 +101,7 @@ data("poisson_series")
 model <- bsm_ng(poisson_series, sd_level = 
   halfnormal(0.1, 1), sd_slope=halfnormal(0.01, 0.1),
   distribution = "poisson")
-mcmc_poisson <- run_mcmc(model, n_iter = 5000, nsim = 10)
+mcmc_poisson <- run_mcmc(model, iter = 5000, nsim = 10)
 
 future_model <- model
 future_model$y <- ts(rep(NA, 25), start = end(model$y), 

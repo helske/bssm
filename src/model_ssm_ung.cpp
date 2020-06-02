@@ -11,7 +11,7 @@ ssm_ung::ssm_ung(const Rcpp::List model, const unsigned int seed, const double z
     T(Rcpp::as<arma::cube>(model["T"])), R(Rcpp::as<arma::cube>(model["R"])),
     a1(Rcpp::as<arma::vec>(model["a1"])), P1(Rcpp::as<arma::mat>(model["P1"])),
     D(Rcpp::as<arma::vec>(model["D"])), C(Rcpp::as<arma::mat>(model["C"])),
-    xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(arma::vec(xreg.n_cols, arma::fill::zeros)),
+    xreg(Rcpp::as<arma::mat>(model["xreg"])), beta(Rcpp::as<arma::vec>(model["beta"])),
     n(y.n_elem), m(a1.n_elem), k(R.n_cols), Ztv(Z.n_cols > 1), Ttv(T.n_slices > 1), 
     Rtv(R.n_slices > 1), Dtv(D.n_elem > 1),  Ctv(C.n_cols > 1),
     theta(Rcpp::as<arma::vec>(model["theta"])), 
@@ -108,7 +108,7 @@ void ssm_ung::approximate() {
     approx_model.C = C;
     approx_model.RR = RR;
     approx_model.xbeta = xbeta;
-    
+
     // don't update y and H if using global approximation and we have updated them already
     if(!local_approx & (approx_state == 0)) {
       if (distribution == 0) {
@@ -116,7 +116,8 @@ void ssm_ung::approximate() {
       } else {
         arma::mat alpha = approx_model.fast_smoother().head_cols(n);
         for (unsigned int t = 0; t < n; t++) {
-          mode_estimate(t) = arma::as_scalar(Z.col(Ztv * t).t() * alpha.col(t));
+          mode_estimate(t) = arma::as_scalar(xbeta(t) + D(Dtv * t) + 
+            Z.col(Ztv * t).t() * alpha.col(t));
         }
       }
     } else {
@@ -125,8 +126,8 @@ void ssm_ung::approximate() {
       while(i < max_iter && diff > conv_tol) {
         i++;
         //Construct y and H for the Gaussian model
-        laplace_iter(mode_estimate, approx_model.y, approx_model.HH);
-        approx_model.H = sqrt(approx_model.HH);
+        laplace_iter(mode_estimate);
+       
         // compute new guess of mode
         arma::vec mode_estimate_new(n);
         if (distribution == 0) {
@@ -134,9 +135,11 @@ void ssm_ung::approximate() {
         } else {
           arma::mat alpha = approx_model.fast_smoother().head_cols(n);
           for (unsigned int t = 0; t < n; t++) {
-            mode_estimate_new(t) = arma::as_scalar(Z.col(Ztv * t).t() * alpha.col(t));
+            mode_estimate_new(t) = arma::as_scalar(xbeta(t) + 
+              D(Dtv * t) + Z.col(Ztv * t).t() * alpha.col(t));
           }
         }
+        
         diff = arma::mean(arma::square(mode_estimate_new - mode_estimate));
         mode_estimate = mode_estimate_new;
       }
@@ -159,8 +162,7 @@ void ssm_ung::approximate_for_is(const arma::mat& mode_estimate) {
     approx_model.RR = RR;
     approx_model.xbeta = xbeta;
     //Construct y and H for the Gaussian model
-    laplace_iter(mode_estimate.col(0), approx_model.y, approx_model.HH);
-    approx_model.H = sqrt(approx_model.HH);
+    laplace_iter(mode_estimate.col(0));
     update_scales();
     approx_loglik = 0.0;
     approx_model.engine = engine;
@@ -257,28 +259,28 @@ void ssm_ung::update_scales() {
   case 1  :
     for(unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(y(t))) {
-        scales(t) = y(t) * (mode_estimate(t) + xbeta(t)) -
-          u(t) * std::exp(mode_estimate(t) + xbeta(t)) +
-          0.5 * std::pow((approx_model.y(t) - (mode_estimate(t) + xbeta(t))) / approx_model.H(t), 2.0);
+        scales(t) = y(t) * mode_estimate(t) -
+          u(t) * std::exp(mode_estimate(t)) +
+          0.5 * std::pow((approx_model.y(t) - mode_estimate(t)) / approx_model.H(t), 2.0);
       }
     }
     break;
   case 2  :
     for(unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(y(t))) {
-        scales(t) = y(t) * (mode_estimate(t) + xbeta(t)) -
-          u(t) * std::log1p(std::exp(mode_estimate(t) + xbeta(t))) +
-          0.5 * std::pow((approx_model.y(t) - (mode_estimate(t) + xbeta(t))) / approx_model.H(t), 2.0);
+        scales(t) = y(t) * mode_estimate(t) -
+          u(t) * std::log1p(std::exp(mode_estimate(t))) +
+          0.5 * std::pow((approx_model.y(t) - mode_estimate(t)) / approx_model.H(t), 2.0);
       }
     }
     break;
   case 3  :
     for(unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(y(t))) {
-        scales(t) = y(t) * (mode_estimate(t) + xbeta(t)) -
+        scales(t) = y(t) * mode_estimate(t) -
           (y(t) + phi) *
-          std::log(phi + u(t) * std::exp(mode_estimate(t) + xbeta(t))) +
-          0.5 * std::pow((approx_model.y(t) - (mode_estimate(t) + xbeta(t))) / approx_model.H(t), 2.0);
+          std::log(phi + u(t) * std::exp(mode_estimate(t))) +
+          0.5 * std::pow((approx_model.y(t) - mode_estimate(t)) / approx_model.H(t), 2.0);
       } 
     }
     break;
@@ -293,8 +295,7 @@ void ssm_ung::update_scales() {
  * 2 = Binomial
  * 3 = Negative binomial
  */
-void ssm_ung::laplace_iter(const arma::vec& signal, arma::vec& approx_y,
-  arma::vec& approx_HH) const {
+void ssm_ung::laplace_iter(const arma::vec& signal) {
   
  
   switch(distribution) {
@@ -302,25 +303,26 @@ void ssm_ung::laplace_iter(const arma::vec& signal, arma::vec& approx_y,
   arma::vec tmp = y;
   // avoid dividing by zero
   tmp(arma::find(arma::abs(tmp) < 1e-4)).fill(1e-4);
-  approx_HH = 2.0 * arma::exp(signal) / arma::square(tmp/phi);
-  approx_y = signal + 1.0 - 0.5 * approx_HH;
+  approx_model.HH = 2.0 * arma::exp(signal) / arma::square(tmp/phi);
+  approx_model.y = signal + 1.0 - 0.5 * approx_model.HH;
 } break;
   case 1: {
-    arma::vec tmp = signal + xbeta;
-    approx_HH = 1.0 / (arma::exp(tmp) % u);
-    approx_y = y % approx_HH + tmp - 1.0;
+    arma::vec tmp = signal;
+    approx_model.HH = 1.0 / (arma::exp(tmp) % u);
+    approx_model.y = y % approx_model.HH + tmp - 1.0;
   } break;
   case 2: {
-    arma::vec exptmp = arma::exp(signal + xbeta);
-    approx_HH = arma::square(1.0 + exptmp) / (u % exptmp);
-    approx_y = y % approx_HH + signal + xbeta - 1.0 - exptmp;
+    arma::vec exptmp = arma::exp(signal);
+    approx_model.HH = arma::square(1.0 + exptmp) / (u % exptmp);
+    approx_model.y = y % approx_model.HH + signal - 1.0 - exptmp;
   } break;
   case 3: {
-    arma::vec exptmp = 1.0 / (arma::exp(signal + xbeta) % u); // FIX?
-    approx_HH = 1.0 / phi + exptmp;
-    approx_y = signal + xbeta + y % exptmp - 1.0;
+    arma::vec exptmp = 1.0 / (arma::exp(signal) % u); // FIX?
+    approx_model.HH = 1.0 / phi + exptmp;
+    approx_model.y = signal + y % exptmp - 1.0;
   } break;
   }
+  approx_model.H = sqrt(approx_model.HH);
 }
 
 

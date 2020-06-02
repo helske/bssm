@@ -15,7 +15,6 @@ ssm_mng(
   phi = 1,
   u = 1,
   init_theta = numeric(0),
-  xreg = NULL,
   D,
   C,
   state_names,
@@ -39,10 +38,6 @@ m x k x n array.}
 \item{P1}{Prior covariance matrix for the initial state as m x m matrix.}
 
 \item{init_theta}{Initial values for the unknown hyperparameters theta.}
-
-\item{xreg}{Matrix of n rows and arbitrary number of columns containing covariates. 
-This matrix is not used by default, but can be used to supply additional data to 
-\code{update_fn} (where you can, e.g. input the regression part to D).}
 
 \item{D}{Intercept terms for observation equation, given as a length n vector.}
 

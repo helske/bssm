@@ -15,7 +15,6 @@ ssm_ung(
   phi = 1,
   u = 1,
   init_theta = numeric(0),
-  xreg = NULL,
   D,
   C,
   state_names,
@@ -49,16 +48,13 @@ distributions this is ignored.}
 \item{u}{Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
 term. For binomial, this is the number of trials.}
 
-\item{xreg}{Matrix of n rows and arbitrary number of columns containing covariates. 
-This matrix is not used by default, but can be used to supply additional data to 
-\code{update_fn} (where you can, e.g. input the regression part to D).}
+\item{D}{Intercept terms \eqn{D_t} for the observations equation, given as a
+1 x 1 or 1 x n matrix.}
 
 \item{C}{Intercept terms \eqn{C_t} for the state equation, given as a
-m times n matrix.}
+m times 1 or m times n matrix.}
 
 \item{state_names}{Names for the states.}
-
-\item{Z_prior, T_prior, R_prior}{Priors for the NA values in system matrices.}
 }
 \value{
 Object of class \code{ssm_ung}.
@@ -68,11 +64,10 @@ Construct an object of class \code{ssm_ung} by defining the corresponding terms
 of the observation and state equation:
 }
 \details{
-\deqn{p(y_t | X_t beta + Z_t \alpha_t), (\textrm{observation equation})}
+\deqn{p(y_t | D_t + Z_t \alpha_t), (\textrm{observation equation})}
 \deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
 
 where \eqn{\eta_t \sim N(0, I_k)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other,
-, \eqn{X_t} are fixed covariates and \eqn{beta} contains the corresponding (known) coefficients,
-and  \eqn{p(y_t | .)} is either Poisson, binomial or negative binomial distribution.
+and \eqn{p(y_t | .)} is either Poisson, binomial or negative binomial distribution.
 }

@@ -9,6 +9,12 @@
 Rcpp::List gaussian_approx_model(const Rcpp::List model_, const int model_type) {
 
   switch (model_type) {
+  case 0: {
+  ssm_mng model(model_, 1);
+  model.approximate();
+  return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,
+    Rcpp::Named("H") = model.approx_model.H);
+} break;
   case 1: {
     ssm_ung model(model_, 1);
     model.approximate();
@@ -45,7 +51,8 @@ Rcpp::List gaussian_approx_model_nlg(const arma::mat& y, SEXP Z, SEXP H,
   const arma::mat& known_tv_params, const unsigned int n_states,
   const unsigned int n_etas,  const arma::uvec& time_varying,
   const unsigned int max_iter,
-  const double conv_tol, const unsigned int iekf_iter) {
+  const double conv_tol, const unsigned int iekf_iter,
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
 
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
   Rcpp::XPtr<nmat_fnPtr> xpfun_H(H);
@@ -59,7 +66,7 @@ Rcpp::List gaussian_approx_model_nlg(const arma::mat& y, SEXP Z, SEXP H,
 
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
-    time_varying, 1, iekf_iter, max_iter, conv_tol);
+    time_varying, update_fn, prior_fn, 1, iekf_iter, max_iter, conv_tol);
 
   model.approximate();
   if(!arma::is_finite(model.mode_estimate)) {

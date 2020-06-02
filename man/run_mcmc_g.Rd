@@ -6,10 +6,10 @@
 \usage{
 \method{run_mcmc}{gaussian}(
   model,
-  n_iter,
-  type = "full",
-  n_burnin = floor(n_iter/2),
-  n_thin = 1,
+  iter,
+  output_type = "full",
+  burnin = floor(iter/2),
+  thin = 1,
   gamma = 2/3,
   target_acceptance = 0.234,
   S,
@@ -22,20 +22,20 @@
 \arguments{
 \item{model}{Model model.}
 
-\item{n_iter}{Number of MCMC iterations.}
+\item{iter}{Number of MCMC iterations.}
 
-\item{type}{Type of output. Default is \code{"full"}, which returns
+\item{output_type}{Type of output. Default is \code{"full"}, which returns
 samples from the posterior \eqn{p(\alpha, \theta)}. Option \code{"summary"} does not simulate
 states directly but computes the posterior means and variances of states using
-fast Kalman smoothing. This is slightly faster, memory  efficient and
+fast Kalman smoothing. This is slightly faster, more memory efficient and
 more accurate than calculations based on simulation smoother. Using option \code{"theta"} will only
 return samples from the marginal posterior of the hyperparameters \eqn{\theta}.}
 
-\item{n_burnin}{Length of the burn-in period which is disregarded from the
-results. Defaults to \code{n_iter / 2}. Note that all MCMC algorithms of \code{bssm}
+\item{burnin}{Length of the burn-in period which is disregarded from the
+results. Defaults to \code{iter / 2}. Note that all MCMC algorithms of \code{bssm}
  used adaptive MCMC during the burn-in period in order to find good proposal.}
 
-\item{n_thin}{Thinning rate. All MCMC algorithms in \code{bssm} use the jump chain
+\item{thin}{Thinning rate. All MCMC algorithms in \code{bssm} use the jump chain
 representation, and the thinning is applied to these blocks.
 Defaults to 1.}
 

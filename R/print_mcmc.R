@@ -56,8 +56,8 @@ print.mcmc_output <- function(x, ...) {
   cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"), 
       "\n", sep = "")
   
-  cat("\n", "Iterations = ", x$n_burnin + 1, ":", x$n_iter, "\n", sep = "")
-  cat("Thinning interval = ",x$n_thin, "\n", sep = "")
+  cat("\n", "Iterations = ", x$burnin + 1, ":", x$iter, "\n", sep = "")
+  cat("Thinning interval = ",x$thin, "\n", sep = "")
   cat("Length of the final jump chain = ", length(x$counts), "\n", sep = "")
   cat("\nAcceptance rate after the burn-in period: ", paste(round(x$acceptance_rate,3),"\n", sep = ""))
   
@@ -287,5 +287,5 @@ expand_sample <- function(x, variable = "theta", times, states, by_states = TRUE
       }
     } else stop("MCMC output does not contain posterior samples of states.")
   }
-  mcmc(out, start = x$n_burnin + 1, thin = x$n_thin)
+  mcmc(out, start = x$burnin + 1, thin = x$thin)
 }

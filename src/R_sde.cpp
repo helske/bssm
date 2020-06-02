@@ -112,8 +112,8 @@ Rcpp::List sde_pm_mcmc(const arma::vec& y, const double x0,
   SEXP ddiffusion_pntr, SEXP log_prior_pdf_pntr, SEXP log_obs_density_pntr,
   const arma::vec& theta, const unsigned int nsim,
   const unsigned int L,
-  const unsigned int seed, const unsigned int n_iter,
-  const unsigned int n_burnin, const unsigned int n_thin,
+  const unsigned int seed, const unsigned int iter,
+  const unsigned int burnin, const unsigned int thin,
   const double gamma, const double target_acceptance, const arma::mat S,
   const bool end_ram, const unsigned int type) {
 
@@ -127,8 +127,8 @@ Rcpp::List sde_pm_mcmc(const arma::vec& y, const double x0,
     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_obs, *xpfun_prior,
      L, L, seed);
 
-  mcmc mcmc_run(n_iter, n_burnin,
-    n_thin, model.n, 1, target_acceptance, gamma, S, type);
+  mcmc mcmc_run(iter, burnin,
+    thin, model.n, 1, target_acceptance, gamma, S, type);
 
   mcmc_run.pm_mcmc(model, 1, end_ram, nsim);
 
@@ -166,8 +166,8 @@ Rcpp::List sde_da_mcmc(const arma::vec& y, const double x0,
   SEXP ddiffusion_pntr, SEXP log_prior_pdf_pntr, SEXP log_obs_density_pntr,
   const arma::vec& theta, const unsigned int nsim,
   const unsigned int L_c, const unsigned int L_f, const unsigned int seed,
-  const unsigned int n_iter,
-  const unsigned int n_burnin, const unsigned int n_thin,
+  const unsigned int iter,
+  const unsigned int burnin, const unsigned int thin,
   const double gamma, const double target_acceptance, const arma::mat S,
   const bool end_ram, const unsigned int type) {
 
@@ -181,8 +181,8 @@ Rcpp::List sde_da_mcmc(const arma::vec& y, const double x0,
     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_obs, *xpfun_prior,
      L_f, L_c, seed);
 
-  mcmc mcmc_run(n_iter, n_burnin,
-    n_thin, model.n, 1, target_acceptance, gamma, S, type);
+  mcmc mcmc_run(iter, burnin,
+    thin, model.n, 1, target_acceptance, gamma, S, type);
 
   mcmc_run.da_mcmc(model, 1, end_ram, nsim);
 
@@ -219,8 +219,8 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
   SEXP ddiffusion_pntr, SEXP log_prior_pdf_pntr, SEXP log_obs_density_pntr,
   const arma::vec& theta, const unsigned int nsim,
   const unsigned int L_c, const unsigned int L_f, const unsigned int seed,
-  const unsigned int n_iter,
-  const unsigned int n_burnin, const unsigned int n_thin,
+  const unsigned int iter,
+  const unsigned int burnin, const unsigned int thin,
   const double gamma, const double target_acceptance, const arma::mat S,
   const bool end_ram, const unsigned int is_type, const unsigned int n_threads,
   const unsigned int type) {
@@ -235,7 +235,7 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
     *xpfun_diffusion, *xpfun_ddiffusion, *xpfun_obs, *xpfun_prior,
     L_f, L_c, seed);
 
-  approx_mcmc mcmc_run(n_iter, n_burnin, n_thin, model.n, 1, 1,
+  approx_mcmc mcmc_run(iter, burnin, thin, model.n, 1, 1,
     target_acceptance, gamma, S, type);
 
   mcmc_run.amcmc(model, nsim, end_ram);

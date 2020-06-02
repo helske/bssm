@@ -57,10 +57,11 @@ kfilter.nongaussian <- function(model, ...) {
 ekf <- function(model, iekf_iter = 0) {
   
   out <- ekf_nlg(t(model$y), model$Z, model$H, model$T, 
-  model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
-  model$theta, model$log_prior_pdf, model$known_params, 
-  model$known_tv_params, model$n_states, model$n_etas, 
-  as.integer(model$time_varying), iekf_iter)
+    model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
+    model$theta, model$log_prior_pdf, model$known_params, 
+    model$known_tv_params, model$n_states, model$n_etas, 
+    as.integer(model$time_varying), iekf_iter, 
+    default_update_fn, default_prior_fn)
   
   out$at <- ts(out$at, start = start(model$y), frequency = frequency(model$y))
   out$att <- ts(out$att, start = start(model$y), frequency = frequency(model$y))
@@ -90,7 +91,7 @@ ukf <- function(model, alpha = 1, beta = 0, kappa = 2) {
     model$theta, model$log_prior_pdf, model$known_params, 
     model$known_tv_params, model$n_states, model$n_etas, 
     as.integer(model$time_varying),
-    alpha, beta, kappa)
+    alpha, beta, kappa, default_update_fn, default_prior_fn)
   
   out$at <- ts(out$at, start = start(model$y), frequency = frequency(model$y))
   out$att <- ts(out$att, start = start(model$y), frequency = frequency(model$y))

@@ -4,12 +4,12 @@
 \alias{run_mcmc}
 \title{Bayesian Inference of State Space Models}
 \usage{
-run_mcmc(model, n_iter, ...)
+run_mcmc(model, iter, ...)
 }
 \arguments{
 \item{model}{State space model model of \code{bssm} package.}
 
-\item{n_iter}{Number of MCMC iterations.}
+\item{iter}{Number of MCMC iterations.}
 
 \item{...}{Parameters to specific methods. See \code{\link{run_mcmc.gaussian}} and
 \code{\link{run_mcmc.nongaussian}} for details.}

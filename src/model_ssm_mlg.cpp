@@ -33,8 +33,8 @@ ssm_mlg::ssm_mlg(const arma::mat& y, const arma::cube& Z,
   const arma::mat& P1, const arma::mat& D, 
   const arma::mat& C, const arma::mat& xreg,
   const arma::vec& theta, const unsigned int seed, 
-  const Rcpp::Nullable<Rcpp::Function> update_fn, 
-  const Rcpp::Nullable<Rcpp::Function> prior_fn,
+  const Rcpp::Function update_fn, 
+  const Rcpp::Function prior_fn,
   const double zero_tol) 
   :
     y(y), Z(Z), H(H), T(T), R(R), a1(a1), P1(P1), D(D), C(C),
@@ -45,8 +45,7 @@ ssm_mlg::ssm_mlg(const arma::mat& y, const arma::cube& Z,
     theta(theta), engine(seed), zero_tol(zero_tol), 
     HH(arma::cube(p, p, Htv * (n - 1) + 1)), 
     RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
-    update_fn(update_fn),
-    prior_fn(prior_fn) {
+    update_fn(update_fn), prior_fn(prior_fn) {
   
   compute_HH();
   compute_RR();

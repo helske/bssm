@@ -29,8 +29,8 @@ public:
     const arma::mat& xreg, 
     const arma::vec& theta,
     const unsigned int seed,
-    const Rcpp::Nullable<Rcpp::Function> update_fn = R_NilValue,
-    const Rcpp::Nullable<Rcpp::Function> prior_fn = R_NilValue,
+    const Rcpp::Function update_fn,
+    const Rcpp::Function prior_fn,
     const double zero_tol = 1e-8);
   
   arma::mat y;

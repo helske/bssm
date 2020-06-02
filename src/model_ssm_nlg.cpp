@@ -11,7 +11,8 @@ ssm_nlg::ssm_nlg(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_,
   a1_fnPtr a1_fn_, P1_fnPtr P1_fn_, const arma::vec& theta, 
   prior_fnPtr log_prior_pdf_, const arma::vec& known_params,
   const arma::mat& known_tv_params, const unsigned int m, 
-  const unsigned int k, const arma::uvec& time_varying, 
+  const unsigned int k, const arma::uvec& time_varying,
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn,
   const unsigned int seed, const unsigned int iekf_iter, 
   const unsigned int max_iter, const double conv_tol) 
   :
@@ -20,7 +21,7 @@ ssm_nlg::ssm_nlg(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_,
     a1_fn(a1_fn_), P1_fn(P1_fn_), theta(theta), 
     log_prior_pdf(log_prior_pdf_), known_params(known_params), 
     known_tv_params(known_tv_params), m(m), k(k), n(y.n_cols),  p(y.n_rows),
-    Zgtv(time_varying(0)), Tgtv(time_varying(1)), Htv(time_varying(2)),
+    Zgtv(time_varying(0)), Htv(time_varying(1)), Tgtv(time_varying(2)),
     Rtv(time_varying(3)),
     engine(seed), zero_tol(1e-8), 
     iekf_iter(iekf_iter), 
@@ -30,9 +31,9 @@ ssm_nlg::ssm_nlg(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_,
     approx_state(-1), approx_loglik(0.0),
     scales(arma::vec(n, arma::fill::zeros)),
     approx_model(y, 
-      arma::cube(p, m, n),
+      arma::cube(p, m, (n - 1) * Zgtv + 1),
       arma::cube(p, p, (n - 1) * Htv + 1),
-      arma::cube(m, m, n),
+      arma::cube(m, m, (n - 1) * Tgtv + 1),
       arma::cube(m, k, (n - 1) * Rtv + 1),
       a1_fn(theta, known_params),
       P1_fn(theta, known_params),
@@ -40,40 +41,11 @@ ssm_nlg::ssm_nlg(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_,
       arma::mat(m, n, arma::fill::zeros),
       arma::mat(), 
       theta,
-      seed + 1) {
-  update_model(theta);
+      seed + 1,
+      update_fn, prior_fn) {
 }
-// update system matrices given theta
+
 void ssm_nlg::update_model(const arma::vec& new_theta) {
-  
-  for (unsigned int t = 0; t < approx_model.Z.n_slices; t++) {
-    approx_model.Z.slice(t) = 
-      Z_gn(t, mode_estimate.col(t), theta, known_params, known_tv_params);
-  }
-  
-  for (unsigned int t = 0; t < approx_model.T.n_slices; t++) {
-    approx_model.T.slice(t) = 
-      T_gn(t, mode_estimate.col(t), theta, known_params, known_tv_params);
-  }
-  
-  for (unsigned int t = 0; t < n; t++) {
-    approx_model.D.col(t) = 
-      Z_fn(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
-      approx_model.Z.slice(t * Zgtv) * mode_estimate.col(t);
-    approx_model.C.col(t) =  
-      T_fn(t, mode_estimate.col(t), theta, known_params, known_tv_params) -
-      approx_model.T.slice(t * Tgtv) * mode_estimate.col(t);
-  }
-  for (unsigned int t = 0; t < approx_model.H.n_slices; t++) {
-    approx_model.H.slice(t) = 
-      H_fn(t, mode_estimate.col(t), theta, known_params, known_tv_params);
-  }
-  for (unsigned int t = 0; t < approx_model.R.n_slices; t++) {
-    approx_model.R.slice(t) = 
-      R_fn(t, mode_estimate.col(t), theta, known_params, known_tv_params);
-  }
-  approx_model.compute_HH();
-  approx_model.compute_RR();
   
   theta = new_theta;
   // approximation does not match theta anymore (keep as -1 if so)
@@ -83,7 +55,7 @@ void ssm_nlg::update_model(const arma::vec& new_theta) {
 
 void ssm_nlg::approximate() {
   
-  if(approx_state == -1) {
+  if(approx_state != 1) {
     
     // initial approximation is based on EKF (at and att)
     arma::mat at(m, n + 1);
@@ -114,11 +86,8 @@ void ssm_nlg::approximate() {
       approx_model.C.col(t) =  T_fn(t, att.col(t), theta, known_params, known_tv_params) -
         approx_model.T.slice(t) * att.col(t);
     }
-   
-  }
-  if (approx_state < 1) {
+ 
     mode_estimate = approx_model.fast_smoother().head_cols(n);
-    initial_mode = mode_estimate;
     if (!arma::is_finite(mode_estimate)) {
       return;
     }
@@ -263,7 +232,6 @@ arma::vec ssm_nlg::log_likelihood(
       } else { // note does not check if method == 3...
         // check that approx_model matches theta
         if(approx_state != 1) {
-          mode_estimate = initial_mode;
           approximate(); 
           // compute the log-likelihood of the approximate model
           double gaussian_loglik = approx_model.log_likelihood();
@@ -284,7 +252,6 @@ arma::vec ssm_nlg::log_likelihood(
     } else {
       // check that approx_model matches theta
       if(approx_state != 1) {
-        mode_estimate = initial_mode;
         approximate(); 
         // compute the log-likelihood of the approximate model
         double gaussian_loglik = approx_model.log_likelihood();
@@ -1176,10 +1143,19 @@ double ssm_nlg::log_obs_density(const unsigned int t,
   return weight;
 }
 
-// as ung_filter but without scales
 double ssm_nlg::psi_filter(const unsigned int nsim, arma::cube& alpha, 
   arma::mat& weights, arma::umat& indices) {
   
+  // check that approx_model matches theta
+  if(approx_state != 1) {
+    approximate(); 
+    // compute the log-likelihood of the approximate model
+    double gaussian_loglik = approx_model.log_likelihood();
+    // compute normalized mode-based correction terms 
+    update_scales();
+    // log-likelihood approximation
+    approx_loglik = gaussian_loglik + arma::accu(scales);
+  }
   arma::mat alphahat(m, n + 1);
   arma::cube Vt(m, m, n + 1);
   arma::cube Ct(m, m, n + 1);

@@ -13,7 +13,6 @@ ssm_mlg(
   a1,
   P1,
   init_theta = numeric(0),
-  xreg = NULL,
   D,
   C,
   state_names,
@@ -40,10 +39,6 @@ m x k x n array.}
 
 \item{init_theta}{Initial values for the unknown hyperparameters theta.}
 
-\item{xreg}{Matrix of n rows and arbitrary number of columns containing covariates. 
-This matrix is not used by default, but can be used to supply additional data to 
-\code{update_fn} (where you can, e.g. input the regression part to D).}
-
 \item{D}{Intercept terms for observation equation, given as a length n vector.}
 
 \item{C}{Intercept terms for state equation, given as m x n matrix.}
@@ -55,6 +50,10 @@ components given input vector theta. See details.}
 
 \item{prior_fn}{Function which returns log of prior density 
 given input vector theta. See details.}
+
+\item{xreg}{Matrix of n rows and arbitrary number of columns containing covariates. 
+This matrix is not used by default, but can be used to supply additional data to 
+\code{update_fn} (where you can, e.g. input the regression part to D).}
 }
 \value{
 Object of class \code{ssm_mlg}.

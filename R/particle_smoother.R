@@ -90,18 +90,18 @@ particle_smoother.ssm_nlg <- function(object, nsim,
       object$theta, object$log_prior_pdf, object$known_params, 
       object$known_tv_params, object$n_states, object$n_etas, 
       as.integer(object$time_varying), nsim, seed,
-      max_iter, conv_tol, iekf_iter),
+      max_iter, conv_tol, iekf_iter, default_update_fn, default_prior_fn),
     bsf = bsf_smoother_nlg(t(object$y), object$Z, object$H, object$T, 
       object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
       object$theta, object$log_prior_pdf, object$known_params, 
       object$known_tv_params, object$n_states, object$n_etas, 
-      as.integer(object$time_varying), nsim, seed),
+      as.integer(object$time_varying), nsim, seed, default_update_fn, default_prior_fn),
     ekf = ekpf_smoother(t(object$y), object$Z, object$H, object$T, 
       object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
       object$theta, object$log_prior_pdf, object$known_params, 
       object$known_tv_params, object$n_states, object$n_etas, 
       as.integer(object$time_varying), nsim, 
-      seed)
+      seed, default_update_fn, default_prior_fn)
   )
   colnames(out$alphahat) <- colnames(out$Vt) <-
     colnames(out$Vt) <- object$state_names

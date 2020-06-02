@@ -82,7 +82,8 @@ arma::cube nonlinear_predict(const arma::mat& y, SEXP Z, SEXP H,
   const unsigned int n_states, const unsigned int n_etas,
   const arma::vec& probs, const arma::mat& theta, const arma::mat& alpha,
   const arma::uvec& counts, const unsigned int predict_type,
-  const unsigned int seed, const unsigned int nsim) {
+  const unsigned int seed, const unsigned int nsim,
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
 
 
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
@@ -97,7 +98,7 @@ arma::cube nonlinear_predict(const arma::mat& y, SEXP Z, SEXP H,
 
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1, theta.col(0), *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
-    time_varying, seed);
+    time_varying, update_fn, prior_fn, seed);
 
   return model.predict_sample(theta, alpha, counts, predict_type, nsim);
 
@@ -110,7 +111,8 @@ Rcpp::List nonlinear_predict_ekf(const arma::mat& y, SEXP Z, SEXP H,
   const arma::mat& known_tv_params, const arma::uvec& time_varying,
   const unsigned int n_states, const unsigned int n_etas,
   const arma::vec& probs, const arma::mat& theta, const arma::mat& alpha_last, const arma::cube P_last,
-  const arma::uvec& counts, const unsigned int predict_type) {
+  const arma::uvec& counts, const unsigned int predict_type,
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
 
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
   Rcpp::XPtr<nmat_fnPtr> xpfun_H(H);
@@ -124,7 +126,7 @@ Rcpp::List nonlinear_predict_ekf(const arma::mat& y, SEXP Z, SEXP H,
 
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1, theta.col(0), *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
-    time_varying, 1);
+    time_varying, update_fn, prior_fn, 1);
   return model.predict_interval(probs, theta,
     alpha_last, P_last, counts, predict_type);
 }

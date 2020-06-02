@@ -1,6 +1,7 @@
 #' Gaussian Approximation of Non-Gaussian/Non-linear State Space Model
 #'
-#' Returns the approximating Gaussian model.
+#' Returns the approximating Gaussian model. This function is rarely needed itself, 
+#' and is mainly available for testing and debugging purposes.
 #' 
 #' @param model Model to be approximated.
 #' @param max_iter Maximum number of iterations.
@@ -26,16 +27,18 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100, conv_tol = 1e-8, 
     c("svm", "poisson", "binomial", "negative binomial")) - 1
   out <- gaussian_approx_model(model, model_type(model))
   out$y <- ts(out$y, start = start(model$y), end = end(model$y), frequency = frequency(model$y))
-  if(ncol(model$y) == 1) {
-  approx_model <- ssm_ulg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
-    R = model$R, a1 = model$a1, P1 = model$P1, init_theta = model$theta,
-    xreg = model$xreg, D = model$D, C = model$C, 
-    state_names = names(model$a1), update_fn = model$update_fn, prior_fn = model$prior_fn)
+  if(ncol(out$y) == 1) {
+    D <- model$D
+    if(length(model$beta) > 0) D <- as.numeric(D) + t(model$xreg %*% model$beta)
+    approx_model <- ssm_ulg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
+      R = model$R, a1 = model$a1, P1 = model$P1, init_theta = model$theta,
+      D = D, C = model$C, state_names = names(model$a1), update_fn = model$update_fn,
+      prior_fn = model$prior_fn)
   } else {
     approx_model <- ssm_mlg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
       R = model$R, a1 = model$a1, P1 = model$P1, init_theta = model$theta,
-      xreg = model$xreg, D = model$D, C = model$C, 
-      state_names = names(model$a1), update_fn = model$update_fn, prior_fn = model$prior_fn)
+      D = model$D, C = model$C, state_names = names(model$a1), 
+      update_fn = model$update_fn, prior_fn = model$prior_fn)
   }
   approx_model
 }
@@ -54,7 +57,7 @@ gaussian_approx.ssm_nlg <- function(model, max_iter = 100,
     model$theta, model$log_prior_pdf, model$known_params, 
     model$known_tv_params, model$n_states, model$n_etas,
     as.integer(model$time_varying),
-    max_iter, conv_tol, iekf_iter)
+    max_iter, conv_tol, iekf_iter, default_update_fn, default_prior_fn)
   out$y <- ts(c(out$y), start = start(model$y), end = end(model$y), frequency = frequency(model$y))
   ssm_mlg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
     R = model$R, a1 = model$a1, P1 = model$P1,
