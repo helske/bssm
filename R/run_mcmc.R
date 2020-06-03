@@ -227,7 +227,9 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
         seed, end_adaptive_phase, n_threads, 
         sampling_method, model_type(model))
     },
-    "is" = {
+    "is1" =,
+    "is2" =,
+    "is3" = {
       out <- nongaussian_is_mcmc(model, output_type,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, n_threads, 
@@ -238,8 +240,7 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
       out <- nongaussian_is_mcmc(model, output_type,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, n_threads, 
-        sampling_method,
-        pmatch(mcmc_type, paste0("is", 1:3)), model_type(model), TRUE)
+        sampling_method, 2, model_type(model), TRUE)
     })
   if (output_type == 1) {
     colnames(out$alpha) <- names(model$a1)
@@ -370,7 +371,9 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         sampling_method,iekf_iter, output_type, 
         default_update_fn, default_prior_fn)
     },
-    "is" = {
+    "is1" =,
+    "is2" =,
+    "is3" = {
       nonlinear_is_mcmc(t(model$y), model$Z, model$H, model$T,
         model$R, model$Z_gn, model$T_gn, model$a1, model$P1,
         model$theta, model$log_prior_pdf, model$known_params,
@@ -398,7 +401,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
-        end_adaptive_phase, n_threads, pmatch(mcmc_type, paste0("is", 1:3)),
+        end_adaptive_phase, n_threads, 2,
         sampling_method, iekf_iter, output_type, default_update_fn, 
         default_prior_fn, TRUE)
     }

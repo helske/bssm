@@ -5,7 +5,7 @@
 #'
 #' These simple objects of class \code{bssm_prior} are used to construct a prior distributions for the 
 #' MCMC runs of \code{bssm} package. Currently supported priors are uniform (\code{uniform()}), 
-#' half-normal (\code{halfnormal()}), normal  (\code{normal()}), and truncated normal distribution  (\code{tnormal()}).
+#' half-normal (\code{halfnormal()}), normal (\code{normal()}), and truncated normal distribution  (\code{tnormal()}).
 #' 
 #' 
 #' @rdname priors
@@ -13,7 +13,7 @@
 #' in MCMC.
 #' @param min Lower bound of the uniform and truncated normal prior.
 #' @param max Upper bound of the uniform and truncated normal prior.
-#' @param sd Standard deviation of the half-Normal and Normal priors.
+#' @param sd Standard deviation of the (underlying i.e. non-truncated) Normal distribution.
 #' @param mean Mean of the Normal prior.
 #' @return object of class \code{bssm_prior}.
 #' @export

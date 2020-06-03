@@ -65,7 +65,8 @@ inline void ssm_mlg::compute_HH(){
 
 void ssm_mlg::update_model(const arma::vec& new_theta) {
   
-  Rcpp::List model_list = update_fn(new_theta);
+  Rcpp::List model_list = 
+    update_fn(Rcpp::NumericVector(new_theta.begin(), new_theta.end()));
   if (model_list.containsElementNamed("Z")) {
     Z = Rcpp::as<arma::cube>(model_list["Z"]);
   }
@@ -98,7 +99,7 @@ void ssm_mlg::update_model(const arma::vec& new_theta) {
 
 double ssm_mlg::log_prior_pdf(const arma::vec& x) const {
   
-  return Rcpp::as<double>(prior_fn(x));
+  return Rcpp::as<double>(prior_fn(Rcpp::NumericVector(x.begin(), x.end())));
 }
 
 double ssm_mlg::log_likelihood() const {
