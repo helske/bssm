@@ -26,8 +26,9 @@ ssm_mng::ssm_mng(const Rcpp::List model, const unsigned int seed, const double z
     RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
     update_fn(Rcpp::as<Rcpp::Function>(model["update_fn"])), 
     prior_fn(Rcpp::as<Rcpp::Function>(model["prior_fn"])),
-    approx_model(y, Z, arma::cube(p, p, n), T, R, a1, P1, 
+    approx_model(y, Z, arma::cube(p, p, n, arma::fill::zeros), T, R, a1, P1, 
       D, C, theta, seed + 1, update_fn, prior_fn){
+  compute_RR();
 }
 
 
@@ -100,20 +101,19 @@ void ssm_mng::approximate() {
     } else {
       unsigned int i = 0;
       double diff = conv_tol + 1;
-      
       while(i < max_iter && diff > conv_tol) {
         i++;
         //Construct y and H for the Gaussian model
         laplace_iter(mode_estimate);
-        
+       
         // compute new guess of mode
         arma::mat mode_estimate_new(p, n);
         arma::mat alpha = approx_model.fast_smoother().head_cols(n);
         for (unsigned int t = 0; t < n; t++) {
-          mode_estimate_new.col(t) = D.col(Dtv * t) + 
-            approx_model.Z.slice(Ztv * t) * alpha.col(t);
+          mode_estimate_new.col(t) = 
+            D.col(Dtv * t) + Z.slice(Ztv * t) * alpha.col(t);
         }
-        
+     
         diff = arma::accu(arma::square(mode_estimate_new - mode_estimate)) / (n * p);
         mode_estimate = mode_estimate_new;
       }

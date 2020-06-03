@@ -8,7 +8,7 @@
 #'
 #' @param object Model object.
 #' @param nsim Number of independent samples.
-#' @param use_antithetic Use an antithetic variable for location. Default is \code{FALSE}. Only used if \code{method} is "dk".
+#' @param use_antithetic Use an antithetic variable for location. Default is \code{FALSE}. Ignored for multivariate models.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @return An array containing the generated samples.

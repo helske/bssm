@@ -48,7 +48,8 @@ logLik.nongaussian <- function(object, nsim, method = "psi", seed = 1,
   if (method == 2 & nsim == 0) stop("'nsim' must be positive for bootstrap filter.")
   
   object$distribution <- pmatch(object$distribution,
-    c("svm", "poisson", "binomial", "negative binomial")) - 1
+    c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
+    duplicates.ok = TRUE) - 1
   
   nongaussian_loglik(object, nsim, method, seed, model_type(object))
 }

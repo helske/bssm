@@ -30,9 +30,8 @@ test_that("Test conversion from SSModel to ssm_mng",{
   library(KFAS)
   set.seed(1)
   y <- matrix(rbinom(20, size = 10, prob = plogis(rnorm(20, sd = 0.2))), 10, 2)
-  model_KFAS <- SSModel(y ~ SSMtrend(1, Q = diag(sqrt(0.2), 2),
+  model_KFAS <- SSModel(y ~ SSMtrend(1, Q = diag(0.2^2, 2),
     P1 = diag(2)), u = 10, distribution = "binomial")
-  logLik(model_KFAS, nsim = 0)
   expect_error(model_bssm <- ssm_mng(y, Z = diag(2), u = 10, 
     T = diag(2), R = array(diag(0.2, 2), c(2, 2, 1)), 
     a1 = matrix(0, 2, 1), P1 = diag(2), distribution = "binomial", 

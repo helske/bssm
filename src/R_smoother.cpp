@@ -22,7 +22,7 @@ Rcpp::List gaussian_smoother(const Rcpp::List model_, const int model_type) {
   arma::cube Vt(m, m, n + 1);
 
   switch (model_type) {
-  case -1: {
+  case 0: {
     ssm_mlg model(model_, 1);
     model.smoother(alphahat, Vt);
   } break;
@@ -66,7 +66,7 @@ Rcpp::List gaussian_ccov_smoother(const Rcpp::List model_, const int model_type)
   arma::cube Vt(m, m, n + 1);
   arma::cube Ct(m, m, n + 1);
   switch (model_type) {
-  case -1: {
+  case 0: {
     ssm_mlg model(model_, 1);
   } break;
   case 1: {
@@ -97,7 +97,7 @@ Rcpp::List gaussian_ccov_smoother(const Rcpp::List model_, const int model_type)
 arma::mat gaussian_fast_smoother(const Rcpp::List model_, const int model_type) {
 
   switch (model_type) {
-  case -1: {
+  case 0: {
   ssm_mlg model(model_, 1);
   return model.fast_smoother().t();
 } break;
@@ -124,6 +124,10 @@ arma::cube gaussian_sim_smoother(const Rcpp::List model_, const unsigned int nsi
   bool use_antithetic, const unsigned int seed, const int model_type) {
 
   switch (model_type) {
+  case 0: {
+  ssm_mlg model(model_, seed);
+  return model.simulate_states(nsim);
+} break;
   case 1: {
   ssm_ulg model(model_, seed);
   return model.simulate_states(nsim, use_antithetic);

@@ -200,7 +200,7 @@ predict.mcmc_output <- function(object, future_model, type = "response",
     bsm_ng = , 
     svm = {
       future_model$distribution <- pmatch(future_model$distribution, 
-        c("poisson", "binomial", "negative binomial"))
+        c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"))
 
       nda <- dim(object$alpha)
       out <- nongaussian_predict(future_model, probs,

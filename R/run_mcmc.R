@@ -211,7 +211,8 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
   }
   
   model$distribution <- pmatch(model$distribution,
-    c("svm", "poisson", "binomial", "negative binomial")) - 1
+    c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
+    duplicates.ok = TRUE) - 1
   
   switch(mcmc_type,
     "da" = {

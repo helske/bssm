@@ -57,7 +57,8 @@ particle_smoother.nongaussian <- function(object, nsim,
   model$max_iter <- max_iter
   model$conv_tol <- conv_tol
   model$distribution <- pmatch(model$distribution,
-    c("svm", "poisson", "binomial", "negative binomial")) - 1
+    c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
+    duplicates.ok = TRUE) - 1
   
   if(method == "psi") {
     out <- psi_smoother(object, nsim, seed, model_type(model))

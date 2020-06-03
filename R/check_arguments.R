@@ -2,7 +2,7 @@
 check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
   
   if(multivariate) {
-    if (!is.matrix(x) && !is.numeric(x)) {
+    if (!is.matrix(x)) {
       stop("Argument y must be a numeric matrix or multivariate ts object.")
     }
   } else {

@@ -55,7 +55,9 @@ bootstrap_filter.nongaussian <- function(model, nsim,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
   model$distribution <- 
-    pmatch(model$distribution, c("svm", "poisson", "binomial", "negative binomial")) - 1
+    pmatch(model$distribution, 
+      c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"),
+      duplicates.ok = TRUE) - 1
 
   out <- bsf(model, nsim, seed, FALSE, 1L)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-

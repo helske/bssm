@@ -24,7 +24,8 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100, conv_tol = 1e-8, 
   model$max_iter <- max_iter
   model$conv_tol <- conv_tol
   model$distribution <- pmatch(model$distribution,
-    c("svm", "poisson", "binomial", "negative binomial")) - 1
+    c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
+    duplicates.ok = TRUE) - 1
   out <- gaussian_approx_model(model, model_type(model))
   
   if(ncol(out$y) == 1) {

@@ -1222,7 +1222,7 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
     C <- matrix(mu * (1 - rho$init))
   }
   distribution <- match.arg(distribution, c("poisson", "binomial",
-    "negative binomial"))
+    "negative binomial", "gamma"))
   
   use_phi <- distribution %in% c("negative binomial", "gamma")
   phi_est <- FALSE

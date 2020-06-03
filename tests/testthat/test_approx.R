@@ -50,7 +50,7 @@ test_that("results for poisson GLM are equal to glm function",{
   model_poisson3$P1[] <- 0
   model_poisson3$P1[1] <- 1e7
   model_poisson3$a1[2:5] <- coef(glm_poisson)[-1]
-
+  
   model_poisson4 <- ssm_ung(d$counts, Z = 1, T = 1, R = 0, 
     D = t(model_poisson2$xreg %*% model_poisson2$beta),
     P1 = 1e7, distribution = 'poisson')
@@ -108,3 +108,19 @@ test_that("state estimates for negative binomial GLM are equal to glm function",
   expect_equivalent(sm$alphahat[1], unname(coef(glm_nb)[1]))
 })
 
+test_that("multivariate iid model gives same results as two univariate models", {
+  set.seed(1)
+  y <- matrix(rbinom(20, size = 10, prob = plogis(rnorm(20, sd = 0.5))), 10, 2)
+  expect_error(model <- ssm_mng(y, Z = diag(2), phi = 2, 
+    T = diag(2), R = array(diag(0.5, 2), c(2, 2, 1)), 
+    a1 = matrix(0, 2, 1), P1 = diag(2), distribution = "negative binomial", 
+    init_theta = c(0,0)), NA)
+  expect_error(model1 <- ssm_ung(y[,1], Z = 1, phi = 2, 
+    T = 1, R = 0.5, P1 = 1, distribution = "negative binomial", 
+    init_theta = 0), NA)
+  expect_error(model2 <- ssm_ung(y[,2], Z = 1, phi = 2, 
+    T = 1, R = 0.5, P1 = 1, distribution = "negative binomial", 
+    init_theta = 0), NA)
+  expect_equivalent(gaussian_approx(model)$y, 
+    cbind(gaussian_approx(model1)$y, gaussian_approx(model2)$y))
+})

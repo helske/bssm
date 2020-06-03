@@ -14,7 +14,7 @@ double gaussian_loglik(const Rcpp::List model_, const int model_type) {
   
   double loglik = 0;
   switch (model_type) {
-  case -1: {
+  case 0: {
     ssm_mlg model(model_, 1);
     loglik = model.log_likelihood();
   } break;
@@ -45,6 +45,13 @@ double nongaussian_loglik(const Rcpp::List model_,
   arma::vec loglik(2);
 
   switch (model_type) {
+  case 0: {
+    ssm_mng model(model_, seed);
+    arma::cube alpha(model.m, model.n + 1, nsim);
+    arma::mat weights(nsim, model.n + 1);
+    arma::umat indices(nsim, model.n);
+    loglik = model.log_likelihood(sampling_method, nsim, alpha, weights, indices);
+  } break;
   case 1: {
     ssm_ung model(model_, seed);
     arma::cube alpha(model.m, model.n + 1, nsim);
