@@ -317,9 +317,21 @@ void ssm_ung::laplace_iter(const arma::vec& signal) {
     approx_model.y = y % approx_model.HH + signal - 1.0 - exptmp;
   } break;
   case 3: {
-    arma::vec exptmp = 1.0 / (arma::exp(signal) % u); // FIX?
-    approx_model.HH = 1.0 / phi + exptmp;
-    approx_model.y = signal + y % exptmp - 1.0;
+    // negative binomial
+    arma::vec exptmp = arma::exp(signal) % u;
+    approx_model.HH = square(phi + exptmp) / (phi * exptmp * (y + phi));
+    approx_model.y = signal + (phi + exptmp) * (y - exptmp) / ((y + phi) * exptmp);
+  } break;
+  case 4: {
+    // gamma
+    arma::vec exptmp = arma::exp(signal) % u;
+    approx_model.HH = exptmp / (y * phi);
+    approx_model.y = signal - exptmp / y + 1;
+  } break;
+  case 5: {
+    // gaussian, not actually used here as univariate gaussian belongs to ulg...
+    approx_model.HH = phi;
+    approx_model.y = y;
   } break;
   }
   approx_model.H = sqrt(approx_model.HH);

@@ -217,7 +217,7 @@ The main purpose of the `bssm` is to allow efficient MCMC-based inference for va
 
 ```{r mcmc_bsm}
 prior <- halfnormal(0.1, 1)
-UKgas_model <- bsm(log10(UKgas), sd_y = prior, sd_level = prior,
+UKgas_model <- bsm_lg(log10(UKgas), sd_y = prior, sd_level = prior,
   sd_slope = prior, sd_seasonal =  prior)
 
 mcmc_bsm <- run_mcmc(UKgas_model, iter = 4e4)

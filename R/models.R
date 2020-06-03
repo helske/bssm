@@ -131,7 +131,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #'
 #' where \eqn{\eta_t \sim N(0, I_k)} and
 #' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other,
-#' and \eqn{p(y_t | .)} is either Poisson, binomial or negative binomial distribution.
+#' and \eqn{p(y_t | .)} is either Poisson, binomial, gamma, or negative binomial distribution.
 #'
 #' @param y Observations as time series (or vector) of length \eqn{n}.
 #' @param Z System matrix Z of the observation equation. Either a vector of length m,
@@ -145,10 +145,10 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #' @param distribution distribution of the observation. Possible choices are
 #' \code{"poisson"}, \code{"binomial"}, and \code{"negative binomial"}.
 #' @param phi Additional parameter relating to the non-Gaussian distribution.
-#' For Negative binomial distribution this is the dispersion term, and for other
-#' distributions this is ignored.
-#' @param u Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
-#' term. For binomial, this is the number of trials.
+#' For negative binomial distribution this is the dispersion term, for gamma distribution
+#' this is the shape parameter, and for other distributions this is ignored.
+#' @param u Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, 
+#' this corresponds to the offset term. For binomial, this is the number of trials.
 #' @param state_names Names for the states.
 #' @param C Intercept terms \eqn{C_t} for the state equation, given as a
 #'  m times 1 or m times n matrix.
@@ -376,7 +376,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
     state_names = state_names), class = c("ssm_mlg", "gaussian"))
 }
 
-#' General Non-Gaussian/Non-linear State Space Model
+#' General Non-Gaussian State Space Model
 #'
 #' Constructs an object of class \code{ssm_mng} by defining the corresponding terms
 #' of the observation and state equation:
@@ -386,15 +386,8 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #'
 #' where \eqn{\eta_t \sim N(0, I_k)} and
 #' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and \eqn{p^i(y_t | .)}
-#' is either Poisson, binomial or negative binomial distribution for 
+#' is either Poisson, binomial, gamma, gaussian, or negative binomial distribution for 
 #' each observation series \eqn{i=1,...,k}.
-#'
-#' Compared to other models, these general models need a bit more effort from
-#' the user, as you must provide the several small C++ snippets which define the
-#' model structure. Note that due to the use of pointers, 
-#' you must recompile and construct the model objects in each `R` session, 
-#' i.e. saving and later loading the model object is not sufficient. 
-#' See examples in the package vignette.
 #' 
 #' @param y Observations as multivariate time series or matrix with dimensions n x p.
 #' @param Z System matrix Z of the observation equation as p x m matrix or p x m x n array.

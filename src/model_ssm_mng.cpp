@@ -260,6 +260,7 @@ void ssm_mng::laplace_iter(const arma::mat& signal) {
   for(unsigned int i = 0; i < p; i++) {
     switch(distribution(i)) {
     case 0: {
+  // svm, not actually used in multivariate models...
       arma::rowvec tmp = y.row(i);
       // avoid dividing by zero
       tmp(arma::find(arma::abs(tmp) < 1e-4)).fill(1e-4);
@@ -268,21 +269,36 @@ void ssm_mng::laplace_iter(const arma::mat& signal) {
       approx_model.y.row(i) = signal.row(i) + 1.0 - 0.5 * Hvec;
     } break;
     case 1: {
+      // poisson
       approx_model.HH.tube(i, i) = 1.0 / (arma::exp(signal.row(i)) % u.row(i));
       arma::rowvec Hvec = approx_model.HH.tube(i, i);
       approx_model.y.row(i) = y.row(i) % Hvec + signal.row(i) - 1.0;
     } break;
     case 2: {
+      // binomial
       arma::rowvec exptmp = arma::exp(signal.row(i));
       approx_model.HH.tube(i, i) = arma::square(1.0 + exptmp) / (u.row(i) % exptmp);
       arma::rowvec Hvec = approx_model.HH.tube(i, i);
       approx_model.y.row(i) = y.row(i) % Hvec + signal.row(i) - 1.0 - exptmp;
     } break;
     case 3: {
-      arma::rowvec exptmp = 1.0 / (arma::exp(signal.row(i)) % u.row(i));
-      approx_model.HH.tube(i, i) = 1.0 / phi(i) + exptmp;
-      arma::rowvec Hvec = approx_model.HH.tube(i, i);
-      approx_model.y.row(i) = signal.row(i) + y.row(i) % exptmp - 1.0;
+      // negative binomial
+      arma::rowvec exptmp = arma::exp(signal.row(i)) % u.row(i);
+      approx_model.HH.tube(i, i) = square(phi(i) + exptmp) / 
+        (phi(i) * exptmp * (y.row(i) + phi(i)));
+      approx_model.y.row(i) = signal.row(i) +
+        (phi(i) + exptmp) * (y.row(i) - exptmp) / ((y.row(i) + phi(i)) * exptmp);
+    } break;
+    case 4: {
+      // gamma
+      arma::rowvec exptmp = arma::exp(signal.row(i)) % u.row(i);
+      approx_model.HH.tube(i, i) = exptmp / (y.row(i) * phi(i));
+      approx_model.y.row(i) = signal.row(i) - exptmp / y.row(i) + 1;
+    } break;
+    case 5: {
+      // gaussian
+      approx_model.HH.tube(i, i) = phi(i);
+      approx_model.y.row(i) = y.row(i);
     } break;
     }
   }

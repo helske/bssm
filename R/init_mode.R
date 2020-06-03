@@ -19,7 +19,10 @@ init_mode <- function(y, u, distribution) {
       y[is.na(y) | y < 1/6] <- 1/6
       y <- log(y)
     },
-    stop("Argument distribution must be 'poisson', 'binomial', 'gamma' or 'negative binomial'.")
+    gaussian = {
+      
+    },
+    stop("Argument distribution must be 'poisson', 'binomial', 'gamma', 'gaussian', or 'negative binomial'.")
   )
   y
 }
