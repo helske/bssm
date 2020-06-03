@@ -79,6 +79,7 @@ double ssm_mng::log_prior_pdf(const arma::vec& x) const {
 // Note that the convergence is assessed only
 // by checking the changes in mode, not the actual function values
 void ssm_mng::approximate() {
+  
   // check if there is need to update the approximation
   if (approx_state < 1) {
     //update model
@@ -105,7 +106,6 @@ void ssm_mng::approximate() {
         i++;
         //Construct y and H for the Gaussian model
         laplace_iter(mode_estimate);
-       
         // compute new guess of mode
         arma::mat mode_estimate_new(p, n);
         arma::mat alpha = approx_model.fast_smoother().head_cols(n);
@@ -279,7 +279,7 @@ void ssm_mng::laplace_iter(const arma::mat& signal) {
       approx_model.y.row(i) = y.row(i) % Hvec + signal.row(i) - 1.0 - exptmp;
     } break;
     case 3: {
-      arma::vec exptmp = 1.0 / (arma::exp(signal.row(i)) % u.row(i));
+      arma::rowvec exptmp = 1.0 / (arma::exp(signal.row(i)) % u.row(i));
       approx_model.HH.tube(i, i) = 1.0 / phi(i) + exptmp;
       arma::rowvec Hvec = approx_model.HH.tube(i, i);
       approx_model.y.row(i) = signal.row(i) + y.row(i) % exptmp - 1.0;

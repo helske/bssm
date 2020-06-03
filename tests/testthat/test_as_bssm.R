@@ -41,5 +41,4 @@ test_that("Test conversion from SSModel to ssm_mng",{
   model_bssm$initial_mode <- as.ts(model_bssm$initial_mode)
   expect_error(conv_model_bssm <- as_bssm(model_KFAS, init_theta = c(0,0)), NA)
   expect_equivalent(model_bssm, conv_model_bssm)
-  
 })

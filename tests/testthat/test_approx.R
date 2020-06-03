@@ -121,6 +121,7 @@ test_that("multivariate iid model gives same results as two univariate models", 
   expect_error(model2 <- ssm_ung(y[,2], Z = 1, phi = 2, 
     T = 1, R = 0.5, P1 = 1, distribution = "negative binomial", 
     init_theta = 0), NA)
-  expect_equivalent(gaussian_approx(model)$y, 
-    cbind(gaussian_approx(model1)$y, gaussian_approx(model2)$y))
+  expect_equivalent(gaussian_approx(model, conv_tol = 1e-12)$y, 
+    cbind(gaussian_approx(model1, conv_tol = 1e-12)$y, 
+      gaussian_approx(model2, conv_tol = 1e-12)$y), tol = 1e-6)
 })
