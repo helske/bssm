@@ -558,6 +558,7 @@ template void approx_mcmc::approx_state_posterior(bsm_ng model, const unsigned i
 template void approx_mcmc::approx_state_posterior(svm model, const unsigned int n_threads);
 template void approx_mcmc::approx_state_posterior(ar1_ng model, const unsigned int n_threads);
 template void approx_mcmc::approx_state_posterior(ssm_nlg model, const unsigned int n_threads);
+template void approx_mcmc::approx_state_posterior(ssm_mng model, const unsigned int n_threads);
 
 template <class T>
 void approx_mcmc::approx_state_posterior(T model, const unsigned int n_threads) {
@@ -594,6 +595,7 @@ template void approx_mcmc::approx_state_summary(bsm_ng model);
 template void approx_mcmc::approx_state_summary(svm model);
 template void approx_mcmc::approx_state_summary(ar1_ng model);
 template void approx_mcmc::approx_state_summary(ssm_nlg model);
+template void approx_mcmc::approx_state_summary(ssm_mng model);
 
 template <class T>
 void approx_mcmc::approx_state_summary(T model) {
