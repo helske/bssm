@@ -24,7 +24,7 @@ approx_mcmc::approx_mcmc(const unsigned int iter,
   mcmc(iter, burnin, thin, n, m,
     target_acceptance, gamma, S, output_type),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
-    mode_storage(arma::cube(n, p, n_samples * store_modes)),
+    mode_storage(arma::cube(p, n, n_samples * store_modes)),
     approx_loglik_storage(arma::vec(n_samples)),
     prior_storage(arma::vec(n_samples)), store_modes(store_modes) {
 }
@@ -92,6 +92,7 @@ template void approx_mcmc::amcmc(bsm_ng model, const bool end_ram);
 template void approx_mcmc::amcmc(svm model, const bool end_ram);
 template void approx_mcmc::amcmc(ar1_ng model, const bool end_ram);
 template void approx_mcmc::amcmc(ssm_nlg model, const bool end_ram);
+template void approx_mcmc::amcmc(ssm_mng model, const bool end_ram);
 
 template<class T>
 void approx_mcmc::amcmc(T model, const bool end_ram) {
@@ -118,7 +119,7 @@ void approx_mcmc::amcmc(T model, const bool end_ram) {
   
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
-  arma::mat mode(model.n, model.p);
+  arma::mat mode(model.p, model.n);
   mode = model.mode_estimate;
   
   bool new_value = true;
@@ -141,14 +142,12 @@ void approx_mcmc::amcmc(T model, const bool end_ram) {
     arma::vec theta_prop = theta + S * u;
     // compute prior
     double logprior_prop = model.log_prior_pdf(theta_prop);
-    
     if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
       model.update_model(theta_prop);
       
       arma::vec ll = model.log_likelihood(1, 0, alpha, weights, indices);
       double approx_loglik_prop = ll(0);
-      
       acceptance_prob = std::min(1.0, std::exp(approx_loglik_prop - approx_loglik +
         logprior_prop - logprior));
       

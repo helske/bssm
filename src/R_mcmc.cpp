@@ -318,6 +318,34 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
   }
   
   switch (model_type) {
+  case 0: {
+    ssm_mng model(model_, seed);
+    mcmc_run.amcmc(model, end_ram);
+    if(approx) {
+      if(output_type == 1) {
+        mcmc_run.approx_state_posterior(model, n_threads);
+      } else {
+        if(output_type == 2) {
+          mcmc_run.approx_state_summary(model);
+        }
+      }
+    } else {
+      if(is_type == 3) {
+        mcmc_run.expand();
+      }
+      switch (sampling_method) {
+      case 1:
+        mcmc_run.is_correction_psi(model, nsim, is_type, n_threads);
+        break;
+      case 2:
+        mcmc_run.is_correction_bsf(model, nsim, is_type, n_threads);
+        break;
+      case 3:
+        mcmc_run.is_correction_spdk(model, nsim, is_type, n_threads);
+        break;
+      }
+    } 
+  } break;
   case 1: {
     ssm_ung model(model_, seed);
     mcmc_run.amcmc(model, end_ram);
