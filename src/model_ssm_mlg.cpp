@@ -53,13 +53,13 @@ ssm_mlg::ssm_mlg(const arma::mat& y, const arma::cube& Z,
 
 inline void ssm_mlg::compute_RR(){
   for (unsigned int t = 0; t < R.n_slices; t++) {
-    RR.slice(t) = R.slice(t * Rtv) * R.slice(t * Rtv).t();
+    RR.slice(t) = R.slice(t) * R.slice(t).t();
   }
 }
 
 inline void ssm_mlg::compute_HH(){
   for (unsigned int t = 0; t < H.n_slices; t++) {
-    HH.slice(t) = H.slice(t * Htv) * H.slice(t * Htv).t();
+    HH.slice(t) = H.slice(t) * H.slice(t).t();
   }
 }
 

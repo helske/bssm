@@ -64,4 +64,19 @@ test_that("proper arguments for svm don't throw an error",{
   expect_error(svm(1:10, uniform(0.9,-0.9, 0.99), halfnormal(1,2), halfnormal(1,2)), NA)
 })
 
-
+test_that("multivariate non-gaussian model", {
+  set.seed(1)
+  y <- cbind(
+    rpois(10, exp(cumsum(rnorm(10, sd = 0.1)))),
+    rpois(10, exp(cumsum(rnorm(10, sd = 0.1)))))
+  pfun <- function(theta) {
+    dnorm(exp(theta), 0, 1, log = TRUE)
+  }
+  ufun <- function(theta) {
+    list(R = array(diag(exp(theta)), c(2, 2, 1)))
+  }
+  expect_error(mng_model <- ssm_mng(y = y, Z = diag(2), T = diag(2), 
+    R = 0.1 * diag(2), P1 = diag(2), distribution = "poisson",
+    init_theta = log(c(0.1, 0.1)), prior_fn = pfun, update_fn = ufun), NA)
+  expect_error(logLik(mng_model, nsim = 10), NA)
+})

@@ -34,7 +34,7 @@ ssm_mng::ssm_mng(const Rcpp::List model, const unsigned int seed, const double z
 
 inline void ssm_mng::compute_RR(){
   for (unsigned int t = 0; t < R.n_slices; t++) {
-    RR.slice(t) = R.slice(t * Rtv) * R.slice(t * Rtv).t();
+    RR.slice(t) = R.slice(t) * R.slice(t).t();
   }
 }
 
@@ -259,21 +259,21 @@ void ssm_mng::laplace_iter(const arma::mat& signal) {
   
   for(unsigned int i = 0; i < p; i++) {
     switch(distribution(i)) {
-    case 0: {
-  // svm, not actually used in multivariate models...
-  // arma::rowvec tmp = y.row(i);
-  // // avoid dividing by zero
-  // tmp(arma::find(arma::abs(tmp) < 1e-4)).fill(1e-4);
-  // approx_model.HH.tube(i, i) = 2.0 * arma::exp(signal.row(i)) / arma::square(tmp/phi(i));
-  // arma::rowvec Hvec = approx_model.HH.tube(i, i);
-  // approx_model.y.row(i) = signal.row(i) + 1.0 - 0.5 * Hvec;
-} break;
+    //  case 0: {
+    // svm, not actually used in multivariate models...
+    // arma::rowvec tmp = y.row(i);
+    // // avoid dividing by zero
+    // tmp(arma::find(arma::abs(tmp) < 1e-4)).fill(1e-4);
+    // approx_model.HH.tube(i, i) = 2.0 * arma::exp(signal.row(i)) / arma::square(tmp/phi(i));
+    // arma::rowvec Hvec = approx_model.HH.tube(i, i);
+    // approx_model.y.row(i) = signal.row(i) + 1.0 - 0.5 * Hvec;
+    //} break;
     case 1: {
-      // poisson
-      approx_model.HH.tube(i, i) = 1.0 / (arma::exp(signal.row(i)) % u.row(i));
-      arma::rowvec Hvec = approx_model.HH.tube(i, i);
-      approx_model.y.row(i) = y.row(i) % Hvec + signal.row(i) - 1.0;
-    } break;
+  // poisson
+  approx_model.HH.tube(i, i) = 1.0 / (arma::exp(signal.row(i)) % u.row(i));
+  arma::rowvec Hvec = approx_model.HH.tube(i, i);
+  approx_model.y.row(i) = y.row(i) % Hvec + signal.row(i) - 1.0;
+} break;
     case 2: {
       // binomial
       arma::rowvec exptmp = arma::exp(signal.row(i));
@@ -350,7 +350,7 @@ arma::vec ssm_mng::log_weights(const unsigned int t,  const arma::cube& alpha) c
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
   
   for (unsigned int i = 0; i < alpha.n_slices; i++) {
-    arma::vec simsignal = D.col(t * Dtv) + Z.slice(t) * alpha.slice(i).col(t);
+    arma::vec simsignal = D.col(t * Dtv) + Z.slice(t * Ztv) * alpha.slice(i).col(t);
     for(unsigned int j = 0; j < p; j++) {
       if (arma::is_finite(y(j, t))) {
         switch(distribution(j)) {
@@ -394,7 +394,7 @@ arma::vec ssm_mng::log_obs_density(const unsigned int t,
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
   
   for (unsigned int i = 0; i < alpha.n_slices; i++) {
-    arma::vec simsignal = D.col(t * Dtv) + Z.slice(t) * alpha.slice(i).col(t);
+    arma::vec simsignal = D.col(t * Dtv) + Z.slice(t * Ztv) * alpha.slice(i).col(t);
     for(unsigned int j = 0; j < p; j++) {
       if (arma::is_finite(y(j, t))) {
         switch(distribution(j)) {
@@ -422,8 +422,7 @@ arma::vec ssm_mng::log_obs_density(const unsigned int t,
       }
     }
   }
-}
-return weights;
+  return weights;
 }
 
 
@@ -538,7 +537,6 @@ double ssm_mng::psi_filter(const unsigned int nsim, arma::cube& alpha,
 
 double ssm_mng::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
-  
   arma::uvec nonzero = arma::find(P1.diag() > 0);
   arma::mat L_P1(m, m, arma::fill::zeros);
   if (nonzero.n_elem > 0) {
@@ -553,7 +551,6 @@ double ssm_mng::bsf_filter(const unsigned int nsim, arma::cube& alpha,
     }
     alpha.slice(i).col(0) = a1 + L_P1 * um;
   }
-  
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec normalized_weights(nsim);
   double loglik = 0.0;
@@ -580,26 +577,22 @@ double ssm_mng::bsf_filter(const unsigned int nsim, arma::cube& alpha,
     for (unsigned int i = 0; i < nsim; i++) {
       r(i) = unif(engine);
     }
-    
     indices.col(t) = stratified_sample(normalized_weights, r, nsim);
-    
     arma::mat alphatmp(m, nsim);
     
     for (unsigned int i = 0; i < nsim; i++) {
       alphatmp.col(i) = alpha.slice(indices(i, t)).col(t);
     }
-    
     for (unsigned int i = 0; i < nsim; i++) {
       arma::vec uk(k);
       for(unsigned int j = 0; j < k; j++) {
         uk(j) = normal(engine);
       }
-      alpha.slice(i).col(t + 1) = C.col(t * Ctv) + T.slice(t) * alphatmp.col(i) + R.slice(t) * uk;
+      alpha.slice(i).col(t + 1) = C.col(t * Ctv) + 
+        T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
     }
-    
     if ((t < (n - 1)) && arma::uvec(arma::find_nonfinite(y.col(t + 1))).n_elem < p) {
       weights.col(t + 1) = log_obs_density(t + 1, alpha);
-      
       double max_weight = weights.col(t + 1).max();
       weights.col(t + 1) = arma::exp(weights.col(t + 1) - max_weight);
       double sum_weights = arma::accu(weights.col(t + 1));

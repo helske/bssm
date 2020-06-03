@@ -43,7 +43,7 @@ ssm_ung::ssm_ung(const Rcpp::List model, const unsigned int seed, const double z
 
 inline void ssm_ung::compute_RR(){
   for (unsigned int t = 0; t < R.n_slices; t++) {
-    RR.slice(t) = R.slice(t * Rtv) * R.slice(t * Rtv).t();
+    RR.slice(t) = R.slice(t) * R.slice(t).t();
   }
 }
 
