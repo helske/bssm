@@ -48,7 +48,7 @@ inline void ssm_ung::compute_RR(){
 }
 
 void ssm_ung::update_model(const arma::vec& new_theta) {
-
+  
   Rcpp::List model_list =
     update_fn(Rcpp::NumericVector(new_theta.begin(), new_theta.end()));
   
@@ -108,7 +108,7 @@ void ssm_ung::approximate() {
     approx_model.C = C;
     approx_model.RR = RR;
     approx_model.xbeta = xbeta;
-
+    
     // don't update y and H if using global approximation and we have updated them already
     if(!local_approx & (approx_state == 0)) {
       if (distribution == 0) {
@@ -127,7 +127,7 @@ void ssm_ung::approximate() {
         i++;
         //Construct y and H for the Gaussian model
         laplace_iter(mode_estimate);
-       
+        
         // compute new guess of mode
         arma::vec mode_estimate_new(n);
         if (distribution == 0) {
@@ -150,23 +150,23 @@ void ssm_ung::approximate() {
 // construct approximating model from fixed mode estimate, no iterations
 // used in IS-correction
 void ssm_ung::approximate_for_is(const arma::mat& mode_estimate) {
-
-    approx_model.Z = Z;
-    approx_model.T = T;
-    approx_model.R = R;
-    approx_model.a1 = a1;
-    approx_model.P1 = P1;
-    approx_model.beta = beta;
-    approx_model.D = D;
-    approx_model.C = C;
-    approx_model.RR = RR;
-    approx_model.xbeta = xbeta;
-    //Construct y and H for the Gaussian model
-    laplace_iter(mode_estimate.col(0));
-    update_scales();
-    approx_loglik = 0.0;
-    approx_model.engine = engine;
-    approx_state = 1;
+  
+  approx_model.Z = Z;
+  approx_model.T = T;
+  approx_model.R = R;
+  approx_model.a1 = a1;
+  approx_model.P1 = P1;
+  approx_model.beta = beta;
+  approx_model.D = D;
+  approx_model.C = C;
+  approx_model.RR = RR;
+  approx_model.xbeta = xbeta;
+  //Construct y and H for the Gaussian model
+  laplace_iter(mode_estimate.col(0));
+  update_scales();
+  approx_loglik = 0.0;
+  approx_model.engine = engine;
+  approx_state = 1;
 }
 
 // method = 1 psi-APF, 2 = BSF, 3 = SPDK, 4 = IEKF (not applicable)
@@ -297,7 +297,7 @@ void ssm_ung::update_scales() {
  */
 void ssm_ung::laplace_iter(const arma::vec& signal) {
   
- 
+  
   switch(distribution) {
   case 0: {
   arma::vec tmp = y;
@@ -328,11 +328,11 @@ void ssm_ung::laplace_iter(const arma::vec& signal) {
     approx_model.HH = exptmp / (y * phi);
     approx_model.y = signal - exptmp / y + 1;
   } break;
-  case 5: {
-    // gaussian, not actually used here as univariate gaussian belongs to ulg...
-    approx_model.HH = phi;
-    approx_model.y = y;
-  } break;
+    // case 5: {
+    //   // gaussian, not actually used here as univariate gaussian belongs to ulg...
+    //   approx_model.HH = phi;
+    //   approx_model.y = y;
+    // } break;
   }
   approx_model.H = sqrt(approx_model.HH);
 }
@@ -357,6 +357,9 @@ double ssm_ung::compute_const_term() {
     break;
   case 3 :
     const_term = negbin_log_const(y(y_ind), u(y_ind), phi);
+    break;  
+  case 4 :
+    const_term = gamma_log_const(y(y_ind), u(y_ind), phi);
     break;
   }
   return const_term - norm_log_const(approx_model.y(y_ind), approx_model.H(y_ind));
@@ -406,7 +409,7 @@ arma::vec ssm_ung::log_weights(
           0.5 * std::pow((approx_model.y(t) - simsignal) / approx_model.H(t), 2.0);
       }
       break;
-    case 3  :
+    case 3  : //negbin
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
         double simsignal = arma::as_scalar(D(t * Dtv) + Z.col(t * Ztv).t() *
           alpha.slice(i).col(t) + xbeta(t));
@@ -415,6 +418,18 @@ arma::vec ssm_ung::log_weights(
           0.5 * std::pow((approx_model.y(t) - simsignal) / approx_model.H(t), 2.0);
       }
       break;
+    case 4  : //gamma
+      for (unsigned int i = 0; i < alpha.n_slices; i++) {
+        double simsignal = arma::as_scalar(D(t * Dtv) + Z.col(t * Ztv).t() *
+          alpha.slice(i).col(t) + xbeta(t));
+        weights(i) = -phi * simsignal - (y(t) * phi * exp(-simsignal) / u(t)) +
+          0.5 * std::pow((approx_model.y(t) - simsignal) / approx_model.H(t), 2.0);
+        
+      }
+      break;
+      // case 5  :
+      //   Rcpp::stop("Impossible thing happened: Univariate non-gaussian model is Gaussian!")
+      //   break;
     }
   }
   return weights;
@@ -459,6 +474,14 @@ arma::vec ssm_ung::log_obs_density(const unsigned int t,
           alpha.slice(i).col(t) + xbeta(t));
         weights(i) = y(t) * simsignal - (y(t) + phi) *
           std::log(phi + u(t) * std::exp(simsignal));
+      }
+      break;
+    case 4  :
+      for (unsigned int i = 0; i < alpha.n_slices; i++) {
+        double simsignal = arma::as_scalar(D(t * Dtv) + Z.col(t * Ztv).t() *
+          alpha.slice(i).col(t) + xbeta(t));
+        weights(i) = -phi * simsignal - (y(t) * phi * exp(-simsignal) / u(t));
+        
       }
       break;
     }
@@ -668,6 +691,10 @@ double ssm_ung::bsf_filter(const unsigned int nsim, arma::cube& alpha,
     arma::uvec finite_y(find_finite(y));
     loglik += negbin_log_const(y(finite_y), u(finite_y), phi);
   } break;
+  case 4 : {
+    arma::uvec finite_y(find_finite(y));
+    loglik += gamma_log_const(y(finite_y), u(finite_y), phi);
+  } break;
   }
   return loglik;
 }
@@ -755,6 +782,14 @@ arma::mat ssm_ung::sample_model(
         }
       }
       break;
+    case 4:
+      for (unsigned int i = 0; i < nsim; i++) {
+        for (unsigned int t = 0; t < n; t++) {
+          y(0, t, i) = std::exp(xbeta(t) + D(t * Dtv) +
+            arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
+        }
+      }
+      break;
     }
     
     if (predict_type == 1) {
@@ -788,6 +823,15 @@ arma::mat ssm_ung::sample_model(
             std::negative_binomial_distribution<>
             negative_binomial(phi, phi / (phi + u(t) * y(0, t, i)));
             y(0, t, i) = negative_binomial(engine);
+          }
+        }
+        break;
+      case 4:
+        for (unsigned int i = 0; i < nsim; i++) {
+          for (unsigned int t = 0; t < n; t++) {
+            std::gamma_distribution<>
+            gamma(phi, u(t) * y(0, t, i) / phi);
+            y(0, t, i) = gamma(engine);
           }
         }
         break;

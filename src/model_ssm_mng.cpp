@@ -113,7 +113,7 @@ void ssm_mng::approximate() {
           mode_estimate_new.col(t) = 
             D.col(Dtv * t) + Z.slice(Ztv * t) * alpha.col(t);
         }
-     
+        
         diff = arma::accu(arma::square(mode_estimate_new - mode_estimate)) / (n * p);
         mode_estimate = mode_estimate_new;
       }
@@ -256,18 +256,18 @@ void ssm_mng::update_scales() {
  * 3 = Negative binomial
  */
 void ssm_mng::laplace_iter(const arma::mat& signal) {
-
+  
   for(unsigned int i = 0; i < p; i++) {
     switch(distribution(i)) {
     case 0: {
   // svm, not actually used in multivariate models...
-      arma::rowvec tmp = y.row(i);
-      // avoid dividing by zero
-      tmp(arma::find(arma::abs(tmp) < 1e-4)).fill(1e-4);
-      approx_model.HH.tube(i, i) = 2.0 * arma::exp(signal.row(i)) / arma::square(tmp/phi(i));
-      arma::rowvec Hvec = approx_model.HH.tube(i, i);
-      approx_model.y.row(i) = signal.row(i) + 1.0 - 0.5 * Hvec;
-    } break;
+  // arma::rowvec tmp = y.row(i);
+  // // avoid dividing by zero
+  // tmp(arma::find(arma::abs(tmp) < 1e-4)).fill(1e-4);
+  // approx_model.HH.tube(i, i) = 2.0 * arma::exp(signal.row(i)) / arma::square(tmp/phi(i));
+  // arma::rowvec Hvec = approx_model.HH.tube(i, i);
+  // approx_model.y.row(i) = signal.row(i) + 1.0 - 0.5 * Hvec;
+} break;
     case 1: {
       // poisson
       approx_model.HH.tube(i, i) = 1.0 / (arma::exp(signal.row(i)) % u.row(i));
@@ -311,9 +311,9 @@ double ssm_mng::compute_const_term() const {
   for(unsigned int i = 0; i < p; i++) {
     arma::uvec y_ind(find_finite(y.row(i)));
     switch(distribution(i)) {
-    case 0 :
-      const_term += y_ind.n_elem * norm_log_const(phi(i));
-      break;
+    // case 0 :
+    //   const_term += y_ind.n_elem * norm_log_const(phi(i));
+    //   break;
     case 1 : 
       for(unsigned int t = 0; t < y_ind.n_elem; t++) {
         const_term += poisson_log_const(y(i, y_ind(t)), u(i, y_ind(t)));
@@ -328,6 +328,14 @@ double ssm_mng::compute_const_term() const {
       for(unsigned int t = 0; t < y_ind.n_elem; t++) {
         const_term += negbin_log_const(y(i, y_ind(t)), u(i, y_ind(t)), phi(i));
       }
+      break;
+    case 4 : 
+      for(unsigned int t = 0; t < y_ind.n_elem; t++) {
+        const_term += gamma_log_const(y(i, y_ind(t)), u(i, y_ind(t)), phi(i));
+      }
+      break;
+    case 5 : 
+      const_term += y_ind.n_elem * norm_log_const(phi(i));
       break;
     }
     for(unsigned int t = 0; t < y_ind.n_elem; t++) {
@@ -346,10 +354,10 @@ arma::vec ssm_mng::log_weights(const unsigned int t,  const arma::cube& alpha) c
     for(unsigned int j = 0; j < p; j++) {
       if (arma::is_finite(y(j, t))) {
         switch(distribution(j)) {
-        case 0  :
-          weights(i) += -0.5 * (simsignal(j) + std::pow(y(j,t) / phi(j), 2.0) * 
-            std::exp(-simsignal(j)));
-          break;
+        // case 0  :
+        //   weights(i) += -0.5 * (simsignal(j) + std::pow(y(j,t) / phi(j), 2.0) * 
+        //     std::exp(-simsignal(j)));
+        //   break;
         case 1  :
           weights(i) += y(j,t) * simsignal(j) - u(j,t) * std::exp(simsignal(j));
           break;
@@ -360,8 +368,14 @@ arma::vec ssm_mng::log_weights(const unsigned int t,  const arma::cube& alpha) c
           weights(i) += y(j,t) * simsignal(j) - (y(j,t) + phi(j)) *
             std::log(phi(j) + u(j,t) * std::exp(simsignal(j)));
           break;
+        case 4 :
+          weights(i) += -phi(j) * simsignal(j) - (y(j,t) * phi(j) * exp(-simsignal(j)) / u(j,t));
+          break;
+        case 5 :
+          weights(i) += -0.5 * std::pow((y(j,t) - simsignal(j)) / phi(j), 2.0);
+          break;
         }
-        weights += 
+        weights(i) += 
           0.5 * std::pow((approx_model.y(j,t) - simsignal(j)) / approx_model.H(j,j,t), 2.0);
       }
     }
@@ -384,10 +398,10 @@ arma::vec ssm_mng::log_obs_density(const unsigned int t,
     for(unsigned int j = 0; j < p; j++) {
       if (arma::is_finite(y(j, t))) {
         switch(distribution(j)) {
-        case 0  :
-          weights(i) += -0.5 * (simsignal(j) + std::pow(y(j,t) / phi(j), 2.0) * 
-            std::exp(-simsignal(j)));
-          break;
+        // case 0  :
+        //   weights(i) += -0.5 * (simsignal(j) + std::pow(y(j,t) / phi(j), 2.0) * 
+        //     std::exp(-simsignal(j)));
+        //   break;
         case 1  :
           weights(i) += y(j,t) * simsignal(j) - u(j,t) * std::exp(simsignal(j));
           break;
@@ -398,11 +412,18 @@ arma::vec ssm_mng::log_obs_density(const unsigned int t,
           weights(i) += y(j,t) * simsignal(j) - (y(j,t) + phi(j)) *
             std::log(phi(j) + u(j,t) * std::exp(simsignal(j)));
           break;
+        case 4 :
+          weights(i) += -phi(j) * simsignal(j) - (y(j,t) * phi(j) * exp(-simsignal(j)) / u(j,t));
+          break;
+        case 5 :
+          weights(i) += -0.5 * std::pow((y(j,t) - simsignal(j)) / phi(j), 2.0);
+          break;
         }
       }
     }
   }
-  return weights;
+}
+return weights;
 }
 
 
@@ -597,9 +618,9 @@ double ssm_mng::bsf_filter(const unsigned int nsim, arma::cube& alpha,
     arma::uvec y_ind(find_finite(y.row(i)));
     // constant part of the log-likelihood
     switch(distribution(i)) {
-    case 0 :
-      loglik += y_ind.n_elem * norm_log_const(phi(i));
-      break;
+    // case 0 :
+    //   loglik += y_ind.n_elem * norm_log_const(phi(i));
+    //   break;
     case 1 : 
       for(unsigned int t = 0; t < y_ind.n_elem; t++) {
         loglik += poisson_log_const(y(i, y_ind(t)), u(i, y_ind(t)));
@@ -614,6 +635,14 @@ double ssm_mng::bsf_filter(const unsigned int nsim, arma::cube& alpha,
       for(unsigned int t = 0; t < y_ind.n_elem; t++) {
         loglik += negbin_log_const(y(i,y_ind(t)), u(i,y_ind(t)), phi(i));
       }
+      break;
+    case 4 :
+      for(unsigned int t = 0; t < y_ind.n_elem; t++) {
+        loglik += gamma_log_const(y(i,y_ind(t)), u(i,y_ind(t)), phi(i));
+      }
+      break;
+    case 5 :
+      loglik += y_ind.n_elem * norm_log_const(phi(i));
       break;
     }
   }

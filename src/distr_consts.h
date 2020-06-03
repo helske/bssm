@@ -10,10 +10,12 @@ double norm_log_const(double sd);
 double poisson_log_const(double y, double u);
 double binomial_log_const(double y, double u);
 double negbin_log_const(double y, double u, double phi);
+double gamma_log_const(double y, double u, double phi);
 
 double norm_log_const(const arma::vec& y, const arma::vec& sd);
 double poisson_log_const(const arma::vec& y, const arma::vec& u);
 double binomial_log_const(const arma::vec& y, const arma::vec& u);
-double negbin_log_const(const arma::vec&  y, const arma::vec& u, double phi);
+double negbin_log_const(const arma::vec& y, const arma::vec& u, double phi);
+double gamma_log_const(const arma::vec& y, const arma::vec& u, double phi);
 
 #endif
