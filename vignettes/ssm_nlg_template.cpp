@@ -3,6 +3,7 @@
 
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(BH)]]
 // [[Rcpp::interfaces(r, cpp)]]
 
 // Function for the prior mean of alpha_1
