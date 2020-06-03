@@ -20,7 +20,7 @@ ssm_ung::ssm_ung(const Rcpp::List model, const unsigned int seed, const double z
     distribution(model["distribution"]),
     max_iter(model["max_iter"]), conv_tol(model["conv_tol"]), 
     local_approx(model["local_approx"]),
-    initial_mode(Rcpp::as<arma::vec>(model["initial_mode"])),
+    initial_mode((Rcpp::as<arma::mat>(model["initial_mode"])).t()),
     mode_estimate(initial_mode),
     approx_state(-1),
     approx_loglik(0.0), scales(arma::vec(n, arma::fill::zeros)),
@@ -112,12 +112,12 @@ void ssm_ung::approximate() {
     // don't update y and H if using global approximation and we have updated them already
     if(!local_approx & (approx_state == 0)) {
       if (distribution == 0) {
-        mode_estimate = arma::vectorise(approx_model.fast_smoother().head_cols(n));
+        mode_estimate = approx_model.fast_smoother().head_cols(n);
       } else {
         arma::mat alpha = approx_model.fast_smoother().head_cols(n);
         for (unsigned int t = 0; t < n; t++) {
-          mode_estimate(t) = arma::as_scalar(xbeta(t) + D(Dtv * t) + 
-            Z.col(Ztv * t).t() * alpha.col(t));
+          mode_estimate.col(t) = xbeta(t) + D(Dtv * t) + 
+            Z.col(Ztv * t).t() * alpha.col(t);
         }
       }
     } else {
@@ -126,21 +126,21 @@ void ssm_ung::approximate() {
       while(i < max_iter && diff > conv_tol) {
         i++;
         //Construct y and H for the Gaussian model
-        laplace_iter(mode_estimate);
+        laplace_iter(arma::vectorise(mode_estimate));
         
         // compute new guess of mode
-        arma::vec mode_estimate_new(n);
+        arma::mat mode_estimate_new(1, n);
         if (distribution == 0) {
-          mode_estimate_new = arma::vectorise(approx_model.fast_smoother().head_cols(n));
+          mode_estimate_new = approx_model.fast_smoother().head_cols(n);
         } else {
           arma::mat alpha = approx_model.fast_smoother().head_cols(n);
           for (unsigned int t = 0; t < n; t++) {
-            mode_estimate_new(t) = arma::as_scalar(xbeta(t) + 
-              D(Dtv * t) + Z.col(Ztv * t).t() * alpha.col(t));
+            mode_estimate_new.col(t) = xbeta(t) + 
+              D(Dtv * t) + Z.col(Ztv * t).t() * alpha.col(t);
           }
         }
         
-        diff = arma::mean(arma::square(mode_estimate_new - mode_estimate));
+        diff = arma::accu(arma::square(mode_estimate_new - mode_estimate)) / n;
         mode_estimate = mode_estimate_new;
       }
     }
@@ -149,7 +149,7 @@ void ssm_ung::approximate() {
 }
 // construct approximating model from fixed mode estimate, no iterations
 // used in IS-correction
-void ssm_ung::approximate_for_is(const arma::mat& mode_estimate) {
+void ssm_ung::approximate_for_is(const arma::mat& mode_estimate_) {
   
   approx_model.Z = Z;
   approx_model.T = T;
@@ -162,11 +162,11 @@ void ssm_ung::approximate_for_is(const arma::mat& mode_estimate) {
   approx_model.RR = RR;
   approx_model.xbeta = xbeta;
   //Construct y and H for the Gaussian model
-  laplace_iter(mode_estimate.col(0));
+  mode_estimate = mode_estimate_;
+  laplace_iter(arma::vectorise(mode_estimate));
   update_scales();
   approx_loglik = 0.0;
-  approx_model.engine = engine;
-  approx_state = 1;
+  approx_state = 2;
 }
 
 // method = 1 psi-APF, 2 = BSF, 3 = SPDK, 4 = IEKF (not applicable)
@@ -186,10 +186,11 @@ arma::vec ssm_ung::log_likelihood(
       loglik(1) = loglik(0);
     } else {
       // check that approx_model matches theta
-      if(approx_state != 1) {
-        mode_estimate = initial_mode; //always start from the same value
-        approximate(); 
-        
+      if(approx_state < 2) {
+        if (approx_state < 1) {
+          mode_estimate = initial_mode;
+          approximate(); 
+        }
         // compute the log-likelihood of the approximate model
         double gaussian_loglik = approx_model.log_likelihood();
         // compute unnormalized mode-based correction terms 
@@ -220,9 +221,11 @@ arma::vec ssm_ung::log_likelihood(
     } 
   } else {
     // check that approx_model matches theta
-    if(approx_state != 1) {
-      mode_estimate = initial_mode;
-      approximate(); 
+    if(approx_state < 2) {
+      if (approx_state < 1) {
+        mode_estimate = initial_mode;
+        approximate(); 
+      }
       // compute the log-likelihood of the approximate model
       double gaussian_loglik = approx_model.log_likelihood();
       // compute unnormalized mode-based correction terms 
@@ -508,10 +511,11 @@ arma::vec ssm_ung::log_obs_density(const unsigned int t,
 double ssm_ung::psi_filter(const unsigned int nsim, arma::cube& alpha, 
   arma::mat& weights, arma::umat& indices) {
   
-  if(approx_state != 1) {
-    mode_estimate = initial_mode;
-    approximate(); 
-    
+  if(approx_state < 2) {
+    if (approx_state < 1) {
+      mode_estimate = initial_mode;
+      approximate(); 
+    }
     // compute the log-likelihood of the approximate model
     double gaussian_loglik = approx_model.log_likelihood();
     // compute unnormalized mode-based correction terms 

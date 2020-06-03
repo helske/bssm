@@ -118,13 +118,13 @@ void ssm_mng::approximate() {
         mode_estimate = mode_estimate_new;
       }
     }
-    approx_state = 1;
+    approx_state = 1; //approx matches theta, approx_loglik does not match
   }
   
 }
 // construct approximating model from fixed mode estimate, no iterations
 // used in IS-correction
-void ssm_mng::approximate_for_is(const arma::mat& mode_estimate) {
+void ssm_mng::approximate_for_is(const arma::mat& mode_estimate_) {
   
   approx_model.Z = Z;
   approx_model.T = T;
@@ -135,11 +135,11 @@ void ssm_mng::approximate_for_is(const arma::mat& mode_estimate) {
   approx_model.C = C;
   approx_model.RR = RR;
   //Construct y and H for the Gaussian model
+  mode_estimate = mode_estimate_;
   laplace_iter(mode_estimate);
   update_scales();
   approx_loglik = 0.0;
-  approx_model.engine = engine;
-  approx_state = 1;
+  approx_state = 2;
 }
 
 // method = 1 psi-APF, 2 = BSF, 3 = SPDK (not applicable), 4 = IEKF (not applicable)
@@ -158,11 +158,12 @@ arma::vec ssm_mng::log_likelihood(
       loglik(0) = bsf_filter(nsim, alpha, weights, indices);
       loglik(1) = loglik(0);
     } else {
-      // check that approx_model matches theta
-      if(approx_state != 1) {
-        mode_estimate = initial_mode;
-        approximate(); 
-        
+      // check that approx_model matches theta and approx_loglik
+      if(approx_state < 2) {
+        if (approx_state < 1) {
+          mode_estimate = initial_mode;
+          approximate(); 
+        }
         // compute the log-likelihood of the approximate model
         double gaussian_loglik = approx_model.log_likelihood();
         // compute unnormalized mode-based correction terms 
@@ -193,9 +194,11 @@ arma::vec ssm_mng::log_likelihood(
     } 
   } else {
     // check that approx_model matches theta
-    if(approx_state != 1) {
-      mode_estimate = initial_mode;
-      approximate(); 
+    if(approx_state < 2) {
+      if (approx_state < 1) {
+        mode_estimate = initial_mode;
+        approximate(); 
+      }
       // compute the log-likelihood of the approximate model
       double gaussian_loglik = approx_model.log_likelihood();
       // compute unnormalized mode-based correction terms 
@@ -383,6 +386,13 @@ arma::vec ssm_mng::log_weights(const unsigned int t,  const arma::cube& alpha) c
   return weights;
 }
 
+arma::vec ssm_mng::importance_weights(const arma::cube& alpha) const {
+  arma::vec weights(alpha.n_slices, arma::fill::zeros);
+  for(unsigned int t = 0; t < n; t++) {
+    weights += log_weights(t, alpha);
+  }
+  return weights;
+}
 // Logarithms of _normalized_ densities g(y_t | alpha_t)
 /*
  * t:             Time point where the densities are computed
@@ -445,10 +455,11 @@ arma::vec ssm_mng::log_obs_density(const unsigned int t,
 double ssm_mng::psi_filter(const unsigned int nsim, arma::cube& alpha, 
   arma::mat& weights, arma::umat& indices) {
   
-  if(approx_state != 1) {
-    mode_estimate = initial_mode;
-    approximate(); 
-    
+  if(approx_state < 2) {
+    if (approx_state < 1) {
+      mode_estimate = initial_mode;
+      approximate(); 
+    }
     // compute the log-likelihood of the approximate model
     double gaussian_loglik = approx_model.log_likelihood();
     // compute unnormalized mode-based correction terms 

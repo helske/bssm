@@ -235,7 +235,7 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   }
   check_u(u)
   
-  initial_mode <- init_mode(y, u, distribution)
+  initial_mode <- matrix(init_mode(y, u, distribution), ncol = 1)
   
   if (missing(state_names)) {
     state_names <- paste("state", 1:m)
@@ -1010,8 +1010,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     }
   }
   
-  initial_mode <- init_mode(y, u, distribution)
-  
+  initial_mode <- matrix(init_mode(y, u, distribution), ncol = 1)
   
   dim(T) <- c(m, m, 1)
   dim(R) <- c(m, ncol(R), 1)
@@ -1237,7 +1236,7 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
       u <- rep(u, length.out = n)
     }
   }
-  initial_mode <- init_mode(y, u, distribution)
+  initial_mode <- matrix(init_mode(y, u, distribution), ncol = 1)
   P1 <- matrix(sigma$init^2 / (1 - rho$init^2))
   
   Z <- matrix(1)

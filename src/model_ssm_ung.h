@@ -50,9 +50,11 @@ public:
   unsigned int max_iter;
   double conv_tol;
   const bool local_approx;
-  const arma::vec initial_mode; // creating approx always starts from here
-  arma::vec mode_estimate; // current estimate of mode
-  // -1 = no approx, 0 = theta doesn't match, 1 = proper local/global approx 
+  const arma::mat initial_mode; // creating approx always starts from here
+  arma::mat mode_estimate; // current estimate of mode
+  
+  // -1 = no approx, 0 = theta doesn't match, 
+  // 1 = proper local/global approx, 2 = approx_loglik updated
   int approx_state; 
   // store the current approx_loglik in order to avoid computing it again
   double approx_loglik; 
@@ -87,7 +89,7 @@ public:
   
   // update approximating Gaussian model
   void approximate();
-  void approximate_for_is(const arma::mat& mode_estimate);
+  void approximate_for_is(const arma::mat& mode_estimate_);
   // given the mode_estimate, compute y and H of the approximating Gaussian model
   void laplace_iter(const arma::vec& signal);
 

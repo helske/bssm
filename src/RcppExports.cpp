@@ -286,6 +286,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// importance_sample_ng
+Rcpp::List importance_sample_ng(const Rcpp::List model_, unsigned int nsim, bool use_antithetic, const unsigned int seed, const int model_type);
+RcppExport SEXP _bssm_importance_sample_ng(SEXP model_SEXP, SEXP nsimSEXP, SEXP use_antitheticSEXP, SEXP seedSEXP, SEXP model_typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List >::type model_(model_SEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type nsim(nsimSEXP);
+    Rcpp::traits::input_parameter< bool >::type use_antithetic(use_antitheticSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< const int >::type model_type(model_typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(importance_sample_ng(model_, nsim, use_antithetic, seed, model_type));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gaussian_kfilter
 Rcpp::List gaussian_kfilter(const Rcpp::List model_, const unsigned int model_type);
 RcppExport SEXP _bssm_gaussian_kfilter(SEXP model_SEXP, SEXP model_typeSEXP) {
@@ -1188,6 +1203,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bssm_ekf_fast_smoother_nlg", (DL_FUNC) &_bssm_ekf_fast_smoother_nlg, 19},
     {"_bssm_ekpf", (DL_FUNC) &_bssm_ekpf, 20},
     {"_bssm_ekpf_smoother", (DL_FUNC) &_bssm_ekpf_smoother, 20},
+    {"_bssm_importance_sample_ng", (DL_FUNC) &_bssm_importance_sample_ng, 5},
     {"_bssm_gaussian_kfilter", (DL_FUNC) &_bssm_gaussian_kfilter, 2},
     {"_bssm_gaussian_loglik", (DL_FUNC) &_bssm_gaussian_loglik, 2},
     {"_bssm_nongaussian_loglik", (DL_FUNC) &_bssm_nongaussian_loglik, 5},

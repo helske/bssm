@@ -50,7 +50,8 @@ public:
   const arma::mat initial_mode; // creating approx always starts from here
   arma::mat mode_estimate; // current estimate of mode
   
-  // -1 = no approx, 0 = theta doesn't match, 1 = proper local/global approx 
+  // -1 = no approx, 0 = theta doesn't match, 
+  // 1 = proper local/global approx, 2 = approx_loglik updated
   int approx_state; 
   // store the current approx_loglik in order to avoid computing it again
   double approx_loglik; 
@@ -81,7 +82,7 @@ public:
   
   // update the approximating Gaussian model
   void approximate();
-  void approximate_for_is(const arma::mat& mode_estimate);
+  void approximate_for_is(const arma::mat& mode_estimate_);
   
   double compute_const_term() const;
   
@@ -109,7 +110,7 @@ public:
   
   // compute logarithms of _unnormalized_ importance weights g(y_t | alpha_t) / ~g(~y_t | alpha_t)
   arma::vec log_weights(const unsigned int t, const arma::cube& alphasim) const;
-  
+  arma::vec importance_weights(const arma::cube& alpha) const;
   // compute unnormalized mode-based scaling terms
   // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
   void update_scales();
