@@ -23,7 +23,7 @@ importance_sample(model, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
 \item{nsim}{Number of samples.}
 
 \item{use_antithetic}{Logical. If \code{TRUE} (default), use antithetic 
-variable for location in simulation smoothing.}
+variable for location in simulation smoothing. Ignored for \code{ssm_mng} models.}
 
 \item{max_iter}{Maximum number of iterations used for the approximation.}
 

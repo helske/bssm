@@ -42,11 +42,11 @@ m x k x n array, or object which can be coerced to such.}
 \code{"poisson"}, \code{"binomial"}, and \code{"negative binomial"}.}
 
 \item{phi}{Additional parameter relating to the non-Gaussian distribution.
-For Negative binomial distribution this is the dispersion term, and for other
-distributions this is ignored.}
+For negative binomial distribution this is the dispersion term, for gamma distribution
+this is the shape parameter, and for other distributions this is ignored.}
 
-\item{u}{Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
-term. For binomial, this is the number of trials.}
+\item{u}{Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, 
+this corresponds to the offset term. For binomial, this is the number of trials.}
 
 \item{D}{Intercept terms \eqn{D_t} for the observations equation, given as a
 1 x 1 or 1 x n matrix.}
@@ -69,5 +69,5 @@ of the observation and state equation:
 
 where \eqn{\eta_t \sim N(0, I_k)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other,
-and \eqn{p(y_t | .)} is either Poisson, binomial or negative binomial distribution.
+and \eqn{p(y_t | .)} is either Poisson, binomial, gamma, or negative binomial distribution.
 }

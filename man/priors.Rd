@@ -23,7 +23,7 @@ in MCMC.}
 
 \item{max}{Upper bound of the uniform and truncated normal prior.}
 
-\item{sd}{Standard deviation of the half-Normal and Normal priors.}
+\item{sd}{Standard deviation of the (underlying i.e. non-truncated) Normal distribution.}
 
 \item{mean}{Mean of the Normal prior.}
 }
@@ -33,5 +33,5 @@ object of class \code{bssm_prior}.
 \description{
 These simple objects of class \code{bssm_prior} are used to construct a prior distributions for the 
 MCMC runs of \code{bssm} package. Currently supported priors are uniform (\code{uniform()}), 
-half-normal (\code{halfnormal()}), normal  (\code{normal()}), and truncated normal distribution  (\code{tnormal()}).
+half-normal (\code{halfnormal()}), normal (\code{normal()}), and truncated normal distribution  (\code{tnormal()}).
 }

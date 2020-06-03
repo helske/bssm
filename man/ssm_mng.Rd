@@ -2,7 +2,7 @@
 % Please edit documentation in R/models.R
 \name{ssm_mng}
 \alias{ssm_mng}
-\title{General Non-Gaussian/Non-linear State Space Model}
+\title{General Non-Gaussian State Space Model}
 \usage{
 ssm_mng(
   y,
@@ -66,13 +66,6 @@ of the observation and state equation:
 
 where \eqn{\eta_t \sim N(0, I_k)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and \eqn{p^i(y_t | .)}
-is either Poisson, binomial or negative binomial distribution for 
+is either Poisson, binomial, gamma, gaussian, or negative binomial distribution for 
 each observation series \eqn{i=1,...,k}.
-
-Compared to other models, these general models need a bit more effort from
-the user, as you must provide the several small C++ snippets which define the
-model structure. Note that due to the use of pointers, 
-you must recompile and construct the model objects in each `R` session, 
-i.e. saving and later loading the model object is not sufficient. 
-See examples in the package vignette.
 }
