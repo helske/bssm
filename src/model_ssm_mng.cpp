@@ -68,7 +68,7 @@ void ssm_mng::update_model(const arma::vec& new_theta) {
   }
   theta = new_theta;
   // approximation does not match theta anymore (keep as -1 if so)
-  if (approx_state == 1) approx_state = 0;
+  if (approx_state > 0) approx_state = 0;
 }
 
 double ssm_mng::log_prior_pdf(const arma::vec& x) const {
@@ -173,6 +173,7 @@ arma::vec ssm_mng::log_likelihood(
         double const_term = compute_const_term(); 
         // log-likelihood approximation
         approx_loglik = gaussian_loglik + const_term + arma::accu(scales);
+        approx_state = 2;
       }
       // psi-PF
       if (method == 1) {
@@ -208,6 +209,7 @@ arma::vec ssm_mng::log_likelihood(
       double const_term = compute_const_term(); 
       // log-likelihood approximation
       approx_loglik = gaussian_loglik + const_term + arma::accu(scales);
+      approx_state = 2;
     }
     loglik(0) = approx_loglik;
     loglik(1) = loglik(0);
@@ -290,7 +292,7 @@ void ssm_mng::laplace_iter(const arma::mat& signal) {
       approx_model.HH.tube(i, i) = square(phi(i) + exptmp) / 
         (phi(i) * exptmp * (y.row(i) + phi(i)));
       approx_model.y.row(i) = signal.row(i) +
-        (phi(i) + exptmp) * (y.row(i) - exptmp) / ((y.row(i) + phi(i)) * exptmp);
+        (phi(i) + exptmp) % (y.row(i) - exptmp) / ((y.row(i) + phi(i)) % exptmp);
     } break;
     case 4: {
       // gamma

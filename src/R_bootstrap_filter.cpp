@@ -383,25 +383,26 @@ Rcpp::List bsf_nlg(const arma::mat& y, SEXP Z, SEXP H,
   Rcpp::XPtr<a1_fnPtr> xpfun_a1(a1);
   Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
-
+  
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     time_varying, update_fn, prior_fn, seed);
-
+  
   unsigned int m = model.m;
   unsigned n = model.n;
 
   arma::cube alpha(m, n + 1, nsim);
   arma::mat weights(nsim, n + 1);
   arma::umat indices(nsim, n);
+  
   double loglik = model.bsf_filter(nsim, alpha, weights, indices);
-
-  arma::mat at(m, n);
+  
+  arma::mat at(m, n + 1);
   arma::mat att(m, n);
-  arma::cube Pt(m, m, n);
+  arma::cube Pt(m, m, n + 1);
   arma::cube Ptt(m, m, n);
   filter_summary(alpha, at, att, Pt, Ptt, weights);
-
+  
   arma::inplace_trans(at);
   arma::inplace_trans(att);
   return Rcpp::List::create(
@@ -429,7 +430,7 @@ Rcpp::List bsf_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
   Rcpp::XPtr<a1_fnPtr> xpfun_a1(a1);
   Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
-
+  
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     time_varying, update_fn, prior_fn, seed);
@@ -441,13 +442,11 @@ Rcpp::List bsf_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
   arma::mat weights(nsim, n + 1);
   arma::umat indices(nsim, n);
   double loglik = model.bsf_filter(nsim, alpha, weights, indices);
-
+  
   arma::mat alphahat(model.m, model.n + 1);
   arma::cube Vt(model.m, model.m, model.n + 1);
-
   filter_smoother(alpha, indices);
   weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
-
   arma::inplace_trans(alphahat);
 
   return Rcpp::List::create(

@@ -83,7 +83,7 @@ void ssm_ung::update_model(const arma::vec& new_theta) {
   }
   theta = new_theta;
   // approximation does not match theta anymore (keep as -1 if so)
-  if (approx_state == 1) approx_state = 0;
+  if (approx_state > 0) approx_state = 0;
 }
 
 double ssm_ung::log_prior_pdf(const arma::vec& x) const {
@@ -200,6 +200,7 @@ arma::vec ssm_ung::log_likelihood(
         double const_term = compute_const_term(); 
         // log-likelihood approximation
         approx_loglik = gaussian_loglik + const_term + arma::accu(scales);
+        approx_state = 2;
       }
       // psi-PF
       if (method == 1) {
@@ -235,6 +236,7 @@ arma::vec ssm_ung::log_likelihood(
       double const_term = compute_const_term(); 
       // log-likelihood approximation
       approx_loglik = gaussian_loglik + const_term + arma::accu(scales);
+      approx_state = 2;
     }
     loglik(0) = approx_loglik;
     loglik(1) = loglik(0);
@@ -323,7 +325,7 @@ void ssm_ung::laplace_iter(const arma::vec& signal) {
     // negative binomial
     arma::vec exptmp = arma::exp(signal) % u;
     approx_model.HH = square(phi + exptmp) / (phi * exptmp * (y + phi));
-    approx_model.y = signal + (phi + exptmp) * (y - exptmp) / ((y + phi) * exptmp);
+    approx_model.y = signal + (phi + exptmp) % (y - exptmp) / ((y + phi) % exptmp);
   } break;
   case 4: {
     // gamma

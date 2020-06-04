@@ -28,9 +28,9 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100, conv_tol = 1e-8, 
     duplicates.ok = TRUE) - 1
   out <- gaussian_approx_model(model, model_type(model))
   
-  if(ncol(out$y) == 1) {
-    out$y <- ts(out$y, start = start(model$y), end = end(model$y), 
-                frequency = frequency(model$y))
+  if(nrow(out$y) == 1) {
+    out$y <- ts(c(out$y), start = start(model$y), end = end(model$y), 
+      frequency = frequency(model$y))
     D <- model$D
     if(length(model$beta) > 0) D <- as.numeric(D) + t(model$xreg %*% model$beta)
     approx_model <- ssm_ulg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
@@ -39,7 +39,7 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100, conv_tol = 1e-8, 
       prior_fn = model$prior_fn)
   } else {
     out$y <- ts(t(out$y), start = start(model$y), end = end(model$y), 
-                frequency = frequency(model$y))
+      frequency = frequency(model$y))
     approx_model <- ssm_mlg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
       R = model$R, a1 = model$a1, P1 = model$P1, init_theta = model$theta,
       D = model$D, C = model$C, state_names = names(model$a1), 
@@ -63,8 +63,9 @@ gaussian_approx.ssm_nlg <- function(model, max_iter = 100,
     model$known_tv_params, model$n_states, model$n_etas,
     as.integer(model$time_varying),
     max_iter, conv_tol, iekf_iter, default_update_fn, default_prior_fn)
-  out$y <- ts(c(out$y), start = start(model$y), end = end(model$y), frequency = frequency(model$y))
-  ssm_mlg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
-    R = model$R, a1 = model$a1, P1 = model$P1,
-    init_theta = model$theta, D = model$D, C = model$C)
+  
+  out$y <- ts(t(out$y), start = start(model$y), end = end(model$y), frequency = frequency(model$y))
+  ssm_mlg(y = out$y, Z = out$Z, H = out$H, T = out$T, 
+    R = out$R, a1 = c(out$a1), P1 = out$P1,
+    init_theta = model$theta, D = out$D, C = out$C)
 }

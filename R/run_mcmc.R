@@ -192,6 +192,9 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
     if (mcmc_type != "approx") stop("Number of state samples less than 2, use 'mcmc_type' 'approx' instead.")
     if (nsim == 0) output_type = "theta"
   }
+  
+  sampling_method <- match.arg(sampling_method, c("psi", "bsf", "spdk"))
+  
   sampling_method <- pmatch(sampling_method, c("psi", "bsf", "spdk"))
   
   model$max_iter <- max_iter
@@ -333,19 +336,18 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
   
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
   mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), "ekf", "approx"))
+  if(mcmc_type %in% c("ekf", "approx")) nsim <- 0
   sampling_method <- pmatch(match.arg(sampling_method, c("psi", "bsf", "ekf")), c("psi", "bsf", "ekf"))
-  
-  model$max_iter <- max_iter
-  model$conv_tol <- conv_tol
-  model$iekf_iter <- iekf_iter
+
   
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(model$theta)), length(model$theta))
   }
   
   if (nsim < 2) {
-    if (mcmc_type != "approx") stop("Number of state samples less than 2, use 'mcmc_type' 'approx' instead.")
-    if (nsim == 0) output_type = "theta"
+    if (!(mcmc_type %in% c("ekf", "approx"))) 
+      stop("Number of state samples less than 2, use 'mcmc_type' 'approx' or 'ekf' instead.")
+    if (nsim == 0) output_type <- 3
   }
   
   out <- switch(mcmc_type,
@@ -356,7 +358,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
-        end_adaptive_phase, n_threads,
+        end_adaptive_phase, n_threads, max_iter, conv_tol,
         sampling_method,iekf_iter, output_type, 
         default_update_fn, default_prior_fn)
     },
@@ -367,7 +369,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
-        end_adaptive_phase, n_threads,
+        end_adaptive_phase, n_threads, max_iter, conv_tol,
         sampling_method,iekf_iter, output_type, 
         default_update_fn, default_prior_fn)
     },
@@ -381,7 +383,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$n_states, model$n_etas, seed,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, n_threads, pmatch(mcmc_type, paste0("is", 1:3)),
-        sampling_method, iekf_iter, output_type, default_update_fn, 
+        sampling_method, max_iter, conv_tol, iekf_iter, 
+        output_type, default_update_fn, 
         default_prior_fn, FALSE)
     },
     "ekf" = {
@@ -402,7 +405,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$n_states, model$n_etas, seed,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, n_threads, 2,
-        sampling_method, iekf_iter, output_type, default_update_fn, 
+        sampling_method, max_iter, conv_tol, 
+        iekf_iter, output_type, default_update_fn, 
         default_prior_fn, TRUE)
     }
   )
@@ -472,7 +476,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
 #' is done for transformed parameters with internal_theta = log(theta).
 #' @param end_adaptive_phase If \code{TRUE} (default), $S$ is held fixed after the burnin period.
 #' @param n_threads Number of threads for state simulation.
-#' @param L_c,L_f Integer values defining the discretization levels for first and second stages. 
+#' @param L_c,L_f Integer values defining the discretization levels for first and second stages (defined as 2^L). 
 #' For PM methods, maximum of these is used.
 #' @export
 run_mcmc.ssm_sde <-  function(model, iter, nsim, output_type = "full",

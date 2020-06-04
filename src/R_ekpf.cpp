@@ -82,8 +82,8 @@ Rcpp::List ekpf_smoother(const arma::mat& y, SEXP Z, SEXP H,
   double loglik = model.ekf_filter(nsim, alpha, weights, indices);
 
 
-  arma::mat alphahat(model.m, model.n);
-  arma::cube Vt(model.m, model.m, model.n);
+  arma::mat alphahat(model.m, model.n + 1);
+  arma::cube Vt(model.m, model.m, model.n + 1);
 
   filter_smoother(alpha, indices);
   weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
