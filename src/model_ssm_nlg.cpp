@@ -48,13 +48,13 @@ void ssm_nlg::update_model(const arma::vec& new_theta) {
   
   theta = new_theta;
   // approximation does not match theta anymore (keep as -1 if so)
-  if (approx_state == 1) approx_state = 0;
+  if (approx_state > 0) approx_state = 0;
 }
 
 
 void ssm_nlg::approximate() {
   
-  if(approx_state != 1) {
+  if(approx_state < 1) {
     
     // initial approximation is based on EKF (at and att)
     arma::mat at(m, n + 1);
@@ -63,8 +63,8 @@ void ssm_nlg::approximate() {
     arma::cube Ptt(m, m, n);
     ekf(at, att, Pt, Ptt);
     
-    arma::vec a1 = a1_fn(theta, known_params);
-    arma::mat P1 = P1_fn(theta, known_params);
+    approx_model.a1 = a1_fn(theta, known_params);
+    approx_model.P1 = P1_fn(theta, known_params);
     
     for (unsigned int t = 0; t < approx_model.Z.n_slices; t++) {
       approx_model.Z.slice(t) = Z_gn(t, at.col(t), theta, known_params, known_tv_params);
@@ -81,11 +81,13 @@ void ssm_nlg::approximate() {
     }
     for (unsigned int t = 0; t < n; t++) {
       approx_model.D.col(t) = Z_fn(t, at.col(t), theta, known_params, known_tv_params) -
-        approx_model.Z.slice(t) * at.col(t);
+        approx_model.Z.slice(t * Zgtv) * at.col(t);
       approx_model.C.col(t) =  T_fn(t, att.col(t), theta, known_params, known_tv_params) -
-        approx_model.T.slice(t) * att.col(t);
+        approx_model.T.slice(t * Tgtv) * att.col(t);
     }
- 
+    
+    approx_model.compute_HH();
+    approx_model.compute_RR();
     mode_estimate = approx_model.fast_smoother().head_cols(n);
     if (!arma::is_finite(mode_estimate)) {
       return;
@@ -167,9 +169,6 @@ void ssm_nlg::approximate() {
       ll = ll_new;
       
     }
-    if (i == max_iter && max_iter > 0) {
-      mode_estimate.fill(std::numeric_limits<double>::infinity());
-    }
     approx_state = 1;
   }
 }
@@ -206,7 +205,7 @@ void ssm_nlg::approximate_for_is(const arma::mat& mode_estimate) {
   }
   approx_model.compute_HH();
   approx_model.compute_RR();
-  approx_model.engine = engine;
+  approx_state = 2;
 }
 
 // method = 1 psi-APF, 2 = BSF, 3 = SPDK (not applicable), 4 = IEKF (either approx or IEKF-PF)
@@ -218,9 +217,7 @@ arma::vec ssm_nlg::log_likelihood(
     arma::umat& indices) {
   
   arma::vec loglik(2);
-  
   if(nsim > 0) {
-    
     if (method == 2) {
       loglik(0) = bsf_filter(nsim, alpha, weights, indices);
       loglik(1) = loglik(0);
@@ -230,8 +227,10 @@ arma::vec ssm_nlg::log_likelihood(
         loglik(1) = loglik(0);
       } else { // note does not check if method == 3...
         // check that approx_model matches theta
-        if(approx_state != 1) {
-          approximate(); 
+        if(approx_state < 2) {
+          if (approx_state < 1) {
+            approximate(); 
+          }
           // compute the log-likelihood of the approximate model
           double gaussian_loglik = approx_model.log_likelihood();
           // compute normalized mode-based correction terms 
@@ -250,8 +249,10 @@ arma::vec ssm_nlg::log_likelihood(
       loglik(1) = loglik(0);
     } else {
       // check that approx_model matches theta
-      if(approx_state != 1) {
-        approximate(); 
+      if(approx_state < 2) {
+        if (approx_state < 1) {
+          approximate(); 
+        }
         // compute the log-likelihood of the approximate model
         double gaussian_loglik = approx_model.log_likelihood();
         // compute normalized mode-based correction terms 
@@ -1027,7 +1028,8 @@ double ssm_nlg::ukf(arma::mat& at, arma::mat& att, arma::cube& Pt,
 // log[g(y_t | ^alpha_t) f(^alpha_t | ^alpha_t-1) / 
 // ~g(y_t | ^alpha_t)] ~f(^alpha_t | ^alpha_t-1)
 void ssm_nlg::update_scales()  {
-  
+ 
+  scales.zeros();
   for(unsigned int t = 0; t < n; t++) { 
     arma::uvec na_y = arma::find_nonfinite(y.col(t));
     if (na_y.n_elem < p) {
@@ -1088,7 +1090,6 @@ arma::vec ssm_nlg::log_weights(const unsigned int t, const arma::cube& alpha,
       }
     }
   }
-  arma::vec weights_t(alpha.n_slices, arma::fill::zeros);
   if(t > 0) {
     for (unsigned int i = 0; i < alpha.n_slices; i++) {
       
@@ -1098,14 +1099,13 @@ arma::vec ssm_nlg::log_weights(const unsigned int t, const arma::cube& alpha,
       arma::vec approx_mean = approx_model.C.col(t - 1) + 
         approx_model.T.slice((t - 1) * approx_model.Ttv) * alpha_prev.col(i);
       
-      weights_t(i) +=  dmvnorm(alpha.slice(i).col(t), approx_mean, 
+      weights(i) -=  dmvnorm(alpha.slice(i).col(t), approx_mean, 
         approx_model.RR.slice((t - 1) * approx_model.Rtv), false, true) -
           dmvnorm(alpha.slice(i).col(t), mean, cov, false, true);
-      weights_t(i) = log1pexp(weights_t(i));
     }
   }
   
-  return weights - weights_t;
+  return weights;
 }
 
 
@@ -1145,16 +1145,16 @@ double ssm_nlg::log_obs_density(const unsigned int t,
 double ssm_nlg::psi_filter(const unsigned int nsim, arma::cube& alpha, 
   arma::mat& weights, arma::umat& indices) {
   
-  // check that approx_model matches theta
-  if(approx_state != 1) {
-    approximate(); 
-    // compute the log-likelihood of the approximate model
+  if(approx_state < 2) {
+    if (approx_state < 1) {
+      approximate(); 
+    }
     double gaussian_loglik = approx_model.log_likelihood();
-    // compute normalized mode-based correction terms 
-    update_scales();
+    update_scales(); 
     // log-likelihood approximation
     approx_loglik = gaussian_loglik + arma::accu(scales);
   }
+  
   arma::mat alphahat(m, n + 1);
   arma::cube Vt(m, m, n + 1);
   arma::cube Ct(m, m, n + 1);
@@ -1179,16 +1179,17 @@ double ssm_nlg::psi_filter(const unsigned int nsim, arma::cube& alpha,
   arma::uvec na_y = arma::find_nonfinite(y.col(0));
   if (na_y.n_elem < p) { 
     weights.col(0) = 
-      log_weights(0, alpha, arma::mat(m, nsim, arma::fill::zeros)) - scales(0);
-    double max_weight = weights.col(0).max();
-    weights.col(0) = arma::exp(weights.col(0) - max_weight);
+      arma::exp(log_weights(0, alpha, arma::mat(m, nsim, arma::fill::zeros)) - scales(0));
+    // double max_weight = weights.col(0).max();
+    // weights.col(0) = arma::exp(weights.col(0) - max_weight);
     double sum_weights = arma::accu(weights.col(0));
     if(sum_weights > 0.0){
       normalized_weights = weights.col(0) / sum_weights;
     } else {
       return -std::numeric_limits<double>::infinity();
     }
-    loglik = max_weight + approx_loglik + std::log(sum_weights / nsim);
+    //loglik = max_weight + approx_loglik + std::log(sum_weights / nsim);
+    loglik = approx_loglik + std::log(sum_weights / nsim);
   } else {
     weights.col(0).ones();
     normalized_weights.fill(1.0 / nsim);
@@ -1217,16 +1218,16 @@ double ssm_nlg::psi_filter(const unsigned int nsim, arma::cube& alpha,
     }
     
     if (t < (n - 1) && arma::uvec(arma::find_nonfinite(y.col(t + 1))).n_elem < p) {
-      weights.col(t + 1) = log_weights(t + 1, alpha, alphatmp)  - scales(t+1);
-      double max_weight = weights.col(t + 1).max();
-      weights.col(t+1) = arma::exp(weights.col(t+1) - max_weight);
+      weights.col(t + 1) = exp(log_weights(t + 1, alpha, alphatmp)  - scales(t+1));
+      // double max_weight = weights.col(t + 1).max();
+      // weights.col(t+1) = arma::exp(weights.col(t+1) - max_weight);
       double sum_weights = arma::accu(weights.col(t + 1));
       if(sum_weights > 0.0){
         normalized_weights = weights.col(t + 1) / sum_weights;
       } else {
         return -std::numeric_limits<double>::infinity();
       }
-      loglik += max_weight + std::log(sum_weights / nsim);
+      loglik += std::log(sum_weights / nsim); //max_weight + 
     } else {
       weights.col(t + 1).ones();
       normalized_weights.fill(1.0 / nsim);
