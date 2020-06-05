@@ -114,7 +114,7 @@ void ssm_ung::approximate() {
       if (distribution == 0) {
         mode_estimate = approx_model.fast_smoother().head_cols(n);
       } else {
-        arma::mat alpha = approx_model.fast_smoother().head_cols(n);
+        arma::mat alpha = approx_model.fast_smoother();
         for (unsigned int t = 0; t < n; t++) {
           mode_estimate.col(t) = xbeta(t) + D(Dtv * t) + 
             Z.col(Ztv * t).t() * alpha.col(t);
@@ -133,7 +133,7 @@ void ssm_ung::approximate() {
         if (distribution == 0) {
           mode_estimate_new = approx_model.fast_smoother().head_cols(n);
         } else {
-          arma::mat alpha = approx_model.fast_smoother().head_cols(n);
+          arma::mat alpha = approx_model.fast_smoother();
           for (unsigned int t = 0; t < n; t++) {
             mode_estimate_new.col(t) = xbeta(t) + 
               D(Dtv * t) + Z.col(Ztv * t).t() * alpha.col(t);

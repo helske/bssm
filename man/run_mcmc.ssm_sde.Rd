@@ -45,7 +45,7 @@ or one of the three importance sampling type weighting schemes:
 \code{"is1"} for importance sampling type weighting where the number of particles used for
 weight computations is proportional to the length of the jump chain block.}
 
-\item{L_c, L_f}{Integer values defining the discretization levels for first and second stages. 
+\item{L_c, L_f}{Integer values defining the discretization levels for first and second stages (defined as 2^L). 
 For PM methods, maximum of these is used.}
 
 \item{burnin}{Length of the burn-in period which is disregarded from the

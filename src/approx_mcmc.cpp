@@ -18,13 +18,13 @@
 
 approx_mcmc::approx_mcmc(const unsigned int iter,
   const unsigned int burnin, const unsigned int thin, const unsigned int n,
-  const unsigned int m, const unsigned int p, const double target_acceptance, 
+  const unsigned int m, const unsigned int k, const double target_acceptance, 
   const double gamma, const arma::mat& S, const unsigned int output_type, 
   const bool store_modes) :
   mcmc(iter, burnin, thin, n, m,
     target_acceptance, gamma, S, output_type),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
-    mode_storage(arma::cube(p, n, n_samples * store_modes)),
+    mode_storage(arma::cube(k, n, n_samples * store_modes)),
     approx_loglik_storage(arma::vec(n_samples)),
     prior_storage(arma::vec(n_samples)), store_modes(store_modes) {
 }
@@ -87,15 +87,15 @@ void approx_mcmc::expand() {
 
 // run approximate MCMC for
 // non-linear and/or non-Gaussian state space model with linear-Gaussian states
-template void approx_mcmc::amcmc(ssm_ung model, const bool end_ram);
-template void approx_mcmc::amcmc(bsm_ng model, const bool end_ram);
-template void approx_mcmc::amcmc(svm model, const bool end_ram);
-template void approx_mcmc::amcmc(ar1_ng model, const bool end_ram);
-template void approx_mcmc::amcmc(ssm_nlg model, const bool end_ram);
-template void approx_mcmc::amcmc(ssm_mng model, const bool end_ram);
+template void approx_mcmc::amcmc(ssm_ung model, const unsigned int method, const bool end_ram);
+template void approx_mcmc::amcmc(bsm_ng model, const unsigned int method, const bool end_ram);
+template void approx_mcmc::amcmc(svm model, const unsigned int method, const bool end_ram);
+template void approx_mcmc::amcmc(ar1_ng model, const unsigned int method, const bool end_ram);
+template void approx_mcmc::amcmc(ssm_nlg model, const unsigned int method, const bool end_ram);
+template void approx_mcmc::amcmc(ssm_mng model, const unsigned int method, const bool end_ram);
 
 template<class T>
-void approx_mcmc::amcmc(T model, const bool end_ram) {
+void approx_mcmc::amcmc(T model, const unsigned int method, const bool end_ram) {
   
   // get the current values of theta
   arma::vec theta = model.theta;
@@ -111,7 +111,7 @@ void approx_mcmc::amcmc(T model, const bool end_ram) {
   arma::umat indices(1, 1);
   
   // compute the approximate log-likelihood
-  arma::vec ll = model.log_likelihood(1, 0, alpha, weights, indices);
+  arma::vec ll = model.log_likelihood(method, 0, alpha, weights, indices);
   double approx_loglik = ll(0);
   if (!std::isfinite(approx_loglik))
     Rcpp::stop("Initial log-likelihood is not finite.");
@@ -119,7 +119,7 @@ void approx_mcmc::amcmc(T model, const bool end_ram) {
   
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
-  arma::mat mode(model.p, model.n);
+  arma::mat mode(mode_storage.n_rows, mode_storage.n_cols);
   mode = model.mode_estimate;
   
   bool new_value = true;
@@ -146,7 +146,7 @@ void approx_mcmc::amcmc(T model, const bool end_ram) {
       // update parameters
       model.update_model(theta_prop);
       
-      arma::vec ll = model.log_likelihood(1, 0, alpha, weights, indices);
+      arma::vec ll = model.log_likelihood(method, 0, alpha, weights, indices);
       double approx_loglik_prop = ll(0);
       acceptance_prob = std::min(1.0, std::exp(approx_loglik_prop - approx_loglik +
         logprior_prop - logprior));
@@ -718,7 +718,7 @@ void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
 
 
 void approx_mcmc::ekf_state_sample(ssm_nlg model, const unsigned int n_threads) {
-  
+
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
@@ -729,22 +729,18 @@ void approx_mcmc::ekf_state_sample(ssm_nlg model, const unsigned int n_threads) 
 #pragma omp critical
 {
   model.update_model(theta_storage.col(i));
-}  
-    model.approximate_for_is(mode_storage.slice(i));
+}
+    model.approximate_by_ekf();
     alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
     
   }
 }
 #else
 
-ssm_mlg approx_model(model.y, Z, H, T, R, a1, P1, arma::cube(0,0,0),
-  arma::mat(0,0), D, C, model.seed);
-
-#pragma omp for schedule(dynamic)
 for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
   
-  model.update(theta_storage.col(i));
-  model.approximate_for_is(mode_storage.slice(i));
+  model.update_model(theta_storage.col(i));
+  model.approximate_by_ekf();
   alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
   
 }

@@ -121,11 +121,12 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' @param model Model model.
 #' @param iter Number of MCMC iterations.
 #' @param nsim Number of state samples per MCMC iteration.
+#' Ignored if \code{mcmc_type} is \code{"approx"}.
 #' @param output_type Either \code{"full"} 
 #' (default, returns posterior samples of states alpha and hyperparameters theta), 
 #' \code{"theta"} (for marginal posterior of theta), 
 #' or \code{"summary"} (return the mean and variance estimates of the states 
-#' and posterior samples of theta). If \code{nsim = 0}, this is argument ignored and set to \code{"theta"}.
+#' and posterior samples of theta).
 #' @param mcmc_type What MCMC algorithm to use? Possible choices are
 #' \code{"pm"} for pseudo-marginal MCMC,
 #' \code{"da"} for delayed acceptance version of PMCMC (default), 
@@ -188,14 +189,12 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
   
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
   mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), "approx"))
-  if (nsim < 2) {
-    if (mcmc_type != "approx") stop("Number of state samples less than 2, use 'mcmc_type' 'approx' instead.")
-    if (nsim == 0) output_type = "theta"
-  }
+  if (mcmc_type == "approx") nsim <- 0
+  if (nsim < 2 && mcmc_type != "approx") 
+    stop("Number of state samples less than 2, use 'mcmc_type' 'approx' instead.")
   
-  sampling_method <- match.arg(sampling_method, c("psi", "bsf", "spdk"))
-  
-  sampling_method <- pmatch(sampling_method, c("psi", "bsf", "spdk"))
+  sampling_method <- pmatch(match.arg(sampling_method, c("psi", "bsf", "spdk")), 
+    c("psi", "bsf", "spdk"))
   
   model$max_iter <- max_iter
   model$conv_tol <- conv_tol
@@ -282,6 +281,7 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
 #' @param model Model model.
 #' @param iter Number of MCMC iterations.
 #' @param nsim Number of state samples per MCMC iteration. 
+#' Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.
 #' @param output_type Either \code{"full"} 
 #' (default, returns posterior samples of states alpha and hyperparameters theta), 
 #' \code{"theta"} (for marginal posterior of theta), 
@@ -337,18 +337,16 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
   mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), "ekf", "approx"))
   if(mcmc_type %in% c("ekf", "approx")) nsim <- 0
-  sampling_method <- pmatch(match.arg(sampling_method, c("psi", "bsf", "ekf")), c("psi", "bsf", "ekf"))
-
+  sampling_method <- pmatch(match.arg(sampling_method, c("psi", "bsf", "ekf")), 
+    c("psi", "bsf", NA, "ekf"))
   
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(model$theta)), length(model$theta))
   }
   
-  if (nsim < 2) {
-    if (!(mcmc_type %in% c("ekf", "approx"))) 
-      stop("Number of state samples less than 2, use 'mcmc_type' 'approx' or 'ekf' instead.")
-    if (nsim == 0) output_type <- 3
-  }
+  if (nsim < 2 && !(mcmc_type %in% c("ekf", "approx")))
+     stop("Number of state samples less than 2, use 'mcmc_type' 'approx' or 'ekf' instead.")
+ 
   
   out <- switch(mcmc_type,
     "da" = {
@@ -376,6 +374,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
     "is1" =,
     "is2" =,
     "is3" = {
+      if (sampling_method == 4)
+        stop("IS-MCMC with extended particle filter is (not yet) supported.")
       nonlinear_is_mcmc(t(model$y), model$Z, model$H, model$T,
         model$R, model$Z_gn, model$T_gn, model$a1, model$P1,
         model$theta, model$log_prior_pdf, model$known_params,
@@ -411,11 +411,11 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
     }
   )
   if (output_type == 1) {
-    colnames(out$alpha) <- names(model$a1)
+    colnames(out$alpha) <- model$state_names
   } else {
     if (output_type == 2) {
       colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
-        names(model$a1)
+        model$state_names
       out$alphahat <- ts(out$alphahat, start = start(model$y),
         frequency = frequency(model$y))
     }
@@ -537,7 +537,6 @@ run_mcmc.ssm_sde <-  function(model, iter, nsim, output_type = "full",
     }
   }
   colnames(out$alpha) <- model$state_names
-  
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(model$theta)
   

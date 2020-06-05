@@ -23,7 +23,8 @@ Description: Efficient methods for Bayesian inference of state space models
 License: GPL (>= 2)
 Depends: R (>= 3.1.3)
 Suggests:
-    bayesplot,
+    dplyr,
+    Hmisc,
     KFAS (>= 1.2.1),
     knitr (>= 1.11),
     MASS,

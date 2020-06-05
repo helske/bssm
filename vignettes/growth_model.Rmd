@@ -1,24 +1,32 @@
 ---
-title: "Logistic growth model with bssm"
+title: "Non-linear models with bssm"
 author: 
   - Jouni Helske, University of Jyväskylä, Department of Mathematics and Statistics, Finland
-date: "21 November 2017"
+date: "6 June 2020"
 link-citations: true
 output: html_document
+bibliography: psi.bib
 vignette: |
-  %\VignetteIndexEntry{Logistic growth model with bssm}
+%\VignetteIndexEntry{Non-linear modelsl with bssm}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  %\VignetteDepends{ggplot2}
+  %\VignetteDepends{ggplot2, dplyr}
 ---
-
+  
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-options(tinytex.verbose = TRUE)
+#options(tinytex.verbose = TRUE)
+if (!require("BH")) {
+  message("This vignette needs BH; since it is not installed, code will not be executed.")
+  knitr::opts_chunk$set(eval = FALSE)
+} else {
+  knitr::opts_chunk$set(eval = TRUE)
+}
+
 ```
 
 
-## Logistic growth model
+## Introduction
 
 This vignette shows how to model general non-linear state space models with `bssm`. The general non-linear Gaussian model in `bssm` has following form:
 
@@ -27,65 +35,68 @@ y_t = Z(t, \alpha_t, \theta) + H(t, \alpha_t, \theta)\epsilon_t,\\
 \alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \alpha_t, \theta)\eta_t,\\
 \alpha_1 \sim N(a_1(\theta), P_1(\theta)),
 $$
-with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions, which can sound intimidating at first, but is actually pretty simple, as this vignette illustrates. All of these functions can also depend on some known parameters, defined as `known_params` (vector) and `known_tv_params` (matrix) arguments to `ssm_nlg` functions.
+with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. 
 
-As an example, consider a noisy logistic growth model
+As some of the model matrices may depend on the current state $\alpha_t$, constructing for example $T(t,\alpha_t,\theta)$ by calling user-defined `R` function is not feasible, as this should be done repeatedly within the particle filter which would negate the benefits of the whole `C++` implementation of the particle filter. Therefore the functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions.
+
+As an example, a logistic growth model of form
 $$
-\begin{aligned}
-y_t &= p_t +  \sigma_y\epsilon, &\quad \epsilon_t \sim N(0, 1),\\
-r_{t+1} &= r_t + \sigma_r\eta, &\quad \eta_t \sim N(0, 1),\\
-p_{t+1} &= K p_0 \exp(t r_t) / (K + p_0 (\exp(t r_t) - 1)) + \sigma_p\xi, &\quad \xi_t \sim N(0, 1),
-\end{aligned}
+y_t = p_t + \epsilon_t,\\
+p_{t+1} = K p_t \frac{\exp(r_t dt)}{K + p_t (\exp(r_tdt ) - 1)} + \xi_t,\\
+r_t = \frac{\exp{r'_t}}{1 + \exp{r'_t}},\\
+r'_{t+1} = r'_t + \eta_t,
 $$
+with constant carrying capacity $K = 500$, initial population size $p_0 = 50$, initial growth rate on logit scale $r'_0 = -1.5$, $dt = 0.1$, $\xi \sim N(0,1)$, $\eta \sim N(0,0.05)$, and $\epsilon \sim N(0, 1)$.
 
 Let's first simulate some data, with $\sigma_r=\sigma_p=0$:
 
 ```{r data}
 set.seed(1)
 
-#parameters
-K <- 100 # carrying capacity
-p0 <- 10 # population size at t = 0
-r <- .2 # growth rate
+p0 <- 50 # population size at t = 0
+K <- 500 # carrying capacity
+H <- 1 # standard deviation of obs noise
 
 #sample time
 dT <- .1
 
 #observation times
-t <- seq(0.1, 25, dT)
-
-# simulate true population size (=p) at the observation times
-p <- K * p0 * exp(r * t) / (K + p0 * (exp(r * t) - 1))
-
+t <- seq(0.1, 30, dT)
+n <- length(t)
+r <- plogis(cumsum(c(-1.5, rnorm(n - 1, sd = 0.05))))
+p <- numeric(n)
+p[1] <- p0
+for(i in 2:n)
+  p[i] <- rnorm(1, K * p[i-1] * exp(r[i-1] * dT) / (K + p[i-1] * (exp(r[i-1] * dT) - 1)), 1)
 # observations
-y <- ts(p + rnorm(length(t), 0, 5))
+y <- p + rnorm(n, 0, H)
 ```
 
 
 ## Model in bssm
 
-The functions determining the model functions are given in file `model_functions.cpp`. Here are few pieces from the file. The first one defines the state transition function $T(\cdot)$:
+The functions determining the model functions are given in file `model_functions.cpp`. For example, function `T_fn` defines the state transition function $T(\cdot)$:
 
 ```{Rcpp, eval = FALSE}
-arma::vec T_fn(const unsigned int t, const arma::vec& alpha, 
-  const arma::vec& theta, const arma::vec& known_params, 
-  const arma::mat& known_tv_params) {
+// [[Rcpp::export]]
+arma::vec T_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
+  const arma::vec& known_params, const arma::mat& known_tv_params) {
   
   double dT = known_params(0);
-  double k = known_params(1);
+  double K = known_params(1);
   
   arma::vec alpha_new(2);
   alpha_new(0) = alpha(0);
-  alpha_new(1) = k * alpha(1) * exp(alpha(0) * dT) / 
-    (k + alpha(1) * (exp(alpha(0) * dT) - 1));
-  
+  double r = exp(alpha(0)) / (1.0 + exp(alpha(0)));
+  alpha_new(1) = K * alpha(1) * exp(r * dT) / 
+    (K + alpha(1) * (exp(r * dT) - 1));
   return alpha_new;
 }
 ```
 
-The name of this function does not matter, but it should always return Armadillo vector (`arma::vec`), and have the same signature (i.e. the order and types of the function's parameters) should always be like above, even though some of the parameters were not used in the body of the function. For details of using Armadillo, see [Armadillo documentation](http://arma.sourceforge.net/docs.html). After defining the appropriate model functions, the `cpp` file should also contain a function for creating external pointers for the aforementioned functions. Why this is needed is more technical issue, but fortunately you can just copy the function from the example file without any modifications. 
+The name of this function does not matter, but it should always return Armadillo vector (`arma::vec`), and have the same signature (i.e. the order and types of the function's parameters) should always be like above, even though some of the parameters were not used in the body of the function.  Note that all of these functions can also depend on some known parameters, given as `known_params` (vector) and `known_tv_params` (matrix) arguments to `ssm_nlg` function (which are then passed to individual `C++` snippets). For details of using Armadillo, see [Armadillo documentation](http://arma.sourceforge.net/docs.html). After defining the appropriate model functions, the `cpp` file should also contain a function for creating external pointers for the aforementioned functions. Why this is needed is more technical issue, but fortunately you can just copy the function from the example file without any modifications. 
 
-After creating the file for `C++` functions, you need to compile the file using `Rcpp`:
+After creating the file for `C++` functions, you need to compile the file using `Rcpp`^[As repeated calls to compile same `cpp` file can sometimes lead to memory issues, it is good practice to define unique cache directory using the `cacheDir` argument([see issue in Github](https://github.com/helske/crashtest/issues/1)). But the CRAN does not like this approach so we do not use it here.]:
 
 ```{r pointers}
 Rcpp::sourceCpp("ssm_nlg_template.cpp")
@@ -95,16 +106,17 @@ pntrs <- create_xptrs()
 This takes a few seconds. let's make less than optimal initial guess for $\theta$, the standard deviation of observational level noise, the standard deviations of the process noises (which were zero but let's pretend that we do not know that), and define the prior distribution for $\alpha_1$:
 
 ```{r theta}
-initial_theta <- c(3, 0.5, 0.5)
+initial_theta <- c(H = 1, R1 = 0.05, R2 = 1)
 
 # dT, K, a1 and the prior variances
-psi <- c(dT, 100, 0.3, 5, 4, 10)
+known_params <- c(dT = dT, K = K, a11 = -1, a12 = 50, P11 = 1, P12 = 100)
+
 ```
 
 If you have used line `// [[Rcpp::export]]` before the model functions, you can now test that the functions work as intended:
 
 ```{r test}
-T_fn(0, c(100, 200), initial_theta, psi, matrix(1))
+T_fn(0, c(100, 200), initial_theta, known_params, matrix(1))
 ```
 
 Now the actual model object using `ssm_nlg`:
@@ -115,8 +127,8 @@ model <- ssm_nlg(y = y, a1=pntrs$a1, P1 = pntrs$P1,
   Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
   Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
   theta = initial_theta, log_prior_pdf = pntrs$log_prior_pdf,
-  known_params = psi, known_tv_params = matrix(1),
-  n_states = 2, n_etas = 2)
+  known_params = known_params, known_tv_params = matrix(1),
+  n_states = 2, n_etas = 2, state_names = c("logit_r", "p"))
 ```
 
 Let's first run Extended Kalman filter and smoother using our initial guess for $\theta$:
@@ -124,21 +136,70 @@ Let's first run Extended Kalman filter and smoother using our initial guess for 
 out_filter <- ekf(model)
 out_smoother <- ekf_smoother(model)
 ts.plot(cbind(y, out_filter$att[, 2], out_smoother$alphahat[, 2]), col = 1:3)
-ts.plot(cbind(out_filter$att[, 1], out_smoother$alphahat[, 1]), col = 1:2)
+ts.plot(plogis(cbind(out_filter$att[, 1], out_smoother$alphahat[, 1])), col = 1:2)
 ```
 
 ## Markov chain Monte Carlo
 
-For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use $\psi$-PF based pseudo-marginal MCMC with delayed acceptance (note that in case of multimodal state density, it is typically better to use bootstrap filter). Let us compare this approach with EKF-based approximate MCMC (note that the number of MCMC iterations is rather small):
+For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use $\psi$-APF based MCMC with importance sampling correction [@vihola-helske-franks]. Let us compare this approach with EKF-based approximate MCMC:
 
 ```{r mcmc}
-out_mcmc_pm <- run_mcmc(model, iter = 5000, nsim = 10, mcmc_type = "da", 
-  sampling_method = "psi")
-out_mcmc_ekf <- run_mcmc(model, iter = 5000, mcmc_type = "ekf")
-summary_pm <- summary(out_mcmc_pm)
-summary_ekf <- summary(out_mcmc_ekf)
-ts.plot(cbind(summary_pm$states$Mean[, 1], summary_ekf$states$Mean[, 1]), col = 1:3)
-ts.plot(cbind(y, summary_pm$states$Mean[, 2], summary_ekf$states$Mean[, 2]), col = 1:3)
+mcmc_res <- run_mcmc(model, iter = 2e4, burnin = 5000, nsim = 10, 
+  mcmc_type = "is2", sampling_method = "psi")
+mcmc_ekf_res <- run_mcmc(model, iter = 2e4, burnin = 5000, 
+  mcmc_type = "ekf")
+summary(mcmc_res, return_se = TRUE)
+summary(mcmc_ekf_res, return_se = TRUE)
+```
+
+Using the `as.data.frame` method we can convert the state samples to a data frame for further processing with `dplyr` [@dplyr]:
+```{r summaries}
+library("dplyr")
+library("Hmisc")
+d1 <- as.data.frame(mcmc_res, "states")
+d2 <- as.data.frame(mcmc_ekf_res, "states")
+d1$method <- "is2-psi"
+d2$method <- "approx ekf"
+
+r_summary <- rbind(d1, d2) %>% 
+  filter(variable == "logit_r") %>%
+  group_by(time, method) %>%
+  summarise(
+    mean = wtd.mean(plogis(value), weight, normwt = TRUE), 
+    lwr = wtd.quantile(plogis(value), weight, 0.025, normwt = TRUE), 
+    upr = wtd.quantile(plogis(value), weight, 0.975, normwt = TRUE))
+
+p_summary <- rbind(d1, d2) %>% 
+  filter(variable == "p") %>%
+  group_by(time, method) %>%
+  summarise(  
+    mean = wtd.mean(value, weight, normwt = TRUE), 
+    lwr = wtd.quantile(value, weight, 0.025, normwt = TRUE), 
+    upr = wtd.quantile(value, weight, 0.975, normwt = TRUE))
+
+```
+
+Above we used the weighted versions of mean and quantile functions provided by the `Hmisc` [@hmisc] package as our IS-MCMC algorithm produces weighted samples of the posterior (alternative slightly less efficient approach would be to just sample with replacement using the weight and proceed with the resulting unweighted posterior sample).
+
+Using `ggplot2` [@ggplot2] we can compare our two estimation methods:
+```{r figures}
+library("ggplot2")
+ggplot(r_summary, aes(x = time, y = mean)) + 
+  geom_ribbon(aes(ymin = lwr, ymax = upr, fill = method), 
+    colour = NA, alpha = 0.25) +
+  geom_line(aes(colour = method)) +
+  geom_line(data = data.frame(mean = r, time = seq_along(r))) +
+  theme_bw()
+
+p_summary$cut <- cut(p_summary$time, c(0, 100, 200, 301))
+ggplot(p_summary, aes(x = time, y = mean,)) + 
+  geom_point(data = data.frame(
+    mean = y, time = seq_along(y),
+    cut = cut(seq_along(y), c(0, 100, 200, 301))), alpha = 0.1) +
+  geom_ribbon(aes(ymin = lwr, ymax = upr, fill = method), 
+    colour = NA, alpha = 0.25) +
+  geom_line(aes(colour = method)) +
+  theme_bw() + facet_wrap(~ cut, scales = "free")
 ```
 
 Let's make some predictions based on our MCMC run. We first build a model for future observations, and then call `predict` method. Note that for EKF based prediction (`nsim = 0`) the forecasting is based on the summary statistics obtained with EKF, which produces smoother but potentially biased results.

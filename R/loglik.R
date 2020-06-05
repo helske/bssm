@@ -14,6 +14,11 @@
 logLik.gaussian <- function(object, ...) {
   gaussian_loglik(object, model_type(object))
 }
+
+#' Log-likelihood of a Non-Gaussian State Space Model
+#'
+#' Computes the log-likelihood of the state space model of \code{bssm} package.
+#' 
 #' @param object Model model.
 #' @param nsim Number of samples for particle filter or importance sampling. If 0, 
 #' approximate log-likelihood based on the gaussian approximation is returned.
@@ -54,6 +59,10 @@ logLik.nongaussian <- function(object, nsim, method = "psi",
   
   nongaussian_loglik(object, nsim, method, seed, model_type(object))
 }
+#' Log-likelihood of a Non-linear State Space Model
+#'
+#' Computes the log-likelihood of the state space model of \code{bssm} package.
+#' 
 #' @param object Model model.
 #' @param nsim Number of samples for particle filter. If 0, 
 #' approximate log-likelihood is returned either based on the gaussian approximation or EKF, 
@@ -87,6 +96,10 @@ logLik.ssm_nlg <- function(object, nsim, method = "bsf",
     max_iter, conv_tol, iekf_iter, method,
     default_update_fn, default_prior_fn)
 }
+#' Log-likelihood of a State Space Model with SDE dynamics
+#'
+#' Computes the log-likelihood of the state space model of \code{bssm} package.
+#' 
 #' @param object Model model.
 #' @param nsim Number of samples for particle filter. If 0, 
 #' approximate log-likelihood is returned either based on the gaussian approximation or EKF, 

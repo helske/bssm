@@ -63,6 +63,9 @@ ekf <- function(model, iekf_iter = 0) {
     as.integer(model$time_varying), iekf_iter, 
     default_update_fn, default_prior_fn)
   
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- model$state_names
+  
   out$at <- ts(out$at, start = start(model$y), frequency = frequency(model$y))
   out$att <- ts(out$att, start = start(model$y), frequency = frequency(model$y))
   out
@@ -92,6 +95,9 @@ ukf <- function(model, alpha = 1, beta = 0, kappa = 2) {
     model$known_tv_params, model$n_states, model$n_etas, 
     as.integer(model$time_varying),
     alpha, beta, kappa, default_update_fn, default_prior_fn)
+  
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- model$state_names
   
   out$at <- ts(out$at, start = start(model$y), frequency = frequency(model$y))
   out$att <- ts(out$att, start = start(model$y), frequency = frequency(model$y))

@@ -10,7 +10,7 @@ vignette: >
  %\VignetteIndexEntry{bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  %\VignetteDepends{ggplot2, bayesplot, sde, ramcmc, sitmo}
+  %\VignetteDepends{ggplot2, dplyr, sde, ramcmc, sitmo}
 ---
   
 ```{r setup, include=FALSE}
@@ -225,26 +225,34 @@ mcmc_bsm
 ```
 Note that all MCMC algorithms of `bssm` output also state forecasts for the timepoint $n + 1$, the summary statistics of this state is also shown in the output above.
 
-For plotting purposes, we'll use `bayesplot` package for the figures after expanding our jump chain representation. The function `expand_sample` expands the jump chain representation to typical Markov chain, and returns an object of class `mcmc` of the `coda` package [@coda] (thus the plotting and diagnostic methods of `coda` can also be used). 
+The function `expand_sample` expands the jump chain representation to typical Markov chain, and returns an object of class `mcmc` of the `coda` package [@coda], and thus the plotting and diagnostic methods of `coda` can also be used. Here we use `ggplot2` package for the figures, so we transform the MCMC samples to `data.frame`: 
 
 ```{r plot}
-theta <- expand_sample(mcmc_bsm, "theta")
-suppressMessages(library("bayesplot"))
-mcmc_areas(theta, bw = 0.001)
-level <- expand_sample(mcmc_bsm, "alpha",  times = 101:109, states = 1)
-mcmc_areas(level, bw = 0.005)
+suppressMessages(library("ggplot2"))
+d <- as.data.frame(mcmc_bsm, "theta")
+ggplot(d, aes(x = value)) + 
+  geom_density(bw = 0.1, fill = "#9ebcda") + 
+  facet_wrap(~ variable, scales = "free") + 
+  theme_bw()
 ```
-
-Using the `summary` method we can obtain the posterior estimates of the trend:
 
 ```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component with 95% intervals."}
-sumr <- summary(mcmc_bsm)
-level <- sumr$states$Mean[, 1]
-lwr <- level - 1.96 * sumr$states$SD[, 1]
-upr <- level + 1.96 * sumr$states$SD[, 1]
-ts.plot(UKgas_model$y, cbind(level, lwr, upr), col = c(1, 2, 2, 2), lty = c(1, 1, 2, 2))
-```
+suppressMessages(library("dplyr"))
+d <- as.data.frame(mcmc_bsm, "states")
+summary_y <- d %>% 
+  filter(variable == "level") %>%
+  group_by(time) %>%
+  summarise(mean = mean(value), 
+            lwr = quantile(value, 0.025), 
+            upr = quantile(value, 0.975))
 
+ggplot(summary_y, aes(x = time, y = mean)) + 
+  geom_ribbon(aes(ymin = lwr, ymax = upr), alpha = 0.25) +
+  geom_line() +
+  geom_point(data = data.frame(mean = nhtemp, 
+                              time = time(nhtemp))) +
+  theme_bw()
+```
 
 For prediction intervals, we first build a model for the future time points, and
 then use the previously obtained posterior samples for the prediction:

@@ -67,6 +67,7 @@ print.mcmc_output <- function(x, ...) {
     sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
     se_theta_is <- weighted_se(theta, w)
     se_theta <- sqrt(apply(theta, 2, function(x) asymptotic_var(x, w)))
+  
     stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta), ncol = 4, 
                     dimnames = list(colnames(x$theta), c("Mean", "SD", "SE-IS", "SE")))
   } else {
@@ -79,11 +80,14 @@ print.mcmc_output <- function(x, ...) {
   
   print(stats)
   
+  if(x$mcmc_type %in% paste0("is", 1:3)) {
+    cat("\nEffective sample sizes of weights:\n\n")
+    print(ess(w))
+  }
   cat("\nEffective sample sizes for theta:\n\n")
   esss <- matrix((sd_theta / se_theta)^2, ncol = 1, 
                  dimnames = list(colnames(x$theta), c("ESS")))
   print(esss)
-  
   if(x$output_type != 3) {
     
     n <- nrow(x$alpha)
@@ -165,8 +169,10 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
         se_theta_is <- weighted_se(theta, w)
         se_theta <- sqrt(apply(theta, 2, function(x) asymptotic_var(x, w)))
         ess_theta <- (sd_theta / se_theta)^2
-        summary_theta <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta, ess_theta), ncol = 5, 
-                                dimnames = list(colnames(object$theta), c("Mean", "SD", "SE-IS", "SE", "ESS")))
+        ess_w <- apply(object$theta, 2, function(x) ess(w, identity, x))
+        summary_theta <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta, ess_theta, ess_w), ncol = 6, 
+                                dimnames = list(colnames(object$theta), 
+                                  c("Mean", "SD", "SE-IS", "SE", "ESS", "ESS of weights")))
       } else {
         summary_theta <- matrix(c(mean_theta, sd_theta), ncol = 2, 
                                 dimnames = list(colnames(object$theta), c("Mean", "SD")))
@@ -196,6 +202,7 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
     m <- ncol(object$alpha)
     
     if (object$mcmc_type %in% paste0("is", 1:3)) {
+      w <- object$counts * object$weights
       mean_alpha <- ts(weighted_mean(object$alpha, w), start = attr(object, "ts")$start,
                        frequency = attr(object, "ts")$frequency, names = colnames(object$alpha))
       sd_alpha <- weighted_var(object$alpha, w, method = "moment")
@@ -207,10 +214,11 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
         
         se_alpha <- apply(object$alpha, 2, function(z) sqrt(apply(z, 1, function(x) asymptotic_var(x, w))))
         alpha_ess <- (sd_alpha / se_alpha)^2
+        ess_w <- apply(object$alpha, 2, function(x) ess(w, identity, x))
         summary_alpha <- list(
           "Mean" = mean_alpha, "SD" = sd_alpha, 
-          "SE-IS" = se_alpha_is,
-          "SE" = se_alpha, "ESS" = alpha_ess)
+          "SE-IS" = se_alpha_is, "SE" = se_alpha, 
+          "ESS" = alpha_ess, "ESS of weights" = ess_w)
       } else {
         summary_alpha <- list("Mean" = mean_alpha, "SD" = sd_alpha)
       }

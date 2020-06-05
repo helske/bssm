@@ -3,13 +3,12 @@
 
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(BH)]]
 // [[Rcpp::interfaces(r, cpp)]]
 
 // Function for the prior mean of alpha_1
 // [[Rcpp::export]]
 arma::vec a1_fn(const arma::vec& theta, const arma::vec& known_params) {
- 
+  
   arma::vec a1(2);
   a1(0) = known_params(2);
   a1(1) = known_params(3);
@@ -25,7 +24,7 @@ arma::mat P1_fn(const arma::vec& theta, const arma::vec& known_params) {
   return P1;
 }
 
-// Function for the Cholesky of observational level covariance matrix
+// Function for the observational level standard deviation
 // [[Rcpp::export]]
 arma::mat H_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
@@ -34,7 +33,7 @@ arma::mat H_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
   return H;
 }
 
-// Function for the Cholesky of state level covariance matrix
+// Function for the Cholesky of state level covariance
 // [[Rcpp::export]]
 arma::mat R_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
@@ -69,13 +68,13 @@ arma::vec T_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
   const arma::vec& known_params, const arma::mat& known_tv_params) {
   
   double dT = known_params(0);
-  double k = known_params(1);
-
+  double K = known_params(1);
+  
   arma::vec alpha_new(2);
   alpha_new(0) = alpha(0);
-  alpha_new(1) = k * alpha(1) * exp(alpha(0) * dT) / 
-    (k + alpha(1) * (exp(alpha(0) * dT) -1));
-  
+  double r = exp(alpha(0)) / (1.0 + exp(alpha(0)));
+  alpha_new(1) = K * alpha(1) * exp(r * dT) / 
+    (K + alpha(1) * (exp(r * dT) - 1));
   return alpha_new;
 }
 
@@ -85,16 +84,17 @@ arma::mat T_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
   const arma::vec& known_params, const arma::mat& known_tv_params) {
   
   double dT = known_params(0);
-  double k = known_params(1);
+  double K = known_params(1);
   
-  double tmp = exp(alpha(0) * dT) / 
-    std::pow(k + alpha(1) * (exp(alpha(0) * dT) - 1), 2);
+  double r = exp(alpha(0)) / (1 + exp(alpha(0)));
+  
+  double tmp = exp(r * dT) / std::pow(K + alpha(1) * (exp(r * dT) - 1), 2);
   
   arma::mat Tg(2, 2);
   Tg(0, 0) = 1.0;
   Tg(0, 1) = 0;
-  Tg(1, 0) = k * alpha(1) * dT * (k - alpha(1)) * tmp;
-  Tg(1, 1) = k * k * tmp;
+  Tg(1, 0) = dT * K * alpha(1) * (K - alpha(1)) * tmp * r / (1 + exp(alpha(0)));
+  Tg(1, 1) = K * K * tmp;
   
   return Tg;
 }
@@ -105,12 +105,12 @@ double log_prior_pdf(const arma::vec& theta) {
   
   double log_pdf;
   if(arma::any(theta < 0)) {
-     log_pdf = -std::numeric_limits<double>::infinity();
-   } else {
+    log_pdf = -arma::datum::inf;
+  } else {
     // weakly informative priors. 
     // Note that negative values are handled above
-    log_pdf = R::dnorm(theta(0), 0, 10, 1) + R::dnorm(theta(1), 0, 10, 1) + 
-      R::dnorm(theta(2), 0, 10, 1);
+    log_pdf = 2.0 * (R::dnorm(theta(0), 0, 10, 1) + R::dnorm(theta(1), 0, 10, 1) + 
+      R::dnorm(theta(2), 0, 10, 1));
   }
   return log_pdf;
 }

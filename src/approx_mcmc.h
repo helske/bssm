@@ -20,7 +20,7 @@ public:
 
   //approximate mcmc
   template<class T>
-  void amcmc(T model, const bool end_ram);
+  void amcmc(T model, const unsigned int method, const bool end_ram);
 
   void amcmc(ssm_sde model, const unsigned int nsim, const bool end_ram);
     

@@ -5,14 +5,16 @@ Major update
   * Major changes for model definitions, now model updating and priors 
     can be defined via R functions.
   * Added support for multivariate non-Gaussian models.
-  * Many argument names and model building functions have been changed for clarity and consistency.
-  * Major overhaul of C++ internals which can bring minor efficiency gains and smaller installation size.
+  * Added support for gamma distributions.
   * Added the function as.data.frame for mcmc output which converts the MCMC samples 
     to data.frame format for easier post-processing.
   * Added truncated normal prior.
+  * Many argument names and model building functions have been changed for clarity and consistency.
+  * Major overhaul of C++ internals which can bring minor efficiency gains and smaller installation size.
+  * Allow zero as initial value for positive-constrained parameters of bsm models.
   * Small changes to summary method which can now return also only summaries of the states.
   * Fixed a bug in initializing run_mcmc for negative binomial model. 
-  * Allow zero as initial value for positive-constrained parameters of bsm models.
+  * Fixed a bug in phi-APF for non-linear models.
   
 bssm 0.1.11 (Release date: 2020-02-25)
 ==============

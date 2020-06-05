@@ -3,7 +3,7 @@
 \name{logLik.gaussian}
 \alias{logLik.gaussian}
 \alias{logLik.nongaussian}
-\title{Log-likelihood of the State Space Model}
+\title{Log-likelihood of a Gaussian State Space Model}
 \usage{
 \method{logLik}{gaussian}(object, ...)
 
@@ -11,9 +11,9 @@
   object,
   nsim,
   method = "psi",
-  seed = 1,
   max_iter = 100,
   conv_tol = 1e-08,
+  seed = sample(.Machine$integer.max, size = 1),
   ...
 )
 }
@@ -22,21 +22,19 @@
 
 \item{...}{Ignored.}
 
-\item{nsim}{Number of samples for importance sampling. If 0, approximate log-likelihood is returned.
-See vignette for details.}
+\item{nsim}{Number of samples for particle filter or importance sampling. If 0, 
+approximate log-likelihood based on the gaussian approximation is returned.}
 
-\item{method}{Method for computing the log-likelihood of non-Gaussian/non-linear model. 
-Method \code{"spdk"} uses the importance sampling approach by 
-Shephard and Pitt (1997), and Durbin and Koopman (1997). 
-\code{"psi"} (the default for linear-Gaussian signals) uses psi-auxiliary filter and 
-\code{"bsf"} bootstrap filter (default for general non-linear Gaussian models).}
+\item{method}{Sampling method, default is psi-auxiliary filter (\code{"psi"}), 
+other choices are \code{"bsf"} bootstrap particle filter, and \code{"spdk"}, 
+which uses the importance sampling approach by Shephard and Pitt (1997) and 
+Durbin and Koopman (1997).}
 
-\item{seed}{Seed for the random number generator. Compared to other functions of the package, the
-default seed is fixed (as 1) in order to work properly in numerical optimization algorithms.}
+\item{max_iter}{Maximum number of iterations for gaussian approximation algorithm.}
 
-\item{max_iter}{Maximum number of iterations.}
+\item{conv_tol}{Tolerance parameter for the approximation algorithm.}
 
-\item{conv_tol}{Tolerance parameter.}
+\item{seed}{Seed for the random number generator.}
 }
 \description{
 Computes the log-likelihood of the state space model of \code{bssm} package.

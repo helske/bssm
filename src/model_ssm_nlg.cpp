@@ -57,37 +57,7 @@ void ssm_nlg::approximate() {
   if(approx_state < 1) {
     
     // initial approximation is based on EKF (at and att)
-    arma::mat at(m, n + 1);
-    arma::mat att(m, n);
-    arma::cube Pt(m, m, n + 1);
-    arma::cube Ptt(m, m, n);
-    ekf(at, att, Pt, Ptt);
-    
-    approx_model.a1 = a1_fn(theta, known_params);
-    approx_model.P1 = P1_fn(theta, known_params);
-    
-    for (unsigned int t = 0; t < approx_model.Z.n_slices; t++) {
-      approx_model.Z.slice(t) = Z_gn(t, at.col(t), theta, known_params, known_tv_params);
-    }
-    for (unsigned int t = 0; t < approx_model.H.n_slices; t++) {
-      approx_model.H.slice(t) = H_fn(t, at.col(t), theta, known_params, known_tv_params);
-    }
-    for (unsigned int t = 0; t < approx_model.T.n_slices; t++) {
-      approx_model.T.slice(t) = T_gn(t, att.col(t), theta, known_params, known_tv_params);
-    }
-    
-    for (unsigned int t = 0; t < approx_model.R.n_slices; t++) {
-      approx_model.R.slice(t) = R_fn(t, att.col(t), theta, known_params, known_tv_params);
-    }
-    for (unsigned int t = 0; t < n; t++) {
-      approx_model.D.col(t) = Z_fn(t, at.col(t), theta, known_params, known_tv_params) -
-        approx_model.Z.slice(t * Zgtv) * at.col(t);
-      approx_model.C.col(t) =  T_fn(t, att.col(t), theta, known_params, known_tv_params) -
-        approx_model.T.slice(t * Tgtv) * att.col(t);
-    }
-    
-    approx_model.compute_HH();
-    approx_model.compute_RR();
+    approximate_by_ekf();
     mode_estimate = approx_model.fast_smoother().head_cols(n);
     if (!arma::is_finite(mode_estimate)) {
       return;
@@ -172,7 +142,7 @@ void ssm_nlg::approximate() {
     approx_state = 1;
   }
 }
-
+// not yet in use...
 void ssm_nlg::approximate_for_is(const arma::mat& mode_estimate) {
   
   approx_model.a1 = a1_fn(theta, known_params);
@@ -208,6 +178,41 @@ void ssm_nlg::approximate_for_is(const arma::mat& mode_estimate) {
   approx_state = 2;
 }
 
+
+void ssm_nlg::approximate_by_ekf() {
+  
+  arma::mat at(m, n + 1);
+  arma::mat att(m, n);
+  arma::cube Pt(m, m, n + 1);
+  arma::cube Ptt(m, m, n);
+  ekf(at, att, Pt, Ptt);
+  
+  approx_model.a1 = a1_fn(theta, known_params);
+  approx_model.P1 = P1_fn(theta, known_params);
+  
+  for (unsigned int t = 0; t < approx_model.Z.n_slices; t++) {
+    approx_model.Z.slice(t) = Z_gn(t, at.col(t), theta, known_params, known_tv_params);
+  }
+  for (unsigned int t = 0; t < approx_model.H.n_slices; t++) {
+    approx_model.H.slice(t) = H_fn(t, at.col(t), theta, known_params, known_tv_params);
+  }
+  for (unsigned int t = 0; t < approx_model.T.n_slices; t++) {
+    approx_model.T.slice(t) = T_gn(t, att.col(t), theta, known_params, known_tv_params);
+  }
+  
+  for (unsigned int t = 0; t < approx_model.R.n_slices; t++) {
+    approx_model.R.slice(t) = R_fn(t, att.col(t), theta, known_params, known_tv_params);
+  }
+  for (unsigned int t = 0; t < n; t++) {
+    approx_model.D.col(t) = Z_fn(t, at.col(t), theta, known_params, known_tv_params) -
+      approx_model.Z.slice(t * Zgtv) * at.col(t);
+    approx_model.C.col(t) =  T_fn(t, att.col(t), theta, known_params, known_tv_params) -
+      approx_model.T.slice(t * Tgtv) * att.col(t);
+  }
+  
+  approx_model.compute_HH();
+  approx_model.compute_RR();
+}
 // method = 1 psi-APF, 2 = BSF, 3 = SPDK (not applicable), 4 = IEKF (either approx or IEKF-PF)
 arma::vec ssm_nlg::log_likelihood(
     const unsigned int method, 
@@ -1028,7 +1033,7 @@ double ssm_nlg::ukf(arma::mat& at, arma::mat& att, arma::cube& Pt,
 // log[g(y_t | ^alpha_t) f(^alpha_t | ^alpha_t-1) / 
 // ~g(y_t | ^alpha_t)] ~f(^alpha_t | ^alpha_t-1)
 void ssm_nlg::update_scales()  {
- 
+  
   scales.zeros();
   for(unsigned int t = 0; t < n; t++) { 
     arma::uvec na_y = arma::find_nonfinite(y.col(t));

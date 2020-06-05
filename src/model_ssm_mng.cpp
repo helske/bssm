@@ -94,7 +94,7 @@ void ssm_mng::approximate() {
     
     // don't update y and H if using global approximation and we have updated them already
     if(!local_approx & (approx_state == 0)) {
-      arma::mat alpha = approx_model.fast_smoother().head_cols(n);
+      arma::mat alpha = approx_model.fast_smoother();
       for (unsigned int t = 0; t < n; t++) {
         mode_estimate.col(t) = D.col(Dtv * t) + approx_model.Z.slice(Ztv * t) * alpha.col(t);
       }
@@ -108,7 +108,7 @@ void ssm_mng::approximate() {
         laplace_iter(mode_estimate);
         // compute new guess of mode
         arma::mat mode_estimate_new(p, n);
-        arma::mat alpha = approx_model.fast_smoother().head_cols(n);
+        arma::mat alpha = approx_model.fast_smoother();
         for (unsigned int t = 0; t < n; t++) {
           mode_estimate_new.col(t) = 
             D.col(Dtv * t) + Z.slice(Ztv * t) * alpha.col(t);

@@ -104,6 +104,7 @@ public:
   // update the approximating Gaussian model
   void approximate();
   void approximate_for_is(const arma::mat& mode_estimate);
+  void approximate_by_ekf();
   
   arma::vec log_likelihood(
       const unsigned int method, 
