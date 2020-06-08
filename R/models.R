@@ -146,8 +146,8 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #' m x k x n array, or object which can be coerced to such.
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
-#' @param distribution distribution of the observation. Possible choices are
-#' \code{"poisson"}, \code{"binomial"}, and \code{"negative binomial"}.
+#' @param distribution Distribution of the observed time series. Possible choices are
+#' \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and \code{"negative binomial"}.
 #' @param phi Additional parameter relating to the non-Gaussian distribution.
 #' For negative binomial distribution this is the dispersion term, for gamma distribution
 #' this is the shape parameter, and for other distributions this is ignored.
@@ -159,6 +159,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #'  m times 1 or m times n matrix.
 #' @param D Intercept terms \eqn{D_t} for the observations equation, given as a
 #' 1 x 1 or 1 x n matrix.
+#' @param init_theta Initial values for the unknown hyperparameters theta.
 #' @param update_fn Function which returns list of updated model 
 #' components given input vector theta. This function should take only one 
 #' vector argument which is used to create list with elements named as
@@ -291,10 +292,7 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param init_theta Initial values for the unknown hyperparameters theta.
-#' @param xreg Matrix of n rows and arbitrary number of columns containing covariates. 
-#' This matrix is not used by default, but can be used to supply additional data to 
-#' \code{update_fn} (where you can, e.g. input the regression part to D).
-#' @param D Intercept terms for observation equation, given as a length n vector.
+#' @param D Intercept terms for observation equation, given as a p x n matrix.
 #' @param C Intercept terms for state equation, given as m x n matrix.
 #' @param update_fn Function which returns list of updated model 
 #' components given input vector theta. This function should take only one 
@@ -399,7 +397,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #' Constructs an object of class \code{ssm_mng} by defining the corresponding terms
 #' of the observation and state equation:
 #'
-#' \deqn{p^i(y^_t | D_t + Z_t \alpha_t), (\textrm{observation equation})}
+#' \deqn{p^i(y^i_t | D_t + Z_t \alpha_t), (\textrm{observation equation})}
 #' \deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
 #'
 #' where \eqn{\eta_t \sim N(0, I_k)} and
@@ -410,14 +408,18 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #' @param y Observations as multivariate time series or matrix with dimensions n x p.
 #' @param Z System matrix Z of the observation equation as p x m matrix or p x m x n array.
 #' @param T System matrix T of the state equation. Either a m x m matrix or a
-#' m x m x n array. UPDATE!!
+#' m x m x n array.
 #' @param R Lower triangular matrix R the state equation. Either a m x k matrix or a
 #' m x k x n array.
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
+#' @param distribution vector of distributions of the observed series. Possible choices are
+#' \code{"poisson"}, \code{"binomial"}, \code{"negative binomial"}, \code{"gamma"},
+#' and \code{"gaussian"}.
 #' @param phi Additional parameters relating to the non-Gaussian distributions.
 #' For negative binomial distribution this is the dispersion term, for gamma distribution
-#' this is the shape parameter, and for other distributions this is ignored.
+#' this is the shape parameter, for gaussian this is standard deviation, 
+#' and for other distributions this is ignored.
 #' @param u Constant parameter for non-Gaussian models. For Poisson, gamma, and negative binomial distribution, 
 #' this corresponds to the offset term. For binomial, this is the number of trials.
 #' @param init_theta Initial values for the unknown hyperparameters theta.

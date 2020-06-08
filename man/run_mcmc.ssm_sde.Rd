@@ -71,6 +71,10 @@ is done for transformed parameters with internal_theta = log(theta).}
 \item{end_adaptive_phase}{If \code{TRUE} (default), $S$ is held fixed after the burnin period.}
 
 \item{n_threads}{Number of threads for state simulation.}
+
+\item{seed}{Seed for the random number generator.}
+
+\item{...}{Ignored.}
 }
 \description{
 Methods for posterior inference of states and parameters.

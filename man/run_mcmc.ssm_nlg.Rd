@@ -50,7 +50,7 @@ or one of the three importance sampling type weighting schemes:
 \code{"is1"} for importance sampling type weighting where the number of particles used for
 weight computations is proportional to the length of the jump chain block.}
 
-\item{sampling_method}{If \code{"psi"}, psi-auxiliary particle filter is used for state sampling. 
+\item{sampling_method}{If \code{"psi"}, \eqn{\psi}{psi}-auxiliary particle filter is used for state sampling. 
 If \code{"ekf"}, particle filter based on EKF-proposals are used. 
 If \code{"bsf"} (default), bootstrap filter is used.}
 
@@ -86,6 +86,8 @@ is done for transformed parameters with internal_theta = log(theta).}
 
 \item{iekf_iter}{If \code{iekf_iter > 0}, iterated extended Kalman filter is used with
 \code{iekf_iter} iterations in place of standard EKF. Defaults to zero.}
+
+\item{...}{Ignored.}
 }
 \description{
 Methods for posterior inference of states and parameters.

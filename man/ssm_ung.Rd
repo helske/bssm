@@ -38,8 +38,8 @@ m x k x n array, or object which can be coerced to such.}
 
 \item{P1}{Prior covariance matrix for the initial state as m x m matrix.}
 
-\item{distribution}{distribution of the observation. Possible choices are
-\code{"poisson"}, \code{"binomial"}, and \code{"negative binomial"}.}
+\item{distribution}{Distribution of the observed time series. Possible choices are
+\code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and \code{"negative binomial"}.}
 
 \item{phi}{Additional parameter relating to the non-Gaussian distribution.
 For negative binomial distribution this is the dispersion term, for gamma distribution
@@ -48,6 +48,8 @@ this is the shape parameter, and for other distributions this is ignored.}
 \item{u}{Constant parameter for non-Gaussian models. For Poisson, gamma, and 
 negative binomial distribution, this corresponds to the offset term. For binomial, 
 this is the number of trials.}
+
+\item{init_theta}{Initial values for the unknown hyperparameters theta.}
 
 \item{D}{Intercept terms \eqn{D_t} for the observations equation, given as a
 1 x 1 or 1 x n matrix.}

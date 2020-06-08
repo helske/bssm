@@ -39,7 +39,7 @@ m x k x n array.}
 
 \item{init_theta}{Initial values for the unknown hyperparameters theta.}
 
-\item{D}{Intercept terms for observation equation, given as a length n vector.}
+\item{D}{Intercept terms for observation equation, given as a p x n matrix.}
 
 \item{C}{Intercept terms for state equation, given as m x n matrix.}
 
@@ -54,10 +54,6 @@ If any of these components is missing, it is assumed to be constant wrt. theta.}
 
 \item{prior_fn}{Function which returns log of prior density 
 given input vector theta.}
-
-\item{xreg}{Matrix of n rows and arbitrary number of columns containing covariates. 
-This matrix is not used by default, but can be used to supply additional data to 
-\code{update_fn} (where you can, e.g. input the regression part to D).}
 }
 \value{
 Object of class \code{ssm_mlg}.

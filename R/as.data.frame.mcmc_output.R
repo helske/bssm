@@ -4,6 +4,8 @@
 #'  
 #' @method as.data.frame mcmc_output
 #' @param x Output from \code{\link{run_mcmc}}.
+#' @param row.names Ignored.
+#' @param optional Ignored.
 #' @param variable Return samples of \code{"theta"} (default) or \code{"states"}?
 #' @param times Vector of indices. In case of states, what time points to expand? Default is all.
 #' @param states Vector of indices. In case of states, what states to expand? Default is all.
@@ -14,6 +16,7 @@
 #' @param ... Ignored.
 #' @export
 as.data.frame.mcmc_output <- function(x, 
+  row.names, optional,
   variable = c("theta", "states"),
   times, states,
   expand = !(x$mcmc_type %in% paste0("is", 1:3)), ...) {

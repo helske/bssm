@@ -34,7 +34,7 @@
 #'   nsim = 1000)
 #' 
 #' require("dplyr")
-#' sumr_fit <- as.data.frame(mcmc_results, "states") %>%
+#' sumr_fit <- as.data.frame(mcmc_results, variable = "states") %>%
 #'   group_by(time, iter) %>% 
 #'   mutate(signal = 
 #'       value[variable == "level"] + 

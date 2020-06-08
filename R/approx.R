@@ -9,6 +9,7 @@
 #' @param iekf_iter For non-linear models, number of iterations in iterated EKF (defaults to 0).
 #' @param ... Ignored.
 #' @export
+#' @rdname gaussian_approx
 #' @examples 
 #' data("poisson_series")
 #' model <- bsm_ng(y = poisson_series, sd_slope = 0.01, sd_level = 0.1,
@@ -17,6 +18,7 @@
 gaussian_approx <- function(model, max_iter, conv_tol, ...) {
   UseMethod("gaussian_approx", model)
 }
+#' @rdname gaussian_approx
 #' @method gaussian_approx nongaussian
 #' @export
 gaussian_approx.nongaussian <- function(model, max_iter = 100, conv_tol = 1e-8, ...) {
@@ -47,7 +49,7 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100, conv_tol = 1e-8, 
   }
   approx_model
 }
-
+#' @rdname gaussian_approx
 #' @method gaussian_approx ssm_nlg
 #' @export
 gaussian_approx.ssm_nlg <- function(model, max_iter = 100, 

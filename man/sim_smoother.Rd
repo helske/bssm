@@ -6,18 +6,18 @@
 \alias{sim_smoother.nongaussian}
 \title{Simulation Smoothing}
 \usage{
-sim_smoother(object, nsim, use_antithetic = FALSE, seed, ...)
+sim_smoother(model, nsim, seed, use_antithetic = FALSE, ...)
 
 \method{sim_smoother}{gaussian}(
-  object,
+  model,
   nsim = 1,
-  use_antithetic = FALSE,
   seed = sample(.Machine$integer.max, size = 1),
+  use_antithetic = FALSE,
   ...
 )
 
 \method{sim_smoother}{nongaussian}(
-  object,
+  model,
   nsim = 1,
   seed = sample(.Machine$integer.max, size = 1),
   use_antithetic = FALSE,
@@ -25,13 +25,14 @@ sim_smoother(object, nsim, use_antithetic = FALSE, seed, ...)
 )
 }
 \arguments{
-\item{object}{Model object.}
+\item{model}{Model object.}
 
 \item{nsim}{Number of independent samples.}
 
-\item{use_antithetic}{Use an antithetic variable for location. Default is \code{FALSE}. Ignored for multivariate models.}
-
 \item{seed}{Seed for the random number generator.}
+
+\item{use_antithetic}{Use an antithetic variable for location. 
+Default is \code{FALSE}. Ignored for multivariate models.}
 
 \item{...}{Ignored.}
 }

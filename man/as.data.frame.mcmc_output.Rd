@@ -6,6 +6,8 @@
 \usage{
 \method{as.data.frame}{mcmc_output}(
   x,
+  row.names,
+  optional,
   variable = c("theta", "states"),
   times,
   states,
@@ -15,6 +17,10 @@
 }
 \arguments{
 \item{x}{Output from \code{\link{run_mcmc}}.}
+
+\item{row.names}{Ignored.}
+
+\item{optional}{Ignored.}
 
 \item{variable}{Return samples of \code{"theta"} (default) or \code{"states"}?}
 

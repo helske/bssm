@@ -149,8 +149,8 @@ Using the `as.data.frame` method we can convert the state samples to a data fram
 ```{r summaries}
 library("dplyr")
 library("Hmisc")
-d1 <- as.data.frame(mcmc_res, "states")
-d2 <- as.data.frame(mcmc_ekf_res, "states")
+d1 <- as.data.frame(mcmc_res, variable = "states")
+d2 <- as.data.frame(mcmc_ekf_res, variable = "states")
 d1$method <- "is2-psi"
 d2$method <- "approx ekf"
 

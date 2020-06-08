@@ -525,7 +525,7 @@ for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
     nsimc *= count_storage(i);
   }
   
-  arma::cube alpha_i = model.approx_model.simulate_states(nsimc, true);
+  arma::cube alpha_i = model.approx_model.simulate_states(nsimc);
   arma::vec weights_i = model.importance_weights(alpha_i);
   weights_i = arma::exp(weights_i - arma::accu(model.scales));
   weight_storage(i) = arma::mean(weights_i);
@@ -588,7 +588,7 @@ void approx_mcmc::approx_state_posterior(T model, const unsigned int n_threads) 
 for (unsigned int i = 0; i < theta_storage.n_cols; i++) {
   model.update_model(theta_storage.col(i));
   model.approximate_for_is(mode_storage.slice(i));
-  alpha_storage.slice(i) = approx_model.simulate_states(1).slice(0).t();
+  alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
 }
 #endif
 

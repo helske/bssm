@@ -7,10 +7,10 @@
 \alias{particle_smoother.ssm_sde}
 \title{Particle Smoothing}
 \usage{
-particle_smoother(object, nsim, ...)
+particle_smoother(model, nsim, ...)
 
 \method{particle_smoother}{nongaussian}(
-  object,
+  model,
   nsim,
   method = "psi",
   seed = sample(.Machine$integer.max, size = 1),
@@ -20,7 +20,7 @@ particle_smoother(object, nsim, ...)
 )
 
 \method{particle_smoother}{ssm_nlg}(
-  object,
+  model,
   nsim,
   method = "psi",
   seed = sample(.Machine$integer.max, size = 1),
@@ -31,7 +31,7 @@ particle_smoother(object, nsim, ...)
 )
 
 \method{particle_smoother}{ssm_sde}(
-  object,
+  model,
   nsim,
   L,
   seed = sample(.Machine$integer.max, size = 1),
@@ -39,7 +39,7 @@ particle_smoother(object, nsim, ...)
 )
 }
 \arguments{
-\item{object}{Model.}
+\item{model}{Model.}
 
 \item{nsim}{Number of samples.}
 
@@ -48,15 +48,15 @@ particle_smoother(object, nsim, ...)
 \item{method}{Choice of particle filter algorithm. 
 For Gaussian and non-Gaussian models with linear dynamics,
 options are \code{"bsf"} (bootstrap particle filter) 
-and \code{"psi"} (psi-APF, the default), and 
+and \code{"psi"} (\eqn{\psi}{psi}-APF, the default), and 
 for non-linear models options \code{"ekf"} (extended Kalman particle filter) 
 is also available.}
 
 \item{seed}{Seed for RNG.}
 
-\item{max_iter}{Maximum number of iterations used in Gaussian approximation. Used psi-APF.}
+\item{max_iter}{Maximum number of iterations used in Gaussian approximation. Used \eqn{\psi}{psi}-APF.}
 
-\item{conv_tol}{Tolerance parameter used in Gaussian approximation. Used psi-APF.}
+\item{conv_tol}{Tolerance parameter used in Gaussian approximation. Used \eqn{\psi}{psi}-APF.}
 
 \item{iekf_iter}{If zero (default), first approximation for non-linear 
 Gaussian models is obtained from extended Kalman filter. If 

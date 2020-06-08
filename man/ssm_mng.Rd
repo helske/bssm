@@ -28,7 +28,7 @@ ssm_mng(
 \item{Z}{System matrix Z of the observation equation as p x m matrix or p x m x n array.}
 
 \item{T}{System matrix T of the state equation. Either a m x m matrix or a
-m x m x n array. UPDATE!!}
+m x m x n array.}
 
 \item{R}{Lower triangular matrix R the state equation. Either a m x k matrix or a
 m x k x n array.}
@@ -37,9 +37,14 @@ m x k x n array.}
 
 \item{P1}{Prior covariance matrix for the initial state as m x m matrix.}
 
+\item{distribution}{vector of distributions of the observed series. Possible choices are
+\code{"poisson"}, \code{"binomial"}, \code{"negative binomial"}, \code{"gamma"},
+and \code{"gaussian"}.}
+
 \item{phi}{Additional parameters relating to the non-Gaussian distributions.
 For negative binomial distribution this is the dispersion term, for gamma distribution
-this is the shape parameter, and for other distributions this is ignored.}
+this is the shape parameter, for gaussian this is standard deviation, 
+and for other distributions this is ignored.}
 
 \item{u}{Constant parameter for non-Gaussian models. For Poisson, gamma, and negative binomial distribution, 
 this corresponds to the offset term. For binomial, this is the number of trials.}
@@ -71,7 +76,7 @@ Constructs an object of class \code{ssm_mng} by defining the corresponding terms
 of the observation and state equation:
 }
 \details{
-\deqn{p^i(y^_t | D_t + Z_t \alpha_t), (\textrm{observation equation})}
+\deqn{p^i(y^i_t | D_t + Z_t \alpha_t), (\textrm{observation equation})}
 \deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
 
 where \eqn{\eta_t \sim N(0, I_k)} and

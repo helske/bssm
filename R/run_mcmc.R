@@ -136,7 +136,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' \code{"is2"} for jump chain importance sampling type weighting, or
 #' \code{"is1"} for importance sampling type weighting where the number of particles used for
 #' weight computations is proportional to the length of the jump chain block.
-#' @param sampling_method If \code{"psi"}, psi-auxiliary particle filter is used for state sampling
+#' @param sampling_method If \code{"psi"}, \eqn{\psi}{psi}-auxiliary particle filter is used for state sampling
 #' (default). If \code{"spdk"}, non-sequential importance sampling based
 #' on Gaussian approximation is used. If \code{"bsf"}, bootstrap filter
 #' is used.
@@ -163,7 +163,6 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' @param seed Seed for the random number generator.
 #' @param max_iter Maximum number of iterations used in Gaussian approximation.
 #' @param conv_tol Tolerance parameter used in Gaussian approximation.
-
 #' @param ... Ignored.
 #' set.seed(1)
 #' n <- 50 
@@ -297,7 +296,7 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
 #' \code{"is2"} for jump chain importance sampling type weighting, or
 #' \code{"is1"} for importance sampling type weighting where the number of particles used for
 #' weight computations is proportional to the length of the jump chain block.
-#' @param sampling_method If \code{"psi"}, psi-auxiliary particle filter is used for state sampling. 
+#' @param sampling_method If \code{"psi"}, \eqn{\psi}{psi}-auxiliary particle filter is used for state sampling. 
 #' If \code{"ekf"}, particle filter based on EKF-proposals are used. 
 #' If \code{"bsf"} (default), bootstrap filter is used.
 #' @param burnin Length of the burn-in period which is disregarded from the
@@ -322,6 +321,7 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
 #' @param conv_tol Tolerance parameter used in Gaussian approximation.
 #' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter is used with
 #' \code{iekf_iter} iterations in place of standard EKF. Defaults to zero.
+#' @param ... Ignored.
 #' @export
 run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
   mcmc_type = "da", sampling_method = "bsf",
@@ -478,6 +478,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
 #' @param n_threads Number of threads for state simulation.
 #' @param L_c,L_f Integer values defining the discretization levels for first and second stages (defined as 2^L). 
 #' For PM methods, maximum of these is used.
+#' @param seed Seed for the random number generator.
+#' @param ... Ignored.
 #' @export
 run_mcmc.ssm_sde <-  function(model, iter, nsim, output_type = "full",
   mcmc_type = "da", L_c, L_f,

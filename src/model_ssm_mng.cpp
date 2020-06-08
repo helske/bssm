@@ -302,7 +302,7 @@ void ssm_mng::laplace_iter(const arma::mat& signal) {
     } break;
     case 5: {
       // gaussian
-      approx_model.HH.tube(i, i) = phi(i);
+      approx_model.HH.tube(i, i) = phi(i) * phi(i);
       approx_model.y.row(i) = y.row(i);
     } break;
     }

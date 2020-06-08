@@ -4,6 +4,10 @@ author: "Jouni Helske"
 date: "8 June 2020"
 output: html_document
 bibliography: bssm.bib
+bvignette: |
+  %\VignetteIndexEntry{$\\psi$-APF for non-linear Gaussian state space models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}

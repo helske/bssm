@@ -10,6 +10,6 @@ and exponential family state space models, where the state equation is linear an
 and the conditional observation density is either Gaussian, Poisson,
 binomial, negative binomial or Gamma density. General non-linear Gaussian models and models 
 with continuous SDE dynamics are also supported. For formal definition of the
-currently supported models and methods, as well as some theory behind the IS-MCMC and $\psi$-APF, 
+currently supported models and methods, as well as some theory behind the IS-MCMC and \eqn{\psi}{psi}-APF, 
 see the package vignette and arXiv paper: \url{http://arxiv.org/abs/1609.02541}.
 }
