@@ -113,17 +113,6 @@ public:
       arma::mat& weights, 
       arma::umat& indices);
   
-  Rcpp::List predict_interval(const arma::vec& probs, const arma::mat& thetasim,
-    const arma::mat& alpha_last, const arma::cube& P_last, 
-    const arma::uvec& counts, const unsigned int predict_type);
-  
-  arma::cube predict_sample(const arma::mat& thetasim, const arma::mat& alpha, 
-    const arma::uvec& counts, const unsigned int predict_type, 
-    const unsigned int nsim);
-  
-  arma::cube sample_model(const arma::vec& a1_sim, 
-    const unsigned int predict_type, const unsigned int nsim);
-  
   double ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, 
     arma::cube& Ptt) const;
   
@@ -161,6 +150,12 @@ public:
     const arma::vec& at, const arma::mat& Pt, arma::vec& att, arma::mat& Ptt) const;
   
   double log_signal_pdf(const arma::mat& alpha) const;
+  
+  arma::cube predict_sample(const arma::mat& theta_posterior, 
+    const arma::mat& alpha, const unsigned int predict_type);
+  
+  arma::mat sample_model(const arma::vec& a1_sim, 
+    const unsigned int predict_type);
   
   
 };

@@ -1,51 +1,20 @@
 #' Predictions for State Space Models
-#'
-#' Posterior intervals of future observations or their means
-#' (success probabilities in binomial case). These are
-#' computed using the quantile method where the intervals 
-#' are computed as empirical quantiles the posterior sample,
-#' or using a parametric method by Helske (2016) in a 
-#' linear-Gaussian case.
+#' 
+#' Draw samples from the posterior predictive distribution given the 
+#' posterior draws of hyperparameters theta and alpha_{n+1}.
 #'
 #' @param object mcmc_output object obtained from 
 #' \code{\link{run_mcmc}}
-#' @param intervals If \code{TRUE}, intervals are returned.
-#' Otherwise samples 
-#' from the posterior predictive distribution are returned.
-#' @param type Compute predictions on \code{"mean"} 
-#' ("confidence interval"),
-#' \code{"response"} ("prediction interval"), or 
-#' \code{"state"} level. 
-#' Defaults to \code{"response"}.
-#' @param probs Desired quantiles. Defaults to 
-#' \code{c(0.05, 0.95)}. Always includes median 0.5.
+#' @param type Return predictions on \code{"mean"} 
+#' \code{"response"}, or  \code{"state"} level. 
 #' @param future_model Model for future observations. 
 #' Should have same structure
 #' as the original model which was used in MCMC, in order 
-#' to plug the posterior 
-#' samples of the model parameters to the right places.
-#' @param nsim Number of state samples to draw per MCMC
-#' iteration. 
-#' Note that this has no effect for the time point $n+1$ 
-#' (where $n$ is the length of the original series) as this
-#' is directly obtained from the MCMC output.
-#' \code{nsim} defaults to 1 except for the EKF based MCMC
-#' output of non-linear Gaussian models (see below). 
-#' For linear-Gaussian models the intervals are computed
-#' based on Kalman filter so 
-#' this argument has no effect if \code{intervals} is
-#' \code{TRUE}. For non-linear Gaussian 
-#' models of class \code{ssm_nlg}, if \code{nsim} is 0 and
-#' \code{intervals} is \code{TRUE}, 
-#' EKF based approximation is used for computing the
-#' prediction intervals.
-#' @param return_MCSE For Gaussian models, if \code{TRUE},
-#' the Monte Carlo
-#' standard errors of the intervals are also returned.
+#' to plug the posterior samples of the model parameters to the right places.
+#' @param nsim Number of samples to draw.
 #' @param seed Seed for RNG.
 #' @param ... Ignored.
-#' @return List containing the mean predictions, 
-#' quantiles and Monte Carlo standard errors .
+#' @return Data frame of predicted samples.
 #' @method predict mcmc_output
 #' @rdname predict
 #' @export
@@ -54,255 +23,116 @@
 #' y <- log10(JohnsonJohnson)
 #' prior <- uniform(0.01, 0, 1)
 #' model <- bsm_lg(window(y, end = c(1974, 4)), sd_y = prior,
-#' sd_level = prior, sd_slope = prior, sd_seasonal = prior)
+#'   sd_level = prior, sd_slope = prior, sd_seasonal = prior)
 #' 
 #' mcmc_results <- run_mcmc(model, iter = 5000)
 #' future_model <- model
-#' future_model$y <- ts(rep(NA, 25), start = end(model$y), 
+#' future_model$y <- ts(rep(NA, 25), 
+#'   start = tsp(model$y)[2] + 2 * deltat(model$y), 
 #'   frequency = frequency(model$y))
-#' pred_gaussian <- predict(mcmc_results, future_model, 
-#'   probs = c(0.05, 0.1, 0.5, 0.9, 0.95))
-#' ts.plot(log10(JohnsonJohnson), pred_gaussian$intervals, 
-#'   col = c(1, rep(2, 5)), lty = c(1, 2, 2, 1, 2, 2))
-#'
-#' head(pred_gaussian$intervals)
-#' head(pred_gaussian$MCSE)
+#' pred <- predict(mcmc_results, future_model, type = "state", 
+#'   nsim = 1000)
 #' 
-#' # Non-gaussian models
-#' \dontrun{
-#' data("poisson_series")
+#' require("dplyr")
+#' sumr_fit <- as.data.frame(mcmc_results, "states") %>%
+#'   group_by(time, iter) %>% 
+#'   mutate(signal = 
+#'       value[variable == "level"] + 
+#'       value[variable == "seasonal_1"]) %>%
+#'   group_by(time) %>%
+#'   summarise(mean = mean(signal), 
+#'     lwr = quantile(signal, 0.025), 
+#'     upr = quantile(signal, 0.975))
 #' 
-#' model <- bsm_ng(poisson_series, sd_level = 
-#'   halfnormal(0.1, 1), sd_slope=halfnormal(0.01, 0.1),
-#'   distribution = "poisson")
-#' mcmc_poisson <- run_mcmc(model, iter = 5000, nsim = 10)
-#'
-#' future_model <- model
-#' future_model$y <- ts(rep(NA, 25), start = end(model$y), 
-#'   frequency = frequency(model$y))
+#' sumr_pred <- pred %>% 
+#'   group_by(time, sample) %>%
+#'   mutate(signal = 
+#'       value[variable == "level"] + 
+#'       value[variable == "seasonal_1"]) %>%
+#'   group_by(time) %>%
+#'   summarise(mean = mean(signal),
+#'     lwr = quantile(signal, 0.025), 
+#'     upr = quantile(signal, 0.975)) 
 #' 
-#' pred <- predict(mcmc_poisson, future_model, 
-#'   probs = seq(0.05,0.95, by = 0.05))
-#'
-#' library("ggplot2")
-#' fit <- ts(colMeans(exp(expand_sample(mcmc_poisson, 
-#'     "alpha")$level)))
-#' autoplot(pred, y = model$y, fit = fit)
-#' }
+#' require("ggplot2")
+#' rbind(sumr_fit, sumr_pred) %>% 
+#'   ggplot(aes(x = time, y = mean)) + 
+#'   geom_ribbon(aes(ymin = lwr, ymax = upr), 
+#'    fill = "#92f0a8", alpha = 0.25) +
+#'   geom_line(colour = "#92f0a8") +
+#'   theme_bw() + 
+#'   geom_point(data = data.frame(
+#'     mean = log10(JohnsonJohnson), 
+#'     time = time(JohnsonJohnson)))
+#' 
 predict.mcmc_output <- function(object, future_model, type = "response",
-  intervals = TRUE, probs = c(0.05, 0.95), nsim, return_MCSE = FALSE, 
-  seed = sample(.Machine$integer.max, size = 1), ...) {
+  seed = sample(.Machine$integer.max, size = 1), nsim, ...) {
   
   type <- match.arg(type, c("response", "mean", "state"))
   
   if (object$output_type != 1) stop("MCMC output must contain posterior samples of the states.")
   
-  if (missing(nsim)) {
-    if(object$mcmc_type == "ekf" && intervals) {
-      nsim <- 0
-    } else {
-      nsim <- 1
-    }
-  }
-  
-  probs <- sort(unique(c(probs, 0.5)))
-  n_ahead <- length(future_model$y)
-  start_ts <- start(future_model$y)
-  end_ts <- end(future_model$y)
-  freq <- frequency(future_model$y)
   
   if (attr(object, "model_type") %in% c("bsm_lg", "bsm_ng")) {
     object$theta[,1:(ncol(object$theta) - length(future_model$beta))] <- 
       log(object$theta[,1:(ncol(object$theta) - length(future_model$beta))])
   }
+  w <- object$counts * (if(object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
+  idx <- sample(1:nrow(object$theta), size = nsim, prob = w, replace = TRUE)
+  theta <- t(object$theta[idx, ])
+  alpha <- matrix(object$alpha[nrow(object$alpha),,idx], nrow = ncol(object$alpha))
   
   switch(attr(object, "model_type"),
+    ssm_mlg = ,
     ssm_ulg = ,
     bsm_lg = ,
     ar1_lg = {
-      out <- gaussian_predict(future_model, probs,
-        t(object$theta), matrix(object$alpha[nrow(object$alpha),,], nrow = ncol(object$alpha)), 
-        object$counts, pmatch(type, c("response", "mean", "state")), intervals, 
-        seed, pmatch(attr(object, "model_type"), c("ssm_ulg", "bsm_lg", "ar1_lg")), nsim)
-     
-      if (intervals) {
+      pred <- gaussian_predict(future_model, theta, alpha,
+        pmatch(type, c("response", "mean", "state")), 
+        seed, 
+        pmatch(attr(object, "model_type"), 
+          c("ssm_mng", "ssm_ulg", "bsm_lg", "ar1_lg")) - 1L)
         
-        if (return_MCSE) {
-          if (type != "state") {
-            ses <- matrix(0, n_ahead, length(probs))
-            nsim <- nrow(out$mean_pred)
-            
-            for (i in 1:n_ahead) {
-              for (j in 1:length(probs)) {
-                pnorms <- pnorm(q = out$intervals[i, j], out$mean_pred[, i], out$sd_pred[, i])
-                eff_n <-  effectiveSize(pnorms)
-                ses[i, j] <- sqrt((sum((probs[j] - pnorms) ^ 2) / nsim) / eff_n) /
-                  sum(dnorm(x = out$intervals[i, j], out$mean_pred[, i], out$sd_pred[, i]) / nsim)
-              }
-            }
-            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, 
-                                   end = end_ts, frequency = freq),
-              intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
-                names = paste0(100*probs, "%")),
-              MCSE = ts(ses, start = start_ts, end = end_ts, frequency = freq,
-                names = paste0(100*probs, "%")))
-          } else {
-            m <- length(future_model$a1)
-            ses <- replicate(m, ts(matrix(0, n_ahead, length(probs)), 
-              start = start_ts, end = end_ts, frequency = freq,
-              names = paste0(100*probs, "%")), simplify = FALSE)
-            nsim <- nrow(out$mean_pred)
-            
-            for (k in 1:m) {
-              for (i in 1:n_ahead) {
-                for (j in 1:length(probs)) {
-                  pnorms <- pnorm(q = out$intervals[i, j, k], 
-                                  out$mean_pred[, i, k], out$sd_pred[, i, k])
-                  eff_n <-  effectiveSize(pnorms)
-                  ses[[k]][i, j] <- sqrt((sum((probs[j] - pnorms) ^ 2) / nsim) / eff_n) /
-                    sum(dnorm(x = out$intervals[i, j, k], 
-                              out$mean_pred[, i, k], out$sd_pred[, i, k]) / nsim)
-                }
-              }
-            }
-            
-            intv <- lapply(1:m, function(i) ts(out$intervals[,,i], 
-              start = start_ts, end = end_ts, frequency = freq,
-              names = paste0(100*probs, "%")))
-            names(ses) <- names(intv) <- names(future_model$a1)
-            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, 
-              end = end_ts, frequency = freq, names = names(intv)), 
-              intervals = intv, MCSE = ses)
-          }
-          
-          
-        } else {
-          if (type != "state") {
-            pred <- list(mean = ts(colMeans(out$mean_pred), 
-                                   start = start_ts, end = end_ts, frequency = freq),
-              intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
-                names = paste0(100 * probs, "%"))) 
-          } else {
-            intv <- lapply(1:length(future_model$a1), function(i) ts(out$intervals[,,i], 
-              start = start_ts, end = end_ts, frequency = freq,
-              names = paste0(100*probs, "%")))
-            names(intv) <- names(future_model$a1)
-            pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, 
-              end = end_ts, frequency = freq, names = names(intv)), intervals = intv) 
-          }
-          
-        }
-      } else {
-        pred <- aperm(out[[1]], c(2, 1, 3))
-      }
     },
+    ssm_mng = , 
     ssm_ung = , 
     bsm_ng = , 
     svm = {
-      future_model$distribution <- pmatch(future_model$distribution, 
-        c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"))
-
-      nda <- dim(object$alpha)
-      out <- nongaussian_predict(future_model, probs,
-          t(object$theta), matrix(object$alpha[nrow(object$alpha),,], nda[2], nda[3]),
-          object$counts, 
+      future_model$distribution <- pmatch(future_model$distribution,
+        c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
+        duplicates.ok = TRUE) - 1
+      pred <- nongaussian_predict(future_model, theta, alpha,
           pmatch(type, c("response", "mean", "state")), seed, 
-          pmatch(attr(object, "model_type"), c("ssm_ung", "bsm_ng", "svm", "ar1_ng")), 
-          nsim)
+          pmatch(attr(object, "model_type"), 
+            c("ssm_mng", "ssm_ung", "bsm_ng", "svm", "ar1_ng")) - 1L)
       
-      if(anyNA(out)) stop("NA or NaN values in predictions, possible under/overflow?")
-      
-      if (intervals) {
-        if (type != "state") {
-          pred <- list(mean = ts(rowMeans(out[1,,]),  start = start_ts, end = end_ts, 
-            frequency = freq, names = names(future_model$a1)),
-            intervals = ts(t(apply(out[1,,], 1, quantile, probs, type = 8)), 
-              start = start_ts, end = end_ts, frequency = freq, 
-              names = paste0(100 * probs, "%")))
-        } else {
-          intv <- lapply(1:length(future_model$a1), function(i) 
-            ts(t(apply(out[i,,], 1, quantile, probs, type = 8)), 
-              start = start_ts, end = end_ts, frequency = freq,
-              names = paste0(100*probs, "%")))
-          names(intv) <- names(future_model$a1)
-          
-          pred <- list(mean = ts(apply(out, 1, rowMeans), start = start_ts, end = end_ts, 
-            frequency = freq, names = names(future_model$a1)),
-            intervals = intv)
-        }
-      } else {
-        pred <- out
-      }
+      if(anyNA(pred)) warning("NA or NaN values in predictions, possible under/overflow?")
     },
     ssm_nlg = {
-      if (nsim == 0 && intervals) {
-        out <- nonlinear_predict_ekf(t(future_model$y), future_model$Z, 
+      
+        pred <- nonlinear_predict(t(future_model$y), future_model$Z, 
           future_model$H, future_model$T, future_model$R, future_model$Z_gn, 
           future_model$T_gn, future_model$a1, future_model$P1, 
           future_model$log_prior_pdf, future_model$known_params, 
           future_model$known_tv_params, as.integer(future_model$time_varying),
-          future_model$n_states, future_model$n_etas, probs,
-          t(object$theta), matrix(object$alpha[nrow(object$alpha),,], nrow = ncol(object$alpha)), 
-          array(0, c(future_model$n_states, future_model$n_states, nrow(object$theta))), 
-          object$counts, pmatch(type, c("response", "mean", "state")), 
-          default_update_fn, default_prior_fn)
-        
-        
-        if (type != "state") {
-          pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, end = end_ts, frequency = freq),
-            intervals = ts(out$intervals, start = start_ts, end = end_ts, frequency = freq,
-              names = paste0(100 * probs, "%"))) 
-        } else {
-          intv <- lapply(1:future_model$n_states, function(i) ts(out$intervals[,,i], 
-            start = start_ts, end = end_ts, frequency = freq,
-            names = paste0(100 * probs, "%")))
-          names(intv) <- names(future_model$state_names)
-          pred <- list(mean = ts(colMeans(out$mean_pred), start = start_ts, 
-            end = end_ts, frequency = freq, names = names(intv)), intervals = intv) 
-        }
-        
-      } else {
-        out <- nonlinear_predict(t(future_model$y), future_model$Z, 
-          future_model$H, future_model$T, future_model$R, future_model$Z_gn, 
-          future_model$T_gn, future_model$a1, future_model$P1, 
-          future_model$log_prior_pdf, future_model$known_params, 
-          future_model$known_tv_params, as.integer(future_model$time_varying),
-          future_model$n_states, future_model$n_etas, probs,
-          t(object$theta), matrix(object$alpha[nrow(object$alpha),,], nrow = ncol(object$alpha)), 
-          object$counts, pmatch(type, c("response", "mean", "state")), seed, nsim)
-        
-        if (intervals) {
-          if (type != "state") {
-            if (is.null(ncol(future_model$y)) || ncol(future_model$y) == 1) {
-              intv <- ts(t(apply(out[1,,], 1, quantile, probs, type = 8)),
-                start = start_ts, end = end_ts, frequency = freq, 
-                names = paste0(100 * probs, "%"))
-            } else {
-              intv <- lapply(1:ncol(future_model$y), function(i) 
-                ts(t(apply(out[i,,], 1, quantile, probs, type = 8)), 
-                  start = start_ts, end = end_ts, frequency = freq,
-                  names = paste0(100 * probs, "%")))
-              names(intv) <- colnames(future_model$y)
-            }
-            pred <- list(mean = ts(apply(out, 1, rowMeans), start = start_ts, 
-              end = end_ts, frequency = freq, names = colnames(future_model$y)),
-              intervals = intv)
-          } else {
-            intv <- lapply(1:future_model$n_states, function(i) 
-              ts(t(apply(out[i,,], 1, quantile, probs, type = 8)), 
-                start = start_ts, end = end_ts, frequency = freq,
-                names = paste0(100 * probs, "%")))
-            names(intv) <- future_model$state_names
-            pred <- list(mean = ts(apply(out, 1, rowMeans), start = start_ts, 
-              end = end_ts, frequency = freq, names = future_model$state_names),
-              intervals = intv)
-          }
-          
-        } else {
-          pred <- out
-        }
+          future_model$n_states, future_model$n_etas,
+          theta, alpha, pmatch(type, c("response", "mean", "state")), seed)
+      
       }
-    }, stop("Not yet implemented for multivariate models and ssm_sde. "))
-  class(pred) <- "predict_bssm"
-  pred
+   , stop("Not yet implemented for ssm_sde. "))
+  if(type == "state") {
+    if(attr(object, "model_type") == "ssm_nl") {
+      variables <- future_model$state_names
+    } else {
+      variables <- names(future_model$a1)
+    }
+  } else {
+    variables <- colnames(future_model$y)
+    if(is.null(variables)) variables <- "Series 1"
+  }
+  
+  data.frame(value = as.numeric(pred),
+    variable = variables,
+    time = rep(time(future_model$y), each = nrow(pred)),
+      sample = rep(1:nsim, each = nrow(pred) * ncol(pred)))
 }

@@ -93,7 +93,7 @@ void ssm_mlg::update_model(const arma::vec& new_theta) {
   if (model_list.containsElementNamed("C")) {
     C = Rcpp::as<arma::mat>(model_list["C"]);
   }
-
+  
   theta = new_theta;
 }
 
@@ -520,3 +520,59 @@ arma::cube ssm_mlg::simulate_states(const unsigned int nsim) {
   }
   return asim;
 }
+
+
+arma::cube ssm_mlg::predict_sample(const arma::mat& theta_posterior,
+  const arma::mat& alpha, const unsigned int predict_type) {
+  
+  unsigned int d = p;
+  if (predict_type == 3) d = m;
+  
+  unsigned int n_samples = theta_posterior.n_cols;
+  arma::cube sample(d, n, n_samples);
+  
+  for (unsigned int i = 0; i < n_samples; i++) {
+    update_model(theta_posterior.col(i));
+    a1 = alpha.col(i);
+    sample.slice(i) = sample_model(predict_type);
+  }
+  
+  return sample;
+}
+
+
+arma::mat ssm_mlg::sample_model(const unsigned int predict_type) {
+  
+  arma::mat alpha(m, n);
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  alpha.col(0) = a1;
+  
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    arma::vec uk(k);
+    for(unsigned int j = 0; j < k; j++) {
+      uk(j) = normal(engine);
+    }
+    alpha.col(t + 1) = C.col(t * Ctv) + 
+      T.slice(t * Ttv) * alpha.col(t) + R.slice(t * Rtv) * uk;
+  }
+  
+  if (predict_type < 3) {
+    arma::mat y(p, n);
+    
+    for (unsigned int t = 0; t < n; t++) {
+      y.col(t) = D.col(t * Dtv) + Z.slice(t * Ztv) * alpha.col(t);
+      if(predict_type == 1) {
+        arma::vec up(p);
+        for(unsigned int j = 0; j < p; j++) {
+          up(j) = normal(engine);
+        }
+        y.col(t) += H(t * Htv) * up;
+      }
+    }
+    return y;
+  } else {
+    return alpha;
+  }
+}
+

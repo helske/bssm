@@ -808,13 +808,8 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' library("ggplot2")
 #' ggplot(as.data.frame(theta[,1:2]), aes(x = sd_level, y = sd_seasonal)) +
 #'   geom_point() + stat_density2d(aes(fill = ..level.., alpha = ..level..),
-#'   geom = "polygon") + scale_fill_continuous(low = "green",high = "blue") +
+#'   geom = "polygon") + scale_fill_continuous(low = "green", high = "blue") +
 #'   guides(alpha = "none")
-#'
-# pred <- predict(model, iter = 5000, nsim = 10, n_ahead = 36,
-#   probs = seq(0.05, 0.95, by = 0.05), newdata = matrix(1, 36, 1),
-#   newphi = rep(1, 36))
-# autoplot(pred)
 #' }
 bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), a1, P1,

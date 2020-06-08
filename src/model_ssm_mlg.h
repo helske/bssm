@@ -84,6 +84,10 @@ public:
   arma::mat fast_smoother() const;
   // smoothing which also returns covariances cov(alpha_t, alpha_t-1)
   void smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) const;
+  
+  arma::cube predict_sample(const arma::mat& theta_posterior,
+    const arma::mat& alpha, const unsigned int predict_type);
+  arma::mat sample_model(const unsigned int predict_type);
 };
 
 

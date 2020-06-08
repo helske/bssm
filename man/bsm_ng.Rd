@@ -89,8 +89,7 @@ summary(theta)
 library("ggplot2")
 ggplot(as.data.frame(theta[,1:2]), aes(x = sd_level, y = sd_seasonal)) +
   geom_point() + stat_density2d(aes(fill = ..level.., alpha = ..level..),
-  geom = "polygon") + scale_fill_continuous(low = "green",high = "blue") +
+  geom = "polygon") + scale_fill_continuous(low = "green", high = "blue") +
   guides(alpha = "none")
-
 }
 }

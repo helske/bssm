@@ -38,7 +38,7 @@ Imports:
     diagis,
     ggplot2 (>= 2.0.0),
     Rcpp (>= 0.12.3)
-LinkingTo: BH, Rcpp, RcppArmadillo, ramcmc, sitmo
+LinkingTo: Rcpp, RcppArmadillo, ramcmc, sitmo
 SystemRequirements: C++11
 RoxygenNote: 7.1.0
 VignetteBuilder: knitr

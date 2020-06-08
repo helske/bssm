@@ -4,7 +4,6 @@
 #include "conditional_dist.h"
 #include "rep_mat.h"
 #include "psd_chol.h"
-#include "interval.h"
 
 ssm_nlg::ssm_nlg(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_, 
   nvec_fnPtr T_fn_, nmat_fnPtr R_fn_, nmat_fnPtr Z_gn_, nmat_fnPtr T_gn_, 
@@ -273,201 +272,6 @@ arma::vec ssm_nlg::log_likelihood(
 }
 
 
-Rcpp::List ssm_nlg::predict_interval(const arma::vec& probs, const arma::mat& thetasim,
-  const arma::mat& alpha_last, const arma::cube& P_last, 
-  const arma::uvec& counts, const unsigned int predict_type) {
-  
-  if(p > 1) 
-    Rcpp::stop("Interval prediction using EKF is currently not supported for multivariate observations.");
-  theta = thetasim.col(0);
-  
-  arma::mat at(m, n);
-  arma::cube Pt(m, m, n);
-  at.col(0) = alpha_last.col(0);
-  Pt.slice(0) = P_last.slice(0);
-  
-  for (unsigned int t = 0; t < (n - 1); t++) {
-    at.col(t + 1) = T_fn(t, at.col(t), theta, known_params, known_tv_params);
-    arma::mat Tg = T_gn(t, at.col(t), theta, known_params, known_tv_params);
-    arma::mat Rt = R_fn(t, at.col(t), theta, known_params, known_tv_params);
-    Pt.slice(t + 1) = Tg * Pt.slice(t) * Tg.t() + Rt * Rt.t();
-  }
-  
-  unsigned int n_samples = thetasim.n_cols;
-  
-  if (predict_type < 3) {
-    
-    arma::mat mean_pred(n, n_samples);
-    arma::mat var_pred(n, n_samples);
-    
-    for(unsigned int t = 0; t < n; t++) {
-      mean_pred(t, 0) = arma::as_scalar(Z_fn(t, at.col(t), theta, known_params, known_tv_params));
-      arma::mat Zg = Z_gn(t, at.col(t), theta, known_params, known_tv_params);
-      var_pred(t, 0) = arma::as_scalar(Zg * Pt.slice(t) * Zg.t());
-    }
-    
-    if (predict_type == 1) {
-      for(unsigned int t = 0; t < n; t++) {
-        arma::mat HHt = H_fn(t, at.col(t), theta, known_params, known_tv_params);
-        var_pred(t, 0) += arma::as_scalar(HHt * HHt.t());
-      }
-    }
-    
-    for (unsigned int i = 1; i < n_samples; i++) {
-      
-      theta = thetasim.col(i);
-      at.col(0) = alpha_last.col(i);
-      Pt.slice(0) = P_last.slice(i);
-      
-      for (unsigned int t = 0; t < (n - 1); t++) {
-        at.col(t + 1) = T_fn(t, at.col(t), theta, known_params, known_tv_params);
-        arma::mat Tg = T_gn(t, at.col(t), theta, known_params, known_tv_params);
-        arma::mat Rt = R_fn(t, at.col(t), theta, known_params, known_tv_params);
-        Pt.slice(t + 1) = Tg * Pt.slice(t) * Tg.t() + Rt * Rt.t();
-      }
-      for(unsigned int t = 0; t < n; t++) {
-        mean_pred(t, i) = arma::as_scalar(Z_fn(t, at.col(t), theta, known_params, known_tv_params));
-        arma::mat Zg = Z_gn(t, at.col(t), theta, known_params, known_tv_params);
-        var_pred(t, i) = arma::as_scalar(Zg * Pt.slice(t) * Zg.t());
-      }
-      
-      if (predict_type == 1) {
-        for(unsigned int t = 0; t < n; t++) {
-          arma::mat HHt = H_fn(t, at.col(t), theta, known_params, known_tv_params);
-          var_pred(t, i) += arma::as_scalar(HHt * HHt.t());
-        }
-      }
-      
-    }
-    
-    arma::mat expanded_sd = rep_mat(arma::sqrt(var_pred), counts);
-    arma::inplace_trans(expanded_sd);
-    arma::mat expanded_mean = rep_mat(mean_pred, counts);
-    arma::inplace_trans(expanded_mean);
-    
-    arma::mat intv = intervals(expanded_mean, expanded_sd, probs, n);
-    
-    return Rcpp::List::create(Rcpp::Named("intervals") = intv,
-      Rcpp::Named("mean_pred") = expanded_mean,
-      Rcpp::Named("sd_pred") = expanded_sd);
-  } else {
-    
-    arma::cube mean_pred(n, n_samples, m);
-    arma::cube var_pred(n, n_samples, m);
-    
-    for(unsigned int t = 0; t < n; t++) {
-      mean_pred.tube(t, 0) = at.col(t);
-      var_pred.tube(t, 0) = Pt.slice(t).diag();
-    }
-    
-    for (unsigned int i = 1; i < n_samples; i++) {
-      
-      theta = thetasim.col(i);
-      at.col(0) = alpha_last.col(i);
-      Pt.slice(0) = P_last.slice(i);
-      
-      for (unsigned int t = 0; t < (n - 1); t++) {
-        at.col(t + 1) = T_fn(t, at.col(t), theta, known_params, known_tv_params);
-        arma::mat Tg = T_gn(t, at.col(t), theta, known_params, known_tv_params);
-        arma::mat Rt = R_fn(t, at.col(t), theta, known_params, known_tv_params);
-        Pt.slice(t + 1) = Tg * Pt.slice(t) * Tg.t() + Rt * Rt.t();
-      }
-      
-      
-      for(unsigned int t = 0; t < n; t++) {
-        mean_pred.tube(t, i) = at.col(t);
-        var_pred.tube(t, i) = Pt.slice(t).diag();
-      }
-    }
-    
-    arma::cube intv(n, probs.n_elem, m);
-    arma::cube expanded_sd(arma::accu(counts), n, m);
-    arma::cube expanded_mean(arma::accu(counts), n, m);
-    for (unsigned int i = 0; i < m; i++) {
-      arma::mat tmp1 = rep_mat(arma::sqrt(var_pred.slice(i)), counts);
-      expanded_sd.slice(i) = tmp1.t();
-      arma::mat tmp2 = rep_mat(mean_pred.slice(i), counts);
-      expanded_mean.slice(i) = tmp2.t();
-      intv.slice(i) = intervals(expanded_mean.slice(i), expanded_sd.slice(i),
-        probs, n);
-    }
-    
-    
-    return Rcpp::List::create(Rcpp::Named("intervals") = intv,
-      Rcpp::Named("mean_pred") = expanded_mean,
-      Rcpp::Named("sd_pred") = expanded_sd);
-  }
-}
-
-arma::cube ssm_nlg::predict_sample(const arma::mat& thetasim, 
-  const arma::mat& alpha, const arma::uvec& counts, 
-  const unsigned int predict_type, const unsigned int nsim) {
-  
-  unsigned int d = p;
-  if (predict_type == 3) d = m;
-  arma::mat expanded_theta = rep_mat(thetasim, counts);
-  arma::mat expanded_alpha = rep_mat(alpha, counts);
-  unsigned int n_samples = expanded_theta.n_cols;
-  arma::cube sample(d, n, nsim * n_samples);
-  for (unsigned int i = 0; i < n_samples; i++) {
-    
-    theta = expanded_theta.col(i);
-    
-    sample.slices(i * nsim, (i + 1) * nsim - 1) = 
-      sample_model(expanded_alpha.col(i), predict_type, nsim);
-    
-  }
-  return sample;
-}
-
-arma::cube ssm_nlg::sample_model(const arma::vec& a1_sim,
-  const unsigned int predict_type, const unsigned int nsim) {
-  
-  arma::cube alpha(m, n, nsim);
-  
-  std::normal_distribution<> normal(0.0, 1.0);
-  
-  // sample states
-  for (unsigned int i = 0; i < nsim; i++) {
-    
-    alpha.slice(i).col(0) = a1_sim;
-    for (unsigned int t = 0; t < (n - 1); t++) {
-      arma::vec uk(k);
-      for(unsigned int j = 0; j < k; j++) {
-        uk(j) = normal(engine);
-      }
-      alpha.slice(i).col(t + 1) = T_fn(t, alpha.slice(i).col(t), 
-        theta, known_params, known_tv_params) +  
-          R_fn(t, alpha.slice(i).col(t), theta, known_params, known_tv_params) * uk;
-    }
-  }
-  if (predict_type < 3) {
-    // construct mean
-    arma::cube y_pred(p, n, nsim);
-    for (unsigned int i = 0; i < nsim; i++) {
-      for (unsigned int t = 0; t < n; t++) {
-        y_pred.slice(i).col(t) = Z_fn(t, alpha.slice(i).col(t), theta, 
-          known_params, known_tv_params);
-      }
-    }
-    // sample observation noise
-    if(predict_type == 1) {
-      for (unsigned int i = 0; i < nsim; i++) {
-        for (unsigned int t = 0; t < n; t++) {
-          arma::vec up(p);
-          for (unsigned int j = 0; j < p; j++) {
-            up(j) = normal(engine);
-          }
-          y_pred.slice(i).col(t) += H_fn(t, alpha.slice(i).col(t), 
-            theta, known_params, known_tv_params) * up;
-        }
-      }
-    }
-    return y_pred;
-  }
-  return alpha;
-  
-}
 
 double ssm_nlg::ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& Ptt) const {
   
@@ -1498,3 +1302,61 @@ double ssm_nlg::log_signal_pdf(const arma::mat& alpha) const {
   
 }
 
+
+arma::cube ssm_nlg::predict_sample(const arma::mat& theta_posterior, 
+  const arma::mat& alpha, const unsigned int predict_type) {
+  
+  unsigned int d = p;
+  if (predict_type == 3) d = m;
+  unsigned int n_samples = theta_posterior.n_cols;
+  arma::cube sample(d, n, n_samples);
+  for (unsigned int i = 0; i < n_samples; i++) {
+    theta = theta_posterior.col(i);
+    sample.slice(i) = sample_model(alpha.col(i), predict_type);
+  }
+  return sample;
+}
+
+arma::mat ssm_nlg::sample_model(const arma::vec& a1_sim,
+  const unsigned int predict_type) {
+  
+  arma::mat alpha(m, n);
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  
+  // sample states
+  
+  alpha.col(0) = a1_sim;
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    arma::vec uk(k);
+    for(unsigned int j = 0; j < k; j++) {
+      uk(j) = normal(engine);
+    }
+    alpha.col(t + 1) = T_fn(t, alpha.col(t), 
+      theta, known_params, known_tv_params) +  
+        R_fn(t, alpha.col(t), theta, known_params, known_tv_params) * uk;
+  }
+  if (predict_type < 3) {
+    // construct mean
+    arma::mat y_pred(p, n);
+    for (unsigned int t = 0; t < n; t++) {
+      y_pred.col(t) = Z_fn(t, alpha.col(t), theta, 
+        known_params, known_tv_params);
+    }
+    
+    // sample observation noise
+    if(predict_type == 1) {
+      for (unsigned int t = 0; t < n; t++) {
+        arma::vec up(p);
+        for (unsigned int j = 0; j < p; j++) {
+          up(j) = normal(engine);
+        }
+        y_pred.col(t) += H_fn(t, alpha.col(t), 
+          theta, known_params, known_tv_params) * up;
+      }
+    }
+    return y_pred;
+  }
+  return alpha;
+  
+}

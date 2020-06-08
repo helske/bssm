@@ -654,3 +654,100 @@ double ssm_mng::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   }
   return loglik;
 }
+
+
+arma::cube ssm_mng::predict_sample(const arma::mat& theta_posterior,
+  const arma::mat& alpha, const unsigned int predict_type) {
+  
+  unsigned int d = p;
+  if (predict_type == 3) d = m;
+  
+  unsigned int n_samples = theta_posterior.n_cols;
+  arma::cube sample(d, n, n_samples);
+  
+  
+  for (unsigned int i = 0; i < n_samples; i++) {
+    update_model(theta_posterior.col(i));
+    a1 = alpha.col(i);
+    sample.slice(i) = sample_model(predict_type);
+  }
+  return sample;
+}
+
+
+arma::mat ssm_mng::sample_model(const unsigned int predict_type) {
+  
+  arma::mat alpha(m, n);
+  std::normal_distribution<> normal(0.0, 1.0);
+  
+  alpha.col(0) = a1;
+  
+  for (unsigned int t = 0; t < (n - 1); t++) {
+    arma::vec uk(k);
+    for(unsigned int j = 0; j < k; j++) {
+      uk(j) = normal(engine);
+    }
+    alpha.col(t + 1) =
+      C.col(t * Ctv) + T.slice(t * Ttv) * alpha.col(t) +
+      R.slice(t * Rtv) * uk;
+  }
+  if (predict_type < 3) {
+    
+    arma::mat y(p, n);
+    for (unsigned int t = 0; t < n; t++) {
+      arma::vec signal = D.col(t * Dtv) + Z.slice(t * Ztv) * alpha.col(t);
+      for(unsigned int j = 0; j < p; j++) {
+        
+        switch(distribution(j)) {
+        case 1:
+          y(j, t) =  std::exp(signal(j));
+          break;
+        case 2:
+          y(j, t) =  std::exp(signal(j)) / (1.0 +  std::exp(signal(j)));
+          break;
+        case 3:
+          y(j, t) =  std::exp(signal(j));
+          break;
+        case 4:
+          y(j, t) =  std::exp(signal(j));
+          break;
+        case 5:
+          y(j, t) =  signal(j);
+        }
+        
+        if (predict_type == 1) {
+          
+          switch(distribution(j)) {
+          case 1: {
+          std::poisson_distribution<> poisson(u(j,t) * y(j, t));
+          if ((u(j,t) * y(j, t)) < poisson.max()) {
+            y(j, t) = poisson(engine);
+          } else {
+            y(j, t) = std::numeric_limits<double>::quiet_NaN();
+          }
+        } 
+            break;
+          case 2: {
+            std::binomial_distribution<> binomial(u(j,t), y(j, t));
+            y(j, t) = binomial(engine);
+          }
+            break;
+          case 3: {
+            std::negative_binomial_distribution<>
+            negative_binomial(phi(j), phi(j) / (phi(j) + u(j,t) * y(j, t)));
+            y(j, t) = negative_binomial(engine);
+          }
+            break;
+          case 4: {
+            std::gamma_distribution<> gamma(phi(j), u(j,t) * y(j, t) / phi(j));
+            y(j, t) = gamma(engine);
+          }
+            break;
+          }
+        }
+      }
+    }
+    return y;
+  }
+  return alpha;
+}

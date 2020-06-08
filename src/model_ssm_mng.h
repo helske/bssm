@@ -88,17 +88,6 @@ public:
   
   // given the mode_estimate, compute y and H of the approximating Gaussian model
   void laplace_iter(const arma::mat& signal);
-  
-  Rcpp::List predict_interval(const arma::vec& probs, const arma::mat& thetasim,
-    const arma::mat& alpha_last, const arma::cube& P_last,
-    const arma::uvec& counts, const unsigned int predict_type);
-
-  arma::cube predict_sample(const arma::mat& thetasim, const arma::mat& alpha,
-    const arma::uvec& counts, const unsigned int predict_type,
-    const unsigned int nsim);
-
-  arma::cube sample_model(const arma::vec& a1_sim,
-    const unsigned int predict_type, const unsigned int nsim);
 
     // bootstrap filter
   double bsf_filter(const unsigned int nsim, arma::cube& alpha,
@@ -117,6 +106,11 @@ public:
   
   // compute logarithms of _unnormalized_ densities g(y_t | alpha_t)
   arma::vec log_obs_density(const unsigned int t, const arma::cube& alpha) const;
+  
+  arma::cube predict_sample(const arma::mat& theta_posterior, const arma::mat& alpha,
+    const unsigned int predict_type);
+  
+  arma::mat sample_model(const unsigned int predict_type);
 };
 
 

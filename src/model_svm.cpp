@@ -25,7 +25,7 @@ void svm::update_model(const arma::vec& new_theta) {
 
   theta = new_theta;
   // approximation does not match theta anymore (keep as -1 if so)
-  if (approx_state == 1) approx_state = 0;
+  if (approx_state > 0) approx_state = 0;
 }
 
 

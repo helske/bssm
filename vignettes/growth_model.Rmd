@@ -7,7 +7,7 @@ link-citations: true
 output: html_document
 bibliography: psi.bib
 vignette: |
-%\VignetteIndexEntry{Non-linear modelsl with bssm}
+  %\VignetteIndexEntry{Non-linear modelsl with bssm}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
   %\VignetteDepends{ggplot2, dplyr}
@@ -16,13 +16,6 @@ vignette: |
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 #options(tinytex.verbose = TRUE)
-if (!require("BH")) {
-  message("This vignette needs BH; since it is not installed, code will not be executed.")
-  knitr::opts_chunk$set(eval = FALSE)
-} else {
-  knitr::opts_chunk$set(eval = TRUE)
-}
-
 ```
 
 
@@ -202,17 +195,6 @@ ggplot(p_summary, aes(x = time, y = mean,)) +
   theme_bw() + facet_wrap(~ cut, scales = "free")
 ```
 
-Let's make some predictions based on our MCMC run. We first build a model for future observations, and then call `predict` method. Note that for EKF based prediction (`nsim = 0`) the forecasting is based on the summary statistics obtained with EKF, which produces smoother but potentially biased results.
-
-```{r pred}
-future_model <- model
-future_model$y <- ts(rep(NA, 100), start = end(model$y) + c(1, 0))
-out_pred_pm <- predict(out_mcmc_pm, future_model, type = "response", nsim = 50)
-out_pred_ekf <- predict(out_mcmc_ekf, future_model, type = "response", nsim = 0)
-library("ggplot2")
-autoplot(out_pred_pm, y = model$y, plot_median = FALSE)
-autoplot(out_pred_ekf, y = model$y, plot_median = FALSE)
-```
 
 ## Appendix
 

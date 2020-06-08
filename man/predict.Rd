@@ -8,11 +8,8 @@
   object,
   future_model,
   type = "response",
-  intervals = TRUE,
-  probs = c(0.05, 0.95),
-  nsim,
-  return_MCSE = FALSE,
   seed = sample(.Machine$integer.max, size = 1),
+  nsim,
   ...
 )
 }
@@ -23,96 +20,69 @@
 \item{future_model}{Model for future observations. 
 Should have same structure
 as the original model which was used in MCMC, in order 
-to plug the posterior 
-samples of the model parameters to the right places.}
+to plug the posterior samples of the model parameters to the right places.}
 
-\item{type}{Compute predictions on \code{"mean"} 
-("confidence interval"),
-\code{"response"} ("prediction interval"), or 
-\code{"state"} level. 
-Defaults to \code{"response"}.}
-
-\item{intervals}{If \code{TRUE}, intervals are returned.
-Otherwise samples 
-from the posterior predictive distribution are returned.}
-
-\item{probs}{Desired quantiles. Defaults to 
-\code{c(0.05, 0.95)}. Always includes median 0.5.}
-
-\item{nsim}{Number of state samples to draw per MCMC
-iteration. 
-Note that this has no effect for the time point $n+1$ 
-(where $n$ is the length of the original series) as this
-is directly obtained from the MCMC output.
-\code{nsim} defaults to 1 except for the EKF based MCMC
-output of non-linear Gaussian models (see below). 
-For linear-Gaussian models the intervals are computed
-based on Kalman filter so 
-this argument has no effect if \code{intervals} is
-\code{TRUE}. For non-linear Gaussian 
-models of class \code{ssm_nlg}, if \code{nsim} is 0 and
-\code{intervals} is \code{TRUE}, 
-EKF based approximation is used for computing the
-prediction intervals.}
-
-\item{return_MCSE}{For Gaussian models, if \code{TRUE},
-the Monte Carlo
-standard errors of the intervals are also returned.}
+\item{type}{Return predictions on \code{"mean"} 
+\code{"response"}, or  \code{"state"} level.}
 
 \item{seed}{Seed for RNG.}
+
+\item{nsim}{Number of samples to draw.}
 
 \item{...}{Ignored.}
 }
 \value{
-List containing the mean predictions, 
-quantiles and Monte Carlo standard errors .
+Data frame of predicted samples.
 }
 \description{
-Posterior intervals of future observations or their means
-(success probabilities in binomial case). These are
-computed using the quantile method where the intervals 
-are computed as empirical quantiles the posterior sample,
-or using a parametric method by Helske (2016) in a 
-linear-Gaussian case.
+Draw samples from the posterior predictive distribution given the 
+posterior draws of hyperparameters theta and alpha_{n+1}.
 }
 \examples{
 require("graphics")
 y <- log10(JohnsonJohnson)
 prior <- uniform(0.01, 0, 1)
 model <- bsm_lg(window(y, end = c(1974, 4)), sd_y = prior,
-sd_level = prior, sd_slope = prior, sd_seasonal = prior)
+  sd_level = prior, sd_slope = prior, sd_seasonal = prior)
 
 mcmc_results <- run_mcmc(model, iter = 5000)
 future_model <- model
-future_model$y <- ts(rep(NA, 25), start = end(model$y), 
+future_model$y <- ts(rep(NA, 25), 
+  start = tsp(model$y)[2] + 2 * deltat(model$y), 
   frequency = frequency(model$y))
-pred_gaussian <- predict(mcmc_results, future_model, 
-  probs = c(0.05, 0.1, 0.5, 0.9, 0.95))
-ts.plot(log10(JohnsonJohnson), pred_gaussian$intervals, 
-  col = c(1, rep(2, 5)), lty = c(1, 2, 2, 1, 2, 2))
+pred <- predict(mcmc_results, future_model, type = "state", 
+  nsim = 1000)
 
-head(pred_gaussian$intervals)
-head(pred_gaussian$MCSE)
+require("dplyr")
+sumr_fit <- as.data.frame(mcmc_results, "states") \%>\%
+  group_by(time, iter) \%>\% 
+  mutate(signal = 
+      value[variable == "level"] + 
+      value[variable == "seasonal_1"]) \%>\%
+  group_by(time) \%>\%
+  summarise(mean = mean(signal), 
+    lwr = quantile(signal, 0.025), 
+    upr = quantile(signal, 0.975))
 
-# Non-gaussian models
-\dontrun{
-data("poisson_series")
+sumr_pred <- pred \%>\% 
+  group_by(time, sample) \%>\%
+  mutate(signal = 
+      value[variable == "level"] + 
+      value[variable == "seasonal_1"]) \%>\%
+  group_by(time) \%>\%
+  summarise(mean = mean(signal),
+    lwr = quantile(signal, 0.025), 
+    upr = quantile(signal, 0.975)) 
 
-model <- bsm_ng(poisson_series, sd_level = 
-  halfnormal(0.1, 1), sd_slope=halfnormal(0.01, 0.1),
-  distribution = "poisson")
-mcmc_poisson <- run_mcmc(model, iter = 5000, nsim = 10)
+require("ggplot2")
+rbind(sumr_fit, sumr_pred) \%>\% 
+  ggplot(aes(x = time, y = mean)) + 
+  geom_ribbon(aes(ymin = lwr, ymax = upr), 
+   fill = "#92f0a8", alpha = 0.25) +
+  geom_line(colour = "#92f0a8") +
+  theme_bw() + 
+  geom_point(data = data.frame(
+    mean = log10(JohnsonJohnson), 
+    time = time(JohnsonJohnson)))
 
-future_model <- model
-future_model$y <- ts(rep(NA, 25), start = end(model$y), 
-  frequency = frequency(model$y))
-
-pred <- predict(mcmc_poisson, future_model, 
-  probs = seq(0.05,0.95, by = 0.05))
-
-library("ggplot2")
-fit <- ts(colMeans(exp(expand_sample(mcmc_poisson, 
-    "alpha")$level)))
-autoplot(pred, y = model$y, fit = fit)
-}
 }

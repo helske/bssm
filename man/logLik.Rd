@@ -38,6 +38,8 @@ Durbin and Koopman (1997).}
 }
 \description{
 Computes the log-likelihood of the state space model of \code{bssm} package.
+
+Computes the log-likelihood of the state space model of \code{bssm} package.
 }
 \examples{
 model <- ssm_ulg(y = c(1,4,3), Z = 1, H = 1, T = 1, R = 1)

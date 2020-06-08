@@ -30,13 +30,14 @@
 
 \item{iter}{Number of MCMC iterations.}
 
-\item{nsim}{Number of state samples per MCMC iteration.}
+\item{nsim}{Number of state samples per MCMC iteration.
+Ignored if \code{mcmc_type} is \code{"approx"}.}
 
 \item{output_type}{Either \code{"full"} 
 (default, returns posterior samples of states alpha and hyperparameters theta), 
 \code{"theta"} (for marginal posterior of theta), 
 or \code{"summary"} (return the mean and variance estimates of the states 
-and posterior samples of theta). If \code{nsim = 0}, this is argument ignored and set to \code{"theta"}.}
+and posterior samples of theta).}
 
 \item{mcmc_type}{What MCMC algorithm to use? Possible choices are
 \code{"pm"} for pseudo-marginal MCMC,

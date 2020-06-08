@@ -74,8 +74,8 @@ public:
   const Rcpp::Function update_fn;
   const Rcpp::Function prior_fn;
   
-  double log_prior_pdf(const arma::vec& x) const;
-  void update_model(const arma::vec& new_theta);
+  virtual double log_prior_pdf(const arma::vec& x) const;
+  virtual void update_model(const arma::vec& new_theta);
   
   void compute_RR();
   inline void compute_HH() { HH = square(H); }
@@ -106,12 +106,9 @@ public:
   // simulation smoothing using twisted smc
   void psi_filter(const unsigned int nsim, arma::cube& alpha);
   
-  Rcpp::List predict_interval(const arma::vec& probs, const arma::mat& theta,
-    const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type);
-  arma::cube predict_sample(const arma::mat& theta,
-    const arma::mat& alpha, const arma::uvec& counts, const unsigned int predict_type
-    , const unsigned int nsim);
-  arma::mat sample_model(const unsigned int predict_type, const unsigned int nsim);
+  arma::cube predict_sample(const arma::mat& theta_posterior,
+    const arma::mat& alpha, const unsigned int predict_type);
+  arma::mat sample_model(const unsigned int predict_type);
   
 };
 

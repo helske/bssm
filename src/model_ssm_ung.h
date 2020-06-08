@@ -75,8 +75,8 @@ public:
   
   ssm_ulg approx_model;
   
-  void update_model(const arma::vec& new_theta);
-  double log_prior_pdf(const arma::vec& x) const;
+  virtual void update_model(const arma::vec& new_theta);
+  virtual double log_prior_pdf(const arma::vec& x) const;
   void compute_RR();
   inline void compute_xbeta() { xbeta = xreg * beta; }
   
@@ -113,12 +113,13 @@ public:
   double bsf_filter(const unsigned int nsim, arma::cube& alphasim, 
       arma::mat& weights, arma::umat& indices);
   
-  arma::cube predict_sample(const arma::mat& theta_posterior, const arma::mat& alpha, 
-    const arma::uvec& counts, const unsigned int predict_type, const unsigned int nsim);
-  
-  arma::mat sample_model(const unsigned int predict_type, const unsigned int nsim);
-
   double compute_const_term(); 
+  
+  arma::cube predict_sample(const arma::mat& theta_posterior, const arma::mat& alpha, 
+    const unsigned int predict_type);
+  
+  arma::mat sample_model(const unsigned int predict_type);
+
 };
 
 

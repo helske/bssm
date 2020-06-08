@@ -30,7 +30,8 @@
 
 \item{iter}{Number of MCMC iterations.}
 
-\item{nsim}{Number of state samples per MCMC iteration.}
+\item{nsim}{Number of state samples per MCMC iteration. 
+Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.}
 
 \item{output_type}{Either \code{"full"} 
 (default, returns posterior samples of states alpha and hyperparameters theta), 
