@@ -3,18 +3,17 @@
 #' This package contains functions for Bayesian inference of basic stochastic volatility model
 #' and exponential family state space models, where the state equation is linear and Gaussian,
 #' and the conditional observation density is either Gaussian, Poisson,
-#' binomial, negative binomial or Gamma density. General non-linear Gaussian models are 
-#' also supported. For formal definition of the
-#' currently supported models and methods, as well as theory, see the package vignette 
-#' and arXiv paper: \url{http://arxiv.org/abs/1609.02541}.
+#' binomial, negative binomial or Gamma density. General non-linear Gaussian models and models 
+#' with continuous SDE dynamics are also supported. For formal definition of the
+#' currently supported models and methods, as well as some theory behind the IS-MCMC and $\psi$-APF, 
+#' see the package vignette and arXiv paper: \url{http://arxiv.org/abs/1609.02541}.
 #'
 #' @docType package
 #' @name bssm
 #' @aliases bssm
 #' @importFrom Rcpp evalCpp
-#' @importFrom coda mcmc effectiveSize thin
-#' @importFrom ggplot2  aes aes_string scale_x_continuous scale_y_continuous
-#' @importFrom stats as.ts dnorm  end frequency is.ts logLik pnorm quantile start time ts ts.union tsp tsp<- sd
+#' @importFrom coda mcmc
+#' @importFrom stats as.ts dnorm  end frequency is.ts logLik quantile start time ts ts.union tsp tsp<- sd
 #' @useDynLib bssm
 NULL
 #' Deaths by drowning in Finland in 1969-2014

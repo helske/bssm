@@ -10,9 +10,7 @@
 \item{object}{Output from \code{run_mcmc}}
 
 \item{return_se}{if \code{FALSE} (default), computation of standard 
-errors and effective sample sizes is omitted. 
-This saves time, as computing the spectral densities (by \code{coda}) can be slow for 
-large models.}
+errors and effective sample sizes is omitted.}
 
 \item{variable}{Are the summary statistics computed for either \code{"theta"} (default), 
 \code{"states"}, or \code{"both"}?}
@@ -24,8 +22,4 @@ large models.}
 \description{
 This functions returns a list containing mean, standard deviations, standard errors, and 
 effective sample size estimates for parameters and states.
-}
-\details{
-Note that computing the state summaries can be slow for large models due to repeated 
-calls to \code{\link[coda]{spectrum0.ar}}.
 }

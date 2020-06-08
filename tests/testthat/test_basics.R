@@ -47,7 +47,7 @@ test_that("results for multivariate gaussian model are comparable to KFAS",{
     "sea_trig*5.rear", "sea_trig6.rear", "custom1", "custom2"), NULL, 
     NULL))
   
-  bssm_model <- as_ssm_mlg(kfas_model)
+  bssm_model <- as_bssm(kfas_model)
   expect_equivalent(logLik(kfas_model),logLik(bssm_model))
   expect_equivalent(KFS(kfas_model)$alphahat, smoother(bssm_model)$alphahat)
   

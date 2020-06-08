@@ -1,8 +1,7 @@
 #' Convert KFAS Model to bssm Model
 #'
 #' Converts \code{SSModel} object of \code{KFAS} package to 
-#' \code{ssm_mlg} or \code{ssm_mng} object.
-
+#' \code{bssm} model.
 #' 
 #' @param model Object of class \code{SSModel}.
 #' @param kappa For \code{SSModel} object, a prior variance for initial state
@@ -10,9 +9,8 @@
 #' @param ... Additional arguments to \code{ssm_mlg} and \code{ssm_mng} 
 #' (such as prior and updating functions).
 #' @return Object of class \code{ssm_mlg} or \code{ssm_mng}.
-#' @rdname as_ssm_ulg
 #' @export
-as_bssm <- function(model, kappa = 1e5, ...) {
+as_bssm <- function(model, kappa = 100, ...) {
   
   if (!requireNamespace("KFAS", quietly = TRUE)) {
     stop("This function depends on the KFAS package. ", call. = FALSE)

@@ -18,7 +18,7 @@ importance_sample(model, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
 )
 }
 \arguments{
-\item{model}{of class \code{bsm_ng}, \code{ar1_ng} \code{svm} or \code{ssm_ung}.}
+\item{model}{of class \code{bsm_ng}, \code{ar1_ng} \code{svm}, \code{ssm_ung}, or \code{ssm_mng}.}
 
 \item{nsim}{Number of samples.}
 

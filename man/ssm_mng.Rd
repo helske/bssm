@@ -37,21 +37,31 @@ m x k x n array.}
 
 \item{P1}{Prior covariance matrix for the initial state as m x m matrix.}
 
+\item{phi}{Additional parameters relating to the non-Gaussian distributions.
+For negative binomial distribution this is the dispersion term, for gamma distribution
+this is the shape parameter, and for other distributions this is ignored.}
+
+\item{u}{Constant parameter for non-Gaussian models. For Poisson, gamma, and negative binomial distribution, 
+this corresponds to the offset term. For binomial, this is the number of trials.}
+
 \item{init_theta}{Initial values for the unknown hyperparameters theta.}
 
-\item{D}{Intercept terms for observation equation, given as a length n vector.}
+\item{D}{Intercept terms for observation equation, given as p x n matrix.}
 
 \item{C}{Intercept terms for state equation, given as m x n matrix.}
 
 \item{state_names}{Names for the states.}
 
 \item{update_fn}{Function which returns list of updated model 
-components given input vector theta. See details.}
+components given input vector theta. This function should take only one 
+vector argument which is used to create list with elements named as
+\code{Z}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, \code{C}, and
+\code{phi},
+where each element matches the dimensions of the original model.
+If any of these components is missing, it is assumed to be constant wrt. theta.}
 
 \item{prior_fn}{Function which returns log of prior density 
-given input vector theta. See details.}
-
-\item{H}{Lower triangular matrix H of the observation. Either a scalar or a vector of length n.}
+given input vector theta.}
 }
 \value{
 Object of class \code{ssm_mng}. UDPATE!!
@@ -61,8 +71,8 @@ Constructs an object of class \code{ssm_mng} by defining the corresponding terms
 of the observation and state equation:
 }
 \details{
-\deqn{p^i(y^_t | Z_t \alpha_t), (\textrm{observation equation})}
-\deqn{\alpha_{t+1} = T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
+\deqn{p^i(y^_t | D_t + Z_t \alpha_t), (\textrm{observation equation})}
+\deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
 
 where \eqn{\eta_t \sim N(0, I_k)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and \eqn{p^i(y_t | .)}

@@ -29,9 +29,13 @@ default_update_fn <- function(theta) {}
 #' @param D Intercept terms for observation equation, given as a length n vector.
 #' @param C Intercept terms for state equation, given as m x n matrix.
 #' @param update_fn Function which returns list of updated model 
-#' components given input vector theta. See details.
+#' components given input vector theta. This function should take only one 
+#' vector argument which is used to create list with elements named as
+#' \code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, and \code{C},
+#' where each element matches the dimensions of the original model.
+#' If any of these components is missing, it is assumed to be constant wrt. theta.
 #' @param prior_fn Function which returns log of prior density 
-#' given input vector theta. See details.
+#' given input vector theta.
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_ulg}.
 #' @export
@@ -147,13 +151,23 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #' @param phi Additional parameter relating to the non-Gaussian distribution.
 #' For negative binomial distribution this is the dispersion term, for gamma distribution
 #' this is the shape parameter, and for other distributions this is ignored.
-#' @param u Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, 
-#' this corresponds to the offset term. For binomial, this is the number of trials.
+#' @param u Constant parameter for non-Gaussian models. For Poisson, gamma, and 
+#' negative binomial distribution, this corresponds to the offset term. For binomial, 
+#' this is the number of trials.
 #' @param state_names Names for the states.
 #' @param C Intercept terms \eqn{C_t} for the state equation, given as a
 #'  m times 1 or m times n matrix.
 #' @param D Intercept terms \eqn{D_t} for the observations equation, given as a
 #' 1 x 1 or 1 x n matrix.
+#' @param update_fn Function which returns list of updated model 
+#' components given input vector theta. This function should take only one 
+#' vector argument which is used to create list with elements named as
+#' \code{Z}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, \code{C}, and
+#' \code{phi},
+#' where each element matches the dimensions of the original model.
+#' If any of these components is missing, it is assumed to be constant wrt. theta.
+#' @param prior_fn Function which returns log of prior density 
+#' given input vector theta.
 #' @return Object of class \code{ssm_ung}.
 #' @export
 ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, 
@@ -283,9 +297,13 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
 #' @param D Intercept terms for observation equation, given as a length n vector.
 #' @param C Intercept terms for state equation, given as m x n matrix.
 #' @param update_fn Function which returns list of updated model 
-#' components given input vector theta. See details.
+#' components given input vector theta. This function should take only one 
+#' vector argument which is used to create list with elements named as
+#' \code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, and \code{C},
+#' where each element matches the dimensions of the original model.
+#' If any of these components is missing, it is assumed to be constant wrt. theta.
 #' @param prior_fn Function which returns log of prior density 
-#' given input vector theta. See details.
+#' given input vector theta.
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_mlg}.
 #' @export
@@ -381,8 +399,8 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #' Constructs an object of class \code{ssm_mng} by defining the corresponding terms
 #' of the observation and state equation:
 #'
-#' \deqn{p^i(y^_t | Z_t \alpha_t), (\textrm{observation equation})}
-#' \deqn{\alpha_{t+1} = T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
+#' \deqn{p^i(y^_t | D_t + Z_t \alpha_t), (\textrm{observation equation})}
+#' \deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
 #'
 #' where \eqn{\eta_t \sim N(0, I_k)} and
 #' \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and \eqn{p^i(y_t | .)}
@@ -391,20 +409,29 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #' 
 #' @param y Observations as multivariate time series or matrix with dimensions n x p.
 #' @param Z System matrix Z of the observation equation as p x m matrix or p x m x n array.
-#' @param H Lower triangular matrix H of the observation. Either a scalar or a vector of length n.
 #' @param T System matrix T of the state equation. Either a m x m matrix or a
 #' m x m x n array. UPDATE!!
 #' @param R Lower triangular matrix R the state equation. Either a m x k matrix or a
 #' m x k x n array.
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
+#' @param phi Additional parameters relating to the non-Gaussian distributions.
+#' For negative binomial distribution this is the dispersion term, for gamma distribution
+#' this is the shape parameter, and for other distributions this is ignored.
+#' @param u Constant parameter for non-Gaussian models. For Poisson, gamma, and negative binomial distribution, 
+#' this corresponds to the offset term. For binomial, this is the number of trials.
 #' @param init_theta Initial values for the unknown hyperparameters theta.
-#' @param D Intercept terms for observation equation, given as a length n vector.
+#' @param D Intercept terms for observation equation, given as p x n matrix.
 #' @param C Intercept terms for state equation, given as m x n matrix.
 #' @param update_fn Function which returns list of updated model 
-#' components given input vector theta. See details.
+#' components given input vector theta. This function should take only one 
+#' vector argument which is used to create list with elements named as
+#' \code{Z}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, \code{C}, and
+#' \code{phi},
+#' where each element matches the dimensions of the original model.
+#' If any of these components is missing, it is assumed to be constant wrt. theta.
 #' @param prior_fn Function which returns log of prior density 
-#' given input vector theta. See details.
+#' given input vector theta.
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_mng}. UDPATE!!
 #' @export
@@ -1095,11 +1122,11 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
   if(missing(sigma)) {
     svm_type <- 1L
     check_mu(mu$init)
-    initial_mode <- log(pmax(1e-4, y^2))
+    initial_mode <- matrix(log(pmax(1e-4, y^2)), ncol = 1)
   } else {
     svm_type <- 0L
     check_sd(sigma$init, "sigma", FALSE)
-    initial_mode <- log(pmax(1e-4, y^2)) - 2 * log(sigma$init)
+    initial_mode <- matrix(log(pmax(1e-4, y^2)) - 2 * log(sigma$init), ncol = 1)
   }
   a1 <- if(svm_type) mu$init else 0
   P1 <- matrix(sd_ar$init^2 / (1 - rho$init^2))

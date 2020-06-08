@@ -98,29 +98,27 @@ void mcmc::state_summary(T model) {
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   
-  arma::vec theta = theta_storage.col(0);
-  model.update_model(theta);
+  model.update_model(theta_storage.col(0));
   model.smoother(alphahat, Vt);
   
   double sum_w = count_storage(0);
   arma::mat alphahat_i = alphahat;
   arma::cube Vt_i = Vt;
-  
   for (unsigned int i = 1; i < n_stored; i++) {
-    arma::vec theta = theta_storage.col(i);
-    model.update_model(theta);
+    model.update_model(theta_storage.col(i));
     model.smoother(alphahat_i, Vt_i);
 
     arma::mat diff = alphahat_i - alphahat;
     double tmp = count_storage(i) + sum_w;
     alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
-
+    
     for (unsigned int t = 0; t < model.n + 1; t++) {
       Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
     }
     Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
     sum_w = tmp;
   }
+  
   Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
 

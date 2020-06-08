@@ -29,11 +29,41 @@ Rcpp::List gaussian_mcmc(const Rcpp::List model_,
     arma::mat y = Rcpp::as<arma::mat>(model_["y"]);
     n = y.n_rows;
   }
-  
   mcmc mcmc_run(iter, burnin, thin, n, m,
-    target_acceptance, gamma, S);
+    target_acceptance, gamma, S, output_type);
   
   switch (model_type) {
+  case 0: {
+    ssm_mlg model(model_, seed);
+    mcmc_run.mcmc_gaussian(model, end_ram);
+    
+    switch (output_type) {
+    case 1: {
+      mcmc_run.state_posterior(model, n_threads); //sample states
+      return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+        Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+        Rcpp::Named("counts") = mcmc_run.count_storage,
+        Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+        Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+    } break;
+    case 2: {
+      //summary
+      mcmc_run.state_summary(model);
+      return Rcpp::List::create(Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+        Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
+        Rcpp::Named("counts") = mcmc_run.count_storage,
+        Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+        Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+    } break;
+    case 3: {
+      //marginal of theta
+      return Rcpp::List::create(Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+        Rcpp::Named("counts") = mcmc_run.count_storage,
+        Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+        Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+    } break;
+    }
+  } break;
   case 1: {
     ssm_ulg model(model_, seed);
     mcmc_run.mcmc_gaussian(model, end_ram);
@@ -64,7 +94,7 @@ Rcpp::List gaussian_mcmc(const Rcpp::List model_,
         Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
     } break;
     }
-  }break;
+  } break;
   case 2: {
     bsm_lg model(model_, seed);
     mcmc_run.mcmc_gaussian(model, end_ram);

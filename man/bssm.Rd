@@ -8,8 +8,8 @@
 This package contains functions for Bayesian inference of basic stochastic volatility model
 and exponential family state space models, where the state equation is linear and Gaussian,
 and the conditional observation density is either Gaussian, Poisson,
-binomial, negative binomial or Gamma density. General non-linear Gaussian models are 
-also supported. For formal definition of the
-currently supported models and methods, as well as theory, see the package vignette 
-and arXiv paper: \url{http://arxiv.org/abs/1609.02541}.
+binomial, negative binomial or Gamma density. General non-linear Gaussian models and models 
+with continuous SDE dynamics are also supported. For formal definition of the
+currently supported models and methods, as well as some theory behind the IS-MCMC and $\psi$-APF, 
+see the package vignette and arXiv paper: \url{http://arxiv.org/abs/1609.02541}.
 }

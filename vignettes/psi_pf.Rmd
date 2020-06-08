@@ -1,0 +1,85 @@
+---
+title: "$\\psi$-APF for non-linear Gaussian state space models"
+author: "Jouni Helske"
+date: "8 June 2020"
+output: html_document
+bibliography: bssm.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+@vihola-helske-franks suggest an efficient particle filter $\psi$-APF for likelihood estimation and state smoothing in case of state space models with linear-Gaussian state dynamics. The concept is similar to as in iterated auxiliary particle filter [@guarniero-johansen-lee], where the original model is "twisted" using so called $\psi$-functions, which are found iteratively. Instead of iterative procedure for finding optimal $\psi$-functions, the $\psi$-APF uses conditional smoothing distribution of the states based on an approximate Gaussian model [@durbin-koopman1997, @shephard-pitt]. Compared to off-the-shelf solution based on a bootstrap filter (BSF) [@gordon-salmond-smith], only a fraction of particles are needed for accurate evaluation of the marginal likelihood, which in turn increases the performance of particle Markov chain Monte Carlo (MCMC) computations (and the IS-type corrected MCMC introduced in @vihola-helske-franks).
+
+Here we extend the $\psi$-PF to handle Gaussian models, with non-linear observation or transition equations.
+
+## $\psi$-APF
+
+Let us first consider general state space model of form
+$$
+y_t \sim g(y_t | \alpha_t)\\
+\alpha_{t+1} \sim \mu(\alpha_{t+1} | \alpha_t),
+$$
+and assume that we have an access to approximating densities $\tilde g(y_t | \alpha_t)$, and $\tilde \mu(\alpha_{t+1} | \alpha_t)$.
+
+We define
+$$
+\psi_t(\alpha_t) = \tilde g(y_t | \alpha_t) \textrm{E} \left[ \left. \prod_{p = t + 1}^T \tilde g(y_p | \alpha_p)  \right\vert \alpha_t \right] = \tilde g(y_t | \alpha_t) \int \tilde p(y_{t+1:T}, \alpha_{t+1:T} | \alpha_t) \textrm{d} \alpha_{t+1:T} = \tilde p(y_{t:T} | x_t),
+$$
+
+where $\tilde g(\cdot)$ and $\tilde p(\cdot)$ correspond to the approximating model.
+
+This leads to twisted transition and observation densities of form
+
+$$
+\begin{aligned}
+\mu_1^{\Psi}(\alpha_1) &= \tilde p(\alpha_1 | y_{1:T}),\\
+\mu_t^{\Psi}(\alpha_t | \alpha_{t-1}) &=  \tilde p(\alpha_t | \alpha_{t-1}, y_{t:T}), &t=2\ldots,T,\\
+g_1^{\Psi}(y_1 | \alpha_1)  &= \frac{\mu_1(\alpha_1)}{\tilde \mu_1(\alpha_1)}  \frac{g(y_1 | \alpha_1)}{\tilde g(y_1 | \alpha_1)} \tilde p(y_{1:T}),\\
+g_t^{\Psi}(y_t | \alpha_t)  &= \frac{\mu_t(\alpha_t | \alpha_{t-1})}{\tilde \mu_t(\alpha_t | \alpha_{t-1})}\frac{g(y_t | \alpha_t)}{\tilde g(y_t | \alpha_t)}, &t=2\ldots,T,
+\end{aligned}
+$$
+
+Running particle filter with potentials $g^{\psi}_t$ and proposals $\mu^{\psi}_t$ does not produce the correct filtering distribution, but the resulting smoothing distribution and marginal likelihood estimate $p(y_{1:T})$ coincide with the corresponding estimates of the original model.
+
+In a case where the transition densities $\mu_t$ are Gaussian and the observation densities belong to exponential family, we can obtain the twisted densities via Gaussian approximation as in @vihola-helske-franks. These twisted transition densities correspond to the marginal conditional smoothing distribution $\tilde p(\alpha_t | \alpha_{t-1}, y_{t:T})$ which can be computed straightforwardly from the output of Kalman filter and smoother, as the conditional distribution is Gaussian with mean
+
+$$
+\hat \alpha_t + \textrm{Cov}(\alpha_{t},\alpha_{t-1} | y_{1:T}) \textrm{Var}(\alpha_{t-1}| y_{1:T})^{-1} (\alpha_{t-1} - \hat \alpha_{t-1})
+$$
+and variance
+$$
+\textrm{Var}(\alpha_t | y_{1:T}) - \textrm{Cov}(\alpha_t,\alpha_{t-1} | y_{1:T}) \textrm{Var}(\alpha_{t-1} | y_{1:T})^{-1}\textrm{Cov}(\alpha_{t-1},\alpha_t | y_{1:T}).
+$$
+The mean and variance terms are a standard output of smoothing algorithm, whereas the covariance term can be computed at the same time from the auxiliary variables used in smoothing (see, e.g., @DK2012).
+
+
+## $\psi$-APF for non-linear Gaussian models
+
+We now focus on a non-linear case where the model is of form
+$$
+p(y_t | \alpha_t) = Z_t(\alpha_t) + H_t\epsilon_t,\\
+p(\alpha_{t+1} | \alpha_t) = T_t(\alpha_t) + R_t \eta_t.
+$$
+Compared to @vihola-helske-franks, the transition density $p(\alpha_{t+1} | \alpha_t)$ is now assumed to be non-linear function of states, and we assume (possibly non-linear) Gaussian density for the observations. Now the Gaussian approximation approach of @durbin-koopman1997 and @shephard-pitt is not applicable as such. Natural modification to the algorithm is to use extended Kalman filter (EKF) and for obtaining linear-Gaussian model.
+
+In importance sampling framework, the usage of first order Taylor expansion for obtaining approximate Gaussian model is briefly discussed in @durbin-koopman2001. The idea is simple: First we run the EKF and the corresponding extended Kalman smoothing algorithm using the the original model. Then, using the obtained smoothed estimates $\tilde \alpha$ as a new linearization point, we construct the corresponding mean-adjusted linear-Gaussian model:
+
+$$
+y_t = d_t + \dot{Z_t} \alpha_t + H_t \epsilon_t,\\
+\alpha_{t+1} = c_t + \dot{T_t} \alpha_t + R_t \eta_t,\\
+$$
+where
+$$
+\dot{Z_t} = \left. \frac{\partial Z_t(x)}{\partial x}\right|_{x=\tilde\alpha_t},\\
+d_t = Z_t(\tilde \alpha_t) - \dot{Z_t} \tilde \alpha_t,\\
+\dot{T_t} = \left. \frac{\partial T_t(x)}{\partial x}\right|_{x=\tilde\alpha_t},\\
+c_t = T_t(\tilde \alpha_t) - \dot{T_t} \tilde \alpha_t.
+$$
+
+We then run Kalman filter and smoother (KFS) again for this model, linearize, and continue until convergence. @durbin-koopman2001 show that the smoothed state estimate $\hat \alpha$ of the final approximating Gaussian model coincide with the conditional mode of the original model. However, in practice it is possible that the algorithm does not converge at due to severe non-linearities of the model, or due to poor initial values. In case the EKF at first step tends to diverge, using so called iterated extended Kalman filter [@jazwinski] can sometimes be useful. Also, line-search methods which adjust the step sizes of the optimization algorithm can can also be beneficial. 
+
+## References

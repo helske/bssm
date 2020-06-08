@@ -324,7 +324,7 @@ void ssm_ung::laplace_iter(const arma::vec& signal) {
   case 3: {
     // negative binomial
     arma::vec exptmp = arma::exp(signal) % u;
-    approx_model.HH = square(phi + exptmp) / (phi * exptmp * (y + phi));
+    approx_model.HH = square(phi + exptmp) / (phi * exptmp % (y + phi));
     approx_model.y = signal + (phi + exptmp) % (y - exptmp) / ((y + phi) % exptmp);
   } break;
   case 4: {

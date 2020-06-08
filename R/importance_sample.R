@@ -2,7 +2,7 @@
 #'
 #' Returns \code{nsim} samples from the approximating Gaussian model with corresponding
 #' (scaled) importance weights.
-#' @param model of class \code{bsm_ng}, \code{ar1_ng} \code{svm} or \code{ssm_ung}.
+#' @param model of class \code{bsm_ng}, \code{ar1_ng} \code{svm}, \code{ssm_ung}, or \code{ssm_mng}.
 #' @param nsim Number of samples.
 #' @param use_antithetic Logical. If \code{TRUE} (default), use antithetic 
 #' variable for location in simulation smoothing. Ignored for \code{ssm_mng} models.

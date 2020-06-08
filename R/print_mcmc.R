@@ -22,15 +22,11 @@ asymptotic_var <- function(x, w) {
 #'
 #' Prints some basic summaries from the MCMC run by  \code{\link{run_mcmc}}.
 #' 
-#' In case of IS-corrected MCMC, 
-#' two-types of standard error and effective sample size estimates are returned. 
-#' SE-IS (ESS-IS) are based only on importance sampling estimates, with weights 
+#' In case of IS-corrected MCMC, the SE-IS is based only on importance sampling estimates, with weights 
 #' corresponding to the block sizes of the jump chain multiplied by the 
 #' importance correction weights (if IS-corrected method was used). These estimates
 #' ignore the possible autocorrelations but provide a lower-bound for the asymptotic 
-#' standard error. The SE-AR (ESS-AR) estimates are based on the spectral density 
-#' of \eqn{(x-hatx) * w} where \eqn{hatx} is the weighted mean of \eqn{x} and 
-#' \eqn{w} contains the weights.
+#' standard error. 
 #' 
 #' @method print mcmc_output
 #' @importFrom diagis weighted_mean weighted_var weighted_se ess
@@ -134,14 +130,9 @@ print.mcmc_output <- function(x, ...) {
 #' This functions returns a list containing mean, standard deviations, standard errors, and 
 #' effective sample size estimates for parameters and states.
 #' 
-#' Note that computing the state summaries can be slow for large models due to repeated 
-#' calls to \code{\link[coda]{spectrum0.ar}}.
-#' 
 #' @param object Output from \code{run_mcmc}
 #' @param return_se if \code{FALSE} (default), computation of standard 
 #' errors and effective sample sizes is omitted. 
-#' This saves time, as computing the spectral densities (by \code{coda}) can be slow for 
-#' large models.
 #' @param variable Are the summary statistics computed for either \code{"theta"} (default), 
 #' \code{"states"}, or \code{"both"}?
 #' @param only_theta Deprecated. If \code{TRUE}, summaries are computed only for hyperparameters theta.

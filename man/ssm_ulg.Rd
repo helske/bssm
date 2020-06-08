@@ -46,10 +46,14 @@ m x k x n array.}
 \item{state_names}{Names for the states.}
 
 \item{update_fn}{Function which returns list of updated model 
-components given input vector theta. See details.}
+components given input vector theta. This function should take only one 
+vector argument which is used to create list with elements named as
+\code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, and \code{C},
+where each element matches the dimensions of the original model.
+If any of these components is missing, it is assumed to be constant wrt. theta.}
 
 \item{prior_fn}{Function which returns log of prior density 
-given input vector theta. See details.}
+given input vector theta.}
 }
 \value{
 Object of class \code{ssm_ulg}.

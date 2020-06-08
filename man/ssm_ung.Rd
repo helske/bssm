@@ -45,8 +45,9 @@ m x k x n array, or object which can be coerced to such.}
 For negative binomial distribution this is the dispersion term, for gamma distribution
 this is the shape parameter, and for other distributions this is ignored.}
 
-\item{u}{Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, 
-this corresponds to the offset term. For binomial, this is the number of trials.}
+\item{u}{Constant parameter for non-Gaussian models. For Poisson, gamma, and 
+negative binomial distribution, this corresponds to the offset term. For binomial, 
+this is the number of trials.}
 
 \item{D}{Intercept terms \eqn{D_t} for the observations equation, given as a
 1 x 1 or 1 x n matrix.}
@@ -55,6 +56,17 @@ this corresponds to the offset term. For binomial, this is the number of trials.
 m times 1 or m times n matrix.}
 
 \item{state_names}{Names for the states.}
+
+\item{update_fn}{Function which returns list of updated model 
+components given input vector theta. This function should take only one 
+vector argument which is used to create list with elements named as
+\code{Z}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, \code{C}, and
+\code{phi},
+where each element matches the dimensions of the original model.
+If any of these components is missing, it is assumed to be constant wrt. theta.}
+
+\item{prior_fn}{Function which returns log of prior density 
+given input vector theta.}
 }
 \value{
 Object of class \code{ssm_ung}.

@@ -3,7 +3,7 @@ bssm 1.0.0 (Release date: -)
 Major update
 
   * Major changes for model definitions, now model updating and priors 
-    can be defined via R functions.
+    can be defined via R functions (non-linear and SDE models still rely on C++ snippets).
   * Added support for multivariate non-Gaussian models.
   * Added support for gamma distributions.
   * Added the function as.data.frame for mcmc output which converts the MCMC samples 
@@ -15,6 +15,7 @@ Major update
   * Small changes to summary method which can now return also only summaries of the states.
   * Fixed a bug in initializing run_mcmc for negative binomial model. 
   * Fixed a bug in phi-APF for non-linear models.
+  * Reimplemented predict method which now always produces data frame of samples.
   
 bssm 0.1.11 (Release date: 2020-02-25)
 ==============

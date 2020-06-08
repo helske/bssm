@@ -4,7 +4,7 @@
 #' and returns the filtered estimates and one-step-ahead predictions of the 
 #' states \eqn{\alpha_t} given the data up to time \eqn{t}.
 #'
-#' For non-Gaussian models, the Kalman filtering is based on the approximate Gaussian model.
+#' For non-Gaussian models, the filtering is based on the approximate Gaussian model.
 #'
 #' @param model Model Model object.
 #' @param ... Ignored.

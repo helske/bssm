@@ -5,7 +5,7 @@ author:
 date: "6 June 2020"
 link-citations: true
 output: html_document
-bibliography: psi.bib
+bibliography: bssm.bib
 vignette: |
   %\VignetteIndexEntry{Non-linear modelsl with bssm}
   %\VignetteEngine{knitr::rmarkdown}

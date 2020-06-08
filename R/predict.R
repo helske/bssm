@@ -92,34 +92,35 @@ predict.mcmc_output <- function(object, future_model, type = "response",
         seed, 
         pmatch(attr(object, "model_type"), 
           c("ssm_mng", "ssm_ulg", "bsm_lg", "ar1_lg")) - 1L)
-        
+      
     },
     ssm_mng = , 
     ssm_ung = , 
     bsm_ng = , 
-    svm = {
+    svm = ,
+    ar1_ng = {
       future_model$distribution <- pmatch(future_model$distribution,
         c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
         duplicates.ok = TRUE) - 1
       pred <- nongaussian_predict(future_model, theta, alpha,
-          pmatch(type, c("response", "mean", "state")), seed, 
-          pmatch(attr(object, "model_type"), 
-            c("ssm_mng", "ssm_ung", "bsm_ng", "svm", "ar1_ng")) - 1L)
+        pmatch(type, c("response", "mean", "state")), seed, 
+        pmatch(attr(object, "model_type"), 
+          c("ssm_mng", "ssm_ung", "bsm_ng", "svm", "ar1_ng")) - 1L)
       
       if(anyNA(pred)) warning("NA or NaN values in predictions, possible under/overflow?")
     },
     ssm_nlg = {
       
-        pred <- nonlinear_predict(t(future_model$y), future_model$Z, 
-          future_model$H, future_model$T, future_model$R, future_model$Z_gn, 
-          future_model$T_gn, future_model$a1, future_model$P1, 
-          future_model$log_prior_pdf, future_model$known_params, 
-          future_model$known_tv_params, as.integer(future_model$time_varying),
-          future_model$n_states, future_model$n_etas,
-          theta, alpha, pmatch(type, c("response", "mean", "state")), seed)
+      pred <- nonlinear_predict(t(future_model$y), future_model$Z, 
+        future_model$H, future_model$T, future_model$R, future_model$Z_gn, 
+        future_model$T_gn, future_model$a1, future_model$P1, 
+        future_model$log_prior_pdf, future_model$known_params, 
+        future_model$known_tv_params, as.integer(future_model$time_varying),
+        future_model$n_states, future_model$n_etas,
+        theta, alpha, pmatch(type, c("response", "mean", "state")), seed)
       
-      }
-   , stop("Not yet implemented for ssm_sde. "))
+    }
+    , stop("Not yet implemented for ssm_sde. "))
   if(type == "state") {
     if(attr(object, "model_type") == "ssm_nl") {
       variables <- future_model$state_names
@@ -134,5 +135,5 @@ predict.mcmc_output <- function(object, future_model, type = "response",
   data.frame(value = as.numeric(pred),
     variable = variables,
     time = rep(time(future_model$y), each = nrow(pred)),
-      sample = rep(1:nsim, each = nrow(pred) * ncol(pred)))
+    sample = rep(1:nsim, each = nrow(pred) * ncol(pred)))
 }

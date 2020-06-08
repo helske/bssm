@@ -4,7 +4,7 @@
 \alias{as_bssm}
 \title{Convert KFAS Model to bssm Model}
 \usage{
-as_bssm(model, kappa = 1e+05, ...)
+as_bssm(model, kappa = 100, ...)
 }
 \arguments{
 \item{model}{Object of class \code{SSModel}.}
@@ -20,5 +20,5 @@ Object of class \code{ssm_mlg} or \code{ssm_mng}.
 }
 \description{
 Converts \code{SSModel} object of \code{KFAS} package to 
-\code{ssm_mlg} or \code{ssm_mng} object.
+\code{bssm} model.
 }
