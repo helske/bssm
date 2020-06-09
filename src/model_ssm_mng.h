@@ -68,7 +68,11 @@ public:
   
   ssm_mlg approx_model;
   
-  void compute_RR();
+  void compute_RR(){
+    for (unsigned int t = 0; t < R.n_slices; t++) {
+      RR.slice(t) = R.slice(t) * R.slice(t).t();
+    }
+  }
   
   arma::vec log_likelihood(
       const unsigned int method, 

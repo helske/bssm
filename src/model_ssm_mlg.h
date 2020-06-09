@@ -68,8 +68,17 @@ public:
   const Rcpp::Function update_fn;
   const Rcpp::Function prior_fn;
   
-  void compute_RR();
-  void compute_HH();
+  void compute_RR(){
+    for (unsigned int t = 0; t < R.n_slices; t++) {
+      RR.slice(t) = R.slice(t) * R.slice(t).t();
+    }
+  }
+  
+  void compute_HH(){
+    for (unsigned int t = 0; t < H.n_slices; t++) {
+      HH.slice(t) = H.slice(t) * H.slice(t).t();
+    }
+  }
   
   void update_model(const arma::vec& new_theta);
   double log_prior_pdf(const arma::vec& x) const;

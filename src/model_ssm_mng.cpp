@@ -32,12 +32,6 @@ ssm_mng::ssm_mng(const Rcpp::List model, const unsigned int seed, const double z
 }
 
 
-inline void ssm_mng::compute_RR(){
-  for (unsigned int t = 0; t < R.n_slices; t++) {
-    RR.slice(t) = R.slice(t) * R.slice(t).t();
-  }
-}
-
 void ssm_mng::update_model(const arma::vec& new_theta) {
   Rcpp::List model_list = 
     update_fn(Rcpp::NumericVector(new_theta.begin(), new_theta.end()));
