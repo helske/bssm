@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 @vihola-helske-franks suggest an efficient particle filter $\psi$-APF for likelihood estimation and state smoothing in case of state space models with linear-Gaussian state dynamics. The concept is similar to as in iterated auxiliary particle filter [@guarniero-johansen-lee], where the original model is "twisted" using so called $\psi$-functions, which are found iteratively. Instead of iterative procedure for finding optimal $\psi$-functions, the $\psi$-APF uses conditional smoothing distribution of the states based on an approximate Gaussian model [@durbin-koopman1997, @shephard-pitt]. Compared to off-the-shelf solution based on a bootstrap filter (BSF) [@gordon-salmond-smith], only a fraction of particles are needed for accurate evaluation of the marginal likelihood, which in turn increases the performance of particle Markov chain Monte Carlo (MCMC) computations (and the IS-type corrected MCMC introduced in @vihola-helske-franks).
 
-Here we extend the $\psi$-PF to handle Gaussian models, with non-linear observation or transition equations.
+Here we extend the $\psi$-PF to handle Gaussian models with non-linear observation or transition equations.
 
 ## $\psi$-APF
 

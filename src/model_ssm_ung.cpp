@@ -813,3 +813,88 @@ arma::mat ssm_ung::sample_model(const unsigned int predict_type) {
   return alpha;
 }
 
+
+arma::cube ssm_ung::predict_past(const arma::mat& theta_posterior,
+  const arma::cube& alpha, const unsigned int predict_type) {
+  
+  unsigned int n_samples = theta_posterior.n_cols;
+  arma::cube samples(p, n, n_samples);
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  for (unsigned int i = 0; i < n_samples; i++) {
+    
+    update_model(theta_posterior.col(i));
+    arma::mat y(1, n);
+    
+    switch(distribution) {
+    case 0:
+      y.zeros();
+      break;
+    case 1:
+      for (unsigned int t = 0; t < n; t++) {
+        y(0, t) = std::exp(xbeta(t) + D(t * Dtv) +
+          arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
+      }
+      break;
+    case 2:
+      for (unsigned int t = 0; t < n; t++) {
+        double tmp = std::exp(xbeta(t) + D(t * Dtv) +
+          arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
+        y(0, t) = tmp / (1.0 + tmp);
+      }
+      
+      break;
+    case 3:
+      for (unsigned int t = 0; t < n; t++) {
+        y(0, t) = std::exp(xbeta(t) + D(t * Dtv) +
+          arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
+      }
+      break;
+    case 4:
+      for (unsigned int t = 0; t < n; t++) {
+        y(0, t) = std::exp(xbeta(t) + D(t * Dtv) +
+          arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
+      }
+      break;
+    }
+    if (predict_type == 1) {
+      
+      switch(distribution) {
+      case 0:
+        break;
+      case 1:
+        for (unsigned int t = 0; t < n; t++) {
+          std::poisson_distribution<> poisson(u(t) * y(0, t));
+          if ((u(t) * y(0, t)) < poisson.max()) {
+            y(0, t) = poisson(engine);
+          } else {
+            y(0, t) = std::numeric_limits<double>::quiet_NaN();
+          }
+        }
+        break;
+      case 2:
+        for (unsigned int t = 0; t < n; t++) {
+          std::binomial_distribution<> binomial(u(t), y(0, t));
+          y(0, t) = binomial(engine);
+        }
+        break;
+      case 3:
+        for (unsigned int t = 0; t < n; t++) {
+          std::negative_binomial_distribution<>
+          negative_binomial(phi, phi / (phi + u(t) * y(0, t)));
+          y(0, t) = negative_binomial(engine);
+        }
+        break;
+      case 4:
+        for (unsigned int t = 0; t < n; t++) {
+          std::gamma_distribution<>
+          gamma(phi, u(t) * y(0, t) / phi);
+          y(0, t) = gamma(engine);
+        }
+        break;
+      }
+    }
+    samples.slice(i) = y;
+  }
+  return samples;
+}

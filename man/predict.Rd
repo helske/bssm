@@ -6,10 +6,11 @@
 \usage{
 \method{predict}{mcmc_output}(
   object,
-  future_model,
+  model,
   type = "response",
-  seed = sample(.Machine$integer.max, size = 1),
   nsim,
+  future = TRUE,
+  seed = sample(.Machine$integer.max, size = 1),
   ...
 )
 }
@@ -17,17 +18,21 @@
 \item{object}{mcmc_output object obtained from 
 \code{\link{run_mcmc}}}
 
-\item{future_model}{Model for future observations. 
-Should have same structure
-as the original model which was used in MCMC, in order 
-to plug the posterior samples of the model parameters to the right places.}
+\item{model}{Model for future observations. 
+Should have same structure as the original model which was used in MCMC,
+in order to plug the posterior samples of the model parameters to the right places. 
+It is also possible to input the original model, which can be useful for example for 
+posterior predictive checks. In this case, set argument \code{future} to \code{FALSE}.}
 
 \item{type}{Return predictions on \code{"mean"} 
 \code{"response"}, or  \code{"state"} level.}
 
-\item{seed}{Seed for RNG.}
-
 \item{nsim}{Number of samples to draw.}
+
+\item{future}{Default is \code{TRUE}, in which case predictions are future. 
+Otherwise it is assumed that \code{model} corresponds to the original model.}
+
+\item{seed}{Seed for RNG.}
 
 \item{...}{Ignored.}
 }
@@ -35,8 +40,10 @@ to plug the posterior samples of the model parameters to the right places.}
 Data frame of predicted samples.
 }
 \description{
-Draw samples from the posterior predictive distribution given the 
-posterior draws of hyperparameters theta and alpha_{n+1}.
+Draw samples from the posterior predictive distribution for future time points 
+given the posterior draws of hyperparameters \eqn{\theta} and \eqn{alpha_{n+1}}. 
+Function can also be used to draw samples from the posterior predictive distribution
+\eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
 }
 \examples{
 require("graphics")
@@ -50,6 +57,7 @@ future_model <- model
 future_model$y <- ts(rep(NA, 25), 
   start = tsp(model$y)[2] + 2 * deltat(model$y), 
   frequency = frequency(model$y))
+# use "state" for illustrative purposes, we could use type = "mean" directly
 pred <- predict(mcmc_results, future_model, type = "state", 
   nsim = 1000)
 
@@ -73,7 +81,14 @@ sumr_pred <- pred \%>\%
   summarise(mean = mean(signal),
     lwr = quantile(signal, 0.025), 
     upr = quantile(signal, 0.975)) 
-
+    
+# If we used type = "mean", we could do
+# sumr_pred <- pred \%>\% 
+#   group_by(time) \%>\%
+#   summarise(mean = mean(value),
+#     lwr = quantile(value, 0.025), 
+#     upr = quantile(value, 0.975)) 
+    
 require("ggplot2")
 rbind(sumr_fit, sumr_pred) \%>\% 
   ggplot(aes(x = time, y = mean)) + 
@@ -85,4 +100,34 @@ rbind(sumr_fit, sumr_pred) \%>\%
     mean = log10(JohnsonJohnson), 
     time = time(JohnsonJohnson)))
 
+# Posterior predictions for past observations:
+yrep <- predict(mcmc_results, model, type = "response", 
+  future = FALSE, nsim = 1000)
+meanrep <- predict(mcmc_results, model, type = "mean", 
+  future = FALSE, nsim = 1000)
+  
+sumr_yrep <- yrep \%>\% 
+  group_by(time) \%>\%
+  summarise(earnings = mean(value),
+    lwr = quantile(value, 0.025), 
+    upr = quantile(value, 0.975)) \%>\%
+  mutate(interval = "Observations")
+
+sumr_meanrep <- meanrep \%>\% 
+  group_by(time) \%>\%
+  summarise(earnings = mean(value),
+    lwr = quantile(value, 0.025), 
+    upr = quantile(value, 0.975)) \%>\%
+  mutate(interval = "Mean")
+    
+rbind(sumr_meanrep, sumr_yrep) \%>\% 
+  mutate(interval = factor(interval, levels = c("Observations", "Mean"))) \%>\%
+  ggplot(aes(x = time, y = earnings)) + 
+  geom_ribbon(aes(ymin = lwr, ymax = upr, fill = interval), 
+   alpha = 0.75) +
+  theme_bw() + 
+  geom_point(data = data.frame(
+    earnings = model$y, 
+    time = time(model$y)))    
+    
 }

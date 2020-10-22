@@ -157,7 +157,8 @@ public:
   arma::mat sample_model(const arma::vec& a1_sim, 
     const unsigned int predict_type);
   
-  
+  arma::cube predict_past(const arma::mat& theta_posterior,
+    const arma::cube& alpha, const unsigned int predict_type);
 };
 
 

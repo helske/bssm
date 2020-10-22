@@ -28,7 +28,7 @@ ssm_mlg(
 \item{H}{Lower triangular matrix H of the observation. Either a scalar or a vector of length n.}
 
 \item{T}{System matrix T of the state equation. Either a m x m matrix or a
-m x m x n array. UPDATE!!}
+m x m x n array.}
 
 \item{R}{Lower triangular matrix R the state equation. Either a m x k matrix or a
 m x k x n array.}
@@ -59,13 +59,27 @@ given input vector theta.}
 Object of class \code{ssm_mlg}.
 }
 \description{
-Constructs an object of class \code{ssm_mlg} by defining the corresponding terms
-of the observation and state equation:
+Construct an object of class \code{ssm_mlg} by directly defining the corresponding terms of 
+the model.
 }
 \details{
-\deqn{y_t = D(t,\theta) + Z(t,\theta)  \alpha_t + H(t, \theta) \epsilon_t, (\textrm{observation equation})}
-\deqn{\alpha_{t+1} = C(t,\theta) + T(t, \theta) \alpha_t + R(t, \theta)\eta_t, (\textrm{transition equation})}
+The general multivariate linear-Gaussian model is defined using the following 
+observational and state equations:
 
-where \eqn{\epsilon_t \sim N(0, I_p)}, \eqn{\eta_t \sim N(0, I_m)} and
-\eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
+\deqn{y_t = D_t + Z_t \alpha_t + H_t \epsilon_t, (\textrm{observation equation})}
+\deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
+
+where \eqn{\epsilon_t \sim N(0, I_p)}, \eqn{\eta_t \sim N(0, I_k)} and
+\eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other. 
+Here p is the number of time series and k is the number of disturbance terms 
+(which can be less than m, the number of states).
+
+The \code{update_fn} function should take only one 
+vector argument which is used to create list with elements named as
+\code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, and \code{C},
+where each element matches the dimensions of the original model.
+If any of these components is missing, it is assumed to be constant wrt. theta.
+Note that while you can input say R as m x k matrix for \code{ssm_mlg}, 
+\code{update_fn} should return R as m x k x 1 in this case. 
+It might be useful to first construct the model without updating function
 }

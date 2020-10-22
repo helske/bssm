@@ -61,9 +61,11 @@ Object of class \code{ssm_nlg}.
 }
 \description{
 Constructs an object of class \code{ssm_nlg} by defining the corresponding terms
-of the observation and state equation:
+of the observation and state equation.
 }
 \details{
+The nonlinear Gaussian model is defined as
+
 \deqn{y_t = Z(t, \alpha_t, \theta) + H(t, \theta) \epsilon_t, (\textrm{observation equation})}
 \deqn{\alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \theta)\eta_t, (\textrm{transition equation})}
 

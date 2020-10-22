@@ -12,13 +12,13 @@ as_bssm(model, kappa = 100, ...)
 \item{kappa}{For \code{SSModel} object, a prior variance for initial state
 used to replace exact diffuse elements of the original model.}
 
-\item{...}{Additional arguments to \code{ssm_mlg} and \code{ssm_mng} 
+\item{...}{Additional arguments to model building functions of \code{bssm}
 (such as prior and updating functions).}
 }
 \value{
-Object of class \code{ssm_mlg} or \code{ssm_mng}.
+Object of class \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or \code{ssm_mng}.
 }
 \description{
-Converts \code{SSModel} object of \code{KFAS} package to 
-\code{bssm} model.
+Converts \code{SSModel} object of \code{KFAS} package to general
+\code{bssm} model of type \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or \code{ssm_mng}.
 }

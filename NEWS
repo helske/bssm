@@ -1,3 +1,15 @@
+bssm 1.0.1 (Release date: -)
+==============
+
+  * Added an argument `future` for predict method which allows 
+    predictions for current time points by supplying the original model 
+    (e.g., for posterior predictive checks). 
+    At the same time the argument name `future_model` was changed to `model`.
+  * Fixed a bug in summary.mcmc_run which resulted error when 
+    trying to obtain summary for states only.
+  * Added a check for Kalman filter for a degenerate case where all 
+    observational level and state level variances are zero.
+  
 bssm 1.0.0 (Release date: -)
 ==============
 Major update

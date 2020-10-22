@@ -24,7 +24,7 @@ NULL
 #'
 #' @name drownings
 #' @docType data
-#' @format A time series object containing 46 observations and.
+#' @format A time series object containing 46 observations.
 #' @source Statistics Finland \url{http://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
 #' @keywords datasets
 NULL

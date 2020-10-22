@@ -46,11 +46,7 @@ m x k x n array.}
 \item{state_names}{Names for the states.}
 
 \item{update_fn}{Function which returns list of updated model 
-components given input vector theta. This function should take only one 
-vector argument which is used to create list with elements named as
-\code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, and \code{C},
-where each element matches the dimensions of the original model.
-If any of these components is missing, it is assumed to be constant wrt. theta.}
+components given input vector theta. See details.}
 
 \item{prior_fn}{Function which returns log of prior density 
 given input vector theta.}
@@ -59,14 +55,146 @@ given input vector theta.}
 Object of class \code{ssm_ulg}.
 }
 \description{
-Construct an object of class \code{ssm_ulg} by defining the corresponding terms
-of the observation and state equation:
+Construct an object of class \code{ssm_ulg} by directly defining the corresponding terms of 
+the model.
 }
 \details{
-\deqn{y_t = X_t beta + D_t + Z_t \alpha_t + H_t \epsilon_t, (\textrm{observation equation})}
+The general univariate linear-Gaussian model is defined using the following 
+observational and state equations:
+
+\deqn{y_t = D_t + Z_t \alpha_t + H_t \epsilon_t, (\textrm{observation equation})}
 \deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
 
 where \eqn{\epsilon_t \sim N(0, 1)}, \eqn{\eta_t \sim N(0, I_k)} and
-\eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, \eqn{X_t} are
- fixed covariates and \eqn{beta} contains the corresponding (known) coefficients.
+\eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
+Here k is the number of disturbance terms which can be less than m, the number of states.
+
+The \code{update_fn} function should take only one 
+vector argument which is used to create list with elements named as
+\code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, and \code{C},
+where each element matches the dimensions of the original model.
+If any of these components is missing, it is assumed to be constant wrt. theta.
+Note that while you can input say R as m x k matrix for \code{ssm_ulg}, 
+\code{update_fn} should return R as m x k x 1 in this case. 
+It might be useful to first construct the model without updating function and then check 
+the expected structure of the model components from the output.
+}
+\examples{
+
+# Regression model with time-varying coefficients
+set.seed(1)
+n <- 100
+x1 <- rnorm(n)
+x2 <- rnorm(n)
+b1 <- 1 + cumsum(rnorm(n, sd = 0.5))
+b2 <- 2 + cumsum(rnorm(n, sd = 0.1))
+y <- 1 + b1 * x1 + b2 * x2 + rnorm(n, sd = 0.1)
+
+Z <- rbind(1, x1, x2)
+H <- 0.1
+T <- diag(3)
+R <- diag(c(0, 1, 0.1))
+a1 <- rep(0, 3)
+P1 <- diag(10, 3)
+
+# updates the model given the current values of the parameters
+update_fn <- function(theta) {
+  R <- diag(c(0, theta[1], theta[2]))
+  dim(R) <- c(3, 3, 1)
+  list(R = R, H = theta[3])
+}
+# prior for standard deviations as half-normal(1)
+prior_fn <- function(theta) {
+  if(any(theta < 0)){
+  log_p <- -Inf 
+  } else {
+  log_p <- sum(dnorm(theta, 0, 1, log = TRUE))
+  }
+  log_p
+}
+
+model <- ssm_ulg(y, Z, H, T, R, a1, P1, 
+  init_theta = c(1, 0.1, 0.1), 
+  update_fn = update_fn, prior_fn = prior_fn)
+
+out <- run_mcmc(model, iter = 10000)
+out
+sumr <- summary(out, variable = "state")
+ts.plot(sumr$Mean, col = 1:3)
+lines(b1, col= 2, lty = 2)
+lines(b2, col= 3, lty = 2)
+
+# Perhaps easiest way to construct a general SSM for bssm is to use the 
+# model building functionality of KFAS:
+library("KFAS")
+
+model_kfas <- SSModel(log(drivers) ~ SSMtrend(1, Q = 5e-4)+
+  SSMseasonal(period = 12, sea.type = "trigonometric", Q = 0) +
+ log(PetrolPrice) + law, data = Seatbelts, H = 0.005)
+
+# use as_bssm function for conversion, kappa defines the 
+# prior variance for diffuse states
+model_bssm <- as_bssm(model_kfas, kappa = 100)
+
+# define updating function for parameter estimation
+# we can use SSModel and as_bssm functions here as well
+# (for large model it is more efficient to do this 
+# "manually" by constructing only necessary matrices,
+# i.e., in this case  a list with H and Q)
+
+updatefn <- function(theta){
+  
+  model_kfas <- SSModel(log(drivers) ~ SSMtrend(1, Q = theta[1]^2)+
+    SSMseasonal(period = 12, 
+      sea.type = "trigonometric", Q = theta[2]^2) +
+    log(PetrolPrice) + law, data = Seatbelts, H = theta[3]^2)
+  
+  as_bssm(model_kfas, kappa = 100)
+}
+
+prior <- function(theta) {
+  if(any(theta < 0)) -Inf else sum(dnorm(theta, 0, 0.1, log = TRUE))
+}
+init_theta <- rep(1e-2, 3)
+c("sd_level", "sd_seasonal", "sd_y")
+model_bssm <- as_bssm(model_kfas, kappa = 100, 
+  init_theta = init_theta, 
+  prior_fn = prior, update_fn = updatefn)
+
+\dontrun{
+out <- run_mcmc(model_bssm, iter = 10000, burnin = 5000) 
+out
+
+# Above the regression coefficients are modelled as time-invariant latent states. 
+# Here is an alternative way where we use variable D so that the
+# coefficients are part of parameter vector theta:
+
+updatefn2 <- function(theta) {
+  # note no PetrolPrice or law variables here
+  model_kfas2 <- SSModel(log(drivers) ~ SSMtrend(1, Q = theta[1]^2)+
+    SSMseasonal(period = 12, sea.type = "trigonometric", Q = theta[2]^2), 
+    data = Seatbelts, H = theta[3]^2)
+  
+  X <- model.matrix(~ -1 + law + log(PetrolPrice), data = Seatbelts)
+  D <- t(X \%*\% theta[4:5])
+  as_bssm(model_kfas2, D = D, kappa = 100)
+}
+prior2 <- function(theta) {
+ if(any(theta[1:3] < 0)) {
+  -Inf
+ } else {
+   sum(dnorm(theta[1:3], 0, 0.1, log = TRUE)) +
+   sum(dnorm(theta[4:5], 0, 10, log = TRUE))
+ }
+}
+init_theta <- c(rep(1e-2, 3), 0, 0)
+names(init_theta) <- c("sd_level", "sd_seasonal", "sd_y", "law", "Petrol")
+model_bssm2 <- updatefn2(init_theta)
+model_bssm2$theta <- init_theta
+model_bssm2$prior_fn <- prior2
+model_bssm2$update_fn <- updatefn2
+
+out2 <- run_mcmc(model_bssm2, iter = 10000, burnin = 5000) 
+out2
+}
 }

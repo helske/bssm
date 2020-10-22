@@ -117,6 +117,18 @@ nonlinear_predict <- function(y, Z, H, T, R, Zg, Tg, a1, P1, log_prior_pdf, know
     .Call('_bssm_nonlinear_predict', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, theta, alpha, predict_type, seed, update_fn, prior_fn)
 }
 
+gaussian_predict_past <- function(model_, theta, alpha, predict_type, seed, model_type) {
+    .Call('_bssm_gaussian_predict_past', PACKAGE = 'bssm', model_, theta, alpha, predict_type, seed, model_type)
+}
+
+nongaussian_predict_past <- function(model_, theta, alpha, predict_type, seed, model_type) {
+    .Call('_bssm_nongaussian_predict_past', PACKAGE = 'bssm', model_, theta, alpha, predict_type, seed, model_type)
+}
+
+nonlinear_predict_past <- function(y, Z, H, T, R, Zg, Tg, a1, P1, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, theta, alpha, predict_type, seed, update_fn, prior_fn) {
+    .Call('_bssm_nonlinear_predict_past', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, theta, alpha, predict_type, seed, update_fn, prior_fn)
+}
+
 gaussian_psi_smoother <- function(model_, nsim, seed, model_type) {
     .Call('_bssm_gaussian_psi_smoother', PACKAGE = 'bssm', model_, nsim, seed, model_type)
 }

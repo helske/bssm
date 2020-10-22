@@ -1360,3 +1360,34 @@ arma::mat ssm_nlg::sample_model(const arma::vec& a1_sim,
   return alpha;
   
 }
+
+arma::cube ssm_nlg::predict_past(const arma::mat& theta_posterior,
+  const arma::cube& alpha, const unsigned int predict_type) {
+  
+  unsigned int n_samples = theta_posterior.n_cols;
+  arma::cube samples(p, n, n_samples);
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  for (unsigned int i = 0; i < n_samples; i++) {
+    theta = theta_posterior.col(i);
+    arma::mat y_pred(p, n);
+    for (unsigned int t = 0; t < n; t++) {
+      y_pred.col(t) = Z_fn(t, alpha.slice(i).col(t), theta, 
+        known_params, known_tv_params);
+    }
+    
+    // sample observation noise
+    if(predict_type == 1) {
+      for (unsigned int t = 0; t < n; t++) {
+        arma::vec up(p);
+        for (unsigned int j = 0; j < p; j++) {
+          up(j) = normal(engine);
+        }
+        y_pred.col(t) += H_fn(t, alpha.slice(i).col(t), 
+          theta, known_params, known_tv_params) * up;
+      }
+    }
+    samples.slice(i) = y_pred;
+  }
+  return samples;
+}

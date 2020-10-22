@@ -94,44 +94,48 @@ double ssm_mlg::log_prior_pdf(const arma::vec& x) const {
 double ssm_mlg::log_likelihood() const {
   
   double logLik = 0;
-  arma::vec at = a1;
-  arma::mat Pt = P1;
-  
-  const double LOG2PI = std::log(2.0 * M_PI);
-  
-  for (unsigned int t = 0; t < n; t++) {
-    arma::uvec obs_y = arma::find_finite(y.col(t));
+  if(arma::accu(H) + arma::accu(R) < zero_tol) {
+    logLik = -std::numeric_limits<double>::infinity();
+  } else {
+    arma::vec at = a1;
+    arma::mat Pt = P1;
     
-    if (obs_y.n_elem > 0) {
+    const double LOG2PI = std::log(2.0 * M_PI);
+    
+    for (unsigned int t = 0; t < n; t++) {
+      arma::uvec obs_y = arma::find_finite(y.col(t));
       
-      arma::mat Zt = Z.slice(t * Ztv).rows(obs_y);
+      if (obs_y.n_elem > 0) {
+        
+        arma::mat Zt = Z.slice(t * Ztv).rows(obs_y);
+        
+        arma::mat F = Zt * Pt * Zt.t() + HH.slice(t * Htv).submat(obs_y, obs_y);
+        // first check to avoid armadillo warnings
+        bool chol_ok = F.is_finite();
+        if (!chol_ok) return -std::numeric_limits<double>::infinity();
+        arma::mat cholF(p, p);
+        chol_ok = arma::chol(cholF, F);
+        if (!chol_ok) return -std::numeric_limits<double>::infinity();
+        
+        arma::vec tmp = y.col(t) - D.col(t * Dtv);
+        arma::vec v = tmp.rows(obs_y) - Zt * at;
+        arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
+        arma::mat K = Pt * Zt.t() * inv_cholF * inv_cholF.t();
+        at = C.col(t * Ctv) + T.slice(t * Ttv) * (at + K * v);
+        
+        arma::mat IKZ = arma::eye(m, m) - K * Zt;
+        Pt = arma::symmatu(T.slice(t * Ttv) * (IKZ * Pt * IKZ.t() + K * HH.slice(t * Htv).submat(obs_y, obs_y) * K.t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+        
+        arma::vec Fv = inv_cholF.t() * v;
+        logLik -= 0.5 * arma::as_scalar(obs_y.n_elem * LOG2PI +
+          2.0 * arma::accu(arma::log(arma::diagvec(cholF))) + Fv.t() * Fv);
+        
+      } else {
+        at = C.col(t * Ctv) + T.slice(t * Ttv) * at;
+        Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      }
       
-      arma::mat F = Zt * Pt * Zt.t() + HH.slice(t * Htv).submat(obs_y, obs_y);
-      // first check to avoid armadillo warnings
-      bool chol_ok = F.is_finite();
-      if (!chol_ok) return -std::numeric_limits<double>::infinity();
-      arma::mat cholF(p, p);
-      chol_ok = arma::chol(cholF, F);
-      if (!chol_ok) return -std::numeric_limits<double>::infinity();
-      
-      arma::vec tmp = y.col(t) - D.col(t * Dtv);
-      arma::vec v = tmp.rows(obs_y) - Zt * at;
-      arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
-      arma::mat K = Pt * Zt.t() * inv_cholF * inv_cholF.t();
-      at = C.col(t * Ctv) + T.slice(t * Ttv) * (at + K * v);
-      
-      arma::mat IKZ = arma::eye(m, m) - K * Zt;
-      Pt = arma::symmatu(T.slice(t * Ttv) * (IKZ * Pt * IKZ.t() + K * HH.slice(t * Htv).submat(obs_y, obs_y) * K.t()) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
-      
-      arma::vec Fv = inv_cholF.t() * v;
-      logLik -= 0.5 * arma::as_scalar(obs_y.n_elem * LOG2PI +
-        2.0 * arma::accu(arma::log(arma::diagvec(cholF))) + Fv.t() * Fv);
-      
-    } else {
-      at = C.col(t * Ctv) + T.slice(t * Ttv) * at;
-      Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
     }
-    
   }
   return logLik;
 }
@@ -565,3 +569,26 @@ arma::mat ssm_mlg::sample_model(const unsigned int predict_type) {
   }
 }
 
+
+arma::cube ssm_mlg::predict_past(const arma::mat& theta_posterior,
+  const arma::cube& alpha, const unsigned int predict_type) {
+  
+  unsigned int n_samples = theta_posterior.n_cols;
+  arma::cube samples(p, n, n_samples);
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  for (unsigned int i = 0; i < n_samples; i++) {
+    update_model(theta_posterior.col(i));
+    for (unsigned int t = 0; t < n; t++) {
+      samples.slice(i).col(t) = D.col(t * Dtv) + Z.slice(t * Ztv) * alpha.slice(i).col(t);
+      if(predict_type == 1) {
+        arma::vec up(p);
+        for(unsigned int j = 0; j < p; j++) {
+          up(j) = normal(engine);
+        }
+        samples.slice(i).col(t) += H(t * Htv) * up;
+      }
+    }
+  }
+  return samples;
+}

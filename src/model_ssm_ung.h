@@ -16,7 +16,7 @@ public:
   // constructor from Rcpp::List
   ssm_ung(const Rcpp::List model, 
     const unsigned int seed = 1,
-    const double zero_tol = 1e-8);
+    const double zero_tol = 1e-12);
   
   arma::vec y;
   arma::mat Z;
@@ -123,6 +123,9 @@ public:
     const unsigned int predict_type);
   
   arma::mat sample_model(const unsigned int predict_type);
+  
+  arma::cube predict_past(const arma::mat& theta_posterior,
+    const arma::cube& alpha, const unsigned int predict_type);
 
 };
 

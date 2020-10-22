@@ -2,7 +2,7 @@ Package: bssm
 Type: Package
 Title: Bayesian Inference of Non-Gaussian State Space Models
 Version: 1.0.0
-Date: 2020-06-09
+Date: 2020-10-19
 Authors@R: 
     c(person(given = "Jouni",
            family = "Helske",
@@ -41,7 +41,7 @@ Imports:
     Rcpp (>= 0.12.3)
 LinkingTo: Rcpp, RcppArmadillo, ramcmc, sitmo
 SystemRequirements: C++11
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 VignetteBuilder: knitr
 BugReports: https://github.com/helske/bssm/issues
 ByteCompile: true

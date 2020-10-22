@@ -215,7 +215,7 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
       }
       
     } else {
-      alpha <- expand_sample(object, "alpha")
+      alpha <- expand_sample(object, "states")
       mean_alpha <- ts(sapply(alpha, colMeans),
                        start = attr(object, "ts")$start,
                        frequency = attr(object, "ts")$frequency, names = colnames(object$alpha))

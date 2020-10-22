@@ -13,7 +13,7 @@ public:
   ssm_mlg(
     const Rcpp::List model, 
     const unsigned int seed = 1,
-    const double zero_tol = 1e-8);
+    const double zero_tol = 1e-12);
   
   // constructor from armadillo objects
   ssm_mlg(
@@ -30,7 +30,7 @@ public:
     const unsigned int seed,
     const Rcpp::Function update_fn,
     const Rcpp::Function prior_fn,
-    const double zero_tol = 1e-8);
+    const double zero_tol = 1e-12);
   
   arma::mat y;
   arma::cube Z;
@@ -97,6 +97,9 @@ public:
   arma::cube predict_sample(const arma::mat& theta_posterior,
     const arma::mat& alpha, const unsigned int predict_type);
   arma::mat sample_model(const unsigned int predict_type);
+  
+  arma::cube predict_past(const arma::mat& theta_posterior,
+    const arma::cube& alpha, const unsigned int predict_type);
 };
 
 

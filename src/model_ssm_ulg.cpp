@@ -66,7 +66,7 @@ ssm_ulg::ssm_ulg(
 
 
 void ssm_ulg::update_model(const arma::vec& new_theta) {
-
+  
   Rcpp::List model_list =
     update_fn(Rcpp::NumericVector(new_theta.begin(), new_theta.end()));
   if (model_list.containsElementNamed("Z")) {
@@ -110,30 +110,34 @@ double ssm_ulg::log_prior_pdf(const arma::vec& x) const {
 double ssm_ulg::log_likelihood() const {
   
   double logLik = 0;
-  arma::vec at = a1;
-  arma::mat Pt = P1;
-  
-  arma::vec y_tmp = y;
-  if(xreg.n_cols > 0) {
-    y_tmp -= xbeta;
-  }
-  
-  const double LOG2PI = std::log(2.0 * M_PI);
-  
-  for (unsigned int t = 0; t < n; t++) {
-    double F = arma::as_scalar(Z.col(t * Ztv).t() * Pt * Z.col(t * Ztv) + HH(t * Htv));
-    if (arma::is_finite(y_tmp(t)) && F > zero_tol) {
-      double v = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at);
-      arma::vec K = Pt * Z.col(t * Ztv) / F;
-      at = C.col(t * Ctv) + T.slice(t * Ttv) * (at + K * v);
-      Pt = arma::symmatu(T.slice(t * Ttv) * (Pt - K * K.t() * F) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
-      logLik -= 0.5 * (LOG2PI + std::log(F) + v * v/F);
-    } else {
-      at = C.col(t * Ctv) + T.slice(t * Ttv) * at;
-      Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+  if(arma::accu(H) + arma::accu(R) < zero_tol) {
+    logLik = -std::numeric_limits<double>::infinity();
+  } else {
+    
+    arma::vec at = a1;
+    arma::mat Pt = P1;
+    
+    arma::vec y_tmp = y;
+    if(xreg.n_cols > 0) {
+      y_tmp -= xbeta;
+    }
+    
+    const double LOG2PI = std::log(2.0 * M_PI);
+    
+    for (unsigned int t = 0; t < n; t++) {
+      double F = arma::as_scalar(Z.col(t * Ztv).t() * Pt * Z.col(t * Ztv) + HH(t * Htv));
+      if (arma::is_finite(y_tmp(t)) && F > zero_tol) {
+        double v = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at);
+        arma::vec K = Pt * Z.col(t * Ztv) / F;
+        at = C.col(t * Ctv) + T.slice(t * Ttv) * (at + K * v);
+        Pt = arma::symmatu(T.slice(t * Ttv) * (Pt - K * K.t() * F) * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+        logLik -= 0.5 * (LOG2PI + std::log(F) + v * v/F);
+      } else {
+        at = C.col(t * Ctv) + T.slice(t * Ttv) * at;
+        Pt = arma::symmatu(T.slice(t * Ttv) * Pt * T.slice(t * Ttv).t() + RR.slice(t * Rtv));
+      }
     }
   }
-  
   return logLik;
 }
 
@@ -697,7 +701,7 @@ arma::mat ssm_ulg::sample_model(const unsigned int predict_type) {
   
   std::normal_distribution<> normal(0.0, 1.0);
   alpha.col(0) = a1;
-
+  
   for (unsigned int t = 0; t < (n - 1); t++) {
     arma::vec uk(k);
     for(unsigned int j = 0; j < k; j++) {
@@ -723,3 +727,27 @@ arma::mat ssm_ulg::sample_model(const unsigned int predict_type) {
   }
 }
 
+
+arma::cube ssm_ulg::predict_past(const arma::mat& theta_posterior,
+  const arma::cube& alpha, const unsigned int predict_type) {
+  
+  unsigned int n_samples = theta_posterior.n_cols;
+  arma::cube samples(p, n, n_samples);
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  for (unsigned int i = 0; i < n_samples; i++) {
+    update_model(theta_posterior.col(i));
+    for (unsigned int t = 0; t < n; t++) {
+      samples.slice(i).col(t) =  xbeta(t) + D(t * Dtv) +
+        arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t));
+      if(predict_type == 1) {
+        arma::vec up(p);
+        for(unsigned int j = 0; j < p; j++) {
+          up(j) = normal(engine);
+        }
+        samples.slice(i).col(t) += H(t * Htv) * up;
+      }
+    }
+  }
+  return samples;
+}

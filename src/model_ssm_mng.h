@@ -14,7 +14,7 @@ public:
   
   ssm_mng(const Rcpp::List model, 
     const unsigned int seed = 1,
-    const double zero_tol = 1e-8);
+    const double zero_tol = 1e-12);
   
   arma::mat y;
   arma::cube Z;
@@ -115,6 +115,9 @@ public:
     const unsigned int predict_type);
   
   arma::mat sample_model(const unsigned int predict_type);
+  
+  arma::cube predict_past(const arma::mat& theta_posterior,
+    const arma::cube& alpha, const unsigned int predict_type);
 };
 
 

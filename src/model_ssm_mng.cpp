@@ -745,3 +745,72 @@ arma::mat ssm_mng::sample_model(const unsigned int predict_type) {
   }
   return alpha;
 }
+
+
+arma::cube ssm_mng::predict_past(const arma::mat& theta_posterior,
+  const arma::cube& alpha, const unsigned int predict_type) {
+  
+  unsigned int n_samples = theta_posterior.n_cols;
+  arma::cube samples(p, n, n_samples);
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  for (unsigned int i = 0; i < n_samples; i++) {
+    update_model(theta_posterior.col(i));
+    arma::mat y(p, n);
+    for (unsigned int t = 0; t < n; t++) {
+      arma::vec signal = D.col(t * Dtv) + Z.slice(t * Ztv) * alpha.slice(i).col(t);
+      
+      for(unsigned int j = 0; j < p; j++) {
+        switch(distribution(j)) {
+        case 1:
+          y(j, t) =  std::exp(signal(j));
+          break;
+        case 2:
+          y(j, t) =  std::exp(signal(j)) / (1.0 +  std::exp(signal(j)));
+          break;
+        case 3:
+          y(j, t) =  std::exp(signal(j));
+          break;
+        case 4:
+          y(j, t) =  std::exp(signal(j));
+          break;
+        case 5:
+          y(j, t) =  signal(j);
+        }
+        
+        if (predict_type == 1) {
+          
+          switch(distribution(j)) {
+          case 1: {
+          std::poisson_distribution<> poisson(u(j,t) * y(j, t));
+          if ((u(j,t) * y(j, t)) < poisson.max()) {
+            y(j, t) = poisson(engine);
+          } else {
+            y(j, t) = std::numeric_limits<double>::quiet_NaN();
+          }
+        } 
+            break;
+          case 2: {
+            std::binomial_distribution<> binomial(u(j,t), y(j, t));
+            y(j, t) = binomial(engine);
+          }
+            break;
+          case 3: {
+            std::negative_binomial_distribution<>
+            negative_binomial(phi(j), phi(j) / (phi(j) + u(j,t) * y(j, t)));
+            y(j, t) = negative_binomial(engine);
+          }
+            break;
+          case 4: {
+            std::gamma_distribution<> gamma(phi(j), u(j,t) * y(j, t) / phi(j));
+            y(j, t) = gamma(engine);
+          }
+            break;
+          }
+        }
+      }
+    }
+    samples.slice(i) = y;
+  }
+  return samples;
+}

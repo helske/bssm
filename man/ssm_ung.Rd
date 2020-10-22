@@ -45,7 +45,7 @@ m x k x n array, or object which can be coerced to such.}
 For negative binomial distribution this is the dispersion term, for gamma distribution
 this is the shape parameter, and for other distributions this is ignored.}
 
-\item{u}{Constant parameter for non-Gaussian models. For Poisson, gamma, and 
+\item{u}{Constant parameter vector for non-Gaussian models. For Poisson, gamma, and 
 negative binomial distribution, this corresponds to the offset term. For binomial, 
 this is the number of trials.}
 
@@ -60,12 +60,7 @@ m times 1 or m times n matrix.}
 \item{state_names}{Names for the states.}
 
 \item{update_fn}{Function which returns list of updated model 
-components given input vector theta. This function should take only one 
-vector argument which is used to create list with elements named as
-\code{Z}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, \code{C}, and
-\code{phi},
-where each element matches the dimensions of the original model.
-If any of these components is missing, it is assumed to be constant wrt. theta.}
+components given input vector theta. See details.}
 
 \item{prior_fn}{Function which returns log of prior density 
 given input vector theta.}
@@ -74,14 +69,28 @@ given input vector theta.}
 Object of class \code{ssm_ung}.
 }
 \description{
-Construct an object of class \code{ssm_ung} by defining the corresponding terms
-of the observation and state equation:
+Construct an object of class \code{ssm_ung} by directly defining the corresponding terms of 
+the model.
 }
 \details{
+The general univariate non-Gaussian model is defined using the following 
+observational and state equations:
+
 \deqn{p(y_t | D_t + Z_t \alpha_t), (\textrm{observation equation})}
 \deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
 
 where \eqn{\eta_t \sim N(0, I_k)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other,
 and \eqn{p(y_t | .)} is either Poisson, binomial, gamma, or negative binomial distribution.
+Here k is the number of disturbance terms which can be less than m, the number of states.
+
+The \code{update_fn} function should take only one 
+vector argument which is used to create list with elements named as
+\code{Z}, \code{phi} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, and \code{C},
+where each element matches the dimensions of the original model.
+If any of these components is missing, it is assumed to be constant wrt. theta.
+Note that while you can input say R as m x k matrix for \code{ssm_ung}, 
+\code{update_fn} should return R as m x k x 1 in this case. 
+It might be useful to first construct the model without updating function and then check 
+the expected structure of the model components from the output.
 }

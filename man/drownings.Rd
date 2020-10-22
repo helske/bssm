@@ -5,7 +5,7 @@
 \alias{drownings}
 \title{Deaths by drowning in Finland in 1969-2014}
 \format{
-A time series object containing 46 observations and.
+A time series object containing 46 observations.
 }
 \source{
 Statistics Finland \url{http://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
