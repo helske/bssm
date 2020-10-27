@@ -1,10 +1,11 @@
 #' Particle Smoothing
 #'
 #' Function \code{particle_smoother} performs particle smoothing 
-#' based on either bootstrap particle filter [1], $\psi$-auxiliary particle filter (\eqn{\psi}-APF) [2], 
+#' based on either bootstrap particle filter [1], \eqn{\psi}-auxiliary particle filter (\eqn{\psi}-APF) [2], 
 #' or extended Kalman particle filter [3] (or its iterated version [4]). 
 #' The smoothing phase is based on the filter-smoother algorithm by [5].
 #'
+#' @importFrom stats cov
 #' @param model Model.
 #' @param nsim Number of samples.
 #' @param method Choice of particle filter algorithm. 
