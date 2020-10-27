@@ -109,7 +109,6 @@ First, we simulated one realization of length 300 from the logistic growth model
 
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
 library(dplyr)
-library(reshape2)
 library(xtable)
 ```
 
