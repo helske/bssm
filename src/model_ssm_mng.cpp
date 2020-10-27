@@ -544,6 +544,7 @@ double ssm_mng::psi_filter(const unsigned int nsim, arma::cube& alpha,
 
 double ssm_mng::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::mat& weights, arma::umat& indices) {
+  
   arma::uvec nonzero = arma::find(P1.diag() > 0);
   arma::mat L_P1(m, m, arma::fill::zeros);
   if (nonzero.n_elem > 0) {

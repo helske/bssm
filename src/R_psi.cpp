@@ -2,6 +2,7 @@
 #include "model_ssm_ulg.h"
 #include "model_bsm_lg.h"
 #include "model_ar1_lg.h"
+#include "model_ssm_mng.h"
 #include "model_ssm_ung.h"
 #include "model_bsm_ng.h"
 #include "model_svm.h"
@@ -17,6 +18,12 @@ arma::cube gaussian_psi_smoother(const Rcpp::List model_,
   const int model_type) {
   
   switch (model_type) {
+  case 0: {
+  ssm_mlg model(model_, seed);
+  arma::cube alpha(model.m, model.n + 1, nsim);
+  model.psi_filter(nsim, alpha);
+  return alpha;
+} break;
   case 1: {
   ssm_ulg model(model_, seed);
   arma::cube alpha(model.m, model.n + 1, nsim);
@@ -47,6 +54,26 @@ Rcpp::List psi_smoother(const Rcpp::List model_,
   const int model_type) {
   
   switch (model_type) {
+  case 0: {
+  ssm_mng model(model_, seed);
+  arma::cube alpha(model.m, model.n + 1, nsim);
+  arma::mat weights(nsim, model.n + 1);
+  arma::umat indices(nsim, model.n);
+  
+  double loglik = model.psi_filter(nsim, alpha, weights, indices);
+  arma::mat alphahat(model.m, model.n + 1);
+  arma::cube Vt(model.m, model.m, model.n + 1);
+  
+  filter_smoother(alpha, indices);
+  weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+  
+  arma::inplace_trans(alphahat);
+  return Rcpp::List::create(
+    Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") = Vt,
+    Rcpp::Named("weights") = weights,
+    Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
+} break;
+    
   case 1: {
   ssm_ung model(model_, seed);
   

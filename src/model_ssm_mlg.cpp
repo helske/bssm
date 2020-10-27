@@ -1,5 +1,6 @@
 #include "model_ssm_mlg.h"
 #include "psd_chol.h"
+#include "conditional_dist.h"
 
 // General constructor of ssm_mlg object from Rcpp::List
 ssm_mlg::ssm_mlg(
@@ -472,6 +473,35 @@ double ssm_mlg::filter(arma::mat& at, arma::mat& att,
   return logLik;
 }
 
+
+
+void ssm_mlg::psi_filter(const unsigned int nsim, arma::cube& alpha) {
+  
+  arma::mat alphahat(m, n + 1);
+  arma::cube Vt(m, m, n + 1);
+  arma::cube Ct(m, m, n + 1);
+  smoother_ccov(alphahat, Vt, Ct);
+  conditional_cov(Vt, Ct);
+  
+  std::normal_distribution<> normal(0.0, 1.0);
+  for (unsigned int i = 0; i < nsim; i++) {
+    arma::vec um(m);
+    for(unsigned int j = 0; j < m; j++) {
+      um(j) = normal(engine);
+    }
+    alpha.slice(i).col(0) = alphahat.col(0) + Vt.slice(0) * um;
+  }
+  
+  for (unsigned int t = 0; t < n; t++) {
+    for (unsigned int i = 0; i < nsim; i++) {
+      arma::vec um(m);
+      for(unsigned int j = 0; j < m; j++) {
+        um(j) = normal(engine);
+      }
+      alpha.slice(i).col(t + 1) = alphahat.col(t + 1) + Ct.slice(t + 1) * (alpha.slice(i).col(t) - alphahat.col(t)) + Vt.slice(t + 1) * um;
+    }
+  }
+}
 
 // simulate states from smoothing distribution
 // Note: not optimized at all for multiple replications (compare with ssm_ulg implementation)

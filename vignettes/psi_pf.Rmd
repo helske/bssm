@@ -1,7 +1,7 @@
 ---
 title: "$\\psi$-APF for non-linear Gaussian state space models"
 author: "Jouni Helske"
-date: "8 June 2020"
+date: "26 October 2020"
 output: html_document
 bibliography: bssm.bib
 bvignette: |
@@ -12,13 +12,14 @@ bvignette: |
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(dplyr.summarise.inform = FALSE)
 ```
 
 ## Introduction
 
-@vihola-helske-franks suggest an efficient particle filter $\psi$-APF for likelihood estimation and state smoothing in case of state space models with linear-Gaussian state dynamics. The concept is similar to as in iterated auxiliary particle filter [@guarniero-johansen-lee], where the original model is "twisted" using so called $\psi$-functions, which are found iteratively. Instead of iterative procedure for finding optimal $\psi$-functions, the $\psi$-APF uses conditional smoothing distribution of the states based on an approximate Gaussian model [@durbin-koopman1997, @shephard-pitt]. Compared to off-the-shelf solution based on a bootstrap filter (BSF) [@gordon-salmond-smith], only a fraction of particles are needed for accurate evaluation of the marginal likelihood, which in turn increases the performance of particle Markov chain Monte Carlo (MCMC) computations (and the IS-type corrected MCMC introduced in @vihola-helske-franks).
+@vihola-helske-franks suggest an efficient particle filter (sequential Monte Carlo, SMC) called $\psi$-APF for marginal likelihood estimation and state smoothing in case of state space models with linear-Gaussian state dynamics and twice-differentiable observation densities. The concept is similar to as in iterated auxiliary particle filter [@guarniero-johansen-lee], where the original model is "twisted" using so called $\psi$-functions, which are found iteratively. Instead of iterative procedure for finding optimal $\psi$-functions, the $\psi$-APF uses conditional smoothing distribution of the latent states based on an approximate Gaussian model [@durbin-koopman1997; @shephard-pitt]. Compared to off-the-shelf solution based on a bootstrap filter (BSF) [@gordon-salmond-smith], only a fraction of particles are needed for accurate evaluation of the marginal likelihood, which in turn increases the performance of particle Markov chain Monte Carlo (MCMC) computations and the importance sampling (IS) type weighted MCMC introduced in @vihola-helske-franks (see also @lindsten-helske-vihola for combining deterministic approximations and SMC for probabilistic graphical models).
 
-Here we extend the $\psi$-PF to handle Gaussian models with non-linear observation or transition equations.
+Here we study the $\psi$-APF in case of Gaussian models with non-linear observation or transition equations.
 
 ## $\psi$-APF
 
@@ -27,7 +28,7 @@ $$
 y_t \sim g(y_t | \alpha_t)\\
 \alpha_{t+1} \sim \mu(\alpha_{t+1} | \alpha_t),
 $$
-and assume that we have an access to approximating densities $\tilde g(y_t | \alpha_t)$, and $\tilde \mu(\alpha_{t+1} | \alpha_t)$.
+and as in @vihola-helske-franks we assume that we have an access to approximating densities $\tilde g(y_t | \alpha_t)$, and $\tilde \mu(\alpha_{t+1} | \alpha_t)$.
 
 We define
 $$
@@ -47,7 +48,7 @@ g_t^{\Psi}(y_t | \alpha_t)  &= \frac{\mu_t(\alpha_t | \alpha_{t-1})}{\tilde \mu_
 \end{aligned}
 $$
 
-Running particle filter with potentials $g^{\psi}_t$ and proposals $\mu^{\psi}_t$ does not produce the correct filtering distribution, but the resulting smoothing distribution and marginal likelihood estimate $p(y_{1:T})$ coincide with the corresponding estimates of the original model.
+Running particle filter with potentials $g^{\psi}_t$ and proposals $\mu^{\psi}_t$ does not produce the correct filtering distribution (with respect to the original model), but the resulting smoothing distribution and marginal likelihood estimate $p(y_{1:T})$ coincide with the corresponding estimates of the original model.
 
 In a case where the transition densities $\mu_t$ are Gaussian and the observation densities belong to exponential family, we can obtain the twisted densities via Gaussian approximation as in @vihola-helske-franks. These twisted transition densities correspond to the marginal conditional smoothing distribution $\tilde p(\alpha_t | \alpha_{t-1}, y_{t:T})$ which can be computed straightforwardly from the output of Kalman filter and smoother, as the conditional distribution is Gaussian with mean
 
@@ -58,8 +59,7 @@ and variance
 $$
 \textrm{Var}(\alpha_t | y_{1:T}) - \textrm{Cov}(\alpha_t,\alpha_{t-1} | y_{1:T}) \textrm{Var}(\alpha_{t-1} | y_{1:T})^{-1}\textrm{Cov}(\alpha_{t-1},\alpha_t | y_{1:T}).
 $$
-The mean and variance terms are a standard output of smoothing algorithm, whereas the covariance term can be computed at the same time from the auxiliary variables used in smoothing (see, e.g., @DK2012).
-
+The mean and variance terms are a standard output of smoothing algorithm, whereas the covariance term can be computed at the same time from the auxiliary variables used in smoothing (see, e.g., @DK2012). Note that in this case the potentials $g_t^{\Psi}(y_t | \alpha_t)$ simplify to form $\frac{g(y_t | \alpha_t)}{\tilde g(y_t | \alpha_t)}$ and similaly for the first time point which contains additional term corresponding to the marginal likelihood of the approximating Gaussian model.
 
 ## $\psi$-APF for non-linear Gaussian models
 
@@ -68,9 +68,9 @@ $$
 p(y_t | \alpha_t) = Z_t(\alpha_t) + H_t\epsilon_t,\\
 p(\alpha_{t+1} | \alpha_t) = T_t(\alpha_t) + R_t \eta_t.
 $$
-Compared to @vihola-helske-franks, the transition density $p(\alpha_{t+1} | \alpha_t)$ is now assumed to be non-linear function of states, and we assume (possibly non-linear) Gaussian density for the observations. Now the Gaussian approximation approach of @durbin-koopman1997 and @shephard-pitt is not applicable as such. Natural modification to the algorithm is to use extended Kalman filter (EKF) and for obtaining linear-Gaussian model.
+Compared to @vihola-helske-franks, the transition density $p(\alpha_{t+1} | \alpha_t)$ is now assumed to be non-linear function of states, and we assume (possibly non-linear) Gaussian density for the observations, and the Gaussian approximation approach of @durbin-koopman1997 and @shephard-pitt is not applicable as such. Natural modification to the algorithm is to use extended Kalman filter (EKF) for obtaining linear-Gaussian model.
 
-In importance sampling framework, the usage of first order Taylor expansion for obtaining approximate Gaussian model is briefly discussed in @durbin-koopman2001. The idea is simple: First we run the EKF and the corresponding extended Kalman smoothing algorithm using the the original model. Then, using the obtained smoothed estimates $\tilde \alpha$ as a new linearization point, we construct the corresponding mean-adjusted linear-Gaussian model:
+In importance sampling framework, the usage of first order Taylor expansion for obtaining approximate Gaussian model is briefly discussed in @durbin-koopman2001. Here we first we run the EKF and the corresponding extended Kalman smoothing algorithm using the the original model. Then, using the obtained smoothed estimates $\tilde \alpha$ as a new linearization point, we construct the corresponding mean-adjusted linear-Gaussian model:
 
 $$
 y_t = d_t + \dot{Z_t} \alpha_t + H_t \epsilon_t,\\
@@ -84,6 +84,330 @@ d_t = Z_t(\tilde \alpha_t) - \dot{Z_t} \tilde \alpha_t,\\
 c_t = T_t(\tilde \alpha_t) - \dot{T_t} \tilde \alpha_t.
 $$
 
-We then run Kalman filter and smoother (KFS) again for this model, linearize, and continue until convergence. @durbin-koopman2001 show that the smoothed state estimate $\hat \alpha$ of the final approximating Gaussian model coincide with the conditional mode of the original model. However, in practice it is possible that the algorithm does not converge at due to severe non-linearities of the model, or due to poor initial values. In case the EKF at first step tends to diverge, using so called iterated extended Kalman filter [@jazwinski] can sometimes be useful. Also, line-search methods which adjust the step sizes of the optimization algorithm can can also be beneficial. 
+We then run Kalman filter and smoother (KFS) again for this model, linearize, and continue until convergence. @durbin-koopman2001 show that the smoothed state estimate $\hat \alpha$ of the final approximating Gaussian model coincide with the conditional mode of the original model. 
+
+Compared to the $\psi$-APF with linear-Gaussian states and observations from exponential family, there are cases of non-linear models where it is likely that $\psi$-APF does not perform well. Due to the severe non-linearities of the model, it is possible that the linearization algorithm does not converge. In case the EKF at first step tends to diverge, using so called iterated extended Kalman filter [@jazwinski] can sometimes be useful. Another issue is multimodal distributions, where it is likely that standard BSF outperforms $\psi$-APF. Nevertheless, as illustrated in the next Section, when applicable $\psi-APF can lead to significant computational gains compared to several other particle filtering algorithms.
+
+## Illustrations
+
+We now compare $\psi$-PF with standard bootstrap filter (BSF) [@gordon-salmond-smith], and extended Kalman particle filter algorithm [@merwe-doucet-freitas-wan]. Note that @merwe-doucet-freitas-wan recommend using particle filter based on unscented Kalman filter (UKF) instead of EKPF as it generally produces more accurate results, but as the UKF algorithm depends of several tuning parameters, its use as black-box-type algorithm is more problematic.
+
+We are interested in the accuracy of the log-likelihood estimate and the relative computational performance of the different particle filtering algorithms with varying number of particles $N$. In addition, we compare the accuracy of the smoothed state estimates at the first and last time point, based on the filter-smoother algorithm [@kitagawa]. As a efficiency measure, we use inverse relative efficiency (IRE), defined as the mean squared error (MSE) multiplied by the average computation time, where the reference value for MSE is based on a bootstrap filter with 100,000 particles.
+
+### Non-linear transition equation
+
+Our first model is logistic growth model of form
+$$
+y_t = p_t + \epsilon_t,\\
+p_{t+1} = K p_t \frac{\exp(r_t dt)}{K + p_t (\exp(r_tdt ) - 1)} + \xi_t,\\
+r_t = \frac{\exp{r'_t}}{1 + \exp{r'_t}},\\
+r'_{t+1} = r'_t + \eta_t,
+$$
+with constant carrying capacity $K = 500$, initial population size $p_1 = 50$, initial growth rate on logit scale $r'_1 = -1.5$, $dt = 0.1$, $\xi \sim N(0,1)$, $\eta \sim N(0,0.05^2)$, and $\epsilon \sim N(0, 1)$.
+
+First, we simulated one realization of length 300 from the logistic growth model. All the model parameters were assumed to be known, expect that the prior variances for the states $p_1$ and $r'_1$ was set to $1$ and $100$. We then performed particle smoothing 1000 times with $N=100$, and $N=1000$ particles, using BSF, EKPF, and $\psi$-APF algorithms. 
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(dplyr)
+library(reshape2)
+library(xtable)
+```
+
+```{r, echo = FALSE, cache = FALSE, eval = FALSE}
+library("bssm")
+library("foreach")
+library("doParallel")
+
+growth_model_experiment <- function(n_cores, nsim, nsim_states) {
+  
+  set.seed(1)
+  
+  p1 <- 50 # population size at t = 1
+  K <- 500 # carrying capacity
+  
+  #sample time
+  dT <- .1
+  
+  #observation times
+  t <- seq(0.1, 30, dT)
+  n <- length(t)
+  r <- plogis(cumsum(c(-1.5, rnorm(n - 1, sd = 0.05))))
+  p <- numeric(n)
+  p[1] <- p1
+  for(i in 2:n)
+    p[i] <- rnorm(1, K * p[i-1] * exp(r[i-1] * dT) / (K + p[i-1] * (exp(r[i-1] * dT) - 1)), 1)
+  # observations
+  y <- p + rnorm(n, 0, 1)
+  
+  initial_theta <- c(H = 1, R1 = 0.05, R2 = 1)
+  
+  # dT, K, a1 and the prior variances
+  known_params <- c(dT = dT, K = K, a11 = -1.5, a12 = 50, P11 = 1, P12 = 100)
+  
+  cl<-makeCluster(n_cores)
+  registerDoParallel(cl)
+  
+  results <- foreach (j = 1:n_cores, .combine = "rbind", .packages = "bssm") %dopar% {
+    
+    Rcpp::sourceCpp("growth_model_functions.cpp")
+    pntrs <- create_xptrs()
+    model <- ssm_nlg(y = y, a1=pntrs$a1, P1 = pntrs$P1,
+      Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn,
+      Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+      theta = initial_theta, log_prior_pdf = pntrs$log_prior_pdf,
+      known_params = known_params, known_tv_params = matrix(1),
+      n_states = 2, n_etas = 2)
+    
+    bsf <- ekpf <- psi <- matrix(NA, 10, nsim / n_cores)
+    
+    for(i in 1:ncol(bsf)) {
+      
+      time <- system.time(out <- particle_smoother(model, nsim = nsim_states, method = "bsf"))[3]
+      bsf[, i] <- c(out$logLik, out$alphahat[1, ], diag(out$Vt[, , 1]),
+        out$alphahat[n, ], diag(out$Vt[, , n]), time)
+      
+      time <- system.time(out <- particle_smoother(model, nsim = nsim_states, method = "psi"))[3]
+      psi[, i] <- c(out$logLik, out$alphahat[1, ], diag(out$Vt[, , 1]),
+        out$alphahat[n, ], diag(out$Vt[, , n]), time)
+      
+      time <- system.time(out <- particle_smoother(model, nsim = nsim_states, method = "ekf"))[3]
+      ekpf[, i] <- c(out$logLik, out$alphahat[1, ], diag(out$Vt[, , 1]),
+        out$alphahat[n, ], diag(out$Vt[, , n]), time)
+    }
+    x <- t(cbind(bsf, ekpf, psi))
+    colnames(x) <- c("logLik", "alpha_11", "alpha_21", "V_11", "V_21", 
+      "alpha_1n", "alpha_2n", "V_1n", "V_2n", "time")
+    
+    data.frame(x,
+      method = rep(factor(c("BSF", "EKPF", "PSI")), each = ncol(bsf)), 
+      N = nsim_states)
+  }
+  stopCluster(cl)
+  results
+}
+
+gm_result_10 <- growth_model_experiment(1, 10000, 10) 
+saveRDS(gm_result_10, file = "gm_result_10.rds")
+
+gm_result_100 <- growth_model_experiment(1, 10000, 100) 
+saveRDS(gm_result_100, file = "gm_result_100.rds")
+
+gm_result_1000 <- growth_model_experiment(1, 10000, 1000) 
+saveRDS(gm_result_1000, file = "gm_result_1000.rds")
+
+# ground truth
+set.seed(1)
+
+p1 <- 50 # population size at t = 1
+K <- 500 # carrying capacity
+
+#sample time
+dT <- .1
+
+#observation times
+t <- seq(0.1, 30, dT)
+n <- length(t)
+r <- plogis(cumsum(c(-1.5, rnorm(n - 1, sd = 0.05))))
+p <- numeric(n)
+p[1] <- p1
+for(i in 2:n)
+  p[i] <- rnorm(1, K * p[i-1] * exp(r[i-1] * dT) / (K + p[i-1] * (exp(r[i-1] * dT) - 1)), 1)
+# observations
+y <- p + rnorm(n, 0, 1)
+
+initial_theta <- c(H = 1, R1 = 0.05, R2 = 1)
+
+# dT, K, a1 and the prior variances
+known_params <- c(dT = dT, K = K, a11 = -1.5, a12 = 50, P11 = 1, P12 = 100)
+
+Rcpp::sourceCpp("growth_model_functions.cpp")
+
+pntrs <- create_xptrs()
+model <- ssm_nlg(y = y, a1=pntrs$a1, P1 = pntrs$P1,
+  Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn,
+  Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+  theta = initial_theta, log_prior_pdf = pntrs$log_prior_pdf,
+  known_params = known_params, known_tv_params = matrix(1),
+  n_states = 2, n_etas = 2)
+
+out <- particle_smoother(model, nsim = 1e5, method = "bsf")
+truth <- c(out$logLik, out$alphahat[1, ], diag(out$Vt[, , 1]),
+  out$alphahat[n, ], diag(out$Vt[, , n]))
+names(truth) <- c("logLik", "alpha_11", "alpha_21", "V_11", "V_21", "alpha_1n", 
+  "alpha_2n", "V_1n", "V_2n")
+saveRDS(truth, file = "gm_truth.rds")
+```
+
+```{r, echo = FALSE}
+gm10 <- readRDS("psi_pf_experiments/gm_result_10.rds")
+gm100 <- readRDS("psi_pf_experiments/gm_result_100.rds")
+gm1000 <- readRDS("psi_pf_experiments/gm_result_1000.rds")
+
+results <- rbind(gm10, gm100, gm1000)
+```
+
+Table 1 shows the means, standard deviations, and IREs of the log-likelihood estimates using different methods. We see although BSF produces less accurate results than EKPF, the computational load of EKFP negates the increased accuracy in terms of IRE. However, $\psi$-APF provides significantly smaller standard errors with IREs several orders of magnitude smaller than ones obtained from other methods.
+```{r loglik, echo = FALSE}
+reference <- readRDS("psi_pf_experiments/gm_truth.rds")
+
+IRE <- function(x, time) {
+    mean((x - truth)^2) * mean(time)
+}
+truth <- reference["logLik"]
+sumr <- results %>% group_by(method, N) %>%
+  summarise(mean = mean(logLik), SD = sd(logLik), 
+    IRE = IRE(logLik, time), time = mean(time))
+sumr %>% arrange(N) %>% knitr::kable(digit = 4)
+```
+
+Similar table for the smoothed estimate of $p_1$ show again the superiority of the $\psi$-PF, with no clear differences between BSF and EKPF.
+```{r alpha, echo = FALSE}
+truth <- reference["alpha_11"]
+sumr <- results %>% group_by(method, N) %>% 
+  summarise(mean = mean(alpha_11), SD = sd(alpha_11), 
+  IRE = IRE(alpha_11, time), time = mean(time))
+
+sumr %>% arrange(N) %>% knitr::kable(digit = 4)
+```
+
+
+### Non-linear observation equation
+
+As a second illustration, we consider a model
+$$
+y_t = \exp(\alpha_t) + \epsilon_t,\\
+\alpha_{t+1} = 0.95\alpha_t + \eta_t,
+$$
+where $\eta \sim N(0, \sigma^2)$ and $\epsilon_t \sim N(0, 1)$, with stationary initial distribution $\alpha_1 \sim N(0, \sigma^2 / (1-0.95^2))$. Now state dynamics are linear-Gaussian, but the observation density is nonlinear with respect to state. 
+
+We simulated data of length $n=100$ using $\sigma^2 = 0.1$ and $\sigma^2=1$. In case of $\sigma^2=1$, EKPF generated spurious results and therefore the results are only shown for BSF and $\psi$-PF. 
+```{r, echo = FALSE, eval = FALSE}
+library("bssm")
+library("foreach")
+library("doParallel")
+
+ar_exp_model_experiment <- function(n_cores, nsim, nsim_states, theta) {
+  
+  set.seed(1)
+  n <- 100
+  alpha <- arima.sim(n = n, list(ar = 0.95), sd = theta)
+  y <- rnorm(n, exp(alpha))
+  
+  cl<-makeCluster(n_cores)
+  registerDoParallel(cl)
+  
+  results <- foreach (j = 1:n_cores, .combine = "rbind", .packages = "bssm") %dopar% {
+    
+    Rcpp::sourceCpp("ar_exp_model_functions.cpp")
+    pntrs <- create_xptrs()
+    model <- ssm_nlg(y = y, a1=pntrs$a1, P1 = pntrs$P1, 
+      Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
+      Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+      theta = theta, log_prior_pdf = pntrs$log_prior_pdf,
+      known_params = 0, known_tv_params = matrix(1),
+      n_states = 1, n_etas = 1)
+    
+    
+    bsf <- ekpf <- psi <- matrix(NA, 6, nsim / n_cores)
+    
+  
+    for(i in 1:ncol(bsf)) {
+      time <- system.time(out <- particle_smoother(model, nsim = nsim_states, method = "bsf"))[3]
+      bsf[, i] <- c(out$logLik, out$alphahat[1, ], out$Vt[, , 1],
+        out$alphahat[n, ], out$Vt[, , n], time)
+      
+      time <- system.time(out <- particle_smoother(model, nsim = nsim_states, method = "psi"))[3]
+      psi[, i] <- c(out$logLik, out$alphahat[1, ], out$Vt[, , 1],
+        out$alphahat[n, ], out$Vt[, , n], time)
+      
+      time <- system.time(out <- particle_smoother(model, nsim = nsim_states, method = "ekf"))[3]
+      ekpf[, i] <- c(out$logLik, out$alphahat[1, ], out$Vt[, , 1],
+        out$alphahat[n, ], out$Vt[, , n], time)
+    }
+    x <- t(cbind(bsf, ekpf, psi))
+    colnames(x) <- c("logLik", "alpha_1", "V_1", "alpha_n", "V_n", "time")
+    
+    data.frame(x,
+      method = rep(factor(c("BSF", "EKPF", "PSI")), each = ncol(bsf)), 
+      N = nsim_states)
+  }
+  stopCluster(cl)
+  results
+}
+
+
+### TRUTH
+
+set.seed(1)
+n <- 100
+alpha <- arima.sim(n = n, list(ar = 0.95), sd = 0.1)
+y <- rnorm(n, exp(alpha), 1)
+
+Rcpp::sourceCpp("ar_exp_model_functions.cpp")
+pntrs <- create_xptrs()
+model <- ssm_nlg(y = y, a1=pntrs$a1, P1 = pntrs$P1, 
+  Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
+  Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+  theta = 0.1, log_prior_pdf = pntrs$log_prior_pdf,
+  known_params = 0, known_tv_params = matrix(1),
+  n_states = 1, n_etas = 1)
+
+
+out <- particle_smoother(model, nsim = 1e6, method = "bsf")
+reference <- c(logLik = out$logLik, alpha_1=out$alphahat[1], V_1 = out$Vt[1],
+  alpha_n = out$alphahat[n], V_n = out$Vt[n])
+saveRDS(reference, file = "ar_truth.rds")
+
+print("Running with 10 particles")
+ar_result_10 <- ar_exp_model_experiment(1, 10000, 10, 0.1) 
+saveRDS(ar_result_10, file = "ar_result_10.rds")
+
+print("Running with 100 particles")
+ar_result_100 <- ar_exp_model_experiment(1, 10000, 100, 0.1) 
+saveRDS(ar_result_100, file = "ar_result_100.rds")
+
+print("Running with 1000 particles")
+ar_result_1000 <- ar_exp_model_experiment(1, 10000, 1000, 0.1) 
+saveRDS(ar_result_1000, file = "ar_result_1000.rds")
+
+print("Running with 10000 particles")
+ar_result_10000 <- ar_exp_model_experiment(1, 10000, 10000, 0.1) 
+saveRDS(ar_result_10000, file = "ar_result_10000.rds")
+```
+
+```{r, echo = FALSE}
+ar10 <- readRDS("psi_pf_experiments/ar_result_10.rds")
+ar100 <- readRDS("psi_pf_experiments/ar_result_100.rds")
+ar1000 <- readRDS("psi_pf_experiments/ar_result_1000.rds")
+#ar10000 <- readRDS("psi_pf_experiments/ar_result_10000.rds")
+
+results <- rbind(ar10, ar100, ar1000)#, ar10000)
+```
+
+Table 4 shows the means and standard deviations of the log-likelihood estimates over the replications as well as IRE and average runtime using different methods. Again, $\psi$-APF performs well.
+
+```{r loglik_ar, echo = FALSE}
+reference <- readRDS("psi_pf_experiments/ar_truth.rds")
+truth <- reference["logLik"]
+sumr <- results %>% group_by(method, N) %>%
+  summarise(mean = mean(logLik), SD = sd(logLik), 
+    IRE = IRE(logLik, time), time = mean(time))
+sumr %>% arrange(N) %>% knitr::kable(digit = 4)
+```
+
+Although with fixed number of particles the $\psi$-APF produces smaller standard errors than BSF and PEKF (which behave very similarly) for $\alpha_1$, their IREs are comparable.
+
+```{r state1_ar, echo = FALSE}
+truth <- reference["alpha_1"]
+sumr <- results %>% group_by(method, N) %>%
+  summarise(mean = mean(alpha_1), SD = sd(alpha_1), 
+    IRE = IRE(alpha_1, time))
+sumr %>% arrange(N) %>% knitr::kable(digit = 4)
+```
+
+## Discussion
+
+In this note we have studied the performance of the previously suggested $\psi$-PF in context of non-linear Gaussian using the extended Kalman filter and smoother as an intermediate approximation, using two simulated case studies. Although there are obvious limitations in using the EKF (such as convergence failures due to severe non-linearities), our results suggest that if reasonably accurate EKF type approximations are available, it is beneficial to incorporate those into particle filter scheme.
 
 ## References
+

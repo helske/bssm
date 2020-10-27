@@ -88,6 +88,9 @@ public:
   arma::cube simulate_states(const unsigned int nsim);
   
   double filter(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& Ptt) const;
+  
+  void psi_filter(const unsigned int nsim, arma::cube& alpha);
+    
   void smoother(arma::mat& at, arma::cube& Pt) const; 
   // perform fast state smoothing
   arma::mat fast_smoother() const;

@@ -39,14 +39,14 @@ p_{t+1} = K p_t \frac{\exp(r_t dt)}{K + p_t (\exp(r_tdt ) - 1)} + \xi_t,\\
 r_t = \frac{\exp{r'_t}}{1 + \exp{r'_t}},\\
 r'_{t+1} = r'_t + \eta_t,
 $$
-with constant carrying capacity $K = 500$, initial population size $p_0 = 50$, initial growth rate on logit scale $r'_0 = -1.5$, $dt = 0.1$, $\xi \sim N(0,1)$, $\eta \sim N(0,0.05)$, and $\epsilon \sim N(0, 1)$.
+with constant carrying capacity $K = 500$, initial population size $p_1 = 50$, initial growth rate on logit scale $r'_1 = -1.5$, $dt = 0.1$, $\xi \sim N(0,1)$, $\eta \sim N(0,0.05)$, and $\epsilon \sim N(0, 1)$.
 
 Let's first simulate some data, with $\sigma_r=\sigma_p=0$:
 
 ```{r data}
 set.seed(1)
 
-p0 <- 50 # population size at t = 0
+p1 <- 50 # population size at t = 1
 K <- 500 # carrying capacity
 H <- 1 # standard deviation of obs noise
 
@@ -58,7 +58,7 @@ t <- seq(0.1, 30, dT)
 n <- length(t)
 r <- plogis(cumsum(c(-1.5, rnorm(n - 1, sd = 0.05))))
 p <- numeric(n)
-p[1] <- p0
+p[1] <- p1
 for(i in 2:n)
   p[i] <- rnorm(1, K * p[i-1] * exp(r[i-1] * dT) / (K + p[i-1] * (exp(r[i-1] * dT) - 1)), 1)
 # observations

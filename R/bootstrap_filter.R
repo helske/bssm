@@ -2,7 +2,6 @@
 #'
 #' Function \code{bootstrap_filter} performs a bootstrap filtering with stratification
 #' resampling.
-#'
 #' @param model of class \code{bsm_lg}, \code{bsm_ng} or \code{svm}.
 #' @param nsim Number of samples.
 #' @param seed Seed for RNG.
@@ -10,6 +9,9 @@
 #' @return A list containing samples, weights from the last time point, and an
 #' estimate of log-likelihood.
 #' @export
+#' @references 
+#' Gordon, N. J., Salmond, D. J., & Smith, A. F. M. (1993). 
+#' Novel approach to nonlinear/non-Gaussian Bayesian state estimation. IEE Proceedings-F, 140, 107–113.
 #' @rdname bootstrap_filter
 bootstrap_filter <- function(model, nsim, ...) {
   UseMethod("bootstrap_filter", model)

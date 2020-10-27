@@ -1,21 +1,19 @@
 #' Bayesian Inference of State Space Models
 #'
 #' Adaptive Markov chain Monte Carlo simulation of state space models using
-#' Robust Adaptive Metropolis algorithm by Vihola (2012).
+#' Robust Adaptive Metropolis algorithm by Vihola (2012). See specific methods for various model types for details.
 #'
 #' @importFrom stats tsp
 #' @param model State space model model of \code{bssm} package.
 #' @param iter Number of MCMC iterations.
-#' @param ... Parameters to specific methods. See \code{\link{run_mcmc.gaussian}} and
-#' \code{\link{run_mcmc.nongaussian}} for details.
+#' @param ... Parameters to specific methods. See \code{\link{run_mcmc.gaussian}},
+#' \code{\link{run_mcmc.nongaussian}}, \code{\link{run_mcmc.ssm_nlg}}, 
+#' and \code{\link{run_mcmc.ssm_sde}} for details.
 #' @export
 #' @rdname run_mcmc
 #' @references Matti Vihola (2012). "Robust adaptive Metropolis algorithm with
 #' coerced acceptance rate". Statistics and Computing, Volume 22, Issue 5,
 #' pages 997--1008.
-#' Matti Vihola, Jouni Helske, Jordan Franks (2020). 
-#' "Importance sampling type estimators based on approximate marginal MCMC"
-#' ArXiv:1609.02541.
 run_mcmc <- function(model, iter, ...) {
   UseMethod("run_mcmc", model)
 }
@@ -49,6 +47,9 @@ run_mcmc <- function(model, iter, ...) {
 #' @param n_threads Number of threads for state simulation.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
+#' @references 
+#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+#' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 #' @export
 run_mcmc.gaussian <- function(model, iter, output_type = "full",
   burnin = floor(iter / 2), thin = 1, gamma = 2/3,
@@ -136,7 +137,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' \code{"is2"} for jump chain importance sampling type weighting, or
 #' \code{"is1"} for importance sampling type weighting where the number of particles used for
 #' weight computations is proportional to the length of the jump chain block.
-#' @param sampling_method If \code{"psi"}, \eqn{\psi}{psi}-auxiliary particle filter is used for state sampling
+#' @param sampling_method If \code{"psi"}, \eqn{\psi}-APF is used for state sampling
 #' (default). If \code{"spdk"}, non-sequential importance sampling based
 #' on Gaussian approximation is used. If \code{"bsf"}, bootstrap filter
 #' is used.
@@ -296,9 +297,9 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
 #' \code{"is2"} for jump chain importance sampling type weighting, or
 #' \code{"is1"} for importance sampling type weighting where the number of particles used for
 #' weight computations is proportional to the length of the jump chain block.
-#' @param sampling_method If \code{"psi"}, \eqn{\psi}{psi}-auxiliary particle filter is used for state sampling. 
+#' @param sampling_method If \code{"bsf"} (default), bootstrap filter is used for state sampling. 
 #' If \code{"ekf"}, particle filter based on EKF-proposals are used. 
-#' If \code{"bsf"} (default), bootstrap filter is used.
+#' If \code{"psi"}, \eqn{\psi}-APF is used.
 #' @param burnin Length of the burn-in period which is disregarded from the
 #' results. Defaults to \code{iter / 2}.
 #' @param thin Thinning rate. Defaults to 1. Increase for large models in
@@ -323,6 +324,9 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
 #' \code{iekf_iter} iterations in place of standard EKF. Defaults to zero.
 #' @param ... Ignored.
 #' @export
+#' @references 
+#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+#' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
   mcmc_type = "da", sampling_method = "bsf",
   burnin = floor(iter/2), thin = 1,
@@ -481,6 +485,9 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @export
+#' @references 
+#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+#' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 run_mcmc.ssm_sde <-  function(model, iter, nsim, output_type = "full",
   mcmc_type = "da", L_c, L_f,
   burnin = floor(iter/2), thin = 1,
