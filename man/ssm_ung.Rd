@@ -94,3 +94,13 @@ Note that while you can input say R as m x k matrix for \code{ssm_ung},
 It might be useful to first construct the model without updating function and then check 
 the expected structure of the model components from the output.
 }
+\examples{
+
+data("drownings", package = "bssm")
+model <- ssm_ung(drownings[, "deaths"], Z = 1, T = 1, R = 0.2, 
+  a1 = 0, P1 = 10, distribution = "poisson", u = drownings[, "population"])
+
+# approximate results based on Gaussian approximation
+out <- smoother(model)
+ts.plot(cbind(model$y / model$u, exp(out$alphahat)), col = 1:2)
+}

@@ -2,12 +2,21 @@
 % Please edit documentation in R/particle_smoother.R
 \name{particle_smoother}
 \alias{particle_smoother}
+\alias{particle_smoother.gaussian}
 \alias{particle_smoother.nongaussian}
 \alias{particle_smoother.ssm_nlg}
 \alias{particle_smoother.ssm_sde}
 \title{Particle Smoothing}
 \usage{
 particle_smoother(model, nsim, ...)
+
+\method{particle_smoother}{gaussian}(
+  model,
+  nsim,
+  method = "psi",
+  seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
 
 \method{particle_smoother}{nongaussian}(
   model,
@@ -22,7 +31,7 @@ particle_smoother(model, nsim, ...)
 \method{particle_smoother}{ssm_nlg}(
   model,
   nsim,
-  method = "psi",
+  method = "bsf",
   seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100,
   conv_tol = 1e-08,
@@ -47,16 +56,16 @@ particle_smoother(model, nsim, ...)
 
 \item{method}{Choice of particle filter algorithm. 
 For Gaussian and non-Gaussian models with linear dynamics,
-options are \code{"bsf"} (bootstrap particle filter) 
-and \code{"psi"} (\eqn{\psi}{psi}-APF, the default), and 
+options are \code{"bsf"} (bootstrap particle filter, default for non-linear models) 
+and \code{"psi"} (\eqn{\psi}-APF, the default for other models), and 
 for non-linear models options \code{"ekf"} (extended Kalman particle filter) 
 is also available.}
 
 \item{seed}{Seed for RNG.}
 
-\item{max_iter}{Maximum number of iterations used in Gaussian approximation. Used \eqn{\psi}{psi}-APF.}
+\item{max_iter}{Maximum number of iterations used in Gaussian approximation. Used \eqn{\psi}-APF.}
 
-\item{conv_tol}{Tolerance parameter used in Gaussian approximation. Used \eqn{\psi}{psi}-APF.}
+\item{conv_tol}{Tolerance parameter used in Gaussian approximation. Used \eqn{\psi}-APF.}
 
 \item{iekf_iter}{If zero (default), first approximation for non-linear 
 Gaussian models is obtained from extended Kalman filter. If 
@@ -65,7 +74,34 @@ Gaussian models is obtained from extended Kalman filter. If
 
 \item{L}{Integer defining the discretization level.}
 }
+\value{
+List with samples from the smoothing distribution as well as smoothed means and covariances of the states.
+}
 \description{
-Function \code{particle_smoother} performs filter-smoother or forward-backward smoother,
-using a either bootstrap filtering or psi-auxiliary filter with stratification resampling.
+Function \code{particle_smoother} performs particle smoothing 
+based on either bootstrap particle filter [1], $\psi$-auxiliary particle filter (\eqn{\psi}-APF) [2], 
+or extended Kalman particle filter [3] (or its iterated version [4]). 
+The smoothing phase is based on the filter-smoother algorithm by [5].
+}
+\examples{
+set.seed(1)
+x <- cumsum(rnorm(100))
+y <- rnorm(100, x)
+model <- ssm_ulg(y, Z = 1, T = 1, R = 1, H = 1, P1 = 1)
+system.time(out <- particle_smoother(model, nsim = 1000))
+# same with simulation smoother:
+system.time(out2 <- sim_smoother(model, nsim = 1000, use_antithetic = TRUE))
+ts.plot(out$alphahat, rowMeans(out2), col = 1:2)
+
+}
+\references{
+[1] Gordon, N. J., Salmond, D. J., & Smith, A. F. M. (1993). 
+Novel approach to nonlinear/non-Gaussian Bayesian state estimation. IEE Proceedings-F, 140, 107–113.
+[2] Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
+[3] Van Der Merwe, R., Doucet, A., De Freitas, N., & Wan, E. A. (2001). The unscented particle filter. 
+In Advances in neural information processing systems (pp. 584-590).
+[4] Jazwinski, A. 1970. Stochastic Processes and Filtering Theory. Academic Press.
+[5] Kitagawa, G. (1996). Monte Carlo filter and smoother for non-Gaussian nonlinear state space models. 
+Journal of Computational and Graphical Statistics, 5, 1–25.
 }

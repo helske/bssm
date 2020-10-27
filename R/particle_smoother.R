@@ -40,6 +40,7 @@ particle_smoother <- function(model, nsim, ...) {
 
 #' @method particle_smoother gaussian
 #' @export
+#' @rdname particle_smoother
 #' @examples 
 #' set.seed(1)
 #' x <- cumsum(rnorm(100))

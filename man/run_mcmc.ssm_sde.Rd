@@ -79,3 +79,7 @@ is done for transformed parameters with internal_theta = log(theta).}
 \description{
 Methods for posterior inference of states and parameters.
 }
+\references{
+Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
+}

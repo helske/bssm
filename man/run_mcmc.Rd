@@ -11,18 +11,16 @@ run_mcmc(model, iter, ...)
 
 \item{iter}{Number of MCMC iterations.}
 
-\item{...}{Parameters to specific methods. See \code{\link{run_mcmc.gaussian}} and
-\code{\link{run_mcmc.nongaussian}} for details.}
+\item{...}{Parameters to specific methods. See \code{\link{run_mcmc.gaussian}},
+\code{\link{run_mcmc.nongaussian}}, \code{\link{run_mcmc.ssm_nlg}}, 
+and \code{\link{run_mcmc.ssm_sde}} for details.}
 }
 \description{
 Adaptive Markov chain Monte Carlo simulation of state space models using
-Robust Adaptive Metropolis algorithm by Vihola (2012).
+Robust Adaptive Metropolis algorithm by Vihola (2012). See specific methods for various model types for details.
 }
 \references{
 Matti Vihola (2012). "Robust adaptive Metropolis algorithm with
 coerced acceptance rate". Statistics and Computing, Volume 22, Issue 5,
 pages 997--1008.
-Matti Vihola, Jouni Helske, Jordan Franks (2020). 
-"Importance sampling type estimators based on approximate marginal MCMC"
-ArXiv:1609.02541.
 }

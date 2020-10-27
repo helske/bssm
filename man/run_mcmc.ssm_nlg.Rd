@@ -50,9 +50,9 @@ or one of the three importance sampling type weighting schemes:
 \code{"is1"} for importance sampling type weighting where the number of particles used for
 weight computations is proportional to the length of the jump chain block.}
 
-\item{sampling_method}{If \code{"psi"}, \eqn{\psi}{psi}-auxiliary particle filter is used for state sampling. 
+\item{sampling_method}{If \code{"bsf"} (default), bootstrap filter is used for state sampling. 
 If \code{"ekf"}, particle filter based on EKF-proposals are used. 
-If \code{"bsf"} (default), bootstrap filter is used.}
+If \code{"psi"}, \eqn{\psi}-APF is used.}
 
 \item{burnin}{Length of the burn-in period which is disregarded from the
 results. Defaults to \code{iter / 2}.}
@@ -91,4 +91,8 @@ is done for transformed parameters with internal_theta = log(theta).}
 }
 \description{
 Methods for posterior inference of states and parameters.
+}
+\references{
+Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 }

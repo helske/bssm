@@ -49,7 +49,7 @@ or one of the three importance sampling type weighting schemes:
 \code{"is1"} for importance sampling type weighting where the number of particles used for
 weight computations is proportional to the length of the jump chain block.}
 
-\item{sampling_method}{If \code{"psi"}, \eqn{\psi}{psi}-auxiliary particle filter is used for state sampling
+\item{sampling_method}{If \code{"psi"}, \eqn{\psi}-APF is used for state sampling
 (default). If \code{"spdk"}, non-sequential importance sampling based
 on Gaussian approximation is used. If \code{"bsf"}, bootstrap filter
 is used.}
