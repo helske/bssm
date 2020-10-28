@@ -205,7 +205,7 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
         
         se_alpha <- apply(object$alpha, 2, function(z) sqrt(apply(z, 1, function(x) asymptotic_var(x, w))))
         alpha_ess <- (sd_alpha / se_alpha)^2
-        ess_w <- apply(object$alpha, 2, function(x) ess(w, identity, x))
+        ess_w <- apply(object$alpha, 2, function(z) apply(z, 1, function(x) ess(w, identity, x)))
         summary_alpha <- list(
           "Mean" = mean_alpha, "SD" = sd_alpha, 
           "SE" = se_alpha, "ESS" = alpha_ess, 
