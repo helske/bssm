@@ -64,8 +64,8 @@ print.mcmc_output <- function(x, ...) {
     se_theta_is <- weighted_se(theta, w)
     se_theta <- sqrt(apply(theta, 2, function(x) asymptotic_var(x, w)))
   
-    stats <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta), ncol = 4, 
-                    dimnames = list(colnames(x$theta), c("Mean", "SD", "SE-IS", "SE")))
+    stats <- matrix(c(mean_theta, sd_theta, se_theta, se_theta_is), ncol = 4, 
+                    dimnames = list(colnames(x$theta), c("Mean", "SD", "SE", "SE-IS")))
   } else {
     mean_theta <- colMeans(theta)
     sd_theta <- apply(theta, 2, sd)
@@ -95,8 +95,8 @@ print.mcmc_output <- function(x, ...) {
         sd_alpha <- sqrt(diag(weighted_var(alpha, w, method = "moment")))
         se_alpha_is <- weighted_se(alpha, w)
         se_alpha <- sqrt(apply(alpha, 2, function(x) asymptotic_var(x, w)))
-        stats <- matrix(c(mean_alpha, sd_alpha, se_alpha_is, se_alpha), ncol = 4, 
-                        dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE-IS", "SE")))
+        stats <- matrix(c(mean_alpha, sd_alpha, se_alpha,se_alpha_is), ncol = 4, 
+                        dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE", "SE-IS")))
       } else {
         mean_alpha <- colMeans(alpha)
         sd_alpha <- apply(alpha, 2, sd)
@@ -161,9 +161,9 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
         se_theta <- sqrt(apply(theta, 2, function(x) asymptotic_var(x, w)))
         ess_theta <- (sd_theta / se_theta)^2
         ess_w <- apply(object$theta, 2, function(x) ess(w, identity, x))
-        summary_theta <- matrix(c(mean_theta, sd_theta, se_theta_is, se_theta, ess_theta, ess_w), ncol = 6, 
+        summary_theta <- matrix(c(mean_theta, sd_theta, se_theta, ess_theta, se_theta_is, ess_w), ncol = 6, 
                                 dimnames = list(colnames(object$theta), 
-                                  c("Mean", "SD", "SE-IS", "SE", "ESS", "ESS of weights")))
+                                  c("Mean", "SD", "SE", "ESS", "SE-IS", "ESS-IS")))
       } else {
         summary_theta <- matrix(c(mean_theta, sd_theta), ncol = 2, 
                                 dimnames = list(colnames(object$theta), c("Mean", "SD")))
@@ -208,8 +208,8 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
         ess_w <- apply(object$alpha, 2, function(x) ess(w, identity, x))
         summary_alpha <- list(
           "Mean" = mean_alpha, "SD" = sd_alpha, 
-          "SE-IS" = se_alpha_is, "SE" = se_alpha, 
-          "ESS" = alpha_ess, "ESS of weights" = ess_w)
+          "SE" = se_alpha, "ESS" = alpha_ess, 
+          "SE-IS" = se_alpha_is, "ESS-IS" = ess_w)
       } else {
         summary_alpha <- list("Mean" = mean_alpha, "SD" = sd_alpha)
       }
