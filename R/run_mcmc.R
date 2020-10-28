@@ -43,7 +43,7 @@ run_mcmc <- function(model, iter, ...) {
 #' distribution is \eqn{SS'}. Note that for some parameters 
 #' (currently the standard deviation and dispersion parameters of bsm_lg models) the sampling
 #' is done for transformed parameters with internal_theta = log(theta).
-#' @param end_adaptive_phase If \code{TRUE} (default), $S$ is held fixed after the burnin period.
+#' @param end_adaptive_phase If \code{TRUE} (default), S is held fixed after the burnin period.
 #' @param n_threads Number of threads for state simulation.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
@@ -156,7 +156,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' distribution is \eqn{SS'}. Note that for some parameters 
 #' (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
 #' is done for transformed parameters with internal_theta = log(theta).
-#' @param end_adaptive_phase If \code{TRUE} (default), $S$ is held fixed after the burnin period.
+#' @param end_adaptive_phase If \code{TRUE} (default), S is held fixed after the burnin period.
 #' @param local_approx If \code{TRUE} (default), Gaussian approximation needed for
 #' importance sampling is performed at each iteration. If false, approximation is updated only
 #' once at the start of the MCMC.
@@ -165,6 +165,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' @param max_iter Maximum number of iterations used in Gaussian approximation.
 #' @param conv_tol Tolerance parameter used in Gaussian approximation.
 #' @param ... Ignored.
+#' @examples
 #' set.seed(1)
 #' n <- 50 
 #' slope <- cumsum(c(0, rnorm(n - 1, sd = 0.001)))
@@ -174,8 +175,55 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #'   sd_level = halfnormal(0.01, 1), 
 #'   sd_slope = halfnormal(0.01, 0.1), 
 #'   P1 = diag(c(10, 0.1)), distribution = "poisson")
-#' mcmc_is <- run_mcmc(poisson_model, iter = 1000, nsim = 10, mcmc_type = "is2")
+#' mcmc_is <- run_mcmc(poisson_model, iter = 1000, nsim = 10, 
+#'   mcmc_type = "da")
 #' summary(mcmc_is, what = "theta", return_se = TRUE)
+#' 
+#' set.seed(123)
+#' n <- 50
+#' sd_level <- 0.1
+#' drift <- 0.01
+#' beta <- -0.9
+#' phi <- 5
+#' 
+#' level <- cumsum(c(5, drift + rnorm(n - 1, sd = sd_level)))
+#' x <- 3 + (1:n) * drift + sin(1:n + runif(n, -1, 1))
+#' y <- rnbinom(n, size = phi, mu = exp(beta * x + level))
+#' 
+#' bssm_model <- bsm_ng(y, xreg = x,
+#'   beta = normal(0, 0, 10),
+#'   phi = halfnormal(1, 10),
+#'   sd_level = halfnormal(0.1, 1), 
+#'   sd_slope = halfnormal(0.01, 0.1),
+#'   a1 = c(0, 0), P1 = diag(c(10, 0.1)^2), 
+#'   distribution = "negative binomial")
+#' 
+#' # run IS-MCMC
+#' fit_bssm <- run_mcmc(bssm_model, iter = 10000,
+#'   nsim = 10, mcmc_type = "is2", seed = 1)
+#'
+#' # extract states   
+#' d_states <- as.data.frame(fit_bssm, variable = "states", time = 1:n)
+#'
+#'  # compute summary statistics
+#' level_bssm <- d_states %>% 
+#'   filter(variable == "level") %>%
+#'   group_by(time) %>%
+#'   summarise(mean = Hmisc::wtd.mean(value, weight, normwt = TRUE), 
+#'     lwr = Hmisc::wtd.quantile(value, weight, 
+#'       0.025, normwt = TRUE), 
+#'     upr = Hmisc::wtd.quantile(value, weight, 
+#'       0.975, normwt = TRUE))
+#' 
+#' # visualize
+#' level_bsm %>% ggplot(aes(x = time, y = mean)) + 
+#'   geom_line() +
+#'   geom_line(aes(y = lwr), linetype = "dashed", na.rm = TRUE) +
+#'   geom_line(aes(y = upr), linetype = "dashed", na.rm = TRUE) +
+#'   theme_bw() + 
+#'   theme(legend.title = element_blank()) + 
+#'   xlab("Time") + ylab("Level")
+#' 
 #' 
 run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
   mcmc_type = "da", sampling_method = "psi", burnin = floor(iter/2),
@@ -315,7 +363,7 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
 #' distribution is \eqn{SS'}. Note that for some parameters 
 #' (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
 #' is done for transformed parameters with internal_theta = log(theta).
-#' @param end_adaptive_phase If \code{TRUE} (default), $S$ is held fixed after the burnin period.
+#' @param end_adaptive_phase If \code{TRUE} (default), S is held fixed after the burnin period.
 #' @param n_threads Number of threads for state simulation.
 #' @param seed Seed for the random number generator.
 #' @param max_iter Maximum number of iterations used in Gaussian approximation.
@@ -478,7 +526,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
 #' distribution is \eqn{SS'}. Note that for some parameters 
 #' (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
 #' is done for transformed parameters with internal_theta = log(theta).
-#' @param end_adaptive_phase If \code{TRUE} (default), $S$ is held fixed after the burnin period.
+#' @param end_adaptive_phase If \code{TRUE} (default), S is held fixed after the burnin period.
 #' @param n_threads Number of threads for state simulation.
 #' @param L_c,L_f Integer values defining the discretization levels for first and second stages (defined as 2^L). 
 #' For PM methods, maximum of these is used.

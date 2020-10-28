@@ -107,7 +107,8 @@
 #'   geom_point(data = data.frame(
 #'     earnings = model$y, 
 #'     time = time(model$y)))    
-#'     
+#' 
+#' 
 predict.mcmc_output <- function(object, model, type = "response", nsim, future = TRUE,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
