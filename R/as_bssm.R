@@ -91,13 +91,13 @@ as_bssm <- function(model, kappa = 100, ...) {
           },
           gamma = {
             if(length(unique(model$u[,i])) > 1)
-              stop("Time-varying shape parameter for gamma is not supported in 'bssm'.")
+              stop("Time-varying shape parameter for gamma is not (yet) supported in 'bssm'.")
             phi[i] <- model$u[1,i]
             u[,i] <- 1
           },
           "negative binomial" = {
             if(length(unique(model$u[,i])) > 1)
-              stop("Time-varying dispersion parameter for negative binomial is not supported in 'bssm'.")
+              stop("Time-varying dispersion parameter for negative binomial is not (yet) supported in 'bssm'.")
             phi[i] <- model$u[1,i]
             u[,i] <- 1
           }, 

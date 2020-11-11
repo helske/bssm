@@ -44,7 +44,7 @@ run_mcmc <- function(model, iter, ...) {
 #' (currently the standard deviation and dispersion parameters of bsm_lg models) the sampling
 #' is done for transformed parameters with internal_theta = log(theta).
 #' @param end_adaptive_phase If \code{TRUE} (default), S is held fixed after the burnin period.
-#' @param n_threads Number of threads for state simulation.
+#' @param threads Number of threads for state simulation.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @references 
@@ -53,7 +53,7 @@ run_mcmc <- function(model, iter, ...) {
 #' @export
 run_mcmc.gaussian <- function(model, iter, output_type = "full",
   burnin = floor(iter / 2), thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, end_adaptive_phase = TRUE, n_threads = 1,
+  target_acceptance = 0.234, S, end_adaptive_phase = TRUE, threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   
@@ -77,7 +77,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   
   out <- gaussian_mcmc(model, output_type,
     iter, burnin, thin, gamma, target_acceptance, S, seed,
-    end_adaptive_phase, n_threads, model_type(model))
+    end_adaptive_phase, threads, model_type(model))
   
   if (output_type == 1) {
     colnames(out$alpha) <- names(model$a1)
@@ -160,7 +160,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' @param local_approx If \code{TRUE} (default), Gaussian approximation needed for
 #' importance sampling is performed at each iteration. If false, approximation is updated only
 #' once at the start of the MCMC.
-#' @param n_threads Number of threads for state simulation.
+#' @param threads Number of threads for state simulation.
 #' @param seed Seed for the random number generator.
 #' @param max_iter Maximum number of iterations used in Gaussian approximation.
 #' @param conv_tol Tolerance parameter used in Gaussian approximation.
@@ -190,7 +190,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' x <- 3 + (1:n) * drift + sin(1:n + runif(n, -1, 1))
 #' y <- rnbinom(n, size = phi, mu = exp(beta * x + level))
 #' 
-#' bssm_model <- bsm_ng(y, xreg = x,
+#' model <- bsm_ng(y, xreg = x,
 #'   beta = normal(0, 0, 10),
 #'   phi = halfnormal(1, 10),
 #'   sd_level = halfnormal(0.1, 1), 
@@ -199,14 +199,17 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #'   distribution = "negative binomial")
 #' 
 #' # run IS-MCMC
-#' fit_bssm <- run_mcmc(bssm_model, iter = 10000,
+#' fit <- run_mcmc(model, iter = 10000,
 #'   nsim = 10, mcmc_type = "is2", seed = 1)
 #'
 #' # extract states   
-#' d_states <- as.data.frame(fit_bssm, variable = "states", time = 1:n)
-#'
+#' d_states <- as.data.frame(fit, variable = "states", time = 1:n)
+#' 
+#' library("dplyr")
+#' library("ggplot2")
+#' 
 #'  # compute summary statistics
-#' level_bssm <- d_states %>% 
+#' level_sumr <- d_states %>% 
 #'   filter(variable == "level") %>%
 #'   group_by(time) %>%
 #'   summarise(mean = Hmisc::wtd.mean(value, weight, normwt = TRUE), 
@@ -216,7 +219,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #'       0.975, normwt = TRUE))
 #' 
 #' # visualize
-#' level_bsm %>% ggplot(aes(x = time, y = mean)) + 
+#' level_sumr %>% ggplot(aes(x = time, y = mean)) + 
 #'   geom_line() +
 #'   geom_line(aes(y = lwr), linetype = "dashed", na.rm = TRUE) +
 #'   geom_line(aes(y = upr), linetype = "dashed", na.rm = TRUE) +
@@ -228,7 +231,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
   mcmc_type = "da", sampling_method = "psi", burnin = floor(iter/2),
   thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  local_approx  = TRUE, n_threads = 1,
+  local_approx  = TRUE, threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100, conv_tol = 1e-8, ...) {
   
   if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
@@ -268,13 +271,13 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
     "da" = {
       out <- nongaussian_da_mcmc(model, 
         output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S,
-        seed, end_adaptive_phase, n_threads,
+        seed, end_adaptive_phase, threads,
         sampling_method, model_type(model))
     },
     "pm" = {
       out <- nongaussian_pm_mcmc(model, output_type,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
-        seed, end_adaptive_phase, n_threads, 
+        seed, end_adaptive_phase, threads, 
         sampling_method, model_type(model))
     },
     "is1" =,
@@ -282,14 +285,14 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
     "is3" = {
       out <- nongaussian_is_mcmc(model, output_type,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
-        seed, end_adaptive_phase, n_threads, 
+        seed, end_adaptive_phase, threads, 
         sampling_method,
         pmatch(mcmc_type, paste0("is", 1:3)), model_type(model), FALSE)
     },
     "approx" = {
       out <- nongaussian_is_mcmc(model, output_type,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
-        seed, end_adaptive_phase, n_threads, 
+        seed, end_adaptive_phase, threads, 
         sampling_method, 2, model_type(model), TRUE)
     })
   if (output_type == 1) {
@@ -364,7 +367,7 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
 #' (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
 #' is done for transformed parameters with internal_theta = log(theta).
 #' @param end_adaptive_phase If \code{TRUE} (default), S is held fixed after the burnin period.
-#' @param n_threads Number of threads for state simulation.
+#' @param threads Number of threads for state simulation.
 #' @param seed Seed for the random number generator.
 #' @param max_iter Maximum number of iterations used in Gaussian approximation.
 #' @param conv_tol Tolerance parameter used in Gaussian approximation.
@@ -379,7 +382,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
   mcmc_type = "da", sampling_method = "bsf",
   burnin = floor(iter/2), thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  n_threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
+  threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
   conv_tol = 1e-8, iekf_iter = 0, ...) {
   
   if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
@@ -408,7 +411,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
-        end_adaptive_phase, n_threads, max_iter, conv_tol,
+        end_adaptive_phase, threads, max_iter, conv_tol,
         sampling_method,iekf_iter, output_type, 
         default_update_fn, default_prior_fn)
     },
@@ -419,7 +422,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
-        end_adaptive_phase, n_threads, max_iter, conv_tol,
+        end_adaptive_phase, threads, max_iter, conv_tol,
         sampling_method,iekf_iter, output_type, 
         default_update_fn, default_prior_fn)
     },
@@ -434,7 +437,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
-        end_adaptive_phase, n_threads, pmatch(mcmc_type, paste0("is", 1:3)),
+        end_adaptive_phase, threads, pmatch(mcmc_type, paste0("is", 1:3)),
         sampling_method, max_iter, conv_tol, iekf_iter, 
         output_type, default_update_fn, 
         default_prior_fn, FALSE)
@@ -446,7 +449,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
         iter, burnin, thin, gamma, target_acceptance, S,
-        end_adaptive_phase,  n_threads, iekf_iter, output_type, 
+        end_adaptive_phase,  threads, iekf_iter, output_type, 
         default_update_fn, default_prior_fn)
     },
     "approx" = {
@@ -456,7 +459,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
         nsim, iter, burnin, thin, gamma, target_acceptance, S,
-        end_adaptive_phase, n_threads, 2,
+        end_adaptive_phase, threads, 2,
         sampling_method, max_iter, conv_tol, 
         iekf_iter, output_type, default_update_fn, 
         default_prior_fn, TRUE)
@@ -527,7 +530,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
 #' (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
 #' is done for transformed parameters with internal_theta = log(theta).
 #' @param end_adaptive_phase If \code{TRUE} (default), S is held fixed after the burnin period.
-#' @param n_threads Number of threads for state simulation.
+#' @param threads Number of threads for state simulation.
 #' @param L_c,L_f Integer values defining the discretization levels for first and second stages (defined as 2^L). 
 #' For PM methods, maximum of these is used.
 #' @param seed Seed for the random number generator.
@@ -540,7 +543,7 @@ run_mcmc.ssm_sde <-  function(model, iter, nsim, output_type = "full",
   mcmc_type = "da", L_c, L_f,
   burnin = floor(iter/2), thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
-  n_threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
+  threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
   
   if(any(c(model$drift, model$diffusion, model$ddiffusion,
     model$prior_pdf, model$obs_pdf) %in% c("<pointer: (nil)>", "<pointer: 0x0>"))) {
@@ -590,7 +593,7 @@ run_mcmc.ssm_sde <-  function(model, iter, nsim, output_type = "full",
         nsim, L_c, L_f, seed,
         iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, pmatch(mcmc_type, paste0("is", 1:3)), 
-        n_threads, output_type)
+        threads, output_type)
     }
   }
   colnames(out$alpha) <- model$state_names

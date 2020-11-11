@@ -18,7 +18,7 @@
   target_acceptance = 0.234,
   S,
   end_adaptive_phase = TRUE,
-  n_threads = 1,
+  threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
   ...
 )
@@ -68,9 +68,9 @@ distribution is \eqn{SS'}. Note that for some parameters
 (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
 is done for transformed parameters with internal_theta = log(theta).}
 
-\item{end_adaptive_phase}{If \code{TRUE} (default), $S$ is held fixed after the burnin period.}
+\item{end_adaptive_phase}{If \code{TRUE} (default), S is held fixed after the burnin period.}
 
-\item{n_threads}{Number of threads for state simulation.}
+\item{threads}{Number of threads for state simulation.}
 
 \item{seed}{Seed for the random number generator.}
 

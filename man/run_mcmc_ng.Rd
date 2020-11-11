@@ -18,7 +18,7 @@
   S,
   end_adaptive_phase = TRUE,
   local_approx = TRUE,
-  n_threads = 1,
+  threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100,
   conv_tol = 1e-08,
@@ -74,13 +74,13 @@ distribution is \eqn{SS'}. Note that for some parameters
 (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
 is done for transformed parameters with internal_theta = log(theta).}
 
-\item{end_adaptive_phase}{If \code{TRUE} (default), $S$ is held fixed after the burnin period.}
+\item{end_adaptive_phase}{If \code{TRUE} (default), S is held fixed after the burnin period.}
 
 \item{local_approx}{If \code{TRUE} (default), Gaussian approximation needed for
 importance sampling is performed at each iteration. If false, approximation is updated only
 once at the start of the MCMC.}
 
-\item{n_threads}{Number of threads for state simulation.}
+\item{threads}{Number of threads for state simulation.}
 
 \item{seed}{Seed for the random number generator.}
 
@@ -88,7 +88,12 @@ once at the start of the MCMC.}
 
 \item{conv_tol}{Tolerance parameter used in Gaussian approximation.}
 
-\item{...}{Ignored.
+\item{...}{Ignored.}
+}
+\description{
+Methods for posterior inference of states and parameters.
+}
+\examples{
 set.seed(1)
 n <- 50 
 slope <- cumsum(c(0, rnorm(n - 1, sd = 0.001)))
@@ -98,9 +103,57 @@ poisson_model <- bsm_ng(y,
   sd_level = halfnormal(0.01, 1), 
   sd_slope = halfnormal(0.01, 0.1), 
   P1 = diag(c(10, 0.1)), distribution = "poisson")
-mcmc_is <- run_mcmc(poisson_model, iter = 1000, nsim = 10, mcmc_type = "is2")
-summary(mcmc_is, what = "theta", return_se = TRUE)}
-}
-\description{
-Methods for posterior inference of states and parameters.
+mcmc_is <- run_mcmc(poisson_model, iter = 1000, nsim = 10, 
+  mcmc_type = "da")
+summary(mcmc_is, what = "theta", return_se = TRUE)
+
+set.seed(123)
+n <- 50
+sd_level <- 0.1
+drift <- 0.01
+beta <- -0.9
+phi <- 5
+
+level <- cumsum(c(5, drift + rnorm(n - 1, sd = sd_level)))
+x <- 3 + (1:n) * drift + sin(1:n + runif(n, -1, 1))
+y <- rnbinom(n, size = phi, mu = exp(beta * x + level))
+
+model <- bsm_ng(y, xreg = x,
+  beta = normal(0, 0, 10),
+  phi = halfnormal(1, 10),
+  sd_level = halfnormal(0.1, 1), 
+  sd_slope = halfnormal(0.01, 0.1),
+  a1 = c(0, 0), P1 = diag(c(10, 0.1)^2), 
+  distribution = "negative binomial")
+
+# run IS-MCMC
+fit <- run_mcmc(model, iter = 10000,
+  nsim = 10, mcmc_type = "is2", seed = 1)
+
+# extract states   
+d_states <- as.data.frame(fit, variable = "states", time = 1:n)
+
+library("dplyr")
+library("ggplot2")
+
+ # compute summary statistics
+level_sumr <- d_states \%>\% 
+  filter(variable == "level") \%>\%
+  group_by(time) \%>\%
+  summarise(mean = Hmisc::wtd.mean(value, weight, normwt = TRUE), 
+    lwr = Hmisc::wtd.quantile(value, weight, 
+      0.025, normwt = TRUE), 
+    upr = Hmisc::wtd.quantile(value, weight, 
+      0.975, normwt = TRUE))
+
+# visualize
+level_sumr \%>\% ggplot(aes(x = time, y = mean)) + 
+  geom_line() +
+  geom_line(aes(y = lwr), linetype = "dashed", na.rm = TRUE) +
+  geom_line(aes(y = upr), linetype = "dashed", na.rm = TRUE) +
+  theme_bw() + 
+  theme(legend.title = element_blank()) + 
+  xlab("Time") + ylab("Level")
+
+
 }

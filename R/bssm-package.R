@@ -6,7 +6,11 @@
 #' binomial, negative binomial or Gamma density. General non-linear Gaussian models and models 
 #' with continuous SDE dynamics are also supported. For formal definition of the
 #' currently supported models and methods, as well as some theory behind the IS-MCMC and \eqn{\psi}{psi}-APF, 
-#' see the package vignette and arXiv paper: \url{http://arxiv.org/abs/1609.02541}.
+#' see the package vignettes and Vihola, Helske, Franks (2020)
+#' 
+#' @references 
+#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+#' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 #'
 #' @docType package
 #' @name bssm

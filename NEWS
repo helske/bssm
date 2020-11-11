@@ -9,6 +9,10 @@ bssm 1.0.1 (Release date: -)
     trying to obtain summary for states only.
   * Added a check for Kalman filter for a degenerate case where all 
     observational level and state level variances are zero.
+  * Renamed argument `n_threads` to `threads` for consistency 
+    with `iter` and `burnin` arguments.
+  * Improved documentation, added examples.
+  * Added a vignette regarding psi-APF for non-linear models.
   
 bssm 1.0.0 (Release date: -)
 ==============

@@ -129,5 +129,6 @@ rbind(sumr_meanrep, sumr_yrep) \%>\%
   geom_point(data = data.frame(
     earnings = model$y, 
     time = time(model$y)))    
-    
+
+
 }
