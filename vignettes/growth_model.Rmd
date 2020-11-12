@@ -28,7 +28,7 @@ y_t = Z(t, \alpha_t, \theta) + H(t, \alpha_t, \theta)\epsilon_t,\\
 \alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \alpha_t, \theta)\eta_t,\\
 \alpha_1 \sim N(a_1(\theta), P_1(\theta)),
 $$
-with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. 
+with $t=1,\ldots, n$, $\epsilon_t \sim N(0,\textrm{I}_p)$, and $\eta \sim N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. 
 
 As some of the model matrices may depend on the current state $\alpha_t$, constructing for example $T(t,\alpha_t,\theta)$ by calling user-defined `R` function is not feasible, as this should be done repeatedly within the particle filter which would negate the benefits of the whole `C++` implementation of the particle filter. Therefore the functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions.
 
