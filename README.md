@@ -22,10 +22,18 @@ install.packages("devtools")
 devtools::install_github("helske/bssm")
 ```
 
-NEWS
+Recent changes (For all changes, see NEWS file.)
 ==========================================================================
 
-bssm 1.0.1 (Release date: 2020-11-11)
+bssm 1.0.2 (Release date: )
+==============
+
+   * Fixed few typos in vignette (thanks Kyle Hussman)
+   * Reduced runtime of MCMC in growth model vignette as requested by CRAN.
+   * Fixed a bug with bsm models with covariates, where all standard deviation parameters were fixed. 
+     This resulted error within MCMC algorithms.
+   
+bssm 1.0.1-1 (Release date: 2020-11-12)
 ==============
 
   * Added an argument `future` for predict method which allows 
@@ -77,89 +85,4 @@ bssm 0.1.9 (Release date: 2020-01-27)
   * Added ts attribute for svm model.
   * Corrected asymptotic variance for summary methods.
   
-bssm 0.1.8-1 (Release date: 2019-12-20)
-==============
-  * Tweaked tests in order to pass MKL case at CRAN.
-
-bssm 0.1.8 (Release date: 2019-09-23)
-==============
-  * Fixed a bug in predict method which prevented the method working in case of ngssm models.
-  * Fixed a bug in predict method which threw an error due to dimension drop of models with single state.
-  * Fixed issues with the vignette.
-
-bssm 0.1.7 (Release date: 2019-03-19)
-==============
-  * Fixed a bug in EKF smoother which resulted wrong smoothed state estimates in 
-    case of partially missing multivariate observations. Thanks for Santeri Karppinen for spotting the bug. 
-  * Added twisted SMC based simulation smoothing algorithm for Gaussian models, as an alternative to 
-    Kalman smoother based simulation.
-  
-bssm 0.1.6-1 (Release date: 2018-11-20)
-==============
-  * Fixed wrong dimension declarations in pseudo-marginal MCMC and logLik methods for SDE and ng_ar1 models.
-  * Added a missing Jacobian for ng_bsm and bsm models using IS-correction.
-  * Changed internal parameterization of ng_bsm and bsm models from log(1+theta) to log(theta).
-  
-bssm 0.1.5 (Release date: 2018-05-23)
-==============
-  * Fixed the Cholesky decomposition in filtering recursions of multivariate models.
-  * as_gssm now works for multivariate Gaussian models of KFAS as well.
-  * Fixed several issues regarding partially missing observations in multivariate models.
-  * Added the MASS package to Suggests as it is used in some unit tests.
-  * Added missing type argument to SDE MCMC call with delayed acceptance.
-  
-bssm 0.1.4-1 (Release date: 2018-02-04)
-==============
-  * Fixed the use of uninitialized values in psi-filter from version 0.1.3.
-
-bssm 0.1.4 (Release date: 2018-02-04)
-==============
-  * MCMC output can now be defined with argument `type`. Instead of returning joint posterior 
-    samples, run_mcmc can now return only marginal samples of theta, or summary statistics of 
-    the states.
-  * Due to the above change, argument `sim_states` was removed from the Gaussian MCMC methods.
-  * MCMC functions are now less memory intensive, especially with `type="theta"`.
-
-
-bssm 0.1.3 (Release date: 2018-01-07)
-==============
-  * Streamlined the output of the print method for MCMC results.
-  * Fixed major bugs in predict method which caused wrong values for the prediction intervals.
-  * Fixed some package dependencies.
-  * Sampling for standard deviation parameters of BSM and their non-Gaussian counterparts 
-    is now done in logarithmic scale for slightly increased efficiency.
-  * Added a new model class ar1 for univariate (possibly noisy) Gaussian AR(1) processes.
-  * MCMC output now includes posterior predictive distribution of states for one step ahead 
-    to the future.
-  
-bssm 0.1.2 (Release date: 2017-11-21)
-==============
-  * API change for run_mcmc: All MCMC methods are now under the argument method, 
-    instead of having separate arguments for delayed acceptance and IS schemes.
-  * summary method for MCMC output now omits the computation of SE and ESS in order 
-    to speed up the function.
-  * Added new model class lgg_ssm, which is a linear-Gaussian model defined 
-    directly via C++ like non-linear ssm_nlg models. This allows more flexible
-    prior definitions and complex system matrix constructions.
-  * Added another new model class, ssm_sde, which is a model with continuous 
-    state dynamics defined as SDE. These too are defined via couple 
-    simple C++ functions.
-  * Added non-gaussian AR(1) model class.
-  * Added argument nsim for predict method, which allows multiple draws per MCMC iteration.
-  * The noise multiplier matrices H and R in ssm_nlg models can now depend on states.
-  
-bssm 0.1.1-1 (Release date: 2017-06-27)
-==============
-  * Use byte compiler.
-  * Skip tests relying in certain numerical precision on CRAN.
-  
-bssm 0.1.1 (Release date: 2017-06-27)
-==============
-  
-  * Switched from C++11 PRNGs to sitmo.
-  * Fixed some portability issues in C++ codes.
-
-bssm 0.1.0 (Release date: 2017-06-24)
-==============
-
-  * Initial release.
+For older versions, see NEWS file.

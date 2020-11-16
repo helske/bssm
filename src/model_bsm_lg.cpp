@@ -14,7 +14,7 @@ bsm_lg::bsm_lg(const Rcpp::List model, const unsigned int seed) :
   level_est(fixed(1) == 0),
   slope_est(slope && fixed(2) == 0),
   seasonal_est(seasonal && fixed(3) == 0)
-  {
+{
   
 }
 
@@ -54,9 +54,12 @@ double bsm_lg::log_prior_pdf(const arma::vec& x) const {
   
   double log_prior = 0.0;
   arma::vec pars = x;
-  pars.subvec(0, pars.n_elem - xreg.n_cols - 1) = 
-    arma::exp(pars.subvec(0, pars.n_elem - xreg.n_cols - 1));
-  
+  if (arma::accu(fixed) < 4) {
+    pars.subvec(0, pars.n_elem - xreg.n_cols - 1) = 
+      arma::exp(pars.subvec(0, pars.n_elem - xreg.n_cols - 1));
+    // add jacobian
+    log_prior += arma::accu(x.subvec(0, x.n_elem - xreg.n_cols - 1));
+  }
   for(unsigned int i = 0; i < pars.n_elem; i++) {
     switch(prior_distributions(i)) {
     case 0  :
@@ -83,8 +86,7 @@ double bsm_lg::log_prior_pdf(const arma::vec& x) const {
       break;
     }
   }
-  // add jacobian
-  log_prior += arma::accu(x.subvec(0, x.n_elem - xreg.n_cols - 1));
+  
   return log_prior;
 }
 

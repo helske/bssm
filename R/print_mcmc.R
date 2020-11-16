@@ -77,7 +77,7 @@ print.mcmc_output <- function(x, ...) {
   print(stats)
   
   if(x$mcmc_type %in% paste0("is", 1:3)) {
-    cat("\nEffective sample sizes of weights:\n\n")
+    cat("\nEffective sample size of weights:\n\n")
     print(ess(w))
   }
   cat("\nEffective sample sizes for theta:\n\n")

@@ -963,13 +963,14 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' If missing, the seasonal component is omitted from the model.
 #' @param sd_noise Prior for the standard error of the additional noise term.
 #' See \link[=uniform]{priors} for details. If missing, no additional noise term is used.
-#' @param distribution distribution of the observation. Possible choices are
-#' \code{"poisson"}, \code{"binomial"}, \code{"negative binomial"}.
+#' @param distribution Distribution of the observed time series. Possible choices are
+#' \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and \code{"negative binomial"}.
 #' @param phi Additional parameter relating to the non-Gaussian distribution.
-#' For Negative binomial distribution this is the dispersion term, and for other
-#' distributions this is ignored.
-#' @param u Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
-#' term. For binomial, this is the number of trials.
+#' For negative binomial distribution this is the dispersion term, for gamma distribution
+#' this is the shape parameter, and for other distributions this is ignored.
+#' @param u Constant parameter vector for non-Gaussian models. For Poisson, gamma, and 
+#' negative binomial distribution, this corresponds to the offset term. For binomial, 
+#' this is the number of trials.
 #' @param beta Prior for the regression coefficients.
 #' @param xreg Matrix containing covariates.
 #' @param period Length of the seasonal component i.e. the number of
@@ -1333,13 +1334,14 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
 #' @param sigma Prior for the standard deviation of noise of the AR-process.
 #' @param beta Prior for the regression coefficients.
 #' @param xreg Matrix containing covariates.
-#' @param distribution distribution of the observation. Possible choices are
-#' \code{"poisson"}, \code{"binomial"} and \code{"negative binomial"}.
+#' @param distribution Distribution of the observed time series. Possible choices are
+#' \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and \code{"negative binomial"}.
 #' @param phi Additional parameter relating to the non-Gaussian distribution.
-#' For Negative binomial distribution this is the dispersion term, and for other
-#' distributions this is ignored.
-#' @param u Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
-#' term. For binomial, this is the number of trials.
+#' For negative binomial distribution this is the dispersion term, for gamma distribution
+#' this is the shape parameter, and for other distributions this is ignored.
+#' @param u Constant parameter vector for non-Gaussian models. For Poisson, gamma, and 
+#' negative binomial distribution, this corresponds to the offset term. For binomial, 
+#' this is the number of trials.
 #' @return Object of class \code{ar1_ng}.
 #' @export
 #' @rdname ar1_ng

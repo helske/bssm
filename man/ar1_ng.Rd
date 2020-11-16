@@ -15,15 +15,16 @@ ar1_ng(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NULL)
 
 \item{mu}{A fixed value or a prior for the stationary mean of the latent AR(1) process. Parameter is omitted if this is set to 0.}
 
-\item{distribution}{distribution of the observation. Possible choices are
-\code{"poisson"}, \code{"binomial"} and \code{"negative binomial"}.}
+\item{distribution}{Distribution of the observed time series. Possible choices are
+\code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and \code{"negative binomial"}.}
 
 \item{phi}{Additional parameter relating to the non-Gaussian distribution.
-For Negative binomial distribution this is the dispersion term, and for other
-distributions this is ignored.}
+For negative binomial distribution this is the dispersion term, for gamma distribution
+this is the shape parameter, and for other distributions this is ignored.}
 
-\item{u}{Constant parameter for non-Gaussian models. For Poisson and negative binomial distribution, this corresponds to the offset
-term. For binomial, this is the number of trials.}
+\item{u}{Constant parameter vector for non-Gaussian models. For Poisson, gamma, and 
+negative binomial distribution, this corresponds to the offset term. For binomial, 
+this is the number of trials.}
 
 \item{beta}{Prior for the regression coefficients.}
 

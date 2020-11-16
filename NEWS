@@ -1,4 +1,13 @@
-bssm 1.0.1 (Release date: -)
+bssm 1.0.2 (Release date: )
+==============
+
+   * Fixed few typos in vignette (thanks Kyle Hussman)
+   * Reduced runtime of MCMC in growth model vignette as requested by CRAN.
+   * Fixed a bug with bsm models with covariates, where all standard deviation parameters were fixed. 
+     This resulted error within MCMC algorithms.
+   * Fixed some docs.
+
+bssm 1.0.1-1 (Release date: 2020-11-12)
 ==============
 
   * Added an argument `future` for predict method which allows 
@@ -14,7 +23,7 @@ bssm 1.0.1 (Release date: -)
   * Improved documentation, added examples.
   * Added a vignette regarding psi-APF for non-linear models.
   
-bssm 1.0.0 (Release date: -)
+bssm 1.0.0 (Release date: 2020-06-09)
 ==============
 Major update
 

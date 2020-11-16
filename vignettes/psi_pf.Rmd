@@ -236,7 +236,7 @@ names(truth) <- c("logLik", "alpha_11", "alpha_21", "V_11", "V_21", "alpha_1n",
 saveRDS(truth, file = "gm_truth.rds")
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = FALSE}
 gm10 <- readRDS("psi_pf_experiments/gm_result_10.rds")
 gm100 <- readRDS("psi_pf_experiments/gm_result_100.rds")
 gm1000 <- readRDS("psi_pf_experiments/gm_result_1000.rds")
@@ -245,7 +245,7 @@ results <- rbind(gm10, gm100, gm1000)
 ```
 
 Table 1 shows the means, standard deviations, and IREs of the log-likelihood estimates using different methods. We see although BSF produces less accurate results than EKPF, the computational load of EKFP negates the increased accuracy in terms of IRE. However, $\psi$-APF provides significantly smaller standard errors with IREs several orders of magnitude smaller than ones obtained from other methods.
-```{r loglik, echo = FALSE}
+```{r loglik, echo = FALSE, eval = FALSE}
 reference <- readRDS("psi_pf_experiments/gm_truth.rds")
 
 IRE <- function(x, time) {
@@ -255,19 +255,28 @@ truth <- reference["logLik"]
 sumr <- results %>% group_by(method, N) %>%
   summarise(mean = mean(logLik), SD = sd(logLik), 
     IRE = IRE(logLik, time), time = mean(time))
-sumr %>% arrange(N) %>% knitr::kable(digit = 4)
+table1 <- sumr %>% arrange(N) %>% knitr::kable(digit = 4,
+             caption = "Results for the log-likelihood estimates of the growth model. ")
+saveRDS(table1, file = "psi_pf_experiments/table1.rds")
+```
+```{r tabl21, echo = FALSE}
+readRDS("psi_pf_experiments/table1.rds")
 ```
 
 Similar table for the smoothed estimate of $p_1$ show again the superiority of the $\psi$-PF, with no clear differences between BSF and EKPF.
-```{r alpha, echo = FALSE}
+```{r alpha, echo = FALSE, eval = FALSE}
 truth <- reference["alpha_11"]
 sumr <- results %>% group_by(method, N) %>% 
   summarise(mean = mean(alpha_11), SD = sd(alpha_11), 
   IRE = IRE(alpha_11, time), time = mean(time))
 
-sumr %>% arrange(N) %>% knitr::kable(digit = 4)
+table2 <- sumr %>% arrange(N) %>% knitr::kable(digit = 4,
+             caption = "Results for the p_1 estimates of the growth model. ")
+saveRDS(table2, file = "psi_pf_experiments/table2.rds")
 ```
-
+```{r table2, echo = FALSE}
+readRDS("psi_pf_experiments/table2.rds")
+```
 
 ### Non-linear observation equation
 
@@ -368,39 +377,45 @@ print("Running with 1000 particles")
 ar_result_1000 <- ar_exp_model_experiment(1, 10000, 1000, 0.1) 
 saveRDS(ar_result_1000, file = "ar_result_1000.rds")
 
-print("Running with 10000 particles")
-ar_result_10000 <- ar_exp_model_experiment(1, 10000, 10000, 0.1) 
-saveRDS(ar_result_10000, file = "ar_result_10000.rds")
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = FALSE}
 ar10 <- readRDS("psi_pf_experiments/ar_result_10.rds")
 ar100 <- readRDS("psi_pf_experiments/ar_result_100.rds")
 ar1000 <- readRDS("psi_pf_experiments/ar_result_1000.rds")
-#ar10000 <- readRDS("psi_pf_experiments/ar_result_10000.rds")
 
-results <- rbind(ar10, ar100, ar1000)#, ar10000)
+results <- rbind(ar10, ar100, ar1000)
 ```
 
 Table 4 shows the means and standard deviations of the log-likelihood estimates over the replications as well as IRE and average runtime using different methods. Again, $\psi$-APF performs well.
 
-```{r loglik_ar, echo = FALSE}
+```{r loglik_ar, echo = FALSE, eval = FALSE}
 reference <- readRDS("psi_pf_experiments/ar_truth.rds")
 truth <- reference["logLik"]
 sumr <- results %>% group_by(method, N) %>%
   summarise(mean = mean(logLik), SD = sd(logLik), 
     IRE = IRE(logLik, time), time = mean(time))
-sumr %>% arrange(N) %>% knitr::kable(digit = 4)
+table3 <- sumr %>% arrange(N) %>% knitr::kable(digit = 4,
+             caption = "Results for the log-likelihood estimates of the AR model. ")
+saveRDS(table3, file = "psi_pf_experiments/table3.rds")
+```
+```{r table3, echo = FALSE}
+readRDS("psi_pf_experiments/table3.rds")
 ```
 
 Although with fixed number of particles the $\psi$-APF produces smaller standard errors than BSF and PEKF (which behave very similarly) for $\alpha_1$, their IREs are comparable.
 
-```{r state1_ar, echo = FALSE}
+```{r state1_ar, echo = FALSE, eval = FALSE}
 truth <- reference["alpha_1"]
 sumr <- results %>% group_by(method, N) %>%
   summarise(mean = mean(alpha_1), SD = sd(alpha_1), 
     IRE = IRE(alpha_1, time))
-sumr %>% arrange(N) %>% knitr::kable(digit = 4)
+table4 <- sumr %>% arrange(N) %>% knitr::kable(digit = 4,
+             caption = "Results for the alpha_1 estimates of the AR model. ")
+saveRDS(table4, file = "psi_pf_experiments/table4.rds")
+```
+```{r table5, echo = FALSE}
+readRDS("psi_pf_experiments/table4.rds")
 ```
 
 ## Discussion

@@ -64,6 +64,8 @@ with $\alpha_1 \sim  N(\mu, \sigma^2_{\eta} / (1-\rho^2))$. For identifiability 
 
 Typically some of the model components such as $\beta$, $T_t$ or $R_t$ depend on unknown parameter vector $\theta$, so $g_t(y_t | \alpha_t)$ and $\mu_t(\alpha_{t+1} | \alpha_t)$ depend implicitly on $\theta$. Our goal is to perform Bayesian inference of the joint posterior of $\alpha_{1:T}$ and $\theta$. 
 
+For multivariate models, these distributions can be combined arbitrarily, except the stochastic volatility model case which is currently handled separately. Also, for fully Gaussian model, the observational level errors can be correlated, i.e. $Cov(\epsilon_t) = H_tH'_t$.
+
 
 ## MCMC for Gaussian state space models
 
@@ -135,7 +137,7 @@ y_t = Z(t, \alpha_t, \theta) + H(t, \alpha_t, \theta)\epsilon_t,\\
 \alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \alpha_t, \theta)\eta_t,\\
 \alpha_1 \sim N(a_1(\theta), P_1(\theta)),
 $$
-with $t=1,\ldots, n$, $\epsilon_t ~ N(0,\textrm{I}_p)$, and $\eta ~ N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ needed by the EKF and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions. All of these functions can also depend on some known parameters, defined as `known_params` (vector) and `known_tv_params` (matrix with $n$ columns) arguments to `ssm_nlg` function. Note that while using the Laplace approximation as intermediate step is typically always more efficient that standard BSF based particle MCMC, the EKF approximation can be very unstable, and thus the the methods using EKF in the approximation phase can have poor performance in some cases.
+with $t=1,\ldots, n$, $\epsilon_t \sim N(0,\textrm{I}_p)$, and $\eta \sim N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. Functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ needed by the EKF and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions. All of these functions can also depend on some known parameters, defined as `known_params` (vector) and `known_tv_params` (matrix with $n$ columns) arguments to `ssm_nlg` function. Note that while using the Laplace approximation as intermediate step is typically always more efficient that standard BSF based particle MCMC, the EKF approximation can be very unstable, and thus the the methods using EKF in the approximation phase can have poor performance in some cases.
 
 ## Time-discretised diffusion models
 
@@ -211,14 +213,14 @@ Compared to filtering problem, in smoothing problems we are interested in the co
 
 ## Markov chain Monte Carlo
 
-The main purpose of the `bssm` is to allow efficient MCMC-based inference for various state space models. For this task, a method `run_mcmc` can be used. The function takes large number of arguments, depending on the model class, but for many of these, default values are provided. For linear-Gaussian models, we only need to supply the number of iterations. Here we define a random walk model with a drift and stochastic seasonal component for UK gas consumption dataset and use 40 000 MCMC iteration where first half is discarded by default as a burn-in (burn-in phase is also used for the adaptation of the proposal distribution):
+The main purpose of the `bssm` is to allow efficient MCMC-based inference for various state space models. For this task, a method `run_mcmc` can be used. The function takes large number of arguments, depending on the model class, but for many of these, default values are provided. For linear-Gaussian models, we only need to supply the number of iterations. Here we define a random walk model with a drift and stochastic seasonal component for UK gas consumption dataset and use 40 000 MCMC iteration where first half is discarded by default as a burn-in (burn-in phase is also used for the adaptation of the proposal distribution). Note that the number of iterations is quite low and in practice we should run the chain longer. Here we use less iterations to speed up the package checks on CRAN.
 
 ```{r mcmc_bsm}
 prior <- halfnormal(0.1, 1)
 UKgas_model <- bsm_lg(log10(UKgas), sd_y = prior, sd_level = prior,
   sd_slope = prior, sd_seasonal =  prior)
 
-mcmc_bsm <- run_mcmc(UKgas_model, iter = 4e4)
+mcmc_bsm <- run_mcmc(UKgas_model, iter = 4e4, seed = 1)
 mcmc_bsm
 ```
 Note that all MCMC algorithms of `bssm` output also state forecasts for the timepoint $n + 1$, the summary statistics of this state is also shown in the output above.
@@ -229,7 +231,7 @@ The function `expand_sample` expands the jump chain representation to typical Ma
 suppressMessages(library("ggplot2"))
 d <- as.data.frame(mcmc_bsm, variable = "theta")
 ggplot(d, aes(x = value)) + 
-  geom_density(bw = 0.001, fill = "#92f0a8") + 
+  geom_density(adjust = 3, fill = "#92f0a8") + 
   facet_wrap(~ variable, scales = "free") + 
   theme_bw()
 ```

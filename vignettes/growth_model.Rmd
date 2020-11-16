@@ -96,14 +96,13 @@ Rcpp::sourceCpp("ssm_nlg_template.cpp")
 pntrs <- create_xptrs()
 ```
 
-This takes a few seconds. let's make less than optimal initial guess for $\theta$, the standard deviation of observational level noise, the standard deviations of the process noises (which were zero but let's pretend that we do not know that), and define the prior distribution for $\alpha_1$:
+This takes a few seconds. let's define our initial guess for $\theta$, the standard deviation of observational level noise, the standard deviations of the process noises, and define the prior distribution for $\alpha_1$:
 
 ```{r theta}
-initial_theta <- c(H = 1, R1 = 0.05, R2 = 1)
+initial_theta <- c(H = 1.2, R1 = 0.03, R2 = 0.5)
 
 # dT, K, a1 and the prior variances
 known_params <- c(dT = dT, K = K, a11 = -1, a12 = 50, P11 = 1, P12 = 100)
-
 ```
 
 If you have used line `// [[Rcpp::export]]` before the model functions, you can now test that the functions work as intended:
@@ -134,18 +133,21 @@ ts.plot(plogis(cbind(out_filter$att[, 1], out_smoother$alphahat[, 1])), col = 1:
 
 ## Markov chain Monte Carlo
 
-For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use $\psi$-APF based MCMC with importance sampling correction [@vihola-helske-franks]. Let us compare this approach with EKF-based approximate MCMC:
+For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use $\psi$-APF based MCMC with importance sampling correction [@vihola-helske-franks]. Let us compare this approach with EKF-based approximate MCMC (note the relatively small number of iterations due to package check requirements in CRAN):
 
 ```{r mcmc}
-mcmc_res <- run_mcmc(model, iter = 2e4, burnin = 5000, nsim = 10, 
-  mcmc_type = "is2", sampling_method = "psi")
-mcmc_ekf_res <- run_mcmc(model, iter = 2e4, burnin = 5000, 
-  mcmc_type = "ekf")
+# Cholesky of initial proposal matrix (taken from previous runs)
+# used here to speed up convergence due to the small number of iterations
+S <- matrix(c(0.15, 0.01, -0.12, 0, 0.04, -0.05, 0, 0, 0.16), 3, 3) 
+mcmc_res <- run_mcmc(model, iter = 6000, burnin = 1000, nsim = 10, 
+  mcmc_type = "is2", sampling_method = "psi", S = S)
+mcmc_ekf_res <- run_mcmc(model, iter = 6000, burnin = 1000, 
+  mcmc_type = "ekf", S = S)
 summary(mcmc_res, return_se = TRUE)
 summary(mcmc_ekf_res, return_se = TRUE)
 ```
 
-Using the `as.data.frame` method we can convert the state samples to a data frame for further processing with `dplyr` [@dplyr]:
+Using the `as.data.frame` method we can convert the state samples to a data frame for further processing with the `dplyr` package [@dplyr]:
 ```{r summaries}
 library("dplyr")
 library("Hmisc")
@@ -169,7 +171,6 @@ p_summary <- rbind(d1, d2) %>%
     mean = wtd.mean(value, weight, normwt = TRUE), 
     lwr = wtd.quantile(value, weight, 0.025, normwt = TRUE), 
     upr = wtd.quantile(value, weight, 0.975, normwt = TRUE))
-
 ```
 
 Above we used the weighted versions of mean and quantile functions provided by the `Hmisc` [@hmisc] package as our IS-MCMC algorithm produces weighted samples of the posterior (alternative slightly less efficient approach would be to just sample with replacement using the weight and proceed with the resulting unweighted posterior sample).

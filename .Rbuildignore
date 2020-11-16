@@ -8,3 +8,7 @@
 ^\.Rhistory$
 ^bssm.pdf$
 ^growth_model.pdf$
+^vignettes/psi_pf_experiments/.*result.*\.rds$
+^vignettes/psi_pf_experiments/.*truth.*\.rds$
+^vignettes/psi_pf_experiments/.*\.sh$
+^vignettes/psi_pf_experiments/.*\.R$

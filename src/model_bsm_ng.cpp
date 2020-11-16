@@ -15,8 +15,8 @@ bsm_ng::bsm_ng(const Rcpp::List model, const unsigned int seed) :
 
 void bsm_ng::update_model(const arma::vec& new_theta) {
 
-  if (arma::accu(fixed) < 3 || noise || phi_est) {
-
+  if (arma::accu(fixed) < 3 || noise) {
+    
     // sd_level
     if (level_est) {
       R(0, 0, 0) = std::exp(new_theta(0));
@@ -40,7 +40,6 @@ void bsm_ng::update_model(const arma::vec& new_theta) {
   if(phi_est) {
     phi = std::exp(new_theta(level_est + slope_est + seasonal_est + noise));
   }
-
   if(xreg.n_cols > 0) {
     beta = new_theta.subvec(new_theta.n_elem - xreg.n_cols, new_theta.n_elem - 1);
     compute_xbeta();
@@ -51,11 +50,15 @@ void bsm_ng::update_model(const arma::vec& new_theta) {
 }
 
 double bsm_ng::log_prior_pdf(const arma::vec& x) const {
-
+  
   double log_prior = 0.0;
   arma::vec pars = x;
-  pars.subvec(0, pars.n_elem - xreg.n_cols - 1) = 
-    arma::exp(pars.subvec(0, pars.n_elem - xreg.n_cols - 1));
+  if (arma::accu(fixed) < 3 || noise) {
+    pars.subvec(0, pars.n_elem - xreg.n_cols - 1) = 
+      arma::exp(pars.subvec(0, pars.n_elem - xreg.n_cols - 1));
+    // add jacobian
+    log_prior += arma::accu(x.subvec(0, x.n_elem - xreg.n_cols - 1));
+  }
   
   for(unsigned int i = 0; i < pars.n_elem; i++) {
     switch(prior_distributions(i)) {
@@ -83,8 +86,7 @@ double bsm_ng::log_prior_pdf(const arma::vec& x) const {
       break;
     }
   }
-  // add jacobian
-  log_prior += arma::accu(x.subvec(0, x.n_elem - xreg.n_cols - 1));
+
   return log_prior;
 }
 
