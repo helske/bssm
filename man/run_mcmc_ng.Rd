@@ -155,5 +155,38 @@ level_sumr \%>\% ggplot(aes(x = time, y = mean)) +
   theme(legend.title = element_blank()) + 
   xlab("Time") + ylab("Level")
 
+# Bivariate Poisson model:
+
+set.seed(1)
+x <- cumsum(c(3, rnorm(19, sd = 0.5)))
+y <- cbind(
+  rpois(20, exp(x)), 
+  rpois(20, exp(x)))
+
+prior_fn <- function(theta) {
+  # half-normal prior using transformation
+  dnorm(exp(theta), 0, 1, log = TRUE) + theta # plus jacobian term
+}
+
+update_fn <- function(theta) {
+  list(R = array(exp(theta), c(1, 1, 1)))
+}
+
+model <- ssm_mng(y = y, Z = matrix(1,2,1), T = 1, 
+  R = 0.1, P1 = 1, distribution = "poisson",
+  init_theta = log(0.1), 
+  prior_fn = prior_fn, update_fn = update_fn)
+out <- run_mcmc(model, iter = 5000, nsim = 10)
+
+sumr <- as.data.frame(out, variable = "states") \%>\% 
+  group_by(time) \%>\% mutate(value = exp(value)) \%>\%
+  summarise(mean = mean(value), 
+    ymin = quantile(value, 0.05), ymax = quantile(value, 0.95))
+ggplot(sumr, aes(time, mean)) + 
+geom_ribbon(aes(ymin = ymin, ymax = ymax),alpha = 0.25) + 
+geom_line() + 
+geom_line(data = data.frame(mean = y[, 1], time = 1:20), colour = "tomato") + 
+geom_line(data = data.frame(mean = y[, 2], time = 1:20), colour = "tomato") +
+theme_bw()
 
 }
