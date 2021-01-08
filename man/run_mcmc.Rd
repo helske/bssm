@@ -17,7 +17,8 @@ and \code{\link{run_mcmc.ssm_sde}} for details.}
 }
 \description{
 Adaptive Markov chain Monte Carlo simulation of state space models using
-Robust Adaptive Metropolis algorithm by Vihola (2012). See specific methods for various model types for details.
+Robust Adaptive Metropolis algorithm by Vihola (2012). 
+See specific methods for various model types for details.
 }
 \references{
 Matti Vihola (2012). "Robust adaptive Metropolis algorithm with

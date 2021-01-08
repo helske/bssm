@@ -51,6 +51,6 @@ model2 <- bsm_ng(y = c(1,4,3), sd_level = 0.5, P1 = 2,
   distribution = "poisson")
 logLik(model, nsim = 0)
 logLik(model2, nsim = 0)
-logLik(model, nsim = 10)
-logLik(model2, nsim = 10)
+logLik(model, nsim = 10, seed = 1)
+logLik(model2, nsim = 10, seed = 1)
 }

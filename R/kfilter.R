@@ -18,9 +18,14 @@
 kfilter <- function(model, ...) {
   UseMethod("kfilter", model)
 }
-
 #' @method kfilter gaussian
+#' @rdname kfilter
 #' @export
+#' @examples
+#' x <- cumsum(rnorm(20))
+#' y <- x + rnorm(20, sd = 0.1)
+#' model <- bsm_lg(y, sd_level = 1, sd_y = 0.1)
+#' ts.plot(cbind(y, x, kfilter(model)$att), col = 1:3)
 kfilter.gaussian <- function(model, ...) {
   
   out <- gaussian_kfilter(model, model_type = model_type(model))
@@ -32,6 +37,7 @@ kfilter.gaussian <- function(model, ...) {
 }
 
 #' @method kfilter nongaussian
+#' @rdname kfilter
 #' @export
 kfilter.nongaussian <- function(model, ...) {
   kfilter(gaussian_approx(model))
@@ -85,7 +91,6 @@ ekf <- function(model, iekf_iter = 0) {
 #'  \code{Ptt}.
 #' @export
 #' @rdname ukf
-#' @export
 #' @export
 ukf <- function(model, alpha = 1, beta = 0, kappa = 2) {
   

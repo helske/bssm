@@ -13,7 +13,7 @@
   gamma = 2/3,
   target_acceptance = 0.234,
   S,
-  end_adaptive_phase = TRUE,
+  end_adaptive_phase = FALSE,
   threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
   ...
@@ -50,7 +50,7 @@ distribution is \eqn{SS'}. Note that for some parameters
 (currently the standard deviation and dispersion parameters of bsm_lg models) the sampling
 is done for transformed parameters with internal_theta = log(theta).}
 
-\item{end_adaptive_phase}{If \code{TRUE} (default), S is held fixed after the burnin period.}
+\item{end_adaptive_phase}{If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.}
 
 \item{threads}{Number of threads for state simulation.}
 
@@ -60,6 +60,27 @@ is done for transformed parameters with internal_theta = log(theta).}
 }
 \description{
 Bayesian Inference of Linear-Gaussian State Space Models
+}
+\examples{
+model <- ar1_lg(LakeHuron, rho = uniform(0.5,-1,1), 
+  sigma = halfnormal(1, 10), mu = normal(500, 500, 500), 
+  sd_y = halfnormal(1, 10))
+
+mcmc_results <- run_mcmc(model, iter = 1e5)
+summary(mcmc_results, return_se = TRUE)
+
+require("dplyr")
+sumr <- as.data.frame(mcmc_results, variable = "states") \%>\%
+  group_by(time) \%>\%
+  summarise(mean = mean(value), 
+    lwr = quantile(value, 0.025), 
+    upr = quantile(value, 0.975))
+require("ggplot2")
+sumr \%>\% ggplot(aes(time, mean)) + 
+  geom_ribbon(aes(ymin = lwr, ymax = upr),alpha=0.25) + 
+  geom_line() + theme_bw() +
+  geom_point(data = data.frame(mean = LakeHuron, time = time(LakeHuron)),
+    col = 2)
 }
 \references{
 Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 

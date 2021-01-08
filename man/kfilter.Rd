@@ -2,9 +2,15 @@
 % Please edit documentation in R/kfilter.R
 \name{kfilter}
 \alias{kfilter}
+\alias{kfilter.gaussian}
+\alias{kfilter.nongaussian}
 \title{Kalman Filtering}
 \usage{
 kfilter(model, ...)
+
+\method{kfilter}{gaussian}(model, ...)
+
+\method{kfilter}{nongaussian}(model, ...)
 }
 \arguments{
 \item{model}{Model Model object.}
@@ -24,6 +30,12 @@ states \eqn{\alpha_t} given the data up to time \eqn{t}.
 }
 \details{
 For non-Gaussian models, the filtering is based on the approximate Gaussian model.
+}
+\examples{
+x <- cumsum(rnorm(20))
+y <- x + rnorm(20, sd = 0.1)
+model <- bsm_lg(y, sd_level = 1, sd_y = 0.1)
+ts.plot(cbind(y, x, kfilter(model)$att), col = 1:3)
 }
 \seealso{
 \code{\link{bootstrap_filter}}

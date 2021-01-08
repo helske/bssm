@@ -37,5 +37,21 @@ less than \code{conv_tol}.}
 }
 \description{
 Returns \code{nsim} samples from the approximating Gaussian model with corresponding
-(scaled) importance weights.
+(scaled) importance weights. Probably mostly useful for comparing KFAS and bssm packages.
+}
+\examples{
+data("sexratio", package = "KFAS")
+model <- bsm_ng(sexratio[, "Male"], sd_level = 0.001, u = sexratio[, "Total"],
+  distribution = "binomial")
+
+imp <- importance_sample(model, nsim = 1000)
+
+est <- matrix(NA, 3, nrow(sexratio))
+for(i in 1:ncol(est)) {
+  est[, i] <- Hmisc::wtd.quantile(exp(imp$alpha[i, 1, ]), imp$weights, 
+    prob = c(0.05,0.5,0.95), normwt=TRUE)
+}
+
+ts.plot(t(est),lty = c(2,1,2))
+
 }

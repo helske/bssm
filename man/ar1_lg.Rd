@@ -27,3 +27,10 @@ Object of class \code{ar1_lg}.
 \description{
 Constructs a simple Gaussian model where the state dynamics follow an AR(1) process.
 }
+\examples{
+model <- ar1_lg(BJsales, rho = uniform(0.5,-1,1), 
+  sigma = halfnormal(1, 10), mu = normal(200, 200, 100), 
+  sd_y = halfnormal(1, 10))
+out <- run_mcmc(model, iter = 2e4)
+summary(out, return_se = TRUE)
+}

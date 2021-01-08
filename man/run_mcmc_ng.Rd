@@ -16,7 +16,7 @@
   gamma = 2/3,
   target_acceptance = 0.234,
   S,
-  end_adaptive_phase = TRUE,
+  end_adaptive_phase = FALSE,
   local_approx = TRUE,
   threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
@@ -74,7 +74,7 @@ distribution is \eqn{SS'}. Note that for some parameters
 (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
 is done for transformed parameters with internal_theta = log(theta).}
 
-\item{end_adaptive_phase}{If \code{TRUE} (default), S is held fixed after the burnin period.}
+\item{end_adaptive_phase}{If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.}
 
 \item{local_approx}{If \code{TRUE} (default), Gaussian approximation needed for
 importance sampling is performed at each iteration. If false, approximation is updated only

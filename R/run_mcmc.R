@@ -1,7 +1,8 @@
 #' Bayesian Inference of State Space Models
 #'
 #' Adaptive Markov chain Monte Carlo simulation of state space models using
-#' Robust Adaptive Metropolis algorithm by Vihola (2012). See specific methods for various model types for details.
+#' Robust Adaptive Metropolis algorithm by Vihola (2012). 
+#' See specific methods for various model types for details.
 #'
 #' @importFrom stats tsp
 #' @param model State space model model of \code{bssm} package.
@@ -43,7 +44,7 @@ run_mcmc <- function(model, iter, ...) {
 #' distribution is \eqn{SS'}. Note that for some parameters 
 #' (currently the standard deviation and dispersion parameters of bsm_lg models) the sampling
 #' is done for transformed parameters with internal_theta = log(theta).
-#' @param end_adaptive_phase If \code{TRUE} (default), S is held fixed after the burnin period.
+#' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.
 #' @param threads Number of threads for state simulation.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
@@ -51,9 +52,29 @@ run_mcmc <- function(model, iter, ...) {
 #' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 #' @export
+#' @examples 
+#' model <- ar1_lg(LakeHuron, rho = uniform(0.5,-1,1), 
+#'   sigma = halfnormal(1, 10), mu = normal(500, 500, 500), 
+#'   sd_y = halfnormal(1, 10))
+#' 
+#' mcmc_results <- run_mcmc(model, iter = 1e5)
+#' summary(mcmc_results, return_se = TRUE)
+#' 
+#' require("dplyr")
+#' sumr <- as.data.frame(mcmc_results, variable = "states") %>%
+#'   group_by(time) %>%
+#'   summarise(mean = mean(value), 
+#'     lwr = quantile(value, 0.025), 
+#'     upr = quantile(value, 0.975))
+#' require("ggplot2")
+#' sumr %>% ggplot(aes(time, mean)) + 
+#'   geom_ribbon(aes(ymin = lwr, ymax = upr),alpha=0.25) + 
+#'   geom_line() + theme_bw() +
+#'   geom_point(data = data.frame(mean = LakeHuron, time = time(LakeHuron)),
+#'     col = 2)
 run_mcmc.gaussian <- function(model, iter, output_type = "full",
   burnin = floor(iter / 2), thin = 1, gamma = 2/3,
-  target_acceptance = 0.234, S, end_adaptive_phase = TRUE, threads = 1,
+  target_acceptance = 0.234, S, end_adaptive_phase = FALSE, threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   
@@ -156,7 +177,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' distribution is \eqn{SS'}. Note that for some parameters 
 #' (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
 #' is done for transformed parameters with internal_theta = log(theta).
-#' @param end_adaptive_phase If \code{TRUE} (default), S is held fixed after the burnin period.
+#' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.
 #' @param local_approx If \code{TRUE} (default), Gaussian approximation needed for
 #' importance sampling is performed at each iteration. If false, approximation is updated only
 #' once at the start of the MCMC.
@@ -230,7 +251,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' 
 run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
   mcmc_type = "da", sampling_method = "psi", burnin = floor(iter/2),
-  thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   local_approx  = TRUE, threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100, conv_tol = 1e-8, ...) {
   
@@ -366,7 +387,7 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
 #' distribution is \eqn{SS'}. Note that for some parameters 
 #' (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
 #' is done for transformed parameters with internal_theta = log(theta).
-#' @param end_adaptive_phase If \code{TRUE} (default), S is held fixed after the burnin period.
+#' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.
 #' @param threads Number of threads for state simulation.
 #' @param seed Seed for the random number generator.
 #' @param max_iter Maximum number of iterations used in Gaussian approximation.
@@ -381,7 +402,7 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
 run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
   mcmc_type = "da", sampling_method = "bsf",
   burnin = floor(iter/2), thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
   conv_tol = 1e-8, iekf_iter = 0, ...) {
   
@@ -529,7 +550,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
 #' distribution is \eqn{SS'}. Note that for some parameters 
 #' (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
 #' is done for transformed parameters with internal_theta = log(theta).
-#' @param end_adaptive_phase If \code{TRUE} (default), S is held fixed after the burnin period.
+#' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.
 #' @param threads Number of threads for state simulation.
 #' @param L_c,L_f Integer values defining the discretization levels for first and second stages (defined as 2^L). 
 #' For PM methods, maximum of these is used.
@@ -542,7 +563,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
 run_mcmc.ssm_sde <-  function(model, iter, nsim, output_type = "full",
   mcmc_type = "da", L_c, L_f,
   burnin = floor(iter/2), thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = TRUE,
+  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
   
   if(any(c(model$drift, model$diffusion, model$ddiffusion,

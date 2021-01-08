@@ -462,6 +462,13 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_mlg}.
 #' @export
+#' @examples
+#' 
+#' data("GlobalTemp", package = "KFAS")
+#' model_temp <- ssm_mlg(GlobalTemp, H = matrix(c(0.15,0.05,0, 0.05), 2, 2), 
+#'   R = 0.05, Z = matrix(1, 2, 1), T = 1, P1 = 10)
+#' ts.plot(cbind(model_temp$y, smoother(model_temp)$alphahat),col=1:3)
+#' 
 ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
   D, C, state_names, update_fn = default_update_fn, prior_fn = default_prior_fn) {
   
@@ -1476,6 +1483,12 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
 #' @return Object of class \code{ar1_lg}.
 #' @export
 #' @rdname ar1_lg
+#' @examples 
+#' model <- ar1_lg(BJsales, rho = uniform(0.5,-1,1), 
+#'   sigma = halfnormal(1, 10), mu = normal(200, 200, 100), 
+#'   sd_y = halfnormal(1, 10))
+#' out <- run_mcmc(model, iter = 2e4)
+#' summary(out, return_se = TRUE)
 ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
   
   check_y(y)
@@ -1592,6 +1605,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
 #' Compared to other models, these general models need a bit more effort from
 #' the user, as you must provide the several small C++ snippets which define the
 #' model structure. See examples in the vignette.
+#' 
 #' @param y Observations as multivariate time series (or matrix) of length \eqn{n}.
 #' @param Z,H,T,R  An external pointers for the C++ functions which
 #' define the corresponding model functions.
@@ -1644,7 +1658,7 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
 #'
 #' As in case of \code{ssm_nlg} models, these general models need a bit more effort from
 #' the user, as you must provide the several small C++ snippets which define the
-#' model structure. See SDE vignette for an example.
+#' model structure. See vignettes for an example.
 #'
 #' @param y Observations as univariate time series (or vector) of length \eqn{n}.
 #' @param drift,diffusion,ddiffusion An external pointers for the C++ functions which

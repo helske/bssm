@@ -6,7 +6,7 @@
 #' binomial, negative binomial or Gamma density. General non-linear Gaussian models and models 
 #' with continuous SDE dynamics are also supported. For formal definition of the
 #' currently supported models and methods, as well as some theory behind the IS-MCMC and \eqn{\psi}{psi}-APF, 
-#' see the package vignettes and Vihola, Helske, Franks (2020)
+#' see the package vignettes and Vihola, Helske, Franks (2020).
 #' 
 #' @references 
 #' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 

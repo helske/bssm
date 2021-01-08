@@ -83,3 +83,11 @@ Note that while you can input say R as m x k matrix for \code{ssm_mlg},
 \code{update_fn} should return R as m x k x 1 in this case. 
 It might be useful to first construct the model without updating function
 }
+\examples{
+
+data("GlobalTemp", package = "KFAS")
+model_temp <- ssm_mlg(GlobalTemp, H = matrix(c(0.15,0.05,0, 0.05), 2, 2), 
+  R = 0.05, Z = matrix(1, 2, 1), T = 1, P1 = 10)
+ts.plot(cbind(model_temp$y, smoother(model_temp)$alphahat),col=1:3)
+
+}

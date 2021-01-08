@@ -41,8 +41,8 @@ logLik.gaussian <- function(object, ...) {
 #'   distribution = "poisson")
 #' logLik(model, nsim = 0)
 #' logLik(model2, nsim = 0)
-#' logLik(model, nsim = 10)
-#' logLik(model2, nsim = 10)
+#' logLik(model, nsim = 10, seed = 1)
+#' logLik(model2, nsim = 10, seed = 1)
 logLik.nongaussian <- function(object, nsim, method = "psi", 
   max_iter = 100, conv_tol = 1e-8, seed = sample(.Machine$integer.max, size = 1),...) {
   

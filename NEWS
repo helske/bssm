@@ -1,11 +1,12 @@
 bssm 1.0.2 (Release date: )
 ==============
-
+   
+   * The adaptation of the proposal distribution now continues also after the burn-in by default. 
    * Fixed few typos in vignette (thanks Kyle Hussman)
    * Reduced runtime of MCMC in growth model vignette as requested by CRAN.
    * Fixed a bug with bsm models with covariates, where all standard deviation parameters were fixed. 
      This resulted error within MCMC algorithms.
-   * Fixed some docs.
+   * Fixed some docs and added more examples.
 
 bssm 1.0.1-1 (Release date: 2020-11-12)
 ==============

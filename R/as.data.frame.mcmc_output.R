@@ -15,6 +15,24 @@
 #' the resulting data.frame contains variable weight (= counts times IS-weights).
 #' @param ... Ignored.
 #' @export
+#' @examples
+#' data("poisson_series")
+#' model <- bsm_ng(y = poisson_series, 
+#' sd_slope = halfnormal(0.1, 0.1), 
+#' sd_level = halfnormal(0.1, 1),
+#'   distribution = "poisson")
+#'   
+#' out <- run_mcmc(model, iter = 2000, nsim = 10)
+#' head(as.data.frame(out, variable = "theta"))
+#' head(as.data.frame(out, variable = "state"))
+#' 
+#' # don't expand the jump chain:
+#' head(as.data.frame(out, variable = "theta", expand = FALSE))
+#' 
+#' # IS-weighted version:
+#' out_is <- run_mcmc(model, iter = 2000, nsim = 10, mcmc_type  = "is2")
+#' head(as.data.frame(out_is, variable = "theta"))
+#' 
 as.data.frame.mcmc_output <- function(x, 
   row.names, optional,
   variable = c("theta", "states"),
