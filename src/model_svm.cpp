@@ -57,6 +57,13 @@ double svm::log_prior_pdf(const arma::vec& x) const {
         log_prior -= 0.5 * std::pow((x(i) - prior_parameters(0, i)) / prior_parameters(1, i), 2);
       }
       break;
+    case 4 : // gamma
+      if (x(i) < 0) {
+        return -std::numeric_limits<double>::infinity(); 
+      } else {
+        log_prior += (prior_parameters(0, i) - 1) * log(x(i)) - prior_parameters(1, i) * x(i);
+      }
+      break;
     }
   }
   return log_prior;

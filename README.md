@@ -32,6 +32,7 @@ bssm 1.0.2 (Release date: )
    * Reduced runtime of MCMC in growth model vignette as requested by CRAN.
    * Fixed a bug with bsm models with covariates, where all standard deviation parameters were fixed. 
      This resulted error within MCMC algorithms.
+   * Gamma priors are now supported in easy-to-use models such as `bsm_lg`. 
    
 bssm 1.0.1-1 (Release date: 2020-11-12)
 ==============

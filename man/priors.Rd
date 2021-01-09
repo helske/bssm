@@ -5,6 +5,7 @@
 \alias{halfnormal}
 \alias{normal}
 \alias{tnormal}
+\alias{gamma}
 \title{Prior objects for bssm models}
 \usage{
 uniform(init, min, max)
@@ -14,6 +15,8 @@ halfnormal(init, sd)
 normal(init, mean, sd)
 
 tnormal(init, mean, sd, min = -Inf, max = Inf)
+
+gamma(init, shape, rate)
 }
 \arguments{
 \item{init}{Initial value for the parameter, used in initializing the model components and as a starting value
@@ -26,6 +29,10 @@ in MCMC.}
 \item{sd}{Standard deviation of the (underlying i.e. non-truncated) Normal distribution.}
 
 \item{mean}{Mean of the Normal prior.}
+
+\item{shape}{Shape parameter of the Gamma prior.}
+
+\item{rate}{Rate parameter of the Gamma prior.}
 }
 \value{
 object of class \code{bssm_prior}.
@@ -33,5 +40,6 @@ object of class \code{bssm_prior}.
 \description{
 These simple objects of class \code{bssm_prior} are used to construct a prior distributions for the 
 MCMC runs of \code{bssm} package. Currently supported priors are uniform (\code{uniform()}), 
-half-normal (\code{halfnormal()}), normal (\code{normal()}), and truncated normal distribution  (\code{tnormal()}).
+half-normal (\code{halfnormal()}), normal (\code{normal()}), gamma (\code{gamma}), and 
+truncated normal distribution  (\code{tnormal()}).
 }

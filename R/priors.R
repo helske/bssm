@@ -5,7 +5,8 @@
 #'
 #' These simple objects of class \code{bssm_prior} are used to construct a prior distributions for the 
 #' MCMC runs of \code{bssm} package. Currently supported priors are uniform (\code{uniform()}), 
-#' half-normal (\code{halfnormal()}), normal (\code{normal()}), and truncated normal distribution  (\code{tnormal()}).
+#' half-normal (\code{halfnormal()}), normal (\code{normal()}), gamma (\code{gamma}), and 
+#' truncated normal distribution  (\code{tnormal()}).
 #' 
 #' 
 #' @rdname priors
@@ -15,6 +16,8 @@
 #' @param max Upper bound of the uniform and truncated normal prior.
 #' @param sd Standard deviation of the (underlying i.e. non-truncated) Normal distribution.
 #' @param mean Mean of the Normal prior.
+#' @param shape Shape parameter of the Gamma prior.
+#' @param rate Rate parameter of the Gamma prior.
 #' @return object of class \code{bssm_prior}.
 #' @export
 uniform <- function(init, min, max){
@@ -116,10 +119,33 @@ combine_priors <- function(x) {
     parameters[1:(length(x[[i]])-2), i] <- as.numeric(x[[i]][-(1:2)])
   }
   list(prior_distributions = 
-      pmatch(prior_distributions, c("uniform", "halfnormal", "normal", "tnormal"), duplicates.ok = TRUE)-1, 
+      pmatch(prior_distributions, c("uniform", "halfnormal", "normal", "tnormal", "gamma"), duplicates.ok = TRUE)-1, 
     parameters = parameters)
 }
-
+#' @rdname priors
+#' @export
+gamma <- function(init, shape, rate){
+  
+  if(any(!is.numeric(init), !is.numeric(shape), !is.numeric(rate))) {
+    stop("Parameters for priors must be numeric.")
+  }
+  if (any(shape < 0)) {
+    stop("Shape parameter for Gamma distribution must be positive.")
+  }
+  if (any(rate < 0)) {
+    stop("Rate parameter for Gamma distribution must be positive.")
+  }
+  n <- max(length(init), length(shape), length(rate))
+  if (n > 1) {
+    structure(lapply(1:n, function(i) structure(list(prior_distribution = "gamma", 
+      init = safe_pick(init, i), shape = safe_pick(shape, i), rate = safe_pick(rate, i)), 
+      class = "bssm_prior")), class = "bssm_prior_list")
+    
+  } else {
+    structure(list(prior_distribution = "gamma", init = init, shape = shape, rate = rate), 
+      class = "bssm_prior")
+  }
+}
 is_prior <- function(x){
   inherits(x, "bssm_prior")
 }
