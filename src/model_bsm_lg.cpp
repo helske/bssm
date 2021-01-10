@@ -85,10 +85,10 @@ double bsm_lg::log_prior_pdf(const arma::vec& x) const {
       }
       break;
     case 4 : // gamma
-      if (x(i) < 0) {
+      if (pars(i) < 0) {
         return -std::numeric_limits<double>::infinity(); 
       } else {
-        log_prior += (prior_parameters(0, i) - 1) * log(x(i)) - prior_parameters(1, i) * x(i);
+        log_prior += (prior_parameters(0, i) - 1) * log(pars(i)) - prior_parameters(1, i) * pars(i);
       }
       break;
     }
