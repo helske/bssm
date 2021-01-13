@@ -12,3 +12,4 @@
 ^vignettes/psi_pf_experiments/.*truth.*\.rds$
 ^vignettes/psi_pf_experiments/.*\.sh$
 ^vignettes/psi_pf_experiments/.*\.R$
+^\.github$

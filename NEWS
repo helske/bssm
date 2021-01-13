@@ -7,6 +7,7 @@ bssm 1.0.2 (Release date: )
    * Fixed a bug with bsm models with covariates, where all standard deviation parameters were fixed. 
      This resulted error within MCMC algorithms.
    * Fixed some docs and added more examples.
+   * Changed default MCMC type to typically most efficient and robust IS2.
 
 bssm 1.0.1-1 (Release date: 2020-11-12)
 ==============

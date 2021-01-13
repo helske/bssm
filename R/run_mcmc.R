@@ -151,11 +151,11 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' and posterior samples of theta).
 #' @param mcmc_type What MCMC algorithm to use? Possible choices are
 #' \code{"pm"} for pseudo-marginal MCMC,
-#' \code{"da"} for delayed acceptance version of PMCMC (default), 
+#' \code{"da"} for delayed acceptance version of PMCMC , 
 #' \code{"approx"} for approximate inference based on the Gaussian approximation of the model,
 #' or one of the three importance sampling type weighting schemes:
 #' \code{"is3"} for simple importance sampling (weight is computed for each MCMC iteration independently),
-#' \code{"is2"} for jump chain importance sampling type weighting, or
+#' \code{"is2"} for jump chain importance sampling type weighting (default), or
 #' \code{"is1"} for importance sampling type weighting where the number of particles used for
 #' weight computations is proportional to the length of the jump chain block.
 #' @param sampling_method If \code{"psi"}, \eqn{\psi}-APF is used for state sampling
@@ -171,7 +171,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' of the summary statistics in case of pseudo-marginal methods.
 #' @param gamma Tuning parameter for the adaptation of RAM algorithm. Must be
 #' between 0 and 1 (not checked).
-#' @param target_acceptance Target acceptance ratio for RAM. Defaults to 0.234.
+#' @param target_acceptance Target acceptance ratio for RAM. Defaults to 0.234. 
 #' @param S Initial value for the lower triangular matrix of RAM
 #' algorithm, so that the covariance matrix of the Gaussian proposal
 #' distribution is \eqn{SS'}. Note that for some parameters 
@@ -179,7 +179,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' is done for transformed parameters with internal_theta = log(theta).
 #' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.
 #' @param local_approx If \code{TRUE} (default), Gaussian approximation needed for
-#' importance sampling is performed at each iteration. If false, approximation is updated only
+#' importance sampling is performed at each iteration. If \code{FALSE}, approximation is updated only
 #' once at the start of the MCMC.
 #' @param threads Number of threads for state simulation.
 #' @param seed Seed for the random number generator.
@@ -283,7 +283,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' theme_bw()
 #' 
 run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
-  mcmc_type = "da", sampling_method = "psi", burnin = floor(iter/2),
+  mcmc_type = "is2", sampling_method = "psi", burnin = floor(iter/2),
   thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   local_approx  = TRUE, threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100, conv_tol = 1e-8, ...) {
@@ -394,12 +394,12 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
 #' and posterior samples of theta). 
 #' @param mcmc_type What MCMC algorithm to use? Possible choices are
 #' \code{"pm"} for pseudo-marginal MCMC,
-#' \code{"da"} for delayed acceptance version of PMCMC (default), 
+#' \code{"da"} for delayed acceptance version of pseudo-marginal MCMC, 
 #' \code{"approx"} for approximate inference based on the Gaussian approximation of the model,
 #' \code{"ekf"} for approximate inference using extended Kalman filter, 
 #' or one of the three importance sampling type weighting schemes:
 #' \code{"is3"} for simple importance sampling (weight is computed for each MCMC iteration independently),
-#' \code{"is2"} for jump chain importance sampling type weighting, or
+#' \code{"is2"} for jump chain importance sampling type weighting (default), or
 #' \code{"is1"} for importance sampling type weighting where the number of particles used for
 #' weight computations is proportional to the length of the jump chain block.
 #' @param sampling_method If \code{"bsf"} (default), bootstrap filter is used for state sampling. 
@@ -433,7 +433,7 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
 #' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
-  mcmc_type = "da", sampling_method = "bsf",
+  mcmc_type = "is2", sampling_method = "bsf",
   burnin = floor(iter/2), thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
@@ -562,10 +562,10 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
 #' and posterior samples of theta). If \code{nsim = 0}, this is argument ignored and set to \code{"theta"}.
 #' @param mcmc_type What MCMC algorithm to use? Possible choices are
 #' \code{"pm"} for pseudo-marginal MCMC,
-#' \code{"da"} for delayed acceptance version of PMCMC (default), 
+#' \code{"da"} for delayed acceptance version of pseudo-marginal MCMC, 
 #' or one of the three importance sampling type weighting schemes:
 #' \code{"is3"} for simple importance sampling (weight is computed for each MCMC iteration independently),
-#' \code{"is2"} for jump chain importance sampling type weighting, or
+#' \code{"is2"} for jump chain importance sampling type weighting (default), or
 #' \code{"is1"} for importance sampling type weighting where the number of particles used for
 #' weight computations is proportional to the length of the jump chain block.
 #' @param burnin Length of the burn-in period which is disregarded from the
@@ -594,7 +594,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
 #' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 run_mcmc.ssm_sde <-  function(model, iter, nsim, output_type = "full",
-  mcmc_type = "da", L_c, L_f,
+  mcmc_type = "is2", L_c, L_f,
   burnin = floor(iter/2), thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {

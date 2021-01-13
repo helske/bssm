@@ -9,7 +9,7 @@
   iter,
   nsim,
   output_type = "full",
-  mcmc_type = "da",
+  mcmc_type = "is2",
   sampling_method = "bsf",
   burnin = floor(iter/2),
   thin = 1,
@@ -41,12 +41,12 @@ and posterior samples of theta).}
 
 \item{mcmc_type}{What MCMC algorithm to use? Possible choices are
 \code{"pm"} for pseudo-marginal MCMC,
-\code{"da"} for delayed acceptance version of PMCMC (default), 
+\code{"da"} for delayed acceptance version of pseudo-marginal MCMC, 
 \code{"approx"} for approximate inference based on the Gaussian approximation of the model,
 \code{"ekf"} for approximate inference using extended Kalman filter, 
 or one of the three importance sampling type weighting schemes:
 \code{"is3"} for simple importance sampling (weight is computed for each MCMC iteration independently),
-\code{"is2"} for jump chain importance sampling type weighting, or
+\code{"is2"} for jump chain importance sampling type weighting (default), or
 \code{"is1"} for importance sampling type weighting where the number of particles used for
 weight computations is proportional to the length of the jump chain block.}
 
