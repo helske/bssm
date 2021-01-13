@@ -28,19 +28,20 @@ test_that("MCMC results for Gaussian model are correct",{
 })
 
 
-test_that("MCMC results for Poisson model are correct",{
+test_that("DA-MCMC results for Poisson model are correct",{
   set.seed(123)
   model_bssm <- bsm_ng(rpois(10, exp(0.2) * (2:11)), P1 = diag(2, 2), sd_slope = 0,
     sd_level = uniform(2, 0, 10), u = 2:11, distribution = "poisson")
   
-  expect_error(mcmc_poisson <- run_mcmc(model_bssm, iter = 100, nsim = 5, seed = 42), NA)
+  expect_error(mcmc_poisson <- run_mcmc(model_bssm, mcmc_type = "da", 
+    iter = 100, nsim = 5, seed = 42), NA)
   
-  expect_equal(run_mcmc(model_bssm, iter = 100, seed = 1, nsim = 5)[-14], 
-    run_mcmc(model_bssm, iter = 100, seed = 1, nsim = 5)[-14])
-  expect_equal(run_mcmc(model_bssm, iter = 100, seed = 1, output_type = "summary", nsim = 5)[-15], 
-    run_mcmc(model_bssm, iter = 100, seed = 1, output_type = "summary", nsim = 5)[-15])
-  expect_equal(run_mcmc(model_bssm, iter = 100, seed = 1, output_type = "theta", nsim = 5)[-13], 
-    run_mcmc(model_bssm, iter = 100, seed = 1, output_type = "theta", nsim = 5)[-13])
+  expect_equal(run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, nsim = 5)[-14], 
+    run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, nsim = 5)[-14])
+  expect_equal(run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, output_type = "summary", nsim = 5)[-15], 
+    run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, output_type = "summary", nsim = 5)[-15])
+  expect_equal(run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, output_type = "theta", nsim = 5)[-13], 
+    run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, output_type = "theta", nsim = 5)[-13])
 
   expect_gt(mcmc_poisson$acceptance_rate, 0)
   expect_gte(min(mcmc_poisson$theta), 0)
