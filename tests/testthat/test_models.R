@@ -78,5 +78,5 @@ test_that("multivariate non-gaussian model", {
   expect_error(mng_model <- ssm_mng(y = y, Z = diag(2), T = diag(2), 
     R = 0.1 * diag(2), P1 = diag(2), distribution = "poisson",
     init_theta = log(c(0.1, 0.1)), prior_fn = pfun, update_fn = ufun), NA)
-  expect_error(logLik(mng_model, nsim = 10), NA)
+  expect_error(logLik(mng_model, particles = 10), NA)
 })

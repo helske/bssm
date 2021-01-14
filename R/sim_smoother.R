@@ -1,7 +1,7 @@
 #' Simulation Smoothing
 #'
 #' Function \code{sim_smoother} performs simulation smoothing i.e. simulates the states
-#' from the conditional distribution \eqn{p(\alpha | y, \theta)}.
+#' from the conditional distribution \eqn{p(\alpha | y, \theta)} for linear-Gaussian models.
 #' 
 #' For non-Gaussian/non-linear models, the simulation is based on the approximating
 #' Gaussian model.

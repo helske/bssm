@@ -20,13 +20,13 @@ logLik.gaussian <- function(object, ...) {
 #' Computes the log-likelihood of the state space model of \code{bssm} package.
 #' 
 #' @param object Model model.
-#' @param nsim Number of samples for particle filter or importance sampling. If 0, 
-#' approximate log-likelihood based on the gaussian approximation is returned.
+#' @param particles Number of samples for particle filter or importance sampling. If 0, 
+#' approximate log-likelihood based on the Gaussian approximation is returned.
 #' @param method Sampling method, default is psi-auxiliary filter (\code{"psi"}), 
 #' other choices are \code{"bsf"} bootstrap particle filter, and \code{"spdk"}, 
 #' which uses the importance sampling approach by Shephard and Pitt (1997) and 
 #' Durbin and Koopman (1997). 
-#' @param max_iter Maximum number of iterations for gaussian approximation algorithm.
+#' @param max_iter Maximum number of iterations for Gaussian approximation algorithm.
 #' @param conv_tol Tolerance parameter for the approximation algorithm.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
@@ -39,38 +39,43 @@ logLik.gaussian <- function(object, ...) {
 #'   
 #' model2 <- bsm_ng(y = c(1,4,3), sd_level = 0.5, P1 = 2,
 #'   distribution = "poisson")
-#' logLik(model, nsim = 0)
-#' logLik(model2, nsim = 0)
-#' logLik(model, nsim = 10, seed = 1)
-#' logLik(model2, nsim = 10, seed = 1)
-logLik.nongaussian <- function(object, nsim, method = "psi", 
+#' logLik(model, particles = 0)
+#' logLik(model2, particles = 0)
+#' logLik(model, particles = 10, seed = 1)
+#' logLik(model2, particles = 10, seed = 1)
+logLik.nongaussian <- function(object, particles, method = "psi", 
   max_iter = 100, conv_tol = 1e-8, seed = sample(.Machine$integer.max, size = 1),...) {
   
   object$max_iter <- max_iter
   object$conv_tol <- conv_tol
   
+  if(missing(particles)) {
+    nsim <- match.call(expand.dots = TRUE)$nsim
+    if (!is.null(nsim)) particles <- nsim
+  }
+  
   method <- match.arg(method, c("psi", "bsf", "spdk"))
   method <- pmatch(method, c("psi", "bsf", "spdk"))
-  if (method == 2 && nsim == 0) stop("'nsim' must be positive for bootstrap filter.")
+  if (method == 2 && particles == 0) stop("'particles' must be positive for bootstrap filter.")
   
   object$distribution <- pmatch(object$distribution,
     c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
     duplicates.ok = TRUE) - 1
   
-  nongaussian_loglik(object, nsim, method, seed, model_type(object))
+  nongaussian_loglik(object, particles, method, seed, model_type(object))
 }
 #' Log-likelihood of a Non-linear State Space Model
 #'
 #' Computes the log-likelihood of the state space model of \code{bssm} package.
 #' 
 #' @param object Model model.
-#' @param nsim Number of samples for particle filter. If 0, 
+#' @param particles Number of samples for particle filter. If 0, 
 #' approximate log-likelihood is returned either based on the gaussian approximation or EKF, 
 #' depending on the \code{method} argument.
 #' @param method Sampling method. Default is the bootstrap particle filter (\code{"bsf"}). 
 #' Other choices are \code{"psi"} which uses psi-auxiliary filter 
-#' (or approximating gaussian model in the case of \code{nsim = 0}), and \code{"ekf"} which 
-#' uses EKF-based particle filter (or just EKF approximation in the case of \code{nsim = 0}).
+#' (or approximating Gaussian model in the case of \code{particles = 0}), and \code{"ekf"} which 
+#' uses EKF-based particle filter (or just EKF approximation in the case of \code{particles = 0}).
 #' @param max_iter Maximum number of iterations for gaussian approximation algorithm.
 #' @param conv_tol Tolerance parameter for the approximation algorithm.
 #' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter is used with
@@ -79,20 +84,25 @@ logLik.nongaussian <- function(object, nsim, method = "psi",
 #' @param ... Ignored.
 #' @method logLik ssm_nlg
 #' @export
-logLik.ssm_nlg <- function(object, nsim, method = "bsf",
+logLik.ssm_nlg <- function(object, particles, method = "bsf",
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  if(missing(particles)) {
+    nsim <- match.call(expand.dots = TRUE)$nsim
+    if (!is.null(nsim)) particles <- nsim
+  }
+  
   method <- match.arg(method, c("psi", "bsf", "ekf"))
-  if (method == "bsf" && nsim == 0) 
-    stop("'nsim' must be positive for bootstrap particle filter.")
+  if (method == "bsf" && particles == 0) 
+    stop("'particles' must be positive for bootstrap particle filter.")
   method <- pmatch(method,  c("psi", "bsf", NA, "ekf"))
  
   nonlinear_loglik(t(object$y), object$Z, object$H, object$T, 
     object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
     object$theta, object$log_prior_pdf, object$known_params, 
     object$known_tv_params, object$n_states, object$n_etas, 
-    as.integer(object$time_varying), nsim, seed,
+    as.integer(object$time_varying), particles, seed,
     max_iter, conv_tol, iekf_iter, method,
     default_update_fn, default_prior_fn)
 }
@@ -101,21 +111,23 @@ logLik.ssm_nlg <- function(object, nsim, method = "bsf",
 #' Computes the log-likelihood of the state space model of \code{bssm} package.
 #' 
 #' @param object Model model.
-#' @param nsim Number of samples for particle filter. If 0, 
-#' approximate log-likelihood is returned either based on the gaussian approximation or EKF, 
-#' depending on the \code{method} argument.
+#' @param particles Number of samples for particle filter. 
 #' @param L Integer  defining the discretization level defined as (2^L). 
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @method logLik ssm_sde
 #' @export
-logLik.ssm_sde <- function(object, nsim, L,
+logLik.ssm_sde <- function(object, particles, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   if(L <= 0) stop("Discretization level L must be larger than 0.")
+  if(missing(particles)) {
+    nsim <- match.call(expand.dots = TRUE)$nsim
+    if (!is.null(nsim)) particles <- nsim
+  }
   loglik_sde(object$y, object$x0, object$positive, 
     object$drift, object$diffusion, object$ddiffusion, 
     object$prior_pdf, object$obs_pdf, object$theta, 
-    nsim, L, seed)
+    particles, L, seed)
 }
 
 

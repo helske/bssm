@@ -139,7 +139,7 @@ For parameter inference, we can perform full Bayesian inference with \texttt{bss
 # Cholesky of initial proposal matrix (taken from previous runs)
 # used here to speed up convergence due to the small number of iterations
 S <- matrix(c(0.15, 0.01, -0.12, 0, 0.04, -0.05, 0, 0, 0.16), 3, 3) 
-mcmc_res <- run_mcmc(model, iter = 6000, burnin = 1000, nsim = 10, 
+mcmc_res <- run_mcmc(model, iter = 6000, burnin = 1000, particles = 10, 
   mcmc_type = "is2", sampling_method = "psi", S = S)
 mcmc_ekf_res <- run_mcmc(model, iter = 6000, burnin = 1000, 
   mcmc_type = "ekf", S = S)

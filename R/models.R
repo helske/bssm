@@ -998,7 +998,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'   xreg = Seatbelts[, "law"])
 #' \dontrun{
 #' set.seed(123)
-#' mcmc_out <- run_mcmc(model, iter = 5000, nsim = 10)
+#' mcmc_out <- run_mcmc(model, iter = 5000, particles = 10)
 #' mcmc_out$acceptance_rate
 #' theta <- expand_sample(mcmc_out, "theta")
 #' plot(theta)
@@ -1273,7 +1273,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' obj <- function(pars) {
 #'    -logLik(svm(exchange, rho = uniform(pars[1],-0.999,0.999),
 #'    sd_ar = halfnormal(pars[2],sd=5),
-#'    sigma = halfnormal(pars[3],sd=2)), nsim = 0)
+#'    sigma = halfnormal(pars[3],sd=2)), particles = 0)
 #' }
 #' opt <- nlminb(c(0.98, 0.15, 0.6), obj, lower = c(-0.999, 1e-4, 1e-4), upper = c(0.999,10,10))
 #' pars <- opt$par

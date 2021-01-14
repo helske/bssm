@@ -1,6 +1,5 @@
 #include "mcmc.h"
 #include "approx_mcmc.h"
-#include "approx_mcmc.h"
 
 #include "model_ssm_mlg.h"
 #include "model_ssm_mng.h"
@@ -340,7 +339,7 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
   }
   
   approx_mcmc mcmc_run(iter, burnin, thin, n, m, p,
-    target_acceptance, gamma, S, output_type, sampling_method != 2);
+    target_acceptance, gamma, S, output_type);
   if (nsim <= 1) {
     mcmc_run.alpha_storage.zeros();
     mcmc_run.weight_storage.ones();
@@ -498,7 +497,11 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
       Rcpp::Named("weights") = mcmc_run.weight_storage,
       Rcpp::Named("counts") = mcmc_run.count_storage,
       Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+      Rcpp::Named("S") = mcmc_run.S, 
+      Rcpp::Named("posterior") = mcmc_run.posterior_storage,
+      Rcpp::Named("modes") = mcmc_run.mode_storage,
+      Rcpp::Name("prior") = mcmc_run.prior_storage,
+      Rcpp::Name("approx_loglik") = mcmc_run.approx_loglik_storage);
   } break;
   case 2: {
     return Rcpp::List::create(
@@ -507,7 +510,11 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
       Rcpp::Named("weights") = mcmc_run.weight_storage,
       Rcpp::Named("counts") = mcmc_run.count_storage,
       Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+      Rcpp::Named("S") = mcmc_run.S, 
+      Rcpp::Named("posterior") = mcmc_run.posterior_storage,
+      Rcpp::Named("modes") = mcmc_run.mode_storage,
+      Rcpp::Name("prior") = mcmc_run.prior_storage,
+      Rcpp::Name("approx_loglik") = mcmc_run.approx_loglik_storage);
   } break;
   case 3: {
     return Rcpp::List::create(
@@ -515,7 +522,11 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
       Rcpp::Named("weights") = mcmc_run.weight_storage,
       Rcpp::Named("counts") = mcmc_run.count_storage,
       Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+      Rcpp::Named("S") = mcmc_run.S, 
+      Rcpp::Named("posterior") = mcmc_run.posterior_storage,
+      Rcpp::Named("modes") = mcmc_run.mode_storage,
+      Rcpp::Name("prior") = mcmc_run.prior_storage,
+      Rcpp::Name("approx_loglik") = mcmc_run.approx_loglik_storage);
   } break;
   }
   
@@ -740,7 +751,7 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, update_fn, prior_fn, seed, iekf_iter, max_iter, conv_tol);
 
   approx_mcmc mcmc_run(iter, burnin, thin, model.n,
-    model.m, model.m, target_acceptance, gamma, S, output_type, sampling_method == 1);
+    model.m, model.m, target_acceptance, gamma, S, output_type);
   
   mcmc_run.amcmc(model, sampling_method, end_ram);
   
@@ -771,7 +782,11 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
       Rcpp::Named("weights") = mcmc_run.weight_storage,
       Rcpp::Named("counts") = mcmc_run.count_storage,
       Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+      Rcpp::Named("S") = mcmc_run.S, 
+      Rcpp::Named("posterior") = mcmc_run.posterior_storage,
+      Rcpp::Named("modes") = mcmc_run.mode_storage,
+      Rcpp::Name("prior") = mcmc_run.prior_storage,
+      Rcpp::Name("approx_loglik") = mcmc_run.approx_loglik_storage);
   } break;
   case 2: {
     return Rcpp::List::create(
@@ -780,7 +795,11 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
       Rcpp::Named("weights") = mcmc_run.weight_storage,
       Rcpp::Named("counts") = mcmc_run.count_storage,
       Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+      Rcpp::Named("S") = mcmc_run.S, 
+      Rcpp::Named("posterior") = mcmc_run.posterior_storage,
+      Rcpp::Named("modes") = mcmc_run.mode_storage,
+      Rcpp::Name("prior") = mcmc_run.prior_storage,
+      Rcpp::Name("approx_loglik") = mcmc_run.approx_loglik_storage);
   } break;
   case 3: {
     return Rcpp::List::create(
@@ -788,7 +807,11 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
       Rcpp::Named("weights") = mcmc_run.weight_storage,
       Rcpp::Named("counts") = mcmc_run.count_storage,
       Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+      Rcpp::Named("S") = mcmc_run.S, 
+      Rcpp::Named("posterior") = mcmc_run.posterior_storage,
+      Rcpp::Named("modes") = mcmc_run.mode_storage,
+      Rcpp::Name("prior") = mcmc_run.prior_storage,
+      Rcpp::Name("approx_loglik") = mcmc_run.approx_loglik_storage);
   } break;
   }
   

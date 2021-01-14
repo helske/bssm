@@ -33,3 +33,8 @@ model <- bsm_ng(y = poisson_series, sd_slope = 0.01, sd_level = 0.1,
   distribution = "poisson")
 out <- gaussian_approx(model)
 }
+\references{
+Koopman, S.J. and Durbin J. (2012). Time Series Analysis by State Space Methods. Second edition. Oxford: Oxford University Press.
+Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
+}

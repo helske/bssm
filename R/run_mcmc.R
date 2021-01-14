@@ -142,7 +142,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' @export
 #' @param model Model model.
 #' @param iter Number of MCMC iterations.
-#' @param nsim Number of state samples per MCMC iteration.
+#' @param particles Number of state samples per MCMC iteration.
 #' Ignored if \code{mcmc_type} is \code{"approx"}.
 #' @param output_type Either \code{"full"} 
 #' (default, returns posterior samples of states alpha and hyperparameters theta), 
@@ -196,7 +196,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #'   sd_level = halfnormal(0.01, 1), 
 #'   sd_slope = halfnormal(0.01, 0.1), 
 #'   P1 = diag(c(10, 0.1)), distribution = "poisson")
-#' mcmc_is <- run_mcmc(poisson_model, iter = 1000, nsim = 10, 
+#' mcmc_is <- run_mcmc(poisson_model, iter = 1000, particles = 10, 
 #'   mcmc_type = "da")
 #' summary(mcmc_is, what = "theta", return_se = TRUE)
 #' 
@@ -221,7 +221,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' 
 #' # run IS-MCMC
 #' fit <- run_mcmc(model, iter = 10000,
-#'   nsim = 10, mcmc_type = "is2", seed = 1)
+#'   particles = 10, mcmc_type = "is2", seed = 1)
 #'
 #' # extract states   
 #' d_states <- as.data.frame(fit, variable = "states", time = 1:n)
@@ -269,7 +269,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #'   R = 0.1, P1 = 1, distribution = "poisson",
 #'   init_theta = log(0.1), 
 #'   prior_fn = prior_fn, update_fn = update_fn)
-#' out <- run_mcmc(model, iter = 5000, nsim = 10)
+#' out <- run_mcmc(model, iter = 5000, particles = 10)
 #' 
 #' sumr <- as.data.frame(out, variable = "states") %>% 
 #'   group_by(time) %>% mutate(value = exp(value)) %>%
@@ -282,11 +282,16 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' geom_line(data = data.frame(mean = y[, 2], time = 1:20), colour = "tomato") +
 #' theme_bw()
 #' 
-run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
+run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   mcmc_type = "is2", sampling_method = "psi", burnin = floor(iter/2),
   thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   local_approx  = TRUE, threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100, conv_tol = 1e-8, ...) {
+  
+  if(missing(particles)) {
+    nsim <- match.call(expand.dots = TRUE)$nsim
+    if (!is.null(nsim)) particles <- nsim
+  }
   
   if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
@@ -294,8 +299,8 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
   
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
   mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), "approx"))
-  if (mcmc_type == "approx") nsim <- 0
-  if (nsim < 2 && mcmc_type != "approx") 
+  if (mcmc_type == "approx") particles <- 0
+  if (particles < 2 && mcmc_type != "approx") 
     stop("Number of state samples less than 2, use 'mcmc_type' 'approx' instead.")
   
   sampling_method <- pmatch(match.arg(sampling_method, c("psi", "bsf", "spdk")), 
@@ -324,13 +329,13 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
   switch(mcmc_type,
     "da" = {
       out <- nongaussian_da_mcmc(model, 
-        output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S,
+        output_type, particles, iter, burnin, thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, threads,
         sampling_method, model_type(model))
     },
     "pm" = {
       out <- nongaussian_pm_mcmc(model, output_type,
-        nsim, iter, burnin, thin, gamma, target_acceptance, S,
+        particles, iter, burnin, thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, threads, 
         sampling_method, model_type(model))
     },
@@ -338,14 +343,14 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
     "is2" =,
     "is3" = {
       out <- nongaussian_is_mcmc(model, output_type,
-        nsim, iter, burnin, thin, gamma, target_acceptance, S,
+        particles, iter, burnin, thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, threads, 
         sampling_method,
         pmatch(mcmc_type, paste0("is", 1:3)), model_type(model), FALSE)
     },
     "approx" = {
       out <- nongaussian_is_mcmc(model, output_type,
-        nsim, iter, burnin, thin, gamma, target_acceptance, S,
+        particles, iter, burnin, thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, threads, 
         sampling_method, 2, model_type(model), TRUE)
     })
@@ -385,7 +390,7 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
 #' @method run_mcmc ssm_nlg
 #' @param model Model model.
 #' @param iter Number of MCMC iterations.
-#' @param nsim Number of state samples per MCMC iteration. 
+#' @param particles Number of state samples per MCMC iteration. 
 #' Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.
 #' @param output_type Either \code{"full"} 
 #' (default, returns posterior samples of states alpha and hyperparameters theta), 
@@ -432,12 +437,17 @@ run_mcmc.nongaussian <- function(model, iter, nsim, output_type = "full",
 #' @references 
 #' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
-run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
+run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   mcmc_type = "is2", sampling_method = "bsf",
   burnin = floor(iter/2), thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
   conv_tol = 1e-8, iekf_iter = 0, ...) {
+  
+  if(missing(particles)) {
+    nsim <- match.call(expand.dots = TRUE)$nsim
+    if (!is.null(nsim)) particles <- nsim
+  }
   
   if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
@@ -445,7 +455,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
   
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
   mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), "ekf", "approx"))
-  if(mcmc_type %in% c("ekf", "approx")) nsim <- 0
+  if(mcmc_type %in% c("ekf", "approx")) particles <- 0
   sampling_method <- pmatch(match.arg(sampling_method, c("psi", "bsf", "ekf")), 
     c("psi", "bsf", NA, "ekf"))
   
@@ -453,7 +463,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
     S <- diag(0.1 * pmax(0.1, abs(model$theta)), length(model$theta))
   }
   
-  if (nsim < 2 && !(mcmc_type %in% c("ekf", "approx")))
+  if (particles < 2 && !(mcmc_type %in% c("ekf", "approx")))
      stop("Number of state samples less than 2, use 'mcmc_type' 'approx' or 'ekf' instead.")
  
   
@@ -464,7 +474,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$theta, model$log_prior_pdf, model$known_params,
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
-        nsim, iter, burnin, thin, gamma, target_acceptance, S,
+        particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, max_iter, conv_tol,
         sampling_method,iekf_iter, output_type, 
         default_update_fn, default_prior_fn)
@@ -475,7 +485,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$theta, model$log_prior_pdf, model$known_params,
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
-        nsim, iter, burnin, thin, gamma, target_acceptance, S,
+        particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, max_iter, conv_tol,
         sampling_method,iekf_iter, output_type, 
         default_update_fn, default_prior_fn)
@@ -490,7 +500,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$theta, model$log_prior_pdf, model$known_params,
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
-        nsim, iter, burnin, thin, gamma, target_acceptance, S,
+        particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, pmatch(mcmc_type, paste0("is", 1:3)),
         sampling_method, max_iter, conv_tol, iekf_iter, 
         output_type, default_update_fn, 
@@ -512,7 +522,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
         model$theta, model$log_prior_pdf, model$known_params,
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
-        nsim, iter, burnin, thin, gamma, target_acceptance, S,
+        particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, 2,
         sampling_method, max_iter, conv_tol, 
         iekf_iter, output_type, default_update_fn, 
@@ -554,12 +564,12 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
 #' @method run_mcmc ssm_sde
 #' @param model Model model.
 #' @param iter Number of MCMC iterations.
-#' @param nsim Number of state samples per MCMC iteration.
+#' @param particles Number of state samples per MCMC iteration.
 #' @param output_type Either \code{"full"} 
 #' (default, returns posterior samples of states alpha and hyperparameters theta), 
 #' \code{"theta"} (for marginal posterior of theta), 
 #' or \code{"summary"} (return the mean and variance estimates of the states 
-#' and posterior samples of theta). If \code{nsim = 0}, this is argument ignored and set to \code{"theta"}.
+#' and posterior samples of theta). If \code{particles = 0}, this is argument ignored and set to \code{"theta"}.
 #' @param mcmc_type What MCMC algorithm to use? Possible choices are
 #' \code{"pm"} for pseudo-marginal MCMC,
 #' \code{"da"} for delayed acceptance version of pseudo-marginal MCMC, 
@@ -593,7 +603,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, nsim, output_type = "full",
 #' @references 
 #' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
-run_mcmc.ssm_sde <-  function(model, iter, nsim, output_type = "full",
+run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   mcmc_type = "is2", L_c, L_f,
   burnin = floor(iter/2), thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
@@ -604,10 +614,15 @@ run_mcmc.ssm_sde <-  function(model, iter, nsim, output_type = "full",
     stop("NULL pointer detected, please recompile the pointer file and reconstruct the model.")
   }
   
+  if(missing(particles)) {
+    nsim <- match.call(expand.dots = TRUE)$nsim
+    if (!is.null(nsim)) particles <- nsim
+  }
+  
   if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   check_target(target_acceptance)
-  if(nsim <= 0) stop("nsim should be positive integer.")
+  if(particles <= 0) stop("particles should be positive integer.")
   
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
   mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3)))
@@ -622,7 +637,7 @@ run_mcmc.ssm_sde <-  function(model, iter, nsim, output_type = "full",
     out <- sde_da_mcmc(model$y, model$x0, model$positive,
       model$drift, model$diffusion, model$ddiffusion,
       model$prior_pdf, model$obs_pdf, model$theta,
-      nsim, L_c, L_f, seed,
+      particles, L_c, L_f, seed,
       iter, burnin, thin, gamma, target_acceptance, S,
       end_adaptive_phase, output_type)
   } else {
@@ -634,7 +649,7 @@ run_mcmc.ssm_sde <-  function(model, iter, nsim, output_type = "full",
       out <- sde_pm_mcmc(model$y, model$x0, model$positive,
         model$drift, model$diffusion, model$ddiffusion,
         model$prior_pdf, model$obs_pdf, model$theta,
-        nsim, L, seed,
+        particles, L, seed,
         iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, output_type)
     } else {
@@ -644,7 +659,7 @@ run_mcmc.ssm_sde <-  function(model, iter, nsim, output_type = "full",
       out <- sde_is_mcmc(model$y, model$x0, model$positive,
         model$drift, model$diffusion, model$ddiffusion,
         model$prior_pdf, model$obs_pdf, model$theta,
-        nsim, L_c, L_f, seed,
+        particles, L_c, L_f, seed,
         iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, pmatch(mcmc_type, paste0("is", 1:3)), 
         threads, output_type)

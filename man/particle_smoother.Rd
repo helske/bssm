@@ -83,6 +83,9 @@ based on either bootstrap particle filter [1], \eqn{\psi}-auxiliary particle fil
 or extended Kalman particle filter [3] (or its iterated version [4]). 
 The smoothing phase is based on the filter-smoother algorithm by [5].
 }
+\details{
+See one of the vignettes for \eqn{\psi}-APF in case of nonlinear models.
+}
 \examples{
 set.seed(1)
 x <- cumsum(rnorm(100))
