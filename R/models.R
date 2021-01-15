@@ -246,7 +246,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
   
   # xreg and beta are need in C++ side in order to combine constructors 
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
-     D = D, C = C, update_fn = update_fn,
+    D = D, C = C, update_fn = update_fn,
     prior_fn = prior_fn, theta = init_theta,
     xreg = matrix(0,0,0), beta = numeric(0)), class = c("ssm_ulg", "gaussian"))
 }
@@ -324,7 +324,7 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   
   check_y(y, distribution = distribution)
   n <- length(y)
- 
+  
   if (length(Z) == 1) {
     dim(Z) <- c(1, 1)
     m <- 1
@@ -623,7 +623,7 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
       c("poisson", "binomial", "negative binomial", "gamma", "gaussian"))
     check_phi(phi[i])
   }
-
+  
   
   # create Z
   if (dim(Z)[1] != p || !(dim(Z)[3] %in% c(1, NA, n)))
@@ -683,11 +683,10 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
     C <- matrix(0, m, 1)
   }
   
-  
   if (length(u) == 1) {
     u <- matrix(u, n, p)
   }
-  check_u(u)
+  check_u(u) 
   if(!identical(dim(y), dim(u))) stop("Dimensions of 'y' and 'u' do not match. ")
   initial_mode <- y
   for(i in 1:p) {
@@ -1183,8 +1182,8 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     R[m, max(1, ncol(R) - 1)] <- sd_noise$init
   }
   
-  use_phi <- distribution %in% c("negative binomial")
   phi_est <- FALSE
+  use_phi <- distribution %in% c("negative binomial", "gamma")
   if (use_phi) {
     if (is_prior(phi)) {
       check_phi(phi$init, distribution)
@@ -1196,13 +1195,11 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     phi <- 1
   }
   
-  use_u <- distribution %in% c("poisson", "binomial", "negative binomial")
-  if (use_u) {
-    check_u(u)
-    if (length(u) != n) {
-      u <- rep(u, length.out = n)
-    }
+  check_u(u)
+  if (length(u) != n) {
+    u <- rep(u, length.out = n)
   }
+  
   
   initial_mode <- matrix(init_mode(y, u, distribution), ncol = 1)
   
@@ -1424,13 +1421,11 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
     phi <- 1
   }
   
-  use_u <- distribution %in% c("poisson", "binomial", "negative binomial")
-  if (use_u) {
-    check_u(u)
-    if (length(u) != n) {
-      u <- rep(u, length.out = n)
-    }
+  check_u(u)
+  if (length(u) != n) {
+    u <- rep(u, length.out = n)
   }
+
   initial_mode <- matrix(init_mode(y, u, distribution), ncol = 1)
   P1 <- matrix(sigma$init^2 / (1 - rho$init^2))
   
