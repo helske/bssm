@@ -12,22 +12,24 @@ Rcpp::List importance_sample_ng(const Rcpp::List model_,
   
   switch (model_type) { 
   case 0: {
-  ssm_mng model(model_, seed);
-  model.approximate();
-  arma::cube alpha = model.approx_model.simulate_states(nsim);
-  model.update_scales();
-  arma::vec weights = model.importance_weights(alpha);
-  weights = arma::exp(weights - arma::accu(model.scales));
-  return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
-    Rcpp::Named("weights") = weights);
-} break;
+    ssm_mng model(model_, seed);
+    model.approximate();
+    arma::cube alpha = model.approx_model.simulate_states(nsim);
+    model.update_scales();
+    arma::vec weights = model.importance_weights(alpha);
+    double maxw = weights.max();
+    weights = arma::exp(weights - arma::accu(model.scales) - maxw);
+    return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
+      Rcpp::Named("weights") = weights);
+  } break;
   case 1: {
     ssm_ung model(model_, seed);
     model.approximate();
     arma::cube alpha = model.approx_model.simulate_states(nsim);
     model.update_scales();
     arma::vec weights = model.importance_weights(alpha);
-    weights = arma::exp(weights - arma::accu(model.scales));
+    double maxw = weights.max();
+    weights = arma::exp(weights - arma::accu(model.scales) - maxw);
     
     return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
       Rcpp::Named("weights") = weights);
@@ -38,7 +40,8 @@ Rcpp::List importance_sample_ng(const Rcpp::List model_,
     arma::cube alpha = model.approx_model.simulate_states(nsim);
     model.update_scales();
     arma::vec weights = model.importance_weights(alpha);
-    weights = arma::exp(weights - arma::accu(model.scales));
+    double maxw = weights.max();
+    weights = arma::exp(weights - arma::accu(model.scales) - maxw);
     return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
       Rcpp::Named("weights") = weights);
   } break;
@@ -48,7 +51,8 @@ Rcpp::List importance_sample_ng(const Rcpp::List model_,
     arma::cube alpha = model.approx_model.simulate_states(nsim);
     model.update_scales();
     arma::vec weights = model.importance_weights(alpha);
-    weights = arma::exp(weights - arma::accu(model.scales));
+    double maxw = weights.max();
+    weights = arma::exp(weights - arma::accu(model.scales) - maxw);
     return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
       Rcpp::Named("weights") = weights);
   } break;
@@ -58,7 +62,8 @@ Rcpp::List importance_sample_ng(const Rcpp::List model_,
     arma::cube alpha = model.approx_model.simulate_states(nsim);
     model.update_scales();
     arma::vec weights = model.importance_weights(alpha);
-    weights = arma::exp(weights - arma::accu(model.scales));
+    double maxw = weights.max();
+    weights = arma::exp(weights - arma::accu(model.scales) - maxw);
     return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
       Rcpp::Named("weights") = weights);
   } break;
