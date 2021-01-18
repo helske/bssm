@@ -12,7 +12,8 @@ get_map <- function(x) {
 #' logarithm of the post-correction weights at approximate MAP of theta, 
 #' using various particle sizes and suggest smallest number of particles 
 #' which still leads standard deviation less than 1. Similar approach was suggested in
-#' case of pseudo-marginal MCMC by Doucet et al. (2015) (see also Vihola et al (2020)).
+#' the context of pseudo-marginal MCMC by Doucet et al. (2015), but see also 
+#' Section 10.3 in Vihola et al (2020).
 #' 
 #' @param model Model of class \code{nongaussian} or \code{ssm_nlg}.
 #' @param mcmc_output An output from \code{run_mcmc} used to compute the MAP estimate of theta. 
@@ -57,7 +58,7 @@ get_map <- function(x) {
 #'   u = u)
 #' 
 #' out_approx <- run_mcmc(model, mcmc_type = "approx", 
-#'   iter = 50000, particles = 0)
+#'   iter = 5000)
 #' 
 #' estN <- suggest_N(model, out_approx, candidates = seq(10, 50, by = 10))
 #' plot(x = estN$results$N, y = estN$results$sd, type = "b")
@@ -140,7 +141,7 @@ suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10),
 #'   u = u)
 #' 
 #' out_approx <- run_mcmc(model, mcmc_type = "approx", 
-#'   iter = 50000, particles = 0)
+#'   iter = 50000)
 #' 
 #' out_is2 <- post_correct(model, out_approx, particles = 30)
 #' summary(out_approx, return_se = TRUE)

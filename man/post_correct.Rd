@@ -68,7 +68,7 @@ model <- ar1_ng(y, distribution = "binomial",
   u = u)
 
 out_approx <- run_mcmc(model, mcmc_type = "approx", 
-  iter = 50000, particles = 0)
+  iter = 50000)
 
 out_is2 <- post_correct(model, out_approx, particles = 30)
 summary(out_approx, return_se = TRUE)
