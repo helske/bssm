@@ -84,7 +84,7 @@ suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10),
         model$known_tv_params, model$n_states, model$n_etas, 
         as.integer(model$time_varying),
         default_update_fn, default_prior_fn, theta, candidates, replications, seed)
-    } else stop("Function 'suggest_N' is only available for models of class 'nongaussian' and 'nonlinear'.")
+    } else stop("Function 'suggest_N' is only available for models of class 'nongaussian' and 'nlg_ssm'.")
   }
   list(N = candidates[which(out < 1)[1]], results = data.frame(N = candidates, sd = out))
 }
@@ -207,7 +207,7 @@ post_correct <- function(model, mcmc_output, particles, threads = 1L,
         particles,
         seed, threads, is_type,
         mcmc_output$counts, t(mcmc_output$theta), mcmc_output$modes)
-    } else stop("Function 'post_correct' is only available for models of class 'nongaussian' and 'nonlinear'.")
+    } else stop("Function 'post_correct' is only available for models of class 'nongaussian' and 'ssm_nlg'.")
   }
   mcmc_output$weights <- out$weights
   mcmc_output$posterior <- mcmc_output$posterior + out$posterior
