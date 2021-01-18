@@ -25,7 +25,7 @@ devtools::install_github("helske/bssm")
 Recent changes (For all changes, see NEWS file.)
 ==========================================================================
 
-bssm 1.0.2 (Release date: )
+bssm 1.1.0 (Release date: 2021-01-19)
 ==============
 
    * Added function `suggest_N` which can be used to choose 
