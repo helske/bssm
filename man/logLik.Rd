@@ -9,7 +9,7 @@
 
 \method{logLik}{nongaussian}(
   object,
-  nsim,
+  particles,
   method = "psi",
   max_iter = 100,
   conv_tol = 1e-08,
@@ -22,15 +22,15 @@
 
 \item{...}{Ignored.}
 
-\item{nsim}{Number of samples for particle filter or importance sampling. If 0, 
-approximate log-likelihood based on the gaussian approximation is returned.}
+\item{particles}{Number of samples for particle filter or importance sampling. If 0, 
+approximate log-likelihood based on the Gaussian approximation is returned.}
 
 \item{method}{Sampling method, default is psi-auxiliary filter (\code{"psi"}), 
 other choices are \code{"bsf"} bootstrap particle filter, and \code{"spdk"}, 
 which uses the importance sampling approach by Shephard and Pitt (1997) and 
 Durbin and Koopman (1997).}
 
-\item{max_iter}{Maximum number of iterations for gaussian approximation algorithm.}
+\item{max_iter}{Maximum number of iterations for Gaussian approximation algorithm.}
 
 \item{conv_tol}{Tolerance parameter for the approximation algorithm.}
 
@@ -49,8 +49,8 @@ model <- ssm_ung(y = c(1,4,3), Z = 1, T = 1, R = 0.5, P1 = 2,
   
 model2 <- bsm_ng(y = c(1,4,3), sd_level = 0.5, P1 = 2,
   distribution = "poisson")
-logLik(model, nsim = 0)
-logLik(model2, nsim = 0)
-logLik(model, nsim = 10, seed = 1)
-logLik(model2, nsim = 10, seed = 1)
+logLik(model, particles = 0)
+logLik(model2, particles = 0)
+logLik(model, particles = 10, seed = 1)
+logLik(model2, particles = 10, seed = 1)
 }

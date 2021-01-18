@@ -58,8 +58,11 @@ particle_smoother.gaussian <- function(model, particles,  method = "psi",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   if(missing(particles)) {
-    nsim <- match.call(expand.dots = TRUE)$nsim
-    if (!is.null(nsim)) particles <- nsim
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
   }
   
   if(method == "psi") {
@@ -96,8 +99,11 @@ particle_smoother.nongaussian <- function(model, particles,
   max_iter = 100, conv_tol = 1e-8, ...) {
   
   if(missing(particles)) {
-    nsim <- match.call(expand.dots = TRUE)$nsim
-    if (!is.null(nsim)) particles <- nsim
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
   }
   
   method <- match.arg(method, c("bsf", "psi"))
@@ -132,8 +138,11 @@ particle_smoother.ssm_nlg <- function(model, particles,
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0, ...) {
   
   if(missing(particles)) {
-    nsim <- match.call(expand.dots = TRUE)$nsim
-    if (!is.null(nsim)) particles <- nsim
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
   }
   
   method <- match.arg(method, c("bsf", "psi", "ekf"))
@@ -178,8 +187,11 @@ particle_smoother.ssm_sde <- function(model, particles, L,
   if(L < 1) stop("Discretization level L must be larger than 0.")
   
   if(missing(particles)) {
-    nsim <- match.call(expand.dots = TRUE)$nsim
-    if (!is.null(nsim)) particles <- nsim
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
   }
   
   out <-  bsf_smoother_sde(model$y, model$x0, model$positive, 

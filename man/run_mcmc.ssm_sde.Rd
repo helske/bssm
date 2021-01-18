@@ -7,7 +7,7 @@
 \method{run_mcmc}{ssm_sde}(
   model,
   iter,
-  nsim,
+  particles,
   output_type = "full",
   mcmc_type = "is2",
   L_c,
@@ -28,13 +28,13 @@
 
 \item{iter}{Number of MCMC iterations.}
 
-\item{nsim}{Number of state samples per MCMC iteration.}
+\item{particles}{Number of state samples per MCMC iteration.}
 
 \item{output_type}{Either \code{"full"} 
 (default, returns posterior samples of states alpha and hyperparameters theta), 
 \code{"theta"} (for marginal posterior of theta), 
 or \code{"summary"} (return the mean and variance estimates of the states 
-and posterior samples of theta). If \code{nsim = 0}, this is argument ignored and set to \code{"theta"}.}
+and posterior samples of theta). If \code{particles = 0}, this is argument ignored and set to \code{"theta"}.}
 
 \item{mcmc_type}{What MCMC algorithm to use? Possible choices are
 \code{"pm"} for pseudo-marginal MCMC,

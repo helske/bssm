@@ -62,8 +62,11 @@ bootstrap_filter.nongaussian <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
   if(missing(particles)) {
-    nsim <- match.call(expand.dots = TRUE)$nsim
-    if (!is.null(nsim)) particles <- nsim
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
   }
   
   model$distribution <- 
@@ -87,8 +90,11 @@ bootstrap_filter.ssm_nlg <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
   if(missing(particles)) {
-    nsim <- match.call(expand.dots = TRUE)$nsim
-    if (!is.null(nsim)) particles <- nsim
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
   }
   
   out <- bsf_nlg(t(model$y), model$Z, model$H, model$T,
@@ -116,8 +122,11 @@ bootstrap_filter.ssm_sde <- function(model, particles, L,
   if(L < 1) stop("Discretization level L must be larger than 0.")
   
   if(missing(particles)) {
-    nsim <- match.call(expand.dots = TRUE)$nsim
-    if (!is.null(nsim)) particles <- nsim
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
   }
   
   out <- bsf_sde(model$y, model$x0, model$positive,

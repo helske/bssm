@@ -45,7 +45,7 @@ sd_slope = halfnormal(0.1, 0.1),
 sd_level = halfnormal(0.1, 1),
   distribution = "poisson")
   
-out <- run_mcmc(model, iter = 2000, nsim = 10)
+out <- run_mcmc(model, iter = 2000, particles = 10)
 head(as.data.frame(out, variable = "theta"))
 head(as.data.frame(out, variable = "state"))
 
@@ -53,7 +53,7 @@ head(as.data.frame(out, variable = "state"))
 head(as.data.frame(out, variable = "theta", expand = FALSE))
 
 # IS-weighted version:
-out_is <- run_mcmc(model, iter = 2000, nsim = 10, mcmc_type  = "is2")
+out_is <- run_mcmc(model, iter = 2000, particles = 10, mcmc_type  = "is2")
 head(as.data.frame(out_is, variable = "theta"))
 
 }

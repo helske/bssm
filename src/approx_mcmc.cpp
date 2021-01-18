@@ -189,6 +189,8 @@ void approx_mcmc::amcmc(T model, const unsigned int method, const bool end_ram) 
   
   trim_storage();
   acceptance_rate /= (iter - burnin);
+  // approx posterior
+  posterior_storage = approx_loglik_storage + prior_storage;
 }
 
 // approximate MCMC

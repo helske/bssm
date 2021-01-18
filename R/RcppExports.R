@@ -105,6 +105,22 @@ R_milstein_joint <- function(x0, L_c, L_f, t, theta, drift_pntr, diffusion_pntr,
     .Call('_bssm_R_milstein_joint', PACKAGE = 'bssm', x0, L_c, L_f, t, theta, drift_pntr, diffusion_pntr, ddiffusion_pntr, positive, seed)
 }
 
+suggest_n_nongaussian <- function(model_, theta, candidates, replications, seed, model_type) {
+    .Call('_bssm_suggest_n_nongaussian', PACKAGE = 'bssm', model_, theta, candidates, replications, seed, model_type)
+}
+
+suggest_n_nonlinear <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, update_fn, prior_fn, theta_map, candidates, replications, seed) {
+    .Call('_bssm_suggest_n_nonlinear', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, update_fn, prior_fn, theta_map, candidates, replications, seed)
+}
+
+postcorrection_nongaussian <- function(model_, model_type, output_type, nsim, seed, n_threads, is_type, counts, theta, modes) {
+    .Call('_bssm_postcorrection_nongaussian', PACKAGE = 'bssm', model_, model_type, output_type, nsim, seed, n_threads, is_type, counts, theta, modes)
+}
+
+postcorrection_nonlinear <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta_init, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, update_fn, prior_fn, output_type, nsim, seed, n_threads, is_type, counts, theta, modes) {
+    .Call('_bssm_postcorrection_nonlinear', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta_init, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, update_fn, prior_fn, output_type, nsim, seed, n_threads, is_type, counts, theta, modes)
+}
+
 gaussian_predict <- function(model_, theta, alpha, predict_type, seed, model_type) {
     .Call('_bssm_gaussian_predict', PACKAGE = 'bssm', model_, theta, alpha, predict_type, seed, model_type)
 }

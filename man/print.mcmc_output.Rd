@@ -14,10 +14,3 @@
 \description{
 Prints some basic summaries from the MCMC run by  \code{\link{run_mcmc}}.
 }
-\details{
-In case of IS-corrected MCMC, the SE-IS is based only on importance sampling estimates, with weights 
-corresponding to the block sizes of the jump chain multiplied by the 
-importance correction weights (if IS-corrected method was used). These estimates
-ignore the possible autocorrelations but provide a lower-bound for the asymptotic 
-standard error.
-}

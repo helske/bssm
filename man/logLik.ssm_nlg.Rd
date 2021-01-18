@@ -6,7 +6,7 @@
 \usage{
 \method{logLik}{ssm_nlg}(
   object,
-  nsim,
+  particles,
   method = "bsf",
   max_iter = 100,
   conv_tol = 1e-08,
@@ -18,14 +18,14 @@
 \arguments{
 \item{object}{Model model.}
 
-\item{nsim}{Number of samples for particle filter. If 0, 
+\item{particles}{Number of samples for particle filter. If 0, 
 approximate log-likelihood is returned either based on the gaussian approximation or EKF, 
 depending on the \code{method} argument.}
 
 \item{method}{Sampling method. Default is the bootstrap particle filter (\code{"bsf"}). 
 Other choices are \code{"psi"} which uses psi-auxiliary filter 
-(or approximating gaussian model in the case of \code{nsim = 0}), and \code{"ekf"} which 
-uses EKF-based particle filter (or just EKF approximation in the case of \code{nsim = 0}).}
+(or approximating Gaussian model in the case of \code{particles = 0}), and \code{"ekf"} which 
+uses EKF-based particle filter (or just EKF approximation in the case of \code{particles = 0}).}
 
 \item{max_iter}{Maximum number of iterations for gaussian approximation algorithm.}
 

@@ -7,7 +7,7 @@
 \method{run_mcmc}{nongaussian}(
   model,
   iter,
-  nsim,
+  particles,
   output_type = "full",
   mcmc_type = "is2",
   sampling_method = "psi",
@@ -30,7 +30,7 @@
 
 \item{iter}{Number of MCMC iterations.}
 
-\item{nsim}{Number of state samples per MCMC iteration.
+\item{particles}{Number of state samples per MCMC iteration.
 Ignored if \code{mcmc_type} is \code{"approx"}.}
 
 \item{output_type}{Either \code{"full"} 
@@ -103,7 +103,7 @@ poisson_model <- bsm_ng(y,
   sd_level = halfnormal(0.01, 1), 
   sd_slope = halfnormal(0.01, 0.1), 
   P1 = diag(c(10, 0.1)), distribution = "poisson")
-mcmc_is <- run_mcmc(poisson_model, iter = 1000, nsim = 10, 
+mcmc_is <- run_mcmc(poisson_model, iter = 1000, particles = 10, 
   mcmc_type = "da")
 summary(mcmc_is, what = "theta", return_se = TRUE)
 
@@ -128,7 +128,7 @@ model <- bsm_ng(y, xreg = x,
 
 # run IS-MCMC
 fit <- run_mcmc(model, iter = 10000,
-  nsim = 10, mcmc_type = "is2", seed = 1)
+  particles = 10, mcmc_type = "is2", seed = 1)
 
 # extract states   
 d_states <- as.data.frame(fit, variable = "states", time = 1:n)
@@ -176,7 +176,7 @@ model <- ssm_mng(y = y, Z = matrix(1,2,1), T = 1,
   R = 0.1, P1 = 1, distribution = "poisson",
   init_theta = log(0.1), 
   prior_fn = prior_fn, update_fn = update_fn)
-out <- run_mcmc(model, iter = 5000, nsim = 10)
+out <- run_mcmc(model, iter = 5000, particles = 10)
 
 sumr <- as.data.frame(out, variable = "states") \%>\% 
   group_by(time) \%>\% mutate(value = exp(value)) \%>\%

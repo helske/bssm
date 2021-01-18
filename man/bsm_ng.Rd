@@ -81,7 +81,7 @@ model <- bsm_ng(Seatbelts[, "VanKilled"], distribution = "poisson",
   xreg = Seatbelts[, "law"])
 \dontrun{
 set.seed(123)
-mcmc_out <- run_mcmc(model, iter = 5000, nsim = 10)
+mcmc_out <- run_mcmc(model, iter = 5000, particles = 10)
 mcmc_out$acceptance_rate
 theta <- expand_sample(mcmc_out, "theta")
 plot(theta)
@@ -92,5 +92,11 @@ ggplot(as.data.frame(theta[,1:2]), aes(x = sd_level, y = sd_seasonal)) +
   geom_point() + stat_density2d(aes(fill = ..level.., alpha = ..level..),
   geom = "polygon") + scale_fill_continuous(low = "green", high = "blue") +
   guides(alpha = "none")
+  
+# Traceplot using as.data.frame method for MCMC output:
+library("dplyr")
+as.data.frame(mcmc_out) \%>\% 
+  filter(variable == "sd_level") \%>\% 
+  ggplot(aes(y = value, x = iter)) + geom_line()
 }
 }

@@ -1,13 +1,21 @@
 bssm 1.0.2 (Release date: )
 ==============
    
+   * Added function `suggest_N` which can be used to choose 
+     suitable number of particles for IS-MCMC.
+   * Added function `post_correct` which can be used to update 
+     previous approximate MCMC with IS-weights.
+   * Gamma priors are now supported in easy-to-use models such as `bsm_lg`. 
    * The adaptation of the proposal distribution now continues also after the burn-in by default. 
-   * Fixed few typos in vignette (thanks Kyle Hussman)
-   * Reduced runtime of MCMC in growth model vignette as requested by CRAN.
+   * Changed default MCMC type to typically most efficient and robust IS2.
+   * Renamed `nsim` argument to `particles` in most of the R functions (`nsim` also works with a warning).
    * Fixed a bug with bsm models with covariates, where all standard deviation parameters were fixed. 
      This resulted error within MCMC algorithms.
+   * Fixed a dimension drop bug in the predict method which caused error for univariate models.
    * Fixed some docs and added more examples.
-   * Changed default MCMC type to typically most efficient and robust IS2.
+   * Fixed few typos in vignette (thanks Kyle Hussman)
+   * Reduced runtime of MCMC in growth model vignette as requested by CRAN.
+  
 
 bssm 1.0.1-1 (Release date: 2020-11-12)
 ==============

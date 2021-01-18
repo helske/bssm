@@ -7,7 +7,7 @@
 \method{run_mcmc}{ssm_nlg}(
   model,
   iter,
-  nsim,
+  particles,
   output_type = "full",
   mcmc_type = "is2",
   sampling_method = "bsf",
@@ -30,7 +30,7 @@
 
 \item{iter}{Number of MCMC iterations.}
 
-\item{nsim}{Number of state samples per MCMC iteration. 
+\item{particles}{Number of state samples per MCMC iteration. 
 Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.}
 
 \item{output_type}{Either \code{"full"} 

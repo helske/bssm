@@ -8,11 +8,11 @@
 \alias{particle_smoother.ssm_sde}
 \title{Particle Smoothing}
 \usage{
-particle_smoother(model, nsim, ...)
+particle_smoother(model, particles, ...)
 
 \method{particle_smoother}{gaussian}(
   model,
-  nsim,
+  particles,
   method = "psi",
   seed = sample(.Machine$integer.max, size = 1),
   ...
@@ -20,7 +20,7 @@ particle_smoother(model, nsim, ...)
 
 \method{particle_smoother}{nongaussian}(
   model,
-  nsim,
+  particles,
   method = "psi",
   seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100,
@@ -30,7 +30,7 @@ particle_smoother(model, nsim, ...)
 
 \method{particle_smoother}{ssm_nlg}(
   model,
-  nsim,
+  particles,
   method = "bsf",
   seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100,
@@ -41,7 +41,7 @@ particle_smoother(model, nsim, ...)
 
 \method{particle_smoother}{ssm_sde}(
   model,
-  nsim,
+  particles,
   L,
   seed = sample(.Machine$integer.max, size = 1),
   ...
@@ -50,7 +50,7 @@ particle_smoother(model, nsim, ...)
 \arguments{
 \item{model}{Model.}
 
-\item{nsim}{Number of samples.}
+\item{particles}{Number of samples for particle filter.}
 
 \item{...}{Ignored.}
 
@@ -91,9 +91,9 @@ set.seed(1)
 x <- cumsum(rnorm(100))
 y <- rnorm(100, x)
 model <- ssm_ulg(y, Z = 1, T = 1, R = 1, H = 1, P1 = 1)
-system.time(out <- particle_smoother(model, nsim = 1000))
+system.time(out <- particle_smoother(model, particles = 1000))
 # same with simulation smoother:
-system.time(out2 <- sim_smoother(model, nsim = 1000, use_antithetic = TRUE))
+system.time(out2 <- sim_smoother(model, particles = 1000, use_antithetic = TRUE))
 ts.plot(out$alphahat, rowMeans(out2), col = 1:2)
 
 }

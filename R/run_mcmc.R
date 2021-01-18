@@ -289,8 +289,11 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100, conv_tol = 1e-8, ...) {
   
   if(missing(particles)) {
-    nsim <- match.call(expand.dots = TRUE)$nsim
-    if (!is.null(nsim)) particles <- nsim
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
   }
   
   if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
@@ -445,8 +448,11 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   conv_tol = 1e-8, iekf_iter = 0, ...) {
   
   if(missing(particles)) {
-    nsim <- match.call(expand.dots = TRUE)$nsim
-    if (!is.null(nsim)) particles <- nsim
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
   }
   
   if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
@@ -615,8 +621,11 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   }
   
   if(missing(particles)) {
-    nsim <- match.call(expand.dots = TRUE)$nsim
-    if (!is.null(nsim)) particles <- nsim
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
   }
   
   if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")

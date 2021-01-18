@@ -50,8 +50,11 @@ logLik.nongaussian <- function(object, particles, method = "psi",
   object$conv_tol <- conv_tol
   
   if(missing(particles)) {
-    nsim <- match.call(expand.dots = TRUE)$nsim
-    if (!is.null(nsim)) particles <- nsim
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
   }
   
   method <- match.arg(method, c("psi", "bsf", "spdk"))
@@ -89,8 +92,11 @@ logLik.ssm_nlg <- function(object, particles, method = "bsf",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   if(missing(particles)) {
-    nsim <- match.call(expand.dots = TRUE)$nsim
-    if (!is.null(nsim)) particles <- nsim
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
   }
   
   method <- match.arg(method, c("psi", "bsf", "ekf"))
@@ -121,8 +127,11 @@ logLik.ssm_sde <- function(object, particles, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   if(L <= 0) stop("Discretization level L must be larger than 0.")
   if(missing(particles)) {
-    nsim <- match.call(expand.dots = TRUE)$nsim
-    if (!is.null(nsim)) particles <- nsim
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
   }
   loglik_sde(object$y, object$x0, object$positive, 
     object$drift, object$diffusion, object$ddiffusion, 

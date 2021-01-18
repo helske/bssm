@@ -208,7 +208,7 @@ predict.mcmc_output <- function(object, model, type = "response", nsim, future =
     n <- nrow(object$alpha) - 1L
     m <- ncol(object$alpha)
     
-    states <- object$alpha[1:n, , idx]
+    states <- object$alpha[1:n, , idx, drop = FALSE]
     
     if(type == "state") {
       if(attr(object, "model_type") == "ssm_nlg") {

@@ -44,13 +44,13 @@ arma::cube nongaussian_predict_past(const Rcpp::List model_,
   
   switch (model_type) {
   case 0: {
-  ssm_mng model(model_, seed);
-  return model.predict_past(theta, alpha, predict_type);
-} break;
+    ssm_mng model(model_, seed);
+    return model.predict_past(theta, alpha, predict_type);
+  } break;
   case 1: {
-  ssm_ung model(model_, seed);
-  return model.predict_past(theta, alpha, predict_type);
-} break;
+    ssm_ung model(model_, seed);
+    return model.predict_past(theta, alpha, predict_type);
+  } break;
   case 2: {
     bsm_ng model(model_, seed);
     return model.predict_past(theta, alpha, predict_type);

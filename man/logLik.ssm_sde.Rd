@@ -4,14 +4,18 @@
 \alias{logLik.ssm_sde}
 \title{Log-likelihood of a State Space Model with SDE dynamics}
 \usage{
-\method{logLik}{ssm_sde}(object, nsim, L, seed = sample(.Machine$integer.max, size = 1), ...)
+\method{logLik}{ssm_sde}(
+  object,
+  particles,
+  L,
+  seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
 }
 \arguments{
 \item{object}{Model model.}
 
-\item{nsim}{Number of samples for particle filter. If 0, 
-approximate log-likelihood is returned either based on the gaussian approximation or EKF, 
-depending on the \code{method} argument.}
+\item{particles}{Number of samples for particle filter.}
 
 \item{L}{Integer  defining the discretization level defined as (2^L).}
 

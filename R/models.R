@@ -1002,12 +1002,18 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' theta <- expand_sample(mcmc_out, "theta")
 #' plot(theta)
 #' summary(theta)
-#'
+#' 
 #' library("ggplot2")
 #' ggplot(as.data.frame(theta[,1:2]), aes(x = sd_level, y = sd_seasonal)) +
 #'   geom_point() + stat_density2d(aes(fill = ..level.., alpha = ..level..),
 #'   geom = "polygon") + scale_fill_continuous(low = "green", high = "blue") +
 #'   guides(alpha = "none")
+#'   
+#' # Traceplot using as.data.frame method for MCMC output:
+#' library("dplyr")
+#' as.data.frame(mcmc_out) %>% 
+#'   filter(variable == "sd_level") %>% 
+#'   ggplot(aes(y = value, x = iter)) + geom_line()
 #' }
 bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), a1, P1,

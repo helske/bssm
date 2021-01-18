@@ -834,35 +834,35 @@ arma::cube ssm_ung::predict_past(const arma::mat& theta_posterior,
     arma::mat y(1, n);
     
     switch(distribution) {
-    case 0:
-      y.zeros();
-      break;
-    case 1:
-      for (unsigned int t = 0; t < n; t++) {
-        y(0, t) = std::exp(xbeta(t) + D(t * Dtv) +
-          arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
-      }
-      break;
-    case 2:
-      for (unsigned int t = 0; t < n; t++) {
-        double tmp = std::exp(xbeta(t) + D(t * Dtv) +
-          arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
-        y(0, t) = tmp / (1.0 + tmp);
-      }
-      
-      break;
-    case 3:
-      for (unsigned int t = 0; t < n; t++) {
-        y(0, t) = std::exp(xbeta(t) + D(t * Dtv) +
-          arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
-      }
-      break;
-    case 4:
-      for (unsigned int t = 0; t < n; t++) {
-        y(0, t) = std::exp(xbeta(t) + D(t * Dtv) +
-          arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
-      }
-      break;
+      case 0:
+        y.zeros();
+        break;
+      case 1:
+        for (unsigned int t = 0; t < n; t++) {
+          y(0, t) = std::exp(xbeta(t) + D(t * Dtv) +
+            arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
+        }
+        break;
+      case 2:
+        for (unsigned int t = 0; t < n; t++) {
+          double tmp = std::exp(xbeta(t) + D(t * Dtv) +
+            arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
+          y(0, t) = tmp / (1.0 + tmp);
+        }
+        
+        break;
+      case 3:
+        for (unsigned int t = 0; t < n; t++) {
+          y(0, t) = std::exp(xbeta(t) + D(t * Dtv) +
+            arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
+        }
+        break;
+      case 4:
+        for (unsigned int t = 0; t < n; t++) {
+          y(0, t) = std::exp(xbeta(t) + D(t * Dtv) +
+            arma::as_scalar(Z.col(t * Ztv).t() * alpha.slice(i).col(t)));
+        }
+        break;
     }
     if (predict_type == 1) {
       

@@ -5,14 +5,19 @@
 \alias{ekpf_filter.ssm_nlg}
 \title{Extended Kalman Particle Filtering}
 \usage{
-ekpf_filter(object, nsim, ...)
+ekpf_filter(object, particles, ...)
 
-\method{ekpf_filter}{ssm_nlg}(object, nsim, seed = sample(.Machine$integer.max, size = 1), ...)
+\method{ekpf_filter}{ssm_nlg}(
+  object,
+  particles,
+  seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
 }
 \arguments{
 \item{object}{of class \code{ssm_nlg}.}
 
-\item{nsim}{Number of samples.}
+\item{particles}{Number of particles.}
 
 \item{...}{Ignored.}
 

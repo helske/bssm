@@ -50,12 +50,11 @@ public:
   
   arma::vec weight_storage;
   arma::cube mode_storage;
-
-private:
-
-  void trim_storage();
   arma::vec approx_loglik_storage;
   arma::vec prior_storage;
+  void trim_storage();
+  
+private:
   const bool store_modes;
 };
 
