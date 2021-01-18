@@ -78,11 +78,11 @@ suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10),
     out <- suggest_n_nongaussian(model, theta, candidates, replications, seed, model_type(model))
   } else {
     if (inherits(model, "ssm_nlg")) {
-      out <- suggest_n_nonlinear(t(object$y), object$Z, object$H, object$T, 
-        object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
-        object$theta, object$log_prior_pdf, object$known_params, 
-        object$known_tv_params, object$n_states, object$n_etas, 
-        as.integer(object$time_varying),
+      out <- suggest_n_nonlinear(t(model$y), model$Z, model$H, model$T, 
+        model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
+        model$theta, model$log_prior_pdf, model$known_params, 
+        model$known_tv_params, model$n_states, model$n_etas, 
+        as.integer(model$time_varying),
         default_update_fn, default_prior_fn, theta, candidates, replications, seed)
     } else stop("Function 'suggest_N' is only available for models of class 'nongaussian' and 'nonlinear'.")
   }
