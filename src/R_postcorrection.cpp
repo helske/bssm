@@ -13,22 +13,8 @@
 // [[Rcpp::export]]
 arma::vec suggest_n_nongaussian(const Rcpp::List model_,
   const arma::vec theta, const arma::vec candidates,
-  const int replications, const unsigned int seed,
+  const unsigned int replications, const unsigned int seed,
   const int model_type) {
-  
-  arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
-  unsigned int m = a1.n_elem;
-  unsigned int n;
-  unsigned int p;
-  if(model_type > 0) {
-    arma::vec y = Rcpp::as<arma::vec>(model_["y"]);
-    n = y.n_elem;
-    p = 1;
-  } else {
-    arma::mat y = Rcpp::as<arma::mat>(model_["y"]);
-    n = y.n_rows;
-    p = y.n_cols;
-  }
   
   arma::vec sds(candidates.n_elem);
   
@@ -127,7 +113,7 @@ arma::vec suggest_n_nonlinear(const arma::mat& y, SEXP Z, SEXP H,
   const unsigned int n_etas,  const arma::uvec& time_varying,
   const Rcpp::Function update_fn, const Rcpp::Function prior_fn,
   const arma::vec theta_map, const arma::vec candidates,
-  const int replications, const unsigned int seed) {
+  const unsigned int replications, const unsigned int seed) {
   
   
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);

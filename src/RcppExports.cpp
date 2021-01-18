@@ -680,7 +680,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // suggest_n_nongaussian
-arma::vec suggest_n_nongaussian(const Rcpp::List model_, const arma::vec theta, const arma::vec candidates, const int replications, const unsigned int seed, const int model_type);
+arma::vec suggest_n_nongaussian(const Rcpp::List model_, const arma::vec theta, const arma::vec candidates, const unsigned int replications, const unsigned int seed, const int model_type);
 RcppExport SEXP _bssm_suggest_n_nongaussian(SEXP model_SEXP, SEXP thetaSEXP, SEXP candidatesSEXP, SEXP replicationsSEXP, SEXP seedSEXP, SEXP model_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -688,7 +688,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::List >::type model_(model_SEXP);
     Rcpp::traits::input_parameter< const arma::vec >::type theta(thetaSEXP);
     Rcpp::traits::input_parameter< const arma::vec >::type candidates(candidatesSEXP);
-    Rcpp::traits::input_parameter< const int >::type replications(replicationsSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type replications(replicationsSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< const int >::type model_type(model_typeSEXP);
     rcpp_result_gen = Rcpp::wrap(suggest_n_nongaussian(model_, theta, candidates, replications, seed, model_type));
@@ -696,7 +696,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // suggest_n_nonlinear
-arma::vec suggest_n_nonlinear(const arma::mat& y, SEXP Z, SEXP H, SEXP T, SEXP R, SEXP Zg, SEXP Tg, SEXP a1, SEXP P1, const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params, const arma::mat& known_tv_params, const unsigned int n_states, const unsigned int n_etas, const arma::uvec& time_varying, const Rcpp::Function update_fn, const Rcpp::Function prior_fn, const arma::vec theta_map, const arma::vec candidates, const int replications, const unsigned int seed);
+arma::vec suggest_n_nonlinear(const arma::mat& y, SEXP Z, SEXP H, SEXP T, SEXP R, SEXP Zg, SEXP Tg, SEXP a1, SEXP P1, const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params, const arma::mat& known_tv_params, const unsigned int n_states, const unsigned int n_etas, const arma::uvec& time_varying, const Rcpp::Function update_fn, const Rcpp::Function prior_fn, const arma::vec theta_map, const arma::vec candidates, const unsigned int replications, const unsigned int seed);
 RcppExport SEXP _bssm_suggest_n_nonlinear(SEXP ySEXP, SEXP ZSEXP, SEXP HSEXP, SEXP TSEXP, SEXP RSEXP, SEXP ZgSEXP, SEXP TgSEXP, SEXP a1SEXP, SEXP P1SEXP, SEXP thetaSEXP, SEXP log_prior_pdfSEXP, SEXP known_paramsSEXP, SEXP known_tv_paramsSEXP, SEXP n_statesSEXP, SEXP n_etasSEXP, SEXP time_varyingSEXP, SEXP update_fnSEXP, SEXP prior_fnSEXP, SEXP theta_mapSEXP, SEXP candidatesSEXP, SEXP replicationsSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -721,7 +721,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::Function >::type prior_fn(prior_fnSEXP);
     Rcpp::traits::input_parameter< const arma::vec >::type theta_map(theta_mapSEXP);
     Rcpp::traits::input_parameter< const arma::vec >::type candidates(candidatesSEXP);
-    Rcpp::traits::input_parameter< const int >::type replications(replicationsSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type replications(replicationsSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
     rcpp_result_gen = Rcpp::wrap(suggest_n_nonlinear(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, update_fn, prior_fn, theta_map, candidates, replications, seed));
     return rcpp_result_gen;
