@@ -77,7 +77,7 @@ suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10),
     
     out <- suggest_n_nongaussian(model, theta, candidates, replications, seed, model_type(model))
   } else {
-    if (inherits(model, "nonlinear")) {
+    if (inherits(model, "ssm_nlg")) {
       out <- suggest_n_nonlinear(t(object$y), object$Z, object$H, object$T, 
         object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
         object$theta, object$log_prior_pdf, object$known_params, 
@@ -197,12 +197,12 @@ post_correct <- function(model, mcmc_output, particles, threads = 1L,
       particles,
       seed, threads, is_type, mcmc_output$counts, t(mcmc_output$theta), mcmc_output$modes)
   } else {
-    if (inherits(model, "nonlinear")) {
-      out <- postcorrection_nonlinear(t(object$y), object$Z, object$H, object$T, 
-        object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
-        object$theta, object$log_prior_pdf, object$known_params, 
-        object$known_tv_params, object$n_states, object$n_etas, 
-        as.integer(object$time_varying),
+    if (inherits(model, "ssm_nlg")) {
+      out <- postcorrection_nonlinear(t(model$y), model$Z, model$H, model$T, 
+        model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
+        model$theta, model$log_prior_pdf, model$known_params, 
+        model$known_tv_params, model$n_states, model$n_etas, 
+        as.integer(model$time_varying),
         default_update_fn, default_prior_fn, mcmc_output$output_type, 
         particles,
         seed, threads, is_type,

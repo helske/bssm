@@ -133,7 +133,7 @@ ts.plot(plogis(cbind(out_filter$att[, 1], out_smoother$alphahat[, 1])), col = 1:
 
 ## Markov chain Monte Carlo
 
-For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use $\psi$-APF based MCMC with importance sampling correction [@vihola-helske-franks]. Let us compare this approach with EKF-based approximate MCMC (note the relatively small number of iterations due to package check requirements in CRAN):
+For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use $\psi$-APF based MCMC with importance sampling correction [@vihola-helske-franks]. Let us compare this approach with EKF-based approximate MCMC (note the very small number of iterations due to package check requirements in CRAN):
 
 ```{r mcmc}
 # Cholesky of initial proposal matrix (taken from previous runs)
