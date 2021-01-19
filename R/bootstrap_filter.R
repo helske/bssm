@@ -74,7 +74,7 @@ bootstrap_filter.nongaussian <- function(model, particles,
       c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"),
       duplicates.ok = TRUE) - 1
   
-  out <- bsf(model, particles, seed, FALSE, 1L)
+  out <- bsf(model, particles, seed, FALSE, model_type(model))
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(model$a1)
   out$at <- ts(out$at, start = start(model$y), frequency = frequency(model$y))
