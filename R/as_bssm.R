@@ -89,10 +89,6 @@ as_bssm <- function(model, kappa = 100, ...) {
             phi[i] <- 1
             u[,i] <- model$u[,i]
           },
-          poisson = {
-            phi[i] <- 1
-            u[,i] <- model$u[,i]
-          },
           binomial = {
             phi[i] <- 1
             u[,i] <- model$u[,i]
