@@ -42,9 +42,9 @@ importance_sample.nongaussian <- function(model, nsim, use_antithetic = TRUE,
 
   model$max_iter <- max_iter
   model$conv_tol <- conv_tol
-  model$distribution <- 
-    pmatch(model$distribution,  
-      c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian")) - 1
+  model$distribution <- pmatch(model$distribution,
+    c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
+    duplicates.ok = TRUE) - 1
   out <- importance_sample_ng(model, nsim, use_antithetic, seed, model_type(model))
   rownames(out$alpha) <- names(model$a1)
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
