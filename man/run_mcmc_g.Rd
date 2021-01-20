@@ -66,7 +66,7 @@ model <- ar1_lg(LakeHuron, rho = uniform(0.5,-1,1),
   sigma = halfnormal(1, 10), mu = normal(500, 500, 500), 
   sd_y = halfnormal(1, 10))
 
-mcmc_results <- run_mcmc(model, iter = 1e5)
+mcmc_results <- run_mcmc(model, iter = 2e4)
 summary(mcmc_results, return_se = TRUE)
 
 require("dplyr")

@@ -57,7 +57,7 @@ run_mcmc <- function(model, iter, ...) {
 #'   sigma = halfnormal(1, 10), mu = normal(500, 500, 500), 
 #'   sd_y = halfnormal(1, 10))
 #' 
-#' mcmc_results <- run_mcmc(model, iter = 1e5)
+#' mcmc_results <- run_mcmc(model, iter = 2e4)
 #' summary(mcmc_results, return_se = TRUE)
 #' 
 #' require("dplyr")
@@ -196,6 +196,8 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #'   sd_level = halfnormal(0.01, 1), 
 #'   sd_slope = halfnormal(0.01, 0.1), 
 #'   P1 = diag(c(10, 0.1)), distribution = "poisson")
+#'   
+#' # Note small number of iterations for CRAN checks
 #' mcmc_is <- run_mcmc(poisson_model, iter = 1000, particles = 10, 
 #'   mcmc_type = "da")
 #' summary(mcmc_is, what = "theta", return_se = TRUE)
@@ -220,7 +222,8 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #'   distribution = "negative binomial")
 #' 
 #' # run IS-MCMC
-#' fit <- run_mcmc(model, iter = 10000,
+#' # Note small number of iterations for CRAN checks
+#' fit <- run_mcmc(model, iter = 5000,
 #'   particles = 10, mcmc_type = "is2", seed = 1)
 #'
 #' # extract states   
@@ -269,7 +272,9 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #'   R = 0.1, P1 = 1, distribution = "poisson",
 #'   init_theta = log(0.1), 
 #'   prior_fn = prior_fn, update_fn = update_fn)
-#' out <- run_mcmc(model, iter = 5000, particles = 10)
+#'   
+#' # Note small number of iterations for CRAN checks
+#' out <- run_mcmc(model, iter = 5000, mcmc_type = "approx")
 #' 
 #' sumr <- as.data.frame(out, variable = "states") %>% 
 #'   group_by(time) %>% mutate(value = exp(value)) %>%

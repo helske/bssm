@@ -1,8 +1,8 @@
 Package: bssm
 Type: Package
-Title: Bayesian Inference of Non-Gaussian State Space Models
+Title: Bayesian Inference of Non-linear and Non-Gaussian State Space Models
 Version: 1.1.0
-Date: 2021-01-19
+Date: 2021-01-20
 Authors@R: 
     c(person(given = "Jouni",
            family = "Helske",
@@ -18,8 +18,9 @@ Description: Efficient methods for Bayesian inference of state space models
     importance sampling type weighted estimators 
     (Vihola, Helske, and Franks, 2020, <doi:10.1111/sjos.12492>). 
     Gaussian, Poisson, binomial, negative binomial, and Gamma
-    observation densities and basic stochastic volatility models with Gaussian state 
-    dynamics, as well as general non-linear Gaussian models and discretised 
+    observation densities and basic stochastic volatility models 
+    with linear-Gaussian state dynamics, 
+    as well as general non-linear Gaussian models and discretised 
     diffusion models are supported.
 License: GPL (>= 2)
 Depends: R (>= 3.5.0)

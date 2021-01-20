@@ -82,7 +82,7 @@ public:
       RR.slice(t) = R.slice(t) * R.slice(t).t();
     }
   }
-  void compute_HH() { HH = square(H); }
+  void compute_HH() { HH = arma::square(H); }
   void compute_xbeta() { xbeta = xreg * beta; }
   
   

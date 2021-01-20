@@ -283,7 +283,7 @@ void ssm_mng::laplace_iter(const arma::mat& signal) {
     case 3: {
       // negative binomial
       arma::rowvec exptmp = arma::exp(signal.row(i)) % u.row(i);
-      approx_model.HH.tube(i, i) = square(phi(i) + exptmp) / 
+      approx_model.HH.tube(i, i) = arma::square(phi(i) + exptmp) / 
         (phi(i) * exptmp % (y.row(i) + phi(i)));
       approx_model.y.row(i) = signal.row(i) +
         (phi(i) + exptmp) % (y.row(i) - exptmp) / ((y.row(i) + phi(i)) % exptmp);
@@ -296,7 +296,7 @@ void ssm_mng::laplace_iter(const arma::mat& signal) {
     } break;
     case 5: {
       // gaussian
-      approx_model.HH.tube(i, i) = phi(i) * phi(i);
+      approx_model.HH.tube(i, i).fill(phi(i) * phi(i));
       approx_model.y.row(i) = y.row(i);
     } break;
     }
