@@ -169,6 +169,7 @@ arma::vec ssm_mng::log_likelihood(
         approx_loglik = gaussian_loglik + const_term + arma::accu(scales);
         approx_state = 2;
       }
+      
       // psi-PF
       if (method == 1) {
         loglik(0) = psi_filter(nsim, alpha, weights, indices);
@@ -179,11 +180,13 @@ arma::vec ssm_mng::log_likelihood(
         for (unsigned int t = 0; t < n; t++) {
           w += log_weights(t, alpha);
         }
+        
         w -= arma::accu(scales);
         double maxw = w.max();
         w = arma::exp(w - maxw);
         weights.col(n) = w; // we need these for sampling etc
         loglik(0) = approx_loglik + std::log(arma::mean(w)) + maxw;
+        
       }
       loglik(1) = approx_loglik;
     } 
@@ -231,12 +234,19 @@ void ssm_mng::update_scales() {
             u(i, t) * std::exp(mode_estimate(i, t));
           break;
         case 2  :
-          scales(t) += y(i, t) * mode_estimate(t) - 
+          scales(t) += y(i, t) * mode_estimate(i, t) - 
             u(i, t) * std::log1p(std::exp(mode_estimate(i, t)));
           break;
         case 3  :
           scales(t) += y(i, t) * mode_estimate(i, t) -(y(i, t) + phi(i)) *
             std::log(phi(i) + u(i, t) * std::exp(mode_estimate(i, t)));
+          break;
+        case 4  :
+          scales(t) += -phi(i) * mode_estimate(i, t) - 
+            (y(i, t) * phi(i) * exp(-mode_estimate(i, t)) / u(i, t));
+          break;
+        case 5  :
+          scales(t) += -0.5 * std::pow((y(i, t) - mode_estimate(i, t)) / phi(i), 2.0);
           break;
         }
         scales(t) +=
@@ -253,6 +263,8 @@ void ssm_mng::update_scales() {
  * 1 = Poisson
  * 2 = Binomial
  * 3 = Negative binomial
+ * 4 = Gamma
+ * 5 = Gaussian
  */
 void ssm_mng::laplace_iter(const arma::mat& signal) {
   
@@ -268,11 +280,11 @@ void ssm_mng::laplace_iter(const arma::mat& signal) {
     // approx_model.y.row(i) = signal.row(i) + 1.0 - 0.5 * Hvec;
     //} break;
     case 1: {
-  // poisson
-  approx_model.HH.tube(i, i) = 1.0 / (arma::exp(signal.row(i)) % u.row(i));
-  arma::rowvec Hvec = approx_model.HH.tube(i, i);
-  approx_model.y.row(i) = y.row(i) % Hvec + signal.row(i) - 1.0;
-} break;
+      // poisson
+      approx_model.HH.tube(i, i) = 1.0 / (arma::exp(signal.row(i)) % u.row(i));
+      arma::rowvec Hvec = approx_model.HH.tube(i, i);
+      approx_model.y.row(i) = y.row(i) % Hvec + signal.row(i) - 1.0;
+    } break;
     case 2: {
       // binomial
       arma::rowvec exptmp = arma::exp(signal.row(i));
@@ -301,7 +313,7 @@ void ssm_mng::laplace_iter(const arma::mat& signal) {
     } break;
     }
   }
-  approx_model.H = sqrt(approx_model.HH);  // diagonal
+  approx_model.H = arma::sqrt(approx_model.HH);  // diagonal
 }
 // these are really not constant in all cases (note phi)
 double ssm_mng::compute_const_term() const {
