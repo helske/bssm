@@ -527,14 +527,14 @@ arma::cube ssm_mlg::simulate_states(const unsigned int nsim) {
         for(unsigned int j = 0; j < p; j++) {
           up(j) = normal(engine);
         }
-        y.col(t) -= Z.slice(t * Ztv) * asim.slice(0).col(t) +
-          H(t * Htv) * up;
+        y.col(t) -= Z.slice(t * Ztv) * asim.slice(i).col(t) +
+          H.slice(t * Htv) * up;
       }
       arma::vec uk(k);
       for(unsigned int j = 0; j < k; j++) {
         uk(j) = normal(engine);
       }
-      asim.slice(i).col(t + 1) = T.slice(t * Ttv) * asim.slice(0).col(t) +
+      asim.slice(i).col(t + 1) = T.slice(t * Ttv) * asim.slice(i).col(t) +
         R.slice(t * Rtv) * uk;
     }
     
