@@ -1,3 +1,10 @@
+bssm 1.1.1 (Release date: 2021-01-22)
+==============
+   
+   * Added missing scaling for Gamma distribution in importance sampling weights for added numerical robustness.
+   * Fixed sequential importance sampling for multivariate non-gaussian models.
+   * Fixed simulation smoother for multivariate Gaussian models.
+
 bssm 1.1.0 (Release date: 2021-01-19)
 ==============
    
