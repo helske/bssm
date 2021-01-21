@@ -53,10 +53,10 @@ as_bssm <- function(model, kappa = 100, ...) {
     if (attr(model, "p") == 1) {
       
       if (model$distribution == "negative binomial" && length(unique(model$u)) > 1) {
-        stop("Time-varying dispersion parameter for negative binomial is not supported in 'bssm'.")
+        stop("Time-varying dispersion parameter for negative binomial is not (yet) supported in 'bssm'.")
       } 
       if (model$distribution == "gamma" && length(unique(model$u)) > 1) {
-        stop("Time-varying shape parameter for gamma is not supported in 'bssm'.")
+        stop("Time-varying shape parameter for gamma is not (yet) supported in 'bssm'.")
       }
       
       switch(model$distribution,
@@ -70,11 +70,11 @@ as_bssm <- function(model, kappa = 100, ...) {
         },
         gamma = {
           phi <- model$u[1]
-          u <- rep(1, length(model$u))
+          u <- rep(1, length(model$u))  # no exposure for Gamma in KFAS
         },
         "negative binomial" = {
           phi <- model$u[1]
-          u <- rep(1, length(model$u))
+          u <- rep(1, length(model$u))  # no exposure for NB in KFAS
         })
       out <- ssm_ung(y = model$y, Z = Z, T = model$T, R = R, a1 = c(model$a1), 
         P1 = model$P1, phi = phi, u = u, 
@@ -97,18 +97,18 @@ as_bssm <- function(model, kappa = 100, ...) {
             if(length(unique(model$u[,i])) > 1)
               stop("Time-varying shape parameter for gamma is not (yet) supported in 'bssm'.")
             phi[i] <- model$u[1,i]
-            u[,i] <- 1
+            u[,i] <- 1 # no exposure for Gamma in KFAS
           },
           "negative binomial" = {
             if(length(unique(model$u[,i])) > 1)
               stop("Time-varying dispersion parameter for negative binomial is not (yet) supported in 'bssm'.")
             phi[i] <- model$u[1,i]
-            u[,i] <- 1
+            u[,i] <- 1 # no exposure for NB in KFAS
           }, 
           gaussian = {
             if(length(unique(model$u[,i])) > 1)
               stop("Time-varying standard deviation for gaussian distribution with non-gaussian series is not supported in 'bssm'.")
-            phi <- model$u[1,i]
+            phi[i] <- sqrt(model$u[1,i])
             u[,i] <- 1
           })
       }
