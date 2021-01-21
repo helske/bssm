@@ -283,6 +283,14 @@ void ssm_ung::update_scales() {
       } 
     }
     break;
+  case 4  :
+    for(unsigned int t = 0; t < n; t++) {
+      if (arma::is_finite(y(t))) {
+        scales(t) = -phi * mode_estimate(t) - (y(t) * phi * exp(-mode_estimate(t)) / u(t)) +
+          0.5 * std::pow((approx_model.y(t) - mode_estimate(t)) / approx_model.H(t), 2.0);
+      } 
+    }
+    break;
   }
 }
 
@@ -333,7 +341,7 @@ void ssm_ung::laplace_iter(const arma::vec& signal) {
     //   approx_model.y = y;
     // } break;
   }
-  approx_model.H = sqrt(approx_model.HH);
+  approx_model.H = arma::sqrt(approx_model.HH);
 }
 
 
