@@ -1,6 +1,6 @@
 context("Test basics")
 
-test_that("results for gaussian model are comparable to KFAS",{
+test_that("results for Gaussian models are comparable to KFAS",{
   library("KFAS")
   model_KFAS <- SSModel(1:10 ~ SSMtrend(2, Q = list(0.01^2, 0)), H = 2)
   model_KFAS$P1inf[] <- 0
@@ -19,7 +19,7 @@ test_that("results for gaussian model are comparable to KFAS",{
   expect_equivalent(out_KFAS$V, out_bssm$Vt)
 })
 
-test_that("results for multivariate gaussian model are comparable to KFAS",{
+test_that("results for multivariate Gaussian model are comparable to KFAS",{
   library("KFAS")
   # From the help page of ?KFAS
   data("Seatbelts", package = "datasets")
@@ -64,7 +64,7 @@ test_that("different smoothers give identical results",{
 })
 
 
-test_that("results for poisson model are comparable to KFAS",{
+test_that("results for Poisson model are comparable to KFAS",{
   library("KFAS")
   set.seed(1)
   model_KFAS <- SSModel(rpois(10, exp(0.2) * (2:11)) ~ SSMtrend(2, Q = list(0.01^2, 0)),
@@ -105,4 +105,54 @@ test_that("results for binomial model are comparable to KFAS", {
   expect_error(out_bssm <- smoother(model_bssm), NA)
   expect_equivalent(out_KFAS$alphahat, out_bssm$alphahat)
   expect_equivalent(out_KFAS$V, out_bssm$Vt)
+})
+
+test_that("results for multivariate non-Gaussian model are comparable to KFAS", {
+  library("KFAS")
+  set.seed(1)
+  n <- 10
+  x1 <- cumsum(rnorm(n))
+  x2 <- cumsum(rnorm(n, sd = 0.2))
+  u <- rep(c(1, 15), c(4, 6))
+  y <- cbind(rbinom(n, size = u, prob = plogis(x1)), 
+    rpois(n, u * exp(x1 + x2)), rgamma(n, 10, 10 / exp(x2)), rnorm(n, x2, 0.1))
+ 
+  model_KFAS <- SSModel(y ~ 
+      SSMtrend(1, Q = 1, a1 = -0.5, P1 = 0.5, type = "common", index = 1:2) + 
+      SSMtrend(1, Q = 0.2^2, P1 = 1, type = "common", index = 2:4),
+    distribution = c("binomial", "poisson", "gamma", "gaussian"), 
+    u = cbind(u, u, 10, 0.1^2))
+  model_bssm <- as_bssm(model_KFAS)
+  
+  approx_bssm <- gaussian_approx(model_bssm, conv_tol = 1e-16)
+  approx_KFAS <- approxSSM(model_KFAS, tol = 1e-16)
+  
+  expect_equivalent(approx_bssm$y, approx_KFAS$y, tol = 1e-8)
+  expect_equivalent(approx_bssm$H^2, approx_KFAS$H, tol = 1e-8)
+  
+  expect_equivalent(logLik(model_KFAS, nsim = 0), 
+    logLik(model_bssm, particles = 0), tol = 1e-8)
+  expect_equivalent(logLik(model_KFAS, nsim = 100, seed = 1), 
+    logLik(model_bssm, particles = 100, method = "spdk", seed = 1), tolerance = 1)
+  
+  expect_equivalent(
+    logLik(model_bssm, particles = 100, method = "psi", seed = 1),
+    logLik(model_bssm, particles = 100, method = "spdk", seed = 1), tolerance = 1)
+  
+  # note large tolerance due to the sd of bsf
+  expect_equivalent(
+    logLik(model_bssm, particles = 100, method = "psi", seed = 1),
+    logLik(model_bssm, particles = 100, method = "bsf", seed = 1), tolerance = 10)
+  
+  out_KFAS <- KFS(model_KFAS)
+  expect_error(out_bssm <- smoother(model_bssm), NA)
+  expect_equivalent(out_KFAS$alphahat, out_bssm$alphahat, tolerance = 1e-8)
+  expect_equivalent(out_KFAS$V, out_bssm$Vt, tolerance = 1e-8)
+  is_KFAS <- importanceSSM(model_KFAS, nsim = 1e4)
+  expect_error(is_bssm <- importance_sample(model_bssm, nsim = 1e4), NA)
+  expect_equivalent(apply(is_bssm$alpha, 1:2, mean)[1:n,], 
+    apply(is_KFAS$samples, 1:2, mean), tolerance = 0.1)
+  expect_equivalent(apply(is_bssm$alpha, 1:2, sd)[1:n,], 
+    apply(is_KFAS$samples, 1:2, sd), tolerance = 0.1)
+
 })
