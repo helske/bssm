@@ -38,7 +38,12 @@ Rcpp::List gaussian_mcmc(const Rcpp::List model_,
     
     switch (output_type) {
     case 1: {
-      mcmc_run.state_posterior(model, n_threads); //sample states
+      if (n_threads > 1) {
+        mcmc_run.state_posterior2(model, n_threads); //sample states
+      } else {
+        mcmc_run.state_posterior(model, n_threads); //sample states
+      }
+      
       return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
         Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
         Rcpp::Named("counts") = mcmc_run.count_storage,
@@ -69,7 +74,11 @@ Rcpp::List gaussian_mcmc(const Rcpp::List model_,
     
     switch (output_type) {
     case 1: {
-      mcmc_run.state_posterior(model, n_threads); //sample states
+      if (n_threads > 1) {
+        mcmc_run.state_posterior2(model, n_threads); //sample states
+      } else {
+        mcmc_run.state_posterior(model, n_threads); //sample states
+      }
       return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
         Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
         Rcpp::Named("counts") = mcmc_run.count_storage,

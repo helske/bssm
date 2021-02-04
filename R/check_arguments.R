@@ -129,9 +129,15 @@ check_target <- function(target) {
 }
 
 check_D <- function(x, p, n) {
-  if (is.null(dim(x)) || nrow(x) != p || !(ncol(x) %in% c(1,n))) {
-    stop("'D' must be p x 1 or p x n matrix, where p is the number of series.")
-  } 
+  if(p == 1) {
+    if (!(length(x) %in% c(1,n))) {
+      stop("'D' must be a scalar or length n, where n is the number of observations.")
+    } 
+  } else {
+    if (is.null(dim(x)) || nrow(x) != p || !(ncol(x) %in% c(1,n))) {
+      stop("'D' must be p x 1 or p x n matrix, where p is the number of series.")
+    } 
+  }
 }
 
 check_C <- function(x, m, n) {

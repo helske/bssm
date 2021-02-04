@@ -221,8 +221,9 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
   }
   if (!missing(D)) {
     check_D(D, 1L, n)
+    D <- as.numeric(D)
   } else {
-    D <- matrix(0, 1, 1)
+    D <- 0
   }
   if (!missing(C)) {
     check_C(C, m, n)
@@ -297,7 +298,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #' @param C Intercept terms \eqn{C_t} for the state equation, given as a
 #'  m times 1 or m times n matrix.
 #' @param D Intercept terms \eqn{D_t} for the observations equation, given as a
-#' 1 x 1 or 1 x n matrix.
+#' scalar or vector of length n.
 #' @param init_theta Initial values for the unknown hyperparameters theta.
 #' @param update_fn Function which returns list of updated model 
 #' components given input vector theta. See details.
@@ -377,8 +378,9 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   
   if (!missing(D)) {
     check_D(D, 1L, n)
+    D <- as.numeric(D)
   } else {
-    D <- matrix(0, 1, 1)
+    D <- 0
   }
   if (!missing(C)) {
     check_C(C, m, n)

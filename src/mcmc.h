@@ -3,6 +3,9 @@
 
 #include "bssm.h"
 
+class ssm_ulg;
+class ssm_mlg;
+
 class mcmc {
   
 protected:
@@ -29,6 +32,11 @@ public:
   // sample states given theta
   template <class T>
   void state_posterior(T model, const unsigned int n_threads);
+ 
+ // for circumventing R calls within OpenMP
+  void state_posterior2(ssm_ulg model, const unsigned int n_threads);
+  void state_posterior2(ssm_mlg model, const unsigned int n_threads);
+  
   template <class T>
   void state_summary(T model);
   template <class T>

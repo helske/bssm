@@ -52,7 +52,7 @@ this is the number of trials.}
 \item{init_theta}{Initial values for the unknown hyperparameters theta.}
 
 \item{D}{Intercept terms \eqn{D_t} for the observations equation, given as a
-1 x 1 or 1 x n matrix.}
+scalar or vector of length n.}
 
 \item{C}{Intercept terms \eqn{C_t} for the state equation, given as a
 m times 1 or m times n matrix.}

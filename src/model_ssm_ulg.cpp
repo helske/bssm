@@ -244,7 +244,7 @@ arma::cube ssm_ulg::simulate_states(const unsigned int nsim, const bool use_anti
     }
     asim.slice(0) += fast_smoother();
   }
-  
+ 
   y = y_tmp;
   
   return asim;

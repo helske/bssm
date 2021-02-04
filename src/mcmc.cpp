@@ -54,16 +54,251 @@ void mcmc::trim_storage() {
     alpha_storage.resize(alpha_storage.n_rows, alpha_storage.n_cols, n_stored);
 }
 
+// for circumventing calls to R during parallel runs
+
+void mcmc::state_posterior2(ssm_ulg model, const unsigned int n_threads) {
+  
+  
+  #ifdef _OPENMP
+  
+  Rcpp::List model_list =
+    model.update_fn(Rcpp::NumericVector(model.theta.begin(), model.theta.end()));
+  
+  bool estZ = model_list.containsElementNamed("Z");
+  bool estH = model_list.containsElementNamed("H");
+  bool estT = model_list.containsElementNamed("T");
+  bool estR = model_list.containsElementNamed("R");
+  bool esta1 = model_list.containsElementNamed("a1");
+  bool estP1 = model_list.containsElementNamed("P1");
+  bool estD = model_list.containsElementNamed("D");
+  bool estC = model_list.containsElementNamed("C");
+  bool estbeta = model_list.containsElementNamed("beta");
+  
+  
+  arma::cube Zlist(model.Z.n_rows, model.Z.n_cols, n_stored * estZ);
+  arma::mat Hlist(model.H.n_elem, n_stored * estH);
+  arma::field<arma::cube> Tlist(n_stored * estT);
+  arma::field<arma::cube> Rlist(n_stored * estR);
+  arma::mat a1list(model.a1.n_elem,  n_stored * esta1);
+  arma::cube P1list(model.P1.n_rows, model.P1.n_cols, n_stored * estP1);
+  arma::mat Dlist(model.D.n_elem, n_stored * estD);
+  arma::cube Clist(model.C.n_rows, model.C.n_cols, n_stored * estC);
+  arma::mat betalist(model.beta.n_elem, n_stored * estbeta);
+  
+  for(unsigned int i = 0; i < n_stored; i++) {
+    // Explicit creation just to make sure we do not get memory issues
+    Rcpp::NumericVector theta0(theta_storage.col(i).begin(), theta_storage.col(i).end());
+    Rcpp::List model_list = model.update_fn(theta0);
+    
+    if (estZ) {
+      Zlist.slice(i) = Rcpp::as<arma::mat>(model_list["Z"]);
+    }
+    
+    if (estH) {
+      Hlist.col(i) = Rcpp::as<arma::vec>(model_list["H"]);
+    }
+    
+    if (estT) {
+      // need to create intermediate object in order to avoid memory issues
+      arma::cube tcube = Rcpp::as<arma::cube>(model_list["T"]);
+      Tlist(i) = tcube;
+    }
+    
+    if (estR) {
+      // need to create intermediate object in order to avoid memory issues
+      arma::cube rcube = Rcpp::as<arma::cube>(model_list["R"]);
+      Rlist(i) = rcube;
+    }
+    if (esta1) {
+      a1list.col(i) = Rcpp::as<arma::vec>(model_list["a1"]);
+    }
+    if (estP1) {
+      P1list.slice(i) = Rcpp::as<arma::mat>(model_list["P1"]);
+    }
+    if (estD) {
+      Dlist.col(i) = Rcpp::as<arma::vec>(model_list["D"]);
+    }
+    if (estC) {
+      Clist.slice(i) = Rcpp::as<arma::mat>(model_list["C"]);
+    }
+    
+    if (estbeta) {
+      betalist.col(i) = Rcpp::as<arma::vec>(model_list["beta"]);
+    }
+  }
+#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
+{
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
+  
+  for (unsigned int i = 0; i < n_stored; i++) {
+    if (estZ) {
+      model.Z = Zlist.slice(i);
+    }
+    if (estH) {
+      model.H = Hlist.col(i);
+      model.compute_HH();
+    }
+    if (estR) {
+      
+      model.R = Rlist(i);
+      model.compute_RR();
+    }
+    if (estT) {
+      model.T = Tlist(i);
+    }
+
+    if (esta1) {
+      model.a1 = a1list.col(i);
+    }
+    if (estP1) {
+      model.P1 = P1list.slice(i);
+    }
+    
+    if (estD) {
+      model.D = Dlist.col(i);
+    }
+    if (estC) {
+      model.C = Clist.slice(i);
+    }
+    
+    if (estbeta) {
+      model.beta = betalist.col(i);
+      model.compute_xbeta();
+    }
+    alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
+    
+  }
+}
+  
+#else
+  state_sampler(model, theta_storage, alpha_storage);
+#endif
+}
+
+void mcmc::state_posterior2(ssm_mlg model, const unsigned int n_threads) {
+  
+  
+#ifdef _OPENMP
+  
+  Rcpp::List model_list =
+    model.update_fn(Rcpp::NumericVector(model.theta.begin(), model.theta.end()));
+  
+  bool estZ = model_list.containsElementNamed("Z");
+  bool estH = model_list.containsElementNamed("H");
+  bool estT = model_list.containsElementNamed("T");
+  bool estR = model_list.containsElementNamed("R");
+  bool esta1 = model_list.containsElementNamed("a1");
+  bool estP1 = model_list.containsElementNamed("P1");
+  bool estD = model_list.containsElementNamed("D");
+  bool estC = model_list.containsElementNamed("C");
+  
+  
+  arma::field<arma::cube> Zlist(n_stored * estZ);
+  arma::field<arma::cube> Hlist(n_stored * estH);
+  arma::field<arma::cube> Tlist(n_stored * estT);
+  arma::field<arma::cube> Rlist(n_stored * estR);
+  arma::mat a1list(model.a1.n_elem,  n_stored * esta1);
+  arma::cube P1list(model.P1.n_rows, model.P1.n_cols, n_stored * estP1);
+  arma::cube Dlist(model.D.n_rows, model.D.n_cols, n_stored * estD);
+  arma::cube Clist(model.C.n_rows, model.C.n_cols, n_stored * estC);
+  
+  for(unsigned int i = 0; i < n_stored; i++) {
+    // Explicit creation just to make sure we do not get memory issues
+    Rcpp::NumericVector theta0(theta_storage.col(i).begin(), theta_storage.col(i).end());
+    Rcpp::List model_list = model.update_fn(theta0);
+    
+    if (estZ) {
+      // need to create intermediate object in order to avoid memory issues
+      arma::cube zcube = Rcpp::as<arma::cube>(model_list["Z"]);
+      Zlist(i) = zcube;
+    }
+    
+    if (estH) {
+      arma::cube hcube = Rcpp::as<arma::cube>(model_list["H"]);
+      Hlist(i) = hcube;
+    }
+    
+    if (estT) {
+      arma::cube tcube = Rcpp::as<arma::cube>(model_list["T"]);
+      Tlist(i) = tcube;
+    }
+    
+    if (estR) {
+      arma::cube rcube = Rcpp::as<arma::cube>(model_list["R"]);
+      Rlist(i) = rcube;
+    }
+    if (esta1) {
+      a1list.col(i) = Rcpp::as<arma::vec>(model_list["a1"]);
+    }
+    if (estP1) {
+      P1list.slice(i) = Rcpp::as<arma::mat>(model_list["P1"]);
+    }
+    if (estD) {
+      Dlist.slice(i) = Rcpp::as<arma::mat>(model_list["D"]);
+    }
+    if (estC) {
+      Clist.slice(i) = Rcpp::as<arma::mat>(model_list["C"]);
+    }
+    
+ 
+  }
+#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
+{
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
+  
+  for (unsigned int i = 0; i < n_stored; i++) {
+    if (estZ) {
+      model.Z = Zlist(i);
+    }
+    if (estH) {
+      model.H = Hlist(i);
+      model.compute_HH();
+    }
+    if (estR) {
+      
+      model.R = Rlist(i);
+      model.compute_RR();
+    }
+    if (estT) {
+      model.T = Tlist(i);
+    }
+    
+    if (esta1) {
+      model.a1 = a1list.col(i);
+    }
+    if (estP1) {
+      model.P1 = P1list.slice(i);
+    }
+    
+    if (estD) {
+      model.D = Dlist.slice(i);
+    }
+    if (estC) {
+      model.C = Clist.slice(i);
+    }
+    
+
+    alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
+    
+  }
+}
+  
+#else
+  state_sampler(model, theta_storage, alpha_storage);
+#endif
+}
+
 template void mcmc::state_posterior(ssm_ulg model, const unsigned int n_threads);
+template void mcmc::state_posterior(ssm_mlg model, const unsigned int n_threads);
 template void mcmc::state_posterior(bsm_lg model, const unsigned int n_threads);
 template void mcmc::state_posterior(ar1_lg model, const unsigned int n_threads);
-template void mcmc::state_posterior(ssm_mlg model, const unsigned int n_threads);
 
 template <class T>
 void mcmc::state_posterior(T model, const unsigned int n_threads) {
   
   if(n_threads > 1) {
 #ifdef _OPENMP
+    
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
@@ -80,7 +315,7 @@ void mcmc::state_posterior(T model, const unsigned int n_threads) {
   alpha_storage.slices(start, end) = alpha_piece;
 }
 #else
-    state_sampler(model, theta_storage, alpha_storage);
+state_sampler(model, theta_storage, alpha_storage);
 #endif
   } else {
     state_sampler(model, theta_storage, alpha_storage);
@@ -107,7 +342,7 @@ void mcmc::state_summary(T model) {
   for (unsigned int i = 1; i < n_stored; i++) {
     model.update_model(theta_storage.col(i));
     model.smoother(alphahat_i, Vt_i);
-
+    
     arma::mat diff = alphahat_i - alphahat;
     double tmp = count_storage(i) + sum_w;
     alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
@@ -130,7 +365,6 @@ template <class T>
 
 void mcmc::state_sampler(T model, const arma::mat& theta, arma::cube& alpha) {
   for (unsigned int i = 0; i < theta.n_cols; i++) {
-    //arma::vec theta_i = theta.col(i);
     model.update_model(theta.col(i));
     alpha.slice(i) = model.simulate_states(1).slice(0).t();
   }
@@ -165,7 +399,7 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
   double acceptance_prob = 0.0;
   bool new_value = true;
   unsigned int n_values = 0;
-
+  
   for (unsigned int i = 1; i <= iter; i++) {
     
     if (i % 16 == 0) {
@@ -227,7 +461,7 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
     }
     
   }
-  
+  if(n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC run. Check your model.");
   trim_storage();
   acceptance_rate /= (iter - burnin);
   
@@ -294,7 +528,7 @@ void mcmc::pm_mcmc(
   
   // compute the log-likelihood (unbiased and approximate)
   arma::vec ll = model.log_likelihood(method, nsim, alpha, weights, indices);
-
+  
   if (!std::isfinite(ll(0)))
     Rcpp::stop("Initial log-likelihood is not finite.");
   
@@ -307,7 +541,7 @@ void mcmc::pm_mcmc(
       output_type == 1, method, alpha, weights.col(n), indices,
       sampled_alpha, alphahat_i, Vt_i, model.engine);
   }
-
+  
   double acceptance_prob = 0.0;
   bool new_value = true;
   unsigned int n_values = 0;
@@ -329,7 +563,7 @@ void mcmc::pm_mcmc(
     arma::vec theta_prop = theta + S * u;
     // compute prior
     double logprior_prop = model.log_prior_pdf(theta_prop);
-
+    
     if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       
       // update parameters
@@ -337,7 +571,7 @@ void mcmc::pm_mcmc(
       
       // compute the log-likelihood (unbiased and approximate)
       arma::vec ll_prop = model.log_likelihood(method, nsim, alpha, weights, indices);
-
+      
       //compute the acceptance probability for RAM using the approximate ll
       acceptance_prob = std::min(1.0, std::exp(
         ll_prop(1) - ll(1) +
@@ -399,6 +633,8 @@ void mcmc::pm_mcmc(
   if (output_type == 2) {
     Vt += Valphahat / (iter - burnin); // Var[E(alpha)] + E[Var(alpha)]
   }
+  
+  if(n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC run. Check your model.");
   trim_storage();
   acceptance_rate /= (iter - burnin);
 }
@@ -634,7 +870,7 @@ void mcmc::da_mcmc<ssm_sde>(ssm_sde model, const unsigned int method,
       // update parameters
       model.update_model(theta_prop);
       double ll_c_prop = model.bsf_filter(nsim, model.L_c, alpha, weights, indices);
-    
+      
       // initial acceptance probability, also used in RAM
       acceptance_prob = std::min(1.0, std::exp(ll_c_prop - ll_c +
         logprior_prop - logprior));
@@ -700,6 +936,8 @@ void mcmc::da_mcmc<ssm_sde>(ssm_sde model, const unsigned int method,
   if (output_type == 2) {
     Vt += Valphahat / (iter - burnin); // Var[E(alpha)] + E[Var(alpha)]
   }
+  
+  if(n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC run. Check your model.");
   trim_storage();
   acceptance_rate /= (iter - burnin);
 }

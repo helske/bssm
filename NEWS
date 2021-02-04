@@ -1,3 +1,10 @@
+bssm 1.1.2 (Release date: 2021-02-)
+==============
+   * Fixed definition of D in ssm_ulg and ssm_ung, functions now accept D as scalar or vector as 
+     was originally intended.
+   * Fixed a segfault issue with parallel state sampling in general ssm_ulg/mlg/ung/mng models
+     caused by calls to R function inside parallel region.
+   
 bssm 1.1.1 (Release date: 2021-01-22)
 ==============
    
