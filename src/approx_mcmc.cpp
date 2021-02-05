@@ -62,13 +62,10 @@ void approx_mcmc::expand() {
   arma::vec expanded_weight = rep_vec(weight_storage, count_storage);
   weight_storage.set_size(n_stored);
   weight_storage = expanded_weight;
-  
+
   arma::vec expanded_prior = rep_vec(prior_storage, count_storage);
   prior_storage.set_size(n_stored);
   prior_storage = expanded_prior;
-  
-  count_storage.resize(n_stored);
-  count_storage.ones();
   
   arma::vec expanded_approx_loglik = rep_vec(approx_loglik_storage, count_storage);
   approx_loglik_storage.set_size(n_stored);
@@ -85,6 +82,9 @@ void approx_mcmc::expand() {
     mode_storage.set_size(mode_storage.n_rows, mode_storage.n_cols, n_stored);
     mode_storage = expanded_mode;
   }
+  
+  count_storage.resize(n_stored);
+  count_storage.ones();
 }
 
 // run approximate MCMC for

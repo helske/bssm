@@ -4,6 +4,9 @@ bssm 1.1.2 (Release date: 2021-02-)
      was originally intended.
    * Fixed a segfault issue with parallel state sampling in general ssm_ulg/mlg/ung/mng models
      caused by calls to R function inside parallel region.
+   * Fixed a bug from version 1.0.0 in IS1 type sampling which actually lead to IS2 type sampling.
+   * Fixed out-of-bounds error in IS3 sampling.
+   * Fixed weight computations for multivariate nonlinear models in case of psi-APF.
    
 bssm 1.1.1 (Release date: 2021-01-22)
 ==============
