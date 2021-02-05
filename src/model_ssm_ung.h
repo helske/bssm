@@ -9,6 +9,7 @@
 
 #include "model_ssm_ulg.h"
 
+class parset_ung;
 class ssm_ung {
   
 public:
@@ -76,6 +77,7 @@ public:
   ssm_ulg approx_model;
   
   virtual void update_model(const arma::vec& new_theta);
+  void update_model(const parset_ung& x, unsigned int i);
   virtual double log_prior_pdf(const arma::vec& x) const;
   void compute_RR(){
     for (unsigned int t = 0; t < R.n_slices; t++) {

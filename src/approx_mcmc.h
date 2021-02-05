@@ -6,6 +6,9 @@
 #include "model_ssm_nlg.h"
 #include "model_ssm_sde.h"
 
+class ssm_ung;
+class ssm_mng;
+
 class approx_mcmc: public mcmc {
 
 public:
@@ -38,6 +41,24 @@ public:
   
   template <class T>
   void approx_state_posterior(T model, const unsigned int n_threads);
+  
+  // for handling openmp/R conflict
+  void approx_state_posterior2(ssm_ung model, const unsigned int n_threads);
+  void is_correction_psi2(ssm_ung model, const unsigned int nsim,
+    const unsigned int is_type, const unsigned int n_threads);
+  void is_correction_bsf2(ssm_ung model, const unsigned int nsim,
+    const unsigned int is_type, const unsigned int n_threads);
+  void is_correction_spdk2(ssm_ung model, const unsigned int nsim,
+    const unsigned int is_type, const unsigned int n_threads);
+  
+  void approx_state_posterior2(ssm_mng model, const unsigned int n_threads);
+  void is_correction_psi2(ssm_mng model, const unsigned int nsim,
+    const unsigned int is_type, const unsigned int n_threads);
+  void is_correction_bsf2(ssm_mng model, const unsigned int nsim,
+    const unsigned int is_type, const unsigned int n_threads);
+  void is_correction_spdk2(ssm_mng model, const unsigned int nsim,
+    const unsigned int is_type, const unsigned int n_threads);
+  
   
   template <class T>
   void approx_state_summary(T model);

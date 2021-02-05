@@ -39,9 +39,7 @@ public:
   
   template <class T>
   void state_summary(T model);
-  template <class T>
-  void state_sampler(T model, const arma::mat& theta, arma::cube& alpha);
-
+  
   // gaussian mcmc
   template<class T>
   void mcmc_gaussian(T model, const bool end_ram);
