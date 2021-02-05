@@ -6,7 +6,8 @@ bssm 1.1.2 (Release date: 2021-02-)
      caused by calls to R function inside parallel region.
    * Fixed a bug from version 1.0.0 in IS1 type sampling which actually lead to IS2 type sampling.
    * Fixed out-of-bounds error in IS3 sampling.
-   * Fixed weight computations for multivariate nonlinear models in case of psi-APF.
+   * Fixed weight computations for multivariate nonlinear models in case of psi-APF with 
+     in some border cases with non-standard H.
    
 bssm 1.1.1 (Release date: 2021-01-22)
 ==============

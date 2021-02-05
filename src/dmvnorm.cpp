@@ -45,8 +45,8 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
         //arma::mat S = inv(trimatl(sigma(nonzero, nonzero)));
         //arma::vec tmp = S * (x.rows(nonzero) - mean.rows(nonzero));
         // note sigma2 !
-        arma::mat S = arma::chol(sigma2(nonzero, nonzero));
-        arma::vec tmp = arma::inv(trimatu(S)) * (x.rows(nonzero) - mean.rows(nonzero));
+        arma::mat S = arma::chol(sigma2(nonzero, nonzero), "lower");
+        arma::vec tmp = arma::inv(trimatl(S)) * (x.rows(nonzero) - mean.rows(nonzero));
         
         out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + 
           2.0 * arma::accu(arma::log(arma::diagvec(S))) + 
@@ -81,7 +81,7 @@ double precompute_dmvnorm(const arma::mat& sigma, arma::mat& Linv, const arma::u
   // Linv = arma::inv(arma::trimatl(sigma(nonzero, nonzero)));
   // Can't assume sigma is triangular even though that is the purpose of defining H vs HH..
   
-  Linv = arma::inv(trimatu(arma::chol(sigma(nonzero, nonzero))));
+  Linv = arma::inv(trimatl(arma::chol(sigma(nonzero, nonzero), "lower")));
   
   double constant = -0.5 * nonzero.n_elem * std::log(2.0 * M_PI) +
     arma::accu(arma::log(Linv.diag()));

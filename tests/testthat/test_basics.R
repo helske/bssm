@@ -156,3 +156,19 @@ test_that("results for multivariate non-Gaussian model are comparable to KFAS", 
     apply(is_KFAS$samples, 1:2, sd), tolerance = 0.1)
 
 })
+
+
+test_that("multivariate normal pdf works", {
+  set.seed(1)
+  a <- crossprod(matrix(rnorm(9), 3, 3))
+  logp1 <- expect_error(bssm:::dmvnorm(1:3, -0.1 * (3:1), a, FALSE, TRUE), NA)
+  expect_equivalent(logp1, -14.0607446337904, tolerance = 1e-6)
+  
+  chola <- t(chol(a))
+  logp2 <- expect_error(bssm:::dmvnorm(1:3, -0.1 * (3:1), chola, TRUE, TRUE), NA)
+  expect_equivalent(logp2, -14.0607446337904, tolerance = 1e-6)
+  
+  a[2,] <- a[, 2] <- 0
+  logp3 <- expect_error(bssm:::dmvnorm(1:3, -0.1 * (3:1), a, FALSE, TRUE), NA)
+  expect_equivalent(logp3, -12.5587625856078, tolerance = 1e-6)
+})

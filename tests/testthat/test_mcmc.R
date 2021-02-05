@@ -57,8 +57,16 @@ test_that("MCMC results for SV model using IS-correction are correct",{
     sd_ar = halfnormal(1, 5), sigma = halfnormal(1, 2)), NA)
   
   expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
+    mcmc_type = "is1", seed = 1)[-16], 
+    run_mcmc(model_bssm, iter = 100, particles = 10, mcmc_type = "is1", seed = 1)[-16])
+  
+  expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
     mcmc_type = "is2", seed = 1)[-16], 
     run_mcmc(model_bssm, iter = 100, particles = 10, mcmc_type = "is2", seed = 1)[-16])
+  
+  expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
+    mcmc_type = "is3", seed = 1)[-16], 
+    run_mcmc(model_bssm, iter = 100, particles = 10, mcmc_type = "is3", seed = 1)[-16])
   
   expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
     mcmc_type = "is2", seed = 1, sampling_mcmc_type = "psi")[-16], 
