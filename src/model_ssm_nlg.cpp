@@ -845,7 +845,7 @@ void ssm_nlg::update_scales()  {
       scales(t) = dmvnorm(y.col(t), Z_fn(t, mode_estimate.col(t), theta, known_params, known_tv_params),
         H_fn(t, mode_estimate.col(t), theta, known_params, known_tv_params), true, true) -
           dmvnorm(y.col(t), approx_model.D.col(t) + approx_model.Z.slice(t * approx_model.Ztv) * mode_estimate.col(t),
-            approx_model.H.slice(t * approx_model.Htv), true, true);
+            approx_model.HH.slice(t * approx_model.Htv), false, true);
     }
   }
   
@@ -868,6 +868,7 @@ arma::vec ssm_nlg::log_weights(const unsigned int t, const arma::cube& alpha,
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
   
   arma::uvec na_y = arma::find_nonfinite(y.col(t));
+  
   if (na_y.n_elem < p) {
     
     // original H depends on time or state <=> approx H depends on time or state, or missing values
@@ -877,18 +878,19 @@ arma::vec ssm_nlg::log_weights(const unsigned int t, const arma::cube& alpha,
           dmvnorm(y.col(t), Z_fn(t, alpha.slice(i).col(t), theta, known_params, known_tv_params), 
             H_fn(t, alpha.slice(i).col(t), theta, known_params, known_tv_params), true, true) -
               dmvnorm(y.col(t), approx_model.D.col(t) + approx_model.Z.slice(t * approx_model.Ztv) * alpha.slice(i).col(t),  
-                approx_model.H.slice(t * approx_model.Htv), true, true);
+                approx_model.HH.slice(t * approx_model.Htv), false, true);
       }
     } else {
-      arma::mat H = H_fn(t, alpha.slice(0).col(t), theta, known_params, known_tv_params);
-      arma::uvec nonzero = arma::find(H.diag() > (std::numeric_limits<double>::epsilon() * H.n_cols * H.diag().max()));
+      arma::mat cov = H_fn(t, alpha.slice(0).col(t), theta, known_params, known_tv_params);
+      cov = cov * cov.t();
+      arma::uvec nonzero = arma::find(cov.diag() > (std::numeric_limits<double>::epsilon() * cov.n_cols * cov.diag().max()));
       arma::mat Linv(nonzero.n_elem, nonzero.n_elem);
-      double constant = precompute_dmvnorm(H, Linv, nonzero);
+      double constant = precompute_dmvnorm(cov, Linv, nonzero);
       
-      arma::mat H_a = approx_model.H.slice(0);
-      arma::uvec nonzero_a = arma::find(H_a.diag() > (std::numeric_limits<double>::epsilon() * H_a.n_cols * H_a.diag().max()));
+      arma::mat cov_a = approx_model.HH.slice(0);
+      arma::uvec nonzero_a = arma::find(cov_a.diag() > (std::numeric_limits<double>::epsilon() * cov_a.n_cols * cov_a.diag().max()));
       arma::mat Linv_a(nonzero_a.n_elem, nonzero_a.n_elem);
-      double constant_a = precompute_dmvnorm(H_a, Linv_a, nonzero_a);
+      double constant_a = precompute_dmvnorm(cov_a, Linv_a, nonzero_a);
       
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
         weights(i) = fast_dmvnorm(y.col(t), Z_fn(t, alpha.slice(i).col(t), 
