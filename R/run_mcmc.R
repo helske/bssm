@@ -45,7 +45,7 @@ run_mcmc <- function(model, iter, ...) {
 #' (currently the standard deviation and dispersion parameters of bsm_lg models) the sampling
 #' is done for transformed parameters with internal_theta = log(theta).
 #' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.
-#' @param threads Number of threads for state simulation.
+#' @param threads Number of threads for state simulation. The default is 1.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @references 
@@ -180,8 +180,10 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.
 #' @param local_approx If \code{TRUE} (default), Gaussian approximation needed for
 #' importance sampling is performed at each iteration. If \code{FALSE}, approximation is updated only
-#' once at the start of the MCMC.
-#' @param threads Number of threads for state simulation.
+#' once at the start of the MCMC using the initial model.
+#' @param threads Number of threads for state simulation. The default is 1. 
+#' Note that parallel computing is only used in the post-correction phase of IS-MCMC 
+#' and when sampling the states in case of approximate models.
 #' @param seed Seed for the random number generator.
 #' @param max_iter Maximum number of iterations used in Gaussian approximation.
 #' @param conv_tol Tolerance parameter used in Gaussian approximation.
@@ -198,9 +200,9 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #'   P1 = diag(c(10, 0.1)), distribution = "poisson")
 #'   
 #' # Note small number of iterations for CRAN checks
-#' mcmc_is <- run_mcmc(poisson_model, iter = 1000, particles = 10, 
+#' mcmc_out <- run_mcmc(poisson_model, iter = 1000, particles = 10, 
 #'   mcmc_type = "da")
-#' summary(mcmc_is, what = "theta", return_se = TRUE)
+#' summary(mcmc_out, what = "theta", return_se = TRUE)
 #' 
 #' set.seed(123)
 #' n <- 50
@@ -223,8 +225,9 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' 
 #' # run IS-MCMC
 #' # Note small number of iterations for CRAN checks
+#' # so no real use of parallelization
 #' fit <- run_mcmc(model, iter = 5000,
-#'   particles = 10, mcmc_type = "is2", seed = 1)
+#'   particles = 10, mcmc_type = "is2", seed = 1, threads = 2)
 #'
 #' # extract states   
 #' d_states <- as.data.frame(fit, variable = "states", time = 1:n)

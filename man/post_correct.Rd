@@ -68,13 +68,18 @@ model <- ar1_ng(y, distribution = "binomial",
   u = u)
 
 out_approx <- run_mcmc(model, mcmc_type = "approx", 
-  iter = 50000)
+  local_approx = FALSE, iter = 50000)
 
-out_is2 <- post_correct(model, out_approx, particles = 30)
+out_is2 <- post_correct(model, out_approx, particles = 30,
+  threads = 2)
+out_is2$time
+
 summary(out_approx, return_se = TRUE)
 summary(out_is2, return_se = TRUE)
 
 # latent state
+library("dplyr")
+library("ggplot2")
 state_approx <- as.data.frame(out_approx, variable = "states") \%>\% 
   group_by(time) \%>\%
   summarise(mean = mean(value))
@@ -83,7 +88,7 @@ state_exact <- as.data.frame(out_is2, variable = "states") \%>\%
   group_by(time) \%>\%
   summarise(mean = weighted.mean(value, weight))
 
-dplyr:: bind_rows(approx = state_approx, 
+dplyr::bind_rows(approx = state_approx, 
   exact = state_exact, .id = "method") \%>\%
   filter(time > 200) \%>\%
 ggplot(aes(time, mean, colour = method)) + 

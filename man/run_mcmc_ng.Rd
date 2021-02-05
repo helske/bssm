@@ -78,9 +78,11 @@ is done for transformed parameters with internal_theta = log(theta).}
 
 \item{local_approx}{If \code{TRUE} (default), Gaussian approximation needed for
 importance sampling is performed at each iteration. If \code{FALSE}, approximation is updated only
-once at the start of the MCMC.}
+once at the start of the MCMC using the initial model.}
 
-\item{threads}{Number of threads for state simulation.}
+\item{threads}{Number of threads for state simulation. The default is 1. 
+Note that parallel computing is only used in the post-correction phase of IS-MCMC 
+and when sampling the states in case of approximate models.}
 
 \item{seed}{Seed for the random number generator.}
 
@@ -105,9 +107,9 @@ poisson_model <- bsm_ng(y,
   P1 = diag(c(10, 0.1)), distribution = "poisson")
   
 # Note small number of iterations for CRAN checks
-mcmc_is <- run_mcmc(poisson_model, iter = 1000, particles = 10, 
+mcmc_out <- run_mcmc(poisson_model, iter = 1000, particles = 10, 
   mcmc_type = "da")
-summary(mcmc_is, what = "theta", return_se = TRUE)
+summary(mcmc_out, what = "theta", return_se = TRUE)
 
 set.seed(123)
 n <- 50
@@ -130,8 +132,9 @@ model <- bsm_ng(y, xreg = x,
 
 # run IS-MCMC
 # Note small number of iterations for CRAN checks
+# so no real use of parallelization
 fit <- run_mcmc(model, iter = 5000,
-  particles = 10, mcmc_type = "is2", seed = 1)
+  particles = 10, mcmc_type = "is2", seed = 1, threads = 2)
 
 # extract states   
 d_states <- as.data.frame(fit, variable = "states", time = 1:n)

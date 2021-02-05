@@ -52,7 +52,7 @@ is done for transformed parameters with internal_theta = log(theta).}
 
 \item{end_adaptive_phase}{If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.}
 
-\item{threads}{Number of threads for state simulation.}
+\item{threads}{Number of threads for state simulation. The default is 1.}
 
 \item{seed}{Seed for the random number generator.}
 

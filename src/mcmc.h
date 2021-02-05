@@ -19,10 +19,10 @@ protected:
   const unsigned int n_par;
   const double target_acceptance;
   const double gamma;
-  unsigned int n_stored;
   
 public:
   
+  unsigned int n_stored;
   // constructor
   mcmc(const unsigned int iter, const unsigned int burnin, 
     const unsigned int thin, const unsigned int n, const unsigned int m,

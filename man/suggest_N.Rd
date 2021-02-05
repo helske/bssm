@@ -69,7 +69,7 @@ model <- ar1_ng(y, distribution = "binomial",
   u = u)
 
 out_approx <- run_mcmc(model, mcmc_type = "approx", 
-  iter = 5000)
+ iter = 5000)
 
 estN <- suggest_N(model, out_approx, candidates = seq(10, 50, by = 10))
 plot(x = estN$results$N, y = estN$results$sd, type = "b")
