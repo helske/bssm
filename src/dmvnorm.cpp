@@ -8,9 +8,9 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
   
   if (x.n_elem == 1) {
     if (lwr) {
-      out = -0.5 * (std::log(2.0 * M_PI) + std::log(sigma(0)) + std::pow((x(0) - mean(0)) / sigma(0), 2));
+      out = -0.5 * (std::log(2.0 * M_PI) + 2.0 * std::log(sigma(0)) + std::pow((x(0) - mean(0)) / sigma(0), 2));
     } else {
-      out = - 0.5 * (std::log(2.0 * M_PI) - std::log(sigma(0)) + std::pow(x(0) - mean(0), 2) / sigma(0));
+      out = - 0.5 * (std::log(2.0 * M_PI) + std::log(sigma(0)) + std::pow(x(0) - mean(0), 2) / sigma(0));
     }
   } else {
     

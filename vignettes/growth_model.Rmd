@@ -186,7 +186,7 @@ ggplot(r_summary, aes(x = time, y = mean)) +
   theme_bw()
 
 p_summary$cut <- cut(p_summary$time, c(0, 100, 200, 301))
-ggplot(p_summary, aes(x = time, y = mean,)) + 
+ggplot(p_summary, aes(x = time, y = mean)) + 
   geom_point(data = data.frame(
     mean = y, time = seq_along(y),
     cut = cut(seq_along(y), c(0, 100, 200, 301))), alpha = 0.1) +
@@ -196,6 +196,11 @@ ggplot(p_summary, aes(x = time, y = mean,)) +
   theme_bw() + facet_wrap(~ cut, scales = "free")
 ```
 
+In this example, EKF approximation performs well compared to exact method, while being considerably faster:
+```{r}
+mcmc_res$time
+mcmc_ekf_res$time
+```
 
 ## Appendix
 
