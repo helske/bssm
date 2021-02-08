@@ -288,7 +288,7 @@ Rcpp::List postcorrection_nonlinear(const arma::mat& y, SEXP Z, SEXP H,
   
   approx_mcmc mcmc_run(counts.n_elem, 0, 1, model.n, model.m, model.m,
     0.234, 1, arma::mat(theta.n_rows, theta.n_rows), output_type, true);
-  // mcmc_run.n_stored = counts.n_elem;
+  mcmc_run.n_stored = counts.n_elem;
   // mcmc_run.trim_storage();
   mcmc_run.count_storage = counts;
   mcmc_run.theta_storage = theta;
