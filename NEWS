@@ -8,6 +8,7 @@ bssm 1.1.2 (Release date: 2021-02-08)
    * Fixed out-of-bounds error in IS3 sampling.
    * Fixed weight computations for multivariate nonlinear models in case of psi-APF 
      in some border cases with non-standard H.
+   * Removed Armadillo bound checks for efficiency gains.
    
 bssm 1.1.1 (Release date: 2021-01-22)
 ==============
