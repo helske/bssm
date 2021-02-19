@@ -25,7 +25,7 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
     } else {
       Sx = sigma(finite_x, finite_x);
     }
-    arma::uvec nonzero = arma::find(Sx.diag() > 0);
+    arma::uvec nonzero = arma::find(Sx.diag() > std::numeric_limits<double>::epsilon());
     
     arma::mat S = Sx(nonzero, nonzero);
     

@@ -35,7 +35,7 @@ void conditional_cov(arma::cube& Vt, arma::cube& Ct, const bool use_svd) {
       // Vt can be singular if the states contain deterministic components
       arma::vec diagV = Vt.slice(t - 1).diag();
       arma::uvec nonzero = 
-        arma::find(diagV > (std::numeric_limits<double>::epsilon()  * p * diagV.max()));
+        arma::find(diagV > std::numeric_limits<double>::epsilon());
       
       arma::mat cholVsub = arma::chol(Vt.slice(t - 1).submat(nonzero, nonzero), "lower");
       
@@ -47,7 +47,7 @@ void conditional_cov(arma::cube& Vt, arma::cube& Ct, const bool use_svd) {
       
       arma::vec diagV2 = Vt.slice(t).diag();
       arma::uvec nonzero2 = 
-        arma::find(diagV2 > (std::numeric_limits<double>::epsilon()  * p * diagV2.max()));
+        arma::find(diagV2 > std::numeric_limits<double>::epsilon());
       
       arma::mat cholVsub2 = arma::chol(Vt.slice(t).submat(nonzero2, nonzero2), "lower");
       
@@ -56,7 +56,7 @@ void conditional_cov(arma::cube& Vt, arma::cube& Ct, const bool use_svd) {
     }
     arma::vec diagV = Vt.slice(0).diag();
     arma::uvec nonzero = 
-      arma::find(diagV > (std::numeric_limits<double>::epsilon()  * p * diagV.max()));
+      arma::find(diagV > std::numeric_limits<double>::epsilon());
     
     arma::mat cholV(p, p, arma::fill::zeros);
     arma::mat cholVsub = arma::chol(Vt.slice(0).submat(nonzero, nonzero), "lower");
