@@ -887,7 +887,7 @@ arma::vec ssm_nlg::log_weights(const unsigned int t, const arma::cube& alpha,
       arma::mat Linv(nonzero.n_elem, nonzero.n_elem);
       double constant = precompute_dmvnorm(cov, Linv, nonzero);
       
-      arma::mat cov_a = approx_model.HH.slice(0);
+      arma::mat cov_a = approx_model.HH.slice(t);
       arma::uvec nonzero_a = arma::find(cov_a.diag() > 0);
       arma::mat Linv_a(nonzero_a.n_elem, nonzero_a.n_elem);
       double constant_a = precompute_dmvnorm(cov_a, Linv_a, nonzero_a);
