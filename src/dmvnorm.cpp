@@ -18,7 +18,7 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
     arma::uvec finite_x = arma::find_finite(x);
     unsigned int p = finite_x.n_elem;
     arma::mat Sx(p, p);
-    
+    arma::vec z = x(finite_x) - mean(finite_x);
     if (lwr) {
       arma::mat sigma2 = sigma * sigma.t();
       Sx = sigma2(finite_x, finite_x);
@@ -29,10 +29,9 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
     
     arma::mat S = Sx(nonzero, nonzero);
     
-    arma::mat const rooti = arma::inv(trimatl(arma::chol(S, "lower")));
-    double const other_terms = arma::sum(log(rooti.diag())) - 0.5 * S.n_rows * std::log(2.0 * M_PI);
-    arma::vec z = rooti * (x - mean);
-    out = other_terms - 0.5 * arma::dot(z, z);     
+    arma::mat rooti = arma::inv(trimatl(arma::chol(S, "lower")));
+    arma::vec z2 = rooti * z(nonzero);
+    out = arma::sum(log(rooti.diag())) - 0.5 * S.n_rows * std::log(2.0 * M_PI) - 0.5 * arma::dot(z2, z2);     
     
     
     // if (lwr) {
@@ -84,11 +83,11 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
     //       arma::as_scalar(tmp.t() * arma::diagmat(1.0 / s(nonzero)) * tmp));
     //   }
     // }
-    
-    if (!logd) {
-      out = std::exp(out);
-    }
   }
+  if (!logd) {
+    out = std::exp(out);
+  }
+
   return(out);
 }
 
