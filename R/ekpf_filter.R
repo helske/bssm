@@ -8,7 +8,7 @@
 #' @param seed Seed for RNG.
 #' @param ... Ignored.
 #' @return A list containing samples, filtered estimates and the corresponding covariances,
-#' weights from the last time point, and an estimate of log-likelihood.
+#' weights, and an estimate of log-likelihood.
 #' @references Van Der Merwe, R., Doucet, A., De Freitas, N., & Wan, E. A. (2001). The unscented particle filter. In Advances in neural information processing systems (pp. 584-590).
 #' @export
 #' @rdname ekpf_filter

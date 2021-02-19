@@ -6,8 +6,9 @@
 #' @param particles Number of particles.
 #' @param seed Seed for RNG.
 #' @param ... Ignored.
-#' @return A list containing samples, weights from the last time point, and an
-#' estimate of log-likelihood.
+#' @return List with samples (\code{alpha}) from the filtering distribution and corresponding weights (\code{weights}),
+#'  as well as filtered and predicted states and corresponding covariances (\code{at}, \code{att}, \code{Pt}, \code{Ptt}), 
+#'  and estimated log-likelihood (\code{logLik}).
 #' @export
 #' @references 
 #' Gordon, N. J., Salmond, D. J., & Smith, A. F. M. (1993). 

@@ -24,7 +24,9 @@
 #' \code{iekf_iter} iterations.
 #' @param seed Seed for RNG.
 #' @param ... Ignored.
-#' @return List with samples from the smoothing distribution as well as smoothed means and covariances of the states.
+#' @return List with samples (\code{alpha}) from the smoothing distribution and corresponding weights (\code{weights}),
+#'  as well as smoothed means and covariances (\code{alphahat} and \code{Vt}) of the states and 
+#'  estimated log-likelihood (\code{logLik}).
 #' @references 
 #' [1] Gordon, N. J., Salmond, D. J., & Smith, A. F. M. (1993). 
 #' Novel approach to nonlinear/non-Gaussian Bayesian state estimation. IEE Proceedings-F, 140, 107–113.
