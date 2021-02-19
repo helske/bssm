@@ -130,7 +130,7 @@ Rcpp::List sde_pm_mcmc(const arma::vec& y, const double x0,
   mcmc mcmc_run(iter, burnin,
     thin, model.n, 1, target_acceptance, gamma, S, type);
 
-  mcmc_run.pm_mcmc(model, 1, end_ram, nsim);
+  mcmc_run.pm_mcmc(model, nsim, end_ram);
 
   switch (type) {
   case 1: {
@@ -184,7 +184,7 @@ Rcpp::List sde_da_mcmc(const arma::vec& y, const double x0,
   mcmc mcmc_run(iter, burnin,
     thin, model.n, 1, target_acceptance, gamma, S, type);
 
-  mcmc_run.da_mcmc(model, 1, end_ram, nsim);
+  mcmc_run.da_mcmc(model, nsim, end_ram);
 
   switch (type) {
   case 1: {

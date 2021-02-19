@@ -7,7 +7,7 @@ link-citations: true
 output: html_document
 bibliography: bssm.bib
 vignette: |
-  %\VignetteIndexEntry{Non-linear modelsl with bssm}
+  %\VignetteIndexEntry{Non-linear models with bssm}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
   %\VignetteDepends{ggplot2, dplyr}
@@ -49,18 +49,19 @@ set.seed(1)
 p1 <- 50 # population size at t = 1
 K <- 500 # carrying capacity
 H <- 1 # standard deviation of obs noise
-
+R_1 <- 0.05 # standard deviation of the noise on logit-growth
+R_2 <- 1 # standard deviation of the noise in population level
 #sample time
 dT <- .1
 
 #observation times
 t <- seq(0.1, 30, dT)
 n <- length(t)
-r <- plogis(cumsum(c(-1.5, rnorm(n - 1, sd = 0.05))))
+r <- plogis(cumsum(c(-1.5, rnorm(n - 1, sd = R_1))))
 p <- numeric(n)
 p[1] <- p1
 for(i in 2:n)
-  p[i] <- rnorm(1, K * p[i-1] * exp(r[i-1] * dT) / (K + p[i-1] * (exp(r[i-1] * dT) - 1)), 1)
+  p[i] <- rnorm(1, K * p[i-1] * exp(r[i-1] * dT) / (K + p[i-1] * (exp(r[i-1] * dT) - 1)), R_2)
 # observations
 y <- p + rnorm(n, 0, H)
 ```
@@ -96,10 +97,10 @@ Rcpp::sourceCpp("ssm_nlg_template.cpp")
 pntrs <- create_xptrs()
 ```
 
-This takes a few seconds. let's define our initial guess for $\theta$, the standard deviation of observational level noise, the standard deviations of the process noises, and define the prior distribution for $\alpha_1$:
+This takes a few seconds. let's define our initial guess for $\theta$, the logarithms of the standard deviations of observational and process level noise (we use log-scale in sampling for efficiency reasons, but define priors for the standard deviation, see the template file), and define the prior distribution for $\alpha_1$:
 
 ```{r theta}
-initial_theta <- c(H = 1.2, R1 = 0.03, R2 = 0.5)
+initial_theta <- c(log_H = log(1.2), log_R1 = log(0.1), log_R2 = log(0.5))
 
 # dT, K, a1 and the prior variances
 known_params <- c(dT = dT, K = K, a11 = -1, a12 = 50, P11 = 1, P12 = 100)

@@ -18,7 +18,7 @@ typedef arma::vec (*a1_fnPtr)(const arma::vec& theta, const arma::vec& known_par
 // typedef for a pointer returning P1
 typedef arma::mat (*P1_fnPtr)(const arma::vec& theta, const arma::vec& known_params);
 // typedef for a pointer of log-prior function
-typedef double (*prior_fnPtr)(const arma::vec&);
+typedef double (*prior_fnPtr)(const arma::vec& theta);
 
 class ssm_nlg {
   

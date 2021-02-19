@@ -25,6 +25,16 @@ devtools::install_github("helske/bssm")
 Recent changes (For all changes, see NEWS file.)
 ==========================================================================
 
+bssm 1.1.3 (Release date: 2021-02-)
+==============
+   * Fixed PM-MCMC and DA-MCMC for SDE models and added an example to `ssm_sde`.
+   * Added vignette for SDE models.
+   * Updated citation information and streamlined the main vignette.
+   
+bssm 1.1.2 (Release date: 2021-02-08)
+==============
+   * Some bug fixes, see NEWS for details.
+
 bssm 1.1.0 (Release date: 2021-01-19)
 ==============
 

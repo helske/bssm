@@ -5,6 +5,11 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::interfaces(r, cpp)]]
 
+// Unknown parameters theta:
+// theta(0) = log(H)
+// theta(1) = log(R_1)
+// theta(2) = log(R_2)
+
 // Function for the prior mean of alpha_1
 // [[Rcpp::export]]
 arma::vec a1_fn(const arma::vec& theta, const arma::vec& known_params) {
@@ -29,7 +34,7 @@ arma::mat P1_fn(const arma::vec& theta, const arma::vec& known_params) {
 arma::mat H_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
   arma::mat H(1,1);
-  H(0, 0) = theta(0);
+  H(0, 0) = exp(theta(0));
   return H;
 }
 
@@ -38,8 +43,8 @@ arma::mat H_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
 arma::mat R_fn(const unsigned int t, const arma::vec& alpha, const arma::vec& theta, 
   const arma::vec& known_params, const arma::mat& known_tv_params) {
   arma::mat R(2, 2, arma::fill::zeros);
-  R(0, 0) = theta(1);
-  R(1, 1) = theta(2);
+  R(0, 0) = exp(theta(1));
+  R(1, 1) = exp(theta(2));
   return R;
 }
 
@@ -103,15 +108,16 @@ arma::mat T_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
 // [[Rcpp::export]]
 double log_prior_pdf(const arma::vec& theta) {
   
-  double log_pdf;
-  if(arma::any(theta < 0)) {
-    log_pdf = -arma::datum::inf;
-  } else {
-    // weakly informative priors. 
-    // Note that negative values are handled above
-    log_pdf = 2.0 * (R::dnorm(theta(0), 0, 10, 1) + R::dnorm(theta(1), 0, 10, 1) + 
-      R::dnorm(theta(2), 0, 10, 1));
-  }
+  // weakly informative half-N(0, 4) priors. 
+  // Note that the sampling is on log-scale, 
+  // so we need to add jacobians of the corresponding transformations
+  // we could sample on natural scale with check such as
+  // if(arma::any(theta < 0)) return -std::numeric_limits<double>::infinity();
+  // but this would be less efficient
+  double log_pdf = 
+      R::dnorm(exp(theta(0)), 0, 2, 1) + 
+      R::dnorm(exp(theta(1)), 0, 2, 1) + 
+      R::dnorm(exp(theta(2)), 0, 2, 1);
   return log_pdf;
 }
 

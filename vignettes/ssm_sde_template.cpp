@@ -10,19 +10,19 @@
 // x: state
 // theta: vector of parameters
 
-// theta(0) = rho
+// theta(0) = log_rho
 // theta(1) = nu
-// theta(2) = sigma
+// theta(2) = log_sigma
 
 // Drift function
 // [[Rcpp::export]]
 double drift(const double x, const arma::vec& theta) {
-  return theta(0) * (theta(1) - x);
+  return exp(theta(0)) * (theta(1) - x);
 }
 // diffusion function
 // [[Rcpp::export]]
 double diffusion(const double x, const arma::vec& theta) {
-  return theta(2);
+  return exp(theta(2));
 }
 // Derivative of the diffusion function
 // [[Rcpp::export]]
@@ -34,19 +34,19 @@ double ddiffusion(const double x, const arma::vec& theta) {
 // [[Rcpp::export]]
 double log_prior_pdf(const arma::vec& theta) {
   
-  double log_pdf;
-  if(theta(0) <= 0.0 || theta(2) <= 0.0) {
-    log_pdf = -std::numeric_limits<double>::infinity();
-  } else {
-    // weakly informative priors. 
-    // Note that negative values are handled above
-    log_pdf = R::dnorm(theta(0), 0, 10, 1) + R::dnorm(theta(1), 0, 10, 1) + 
-      R::dnorm(theta(2), 0, 10, 1);
-  }
+  // rho ~ gamma(2, 0.5) // shape-scale parameterization
+  // nu ~ N(0, 4)
+  // sigma ~ half-N(0,1) (theta(2) is log(sigma))
+  double log_pdf = 
+    R::dgamma(exp(theta(0)), 2, 0.5, 1) + 
+    R::dnorm(theta(1), 0, 4, 1) + 
+    R::dnorm(exp(theta(2)), 0, 1, 1) + 
+    theta(0) + theta(2); // jacobians of transformations
   return log_pdf;
 }
 
 // log-density of observations
+// given vector of sampled states alpha
 // [[Rcpp::export]]
 arma::vec log_obs_density(const double y, 
   const arma::vec& alpha, const arma::vec& theta) {

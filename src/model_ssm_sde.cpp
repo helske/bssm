@@ -18,19 +18,6 @@ ssm_sde::ssm_sde(
     coarse_engine(seed), engine(seed + 1), L_f(L_f), L_c(L_c){
 }
 
-arma::vec ssm_sde::log_likelihood(
-    const unsigned int method, 
-    const unsigned int nsim, 
-    arma::cube& alpha, 
-    arma::mat& weights, 
-    arma::umat& indices) {
-  
-  arma::vec ll(2);
-  ll(0) = bsf_filter(nsim, method, alpha, weights, indices);
-  ll(1) = ll(0);
-  return ll;
-}
-
 double ssm_sde::bsf_filter(const unsigned int nsim, 
   const unsigned int L,  arma::cube& alpha, 
   arma::mat& weights, arma::umat& indices) {

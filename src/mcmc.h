@@ -5,6 +5,7 @@
 
 class ssm_ulg;
 class ssm_mlg;
+class ssm_sde;
 
 class mcmc {
   
@@ -52,6 +53,12 @@ public:
   template<class T>
   void da_mcmc(T model, const unsigned int method, const unsigned int nsim, const bool end_ram);
 
+  // pseudo-marginal mcmc for SDE
+  void pm_mcmc(ssm_sde model, const unsigned int nsim, const bool end_ram);
+  
+  // delayed acceptance mcmc for SDE
+  void da_mcmc(ssm_sde model, const unsigned int nsim, const bool end_ram);
+  
   arma::vec posterior_storage;
   arma::mat theta_storage;
   arma::uvec count_storage;

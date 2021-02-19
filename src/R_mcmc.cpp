@@ -462,9 +462,7 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
     } else {
       if(is_type == 3) {
         
-        Rcpp::Rcout<<"1"<<std::endl;
         mcmc_run.expand();
-        Rcpp::Rcout<<"2"<<std::endl;
       }
       switch (sampling_method) {
       case 1:

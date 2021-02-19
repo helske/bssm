@@ -6,6 +6,9 @@
 
 #include "bssm.h"
 
+
+double lchoose(double n, double k);
+
 double norm_log_const(double sd);
 double poisson_log_const(double y, double u);
 double binomial_log_const(double y, double u);

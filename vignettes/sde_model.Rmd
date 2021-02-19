@@ -1,0 +1,101 @@
+---
+title: "Diffusion models with bssm"
+author: 
+  - Jouni Helske, University of Jyväskylä, Department of Mathematics and Statistics, Finland
+date: "17 February 2021"
+link-citations: true
+output: html_document
+bibliography: bssm.bib
+vignette: |
+  %\VignetteIndexEntry{Diffusion models with bssm}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{ggplot2, dplyr}
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#options(tinytex.verbose = TRUE)
+```
+
+
+## Introduction
+
+This vignette shows how to model discretely observed diffusion models with `bssm`. 
+We assume that the state equation is defined as a continuous time diffusion model of form
+$$
+\textrm{d} \alpha_t =
+\mu(t, \alpha_t,\theta) \textrm{d} t +
+\sigma(t, \alpha_t, \theta) \textrm{d} B_t, \quad t\geq0,
+$$
+where $B_t$ is a (vector valued) Brownian motion and where $\mu$ and $\sigma$ are vector and matrix valued functions, with the univariate observation density $p(y_k | \alpha_k)$ defined at integer times $k=1\ldots,n$. As these transition densities are generally unavailable for non-linear diffusions, we use Milstein time-discretisation scheme for approximate simulation with bootstrap particle filter. Fine discretisation mesh gives less bias than the coarser one, with increased computational complexity. Here IS-MCMC approach [@vihola-helske-franks] can provide substantial computational savings.
+
+## Example
+
+Discretely observed diffusion models can be constructed using the `ssm_sde` function, which takes pointers to `C++` functions defining the drift, diffusion, the derivative of the diffusion function, and the log-densities of the observations and the prior. As an example, let us consider an Ornstein–Uhlenbeck process
+$$
+\textrm{d} \alpha_t = \rho (\nu - \alpha_t) \textrm{d} t + \sigma \textrm{d} B_t,
+$$
+with parameters $\theta = (\log\rho, \nu, \log\sigma) = (\log(0.5), 2, \log(0.2))$ and the initial condition $\alpha_0 = 1$. For observation density, we use Poisson distribution with parameter $\exp(\alpha_k)$. We first simulate a trajectory $x_0, \ldots, x_{40}$ using the `sde.sim` function from the `sde` package [@sde] and use that for the simulation of observations $y$:
+```{r}
+set.seed(1)
+n <- 40
+suppressMessages(library("sde"))
+x <- sde.sim(t0 = 0, T = n, X0 = 1, N = n * 2^5,
+  drift = expression(0.5 * (2 - x)),
+  sigma = expression(0.2),
+  sigma.x = expression(0),
+  method = "milstein")
+integer_x <- x[seq(frequency(x) + 1, length(x), frequency(x))]
+y <- rpois(n, exp(integer_x))
+```
+
+We then modify the `C++` functions (see Appendix) which define the terms of the stochastic differential equation, the observation density, and the priors for the unknown parameter vector $\theta$. After compilation with the help of `Rcpp::sourceCpp`, we input pointers to these functions to `ssm_sde` function:
+```{r}
+library("bssm")
+Rcpp::sourceCpp("ssm_sde_template.cpp")
+pntrs <- create_xptrs()
+sde_model <- ssm_sde(y, pntrs$drift, pntrs$diffusion, 
+  pntrs$ddiffusion, pntrs$obs_density, pntrs$prior, 
+  theta = c(log_rho = log(0.5), mu = 2, log_sigma = log(0.2)),
+  x0 = 1, positive = FALSE)
+```
+
+We then run IS-MCMC with 30,000 iterations, using coarse mesh with $L_c=2^2$ discretization points, finer mesh with $L_f=2^5$ points, and 50 particles. We also use two parallel threads for faster post-processing step with finer mesh (note that for accurate inference, more iterations should be used, but here we keep the run short and use only two threads due to CRAN check requirements).
+```{r}
+out <- run_mcmc(sde_model, iter = 3e4, burnin = 1e4, particles = 50, L_c = 2, L_f = 5, threads = 2)
+```
+
+Finally, we can draw our estimated state trajectory and the the corresponding 95 % posterior intervals, together with true process (dashed line, with points corresponding to integer times):
+
+```{r}
+suppressMessages(library("ggplot2"))
+suppressMessages(library("dplyr"))
+
+d <- as.data.frame(out, variable = "states")
+
+state_fit <- d %>% 
+  group_by(time) %>%
+  summarise(state = mean(value), 
+    lwr = quantile(value, 0.025), 
+    upr = quantile(value, 0.975))
+
+ggplot(state_fit, aes(x = time, y = state)) + 
+  geom_ribbon(aes(ymin = lwr, ymax = upr), 
+    fill = "#7570b3", alpha = 0.25) +
+  geom_line(data = data.frame(
+    state = x, 
+    time = time(x)), 
+    colour = "#d95f02", linetype = "dashed") +
+  geom_line(colour = "#7570b3") +
+  geom_point(colour = "#7570b3") +
+  geom_point(data=data.frame(state=integer_x,time=1:n), colour = "#d95f02") +
+  theme_bw()
+```
+
+## Appendix
+
+This is the full `ssm_sde_template.cpp` file:
+
+```{Rcpp ssm_sde_template, code=readLines('ssm_sde_template.cpp'), eval = FALSE, echo = TRUE}
+```

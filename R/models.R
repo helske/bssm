@@ -1673,9 +1673,43 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
 #' @param theta Parameter vector passed to all model functions.
 #' @param x0 Fixed initial value for SDE at time 0.
 #' @param positive If \code{TRUE}, positivity constraint is
-#'   forced by \code{abs} in Millstein scheme.
+#'   forced by \code{abs} in Milstein scheme.
 #' @return Object of class \code{ssm_sde}.
 #' @export
+#' @examples
+#' \dontrun{
+#' library("sde")
+#' set.seed(1)
+#' # theta_0 = rho = 0.5
+#' # theta_1 = nu = 2
+#' # theta_2 = sigma = 0.3
+#' x <- sde.sim(t0 = 0, T = 50, X0 = 1, N = 50,
+#'        drift = expression(0.5 * (2 - x)),
+#'        sigma = expression(0.3),
+#'        sigma.x = expression(0))
+#' y <- rpois(50, exp(x[-1]))
+#'
+#' # Template can be found in the vignette
+#' Rcpp::sourceCpp("ssm_sde_template.cpp")
+#' pntrs <- create_xptrs()
+#' 
+#' sde_model <- ssm_sde(y, pntrs$drift, pntrs$diffusion,
+#'  pntrs$ddiffusion, pntrs$obs_density, pntrs$prior,
+#'  c(rho = 0.5, nu = 2, sigma = 0.3), 1, positive = FALSE)
+#' 
+#' est <- particle_smoother(sde_model, L = 12, particles = 500)
+#' 
+#' ts.plot(cbind(x, est$alphahat, 
+#'   est$alphahat - 2*sqrt(c(est$Vt)), 
+#'   est$alphahat + 2*sqrt(c(est$Vt))), 
+#'   col = c(2, 1, 1, 1), lty = c(1, 1, 2, 2))
+#' 
+#' # Takes time with finer mesh, parallelization with IS-MCMC helps a lot
+#' out <- run_mcmc(sde_model, L_c = 4, L_f = 8, 
+#'   particles = 50, iter = 2e4,
+#'   threads = 4L)
+#' 
+#' }
 ssm_sde <- function(y, drift, diffusion, ddiffusion, obs_pdf,
   prior_pdf, theta, x0, positive) {
   

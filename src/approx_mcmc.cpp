@@ -220,16 +220,16 @@ void approx_mcmc::is_correction_psi(T model, const unsigned int nsim,
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
-  
+
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-  
-  
+
+
 #pragma omp for schedule(static)
   for (unsigned int i = 0; i < n_stored; i++) {
-    
+
     model.update_model(theta_storage.col(i));
     model.approximate_for_is(mode_storage.slice(i));
-    
+
     unsigned int nsimc = nsim;
     if (is_type == 1) {
       nsimc *= count_storage(i);
@@ -237,11 +237,11 @@ void approx_mcmc::is_correction_psi(T model, const unsigned int nsim,
     arma::cube alpha_i(model.m, model.n + 1, nsimc);
     arma::mat weights_i(nsimc, model.n + 1);
     arma::umat indices(nsimc, model.n);
-    
+
     double loglik = model.psi_filter(nsimc, alpha_i, weights_i, indices);
-    
+
     weight_storage(i) = std::exp(loglik);
-    
+
     if (output_type != 3) {
       filter_smoother(alpha_i, indices);
       arma::vec w = weights_i.col(model.n);
@@ -910,7 +910,7 @@ void approx_mcmc::is_correction_bsf<ssm_sde>(ssm_sde model, const unsigned int n
   
   arma::cube Valpha(1, 1, model.n + 1, arma::fill::zeros);
   double sum_w = 0.0;
-  
+
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {

@@ -869,7 +869,7 @@ arma::vec ssm_nlg::log_weights(const unsigned int t, const arma::cube& alpha,
   
   arma::uvec na_y = arma::find_nonfinite(y.col(t));
   
-  if (na_y.n_elem < p) {
+  if (na_y.n_elem < p) { // do we have only missing observations at time t
     
     // original H depends on time or state <=> approx H depends on time or state, or missing values
     if(Htv == 1 || na_y.n_elem > 0) {
@@ -883,12 +883,12 @@ arma::vec ssm_nlg::log_weights(const unsigned int t, const arma::cube& alpha,
     } else {
       arma::mat cov = H_fn(t, alpha.slice(0).col(t), theta, known_params, known_tv_params);
       cov = cov * cov.t();
-      arma::uvec nonzero = arma::find(cov.diag() > (std::numeric_limits<double>::epsilon() * cov.n_cols * cov.diag().max()));
+      arma::uvec nonzero = arma::find(cov.diag() > 0);
       arma::mat Linv(nonzero.n_elem, nonzero.n_elem);
       double constant = precompute_dmvnorm(cov, Linv, nonzero);
       
       arma::mat cov_a = approx_model.HH.slice(0);
-      arma::uvec nonzero_a = arma::find(cov_a.diag() > (std::numeric_limits<double>::epsilon() * cov_a.n_cols * cov_a.diag().max()));
+      arma::uvec nonzero_a = arma::find(cov_a.diag() > 0);
       arma::mat Linv_a(nonzero_a.n_elem, nonzero_a.n_elem);
       double constant_a = precompute_dmvnorm(cov_a, Linv_a, nonzero_a);
       

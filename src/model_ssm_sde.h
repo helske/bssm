@@ -51,13 +51,6 @@ public:
     theta = new_theta;
   };
   
-  arma::vec log_likelihood(
-      const unsigned int method, 
-      const unsigned int nsim, 
-      arma::cube& alpha, 
-      arma::mat& weights, 
-      arma::umat& indices);
-  
   // bootstrap filter  
   double bsf_filter(const unsigned int nsim, const unsigned int L,
     arma::cube& alpha, arma::mat& weights, arma::umat& indices);

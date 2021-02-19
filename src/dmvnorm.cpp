@@ -14,58 +14,76 @@ double dmvnorm(const arma::vec& x, const arma::vec& mean,
     }
   } else {
     
+    // ignore rows/columns corresponding to missing values
     arma::uvec finite_x = arma::find_finite(x);
     unsigned int p = finite_x.n_elem;
+    arma::mat Sx(p, p);
     
     if (lwr) {
       arma::mat sigma2 = sigma * sigma.t();
-      // lazy, could we use previous cholesky?
-      if (p < x.n_elem) {
-        
-        arma::mat U(p, p);
-        arma::mat V(p, p);
-        arma::vec s(p);
-        bool success = arma::svd_econ(U, s, V, sigma2(finite_x, finite_x), "left");
-        
-        if (success) {
-          arma::uvec nonzero = arma::find(s > (std::numeric_limits<double>::epsilon() * p * s(0)));
-          
-          arma::vec tmp = U.cols(nonzero).t() * (x(finite_x) - mean((finite_x)));
-          out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + arma::accu(arma::log(s(nonzero))) + 
-            arma::as_scalar(tmp.t() * arma::diagmat(1.0 / s(nonzero)) * tmp));
-        }
-      } else {
-        
-        arma::uvec nonzero = arma::find(sigma2.diag() > (std::numeric_limits<double>::epsilon() * p * sigma2.diag().max()));
-        if (finite_x.n_elem < p) {
-          nonzero = arma::intersect(finite_x, nonzero);
-        }
-        
-        // before 5.2.2021
-        //arma::mat S = inv(trimatl(sigma(nonzero, nonzero)));
-        //arma::vec tmp = S * (x.rows(nonzero) - mean.rows(nonzero));
-        // note sigma2 !
-        arma::mat S = arma::chol(sigma2(nonzero, nonzero), "lower");
-        arma::vec tmp = arma::inv(trimatl(S)) * (x.rows(nonzero) - mean.rows(nonzero));
-        
-        out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + 
-          2.0 * arma::accu(arma::log(arma::diagvec(S))) + 
-          arma::accu(tmp % tmp));
-      }
+      Sx = sigma2(finite_x, finite_x);
     } else {
-      arma::mat U(p, p);
-      arma::mat V(p, p);
-      arma::vec s(p);
-      bool success = arma::svd_econ(U, s, V, sigma(finite_x, finite_x), "left");
-      
-      if (success) {
-        arma::uvec nonzero = arma::find(s > (std::numeric_limits<double>::epsilon() * p * s(0)));
-        
-        arma::vec tmp = U.cols(nonzero).t() * (x(finite_x) - mean((finite_x)));
-        out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + arma::accu(arma::log(s(nonzero))) + 
-          arma::as_scalar(tmp.t() * arma::diagmat(1.0 / s(nonzero)) * tmp));
-      }
+      Sx = sigma(finite_x, finite_x);
     }
+    arma::uvec nonzero = arma::find(Sx.diag() > 0);
+    
+    arma::mat S = Sx(nonzero, nonzero);
+    
+    arma::mat const rooti = arma::inv(trimatl(arma::chol(S, "lower")));
+    double const other_terms = arma::sum(log(rooti.diag())) - 0.5 * S.n_rows * std::log(2.0 * M_PI);
+    arma::vec z = rooti * (x - mean);
+    out = other_terms - 0.5 * arma::dot(z, z);     
+    
+    
+    // if (lwr) {
+    //   arma::mat sigma2 = sigma * sigma.t();
+    //   // lazy, could we use previous cholesky?
+    //   if (p < x.n_elem) {
+    // 
+    //     arma::mat U(p, p);
+    //     arma::mat V(p, p);
+    //     arma::vec s(p);
+    //     bool success = arma::svd_econ(U, s, V, sigma2(finite_x, finite_x), "left");
+    // 
+    //     if (success) {
+    //       arma::uvec nonzero = arma::find(s > (std::numeric_limits<double>::epsilon() * p * s(0)));
+    // 
+    //       arma::vec tmp = U.cols(nonzero).t() * (x(finite_x) - mean((finite_x)));
+    //       out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + arma::accu(arma::log(s(nonzero))) +
+    //         arma::as_scalar(tmp.t() * arma::diagmat(1.0 / s(nonzero)) * tmp));
+    //     }
+    //   } else {
+    // 
+    //     arma::uvec nonzero = arma::find(sigma2.diag() > (std::numeric_limits<double>::epsilon() * p * sigma2.diag().max()));
+    //     if (finite_x.n_elem < p) {
+    //       nonzero = arma::intersect(finite_x, nonzero);
+    //     }
+    // 
+    //     // before 5.2.2021
+    //     //arma::mat S = inv(trimatl(sigma(nonzero, nonzero)));
+    //     //arma::vec tmp = S * (x.rows(nonzero) - mean.rows(nonzero));
+    //     // note sigma2 !
+    //     arma::mat S = arma::chol(sigma2(nonzero, nonzero), "lower");
+    //     arma::vec tmp = arma::inv(trimatl(S)) * (x.rows(nonzero) - mean.rows(nonzero));
+    // 
+    //     out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) +
+    //       2.0 * arma::accu(arma::log(arma::diagvec(S))) +
+    //       arma::accu(tmp % tmp));
+    //   }
+    // } else {
+    //   arma::mat U(p, p);
+    //   arma::mat V(p, p);
+    //   arma::vec s(p);
+    //   bool success = arma::svd(U, s, V, sigma(finite_x, finite_x));//, "left");
+    // 
+    //   if (success) {
+    //     arma::uvec nonzero = arma::find(s > (std::numeric_limits<double>::epsilon() * p * s(0)));
+    // 
+    //     arma::vec tmp = U.cols(nonzero).t() * (x(finite_x) - mean((finite_x)));
+    //     out = -0.5 * (nonzero.n_elem * std::log(2.0 * M_PI) + arma::accu(arma::log(s(nonzero))) +
+    //       arma::as_scalar(tmp.t() * arma::diagmat(1.0 / s(nonzero)) * tmp));
+    //   }
+    // }
     
     if (!logd) {
       out = std::exp(out);
@@ -87,10 +105,11 @@ double precompute_dmvnorm(const arma::mat& sigma, arma::mat& Linv, const arma::u
     arma::accu(arma::log(Linv.diag()));
   return constant;
 }
-//[[Rcpp::export]]
+//[[Rcpp::export]] 
 double fast_dmvnorm(const arma::vec& x, const arma::vec& mean, 
   const arma::mat& Linv, const arma::uvec& nonzero, const double constant) { 
   
+  // note no missing observations allowed
   arma::vec tmp = Linv * (x.rows(nonzero) - mean.rows(nonzero));
   return constant - 0.5 * arma::accu(tmp % tmp);
 }

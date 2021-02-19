@@ -1,3 +1,9 @@
+bssm 1.1.3 
+==============
+   * Fixed PM-MCMC and DA-MCMC for SDE models and added an example to `ssm_sde`.
+   * Added vignette for SDE models.
+   * Updated citation information and streamlined the main vignette.
+   
 bssm 1.1.2 (Release date: 2021-02-08)
 ==============
    * Changed the definition of D in ssm_ulg and ssm_ung, functions now accept D as scalar or vector as 

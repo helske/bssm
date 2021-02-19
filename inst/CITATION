@@ -1,12 +1,13 @@
 c(
   bibentry(
-    bibtype = "Manual",
-    title = "{bssm}: {B}ayesian Inference of Non-Linear and Non-{G}aussian State Space Models in {R}",
-    author = "Jouni Helske and Matti Vihola",
-    year = sub("-.*", "", meta$Date),
-    note = sprintf("R package version %s", meta$Version),
-    url = "https://CRAN.R-project.org/package=bssm/vignettes/bssm.html",
-    key = "bssm"
+     key = "helske-vihola2021",
+     title= "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in {R}", 
+     author="Jouni Helske and Matti Vihola",
+     year="2021",
+     eprint="2101.08492",
+     archivePrefix="arXiv",
+     primaryClass="stat.CO",
+     url = "https://arxiv.org/abs/2101.08492"
   ),
   bibentry(
     bibtype = "Article",

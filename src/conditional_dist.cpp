@@ -32,7 +32,7 @@ void conditional_cov(arma::cube& Vt, arma::cube& Ct, const bool use_svd) {
     
   } else {
     for (int t = Vt.n_slices - 1; t > 0; t--) {
-      // Vt can be singular if the states contain determistic components
+      // Vt can be singular if the states contain deterministic components
       arma::vec diagV = Vt.slice(t - 1).diag();
       arma::uvec nonzero = 
         arma::find(diagV > (std::numeric_limits<double>::epsilon()  * p * diagV.max()));
