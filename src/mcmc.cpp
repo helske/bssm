@@ -38,10 +38,10 @@ mcmc::mcmc(
   n_samples(std::floor(double(iter - burnin) / double(thin))),
   n_par(S.n_rows),
   target_acceptance(target_acceptance), gamma(gamma), n_stored(0),
-  posterior_storage(arma::vec(n_samples)),
-  theta_storage(arma::mat(n_par, n_samples)),
+  posterior_storage(arma::vec(n_samples, arma::fill::zeros)),
+  theta_storage(arma::mat(n_par, n_samples, arma::fill::zeros)),
   count_storage(arma::uvec(n_samples, arma::fill::zeros)),
-  alpha_storage(arma::cube((output_type == 1) * n + 1, m, (output_type == 1) * n_samples)), 
+  alpha_storage(arma::cube((output_type == 1) * n + 1, m, (output_type == 1) * n_samples, arma::fill::zeros)), 
   alphahat(arma::mat(m, (output_type == 2) * n + 1, arma::fill::zeros)), 
   Vt(arma::cube(m, m, (output_type == 2) * n + 1, arma::fill::zeros)), S(S),
   acceptance_rate(0.0), output_type(output_type) {
