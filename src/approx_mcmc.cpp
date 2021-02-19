@@ -234,9 +234,9 @@ void approx_mcmc::is_correction_psi(T model, const unsigned int nsim,
     if (is_type == 1) {
       nsimc *= count_storage(i);
     }
-    arma::cube alpha_i(model.m, model.n + 1, nsimc);
-    arma::mat weights_i(nsimc, model.n + 1);
-    arma::umat indices(nsimc, model.n);
+    arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+    arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+    arma::umat indices(nsimc, model.n, arma::fill::zeros);
 
     double loglik = model.psi_filter(nsimc, alpha_i, weights_i, indices);
 
@@ -278,9 +278,9 @@ for (unsigned int i = 0; i < n_stored; i++) {
   if (is_type == 1) {
     nsimc *= count_storage(i);
   }
-  arma::cube alpha_i(model.m, model.n + 1, nsimc);
-  arma::mat weights_i(nsimc, model.n + 1);
-  arma::umat indices(nsimc, model.n);
+  arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+  arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+  arma::umat indices(nsimc, model.n, arma::fill::zeros);
   
   double loglik = model.psi_filter(nsimc, alpha_i, weights_i, indices);
   weight_storage(i) = std::exp(loglik);
@@ -358,9 +358,9 @@ void approx_mcmc::is_correction_bsf(T model, const unsigned int nsim,
       nsimc *= count_storage(i);
     }
     
-    arma::cube alpha_i(model.m, model.n + 1, nsimc);
-    arma::mat weights_i(nsimc, model.n + 1);
-    arma::umat indices(nsimc, model.n);
+    arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+    arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+    arma::umat indices(nsimc, model.n, arma::fill::zeros);
     
     double loglik = model.bsf_filter(nsimc, alpha_i, weights_i, indices);
     weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
@@ -400,9 +400,9 @@ for (unsigned int i = 0; i < n_stored; i++) {
     nsimc *= count_storage(i);
   }
   
-  arma::cube alpha_i(model.m, model.n + 1, nsimc);
-  arma::mat weights_i(nsimc, model.n + 1);
-  arma::umat indices(nsimc, model.n);
+  arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+  arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+  arma::umat indices(nsimc, model.n, arma::fill::zeros);
   
   double loglik = model.bsf_filter(nsimc, alpha_i, weights_i, indices);
   weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
@@ -925,9 +925,9 @@ void approx_mcmc::is_correction_bsf<ssm_sde>(ssm_sde model, const unsigned int n
     if (is_type == 1) {
       nsimc *= count_storage(i);
     }
-    arma::cube alpha_i(1, model.n + 1, nsimc);
-    arma::mat weights_i(nsimc, model.n + 1);
-    arma::umat indices(nsimc, model.n);
+    arma::cube alpha_i(1, model.n + 1, nsimc, arma::fill::zeros);
+    arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+    arma::umat indices(nsimc, model.n, arma::fill::zeros);
     double loglik = model.bsf_filter(nsimc, model.L_f, alpha_i, weights_i, indices);
     weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
     
@@ -963,9 +963,9 @@ for (unsigned int i = 0; i < n_stored; i++) {
   if (is_type == 1) {
     nsimc *= count_storage(i);
   }
-  arma::cube alpha_i(1, model.n + 1, nsimc);
-  arma::mat weights_i(nsimc, model.n + 1);
-  arma::umat indices(nsimc, model.n);
+  arma::cube alpha_i(1, model.n + 1, nsimc, arma::fill::zeros);
+  arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+  arma::umat indices(nsimc, model.n, arma::fill::zeros);
   double loglik = model.bsf_filter(nsimc, model.L_f, alpha_i, weights_i, indices);
   weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
   
@@ -1031,9 +1031,9 @@ void approx_mcmc::is_correction_psi2(ssm_ung model, const unsigned int nsim,
     if (is_type == 1) {
       nsimc *= count_storage(i);
     }
-    arma::cube alpha_i(model.m, model.n + 1, nsimc);
-    arma::mat weights_i(nsimc, model.n + 1);
-    arma::umat indices(nsimc, model.n);
+    arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+    arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+    arma::umat indices(nsimc, model.n, arma::fill::zeros);
     
     double loglik = model.psi_filter(nsimc, alpha_i, weights_i, indices);
     
@@ -1075,9 +1075,9 @@ for (unsigned int i = 0; i < n_stored; i++) {
   if (is_type == 1) {
     nsimc *= count_storage(i);
   }
-  arma::cube alpha_i(model.m, model.n + 1, nsimc);
-  arma::mat weights_i(nsimc, model.n + 1);
-  arma::umat indices(nsimc, model.n);
+  arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+  arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+  arma::umat indices(nsimc, model.n, arma::fill::zeros);
   
   double loglik = model.psi_filter(nsimc, alpha_i, weights_i, indices);
   weight_storage(i) = std::exp(loglik);
@@ -1138,9 +1138,9 @@ void approx_mcmc::is_correction_bsf2(ssm_ung model, const unsigned int nsim,
       nsimc *= count_storage(i);
     }
     
-    arma::cube alpha_i(model.m, model.n + 1, nsimc);
-    arma::mat weights_i(nsimc, model.n + 1);
-    arma::umat indices(nsimc, model.n);
+    arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+    arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+    arma::umat indices(nsimc, model.n, arma::fill::zeros);
     
     double loglik = model.bsf_filter(nsimc, alpha_i, weights_i, indices);
     weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
@@ -1180,9 +1180,9 @@ for (unsigned int i = 0; i < n_stored; i++) {
     nsimc *= count_storage(i);
   }
   
-  arma::cube alpha_i(model.m, model.n + 1, nsimc);
-  arma::mat weights_i(nsimc, model.n + 1);
-  arma::umat indices(nsimc, model.n);
+  arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+  arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+  arma::umat indices(nsimc, model.n, arma::fill::zeros);
   
   double loglik = model.bsf_filter(nsimc, alpha_i, weights_i, indices);
   weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
@@ -1343,9 +1343,9 @@ void approx_mcmc::is_correction_psi2(ssm_mng model, const unsigned int nsim,
     if (is_type == 1) {
       nsimc *= count_storage(i);
     }
-    arma::cube alpha_i(model.m, model.n + 1, nsimc);
-    arma::mat weights_i(nsimc, model.n + 1);
-    arma::umat indices(nsimc, model.n);
+    arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+    arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+    arma::umat indices(nsimc, model.n, arma::fill::zeros);
     
     double loglik = model.psi_filter(nsimc, alpha_i, weights_i, indices);
     
@@ -1387,9 +1387,9 @@ for (unsigned int i = 0; i < n_stored; i++) {
   if (is_type == 1) {
     nsimc *= count_storage(i);
   }
-  arma::cube alpha_i(model.m, model.n + 1, nsimc);
-  arma::mat weights_i(nsimc, model.n + 1);
-  arma::umat indices(nsimc, model.n);
+  arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+  arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+  arma::umat indices(nsimc, model.n, arma::fill::zeros);
   
   double loglik = model.psi_filter(nsimc, alpha_i, weights_i, indices);
   weight_storage(i) = std::exp(loglik);
@@ -1450,9 +1450,9 @@ void approx_mcmc::is_correction_bsf2(ssm_mng model, const unsigned int nsim,
       nsimc *= count_storage(i);
     }
     
-    arma::cube alpha_i(model.m, model.n + 1, nsimc);
-    arma::mat weights_i(nsimc, model.n + 1);
-    arma::umat indices(nsimc, model.n);
+    arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+    arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+    arma::umat indices(nsimc, model.n, arma::fill::zeros);
     
     double loglik = model.bsf_filter(nsimc, alpha_i, weights_i, indices);
     weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
@@ -1492,9 +1492,9 @@ for (unsigned int i = 0; i < n_stored; i++) {
     nsimc *= count_storage(i);
   }
   
-  arma::cube alpha_i(model.m, model.n + 1, nsimc);
-  arma::mat weights_i(nsimc, model.n + 1);
-  arma::umat indices(nsimc, model.n);
+  arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+  arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+  arma::umat indices(nsimc, model.n, arma::fill::zeros);
   
   double loglik = model.bsf_filter(nsimc, alpha_i, weights_i, indices);
   weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
