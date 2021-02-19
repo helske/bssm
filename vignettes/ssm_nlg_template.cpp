@@ -109,15 +109,21 @@ arma::mat T_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
 double log_prior_pdf(const arma::vec& theta) {
   
   // weakly informative half-N(0, 4) priors. 
+  
   // Note that the sampling is on log-scale, 
   // so we need to add jacobians of the corresponding transformations
-  // we could sample on natural scale with check such as
+  // we could also sample on natural scale with check such as
   // if(arma::any(theta < 0)) return -std::numeric_limits<double>::infinity();
-  // but this would be less efficient
-  double log_pdf = 
-      R::dnorm(exp(theta(0)), 0, 2, 1) + 
-      R::dnorm(exp(theta(1)), 0, 2, 1) + 
-      R::dnorm(exp(theta(2)), 0, 2, 1);
+  // but this would be less efficient.
+  
+  // You can use R::dnorm and similar functions, see, e.g.
+  // https://teuder.github.io/rcpp4everyone_en/220_dpqr_functions.html
+  double log_pdf =  
+    R::dnorm(exp(theta(0)), 0, 2, 1) +
+    R::dnorm(exp(theta(1)), 0, 2, 1) +
+    R::dnorm(exp(theta(2)), 0, 2, 1) + 
+    arma::accu(theta); //jacobian term
+  
   return log_pdf;
 }
 
@@ -138,7 +144,7 @@ Rcpp::List create_xptrs() {
   // typedef for a pointer returning P1
   typedef arma::mat (*P1_fnPtr)(const arma::vec& theta, const arma::vec& known_params);
   // typedef for a pointer of log-prior function
-  typedef double (*prior_fnPtr)(const arma::vec&);
+  typedef double (*prior_fnPtr)(const arma::vec& theta);
   
   return Rcpp::List::create(
     Rcpp::Named("a1_fn") = Rcpp::XPtr<a1_fnPtr>(new a1_fnPtr(&a1_fn)),
