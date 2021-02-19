@@ -49,11 +49,13 @@ Rcpp::List bsf_sde(const arma::vec& y, const double x0,
      L, L, seed);
 
   unsigned int n = model.n;
-  arma::cube alpha(1, n + 1, nsim);
-  arma::mat weights(nsim, n + 1);
-  arma::umat indices(nsim, n);
+  arma::cube alpha(1, n + 1, nsim, arma::fill::zeros);
+  arma::mat weights(nsim, n + 1, arma::fill::zeros);
+  arma::umat indices(nsim, n, arma::fill::zeros);
   double loglik = model.bsf_filter(nsim, L, alpha, weights, indices);
-
+  if (!std::isfinite(loglik)) 
+    Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+  
   arma::mat at(1, n + 1);
   arma::mat att(1, n + 1);
   arma::cube Pt(1, 1, n + 1);
@@ -87,11 +89,13 @@ Rcpp::List bsf_smoother_sde(const arma::vec& y, const double x0,
      L, L, seed);
 
   unsigned int n = model.n;
-  arma::cube alpha(1, n + 1, nsim);
-  arma::mat weights(nsim, n + 1);
-  arma::umat indices(nsim, n);
+  arma::cube alpha(1, n + 1, nsim, arma::fill::zeros);
+  arma::mat weights(nsim, n + 1, arma::fill::zeros);
+  arma::umat indices(nsim, n, arma::fill::zeros);
   double loglik = model.bsf_filter(nsim, L, alpha, weights, indices);
-
+  if (!std::isfinite(loglik)) 
+    Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+  
   arma::mat alphahat(1, n + 1);
   arma::cube Vt(1, 1, n + 1);
 

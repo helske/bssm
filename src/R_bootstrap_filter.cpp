@@ -26,10 +26,12 @@ Rcpp::List bsf(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
       
       arma::mat at(m, n + 1);
       arma::mat att(m, n);
@@ -50,10 +52,12 @@ Rcpp::List bsf(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
       
       arma::mat at(m, n + 1);
       arma::mat att(m, n);
@@ -74,10 +78,12 @@ Rcpp::List bsf(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
       
       arma::mat at(m, n + 1);
       arma::mat att(m, n);
@@ -101,10 +107,12 @@ Rcpp::List bsf(const Rcpp::List model_,
     unsigned int m = model.m;
     unsigned n = model.n;
     
-    arma::cube alpha(m, n + 1, nsim);
-    arma::mat weights(nsim, n + 1);
-    arma::umat indices(nsim, n);
+    arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+    arma::mat weights(nsim, n + 1, arma::fill::zeros);
+    arma::umat indices(nsim, n, arma::fill::zeros);
     double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+    if (!std::isfinite(loglik)) 
+      Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
     
     arma::mat at(m, n + 1);
     arma::mat att(m, n);
@@ -125,10 +133,12 @@ Rcpp::List bsf(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
       
       arma::mat at(m, n + 1);
       arma::mat att(m, n);
@@ -149,10 +159,13 @@ Rcpp::List bsf(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+      
       arma::mat at(m, n + 1);
       arma::mat att(m, n);
       arma::cube Pt(m, m, n + 1);
@@ -173,10 +186,13 @@ Rcpp::List bsf(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+      
       arma::mat at(m, n + 1);
       arma::mat att(m, n);
       arma::cube Pt(m, m, n + 1);
@@ -197,10 +213,13 @@ Rcpp::List bsf(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+      
       arma::mat at(m, n + 1);
       arma::mat att(m, n);
       arma::cube Pt(m, m, n + 1);
@@ -237,10 +256,12 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
       
       arma::mat alphahat(model.m, model.n + 1);
       arma::cube Vt(model.m, model.m, model.n + 1);
@@ -259,10 +280,13 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+      
       arma::mat alphahat(model.m, model.n + 1);
       arma::cube Vt(model.m, model.m, model.n + 1);
       
@@ -281,10 +305,13 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+      
       arma::mat alphahat(model.m, model.n + 1);
       arma::cube Vt(model.m, model.m, model.n + 1);
       
@@ -306,10 +333,12 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
     unsigned int m = model.m;
     unsigned n = model.n;
     
-    arma::cube alpha(m, n + 1, nsim);
-    arma::mat weights(nsim, n + 1);
-    arma::umat indices(nsim, n);
+    arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+    arma::mat weights(nsim, n + 1, arma::fill::zeros);
+    arma::umat indices(nsim, n, arma::fill::zeros);
     double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+    if (!std::isfinite(loglik)) 
+      Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
     
     arma::mat alphahat(model.m, model.n + 1);
     arma::cube Vt(model.m, model.m, model.n + 1);
@@ -328,10 +357,12 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
       
       arma::mat alphahat(model.m, model.n + 1);
       arma::cube Vt(model.m, model.m, model.n + 1);
@@ -350,10 +381,13 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+      
       arma::mat alphahat(model.m, model.n + 1);
       arma::cube Vt(model.m, model.m, model.n + 1);
       
@@ -372,10 +406,13 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+      
       arma::mat alphahat(model.m, model.n + 1);
       arma::cube Vt(model.m, model.m, model.n + 1);
       
@@ -394,10 +431,13 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       unsigned int m = model.m;
       unsigned n = model.n;
       
-      arma::cube alpha(m, n + 1, nsim);
-      arma::mat weights(nsim, n + 1);
-      arma::umat indices(nsim, n);
+      arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+      arma::mat weights(nsim, n + 1, arma::fill::zeros);
+      arma::umat indices(nsim, n, arma::fill::zeros);
       double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+      if (!std::isfinite(loglik)) 
+        Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+      
       arma::mat alphahat(model.m, model.n + 1);
       arma::cube Vt(model.m, model.m, model.n + 1);
       
@@ -444,11 +484,13 @@ Rcpp::List bsf_nlg(const arma::mat& y, SEXP Z, SEXP H,
   unsigned int m = model.m;
   unsigned n = model.n;
   
-  arma::cube alpha(m, n + 1, nsim);
-  arma::mat weights(nsim, n + 1);
-  arma::umat indices(nsim, n);
+  arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+  arma::mat weights(nsim, n + 1, arma::fill::zeros);
+  arma::umat indices(nsim, n, arma::fill::zeros);
   
   double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+  if (!std::isfinite(loglik)) 
+    Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
   
   arma::mat at(m, n + 1);
   arma::mat att(m, n);
@@ -491,10 +533,12 @@ Rcpp::List bsf_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
   unsigned int m = model.m;
   unsigned n = model.n;
   
-  arma::cube alpha(m, n + 1, nsim);
-  arma::mat weights(nsim, n + 1);
-  arma::umat indices(nsim, n);
+  arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+  arma::mat weights(nsim, n + 1, arma::fill::zeros);
+  arma::umat indices(nsim, n, arma::fill::zeros);
   double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+  if (!std::isfinite(loglik)) 
+    Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
   
   arma::mat alphahat(model.m, model.n + 1);
   arma::cube Vt(model.m, model.m, model.n + 1);

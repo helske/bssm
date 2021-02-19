@@ -20,25 +20,25 @@ arma::cube gaussian_psi_smoother(const Rcpp::List model_,
   switch (model_type) {
   case 0: {
   ssm_mlg model(model_, seed);
-  arma::cube alpha(model.m, model.n + 1, nsim);
+  arma::cube alpha(model.m, model.n + 1, nsim, arma::fill::zeros);
   model.psi_filter(nsim, alpha);
   return alpha;
 } break;
   case 1: {
   ssm_ulg model(model_, seed);
-  arma::cube alpha(model.m, model.n + 1, nsim);
+  arma::cube alpha(model.m, model.n + 1, nsim, arma::fill::zeros);
   model.psi_filter(nsim, alpha);
   return alpha;
 } break;
   case 2: {
     bsm_lg model(model_, seed);
-    arma::cube alpha(model.m, model.n + 1, nsim);
+    arma::cube alpha(model.m, model.n + 1, nsim, arma::fill::zeros);
     model.psi_filter(nsim, alpha);
     return alpha;
   } break;
   case 3: {
     ar1_lg model(model_, seed);
-    arma::cube alpha(model.m, model.n + 1, nsim);
+    arma::cube alpha(model.m, model.n + 1, nsim, arma::fill::zeros);
     model.psi_filter(nsim, alpha);
     return alpha;
   } break;
@@ -56,11 +56,14 @@ Rcpp::List psi_smoother(const Rcpp::List model_,
   switch (model_type) {
   case 0: {
   ssm_mng model(model_, seed);
-  arma::cube alpha(model.m, model.n + 1, nsim);
-  arma::mat weights(nsim, model.n + 1);
-  arma::umat indices(nsim, model.n);
+  arma::cube alpha(model.m, model.n + 1, nsim, arma::fill::zeros);
+  arma::mat weights(nsim, model.n + 1, arma::fill::zeros);
+  arma::umat indices(nsim, model.n, arma::fill::zeros);
   
   double loglik = model.psi_filter(nsim, alpha, weights, indices);
+  if (!std::isfinite(loglik)) 
+    Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+  
   arma::mat alphahat(model.m, model.n + 1);
   arma::cube Vt(model.m, model.m, model.n + 1);
   
@@ -77,11 +80,14 @@ Rcpp::List psi_smoother(const Rcpp::List model_,
   case 1: {
   ssm_ung model(model_, seed);
   
-  arma::cube alpha(model.m, model.n + 1, nsim);
-  arma::mat weights(nsim, model.n + 1);
-  arma::umat indices(nsim, model.n);
+  arma::cube alpha(model.m, model.n + 1, nsim, arma::fill::zeros);
+  arma::mat weights(nsim, model.n + 1, arma::fill::zeros);
+  arma::umat indices(nsim, model.n, arma::fill::zeros);
   
   double loglik = model.psi_filter(nsim, alpha, weights, indices);
+  if (!std::isfinite(loglik)) 
+    Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+  
   arma::mat alphahat(model.m, model.n + 1);
   arma::cube Vt(model.m, model.m, model.n + 1);
   
@@ -96,11 +102,13 @@ Rcpp::List psi_smoother(const Rcpp::List model_,
 } break;
   case 2: {
     bsm_ng model(model_, seed);
-    arma::cube alpha(model.m, model.n + 1, nsim);
-    arma::mat weights(nsim, model.n + 1);
-    arma::umat indices(nsim, model.n);
+    arma::cube alpha(model.m, model.n + 1, nsim, arma::fill::zeros);
+    arma::mat weights(nsim, model.n + 1, arma::fill::zeros);
+    arma::umat indices(nsim, model.n, arma::fill::zeros);
     
     double loglik = model.psi_filter(nsim, alpha, weights, indices);
+    if (!std::isfinite(loglik)) 
+      Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
     
     arma::mat alphahat(model.m, model.n + 1);
     arma::cube Vt(model.m, model.m, model.n + 1);
@@ -116,11 +124,13 @@ Rcpp::List psi_smoother(const Rcpp::List model_,
   } break;
   case 3: {
     svm model(model_, seed);
-    arma::cube alpha(model.m, model.n + 1, nsim);
-    arma::mat weights(nsim, model.n + 1);
-    arma::umat indices(nsim, model.n);
+    arma::cube alpha(model.m, model.n + 1, nsim, arma::fill::zeros);
+    arma::mat weights(nsim, model.n + 1, arma::fill::zeros);
+    arma::umat indices(nsim, model.n, arma::fill::zeros);
     
     double loglik = model.psi_filter(nsim, alpha, weights, indices);
+    if (!std::isfinite(loglik)) 
+      Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
     
     arma::mat alphahat(model.m, model.n + 1);
     arma::cube Vt(model.m, model.m, model.n + 1);
@@ -136,11 +146,13 @@ Rcpp::List psi_smoother(const Rcpp::List model_,
   } break;
   case 4: {
     ar1_ng model(model_, seed);
-    arma::cube alpha(model.m, model.n + 1, nsim);
-    arma::mat weights(nsim, model.n + 1);
-    arma::umat indices(nsim, model.n);
+    arma::cube alpha(model.m, model.n + 1, nsim, arma::fill::zeros);
+    arma::mat weights(nsim, model.n + 1, arma::fill::zeros);
+    arma::umat indices(nsim, model.n, arma::fill::zeros);
     
     double loglik = model.psi_filter(nsim, alpha, weights, indices);
+    if (!std::isfinite(loglik)) 
+      Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
     
     arma::mat alphahat(model.m, model.n + 1);
     arma::cube Vt(model.m, model.m, model.n + 1);
@@ -190,11 +202,13 @@ Rcpp::List psi_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
   if(!arma::is_finite(model.mode_estimate)) {
     Rcpp::warning("Approximation did not converge. ");
   }
-  arma::cube alpha(m, n + 1, nsim);
-  arma::mat weights(nsim, n + 1);
-  arma::umat indices(nsim, n);
+  arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+  arma::mat weights(nsim, n + 1, arma::fill::zeros);
+  arma::umat indices(nsim, n, arma::fill::zeros);
   double loglik = model.psi_filter(nsim, alpha, weights, indices);
-
+  if (!std::isfinite(loglik)) 
+    Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+  
   arma::mat alphahat(model.m, model.n + 1);
   arma::cube Vt(model.m, model.m, model.n + 1);
 

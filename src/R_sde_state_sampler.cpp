@@ -4,6 +4,8 @@
 #include "filter_smoother.h"
 #include "summary.h"
 
+// not used anywhere?!?
+
 // [[Rcpp::export]]
 Rcpp::List sde_state_sampler_bsf_is2(const arma::vec& y, const double x0,
   const bool positive, SEXP drift_pntr, SEXP diffusion_pntr,
@@ -32,17 +34,17 @@ Rcpp::List sde_state_sampler_bsf_is2(const arma::vec& y, const double x0,
     arma::mat weights_i(nsim, model.n + 1);
     arma::umat indices(nsim, model.n);
     double loglik = model.bsf_filter(nsim, L_f, alpha_i, weights_i, indices);
-    // if(arma::is_finite(loglik)) {
+    if(std::isfinite(loglik)) {
       weights(i) = std::exp(loglik - approx_loglik_storage(i));
 
       filter_smoother(alpha_i, indices);
       arma::vec w = weights_i.col(model.n);
       std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
       alpha.slice(i) = alpha_i.slice(sample(model.engine)).t();
-    // } else {
-    //   weights(i) = 0.0;
-    //   alpha.slice(i).zeros();
-    // }
+    } else {
+      weights(i) = -std::numeric_limits<double>::infinity();
+      alpha.slice(i).zeros();
+    }
   }
   return Rcpp::List::create(Rcpp::Named("alpha") = alpha,
     Rcpp::Named("weights") = weights);
