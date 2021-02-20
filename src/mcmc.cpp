@@ -148,27 +148,26 @@ void mcmc::state_summary(T model) {
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   
-  model.update_model(theta_storage.col(0));
-  model.smoother(alphahat, Vt);
+  double sum_w = 0;
+  arma::mat alphahat_i(model.m, model.n + 1);
+  arma::cube Vt_i(model.m, model.m, model.n + 1);
   
-  double sum_w = count_storage(0);
-  arma::mat alphahat_i = alphahat;
-  arma::cube Vt_i = Vt;
-  for (unsigned int i = 1; i < n_stored; i++) {
+  for (unsigned int i = 0; i < n_stored; i++) {
+    
     model.update_model(theta_storage.col(i));
     model.smoother(alphahat_i, Vt_i);
     
+    sum_w += count_storage(i);
     arma::mat diff = alphahat_i - alphahat;
-    double tmp = count_storage(i) + sum_w;
-    alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
-    
+    alphahat += count_storage(i) / sum_w * diff; // update E(alpha)
+    arma::mat diff2 = (alphahat_i - alphahat).t();
     for (unsigned int t = 0; t < model.n + 1; t++) {
-      Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+      // update Var(alpha)
+      Valpha.slice(t) += count_storage(i) * diff.col(t) * diff2.row(t);
     }
-    Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-    sum_w = tmp;
+    // update Var(E(alpha))
+    Vt += count_storage(i) / sum_w * (Vt_i - Vt);
   }
-  
   Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
 

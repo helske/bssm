@@ -1,6 +1,11 @@
 bssm 1.1.3 
 ==============
    * Fixed PM-MCMC and DA-MCMC for SDE models and added an example to `ssm_sde`.
+   * Fixed the state covariance estimates of IS-MCMC, approx-MCMC, and 
+     Gaussian MCMC when output_type = "summary".
+   * Fixed memory leaks due to uninitialized variables due to aborted particle filter.
+   * Fixed numerical issues of multivariate normal density for nonlinear models.
+   * Removed dependency on R::lchoose for safer parallel code.
    * Added vignette for SDE models.
    * Updated citation information and streamlined the main vignette.
    

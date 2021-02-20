@@ -62,7 +62,7 @@ void approx_mcmc::expand() {
   arma::vec expanded_weight = rep_vec(weight_storage, count_storage);
   weight_storage.set_size(n_stored);
   weight_storage = expanded_weight;
-
+  
   arma::vec expanded_prior = rep_vec(prior_storage, count_storage);
   prior_storage.set_size(n_stored);
   prior_storage = expanded_prior;
@@ -220,16 +220,16 @@ void approx_mcmc::is_correction_psi(T model, const unsigned int nsim,
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
-
+  
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-
-
+  
+  
 #pragma omp for schedule(static)
   for (unsigned int i = 0; i < n_stored; i++) {
-
+    
     model.update_model(theta_storage.col(i));
     model.approximate_for_is(mode_storage.slice(i));
-
+    
     unsigned int nsimc = nsim;
     if (is_type == 1) {
       nsimc *= count_storage(i);
@@ -237,11 +237,11 @@ void approx_mcmc::is_correction_psi(T model, const unsigned int nsim,
     arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
     arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
     arma::umat indices(nsimc, model.n, arma::fill::zeros);
-
+    
     double loglik = model.psi_filter(nsimc, alpha_i, weights_i, indices);
-
+    
     weight_storage(i) = std::exp(loglik);
-
+    
     if (output_type != 3) {
       filter_smoother(alpha_i, indices);
       arma::vec w = weights_i.col(model.n);
@@ -254,14 +254,17 @@ void approx_mcmc::is_correction_psi(T model, const unsigned int nsim,
         weighted_summary(alpha_i, alphahat_i, Vt_i, w);
 #pragma omp critical
 {
-        arma::mat diff = alphahat_i - alphahat;
-        double tmp = count_storage(i) + sum_w;
-        alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
-        for (unsigned int t = 0; t < model.n + 1; t++) {
-          Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
-        }
-        Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-        sum_w = tmp;
+  double wnew = weight_storage(i) * count_storage(i);
+  sum_w += wnew;
+  arma::mat diff = alphahat_i - alphahat;
+  alphahat += wnew / sum_w * diff; // update E(alpha)
+  arma::mat diff2 = (alphahat_i - alphahat).t();
+  for (unsigned int t = 0; t < model.n + 1; t++) {
+    // update Var(alpha)
+    Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
+  }
+  // update Var(E(alpha))
+  Vt += wnew / sum_w * (Vt_i - Vt);
 }
       }
     }
@@ -296,21 +299,25 @@ for (unsigned int i = 0; i < n_stored; i++) {
       arma::cube Vt_i(model.m, model.m, model.n + 1);
       weighted_summary(alpha_i, alphahat_i, Vt_i, w);
       
+      double wnew = weight_storage(i) * count_storage(i);
+      sum_w += wnew;
       arma::mat diff = alphahat_i - alphahat;
-      double tmp = count_storage(i) + sum_w;
-      alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+      alphahat += wnew / sum_w * diff; // update E(alpha)
+      arma::mat diff2 = (alphahat_i - alphahat).t();
       for (unsigned int t = 0; t < model.n + 1; t++) {
-        Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+        // update Var(alpha)
+        Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
       }
-      Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-      sum_w = tmp;
+      // update Var(E(alpha))
+      Vt += wnew / sum_w * (Vt_i - Vt);
+      
     }
   }
 }
 
 #endif
 if (output_type == 2) {
-  Vt += Valpha / n_stored; // Var[E(alpha)] + E[Var(alpha)]
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
 posterior_storage = prior_storage + approx_loglik_storage +
   arma::log(weight_storage);
@@ -374,16 +381,20 @@ void approx_mcmc::is_correction_bsf(T model, const unsigned int nsim,
         arma::mat alphahat_i(model.m, model.n + 1);
         arma::cube Vt_i(model.m, model.m, model.n + 1);
         weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+        
 #pragma omp critical
 {
+  double wnew = weight_storage(i) * count_storage(i);
+  sum_w += wnew;
   arma::mat diff = alphahat_i - alphahat;
-  double tmp = count_storage(i) + sum_w;
-  alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+  alphahat += wnew / sum_w * diff; // update E(alpha)
+  arma::mat diff2 = (alphahat_i - alphahat).t();
   for (unsigned int t = 0; t < model.n + 1; t++) {
-    Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+    // update Var(alpha)
+    Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
   }
-  Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-  sum_w = tmp;
+  // update Var(E(alpha))
+  Vt += wnew / sum_w * (Vt_i - Vt);
 }
       }
     }
@@ -417,21 +428,25 @@ for (unsigned int i = 0; i < n_stored; i++) {
       arma::mat alphahat_i(model.m, model.n + 1);
       arma::cube Vt_i(model.m, model.m, model.n + 1);
       weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+      
+      double wnew = weight_storage(i) * count_storage(i);
+      sum_w += wnew;
       arma::mat diff = alphahat_i - alphahat;
-      double tmp = count_storage(i) + sum_w;
-      alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+      alphahat += wnew / sum_w * diff; // update E(alpha)
+      arma::mat diff2 = (alphahat_i - alphahat).t();
       for (unsigned int t = 0; t < model.n + 1; t++) {
-        Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+        // update Var(alpha)
+        Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
       }
-      Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-      sum_w = tmp;
+      // update Var(E(alpha))
+      Vt += wnew / sum_w * (Vt_i - Vt);
       
     }
   }
 }
 #endif
 if (output_type == 2) {
-  Vt += Valpha / n_stored; // Var[E(alpha)] + E[Var(alpha)]
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
 posterior_storage = prior_storage + arma::log(weight_storage);
 }
@@ -488,16 +503,20 @@ void approx_mcmc::is_correction_spdk(T model, const unsigned int nsim,
         arma::mat alphahat_i(model.m, model.n + 1);
         arma::cube Vt_i(model.m, model.m, model.n + 1);
         weighted_summary(alpha_i, alphahat_i, Vt_i, weights_i);
+        
 #pragma omp critical
 {
+  double wnew = weight_storage(i) * count_storage(i);
+  sum_w += wnew;
   arma::mat diff = alphahat_i - alphahat;
-  double tmp = count_storage(i) + sum_w;
-  alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+  alphahat += wnew / sum_w * diff; // update E(alpha)
+  arma::mat diff2 = (alphahat_i - alphahat).t();
   for (unsigned int t = 0; t < model.n + 1; t++) {
-    Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+    // update Var(alpha)
+    Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
   }
-  Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-  sum_w = tmp;
+  // update Var(E(alpha))
+  Vt += wnew / sum_w * (Vt_i - Vt);
 }
       }
     }
@@ -527,24 +546,27 @@ for (unsigned int i = 0; i < n_stored; i++) {
       arma::mat alphahat_i(model.m, model.n + 1);
       arma::cube Vt_i(model.m, model.m, model.n + 1);
       weighted_summary(alpha_i, alphahat_i, Vt_i, weights_i);
+      
+      double wnew = weight_storage(i) * count_storage(i);
+      sum_w += wnew;
       arma::mat diff = alphahat_i - alphahat;
-      double tmp = count_storage(i) + sum_w;
-      alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+      alphahat += wnew / sum_w * diff; // update E(alpha)
+      arma::mat diff2 = (alphahat_i - alphahat).t();
       for (unsigned int t = 0; t < model.n + 1; t++) {
-        Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+        // update Var(alpha)
+        Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
       }
-      Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-      sum_w = tmp;
+      // update Var(E(alpha))
+      Vt += wnew / sum_w * (Vt_i - Vt);
     }
   }
-}
-
+  
 #endif
-if (output_type == 2) {
-  Vt += Valpha / n_stored; // Var[E(alpha)] + E[Var(alpha)]
-}
-posterior_storage = prior_storage + approx_loglik_storage +
-  arma::log(weight_storage);
+  if (output_type == 2) {
+    Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
+  }
+  posterior_storage = prior_storage + approx_loglik_storage +
+    arma::log(weight_storage);
 }
 
 // for avoiding R function call within parallel region (critical pragma is not enough)
@@ -568,11 +590,11 @@ void approx_mcmc::approx_state_posterior2(ssm_ung model, const unsigned int n_th
   }
 }
 #else
-  for (unsigned int i = 0; i < n_stored; i++) {
-    model.update_model(theta_storage.col(i));
-    model.approximate_for_is(mode_storage.slice(i));
-    alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
-  }
+for (unsigned int i = 0; i < n_stored; i++) {
+  model.update_model(theta_storage.col(i));
+  model.approximate_for_is(mode_storage.slice(i));
+  alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
+}
 #endif
 }
 
@@ -647,28 +669,25 @@ void approx_mcmc::approx_state_summary(T model) {
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   
-  model.update_model(theta_storage.col(0));
-  model.approximate_for_is(mode_storage.slice(0));
-  model.approx_model.smoother(alphahat, Vt);
+  double sum_w = 0;
+  arma::mat alphahat_i(model.m, model.n + 1);
+  arma::cube Vt_i(model.m, model.m, model.n + 1);
   
-  double sum_w = count_storage(0);
-  arma::mat alphahat_i = alphahat;
-  arma::cube Vt_i = Vt;
-  
-  for (unsigned int i = 1; i < n_stored; i++) {
+  for (unsigned int i = 0; i < n_stored; i++) {
     model.update_model(theta_storage.col(i));
     model.approximate_for_is(mode_storage.slice(i));
     model.approx_model.smoother(alphahat_i, Vt_i);
     
+    sum_w += count_storage(i);
     arma::mat diff = alphahat_i - alphahat;
-    double tmp = count_storage(i) + sum_w;
-    alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
-    
+    alphahat += count_storage(i) / sum_w * diff; // update E(alpha)
+    arma::mat diff2 = (alphahat_i - alphahat).t();
     for (unsigned int t = 0; t < model.n + 1; t++) {
-      Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+      // update Var(alpha)
+      Valpha.slice(t) += count_storage(i) * diff.col(t) * diff2.row(t);
     }
-    Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-    sum_w = tmp;
+    // update Var(E(alpha))
+    Vt += count_storage(i) / sum_w * (Vt_i - Vt);
   }
   Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
@@ -788,29 +807,27 @@ posterior_storage = prior_storage + approx_loglik_storage;
 
 void approx_mcmc::ekf_state_summary(ssm_nlg model) {
   
-  // first iteration
-  model.update_model(theta_storage.col(0));
-  model.ekf_smoother(alphahat, Vt);
-  
-  double sum_w = count_storage(0);
-  arma::mat alphahat_i = alphahat;
-  arma::cube Vt_i = Vt;
-  
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   
-  for (unsigned int i = 1; i < n_stored; i++) {
+  double sum_w = 0;
+  arma::mat alphahat_i(model.m, model.n + 1);
+  arma::cube Vt_i(model.m, model.m, model.n + 1);
+  
+  for (unsigned int i = 0; i < n_stored; i++) {
     
     model.update_model(theta_storage.col(i));
     model.ekf_smoother(alphahat_i, Vt_i);
-    arma::mat diff = alphahat_i - alphahat;
-    double tmp = count_storage(i) + sum_w;
-    alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
     
+    sum_w += count_storage(i);
+    arma::mat diff = alphahat_i - alphahat;
+    alphahat += count_storage(i) / sum_w * diff; // update E(alpha)
+    arma::mat diff2 = (alphahat_i - alphahat).t();
     for (unsigned int t = 0; t < model.n + 1; t++) {
-      Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+      // update Var(alpha)
+      Valpha.slice(t) += count_storage(i) * diff.col(t) * diff2.row(t);
     }
-    Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-    sum_w = tmp;
+    // update Var(E(alpha))
+    Vt += count_storage(i) / sum_w * (Vt_i - Vt);
   }
   Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
@@ -910,7 +927,7 @@ void approx_mcmc::is_correction_bsf<ssm_sde>(ssm_sde model, const unsigned int n
   
   arma::cube Valpha(1, 1, model.n + 1, arma::fill::zeros);
   double sum_w = 0.0;
-
+  
 #ifdef _OPENMP
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
@@ -941,15 +958,17 @@ void approx_mcmc::is_correction_bsf<ssm_sde>(ssm_sde model, const unsigned int n
         arma::mat alphahat_i(1, model.n + 1);
         arma::cube Vt_i(1, 1, model.n + 1);
         weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+        double wc = weight_storage(i) * count_storage(i);
 #pragma omp critical
 {
   arma::mat diff = alphahat_i - alphahat;
-  double tmp = count_storage(i) + sum_w;
-  alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+  double tmp = wc + sum_w;
+  alphahat = (alphahat * sum_w + alphahat_i * wc) / tmp;
+  arma::mat diff2 = (alphahat_i - alphahat).t();
   for (unsigned int t = 0; t < model.n + 1; t++) {
-    Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+    Valpha.slice(t) += diff.col(t) * diff2.row(t);
   }
-  Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
+  Vt = (Vt * sum_w + Vt_i * wc) / tmp;
   sum_w = tmp;
 }
       }
@@ -980,13 +999,16 @@ for (unsigned int i = 0; i < n_stored; i++) {
       arma::cube Vt_i(1, 1, model.n + 1);
       weighted_summary(alpha_i, alphahat_i, Vt_i, w);
       
+      double wc = weight_storage(i) * count_storage(i);
+      
       arma::mat diff = alphahat_i - alphahat;
-      double tmp = count_storage(i) + sum_w;
-      alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+      double tmp = wc + sum_w;
+      alphahat = (alphahat * sum_w + alphahat_i * wc) / tmp;
+      arma::mat diff2 = (alphahat_i - alphahat).t();
       for (unsigned int t = 0; t < model.n + 1; t++) {
-        Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+        Valpha.slice(t) += diff.col(t) * diff2.row(t);
       }
-      Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
+      Vt = (Vt * sum_w + Vt_i * wc) / tmp;
       sum_w = tmp;
       
     }
@@ -994,7 +1016,7 @@ for (unsigned int i = 0; i < n_stored; i++) {
 }
 #endif
 if (output_type == 2) {
-  Vt += Valpha / n_stored; // Var[E(alpha)] + E[Var(alpha)]
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
 posterior_storage = prior_storage + approx_loglik_storage + arma::log(weight_storage);
 }
@@ -1049,16 +1071,20 @@ void approx_mcmc::is_correction_psi2(ssm_ung model, const unsigned int nsim,
         arma::mat alphahat_i(model.m, model.n + 1);
         arma::cube Vt_i(model.m, model.m, model.n + 1);
         weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+        
 #pragma omp critical
 {
+  double wnew = weight_storage(i) * count_storage(i);
+  sum_w += wnew;
   arma::mat diff = alphahat_i - alphahat;
-  double tmp = count_storage(i) + sum_w;
-  alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+  alphahat += wnew / sum_w * diff; // update E(alpha)
+  arma::mat diff2 = (alphahat_i - alphahat).t();
   for (unsigned int t = 0; t < model.n + 1; t++) {
-    Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+    // update Var(alpha)
+    Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
   }
-  Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-  sum_w = tmp;
+  // update Var(E(alpha))
+  Vt += wnew / sum_w * (Vt_i - Vt);
 }
       }
     }
@@ -1093,21 +1119,24 @@ for (unsigned int i = 0; i < n_stored; i++) {
       arma::cube Vt_i(model.m, model.m, model.n + 1);
       weighted_summary(alpha_i, alphahat_i, Vt_i, w);
       
+      double wnew = weight_storage(i) * count_storage(i);
+      sum_w += wnew;
       arma::mat diff = alphahat_i - alphahat;
-      double tmp = count_storage(i) + sum_w;
-      alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+      alphahat += wnew / sum_w * diff; // update E(alpha)
+      arma::mat diff2 = (alphahat_i - alphahat).t();
       for (unsigned int t = 0; t < model.n + 1; t++) {
-        Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+        // update Var(alpha)
+        Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
       }
-      Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-      sum_w = tmp;
+      // update Var(E(alpha))
+      Vt += wnew / sum_w * (Vt_i - Vt);
     }
   }
 }
 
 #endif
 if (output_type == 2) {
-  Vt += Valpha / n_stored; // Var[E(alpha)] + E[Var(alpha)]
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
 posterior_storage = prior_storage + approx_loglik_storage +
   arma::log(weight_storage);
@@ -1154,16 +1183,20 @@ void approx_mcmc::is_correction_bsf2(ssm_ung model, const unsigned int nsim,
         arma::mat alphahat_i(model.m, model.n + 1);
         arma::cube Vt_i(model.m, model.m, model.n + 1);
         weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+        
 #pragma omp critical
 {
+  double wnew = weight_storage(i) * count_storage(i);
+  sum_w += wnew;
   arma::mat diff = alphahat_i - alphahat;
-  double tmp = count_storage(i) + sum_w;
-  alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+  alphahat += wnew / sum_w * diff; // update E(alpha)
+  arma::mat diff2 = (alphahat_i - alphahat).t();
   for (unsigned int t = 0; t < model.n + 1; t++) {
-    Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+    // update Var(alpha)
+    Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
   }
-  Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-  sum_w = tmp;
+  // update Var(E(alpha))
+  Vt += wnew / sum_w * (Vt_i - Vt);
 }
       }
     }
@@ -1197,21 +1230,25 @@ for (unsigned int i = 0; i < n_stored; i++) {
       arma::mat alphahat_i(model.m, model.n + 1);
       arma::cube Vt_i(model.m, model.m, model.n + 1);
       weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+      
+      double wnew = weight_storage(i) * count_storage(i);
+      sum_w += wnew;
       arma::mat diff = alphahat_i - alphahat;
-      double tmp = count_storage(i) + sum_w;
-      alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+      alphahat += wnew / sum_w * diff; // update E(alpha)
+      arma::mat diff2 = (alphahat_i - alphahat).t();
       for (unsigned int t = 0; t < model.n + 1; t++) {
-        Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+        // update Var(alpha)
+        Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
       }
-      Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-      sum_w = tmp;
+      // update Var(E(alpha))
+      Vt += wnew / sum_w * (Vt_i - Vt);
       
     }
   }
 }
 #endif
 if (output_type == 2) {
-  Vt += Valpha / n_stored; // Var[E(alpha)] + E[Var(alpha)]
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
 posterior_storage = prior_storage + arma::log(weight_storage);
 }
@@ -1257,16 +1294,20 @@ void approx_mcmc::is_correction_spdk2(ssm_ung model, const unsigned int nsim,
         arma::mat alphahat_i(model.m, model.n + 1);
         arma::cube Vt_i(model.m, model.m, model.n + 1);
         weighted_summary(alpha_i, alphahat_i, Vt_i, weights_i);
+        
 #pragma omp critical
 {
+  double wnew = weight_storage(i) * count_storage(i);
+  sum_w += wnew;
   arma::mat diff = alphahat_i - alphahat;
-  double tmp = count_storage(i) + sum_w;
-  alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+  alphahat += wnew / sum_w * diff; // update E(alpha)
+  arma::mat diff2 = (alphahat_i - alphahat).t();
   for (unsigned int t = 0; t < model.n + 1; t++) {
-    Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+    // update Var(alpha)
+    Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
   }
-  Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-  sum_w = tmp;
+  // update Var(E(alpha))
+  Vt += wnew / sum_w * (Vt_i - Vt);
 }
       }
     }
@@ -1296,21 +1337,25 @@ for (unsigned int i = 0; i < n_stored; i++) {
       arma::mat alphahat_i(model.m, model.n + 1);
       arma::cube Vt_i(model.m, model.m, model.n + 1);
       weighted_summary(alpha_i, alphahat_i, Vt_i, weights_i);
+      
+      double wnew = weight_storage(i) * count_storage(i);
+      sum_w += wnew;
       arma::mat diff = alphahat_i - alphahat;
-      double tmp = count_storage(i) + sum_w;
-      alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+      alphahat += wnew / sum_w * diff; // update E(alpha)
+      arma::mat diff2 = (alphahat_i - alphahat).t();
       for (unsigned int t = 0; t < model.n + 1; t++) {
-        Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+        // update Var(alpha)
+        Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
       }
-      Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-      sum_w = tmp;
+      // update Var(E(alpha))
+      Vt += wnew / sum_w * (Vt_i - Vt);
     }
   }
 }
 
 #endif
 if (output_type == 2) {
-  Vt += Valpha / n_stored; // Var[E(alpha)] + E[Var(alpha)]
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
 posterior_storage = prior_storage + approx_loglik_storage +
   arma::log(weight_storage);
@@ -1361,16 +1406,20 @@ void approx_mcmc::is_correction_psi2(ssm_mng model, const unsigned int nsim,
         arma::mat alphahat_i(model.m, model.n + 1);
         arma::cube Vt_i(model.m, model.m, model.n + 1);
         weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+        
 #pragma omp critical
 {
+  double wnew = weight_storage(i) * count_storage(i);
+  sum_w += wnew;
   arma::mat diff = alphahat_i - alphahat;
-  double tmp = count_storage(i) + sum_w;
-  alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+  alphahat += wnew / sum_w * diff; // update E(alpha)
+  arma::mat diff2 = (alphahat_i - alphahat).t();
   for (unsigned int t = 0; t < model.n + 1; t++) {
-    Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+    // update Var(alpha)
+    Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
   }
-  Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-  sum_w = tmp;
+  // update Var(E(alpha))
+  Vt += wnew / sum_w * (Vt_i - Vt);
 }
       }
     }
@@ -1405,21 +1454,24 @@ for (unsigned int i = 0; i < n_stored; i++) {
       arma::cube Vt_i(model.m, model.m, model.n + 1);
       weighted_summary(alpha_i, alphahat_i, Vt_i, w);
       
+      double wnew = weight_storage(i) * count_storage(i);
+      sum_w += wnew;
       arma::mat diff = alphahat_i - alphahat;
-      double tmp = count_storage(i) + sum_w;
-      alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+      alphahat += wnew / sum_w * diff; // update E(alpha)
+      arma::mat diff2 = (alphahat_i - alphahat).t();
       for (unsigned int t = 0; t < model.n + 1; t++) {
-        Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+        // update Var(alpha)
+        Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
       }
-      Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-      sum_w = tmp;
+      // update Var(E(alpha))
+      Vt += wnew / sum_w * (Vt_i - Vt);
     }
   }
 }
 
 #endif
 if (output_type == 2) {
-  Vt += Valpha / n_stored; // Var[E(alpha)] + E[Var(alpha)]
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
 posterior_storage = prior_storage + approx_loglik_storage +
   arma::log(weight_storage);
@@ -1466,16 +1518,20 @@ void approx_mcmc::is_correction_bsf2(ssm_mng model, const unsigned int nsim,
         arma::mat alphahat_i(model.m, model.n + 1);
         arma::cube Vt_i(model.m, model.m, model.n + 1);
         weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+        
 #pragma omp critical
 {
+  double wnew = weight_storage(i) * count_storage(i);
+  sum_w += wnew;
   arma::mat diff = alphahat_i - alphahat;
-  double tmp = count_storage(i) + sum_w;
-  alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+  alphahat += wnew / sum_w * diff; // update E(alpha)
+  arma::mat diff2 = (alphahat_i - alphahat).t();
   for (unsigned int t = 0; t < model.n + 1; t++) {
-    Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+    // update Var(alpha)
+    Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
   }
-  Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-  sum_w = tmp;
+  // update Var(E(alpha))
+  Vt += wnew / sum_w * (Vt_i - Vt);
 }
       }
     }
@@ -1509,21 +1565,25 @@ for (unsigned int i = 0; i < n_stored; i++) {
       arma::mat alphahat_i(model.m, model.n + 1);
       arma::cube Vt_i(model.m, model.m, model.n + 1);
       weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+      
+      double wnew = weight_storage(i) * count_storage(i);
+      sum_w += wnew;
       arma::mat diff = alphahat_i - alphahat;
-      double tmp = count_storage(i) + sum_w;
-      alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+      alphahat += wnew / sum_w * diff; // update E(alpha)
+      arma::mat diff2 = (alphahat_i - alphahat).t();
       for (unsigned int t = 0; t < model.n + 1; t++) {
-        Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+        // update Var(alpha)
+        Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
       }
-      Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-      sum_w = tmp;
+      // update Var(E(alpha))
+      Vt += wnew / sum_w * (Vt_i - Vt);
       
     }
   }
 }
 #endif
 if (output_type == 2) {
-  Vt += Valpha / n_stored; // Var[E(alpha)] + E[Var(alpha)]
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
 posterior_storage = prior_storage + arma::log(weight_storage);
 }
@@ -1571,14 +1631,17 @@ void approx_mcmc::is_correction_spdk2(ssm_mng model, const unsigned int nsim,
         weighted_summary(alpha_i, alphahat_i, Vt_i, weights_i);
 #pragma omp critical
 {
+  double wnew = weight_storage(i) * count_storage(i);
+  sum_w += wnew;
   arma::mat diff = alphahat_i - alphahat;
-  double tmp = count_storage(i) + sum_w;
-  alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+  alphahat += wnew / sum_w * diff; // update E(alpha)
+  arma::mat diff2 = (alphahat_i - alphahat).t();
   for (unsigned int t = 0; t < model.n + 1; t++) {
-    Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+    // update Var(alpha)
+    Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
   }
-  Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-  sum_w = tmp;
+  // update Var(E(alpha))
+  Vt += wnew / sum_w * (Vt_i - Vt);
 }
       }
     }
@@ -1608,21 +1671,25 @@ for (unsigned int i = 0; i < n_stored; i++) {
       arma::mat alphahat_i(model.m, model.n + 1);
       arma::cube Vt_i(model.m, model.m, model.n + 1);
       weighted_summary(alpha_i, alphahat_i, Vt_i, weights_i);
+      
+      double wnew = weight_storage(i) * count_storage(i);
+      sum_w += wnew;
       arma::mat diff = alphahat_i - alphahat;
-      double tmp = count_storage(i) + sum_w;
-      alphahat = (alphahat * sum_w + alphahat_i * count_storage(i)) / tmp;
+      alphahat += wnew / sum_w * diff; // update E(alpha)
+      arma::mat diff2 = (alphahat_i - alphahat).t();
       for (unsigned int t = 0; t < model.n + 1; t++) {
-        Valpha.slice(t) += diff.col(t) * (alphahat_i.col(t) - alphahat.col(t)).t();
+        // update Var(alpha)
+        Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
       }
-      Vt = (Vt * sum_w + Vt_i * count_storage(i)) / tmp;
-      sum_w = tmp;
+      // update Var(E(alpha))
+      Vt += wnew / sum_w * (Vt_i - Vt);
     }
   }
 }
 
 #endif
 if (output_type == 2) {
-  Vt += Valpha / n_stored; // Var[E(alpha)] + E[Var(alpha)]
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
 }
 posterior_storage = prior_storage + approx_loglik_storage +
   arma::log(weight_storage);
