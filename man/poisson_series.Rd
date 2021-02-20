@@ -11,7 +11,7 @@ A vector of length 100
 See example for code for reproducing the data.
 }
 \examples{
-# The data is generated as follows:
+# The data was generated as follows:
 set.seed(321)
 slope <- cumsum(c(0, rnorm(99, sd = 0.01)))
 y <- rpois(100, exp(cumsum(slope + c(0, rnorm(99, sd = 0.1)))))

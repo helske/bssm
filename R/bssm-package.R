@@ -29,8 +29,19 @@ NULL
 #' @name drownings
 #' @docType data
 #' @format A time series object containing 46 observations.
-#' @source Statistics Finland \url{http://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
+#' @source Statistics Finland \url{https://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
 #' @keywords datasets
+#' @examples
+#' data("drownings")
+#' model <- bsm_ng(drownings[, "deaths"], u = drownings[, "population"],
+#'   xreg = drownings[, "summer_temp"], distribution = "poisson", 
+#'   beta = normal(0, 0, 1),
+#'   sd_level = gamma(0.1,2, 10), sd_slope = gamma(0, 2, 10))
+#'   
+#' fit <- run_mcmc(model, iter = 5000, 
+#'   output_type = "summary", mcmc_type = "approx")
+#' fit
+#' ts.plot(model$y/model$u, exp(fit$alphahat[, 1]), col = 1:2)
 NULL
 #' Pound/Dollar daily exchange rates
 #'
@@ -43,6 +54,13 @@ NULL
 #' @keywords datasets
 #' @references James Durbin, Siem Jan Koopman (2012). "Time Series Analysis by State Space Methods". 
 #' Oxford University Press.
+#' @examples
+#' data("exchange")
+#' model <- svm(exchange, rho = uniform(0.97,-0.999,0.999),
+#'  sd_ar = halfnormal(0.175, 2), mu = normal(-0.87, 0, 2))
+#' 
+#' out <- particle_smoother(model, particles = 500)
+#' plot.ts(cbind(model$y, exp(out$alphahat))) 
 NULL
 #' Simulated Poisson time series data
 #'
@@ -53,7 +71,7 @@ NULL
 #' @format A vector of length 100
 #' @keywords datasets
 #' @examples 
-#' # The data is generated as follows:
+#' # The data was generated as follows:
 #' set.seed(321)
 #' slope <- cumsum(c(0, rnorm(99, sd = 0.01)))
 #' y <- rpois(100, exp(cumsum(slope + c(0, rnorm(99, sd = 0.1)))))

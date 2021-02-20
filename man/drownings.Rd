@@ -8,11 +8,23 @@
 A time series object containing 46 observations.
 }
 \source{
-Statistics Finland \url{http://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
+Statistics Finland \url{https://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
 }
 \description{
 Dataset containing number of deaths by drowning in Finland in 1969-2014,
 yearly average summer temperatures (June to August) and
 corresponding population sizes (in hundreds of thousands).
+}
+\examples{
+data("drownings")
+model <- bsm_ng(drownings[, "deaths"], u = drownings[, "population"],
+  xreg = drownings[, "summer_temp"], distribution = "poisson", 
+  beta = normal(0, 0, 1),
+  sd_level = gamma(0.1,2, 10), sd_slope = gamma(0, 2, 10))
+  
+fit <- run_mcmc(model, iter = 5000, 
+  output_type = "summary", mcmc_type = "approx")
+fit
+ts.plot(model$y/model$u, exp(fit$alphahat[, 1]), col = 1:2)
 }
 \keyword{datasets}
