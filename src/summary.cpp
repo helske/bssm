@@ -10,7 +10,7 @@ void summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x) {
     mean_x += diff / (i + 1);
     arma::mat diff2 = (x.slice(i) - mean_x).t();
     for (unsigned int t = 0; t < x.n_cols; t++) {
-      cov_x.slice(t) +=  diff.col(t) * diff.row(t);
+      cov_x.slice(t) +=  diff.col(t) * diff2.row(t);
     }
   }
 }
@@ -26,8 +26,9 @@ void weighted_summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x,
       double tmp = weights(i) + cumsumw;
       arma::mat diff = x.slice(i) - mean_x;
       mean_x += diff * weights(i) / tmp;
+      arma::mat diff2 = (x.slice(i) - mean_x).t();
       for (unsigned int t = 0; t < x.n_cols; t++) {
-        cov_x.slice(t) +=  weights(i) * diff.col(t) * (x.slice(i).col(t) - mean_x.col(t)).t();
+        cov_x.slice(t) +=  weights(i) * diff.col(t) * diff2.row(t);
       }
       cumsumw = tmp;
     }
