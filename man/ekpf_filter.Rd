@@ -25,7 +25,7 @@ ekpf_filter(object, particles, ...)
 }
 \value{
 A list containing samples, filtered estimates and the corresponding covariances,
-weights from the last time point, and an estimate of log-likelihood.
+weights, and an estimate of log-likelihood.
 }
 \description{
 Function \code{ekpf_filter} performs a extended Kalman particle filtering with stratification

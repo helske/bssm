@@ -37,7 +37,9 @@ Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.}
 (default, returns posterior samples of states alpha and hyperparameters theta), 
 \code{"theta"} (for marginal posterior of theta), 
 or \code{"summary"} (return the mean and variance estimates of the states 
-and posterior samples of theta).}
+and posterior samples of theta).  In case of \code{"summary"}, means and 
+covariances are computed using the full output of particle filter 
+instead of sampling one of these as in case of \code{output_type = "full"}.}
 
 \item{mcmc_type}{What MCMC algorithm to use? Possible choices are
 \code{"pm"} for pseudo-marginal MCMC,

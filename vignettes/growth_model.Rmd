@@ -2,7 +2,7 @@
 title: "Non-linear models with bssm"
 author: 
   - Jouni Helske, University of Jyväskylä, Department of Mathematics and Statistics, Finland
-date: "6 June 2020"
+date: "20 February 2021"
 link-citations: true
 output: html_document
 bibliography: bssm.bib
@@ -30,7 +30,7 @@ y_t = Z(t, \alpha_t, \theta) + H(t, \alpha_t, \theta)\epsilon_t,\\
 $$
 with $t=1,\ldots, n$, $\epsilon_t \sim N(0,\textrm{I}_p)$, and $\eta \sim N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. 
 
-As some of the model matrices may depend on the current state $\alpha_t$, constructing for example $T(t,\alpha_t,\theta)$ by calling user-defined `R` function is not feasible, as this should be done repeatedly within the particle filter which would negate the benefits of the whole `C++` implementation of the particle filter. Therefore the functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions.
+As some of the model matrices may depend on the current state $\alpha_t$, constructing for example $T(t,\alpha_t,\theta)$ by calling user-defined `R` function is not feasible, as this should be done repeatedly within the particle filter which would negate the benefits of the whole `C++` implementation of the particle filter and Markov chain Monte Carlo. Therefore the functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions.
 
 As an example, a logistic growth model of form
 $$
@@ -97,12 +97,12 @@ Rcpp::sourceCpp("ssm_nlg_template.cpp")
 pntrs <- create_xptrs()
 ```
 
-This takes a few seconds. let's define our initial guess for $\theta$, the logarithms of the standard deviations of observational and process level noise (we use log-scale in sampling for efficiency reasons, but define priors for the standard deviation, see the template file), and define the prior distribution for $\alpha_1$:
+This takes a few seconds. let's define our initial guess for $\theta$, the logarithms of the standard deviations of observational and process level noise, and define the prior distribution for $\alpha_1(we use log-scale in sampling for efficiency reasons, but define priors for the standard deviations, see the template file)$:
 
 ```{r theta}
-initial_theta <- c(log_H = log(1.2), log_R1 = log(0.1), log_R2 = log(0.5))
+initial_theta <- c(log_H = 0, log_R1 = log(0.05), log_R2 = 0)
 
-# dT, K, a1 and the prior variances
+# dT, K, a1 and the prior variances of first and second state (logit r and and p)
 known_params <- c(dT = dT, K = K, a11 = -1, a12 = 50, P11 = 1, P12 = 100)
 ```
 
@@ -134,26 +134,26 @@ ts.plot(plogis(cbind(out_filter$att[, 1], out_smoother$alphahat[, 1])), col = 1:
 
 ## Markov chain Monte Carlo
 
-For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use $\psi$-APF based MCMC with importance sampling correction [@vihola-helske-franks]. Let us compare this approach with EKF-based approximate MCMC (note the very small number of iterations due to package check requirements in CRAN):
+For parameter inference, we can perform full Bayesian inference with \texttt{bssm}. There are multiple choices for the MCMC algorithm in the package, and here we will use the default choice, which is an approximate MCMC with  $\psi$-APF based importance sampling correction [@vihola-helske-franks]. Let us compare this approach with EKF-based approximate MCMC (the former is unbiased, whereas latter is not). Due to package check requirements in CRAN, we use only small number of iterations:
 
 ```{r mcmc}
 # Cholesky of initial proposal matrix (taken from previous runs)
 # used here to speed up convergence due to the small number of iterations
-S <- matrix(c(0.15, 0.01, -0.12, 0, 0.04, -0.05, 0, 0, 0.16), 3, 3) 
-mcmc_res <- run_mcmc(model, iter = 6000, burnin = 1000, particles = 10, 
+S <- matrix(c(0.13, 0.13, -0.11, 0, 0.82, -0.04, 0, 0, 0.16), 3, 3) 
+mcmc_is <- run_mcmc(model, iter = 6000, burnin = 1000, particles = 10, 
   mcmc_type = "is2", sampling_method = "psi", S = S)
-mcmc_ekf_res <- run_mcmc(model, iter = 6000, burnin = 1000, 
+mcmc_ekf <- run_mcmc(model, iter = 6000, burnin = 1000, 
   mcmc_type = "ekf", S = S)
-summary(mcmc_res, return_se = TRUE)
-summary(mcmc_ekf_res, return_se = TRUE)
+summary(mcmc_is, return_se = TRUE)
+summary(mcmc_ekf, return_se = TRUE)
 ```
 
 Using the `as.data.frame` method we can convert the state samples to a data frame for further processing with the `dplyr` package [@dplyr]:
 ```{r summaries}
 library("dplyr")
 library("Hmisc")
-d1 <- as.data.frame(mcmc_res, variable = "states")
-d2 <- as.data.frame(mcmc_ekf_res, variable = "states")
+d1 <- as.data.frame(mcmc_is, variable = "states")
+d2 <- as.data.frame(mcmc_ekf, variable = "states")
 d1$method <- "is2-psi"
 d2$method <- "approx ekf"
 
@@ -174,7 +174,7 @@ p_summary <- rbind(d1, d2) %>%
     upr = wtd.quantile(value, weight, 0.975, normwt = TRUE))
 ```
 
-Above we used the weighted versions of mean and quantile functions provided by the `Hmisc` [@hmisc] package as our IS-MCMC algorithm produces weighted samples of the posterior (alternative slightly less efficient approach would be to just sample with replacement using the weight and proceed with the resulting unweighted posterior sample).
+Above we used the weighted versions of mean and quantile functions provided by the `Hmisc` [@hmisc] package as our IS-MCMC algorithm produces weighted samples of the posterior. Alternatively, we could have used argument `output_type = "summary"`, in which case the `run_mcmc` returns posterior means and covariances of the states instead of samples (these are computed using the full output of particle filter so these estimates are more accurate). 
 
 Using `ggplot2` [@ggplot2] we can compare our two estimation methods:
 ```{r figures}
@@ -199,8 +199,8 @@ ggplot(p_summary, aes(x = time, y = mean)) +
 
 In this example, EKF approximation performs well compared to exact method, while being considerably faster:
 ```{r}
-mcmc_res$time
-mcmc_ekf_res$time
+mcmc_is$time
+mcmc_ekf$time
 ```
 
 ## Appendix

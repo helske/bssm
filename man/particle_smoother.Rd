@@ -75,7 +75,9 @@ Gaussian models is obtained from extended Kalman filter. If
 \item{L}{Integer defining the discretization level.}
 }
 \value{
-List with samples from the smoothing distribution as well as smoothed means and covariances of the states.
+List with samples (\code{alpha}) from the smoothing distribution and corresponding weights (\code{weights}),
+ as well as smoothed means and covariances (\code{alphahat} and \code{Vt}) of the states and 
+ estimated log-likelihood (\code{logLik}).
 }
 \description{
 Function \code{particle_smoother} performs particle smoothing 

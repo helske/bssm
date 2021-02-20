@@ -51,8 +51,9 @@ bootstrap_filter(model, particles, ...)
 \item{L}{Integer defining the discretization level for SDE models.}
 }
 \value{
-A list containing samples, weights from the last time point, and an
-estimate of log-likelihood.
+List with samples (\code{alpha}) from the filtering distribution and corresponding weights (\code{weights}),
+ as well as filtered and predicted states and corresponding covariances (\code{at}, \code{att}, \code{Pt}, \code{Ptt}), 
+ and estimated log-likelihood (\code{logLik}).
 }
 \description{
 Function \code{bootstrap_filter} performs a bootstrap filtering with stratification
