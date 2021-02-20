@@ -13,6 +13,7 @@ void summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x) {
       cov_x.slice(t) +=  diff.col(t) * diff2.row(t);
     }
   }
+  cov_x /= x.n_slices;
 }
 
 void weighted_summary(const arma::cube& x, arma::mat& mean_x, arma::cube& cov_x, 
