@@ -1,5 +1,6 @@
 c(
   bibentry(
+     bibtype = "Article",
      key = "helske-vihola2021",
      title= "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in {R}", 
      author="Jouni Helske and Matti Vihola",
