@@ -100,7 +100,7 @@ Rcpp::List bsf_smoother_sde(const arma::vec& y, const double x0,
   arma::cube Vt(1, 1, n + 1);
 
   filter_smoother(alpha, indices);
-  weighted_summary(alpha, alphahat, Vt, weights.col(n));
+  summary(alpha, alphahat, Vt); // weights are uniform due to extra time point
 
   arma::inplace_trans(alphahat);
 

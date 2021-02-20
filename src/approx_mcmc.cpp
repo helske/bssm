@@ -244,14 +244,14 @@ void approx_mcmc::is_correction_psi(T model, const unsigned int nsim,
     
     if (output_type != 3) {
       filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n);
+      
       if (output_type == 1) {
-        std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+        std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
         alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
       } else {
         arma::mat alphahat_i(model.m, model.n + 1);
         arma::cube Vt_i(model.m, model.m, model.n + 1);
-        weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+        summary(alpha_i, alphahat_i, Vt_i);
 #pragma omp critical
 {
   double wnew = weight_storage(i) * count_storage(i);
@@ -290,14 +290,14 @@ for (unsigned int i = 0; i < n_stored; i++) {
   
   if (output_type != 3) {
     filter_smoother(alpha_i, indices);
-    arma::vec w = weights_i.col(model.n);
+    
     if (output_type == 1) {
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+      std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
       alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
     } else {
       arma::mat alphahat_i(model.m, model.n + 1);
       arma::cube Vt_i(model.m, model.m, model.n + 1);
-      weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+      summary(alpha_i, alphahat_i, Vt_i);
       
       double wnew = weight_storage(i) * count_storage(i);
       sum_w += wnew;
@@ -373,14 +373,13 @@ void approx_mcmc::is_correction_bsf(T model, const unsigned int nsim,
     weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
     if (output_type != 3) {
       filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n);
       if (output_type == 1) {
-        std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+        std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
         alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
       } else {
         arma::mat alphahat_i(model.m, model.n + 1);
         arma::cube Vt_i(model.m, model.m, model.n + 1);
-        weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+        summary(alpha_i, alphahat_i, Vt_i);
         
 #pragma omp critical
 {
@@ -420,14 +419,13 @@ for (unsigned int i = 0; i < n_stored; i++) {
   
   if (output_type != 3) {
     filter_smoother(alpha_i, indices);
-    arma::vec w = weights_i.col(model.n);
     if (output_type == 1) {
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+      std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
       alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
     } else {
       arma::mat alphahat_i(model.m, model.n + 1);
       arma::cube Vt_i(model.m, model.m, model.n + 1);
-      weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+      summary(alpha_i, alphahat_i, Vt_i);
       
       double wnew = weight_storage(i) * count_storage(i);
       sum_w += wnew;
@@ -950,26 +948,28 @@ void approx_mcmc::is_correction_bsf<ssm_sde>(ssm_sde model, const unsigned int n
     
     if (output_type != 3) {
       filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n);
+      
       if (output_type == 1) {
-        std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+        std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
         alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
       } else {
         arma::mat alphahat_i(1, model.n + 1);
         arma::cube Vt_i(1, 1, model.n + 1);
-        weighted_summary(alpha_i, alphahat_i, Vt_i, w);
-        double wc = weight_storage(i) * count_storage(i);
+        summary(alpha_i, alphahat_i, Vt_i);
+       
 #pragma omp critical
 {
+  double wnew = weight_storage(i) * count_storage(i);
+  sum_w += wnew;
   arma::mat diff = alphahat_i - alphahat;
-  double tmp = wc + sum_w;
-  alphahat = (alphahat * sum_w + alphahat_i * wc) / tmp;
+  alphahat += wnew / sum_w * diff; // update E(alpha)
   arma::mat diff2 = (alphahat_i - alphahat).t();
   for (unsigned int t = 0; t < model.n + 1; t++) {
-    Valpha.slice(t) += diff.col(t) * diff2.row(t);
+    // update Var(alpha)
+    Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
   }
-  Vt = (Vt * sum_w + Vt_i * wc) / tmp;
-  sum_w = tmp;
+  // update Var(E(alpha))
+  Vt += wnew / sum_w * (Vt_i - Vt);
 }
       }
     }
@@ -990,26 +990,26 @@ for (unsigned int i = 0; i < n_stored; i++) {
   
   if (output_type != 3) {
     filter_smoother(alpha_i, indices);
-    arma::vec w = weights_i.col(model.n);
+    
     if (output_type == 1) {
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+      std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
       alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
     } else {
       arma::mat alphahat_i(1, model.n + 1);
       arma::cube Vt_i(1, 1, model.n + 1);
-      weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+      summary(alpha_i, alphahat_i, Vt_i);
       
-      double wc = weight_storage(i) * count_storage(i);
-      
+      double wnew = weight_storage(i) * count_storage(i);
+      sum_w += wnew;
       arma::mat diff = alphahat_i - alphahat;
-      double tmp = wc + sum_w;
-      alphahat = (alphahat * sum_w + alphahat_i * wc) / tmp;
+      alphahat += wnew / sum_w * diff; // update E(alpha)
       arma::mat diff2 = (alphahat_i - alphahat).t();
       for (unsigned int t = 0; t < model.n + 1; t++) {
-        Valpha.slice(t) += diff.col(t) * diff2.row(t);
+        // update Var(alpha)
+        Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
       }
-      Vt = (Vt * sum_w + Vt_i * wc) / tmp;
-      sum_w = tmp;
+      // update Var(E(alpha))
+      Vt += wnew / sum_w * (Vt_i - Vt);
       
     }
   }
@@ -1063,14 +1063,14 @@ void approx_mcmc::is_correction_psi2(ssm_ung model, const unsigned int nsim,
     
     if (output_type != 3) {
       filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n);
+      
       if (output_type == 1) {
-        std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+        std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
         alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
       } else {
         arma::mat alphahat_i(model.m, model.n + 1);
         arma::cube Vt_i(model.m, model.m, model.n + 1);
-        weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+        summary(alpha_i, alphahat_i, Vt_i);
         
 #pragma omp critical
 {
@@ -1110,14 +1110,14 @@ for (unsigned int i = 0; i < n_stored; i++) {
   
   if (output_type != 3) {
     filter_smoother(alpha_i, indices);
-    arma::vec w = weights_i.col(model.n);
+    
     if (output_type == 1) {
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+      std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
       alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
     } else {
       arma::mat alphahat_i(model.m, model.n + 1);
       arma::cube Vt_i(model.m, model.m, model.n + 1);
-      weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+      summary(alpha_i, alphahat_i, Vt_i);
       
       double wnew = weight_storage(i) * count_storage(i);
       sum_w += wnew;
@@ -1175,14 +1175,14 @@ void approx_mcmc::is_correction_bsf2(ssm_ung model, const unsigned int nsim,
     weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
     if (output_type != 3) {
       filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n);
+      
       if (output_type == 1) {
-        std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+        std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
         alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
       } else {
         arma::mat alphahat_i(model.m, model.n + 1);
         arma::cube Vt_i(model.m, model.m, model.n + 1);
-        weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+        summary(alpha_i, alphahat_i, Vt_i);
         
 #pragma omp critical
 {
@@ -1222,14 +1222,14 @@ for (unsigned int i = 0; i < n_stored; i++) {
   
   if (output_type != 3) {
     filter_smoother(alpha_i, indices);
-    arma::vec w = weights_i.col(model.n);
+    
     if (output_type == 1) {
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+      std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
       alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
     } else {
       arma::mat alphahat_i(model.m, model.n + 1);
       arma::cube Vt_i(model.m, model.m, model.n + 1);
-      weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+      summary(alpha_i, alphahat_i, Vt_i);
       
       double wnew = weight_storage(i) * count_storage(i);
       sum_w += wnew;
@@ -1398,14 +1398,14 @@ void approx_mcmc::is_correction_psi2(ssm_mng model, const unsigned int nsim,
     
     if (output_type != 3) {
       filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n);
+      
       if (output_type == 1) {
-        std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+        std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
         alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
       } else {
         arma::mat alphahat_i(model.m, model.n + 1);
         arma::cube Vt_i(model.m, model.m, model.n + 1);
-        weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+        summary(alpha_i, alphahat_i, Vt_i);
         
 #pragma omp critical
 {
@@ -1445,14 +1445,14 @@ for (unsigned int i = 0; i < n_stored; i++) {
   
   if (output_type != 3) {
     filter_smoother(alpha_i, indices);
-    arma::vec w = weights_i.col(model.n);
+    
     if (output_type == 1) {
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+      std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
       alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
     } else {
       arma::mat alphahat_i(model.m, model.n + 1);
       arma::cube Vt_i(model.m, model.m, model.n + 1);
-      weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+      summary(alpha_i, alphahat_i, Vt_i);
       
       double wnew = weight_storage(i) * count_storage(i);
       sum_w += wnew;
@@ -1510,14 +1510,14 @@ void approx_mcmc::is_correction_bsf2(ssm_mng model, const unsigned int nsim,
     weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
     if (output_type != 3) {
       filter_smoother(alpha_i, indices);
-      arma::vec w = weights_i.col(model.n);
+      
       if (output_type == 1) {
-        std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+        std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
         alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
       } else {
         arma::mat alphahat_i(model.m, model.n + 1);
         arma::cube Vt_i(model.m, model.m, model.n + 1);
-        weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+        summary(alpha_i, alphahat_i, Vt_i);
         
 #pragma omp critical
 {
@@ -1557,14 +1557,14 @@ for (unsigned int i = 0; i < n_stored; i++) {
   
   if (output_type != 3) {
     filter_smoother(alpha_i, indices);
-    arma::vec w = weights_i.col(model.n);
+    
     if (output_type == 1) {
-      std::discrete_distribution<unsigned int> sample(w.begin(), w.end());
+      std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
       alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
     } else {
       arma::mat alphahat_i(model.m, model.n + 1);
       arma::cube Vt_i(model.m, model.m, model.n + 1);
-      weighted_summary(alpha_i, alphahat_i, Vt_i, w);
+      summary(alpha_i, alphahat_i, Vt_i);
       
       double wnew = weight_storage(i) * count_storage(i);
       sum_w += wnew;

@@ -267,7 +267,7 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       arma::cube Vt(model.m, model.m, model.n + 1);
       
       filter_smoother(alpha, indices);
-      weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+      summary(alpha, alphahat, Vt);
       
       arma::inplace_trans(alphahat);
       return Rcpp::List::create(
@@ -291,7 +291,7 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       arma::cube Vt(model.m, model.m, model.n + 1);
       
       filter_smoother(alpha, indices);
-      weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+      summary(alpha, alphahat, Vt);
       
       arma::inplace_trans(alphahat);
       return Rcpp::List::create(
@@ -316,7 +316,7 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       arma::cube Vt(model.m, model.m, model.n + 1);
       
       filter_smoother(alpha, indices);
-      weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+      summary(alpha, alphahat, Vt);
       
       arma::inplace_trans(alphahat);
       return Rcpp::List::create(
@@ -344,7 +344,7 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
     arma::cube Vt(model.m, model.m, model.n + 1);
     
     filter_smoother(alpha, indices);
-    weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+    summary(alpha, alphahat, Vt);
     
     arma::inplace_trans(alphahat);
     return Rcpp::List::create(
@@ -368,7 +368,7 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       arma::cube Vt(model.m, model.m, model.n + 1);
       
       filter_smoother(alpha, indices);
-      weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+      summary(alpha, alphahat, Vt);
       
       arma::inplace_trans(alphahat);
       return Rcpp::List::create(
@@ -392,7 +392,7 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       arma::cube Vt(model.m, model.m, model.n + 1);
       
       filter_smoother(alpha, indices);
-      weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+      summary(alpha, alphahat, Vt);
       
       arma::inplace_trans(alphahat);
       return Rcpp::List::create(
@@ -417,7 +417,7 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       arma::cube Vt(model.m, model.m, model.n + 1);
       
       filter_smoother(alpha, indices);
-      weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+      summary(alpha, alphahat, Vt);
       
       arma::inplace_trans(alphahat);
       return Rcpp::List::create(
@@ -442,7 +442,7 @@ Rcpp::List bsf_smoother(const Rcpp::List model_,
       arma::cube Vt(model.m, model.m, model.n + 1);
       
       filter_smoother(alpha, indices);
-      weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+      summary(alpha, alphahat, Vt);
       
       arma::inplace_trans(alphahat);
       return Rcpp::List::create(
@@ -543,7 +543,7 @@ Rcpp::List bsf_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
   arma::mat alphahat(model.m, model.n + 1);
   arma::cube Vt(model.m, model.m, model.n + 1);
   filter_smoother(alpha, indices);
-  weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+  summary(alpha, alphahat, Vt);
   arma::inplace_trans(alphahat);
   
   return Rcpp::List::create(

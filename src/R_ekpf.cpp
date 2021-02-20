@@ -90,7 +90,7 @@ Rcpp::List ekpf_smoother(const arma::mat& y, SEXP Z, SEXP H,
   arma::cube Vt(model.m, model.m, model.n + 1);
 
   filter_smoother(alpha, indices);
-  weighted_summary(alpha, alphahat, Vt, weights.col(model.n));
+  summary(alpha, alphahat, Vt);
 
   arma::inplace_trans(alphahat);
 
