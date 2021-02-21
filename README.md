@@ -10,7 +10,7 @@ bssm: an R package for Bayesian inference of state space models
 Efficient methods for Bayesian inference of state space models via particle Markov 
 chain Monte Carlo and importance sampling type weighted Markov chain Monte Carlo. 
 Currently Gaussian, Poisson, binomial, negative binomial, and Gamma observation densities 
-and linear-Gaussian state dynamics, as well as general non-linear Gaussian models and discretely observed diffusion processes are supported.
+and linear-Gaussian state dynamics, as well as general non-linear Gaussian models and discretely observed latent diffusion processes are supported.
 
 For details, see [paper on ArXiv](https://arxiv.org/abs/2101.08492), [package vignettes at CRAN](https://cran.r-project.org/web/packages/bssm/index.html) and paper on [Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo](https://onlinelibrary.wiley.com/doi/abs/10.1111/sjos.12492). There are also couple posters related to IS-correction methodology: [SMC 2017 workshop: Accelerating MCMC with an approximation ](http://users.jyu.fi/~jovetale/posters/SMC2017) and [UseR!2017: Bayesian non-Gaussian state space models in R](http://users.jyu.fi/~jovetale/posters/user2017.pdf).
 
