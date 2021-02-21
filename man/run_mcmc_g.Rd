@@ -42,7 +42,7 @@ Defaults to 1.}
 \item{gamma}{Tuning parameter for the adaptation of RAM algorithm. Must be
 between 0 and 1 (not checked).}
 
-\item{target_acceptance}{Target acceptance ratio for RAM. Defaults to 0.234.}
+\item{target_acceptance}{Target acceptance rate for MCMC. Defaults to 0.234.}
 
 \item{S}{Initial value for the lower triangular matrix of RAM
 algorithm, so that the covariance matrix of the Gaussian proposal
