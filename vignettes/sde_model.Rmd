@@ -32,7 +32,7 @@ where $B_t$ is a (vector valued) Brownian motion and where $\mu$ and $\sigma$ ar
 
 ## Example
 
-Discretely observed diffusion models can be constructed using the `ssm_sde` function, which takes pointers to `C++` functions defining the drift, diffusion, the derivative of the diffusion function, and the log-densities of the observations and the prior. As an example, let us consider an Ornstein–Uhlenbeck process
+Discretely observed latent diffusion models can be constructed using the `ssm_sde` function, which takes pointers to `C++` functions defining the drift, diffusion, the derivative of the diffusion function, and the log-densities of the observations and the prior. As an example, let us consider an Ornstein–Uhlenbeck process
 $$
 \textrm{d} \alpha_t = \rho (\nu - \alpha_t) \textrm{d} t + \sigma \textrm{d} B_t,
 $$
@@ -61,9 +61,9 @@ sde_model <- ssm_sde(y, pntrs$drift, pntrs$diffusion,
   x0 = 1, positive = FALSE)
 ```
 
-We then run IS-MCMC with 30,000 iterations, using coarse mesh with $L_c=2^2$ discretization points, finer mesh with $L_f=2^5$ points, and 50 particles. We also use two parallel threads for faster post-processing step with finer mesh (note that for accurate inference, more iterations should be used, but here we keep the run short and use only two threads due to CRAN check requirements).
+We then run IS-MCMC with 20,000 iterations (with first half discarded as burn-in by default), using coarse mesh with $L_c=2^2$ discretization points, finer mesh with $L_f=2^5$ points, and 30 particles. We also use two parallel threads for faster post-processing step with finer mesh (note that for accurate inference, more iterations should be used, but here we keep the run short and use only two threads due to CRAN check requirements).
 ```{r}
-out <- run_mcmc(sde_model, iter = 3e4, burnin = 1e4, particles = 50, L_c = 2, L_f = 5, threads = 2)
+out <- run_mcmc(sde_model, iter = 2e4, particles = 30, L_c = 2, L_f = 5, threads = 2)
 ```
 
 Finally, we can draw our estimated state trajectory and the the corresponding 95 % posterior intervals, together with true process (dashed line, with points corresponding to integer times):
