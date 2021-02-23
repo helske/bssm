@@ -141,7 +141,7 @@ void ssm_nlg::approximate() {
     approx_state = 1;
   }
 }
-// not yet in use...
+
 void ssm_nlg::approximate_for_is(const arma::mat& mode_estimate) {
   
   approx_model.a1 = a1_fn(theta, known_params);
