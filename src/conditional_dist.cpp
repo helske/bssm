@@ -9,7 +9,7 @@ void conditional_cov(arma::cube& Vt, arma::cube& Ct, const bool use_svd) {
     for (int t = Vt.n_slices - 1; t > 0; t--) {
       
       arma::mat U(p, p);
-      arma::mat V(1, 1); //not using this
+      arma::mat V(p, p); //not using this
       arma::vec s(p);
       arma::svd_econ(U, s, V, Vt.slice(t - 1), "left");
       arma::uvec nonzero = arma::find(s > (std::numeric_limits<double>::epsilon() * p * s(0)));
@@ -24,7 +24,7 @@ void conditional_cov(arma::cube& Vt, arma::cube& Ct, const bool use_svd) {
     }
     
     arma::mat U(p, p);
-    arma::mat V(1, 1); //not using this
+    arma::mat V(p, p); //not using this
     arma::vec s(p);
     arma::svd_econ(U, s, V, Vt.slice(0), "left");
     
