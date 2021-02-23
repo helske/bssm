@@ -10,9 +10,17 @@ vignette: |
   %\VignetteIndexEntry{bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  %\VignetteDepends{ggplot2, dplyr, sde}
+  %\VignetteDepends{ggplot2, dplyr}
 ---
-  
+
+```{r, echo = FALSE}
+if (!requireNamespace("rmarkdown") ||
+    !rmarkdown::pandoc_available("1.12.3")) {
+  warning(call. = FALSE, "These vignettes assume rmarkdown and pandoc version 1.12.3. These were not found. Older versions will not work.")
+  knitr::knit_exit()
+}
+```
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```

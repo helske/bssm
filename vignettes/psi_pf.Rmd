@@ -8,7 +8,16 @@ bvignette: |
   %\VignetteIndexEntry{$\\psi$-APF for non-linear Gaussian state space models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{dplyr}
 ---
+
+```{r, echo = FALSE}
+if (!requireNamespace("rmarkdown") ||
+    !rmarkdown::pandoc_available("1.12.3")) {
+  warning(call. = FALSE, "These vignettes assume rmarkdown and pandoc version 1.12.3. These were not found. Older versions will not work.")
+  knitr::knit_exit()
+}
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -108,7 +117,7 @@ with constant carrying capacity $K = 500$, initial population size $p_1 = 50$, i
 First, we simulated one realization of length 300 from the logistic growth model. All the model parameters were assumed to be known, expect that the prior variances for the states $p_1$ and $r'_1$ was set to $1$ and $100$. We then performed particle smoothing 1000 times with $N=100$, and $N=1000$ particles, using BSF, EKPF, and $\psi$-APF algorithms. 
 
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
-library(dplyr)
+library("dplyr")
 ```
 
 ```{r, echo = FALSE, cache = FALSE, eval = FALSE}
