@@ -90,10 +90,15 @@ void approx_mcmc::expand() {
 // run approximate MCMC for
 // non-linear and/or non-Gaussian state space model with linear-Gaussian states
 template void approx_mcmc::amcmc(ssm_ung model, const unsigned int method, const bool end_ram);
+
 template void approx_mcmc::amcmc(bsm_ng model, const unsigned int method, const bool end_ram);
+
 template void approx_mcmc::amcmc(svm model, const unsigned int method, const bool end_ram);
+
 template void approx_mcmc::amcmc(ar1_ng model, const unsigned int method, const bool end_ram);
+
 template void approx_mcmc::amcmc(ssm_nlg model, const unsigned int method, const bool end_ram);
+
 template void approx_mcmc::amcmc(ssm_mng model, const unsigned int method, const bool end_ram);
 
 template<class T>
@@ -195,18 +200,113 @@ void approx_mcmc::amcmc(T model, const unsigned int method, const bool end_ram) 
   posterior_storage = approx_loglik_storage + prior_storage;
 }
 
-// approximate MCMC
+
+// run approximate MCMC for SDE model
+void approx_mcmc::amcmc(ssm_sde model, const unsigned int nsim, const bool end_ram) {
+  
+  unsigned int m = 1;
+  unsigned n = model.n;
+  // compute the log[p(theta)]
+  double logprior = model.log_prior_pdf(model.theta);
+  if (!arma::is_finite(logprior)) {
+    Rcpp::stop("Initial prior probability is not finite.");
+  }
+  
+  arma::cube alpha(m, n + 1, nsim);
+  arma::mat weights(nsim, n + 1);
+  arma::umat indices(nsim, n);
+  double loglik = model.bsf_filter(nsim, model.L_c, alpha, weights, indices);
+  if (!std::isfinite(loglik))
+    Rcpp::stop("Initial log-likelihood is not finite.");
+  
+  double acceptance_prob = 0.0;
+  bool new_value = true;
+  unsigned int n_values = 0;
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+  arma::vec theta = model.theta;
+  
+  for (unsigned int i = 1; i <= iter; i++) {
+    if (i % 4 == 0) {
+      Rcpp::checkUserInterrupt();
+    }
+    
+    // sample from standard normal distribution
+    arma::vec u(n_par);
+    for(unsigned int j = 0; j < n_par; j++) {
+      u(j) = normal(model.engine);
+    }
+    
+    // propose new theta
+    arma::vec theta_prop = theta + S * u;
+    // compute prior
+    double logprior_prop = model.log_prior_pdf(theta_prop);
+    
+    if (arma::is_finite(logprior_prop)) {
+      // update parameters
+      model.theta = theta_prop;
+      
+      double loglik_prop = model.bsf_filter(nsim, model.L_c, alpha, weights, indices);
+      
+      //compute the acceptance probability
+      // use explicit min(...) as we need this value later
+      acceptance_prob = std::min(1.0, std::exp(loglik_prop - loglik +
+        logprior_prop - logprior));
+      
+      //accept
+      if (unif(model.engine) < acceptance_prob) {
+        if (i > burnin) {
+          acceptance_rate++;
+          n_values++;
+        }
+        loglik = loglik_prop;
+        logprior = logprior_prop;
+        theta = theta_prop;
+        new_value = true;
+      }
+    } else acceptance_prob = 0.0;
+    
+    if (i > burnin && n_values % thin == 0) {
+      //new block
+      if (new_value) {
+        approx_loglik_storage(n_stored) = loglik;
+        prior_storage(n_stored) = logprior;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
+      }
+    }
+    
+    if (!end_ram || i <= burnin) {
+      ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
+    }
+  }
+  
+  trim_storage();
+  acceptance_rate /= (iter - burnin);
+}
+
+
+// IS-correction with psi-apf
 
 template void approx_mcmc::is_correction_psi(ssm_ung model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads);
+
 template void approx_mcmc::is_correction_psi(bsm_ng model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads);
+
 template void approx_mcmc::is_correction_psi(svm model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads);
+
 template void approx_mcmc::is_correction_psi(ar1_ng model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads);
+
 template void approx_mcmc::is_correction_psi(ssm_mng model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads);
+
 template void approx_mcmc::is_correction_psi(ssm_nlg model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads);
 
@@ -323,6 +423,7 @@ posterior_storage = prior_storage + approx_loglik_storage +
   arma::log(weight_storage);
 }
 
+// IS-correction with bootstrap filter
 template void approx_mcmc::is_correction_bsf(ssm_ung model,
   const unsigned int nsim, const unsigned int is_type,
   const unsigned int n_threads);
@@ -449,6 +550,113 @@ if (output_type == 2) {
 posterior_storage = prior_storage + arma::log(weight_storage);
 }
 
+
+// SDE specialization for is_correction_bsf
+template<>
+void approx_mcmc::is_correction_bsf<ssm_sde>(ssm_sde model, const unsigned int nsim,
+  const unsigned int is_type, const unsigned int n_threads) {
+  
+  arma::cube Valpha(1, 1, model.n + 1, arma::fill::zeros);
+  double sum_w = 0.0;
+  
+#ifdef _OPENMP
+#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
+{
+  
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
+  model.coarse_engine = sitmo::prng_engine(omp_get_thread_num() + n_threads + 1);
+  
+#pragma omp for schedule(static)
+  for (unsigned int i = 0; i < n_stored; i++) {
+    model.theta = theta_storage.col(i);
+    unsigned int nsimc = nsim;
+    if (is_type == 1) {
+      nsimc *= count_storage(i);
+    }
+    arma::cube alpha_i(1, model.n + 1, nsimc, arma::fill::zeros);
+    arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+    arma::umat indices(nsimc, model.n, arma::fill::zeros);
+    double loglik = model.bsf_filter(nsimc, model.L_f, alpha_i, weights_i, indices);
+    weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
+    
+    if (output_type != 3) {
+      filter_smoother(alpha_i, indices);
+      
+      if (output_type == 1) {
+        std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
+        alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
+      } else {
+        arma::mat alphahat_i(1, model.n + 1);
+        arma::cube Vt_i(1, 1, model.n + 1);
+        summary(alpha_i, alphahat_i, Vt_i);
+        
+#pragma omp critical
+{
+  double wnew = weight_storage(i) * count_storage(i);
+  sum_w += wnew;
+  arma::mat diff = alphahat_i - alphahat;
+  alphahat += wnew / sum_w * diff; // update E(alpha)
+  arma::mat diff2 = (alphahat_i - alphahat).t();
+  for (unsigned int t = 0; t < model.n + 1; t++) {
+    // update Var(alpha)
+    Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
+  }
+  // update Var(E(alpha))
+  Vt += wnew / sum_w * (Vt_i - Vt);
+}
+      }
+    }
+  }
+}
+#else
+for (unsigned int i = 0; i < n_stored; i++) {
+  model.theta = theta_storage.col(i);
+  unsigned int nsimc = nsim;
+  if (is_type == 1) {
+    nsimc *= count_storage(i);
+  }
+  arma::cube alpha_i(1, model.n + 1, nsimc, arma::fill::zeros);
+  arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+  arma::umat indices(nsimc, model.n, arma::fill::zeros);
+  double loglik = model.bsf_filter(nsimc, model.L_f, alpha_i, weights_i, indices);
+  weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
+  
+  if (output_type != 3) {
+    filter_smoother(alpha_i, indices);
+    
+    if (output_type == 1) {
+      std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
+      alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
+    } else {
+      arma::mat alphahat_i(1, model.n + 1);
+      arma::cube Vt_i(1, 1, model.n + 1);
+      summary(alpha_i, alphahat_i, Vt_i);
+      
+      double wnew = weight_storage(i) * count_storage(i);
+      sum_w += wnew;
+      arma::mat diff = alphahat_i - alphahat;
+      alphahat += wnew / sum_w * diff; // update E(alpha)
+      arma::mat diff2 = (alphahat_i - alphahat).t();
+      for (unsigned int t = 0; t < model.n + 1; t++) {
+        // update Var(alpha)
+        Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
+      }
+      // update Var(E(alpha))
+      Vt += wnew / sum_w * (Vt_i - Vt);
+      
+    }
+  }
+}
+#endif
+if (output_type == 2) {
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
+}
+posterior_storage = prior_storage + approx_loglik_storage + arma::log(weight_storage);
+}
+
+
+// IS-correction using SPDK
+// Not implemented for nonlinear models (we could though)
 template void approx_mcmc::is_correction_spdk(ssm_ung model, const unsigned int nsim,
   unsigned int is_type, const unsigned int n_threads);
 template void approx_mcmc::is_correction_spdk(bsm_ng model, const unsigned int nsim,
@@ -459,7 +667,6 @@ template void approx_mcmc::is_correction_spdk(ar1_ng model, const unsigned int n
   unsigned int is_type, const unsigned int n_threads);
 template void approx_mcmc::is_correction_spdk(ssm_mng model, const unsigned int nsim,
   unsigned int is_type, const unsigned int n_threads);
-
 
 template <class T>
 void approx_mcmc::is_correction_spdk(T model, const unsigned int nsim,
@@ -558,467 +765,13 @@ for (unsigned int i = 0; i < n_stored; i++) {
       Vt += wnew / sum_w * (Vt_i - Vt);
     }
   }
-  
+}
 #endif
   if (output_type == 2) {
     Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
   }
   posterior_storage = prior_storage + approx_loglik_storage +
     arma::log(weight_storage);
-}
-
-// for avoiding R function call within parallel region (critical pragma is not enough)
-
-void approx_mcmc::approx_state_posterior2(ssm_ung model, const unsigned int n_threads) {
-  
-#ifdef _OPENMP
-  
-  parset_ung pars(model, theta_storage);
-  
-#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
-{
-  
-  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-  
-#pragma omp for schedule(static)
-  for (unsigned int i = 0; i < n_stored; i++) {
-    pars.update(model, i);
-    model.approximate_for_is(mode_storage.slice(i));
-    alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
-  }
-}
-#else
-for (unsigned int i = 0; i < n_stored; i++) {
-  model.update_model(theta_storage.col(i));
-  model.approximate_for_is(mode_storage.slice(i));
-  alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
-}
-#endif
-}
-
-void approx_mcmc::approx_state_posterior2(ssm_mng model, const unsigned int n_threads) {
-  
-#ifdef _OPENMP
-  
-  parset_mng pars(model, theta_storage);
-  
-#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
-{
-  
-  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-  
-#pragma omp for schedule(static)
-  for (unsigned int i = 0; i < n_stored; i++) {
-    pars.update(model, i);
-    model.approximate_for_is(mode_storage.slice(i));
-    alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
-  }
-}
-#else
-for (unsigned int i = 0; i < n_stored; i++) {
-  model.update_model(theta_storage.col(i));
-  model.approximate_for_is(mode_storage.slice(i));
-  alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
-}
-#endif
-}
-template void approx_mcmc::approx_state_posterior(ssm_ung model, const unsigned int n_threads);
-template void approx_mcmc::approx_state_posterior(ssm_mng model, const unsigned int n_threads);
-template void approx_mcmc::approx_state_posterior(ssm_nlg model, const unsigned int n_threads);
-template void approx_mcmc::approx_state_posterior(bsm_ng model, const unsigned int n_threads);
-template void approx_mcmc::approx_state_posterior(svm model, const unsigned int n_threads);
-template void approx_mcmc::approx_state_posterior(ar1_ng model, const unsigned int n_threads);
-
-template <class T>
-void approx_mcmc::approx_state_posterior(T model, const unsigned int n_threads) {
-  
-#ifdef _OPENMP
-#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
-{
-  
-  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-  
-#pragma omp for schedule(static)  
-  for (unsigned int i = 0; i < n_stored; i++) {
-    model.update_model(theta_storage.col(i));
-    model.approximate_for_is(mode_storage.slice(i));
-    alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
-  }
-}
-#else
-for (unsigned int i = 0; i < n_stored; i++) {
-  model.update_model(theta_storage.col(i));
-  model.approximate_for_is(mode_storage.slice(i));
-  alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
-}
-#endif
-
-}
-
-template void approx_mcmc::approx_state_summary(ssm_ung model);
-template void approx_mcmc::approx_state_summary(bsm_ng model);
-template void approx_mcmc::approx_state_summary(svm model);
-template void approx_mcmc::approx_state_summary(ar1_ng model);
-template void approx_mcmc::approx_state_summary(ssm_nlg model);
-template void approx_mcmc::approx_state_summary(ssm_mng model);
-
-template <class T>
-void approx_mcmc::approx_state_summary(T model) {
-  
-  arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
-  
-  double sum_w = 0;
-  arma::mat alphahat_i(model.m, model.n + 1);
-  arma::cube Vt_i(model.m, model.m, model.n + 1);
-  
-  for (unsigned int i = 0; i < n_stored; i++) {
-    model.update_model(theta_storage.col(i));
-    model.approximate_for_is(mode_storage.slice(i));
-    model.approx_model.smoother(alphahat_i, Vt_i);
-    
-    sum_w += count_storage(i);
-    arma::mat diff = alphahat_i - alphahat;
-    alphahat += count_storage(i) / sum_w * diff; // update E(alpha)
-    arma::mat diff2 = (alphahat_i - alphahat).t();
-    for (unsigned int t = 0; t < model.n + 1; t++) {
-      // update Var(alpha)
-      Valpha.slice(t) += count_storage(i) * diff.col(t) * diff2.row(t);
-    }
-    // update Var(E(alpha))
-    Vt += count_storage(i) / sum_w * (Vt_i - Vt);
-  }
-  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
-}
-
-void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
-  
-  
-  arma::vec theta = model.theta;
-  double logprior = model.log_prior_pdf(theta);
-  
-  model.update_model(theta); // just in case
-  // compute the log-likelihood
-  double loglik = model.ekf_loglik();
-  if (!arma::is_finite(loglik)) {
-    Rcpp::stop("Initial approximate likelihood is not finite.");
-  }
-  double acceptance_prob = 0.0;
-  std::normal_distribution<> normal(0.0, 1.0);
-  std::uniform_real_distribution<> unif(0.0, 1.0);
-  
-  bool new_value = true;
-  unsigned int n_values = 0;
-  
-  for (unsigned int i = 1; i <= iter; i++) {
-    if (i % 16 == 0) {
-      Rcpp::checkUserInterrupt();
-    }
-    
-    // sample from standard normal distribution
-    arma::vec u(n_par);
-    for(unsigned int j = 0; j < n_par; j++) {
-      u(j) = normal(model.engine);
-    }
-    
-    // propose new theta
-    arma::vec theta_prop = theta + S * u;
-    // compute prior
-    double logprior_prop = model.log_prior_pdf(theta_prop);
-    
-    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
-      // update parameters
-      model.theta = theta_prop;
-      double loglik_prop = model.ekf_loglik();
-      
-      if (loglik_prop > -std::numeric_limits<double>::infinity() && !std::isnan(loglik_prop)) {
-        
-        acceptance_prob = std::min(1.0,
-          std::exp(loglik_prop - loglik + logprior_prop - logprior));
-        
-      } else {
-        acceptance_prob = 0.0;
-      }
-      
-      if (unif(model.engine) < acceptance_prob) {
-        if (i > burnin) {
-          acceptance_rate++;
-          n_values++;
-        }
-        loglik = loglik_prop;
-        logprior = logprior_prop;
-        theta = theta_prop;
-        new_value = true;
-      }
-    } else acceptance_prob = 0.0;
-    
-    if (i > burnin && n_values % thin == 0) {
-      //new block
-      if (new_value) {
-        approx_loglik_storage(n_stored) = loglik;
-        prior_storage(n_stored) = logprior;
-        theta_storage.col(n_stored) = theta;
-        count_storage(n_stored) = 1;
-        n_stored++;
-        new_value = false;
-      } else {
-        count_storage(n_stored - 1)++;
-      }
-    }
-    
-    if (!end_ram || i <= burnin) {
-      ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
-    }
-  }
-  
-  trim_storage();
-  acceptance_rate /= (iter - burnin);
-}
-
-
-void approx_mcmc::ekf_state_sample(ssm_nlg model, const unsigned int n_threads) {
-  
-#ifdef _OPENMP
-#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
-{
-  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-#pragma omp for schedule(static)
-  for (unsigned int i = 0; i < n_stored; i++) {
-    model.update_model(theta_storage.col(i));
-    model.approximate_by_ekf();
-    alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
-    
-  }
-}
-#else
-
-for (unsigned int i = 0; i < n_stored; i++) {
-  
-  model.update_model(theta_storage.col(i));
-  model.approximate_by_ekf();
-  alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
-  
-}
-#endif
-
-posterior_storage = prior_storage + approx_loglik_storage;
-}
-
-void approx_mcmc::ekf_state_summary(ssm_nlg model) {
-  
-  arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
-  
-  double sum_w = 0;
-  arma::mat alphahat_i(model.m, model.n + 1);
-  arma::cube Vt_i(model.m, model.m, model.n + 1);
-  
-  for (unsigned int i = 0; i < n_stored; i++) {
-    
-    model.update_model(theta_storage.col(i));
-    model.ekf_smoother(alphahat_i, Vt_i);
-    
-    sum_w += count_storage(i);
-    arma::mat diff = alphahat_i - alphahat;
-    alphahat += count_storage(i) / sum_w * diff; // update E(alpha)
-    arma::mat diff2 = (alphahat_i - alphahat).t();
-    for (unsigned int t = 0; t < model.n + 1; t++) {
-      // update Var(alpha)
-      Valpha.slice(t) += count_storage(i) * diff.col(t) * diff2.row(t);
-    }
-    // update Var(E(alpha))
-    Vt += count_storage(i) / sum_w * (Vt_i - Vt);
-  }
-  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
-}
-
-
-// run approximate MCMC for SDE model
-void approx_mcmc::amcmc(ssm_sde model, const unsigned int nsim, const bool end_ram) {
-  
-  unsigned int m = 1;
-  unsigned n = model.n;
-  // compute the log[p(theta)]
-  double logprior = model.log_prior_pdf(model.theta);
-  if (!arma::is_finite(logprior)) {
-    Rcpp::stop("Initial prior probability is not finite.");
-  }
-  
-  arma::cube alpha(m, n + 1, nsim);
-  arma::mat weights(nsim, n + 1);
-  arma::umat indices(nsim, n);
-  double loglik = model.bsf_filter(nsim, model.L_c, alpha, weights, indices);
-  if (!std::isfinite(loglik))
-    Rcpp::stop("Initial log-likelihood is not finite.");
-  
-  double acceptance_prob = 0.0;
-  bool new_value = true;
-  unsigned int n_values = 0;
-  std::normal_distribution<> normal(0.0, 1.0);
-  std::uniform_real_distribution<> unif(0.0, 1.0);
-  arma::vec theta = model.theta;
-  
-  for (unsigned int i = 1; i <= iter; i++) {
-    if (i % 4 == 0) {
-      Rcpp::checkUserInterrupt();
-    }
-    
-    // sample from standard normal distribution
-    arma::vec u(n_par);
-    for(unsigned int j = 0; j < n_par; j++) {
-      u(j) = normal(model.engine);
-    }
-    
-    // propose new theta
-    arma::vec theta_prop = theta + S * u;
-    // compute prior
-    double logprior_prop = model.log_prior_pdf(theta_prop);
-    
-    if (arma::is_finite(logprior_prop)) {
-      // update parameters
-      model.theta = theta_prop;
-      
-      double loglik_prop = model.bsf_filter(nsim, model.L_c, alpha, weights, indices);
-      
-      //compute the acceptance probability
-      // use explicit min(...) as we need this value later
-      acceptance_prob = std::min(1.0, std::exp(loglik_prop - loglik +
-        logprior_prop - logprior));
-      
-      //accept
-      if (unif(model.engine) < acceptance_prob) {
-        if (i > burnin) {
-          acceptance_rate++;
-          n_values++;
-        }
-        loglik = loglik_prop;
-        logprior = logprior_prop;
-        theta = theta_prop;
-        new_value = true;
-      }
-    } else acceptance_prob = 0.0;
-    
-    if (i > burnin && n_values % thin == 0) {
-      //new block
-      if (new_value) {
-        approx_loglik_storage(n_stored) = loglik;
-        prior_storage(n_stored) = logprior;
-        theta_storage.col(n_stored) = theta;
-        count_storage(n_stored) = 1;
-        n_stored++;
-        new_value = false;
-      } else {
-        count_storage(n_stored - 1)++;
-      }
-    }
-    
-    if (!end_ram || i <= burnin) {
-      ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
-    }
-  }
-  
-  trim_storage();
-  acceptance_rate /= (iter - burnin);
-}
-
-template<>
-void approx_mcmc::is_correction_bsf<ssm_sde>(ssm_sde model, const unsigned int nsim,
-  const unsigned int is_type, const unsigned int n_threads) {
-  
-  arma::cube Valpha(1, 1, model.n + 1, arma::fill::zeros);
-  double sum_w = 0.0;
-  
-#ifdef _OPENMP
-#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
-{
-  
-  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-  model.coarse_engine = sitmo::prng_engine(omp_get_thread_num() + n_threads + 1);
-  
-#pragma omp for schedule(static)
-  for (unsigned int i = 0; i < n_stored; i++) {
-    model.theta = theta_storage.col(i);
-    unsigned int nsimc = nsim;
-    if (is_type == 1) {
-      nsimc *= count_storage(i);
-    }
-    arma::cube alpha_i(1, model.n + 1, nsimc, arma::fill::zeros);
-    arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
-    arma::umat indices(nsimc, model.n, arma::fill::zeros);
-    double loglik = model.bsf_filter(nsimc, model.L_f, alpha_i, weights_i, indices);
-    weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
-    
-    if (output_type != 3) {
-      filter_smoother(alpha_i, indices);
-      
-      if (output_type == 1) {
-        std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
-        alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
-      } else {
-        arma::mat alphahat_i(1, model.n + 1);
-        arma::cube Vt_i(1, 1, model.n + 1);
-        summary(alpha_i, alphahat_i, Vt_i);
-       
-#pragma omp critical
-{
-  double wnew = weight_storage(i) * count_storage(i);
-  sum_w += wnew;
-  arma::mat diff = alphahat_i - alphahat;
-  alphahat += wnew / sum_w * diff; // update E(alpha)
-  arma::mat diff2 = (alphahat_i - alphahat).t();
-  for (unsigned int t = 0; t < model.n + 1; t++) {
-    // update Var(alpha)
-    Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
-  }
-  // update Var(E(alpha))
-  Vt += wnew / sum_w * (Vt_i - Vt);
-}
-      }
-    }
-  }
-}
-#else
-for (unsigned int i = 0; i < n_stored; i++) {
-  model.theta = theta_storage.col(i);
-  unsigned int nsimc = nsim;
-  if (is_type == 1) {
-    nsimc *= count_storage(i);
-  }
-  arma::cube alpha_i(1, model.n + 1, nsimc, arma::fill::zeros);
-  arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
-  arma::umat indices(nsimc, model.n, arma::fill::zeros);
-  double loglik = model.bsf_filter(nsimc, model.L_f, alpha_i, weights_i, indices);
-  weight_storage(i) = std::exp(loglik - approx_loglik_storage(i));
-  
-  if (output_type != 3) {
-    filter_smoother(alpha_i, indices);
-    
-    if (output_type == 1) {
-      std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
-      alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
-    } else {
-      arma::mat alphahat_i(1, model.n + 1);
-      arma::cube Vt_i(1, 1, model.n + 1);
-      summary(alpha_i, alphahat_i, Vt_i);
-      
-      double wnew = weight_storage(i) * count_storage(i);
-      sum_w += wnew;
-      arma::mat diff = alphahat_i - alphahat;
-      alphahat += wnew / sum_w * diff; // update E(alpha)
-      arma::mat diff2 = (alphahat_i - alphahat).t();
-      for (unsigned int t = 0; t < model.n + 1; t++) {
-        // update Var(alpha)
-        Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
-      }
-      // update Var(E(alpha))
-      Vt += wnew / sum_w * (Vt_i - Vt);
-      
-    }
-  }
-}
-#endif
-if (output_type == 2) {
-  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
-}
-posterior_storage = prior_storage + approx_loglik_storage + arma::log(weight_storage);
 }
 
 
@@ -1694,3 +1447,271 @@ if (output_type == 2) {
 posterior_storage = prior_storage + approx_loglik_storage +
   arma::log(weight_storage);
 }
+
+
+// Sampling states from approximate posterior using simulation smoother
+template void approx_mcmc::approx_state_posterior(ssm_ung model, const unsigned int n_threads);
+template void approx_mcmc::approx_state_posterior(ssm_mng model, const unsigned int n_threads);
+template void approx_mcmc::approx_state_posterior(ssm_nlg model, const unsigned int n_threads);
+template void approx_mcmc::approx_state_posterior(bsm_ng model, const unsigned int n_threads);
+template void approx_mcmc::approx_state_posterior(svm model, const unsigned int n_threads);
+template void approx_mcmc::approx_state_posterior(ar1_ng model, const unsigned int n_threads);
+
+template <class T>
+void approx_mcmc::approx_state_posterior(T model, const unsigned int n_threads) {
+  
+#ifdef _OPENMP
+#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
+{
+  
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
+  
+#pragma omp for schedule(static)  
+  for (unsigned int i = 0; i < n_stored; i++) {
+    model.update_model(theta_storage.col(i));
+    model.approximate_for_is(mode_storage.slice(i));
+    alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
+  }
+}
+#else
+for (unsigned int i = 0; i < n_stored; i++) {
+  model.update_model(theta_storage.col(i));
+  model.approximate_for_is(mode_storage.slice(i));
+  alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
+}
+#endif
+
+}
+
+// for avoiding R function call within parallel region (critical pragma is not enough)
+
+void approx_mcmc::approx_state_posterior2(ssm_ung model, const unsigned int n_threads) {
+  
+#ifdef _OPENMP
+  
+  parset_ung pars(model, theta_storage);
+  
+#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
+{
+  
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
+  
+#pragma omp for schedule(static)
+  for (unsigned int i = 0; i < n_stored; i++) {
+    pars.update(model, i);
+    model.approximate_for_is(mode_storage.slice(i));
+    alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
+  }
+}
+#else
+for (unsigned int i = 0; i < n_stored; i++) {
+  model.update_model(theta_storage.col(i));
+  model.approximate_for_is(mode_storage.slice(i));
+  alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
+}
+#endif
+}
+
+void approx_mcmc::approx_state_posterior2(ssm_mng model, const unsigned int n_threads) {
+  
+#ifdef _OPENMP
+  
+  parset_mng pars(model, theta_storage);
+  
+#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
+{
+  
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
+  
+#pragma omp for schedule(static)
+  for (unsigned int i = 0; i < n_stored; i++) {
+    pars.update(model, i);
+    model.approximate_for_is(mode_storage.slice(i));
+    alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
+  }
+}
+#else
+for (unsigned int i = 0; i < n_stored; i++) {
+  model.update_model(theta_storage.col(i));
+  model.approximate_for_is(mode_storage.slice(i));
+  alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
+}
+#endif
+}
+
+template void approx_mcmc::approx_state_summary(ssm_ung model);
+template void approx_mcmc::approx_state_summary(bsm_ng model);
+template void approx_mcmc::approx_state_summary(svm model);
+template void approx_mcmc::approx_state_summary(ar1_ng model);
+template void approx_mcmc::approx_state_summary(ssm_nlg model);
+template void approx_mcmc::approx_state_summary(ssm_mng model);
+
+template <class T>
+void approx_mcmc::approx_state_summary(T model) {
+  
+  arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
+  
+  double sum_w = 0;
+  arma::mat alphahat_i(model.m, model.n + 1);
+  arma::cube Vt_i(model.m, model.m, model.n + 1);
+  
+  for (unsigned int i = 0; i < n_stored; i++) {
+    model.update_model(theta_storage.col(i));
+    model.approximate_for_is(mode_storage.slice(i));
+    model.approx_model.smoother(alphahat_i, Vt_i);
+    
+    sum_w += count_storage(i);
+    arma::mat diff = alphahat_i - alphahat;
+    alphahat += count_storage(i) / sum_w * diff; // update E(alpha)
+    arma::mat diff2 = (alphahat_i - alphahat).t();
+    for (unsigned int t = 0; t < model.n + 1; t++) {
+      // update Var(alpha)
+      Valpha.slice(t) += count_storage(i) * diff.col(t) * diff2.row(t);
+    }
+    // update Var(E(alpha))
+    Vt += count_storage(i) / sum_w * (Vt_i - Vt);
+  }
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
+}
+
+// EKF based inference for nonlinear models
+void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
+  
+  
+  arma::vec theta = model.theta;
+  double logprior = model.log_prior_pdf(theta);
+  
+  model.update_model(theta); // just in case
+  // compute the log-likelihood
+  double loglik = model.ekf_loglik();
+  if (!arma::is_finite(loglik)) {
+    Rcpp::stop("Initial approximate likelihood is not finite.");
+  }
+  double acceptance_prob = 0.0;
+  std::normal_distribution<> normal(0.0, 1.0);
+  std::uniform_real_distribution<> unif(0.0, 1.0);
+  
+  bool new_value = true;
+  unsigned int n_values = 0;
+  
+  for (unsigned int i = 1; i <= iter; i++) {
+    if (i % 16 == 0) {
+      Rcpp::checkUserInterrupt();
+    }
+    
+    // sample from standard normal distribution
+    arma::vec u(n_par);
+    for(unsigned int j = 0; j < n_par; j++) {
+      u(j) = normal(model.engine);
+    }
+    
+    // propose new theta
+    arma::vec theta_prop = theta + S * u;
+    // compute prior
+    double logprior_prop = model.log_prior_pdf(theta_prop);
+    
+    if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
+      // update parameters
+      model.theta = theta_prop;
+      double loglik_prop = model.ekf_loglik();
+      
+      if (loglik_prop > -std::numeric_limits<double>::infinity() && !std::isnan(loglik_prop)) {
+        
+        acceptance_prob = std::min(1.0,
+          std::exp(loglik_prop - loglik + logprior_prop - logprior));
+        
+      } else {
+        acceptance_prob = 0.0;
+      }
+      
+      if (unif(model.engine) < acceptance_prob) {
+        if (i > burnin) {
+          acceptance_rate++;
+          n_values++;
+        }
+        loglik = loglik_prop;
+        logprior = logprior_prop;
+        theta = theta_prop;
+        new_value = true;
+      }
+    } else acceptance_prob = 0.0;
+    
+    if (i > burnin && n_values % thin == 0) {
+      //new block
+      if (new_value) {
+        approx_loglik_storage(n_stored) = loglik;
+        prior_storage(n_stored) = logprior;
+        theta_storage.col(n_stored) = theta;
+        count_storage(n_stored) = 1;
+        n_stored++;
+        new_value = false;
+      } else {
+        count_storage(n_stored - 1)++;
+      }
+    }
+    
+    if (!end_ram || i <= burnin) {
+      ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
+    }
+  }
+  
+  trim_storage();
+  acceptance_rate /= (iter - burnin);
+}
+
+void approx_mcmc::ekf_state_sample(ssm_nlg model, const unsigned int n_threads) {
+  
+#ifdef _OPENMP
+#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
+{
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
+#pragma omp for schedule(static)
+  for (unsigned int i = 0; i < n_stored; i++) {
+    model.update_model(theta_storage.col(i));
+    model.approximate_by_ekf();
+    alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
+    
+  }
+}
+#else
+
+for (unsigned int i = 0; i < n_stored; i++) {
+  
+  model.update_model(theta_storage.col(i));
+  model.approximate_by_ekf();
+  alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
+  
+}
+#endif
+
+posterior_storage = prior_storage + approx_loglik_storage;
+}
+
+void approx_mcmc::ekf_state_summary(ssm_nlg model) {
+  
+  arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
+  
+  double sum_w = 0;
+  arma::mat alphahat_i(model.m, model.n + 1);
+  arma::cube Vt_i(model.m, model.m, model.n + 1);
+  
+  for (unsigned int i = 0; i < n_stored; i++) {
+    
+    model.update_model(theta_storage.col(i));
+    model.ekf_smoother(alphahat_i, Vt_i);
+    
+    sum_w += count_storage(i);
+    arma::mat diff = alphahat_i - alphahat;
+    alphahat += count_storage(i) / sum_w * diff; // update E(alpha)
+    arma::mat diff2 = (alphahat_i - alphahat).t();
+    for (unsigned int t = 0; t < model.n + 1; t++) {
+      // update Var(alpha)
+      Valpha.slice(t) += count_storage(i) * diff.col(t) * diff2.row(t);
+    }
+    // update Var(E(alpha))
+    Vt += count_storage(i) / sum_w * (Vt_i - Vt);
+  }
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
+}
+
+
