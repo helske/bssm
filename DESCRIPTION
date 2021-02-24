@@ -36,7 +36,3 @@ BugReports: https://github.com/helske/bssm/issues
 ByteCompile: true
 Encoding: UTF-8
 NeedsCompilation: yes
-Packaged: 2021-02-24 14:58:23 UTC; jovetale
-Author: Jouni Helske [aut, cre] (<https://orcid.org/0000-0001-7130-793X>),
-  Matti Vihola [aut] (<https://orcid.org/0000-0002-8041-7222>)
-Maintainer: Jouni Helske <jouni.helske@iki.fi>
