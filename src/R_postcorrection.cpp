@@ -17,11 +17,11 @@ arma::vec suggest_n_nongaussian(const Rcpp::List model_,
   const int model_type) {
   
   arma::vec sds(candidates.n_elem);
-  
+  Rcpp::Function update_fn = model_["update_fn"];
   switch (model_type) {
   case 0: {
     ssm_mng model(model_, seed);
-    model.update_model(theta);
+    model.update_model(theta, update_fn);
     for(unsigned int i = 0; i < candidates.n_elem; i++) {
       int nsim = candidates(i);
       arma::cube alpha(model.m, model.n + 1, nsim);
@@ -37,7 +37,7 @@ arma::vec suggest_n_nongaussian(const Rcpp::List model_,
   } break;
   case 1: {
     ssm_ung model(model_, seed);
-    model.update_model(theta);
+    model.update_model(theta, update_fn);
     for(unsigned int i = 0; i < candidates.n_elem; i++) {
       int nsim = candidates(i);
       arma::cube alpha(model.m, model.n + 1, nsim);
@@ -53,7 +53,7 @@ arma::vec suggest_n_nongaussian(const Rcpp::List model_,
   } break;
   case 2: {
     bsm_ng model(model_, seed);
-    model.update_model(theta);
+    model.update_model(theta, update_fn);
     for(unsigned int i = 0; i < candidates.n_elem; i++) {
       int nsim = candidates(i);
       arma::cube alpha(model.m, model.n + 1, nsim);
@@ -69,7 +69,7 @@ arma::vec suggest_n_nongaussian(const Rcpp::List model_,
   } break;
   case 3: {
     svm model(model_, seed);
-    model.update_model(theta);
+    model.update_model(theta, update_fn);
     for(unsigned int i = 0; i < candidates.n_elem; i++) {
       int nsim = candidates(i);
       arma::cube alpha(model.m, model.n + 1, nsim);
@@ -85,7 +85,7 @@ arma::vec suggest_n_nongaussian(const Rcpp::List model_,
   } break;
   case 4: {
     ar1_ng model(model_, seed);
-    model.update_model(theta);
+    model.update_model(theta, update_fn);
     for(unsigned int i = 0; i < candidates.n_elem; i++) {
       int nsim = candidates(i);
       arma::cube alpha(model.m, model.n + 1, nsim);
@@ -111,7 +111,6 @@ arma::vec suggest_n_nonlinear(const arma::mat& y, SEXP Z, SEXP H,
   const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params, const unsigned int n_states,
   const unsigned int n_etas,  const arma::uvec& time_varying,
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn,
   const arma::vec theta_map, const arma::vec candidates,
   const unsigned int replications, const unsigned int seed) {
   
@@ -129,9 +128,9 @@ arma::vec suggest_n_nonlinear(const arma::mat& y, SEXP Z, SEXP H,
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params,
     n_states, n_etas,
-    time_varying, update_fn, prior_fn, seed);
+    time_varying, seed);
   
-  model.update_model(theta_map);
+  model.update_model(theta_map, R_NilValue);
   arma::vec sds(candidates.n_elem);
   for(unsigned int i = 0; i < candidates.n_elem; i++) {
     int nsim = candidates(i);
@@ -176,6 +175,7 @@ Rcpp::List postcorrection_nongaussian(const Rcpp::List model_,
 
   approx_mcmc mcmc_run(counts.n_elem, 0, 1, n, m, p,
     0.234, 1, arma::mat(theta.n_rows, theta.n_rows), output_type, true);
+  
   mcmc_run.n_stored = counts.n_elem;
   // mcmc_run.trim_storage();
   mcmc_run.count_storage = counts;
@@ -191,22 +191,16 @@ Rcpp::List postcorrection_nongaussian(const Rcpp::List model_,
       if(is_type == 3) {
         mcmc_run.expand();
       }
-      if (n_threads > 1) {
-        mcmc_run.is_correction_psi2(model, nsim, is_type, n_threads);
-      } else {
-        mcmc_run.is_correction_psi(model, nsim, is_type, n_threads);
-      }
+      mcmc_run.is_correction_psi(model, nsim, is_type, n_threads, model_["update_fn"]);
+      
     } break;
     case 1: {
       ssm_ung model(model_, seed);
       if(is_type == 3) {
         mcmc_run.expand();
       }
-      if (n_threads > 1) {
-        mcmc_run.is_correction_psi2(model, nsim, is_type, n_threads);
-      } else {
-        mcmc_run.is_correction_psi(model, nsim, is_type, n_threads);
-      }
+      mcmc_run.is_correction_psi(model, nsim, is_type, n_threads, model_["update_fn"]);
+     
     } break;
     case 2: {
       bsm_ng model(model_, seed);
@@ -262,7 +256,6 @@ Rcpp::List postcorrection_nonlinear(const arma::mat& y, SEXP Z, SEXP H,
   const arma::vec& theta_init, SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params, const unsigned int n_states,
   const unsigned int n_etas,  const arma::uvec& time_varying,
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn,
   const unsigned int output_type,
   const unsigned int nsim,
   const unsigned int seed,
@@ -283,8 +276,7 @@ Rcpp::List postcorrection_nonlinear(const arma::mat& y, SEXP Z, SEXP H,
   
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1, theta_init, *xpfun_prior, known_params, known_tv_params,
-    n_states, n_etas,
-    time_varying, update_fn, prior_fn, seed);
+    n_states, n_etas, time_varying, seed);
   
   approx_mcmc mcmc_run(counts.n_elem, 0, 1, model.n, model.m, model.m,
     0.234, 1, arma::mat(theta.n_rows, theta.n_rows), output_type, true);

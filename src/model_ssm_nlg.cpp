@@ -11,14 +11,13 @@ ssm_nlg::ssm_nlg(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_,
   prior_fnPtr log_prior_pdf_, const arma::vec& known_params,
   const arma::mat& known_tv_params, const unsigned int m, 
   const unsigned int k, const arma::uvec& time_varying,
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn,
   const unsigned int seed, const unsigned int iekf_iter, 
   const unsigned int max_iter, const double conv_tol) 
   :
     y(y), Z_fn(Z_fn_), H_fn(H_fn_), T_fn(T_fn_), 
     R_fn(R_fn_), Z_gn(Z_gn_), T_gn(T_gn_),
     a1_fn(a1_fn_), P1_fn(P1_fn_), theta(theta), 
-    log_prior_pdf(log_prior_pdf_), known_params(known_params), 
+    log_prior_pdf_(log_prior_pdf_), known_params(known_params), 
     known_tv_params(known_tv_params), m(m), k(k), n(y.n_cols),  p(y.n_rows),
     Zgtv(time_varying(0)), Htv(time_varying(1)), Tgtv(time_varying(2)),
     Rtv(time_varying(3)),
@@ -39,18 +38,27 @@ ssm_nlg::ssm_nlg(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_,
       arma::mat(p, n, arma::fill::zeros),
       arma::mat(m, n, arma::fill::zeros),
       theta,
-      seed + 1,
-      update_fn, prior_fn) {
+      seed + 1) {
 }
-
+// note: Rcpp::Function is not actually used, it is here only to accomodate common mcmc method
 void ssm_nlg::update_model(const arma::vec& new_theta) {
   
   theta = new_theta;
   // approximation does not match theta anymore (keep as -1 if so)
   if (approx_state > 0) approx_state = 0;
 }
+void ssm_nlg::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
+  
+  theta = new_theta;
+  // approximation does not match theta anymore (keep as -1 if so)
+  if (approx_state > 0) approx_state = 0;
+}
 
-
+// note: Rcpp::Function is not actually used, it is here only to accommodate common mcmc method
+double ssm_nlg::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const {
+  
+  return log_prior_pdf_(x);
+}
 void ssm_nlg::approximate() {
   
   if(approx_state < 1) {

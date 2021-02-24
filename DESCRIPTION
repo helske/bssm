@@ -1,6 +1,7 @@
 Package: bssm
 Type: Package
-Title: Bayesian Inference of Non-Linear and Non-Gaussian State Space Models
+Title: Bayesian Inference of Non-Linear and Non-Gaussian State Space
+        Models
 Version: 1.1.3-2
 Date: 2021-02-23
 Authors@R: 
@@ -24,22 +25,9 @@ Description: Efficient methods for Bayesian inference of state space models
     diffusion models are supported.
 License: GPL (>= 2)
 Depends: R (>= 3.5.0)
-Suggests:
-    dplyr,
-    ggplot2 (>= 2.0.0),
-    Hmisc,
-    KFAS (>= 1.2.1),
-    knitr (>= 1.11),
-    MASS,
-    ramcmc,
-    rmarkdown (>= 0.8.1),
-    sde,
-    sitmo,
-    testthat
-Imports:
-    coda (>= 0.18-1),
-    diagis,
-    Rcpp (>= 0.12.3)
+Suggests: dplyr, ggplot2 (>= 2.0.0), Hmisc, KFAS (>= 1.2.1), knitr (>=
+        1.11), MASS, ramcmc, rmarkdown (>= 0.8.1), sde, sitmo, testthat
+Imports: coda (>= 0.18-1), diagis, Rcpp (>= 0.12.3)
 LinkingTo: Rcpp, RcppArmadillo, ramcmc, sitmo
 SystemRequirements: C++11, pandoc (>= 1.12.3, needed for vignettes)
 RoxygenNote: 7.1.1
@@ -47,3 +35,8 @@ VignetteBuilder: knitr
 BugReports: https://github.com/helske/bssm/issues
 ByteCompile: true
 Encoding: UTF-8
+NeedsCompilation: yes
+Packaged: 2021-02-24 14:58:23 UTC; jovetale
+Author: Jouni Helske [aut, cre] (<https://orcid.org/0000-0001-7130-793X>),
+  Matti Vihola [aut] (<https://orcid.org/0000-0002-8041-7222>)
+Maintainer: Jouni Helske <jouni.helske@iki.fi>

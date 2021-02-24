@@ -109,8 +109,7 @@ logLik.ssm_nlg <- function(object, particles, method = "bsf",
     object$theta, object$log_prior_pdf, object$known_params, 
     object$known_tv_params, object$n_states, object$n_etas, 
     as.integer(object$time_varying), particles, seed,
-    max_iter, conv_tol, iekf_iter, method,
-    default_update_fn, default_prior_fn)
+    max_iter, conv_tol, iekf_iter, method)
 }
 #' Log-likelihood of a State Space Model with SDE dynamics
 #'

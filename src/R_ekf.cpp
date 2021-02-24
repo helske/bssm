@@ -6,8 +6,7 @@ Rcpp::List ekf_nlg(const arma::mat& y, SEXP Z, SEXP H,
   const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params, const unsigned int n_states,
   const unsigned int n_etas,  const arma::uvec& time_varying,
-  const unsigned int iekf_iter,
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
+  const unsigned int iekf_iter) {
 
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
   Rcpp::XPtr<nmat_fnPtr> xpfun_H(H);
@@ -21,8 +20,7 @@ Rcpp::List ekf_nlg(const arma::mat& y, SEXP Z, SEXP H,
 
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, 
     *xpfun_Tg, *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, 
-    known_tv_params, n_states, n_etas, time_varying, 
-    update_fn, prior_fn, 1, iekf_iter);
+    known_tv_params, n_states, n_etas, time_varying, 1, iekf_iter);
 
   arma::mat at(model.m, model.n + 1);
   arma::mat att(model.m, model.n);
@@ -48,8 +46,7 @@ Rcpp::List ekf_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
   const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params, const unsigned int n_states,
   const unsigned int n_etas,  const arma::uvec& time_varying,
-  const unsigned int iekf_iter,
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
+  const unsigned int iekf_iter) {
 
 
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
@@ -64,8 +61,7 @@ Rcpp::List ekf_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
 
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, 
     *xpfun_Tg, *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, 
-    known_tv_params, n_states, n_etas, time_varying, 
-    update_fn, prior_fn, 1, iekf_iter);
+    known_tv_params, n_states, n_etas, time_varying, 1, iekf_iter);
 
   arma::mat alphahat(model.m, model.n + 1);
   arma::cube Vt(model.m, model.m, model.n + 1);
@@ -83,8 +79,7 @@ Rcpp::List ekf_fast_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
   const arma::vec& theta, SEXP log_prior_pdf, const arma::vec& known_params,
   const arma::mat& known_tv_params, const unsigned int n_states,
   const unsigned int n_etas,  const arma::uvec& time_varying,
-  const unsigned int iekf_iter,
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
+  const unsigned int iekf_iter) {
 
 
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
@@ -99,8 +94,7 @@ Rcpp::List ekf_fast_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
 
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, 
     *xpfun_Tg, *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, 
-    known_tv_params, n_states, n_etas, time_varying, 
-    update_fn, prior_fn, 1, iekf_iter);
+    known_tv_params, n_states, n_etas, time_varying, 1, iekf_iter);
 
   arma::mat alphahat(model.m, model.n + 1);
   double loglik = model.ekf_fast_smoother(alphahat);

@@ -102,8 +102,7 @@ bootstrap_filter.ssm_nlg <- function(model, particles,
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1,
     model$theta, model$log_prior_pdf, model$known_params,
     model$known_tv_params, model$n_states, model$n_etas,
-    as.integer(model$time_varying), particles, seed, 
-    default_update_fn, default_prior_fn)
+    as.integer(model$time_varying), particles, seed)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <-
     rownames(out$alpha) <- model$state_names

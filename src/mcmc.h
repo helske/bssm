@@ -7,6 +7,9 @@ class ssm_ulg;
 class ssm_mlg;
 class ssm_sde;
 
+extern Rcpp::Function default_update_fn;
+extern Rcpp::Function default_prior_fn;
+
 class mcmc {
   
 protected:
@@ -32,26 +35,30 @@ public:
 
   // sample states given theta
   template <class T>
-  void state_posterior(T model, const unsigned int n_threads);
- 
- // for circumventing R calls within OpenMP
-  void state_posterior2(ssm_ulg model, const unsigned int n_threads);
-  void state_posterior2(ssm_mlg model, const unsigned int n_threads);
+  void state_posterior(T model, const unsigned int n_threads, 
+    const Rcpp::Function update_fn = default_update_fn);
   
   template <class T>
-  void state_summary(T model);
+  void state_summary(T model, 
+    const Rcpp::Function update_fn = default_update_fn);
   
   // gaussian mcmc
   template<class T>
-  void mcmc_gaussian(T model, const bool end_ram);
+  void mcmc_gaussian(T model, const bool end_ram, 
+    const Rcpp::Function update_fn = default_update_fn, 
+    const Rcpp::Function prior_fn = default_prior_fn);
 
   // pseudo-marginal mcmc
   template<class T>
-  void pm_mcmc(T model, const unsigned int method, const unsigned int nsim, const bool end_ram);
+  void pm_mcmc(T model, const unsigned int method, const unsigned int nsim, 
+    const bool end_ram, const Rcpp::Function update_fn = default_update_fn, 
+    const Rcpp::Function prior_fn = default_prior_fn);
 
   // delayed acceptance mcmc
   template<class T>
-  void da_mcmc(T model, const unsigned int method, const unsigned int nsim, const bool end_ram);
+  void da_mcmc(T model, const unsigned int method, const unsigned int nsim, 
+    const bool end_ram, const Rcpp::Function update_fn = default_update_fn, 
+    const Rcpp::Function prior_fn = default_prior_fn);
 
   // pseudo-marginal mcmc for SDE
   void pm_mcmc(ssm_sde model, const unsigned int nsim, const bool end_ram);
@@ -68,7 +75,6 @@ public:
   arma::mat S;
   double acceptance_rate;
   unsigned int output_type;
-  
 };
 
 

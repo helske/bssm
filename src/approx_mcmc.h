@@ -9,6 +9,9 @@
 class ssm_ung;
 class ssm_mng;
 
+extern Rcpp::Function default_update_fn;
+extern Rcpp::Function default_prior_fn;
+
 class approx_mcmc: public mcmc {
 
 public:
@@ -23,45 +26,34 @@ public:
 
   //approximate mcmc
   template<class T>
-  void amcmc(T model, const unsigned int method, const bool end_ram);
+  void amcmc(T model, const unsigned int method, const bool end_ram, 
+    const Rcpp::Function update_fn = default_update_fn, 
+    const Rcpp::Function prior_fn = default_prior_fn);
 
   void amcmc(ssm_sde model, const unsigned int nsim, const bool end_ram);
     
   template <class T>
   void is_correction_psi(T model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
+    const unsigned int is_type, const unsigned int n_threads, 
+    const Rcpp::Function update_fn = default_update_fn);
 
   template <class T>
   void is_correction_bsf(T model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
+    const unsigned int is_type, const unsigned int n_threads, 
+    const Rcpp::Function update_fn = default_update_fn);
 
   template <class T>
   void is_correction_spdk(T model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
+    const unsigned int is_type, const unsigned int n_threads, 
+    const Rcpp::Function update_fn = default_update_fn);
   
   template <class T>
-  void approx_state_posterior(T model, const unsigned int n_threads);
-  
-  // for handling openmp/R conflict
-  void approx_state_posterior2(ssm_ung model, const unsigned int n_threads);
-  void is_correction_psi2(ssm_ung model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
-  void is_correction_bsf2(ssm_ung model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
-  void is_correction_spdk2(ssm_ung model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
-  
-  void approx_state_posterior2(ssm_mng model, const unsigned int n_threads);
-  void is_correction_psi2(ssm_mng model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
-  void is_correction_bsf2(ssm_mng model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
-  void is_correction_spdk2(ssm_mng model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
-  
+  void approx_state_posterior(T model, const unsigned int n_threads, 
+    const Rcpp::Function update_fn = default_update_fn);
   
   template <class T>
-  void approx_state_summary(T model);
+  void approx_state_summary(T model, 
+    const Rcpp::Function update_fn = default_update_fn);
     
   void ekf_state_summary(ssm_nlg model);
   

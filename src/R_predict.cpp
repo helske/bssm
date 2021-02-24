@@ -18,11 +18,11 @@ arma::cube gaussian_predict(const Rcpp::List model_,
   switch (model_type) {
     case 0: {
     ssm_mlg model(model_, seed);
-    return model.predict_sample(theta, alpha, predict_type);
+    return model.predict_sample(theta, alpha, predict_type, model_["update_fn"]);
     } break;
     case 1: {
       ssm_ulg model(model_, seed);
-      return model.predict_sample(theta, alpha, predict_type);
+      return model.predict_sample(theta, alpha, predict_type, model_["update_fn"]);
     } break;
     case 2: {
       bsm_lg model(model_, seed);
@@ -45,11 +45,11 @@ arma::cube nongaussian_predict(const Rcpp::List model_,
   switch (model_type) {
   case 0: {
   ssm_mng model(model_, seed);
-  return model.predict_sample(theta, alpha, predict_type);
+  return model.predict_sample(theta, alpha, predict_type, model_["update_fn"]);
 } break;
   case 1: {
   ssm_ung model(model_, seed);
-  return model.predict_sample(theta, alpha, predict_type);
+  return model.predict_sample(theta, alpha, predict_type, model_["update_fn"]);
 } break;
   case 2: {
     bsm_ng model(model_, seed);
@@ -75,8 +75,7 @@ arma::cube nonlinear_predict(const arma::mat& y, SEXP Z, SEXP H,
   const unsigned int n_states, const unsigned int n_etas,
   const arma::mat& theta, const arma::mat& alpha,
   const unsigned int predict_type,
-  const unsigned int seed, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
+  const unsigned int seed) {
   
   
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
@@ -90,8 +89,8 @@ arma::cube nonlinear_predict(const arma::mat& y, SEXP Z, SEXP H,
   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
   
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
-    *xpfun_a1, *xpfun_P1, theta.col(0), *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
-    time_varying, update_fn, prior_fn, seed);
+    *xpfun_a1, *xpfun_P1, theta.col(0), *xpfun_prior, known_params, known_tv_params, 
+    n_states, n_etas, time_varying, seed);
   
   return model.predict_sample(theta, alpha, predict_type);
   

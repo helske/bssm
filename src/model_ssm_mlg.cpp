@@ -18,9 +18,7 @@ ssm_mlg::ssm_mlg(
     Rtv(R.n_slices > 1), Dtv(D.n_cols > 1), Ctv(C.n_cols > 1), 
     theta(Rcpp::as<arma::vec>(model["theta"])), 
     engine(seed), zero_tol(zero_tol),
-    HH(arma::cube(p, p, Htv * (n - 1) + 1)), RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
-    update_fn(Rcpp::as<Rcpp::Function>(model["update_fn"])), 
-    prior_fn(Rcpp::as<Rcpp::Function>(model["prior_fn"])) {
+    HH(arma::cube(p, p, Htv * (n - 1) + 1)), RR(arma::cube(m, m, Rtv * (n - 1) + 1)) {
   
   compute_HH();
   compute_RR();
@@ -34,8 +32,6 @@ ssm_mlg::ssm_mlg(const arma::mat& y, const arma::cube& Z,
   const arma::mat& P1, const arma::mat& D, 
   const arma::mat& C,
   const arma::vec& theta, const unsigned int seed, 
-  const Rcpp::Function update_fn, 
-  const Rcpp::Function prior_fn,
   const double zero_tol) 
   :
     y(y), Z(Z), H(H), T(T), R(R), a1(a1), P1(P1), D(D), C(C),
@@ -45,15 +41,14 @@ ssm_mlg::ssm_mlg(const arma::mat& y, const arma::cube& Z,
     Dtv(D.n_cols > 1), Ctv(C.n_cols > 1), 
     theta(theta), engine(seed), zero_tol(zero_tol), 
     HH(arma::cube(p, p, Htv * (n - 1) + 1)), 
-    RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
-    update_fn(update_fn), prior_fn(prior_fn) {
+    RR(arma::cube(m, m, Rtv * (n - 1) + 1)) {
   
   compute_HH();
   compute_RR();
 }
 
-
-void ssm_mlg::update_model(const arma::vec& new_theta) {
+ 
+void ssm_mlg::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
   
   Rcpp::List model_list = 
     update_fn(Rcpp::NumericVector(new_theta.begin(), new_theta.end()));
@@ -87,7 +82,7 @@ void ssm_mlg::update_model(const arma::vec& new_theta) {
   theta = new_theta;
 }
 
-double ssm_mlg::log_prior_pdf(const arma::vec& x) const {
+double ssm_mlg::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const {
   
   return Rcpp::as<double>(prior_fn(Rcpp::NumericVector(x.begin(), x.end())));
 }
@@ -546,7 +541,7 @@ arma::cube ssm_mlg::simulate_states(const unsigned int nsim) {
 
 
 arma::cube ssm_mlg::predict_sample(const arma::mat& theta_posterior,
-  const arma::mat& alpha, const unsigned int predict_type) {
+  const arma::mat& alpha, const unsigned int predict_type, const Rcpp::Function update_fn) {
   
   unsigned int d = p;
   if (predict_type == 3) d = m;
@@ -555,7 +550,7 @@ arma::cube ssm_mlg::predict_sample(const arma::mat& theta_posterior,
   arma::cube sample(d, n, n_samples);
   
   for (unsigned int i = 0; i < n_samples; i++) {
-    update_model(theta_posterior.col(i));
+    update_model(theta_posterior.col(i), update_fn);
     a1 = alpha.col(i);
     sample.slice(i) = sample_model(predict_type);
   }
@@ -601,14 +596,14 @@ arma::mat ssm_mlg::sample_model(const unsigned int predict_type) {
 
 
 arma::cube ssm_mlg::predict_past(const arma::mat& theta_posterior,
-  const arma::cube& alpha, const unsigned int predict_type) {
+  const arma::cube& alpha, const unsigned int predict_type, const Rcpp::Function update_fn) {
   
   unsigned int n_samples = theta_posterior.n_cols;
   arma::cube samples(p, n, n_samples);
   
   std::normal_distribution<> normal(0.0, 1.0);
   for (unsigned int i = 0; i < n_samples; i++) {
-    update_model(theta_posterior.col(i));
+    update_model(theta_posterior.col(i), update_fn);
     for (unsigned int t = 0; t < n; t++) {
       samples.slice(i).col(t) = D.col(t * Dtv) + Z.slice(t * Ztv) * alpha.slice(i).col(t);
       if(predict_type == 1) {

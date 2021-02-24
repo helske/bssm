@@ -41,8 +41,6 @@ public:
     const unsigned int m, 
     const unsigned int k,
     const arma::uvec& time_varying,
-    const Rcpp::Function update_fn, 
-    const Rcpp::Function prior_fn,
     const unsigned int seed = 1,
     const unsigned int iekf_iter = 0,
     const unsigned int max_iter = 100,
@@ -67,7 +65,7 @@ public:
   // Parameter vector used in _all_ nonlinear functions
   arma::vec theta;
   //prior log-pdf
-  prior_fnPtr log_prior_pdf;
+  prior_fnPtr log_prior_pdf_;
   // vector of known parameters
   arma::vec known_params;
   // matrix of known (time-varying) parameters
@@ -101,6 +99,8 @@ public:
   ssm_mlg approx_model;
   
   void update_model(const arma::vec& new_theta);
+  void update_model(const arma::vec& new_theta, const Rcpp::Function update_fn);
+  double log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const;
   // update the approximating Gaussian model
   void approximate();
   void approximate_for_is(const arma::mat& mode_estimate);
