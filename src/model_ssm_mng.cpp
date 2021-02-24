@@ -24,13 +24,15 @@ ssm_mng::ssm_mng(const Rcpp::List model, const unsigned int seed, const double z
     approx_loglik(0.0), scales(arma::vec(n, arma::fill::zeros)),
     engine(seed), zero_tol(zero_tol),
     RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
+    update_fn(Rcpp::as<Rcpp::Function>(model["update_fn"])), 
+    prior_fn(Rcpp::as<Rcpp::Function>(model["prior_fn"])),
     approx_model(y, Z, arma::cube(p, p, n, arma::fill::zeros), T, R, a1, P1, 
-      D, C, theta, seed + 1){
+      D, C, theta, seed + 1, update_fn, prior_fn){
   compute_RR();
 }
 
 
-void ssm_mng::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
+void ssm_mng::update_model(const arma::vec& new_theta) {
   Rcpp::List model_list = 
     update_fn(Rcpp::NumericVector(new_theta.begin(), new_theta.end()));
   if (model_list.containsElementNamed("Z")) {
@@ -63,7 +65,7 @@ void ssm_mng::update_model(const arma::vec& new_theta, const Rcpp::Function upda
   if (approx_state > 0) approx_state = 0;
 }
 
-double ssm_mng::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const {
+double ssm_mng::log_prior_pdf(const arma::vec& x) const {
   return Rcpp::as<double>(prior_fn(Rcpp::NumericVector(x.begin(), x.end())));
 }
 
@@ -669,7 +671,7 @@ double ssm_mng::bsf_filter(const unsigned int nsim, arma::cube& alpha,
 
 
 arma::cube ssm_mng::predict_sample(const arma::mat& theta_posterior,
-  const arma::mat& alpha, const unsigned int predict_type, const Rcpp::Function update_fn) {
+  const arma::mat& alpha, const unsigned int predict_type) {
   
   unsigned int d = p;
   if (predict_type == 3) d = m;
@@ -679,7 +681,7 @@ arma::cube ssm_mng::predict_sample(const arma::mat& theta_posterior,
   
   
   for (unsigned int i = 0; i < n_samples; i++) {
-    update_model(theta_posterior.col(i), update_fn);
+    update_model(theta_posterior.col(i));
     a1 = alpha.col(i);
     sample.slice(i) = sample_model(predict_type);
   }
@@ -766,14 +768,14 @@ arma::mat ssm_mng::sample_model(const unsigned int predict_type) {
 
 
 arma::cube ssm_mng::predict_past(const arma::mat& theta_posterior,
-  const arma::cube& alpha, const unsigned int predict_type, const Rcpp::Function update_fn) {
+  const arma::cube& alpha, const unsigned int predict_type) {
   
   unsigned int n_samples = theta_posterior.n_cols;
   arma::cube samples(p, n, n_samples);
   
   std::normal_distribution<> normal(0.0, 1.0);
   for (unsigned int i = 0; i < n_samples; i++) {
-    update_model(theta_posterior.col(i), update_fn);
+    update_model(theta_posterior.col(i));
     arma::mat y(p, n);
     for (unsigned int t = 0; t < n; t++) {
       arma::vec signal = D.col(t * Dtv) + Z.slice(t * Ztv) * alpha.slice(i).col(t);

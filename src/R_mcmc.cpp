@@ -34,22 +34,25 @@ Rcpp::List gaussian_mcmc(const Rcpp::List model_,
   switch (model_type) {
   case 0: {
     ssm_mlg model(model_, seed);
-    mcmc_run.mcmc_gaussian(model, end_ram, 
-      model_["update_fn"], model_["prior_fn"]);
+    mcmc_run.mcmc_gaussian(model, end_ram);
     
     switch (output_type) {
     case 1: {
-      mcmc_run.state_posterior(model, n_threads, model_["update_fn"]); //sample states
-      
-      return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
-        Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
-        Rcpp::Named("counts") = mcmc_run.count_storage,
-        Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-        Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+      if (n_threads > 1) {
+      mcmc_run.state_posterior2(model, n_threads); //sample states
+    } else {
+      mcmc_run.state_posterior(model, n_threads); //sample states
+    }
+    
+    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
     } break;
     case 2: {
       //summary
-      mcmc_run.state_summary(model, model_["update_fn"]);
+      mcmc_run.state_summary(model);
       return Rcpp::List::create(Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
         Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
         Rcpp::Named("counts") = mcmc_run.count_storage,
@@ -67,23 +70,24 @@ Rcpp::List gaussian_mcmc(const Rcpp::List model_,
   } break;
   case 1: {
     ssm_ulg model(model_, seed);
-    mcmc_run.mcmc_gaussian(model, end_ram, 
-      model_["update_fn"], model_["prior_fn"]);
+    mcmc_run.mcmc_gaussian(model, end_ram);
     
     switch (output_type) {
     case 1: {
-      
-      mcmc_run.state_posterior(model, n_threads, model_["update_fn"]); //sample states
-      
-      return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
-        Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
-        Rcpp::Named("counts") = mcmc_run.count_storage,
-        Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
-        Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+      if (n_threads > 1) {
+      mcmc_run.state_posterior2(model, n_threads); //sample states
+    } else {
+      mcmc_run.state_posterior(model, n_threads); //sample states
+    }
+    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  Rcpp::Named("posterior") = mcmc_run.posterior_storage);
     } break;
     case 2: {
       //summary
-      mcmc_run.state_summary(model, model_["update_fn"]);
+      mcmc_run.state_summary(model);
       return Rcpp::List::create(Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
         Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
         Rcpp::Named("counts") = mcmc_run.count_storage,
@@ -184,20 +188,17 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List model_,
     arma::mat y = Rcpp::as<arma::mat>(model_["y"]);
     n = y.n_rows;
   }
-  
   mcmc mcmc_run(iter, burnin, thin, n, m,
     target_acceptance, gamma, S, output_type);
   
   switch (model_type) {
   case 0: {
     ssm_mng model(model_, seed);
-    mcmc_run.pm_mcmc(model, sampling_method, nsim, end_ram, 
-      model_["update_fn"], model_["prior_fn"]);
+    mcmc_run.pm_mcmc(model, sampling_method, nsim, end_ram);
   } break;
   case 1: {
     ssm_ung model(model_, seed);
-    mcmc_run.pm_mcmc(model, sampling_method, nsim, end_ram, 
-      model_["update_fn"], model_["prior_fn"]);
+    mcmc_run.pm_mcmc(model, sampling_method, nsim, end_ram);
   } break;
   case 2: {
     bsm_ng model(model_, seed);
@@ -269,13 +270,11 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List model_,
   switch (model_type) {
   case 0: {
     ssm_mng model(model_, seed);
-    mcmc_run.da_mcmc(model, sampling_method, nsim, end_ram, 
-      model_["update_fn"], model_["prior_fn"]);
+    mcmc_run.da_mcmc(model, sampling_method, nsim, end_ram);
   } break;
   case 1: {
     ssm_ung model(model_, seed);
-    mcmc_run.da_mcmc(model, sampling_method, nsim, end_ram, 
-      model_["update_fn"], model_["prior_fn"]);
+    mcmc_run.da_mcmc(model, sampling_method, nsim, end_ram);
   } break;
   case 2: {
     bsm_ng model(model_, seed);
@@ -347,9 +346,9 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
     n = y.n_rows;
     p = y.n_cols;
   }
-  approx_mcmc mcmc_run(iter, burnin, thin, n, m, p,
-    target_acceptance, gamma, S, output_type, true);
   
+  approx_mcmc mcmc_run(iter, burnin, thin, n, m, p,
+    target_acceptance, gamma, S, output_type);
   if (nsim <= 1) {
     mcmc_run.alpha_storage.zeros();
     mcmc_run.weight_storage.ones();
@@ -359,68 +358,97 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
   switch (model_type) {
   case 0: {
     ssm_mng model(model_, seed);
-    mcmc_run.amcmc(model, 1, end_ram,
-      model_["update_fn"], model_["prior_fn"]);
+    mcmc_run.amcmc(model, 1, end_ram);
     if(approx) {
       if(output_type == 1) {
-        mcmc_run.approx_state_posterior(model, n_threads, model_["update_fn"]);
-        
+        if (n_threads > 1) {
+          mcmc_run.approx_state_posterior2(model, n_threads);
+        } else {
+          mcmc_run.approx_state_posterior(model, n_threads);
+        }
       } else {
         if(output_type == 2) {
-          mcmc_run.approx_state_summary(model, model_["update_fn"]);
+          mcmc_run.approx_state_summary(model);
         }
       }
     } else {
       if(is_type == 3) {
         mcmc_run.expand();
       }
-      
-      switch (sampling_method) {
-      case 1:
-        mcmc_run.is_correction_psi(model, nsim, is_type, n_threads, model_["update_fn"]);
-        break;
-      case 2:
-        mcmc_run.is_correction_bsf(model, nsim, is_type, n_threads, model_["update_fn"]);
-        break;
-      case 3:
-        mcmc_run.is_correction_spdk(model, nsim, is_type, n_threads, model_["update_fn"]);
-        break;
+      if (n_threads > 1) {
+        switch (sampling_method) {
+          case 1:
+            mcmc_run.is_correction_psi2(model, nsim, is_type, n_threads);
+            break;
+          case 2:
+            mcmc_run.is_correction_bsf2(model, nsim, is_type, n_threads);
+            break;
+          case 3:
+            mcmc_run.is_correction_spdk2(model, nsim, is_type, n_threads);
+            break;
+          }
+      } else {
+        switch (sampling_method) {
+          case 1:
+            mcmc_run.is_correction_psi(model, nsim, is_type, n_threads);
+          break;
+          case 2:
+            mcmc_run.is_correction_bsf(model, nsim, is_type, n_threads);
+          break;
+          case 3:
+            mcmc_run.is_correction_spdk(model, nsim, is_type, n_threads);
+          break;
+        }
       }
-      
     } 
   } break;
   case 1: {
     ssm_ung model(model_, seed);
-    mcmc_run.amcmc(model, 1, end_ram, model_["update_fn"], model_["prior_fn"]);
+    mcmc_run.amcmc(model, 1, end_ram);
     if(approx) {
       if(output_type == 1) {
-        mcmc_run.approx_state_posterior(model, n_threads, model_["update_fn"]);
+        if (n_threads > 1) {
+          mcmc_run.approx_state_posterior2(model, n_threads);
+        } else {
+          mcmc_run.approx_state_posterior(model, n_threads);
+        }
       } else {
         if(output_type == 2) {
-          mcmc_run.approx_state_summary(model, model_["update_fn"]);
+          mcmc_run.approx_state_summary(model);
         }
       }
     } else {
       if(is_type == 3) {
         mcmc_run.expand();
       }
-      
-      switch (sampling_method) {
-      case 1:
-        mcmc_run.is_correction_psi(model, nsim, is_type, n_threads, model_["update_fn"]);
-        break;
-      case 2:
-        mcmc_run.is_correction_bsf(model, nsim, is_type, n_threads, model_["update_fn"]);
-        break;
-      case 3:
-        mcmc_run.is_correction_spdk(model, nsim, is_type, n_threads, model_["update_fn"]);
-        break;
+      if (n_threads > 1) {
+        switch (sampling_method) {
+          case 1:
+            mcmc_run.is_correction_psi2(model, nsim, is_type, n_threads);
+          break;
+          case 2:
+            mcmc_run.is_correction_bsf2(model, nsim, is_type, n_threads);
+          break;
+          case 3:
+            mcmc_run.is_correction_spdk2(model, nsim, is_type, n_threads);
+          break;
+        }
+      } else {
+        switch (sampling_method) {
+          case 1:
+            mcmc_run.is_correction_psi(model, nsim, is_type, n_threads);
+          break;
+          case 2:
+            mcmc_run.is_correction_bsf(model, nsim, is_type, n_threads);
+          break;
+          case 3:
+            mcmc_run.is_correction_spdk(model, nsim, is_type, n_threads);
+          break;
+        }
       }
-      
     } 
   } break;
   case 2: {
-    
     bsm_ng model(model_, seed);
     mcmc_run.amcmc(model, 1, end_ram);
     if(approx) {
@@ -557,7 +585,8 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   const bool end_ram, const unsigned int n_threads,
   const unsigned int max_iter, const double conv_tol,
   const unsigned int sampling_method, const unsigned int iekf_iter,
-  const unsigned int output_type) {
+  const unsigned int output_type,
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
   
   
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
@@ -572,7 +601,7 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
-    time_varying, seed);
+    time_varying, update_fn, prior_fn, seed);
   
   mcmc mcmc_run(iter, burnin, thin, model.n,
     model.m, target_acceptance, gamma, S, output_type);
@@ -617,7 +646,8 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   const bool end_ram, const unsigned int n_threads,
   const unsigned int max_iter, const double conv_tol,
   const unsigned int sampling_method, const unsigned int iekf_iter,
-  const unsigned int output_type) {
+  const unsigned int output_type,
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
   
   
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
@@ -632,7 +662,7 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
-    time_varying, seed);
+    time_varying, update_fn, prior_fn, seed);
   
   mcmc mcmc_run(iter, burnin, thin, model.n,
     model.m, target_acceptance, gamma, S, output_type);
@@ -676,7 +706,8 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   const unsigned int burnin, const unsigned int thin,
   const double gamma, const double target_acceptance, const arma::mat S,
   const bool end_ram, const unsigned int n_threads,
-  const unsigned int iekf_iter, const unsigned int output_type) {
+  const unsigned int iekf_iter, const unsigned int output_type,
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
   
   
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
@@ -691,7 +722,7 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
-    time_varying, seed);
+    time_varying, update_fn, prior_fn, seed);
   
   approx_mcmc mcmc_run(iter, burnin, thin, model.n,
     model.m, model.m, target_acceptance, gamma, S, output_type, false);
@@ -742,6 +773,7 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   const unsigned int sampling_method, const unsigned int max_iter,
   const double conv_tol, const unsigned int iekf_iter,
   const unsigned int output_type,
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn,
   const bool approx) {
   
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
@@ -753,15 +785,16 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   Rcpp::XPtr<a1_fnPtr> xpfun_a1(a1);
   Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
-
+  
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
-    time_varying, seed, iekf_iter, max_iter, conv_tol);
-
+    time_varying, update_fn, prior_fn, seed, iekf_iter, max_iter, conv_tol);
+  
   approx_mcmc mcmc_run(iter, burnin, thin, model.n,
     model.m, model.m, target_acceptance, gamma, S, output_type);
-
+  
   mcmc_run.amcmc(model, sampling_method, end_ram);
+  
   if(approx) {
     if(output_type == 1) {
       mcmc_run.approx_state_posterior(model, n_threads);

@@ -33,32 +33,8 @@ void ar1_ng::update_model(const arma::vec& new_theta) {
   // approximation does not match theta anymore (keep as -1 if so)
   if (approx_state > 0) approx_state = 0;
 }
-void ar1_ng::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
-  
-  T(0, 0, 0) = new_theta(0);
-  R(0, 0, 0) = new_theta(1);
-  if (mu_est) {
-    a1(0) = new_theta(2);
-    C.fill(new_theta(2) * (1.0 - new_theta(0)));
-  }
-  P1(0, 0) = std::pow(new_theta(1), 2) / (1.0 - std::pow(new_theta(0), 2));
-  
-  compute_RR();
-  
-  if(phi_est) {
-    phi = new_theta(2 + mu_est);
-  }
-  
-  if(xreg.n_cols > 0) {
-    beta = new_theta.subvec(new_theta.n_elem - xreg.n_cols, new_theta.n_elem - 1);
-    compute_xbeta();
-  }
-  theta = new_theta;  
-  // approximation does not match theta anymore (keep as -1 if so)
-  if (approx_state > 0) approx_state = 0;
-}
 
-double ar1_ng::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const {
+double ar1_ng::log_prior_pdf(const arma::vec& x) const {
   
   double log_prior = 0.0;
   

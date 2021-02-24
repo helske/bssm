@@ -82,8 +82,8 @@ suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10),
         model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
         model$theta, model$log_prior_pdf, model$known_params, 
         model$known_tv_params, model$n_states, model$n_etas, 
-        as.integer(model$time_varying), 
-        theta, candidates, replications, seed)
+        as.integer(model$time_varying),
+        default_update_fn, default_prior_fn, theta, candidates, replications, seed)
     } else stop("Function 'suggest_N' is only available for models of class 'nongaussian' and 'nlg_ssm'.")
   }
   list(N = candidates[which(out < 1)[1]], results = data.frame(N = candidates, sd = out))
@@ -208,7 +208,7 @@ post_correct <- function(model, mcmc_output, particles, threads = 1L,
         model$theta, model$log_prior_pdf, model$known_params, 
         model$known_tv_params, model$n_states, model$n_etas, 
         as.integer(model$time_varying),
-        mcmc_output$output_type, 
+        default_update_fn, default_prior_fn, mcmc_output$output_type, 
         particles,
         seed, threads, is_type,
         mcmc_output$counts, t(mcmc_output$theta), mcmc_output$modes)

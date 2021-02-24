@@ -498,7 +498,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
         model$n_states, model$n_etas, seed,
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, max_iter, conv_tol,
-        sampling_method,iekf_iter, output_type)
+        sampling_method,iekf_iter, output_type, 
+        default_update_fn, default_prior_fn)
     },
     "pm" = {
       nonlinear_pm_mcmc(t(model$y), model$Z, model$H, model$T,
@@ -508,7 +509,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
         model$n_states, model$n_etas, seed,
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, max_iter, conv_tol,
-        sampling_method,iekf_iter, output_type)
+        sampling_method,iekf_iter, output_type, 
+        default_update_fn, default_prior_fn)
     },
     "is1" =,
     "is2" =,
@@ -523,7 +525,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, pmatch(mcmc_type, paste0("is", 1:3)),
         sampling_method, max_iter, conv_tol, iekf_iter, 
-        output_type, FALSE)
+        output_type, default_update_fn, 
+        default_prior_fn, FALSE)
     },
     "ekf" = {
       nonlinear_ekf_mcmc(t(model$y), model$Z, model$H, model$T,
@@ -532,7 +535,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
         iter, burnin, thin, gamma, target_acceptance, S,
-        end_adaptive_phase,  threads, iekf_iter, output_type)
+        end_adaptive_phase,  threads, iekf_iter, output_type, 
+        default_update_fn, default_prior_fn)
     },
     "approx" = {
       nonlinear_is_mcmc(t(model$y), model$Z, model$H, model$T,
@@ -543,7 +547,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, 2,
         sampling_method, max_iter, conv_tol, 
-        iekf_iter, output_type, TRUE)
+        iekf_iter, output_type, default_update_fn, 
+        default_prior_fn, TRUE)
     }
   )
   if (output_type == 1) {

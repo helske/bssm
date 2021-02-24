@@ -68,7 +68,7 @@ gaussian_approx.ssm_nlg <- function(model, max_iter = 100,
     model$theta, model$log_prior_pdf, model$known_params, 
     model$known_tv_params, model$n_states, model$n_etas,
     as.integer(model$time_varying),
-    max_iter, conv_tol, iekf_iter)
+    max_iter, conv_tol, iekf_iter, default_update_fn, default_prior_fn)
   
   out$y <- ts(t(out$y), start = start(model$y), end = end(model$y), frequency = frequency(model$y))
   ssm_mlg(y = out$y, Z = out$Z, H = out$H, T = out$T, 

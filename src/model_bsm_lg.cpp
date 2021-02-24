@@ -49,36 +49,8 @@ void bsm_lg::update_model(const arma::vec& new_theta) {
   }
   theta = new_theta;
 }
-void bsm_lg::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
-  
-  if (arma::accu(fixed) < 4) {
-    if (y_est) {
-      H(0) = std::exp(new_theta(0));
-      HH(0) = std::pow(H(0), 2.0);
-    }
-    // sd_level
-    if (level_est) {
-      R(0, 0, 0) = std::exp(new_theta(y_est));
-    }
-    // sd_slope
-    if (slope_est) {
-      R(1, 1, 0) =  std::exp(new_theta(y_est + level_est));
-    }
-    // sd_seasonal
-    if (seasonal_est) {
-      R(1 + slope, 1 + slope, 0) =
-        std::exp(new_theta(y_est + level_est + slope_est));
-    }
-    compute_RR();
-  }
-  if(xreg.n_cols > 0) {
-    beta = new_theta.subvec(new_theta.n_elem - xreg.n_cols, new_theta.n_elem - 1);
-    compute_xbeta();
-  }
-  theta = new_theta;
-}
 
-double bsm_lg::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const {
+double bsm_lg::log_prior_pdf(const arma::vec& x) const {
   
   double log_prior = 0.0;
   arma::vec pars = x;

@@ -25,7 +25,7 @@ devtools::install_github("helske/bssm")
 Recent changes (For all changes, see NEWS file.)
 ==========================================================================
 
-bssm 1.1.3-2 (Release date: 2021-02-24)
+bssm 1.1.3-2 (Release date: 2021-02-23)
 ==============
    * Fixed missing parenthesis causing compilation fail in case of no OpenMP support.
    * Added pandoc version >= 1.12.3 to system requirements.

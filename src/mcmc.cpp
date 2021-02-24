@@ -24,12 +24,6 @@
 
 #include "parset_lg.h"
 
-// used as placeholder
-Rcpp::Environment pkg = Rcpp::Environment::namespace_env("bssm");
-
-Rcpp::Function default_update_fn = pkg["default_update_fn"];
-Rcpp::Function default_prior_fn = pkg["default_prior_fn"];
-
 mcmc::mcmc(
   const unsigned int iter, 
   const unsigned int burnin,
@@ -50,7 +44,7 @@ mcmc::mcmc(
   alpha_storage(arma::cube((output_type == 1) * n + 1, m, (output_type == 1) * n_samples, arma::fill::zeros)), 
   alphahat(arma::mat(m, (output_type == 2) * n + 1, arma::fill::zeros)), 
   Vt(arma::cube(m, m, (output_type == 2) * n + 1, arma::fill::zeros)), S(S),
-  acceptance_rate(0.0), output_type(output_type){
+  acceptance_rate(0.0), output_type(output_type) {
 }
 
 
@@ -64,14 +58,62 @@ void mcmc::trim_storage() {
 
 // for circumventing calls to R during parallel runs
 
-template void mcmc::state_posterior(bsm_lg model, const unsigned int n_threads, 
-  const Rcpp::Function update_fn);
-template void mcmc::state_posterior(ar1_lg model, const unsigned int n_threads,
-  const Rcpp::Function update_fn);
+void mcmc::state_posterior2(ssm_ulg model, const unsigned int n_threads) {
+  
+  
+#ifdef _OPENMP
+  
+  parset_ulg pars(model, theta_storage);
+  
+#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
+{
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
+#pragma omp for schedule(static)
+  for (unsigned int i = 0; i < n_stored; i++) {
+    pars.update(model, i);
+    alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
+  }
+}
+  
+#else
+  for (unsigned int i = 0; i < n_stored; i++) {
+    model.update_model(theta_storage.col(i));
+    alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
+  }
+#endif
+}
+
+void mcmc::state_posterior2(ssm_mlg model, const unsigned int n_threads) {
+  
+  
+#ifdef _OPENMP
+  parset_mlg pars(model, theta_storage);
+  
+#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
+{
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
+#pragma omp for schedule(static)
+  for (unsigned int i = 0; i < n_stored; i++) {
+    pars.update(model, i);
+    alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
+  }
+}
+  
+#else
+  for (unsigned int i = 0; i < n_stored; i++) {
+    model.update_model(theta_storage.col(i));
+    alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
+  }
+#endif
+}
+
+template void mcmc::state_posterior(ssm_ulg model, const unsigned int n_threads);
+template void mcmc::state_posterior(ssm_mlg model, const unsigned int n_threads);
+template void mcmc::state_posterior(bsm_lg model, const unsigned int n_threads);
+template void mcmc::state_posterior(ar1_lg model, const unsigned int n_threads);
 
 template <class T>
-void mcmc::state_posterior(T model, const unsigned int n_threads, 
-  const Rcpp::Function update_fn) {
+void mcmc::state_posterior(T model, const unsigned int n_threads) {
   
   
 #ifdef _OPENMP
@@ -95,71 +137,14 @@ void mcmc::state_posterior(T model, const unsigned int n_threads,
 
 }
 
-template<>
-void mcmc::state_posterior<ssm_ulg>(ssm_ulg model, const unsigned int n_threads, 
-  const Rcpp::Function update_fn) {
-  
-  
-#ifdef _OPENMP
-  
-  parset_ulg pars(model, theta_storage, update_fn);
-  
-#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
-{
-  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-#pragma omp for schedule(static)
-  for (unsigned int i = 0; i < n_stored; i++) {
-    pars.update(model, i);
-    alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
-  }
-}
 
-#else
-for (unsigned int i = 0; i < n_stored; i++) {
-  model.update_model(theta_storage.col(i), update_fn);
-  alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
-}
-#endif
-}
-
-template<>
-void mcmc::state_posterior<ssm_mlg>(ssm_mlg model, const unsigned int n_threads, 
-  const Rcpp::Function update_fn) {
-  
-  
-#ifdef _OPENMP
-  parset_mlg pars(model, theta_storage, update_fn);
-  
-#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
-{
-  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-#pragma omp for schedule(static)
-  for (unsigned int i = 0; i < n_stored; i++) {
-    pars.update(model, i);
-    alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
-  }
-}
-
-#else
-for (unsigned int i = 0; i < n_stored; i++) {
-  model.update_model(theta_storage.col(i), update_fn);
-  alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
-}
-#endif
-}
-
-template void mcmc::state_summary(ssm_ulg model, 
-  const Rcpp::Function update_fn);
-template void mcmc::state_summary(bsm_lg model, 
-  const Rcpp::Function update_fn);
-template void mcmc::state_summary(ar1_lg model, 
-  const Rcpp::Function update_fn);
-template void mcmc::state_summary(ssm_mlg model, 
-  const Rcpp::Function update_fn);
+template void mcmc::state_summary(ssm_ulg model);
+template void mcmc::state_summary(bsm_lg model);
+template void mcmc::state_summary(ar1_lg model);
+template void mcmc::state_summary(ssm_mlg model);
 
 template <class T>
-void mcmc::state_summary(T model, 
-  const Rcpp::Function update_fn) {
+void mcmc::state_summary(T model) {
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   
@@ -169,7 +154,7 @@ void mcmc::state_summary(T model,
   
   for (unsigned int i = 0; i < n_stored; i++) {
     
-    model.update_model(theta_storage.col(i), update_fn);
+    model.update_model(theta_storage.col(i));
     model.smoother(alphahat_i, Vt_i);
     
     sum_w += count_storage(i);
@@ -190,22 +175,16 @@ void mcmc::state_summary(T model,
 // run MCMC for linear-Gaussian state space model
 // target the marginal p(theta | y)
 // sample states separately given the posterior sample of theta
-template void mcmc::mcmc_gaussian(ssm_ulg model, const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
-template void mcmc::mcmc_gaussian(bsm_lg model, const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
-template void mcmc::mcmc_gaussian(ar1_lg model, const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
-template void mcmc::mcmc_gaussian(ssm_mlg model, const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+template void mcmc::mcmc_gaussian(ssm_ulg model, const bool end_ram);
+template void mcmc::mcmc_gaussian(bsm_lg model, const bool end_ram);
+template void mcmc::mcmc_gaussian(ar1_lg model, const bool end_ram);
+template void mcmc::mcmc_gaussian(ssm_mlg model, const bool end_ram);
 
 template<class T>
-void mcmc::mcmc_gaussian(T model, const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
-  
+void mcmc::mcmc_gaussian(T model, const bool end_ram) {
   arma::vec theta = model.theta;
-  model.update_model(theta, update_fn); // just in case
-  double logprior = model.log_prior_pdf(theta, prior_fn); 
+  model.update_model(theta); // just in case
+  double logprior = model.log_prior_pdf(theta); 
   double loglik = model.log_likelihood();
   
   if (!std::isfinite(logprior))
@@ -236,13 +215,13 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram,
     arma::vec theta_prop = theta + S * u;
     // compute prior
     double logprior_prop;
-    logprior_prop = model.log_prior_pdf(theta_prop, prior_fn); 
+    logprior_prop = model.log_prior_pdf(theta_prop); 
     
     if (logprior_prop > -std::numeric_limits<double>::infinity() && 
       !std::isnan(logprior_prop)) {
       
       // update model based on the proposal
-      model.update_model(theta_prop, update_fn);
+      model.update_model(theta_prop);
       
       // compute log-likelihood with proposed theta
       double loglik_prop = model.log_likelihood();
@@ -292,38 +271,32 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram,
 template void mcmc::pm_mcmc(ssm_ung model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+  const bool end_ram);
 
 template void mcmc::pm_mcmc(bsm_ng model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+  const bool end_ram);
 
 template void mcmc::pm_mcmc(ar1_ng model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+  const bool end_ram);
 
 template void mcmc::pm_mcmc(svm model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+  const bool end_ram);
 
 template void mcmc::pm_mcmc(ssm_nlg model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+  const bool end_ram);
 
 template void mcmc::pm_mcmc(ssm_mng model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+  const bool end_ram);
 
 
 template<class T>
@@ -331,17 +304,16 @@ void mcmc::pm_mcmc(
     T model,
     const unsigned int method,
     const unsigned int nsim,
-    const bool end_ram, 
-    const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
+    const bool end_ram) {
   
   unsigned int m = model.m;
   unsigned int n = model.n;
   
   // get the current values of theta
   arma::vec theta = model.theta;
-  model.update_model(theta, update_fn); // just in case
+  model.update_model(theta); // just in case
   // compute the log[p(theta)]
-  double logprior = model.log_prior_pdf(theta, prior_fn);
+  double logprior = model.log_prior_pdf(theta);
   if (!arma::is_finite(logprior)) {
     Rcpp::stop("Initial prior probability is not finite.");
   }
@@ -386,12 +358,12 @@ void mcmc::pm_mcmc(
     // propose new theta
     arma::vec theta_prop = theta + S * u;
     // compute prior
-    double logprior_prop = model.log_prior_pdf(theta_prop, prior_fn);
+    double logprior_prop = model.log_prior_pdf(theta_prop);
     
     if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       
       // update parameters
-      model.update_model(theta_prop, update_fn);
+      model.update_model(theta_prop);
       
       // compute the log-likelihood (unbiased and approximate)
       arma::vec ll_prop = model.log_likelihood(method, nsim, alpha, weights, indices);
@@ -467,54 +439,47 @@ void mcmc::pm_mcmc(
 template void mcmc::da_mcmc(ssm_ung model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+  const bool end_ram);
 
 template void mcmc::da_mcmc(bsm_ng model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+  const bool end_ram);
 
 template void mcmc::da_mcmc(ar1_ng model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+  const bool end_ram);
 
 template void mcmc::da_mcmc(svm model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+  const bool end_ram);
 
 template void mcmc::da_mcmc(ssm_nlg model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+  const bool end_ram);
 
 template void mcmc::da_mcmc(ssm_mng model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+  const bool end_ram);
 
 template<class T>
 void mcmc::da_mcmc(T model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram, 
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
+  const bool end_ram) {
   
   unsigned int m = model.m;
   unsigned int n = model.n;
   
   // get the current values of theta
   arma::vec theta = model.theta;
-  model.update_model(theta, update_fn); // just in case
+  model.update_model(theta); // just in case
   // compute the log[p(theta)]
-  double logprior = model.log_prior_pdf(theta, prior_fn);
+  double logprior = model.log_prior_pdf(theta);
   if (!arma::is_finite(logprior)) {
     Rcpp::stop("Initial prior probability is not finite.");
   }
@@ -560,12 +525,12 @@ void mcmc::da_mcmc(T model,
     // propose new theta
     arma::vec theta_prop = theta + S * u;
     // compute prior
-    double logprior_prop = model.log_prior_pdf(theta_prop, prior_fn);
+    double logprior_prop = model.log_prior_pdf(theta_prop);
     
     if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       
       // update parameters
-      model.update_model(theta_prop, update_fn);
+      model.update_model(theta_prop);
       // compute the approximate log-likelihood (nsim = 0)
       arma::vec ll_prop = model.log_likelihood(method, 0, alpha, weights, indices);
       

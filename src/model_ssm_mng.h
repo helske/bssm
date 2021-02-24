@@ -8,8 +8,6 @@
 #include "bssm.h"
 #include "model_ssm_mlg.h"
 
-extern Rcpp::Function default_update_fn;
-
 class ssm_mng {
   
 public:
@@ -64,6 +62,10 @@ public:
   const double zero_tol;
   arma::cube RR;
   
+  // R functions
+  const Rcpp::Function update_fn;
+  const Rcpp::Function prior_fn;
+  
   ssm_mlg approx_model;
   
   void compute_RR(){
@@ -79,8 +81,8 @@ public:
       arma::mat& weights, 
       arma::umat& indices);
   
-  void update_model(const arma::vec& new_theta, const Rcpp::Function update_fn);
-  double log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const;
+  void update_model(const arma::vec& new_theta);
+  double log_prior_pdf(const arma::vec& x) const;
   
   // update the approximating Gaussian model
   void approximate();
@@ -110,13 +112,12 @@ public:
   arma::vec log_obs_density(const unsigned int t, const arma::cube& alpha) const;
   
   arma::cube predict_sample(const arma::mat& theta_posterior, const arma::mat& alpha,
-    const unsigned int predict_type, const Rcpp::Function update_fn = default_update_fn);
+    const unsigned int predict_type);
   
   arma::mat sample_model(const unsigned int predict_type);
   
   arma::cube predict_past(const arma::mat& theta_posterior,
-    const arma::cube& alpha, const unsigned int predict_type, 
-    const Rcpp::Function update_fn = default_update_fn);
+    const arma::cube& alpha, const unsigned int predict_type);
 };
 
 
