@@ -73,37 +73,29 @@ template <class T>
 void mcmc::state_posterior(T model, const unsigned int n_threads, 
   const Rcpp::Function update_fn) {
   
-  
 #ifdef _OPENMP
-  
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
-  
 #pragma omp for schedule(static)
+#endif
   for (unsigned int i = 0; i < n_stored; i++) {
     model.update_model(theta_storage.col(i));
     alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
   }
+#ifdef _OPENMP
 }
-#else
-  for (unsigned int i = 0; i < n_stored; i++) {
-    model.update_model(theta_storage.col(i));
-    alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
-  }
 #endif
 
 }
 
 template<>
-void mcmc::state_posterior<ssm_ulg>(ssm_ulg model, const unsigned int n_threads, 
+void mcmc::state_posterior(ssm_ulg model, const unsigned int n_threads, 
   const Rcpp::Function update_fn) {
   
   
 #ifdef _OPENMP
-  
   parset_ulg pars(model, theta_storage, update_fn);
-  
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
@@ -113,7 +105,6 @@ void mcmc::state_posterior<ssm_ulg>(ssm_ulg model, const unsigned int n_threads,
     alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
   }
 }
-
 #else
 for (unsigned int i = 0; i < n_stored; i++) {
   model.update_model(theta_storage.col(i), update_fn);
@@ -123,13 +114,12 @@ for (unsigned int i = 0; i < n_stored; i++) {
 }
 
 template<>
-void mcmc::state_posterior<ssm_mlg>(ssm_mlg model, const unsigned int n_threads, 
+void mcmc::state_posterior(ssm_mlg model, const unsigned int n_threads,
   const Rcpp::Function update_fn) {
-  
-  
+
+   
 #ifdef _OPENMP
   parset_mlg pars(model, theta_storage, update_fn);
-  
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
@@ -139,7 +129,6 @@ void mcmc::state_posterior<ssm_mlg>(ssm_mlg model, const unsigned int n_threads,
     alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
   }
 }
-
 #else
 for (unsigned int i = 0; i < n_stored; i++) {
   model.update_model(theta_storage.col(i), update_fn);
