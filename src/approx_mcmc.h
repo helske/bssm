@@ -9,6 +9,9 @@
 class ssm_ung;
 class ssm_mng;
 
+extern Rcpp::Function default_update_fn;
+extern Rcpp::Function default_prior_fn;
+
 class approx_mcmc: public mcmc {
 
 public:
@@ -17,7 +20,9 @@ public:
   approx_mcmc(const unsigned int iter, const unsigned int burnin, const unsigned int thin,
     const unsigned int n, const unsigned int m, const unsigned int p, 
     const double target_acceptance, const double gamma, const arma::mat& S, 
-    const unsigned int output_type = 1, const bool store_modes = true);
+    const unsigned int output_type = 1, const bool store_modes = true, 
+    const Rcpp::Function update_fn = default_update_fn, 
+    const Rcpp::Function prior_fn = default_prior_fn);
 
   void expand();
 
@@ -41,24 +46,6 @@ public:
   
   template <class T>
   void approx_state_posterior(T model, const unsigned int n_threads);
-  
-  // for handling openmp/R conflict
-  void approx_state_posterior2(ssm_ung model, const unsigned int n_threads);
-  void is_correction_psi2(ssm_ung model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
-  void is_correction_bsf2(ssm_ung model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
-  void is_correction_spdk2(ssm_ung model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
-  
-  void approx_state_posterior2(ssm_mng model, const unsigned int n_threads);
-  void is_correction_psi2(ssm_mng model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
-  void is_correction_bsf2(ssm_mng model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
-  void is_correction_spdk2(ssm_mng model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
-  
   
   template <class T>
   void approx_state_summary(T model);

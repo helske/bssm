@@ -95,8 +95,7 @@ double nonlinear_loglik(const arma::mat& y, SEXP Z, SEXP H,
   const unsigned int n_etas,  const arma::uvec& time_varying,
   const unsigned int nsim,
   const unsigned int seed, const unsigned int max_iter,
-  const double conv_tol, const unsigned int iekf_iter, const unsigned int method,
-  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
+  const double conv_tol, const unsigned int iekf_iter, const unsigned int method) {
   
   
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
@@ -111,7 +110,7 @@ double nonlinear_loglik(const arma::mat& y, SEXP Z, SEXP H,
   
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
-    time_varying, update_fn, prior_fn, seed);
+    time_varying, seed);
   
   model.max_iter = max_iter;
   model.conv_tol = conv_tol;

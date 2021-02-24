@@ -11,7 +11,7 @@ class ssm_mng;
 class parset_ung {
   
 public:
-  parset_ung(const ssm_ung& model, const arma::mat& theta);
+  parset_ung(const ssm_ung& model, const arma::mat& theta, const Rcpp::Function update_fn);
   
   unsigned int n;
   bool est_phi;
@@ -41,7 +41,7 @@ public:
 class parset_mng {
   
 public:
-  parset_mng(const ssm_mng& model, const arma::mat& theta);
+  parset_mng(const ssm_mng& model, const arma::mat& theta, const Rcpp::Function update_fn);
   
   unsigned int n;
   bool est_phi;

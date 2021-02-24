@@ -28,8 +28,6 @@ public:
     const arma::mat& C,
     const arma::vec& theta,
     const unsigned int seed,
-    const Rcpp::Function update_fn,
-    const Rcpp::Function prior_fn,
     const double zero_tol = 1e-12);
   
   arma::mat y;
@@ -64,10 +62,6 @@ public:
   arma::cube HH;
   arma::cube RR;
   
-  // R functions
-  const Rcpp::Function update_fn;
-  const Rcpp::Function prior_fn;
-  
   void compute_RR(){
     for (unsigned int t = 0; t < R.n_slices; t++) {
       RR.slice(t) = R.slice(t) * R.slice(t).t();
@@ -80,8 +74,8 @@ public:
     }
   }
   
-  void update_model(const arma::vec& new_theta);
-  double log_prior_pdf(const arma::vec& x) const;
+  void update_model(const arma::vec& new_theta, const Rcpp::Function update_fn);
+  double log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const;
   
   // compute the log-likelihood using Kalman filter
   double log_likelihood() const;
@@ -98,11 +92,12 @@ public:
   void smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) const;
   
   arma::cube predict_sample(const arma::mat& theta_posterior,
-    const arma::mat& alpha, const unsigned int predict_type);
+    const arma::mat& alpha, const unsigned int predict_type, const Rcpp::Function update_fn);
+  
   arma::mat sample_model(const unsigned int predict_type);
   
   arma::cube predict_past(const arma::mat& theta_posterior,
-    const arma::cube& alpha, const unsigned int predict_type);
+    const arma::cube& alpha, const unsigned int predict_type, const Rcpp::Function update_fn);
 };
 
 

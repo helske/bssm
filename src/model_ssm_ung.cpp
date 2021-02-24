@@ -27,12 +27,9 @@ ssm_ung::ssm_ung(const Rcpp::List model, const unsigned int seed, const double z
     engine(seed), zero_tol(zero_tol),
     RR(arma::cube(m, m, Rtv * (n - 1) + 1)),
     xbeta(arma::vec(n, arma::fill::zeros)),
-    update_fn(Rcpp::as<Rcpp::Function>(model["update_fn"])), 
-    prior_fn(Rcpp::as<Rcpp::Function>(model["prior_fn"])),
     approx_model(arma::vec(n, arma::fill::zeros),
       Z, arma::vec(n, arma::fill::zeros),
-      T, R, a1, P1, D, C, xreg, beta, theta, seed + 1,
-      update_fn, prior_fn) {
+      T, R, a1, P1, D, C, xreg, beta, theta, seed + 1) {
   
   if(xreg.n_cols > 0) {
     compute_xbeta();
@@ -41,7 +38,7 @@ ssm_ung::ssm_ung(const Rcpp::List model, const unsigned int seed, const double z
   
 }
 
-void ssm_ung::update_model(const arma::vec& new_theta) {
+void ssm_ung::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
   
   Rcpp::List model_list =
     update_fn(Rcpp::NumericVector(new_theta.begin(), new_theta.end()));
@@ -80,7 +77,7 @@ void ssm_ung::update_model(const arma::vec& new_theta) {
   if (approx_state > 0) approx_state = 0;
 }
 
-double ssm_ung::log_prior_pdf(const arma::vec& x) const {
+double ssm_ung::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const {
   return Rcpp::as<double>(prior_fn(Rcpp::NumericVector(x.begin(), x.end())));
 }
 
@@ -715,7 +712,7 @@ double ssm_ung::bsf_filter(const unsigned int nsim, arma::cube& alpha,
 }
 
 arma::cube ssm_ung::predict_sample(const arma::mat& theta_posterior,
-  const arma::mat& alpha, const unsigned int predict_type) {
+  const arma::mat& alpha, const unsigned int predict_type, const Rcpp::Function update_fn) {
   
   unsigned int d = 1;
   if (predict_type == 3) d = m;
@@ -725,7 +722,7 @@ arma::cube ssm_ung::predict_sample(const arma::mat& theta_posterior,
   
   
   for (unsigned int i = 0; i < n_samples; i++) {
-    update_model(theta_posterior.col(i));
+    update_model(theta_posterior.col(i), update_fn);
     a1 = alpha.col(i);
     sample.slice(i) = sample_model(predict_type);
   }
@@ -830,7 +827,7 @@ arma::mat ssm_ung::sample_model(const unsigned int predict_type) {
 
 
 arma::cube ssm_ung::predict_past(const arma::mat& theta_posterior,
-  const arma::cube& alpha, const unsigned int predict_type) {
+  const arma::cube& alpha, const unsigned int predict_type, const Rcpp::Function update_fn) {
   
   unsigned int n_samples = theta_posterior.n_cols;
   arma::cube samples(p, n, n_samples);
@@ -838,7 +835,7 @@ arma::cube ssm_ung::predict_past(const arma::mat& theta_posterior,
   std::normal_distribution<> normal(0.0, 1.0);
   for (unsigned int i = 0; i < n_samples; i++) {
     
-    update_model(theta_posterior.col(i));
+    update_model(theta_posterior.col(i), update_fn);
     arma::mat y(1, n);
     
     switch(distribution) {

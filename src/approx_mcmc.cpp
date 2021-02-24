@@ -22,9 +22,11 @@ approx_mcmc::approx_mcmc(const unsigned int iter,
   const unsigned int burnin, const unsigned int thin, const unsigned int n,
   const unsigned int m, const unsigned int k, const double target_acceptance, 
   const double gamma, const arma::mat& S, const unsigned int output_type, 
-  const bool store_modes) :
+  const bool store_modes, Rcpp::Function update_fn, 
+  const Rcpp::Function prior_fn) :
   mcmc(iter, burnin, thin, n, m,
-    target_acceptance, gamma, S, output_type),
+    target_acceptance, gamma, S, output_type,
+    update_fn, prior_fn),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
     mode_storage(arma::cube(k, n, n_samples * store_modes)),
     approx_loglik_storage(arma::vec(n_samples)),
@@ -106,9 +108,10 @@ void approx_mcmc::amcmc(T model, const unsigned int method, const bool end_ram) 
   
   // get the current values of theta
   arma::vec theta = model.theta;
-  model.update_model(theta); // just in case
+  model.update_model(theta, update_fn); // just in case
+  
   // compute the log[p(theta)]
-  double logprior = model.log_prior_pdf(theta);
+  double logprior = model.log_prior_pdf(theta, prior_fn);
   if (!arma::is_finite(logprior)) {
     Rcpp::stop("Initial prior probability is not finite.");
   }
@@ -148,10 +151,10 @@ void approx_mcmc::amcmc(T model, const unsigned int method, const bool end_ram) 
     // propose new theta
     arma::vec theta_prop = theta + S * u;
     // compute prior
-    double logprior_prop = model.log_prior_pdf(theta_prop);
+    double logprior_prop = model.log_prior_pdf(theta_prop, prior_fn);
     if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
-      model.update_model(theta_prop);
+      model.update_model(theta_prop, update_fn);
       
       arma::vec ll = model.log_likelihood(method, 0, alpha, weights, indices);
       double approx_loglik_prop = ll(0);
@@ -292,21 +295,12 @@ void approx_mcmc::amcmc(ssm_sde model, const unsigned int nsim, const bool end_r
 
 // IS-correction with psi-apf
 
-template void approx_mcmc::is_correction_psi(ssm_ung model, const unsigned int nsim,
-  const unsigned int is_type, const unsigned int n_threads);
-
 template void approx_mcmc::is_correction_psi(bsm_ng model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads);
-
 template void approx_mcmc::is_correction_psi(svm model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads);
-
 template void approx_mcmc::is_correction_psi(ar1_ng model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads);
-
-template void approx_mcmc::is_correction_psi(ssm_mng model, const unsigned int nsim,
-  const unsigned int is_type, const unsigned int n_threads);
-
 template void approx_mcmc::is_correction_psi(ssm_nlg model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads);
 
@@ -327,7 +321,7 @@ void approx_mcmc::is_correction_psi(T model, const unsigned int nsim,
 #pragma omp for schedule(static)
   for (unsigned int i = 0; i < n_stored; i++) {
     
-    model.update_model(theta_storage.col(i));
+    model.update_model(theta_storage.col(i), update_fn);
     model.approximate_for_is(mode_storage.slice(i));
     
     unsigned int nsimc = nsim;
@@ -374,7 +368,7 @@ void approx_mcmc::is_correction_psi(T model, const unsigned int nsim,
 
 for (unsigned int i = 0; i < n_stored; i++) {
   
-  model.update_model(theta_storage.col(i));
+  model.update_model(theta_storage.col(i), update_fn);
   model.approximate_for_is(mode_storage.slice(i));
   
   unsigned int nsimc = nsim;
@@ -424,9 +418,6 @@ posterior_storage = prior_storage + approx_loglik_storage +
 }
 
 // IS-correction with bootstrap filter
-template void approx_mcmc::is_correction_bsf(ssm_ung model,
-  const unsigned int nsim, const unsigned int is_type,
-  const unsigned int n_threads);
 template void approx_mcmc::is_correction_bsf(bsm_ng model,
   const unsigned int nsim, const unsigned int is_type,
   const unsigned int n_threads);
@@ -434,9 +425,6 @@ template void approx_mcmc::is_correction_bsf(svm model,
   const unsigned int nsim, const unsigned int is_type,
   const unsigned int n_threads);
 template void approx_mcmc::is_correction_bsf(ar1_ng model,
-  const unsigned int nsim, const unsigned int is_type,
-  const unsigned int n_threads);
-template void approx_mcmc::is_correction_bsf(ssm_mng model,
   const unsigned int nsim, const unsigned int is_type,
   const unsigned int n_threads);
 template void approx_mcmc::is_correction_bsf(ssm_nlg model,
@@ -459,7 +447,7 @@ void approx_mcmc::is_correction_bsf(T model, const unsigned int nsim,
 #pragma omp for schedule(static)
   for (unsigned int i = 0; i < n_stored; i++) {
     
-    model.update_model(theta_storage.col(i));
+    model.update_model(theta_storage.col(i), update_fn);
     
     unsigned int nsimc = nsim;
     if (is_type == 1) {
@@ -503,7 +491,7 @@ void approx_mcmc::is_correction_bsf(T model, const unsigned int nsim,
 #else
 for (unsigned int i = 0; i < n_stored; i++) {
   
-  model.update_model(theta_storage.col(i));
+  model.update_model(theta_storage.col(i), update_fn);
   
   
   unsigned int nsimc = nsim;
@@ -657,15 +645,11 @@ posterior_storage = prior_storage + approx_loglik_storage + arma::log(weight_sto
 
 // IS-correction using SPDK
 // Not implemented for nonlinear models (we could though)
-template void approx_mcmc::is_correction_spdk(ssm_ung model, const unsigned int nsim,
-  unsigned int is_type, const unsigned int n_threads);
 template void approx_mcmc::is_correction_spdk(bsm_ng model, const unsigned int nsim,
   unsigned int is_type, const unsigned int n_threads);
 template void approx_mcmc::is_correction_spdk(svm model, const unsigned int nsim,
   unsigned int is_type, const unsigned int n_threads);
 template void approx_mcmc::is_correction_spdk(ar1_ng model, const unsigned int nsim,
-  unsigned int is_type, const unsigned int n_threads);
-template void approx_mcmc::is_correction_spdk(ssm_mng model, const unsigned int nsim,
   unsigned int is_type, const unsigned int n_threads);
 
 template <class T>
@@ -687,7 +671,7 @@ void approx_mcmc::is_correction_spdk(T model, const unsigned int nsim,
   for (unsigned int i = 0; i < n_stored; i++) {
     
     
-    model.update_model(theta_storage.col(i));
+    model.update_model(theta_storage.col(i), update_fn);
     
     model.approximate_for_is(mode_storage.slice(i));
     
@@ -779,8 +763,8 @@ for (unsigned int i = 0; i < n_stored; i++) {
 // avoids calling R function withing parallel region
 // downside is additional memory requirements due to 
 // storing of all n_stored * estimated model components
-
-void approx_mcmc::is_correction_psi2(ssm_ung model, const unsigned int nsim,
+template<>
+void approx_mcmc::is_correction_psi<ssm_ung>(ssm_ung model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads) {
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
@@ -788,7 +772,7 @@ void approx_mcmc::is_correction_psi2(ssm_ung model, const unsigned int nsim,
   
 #ifdef _OPENMP
   
-  parset_ung pars(model, theta_storage);
+  parset_ung pars(model, theta_storage, update_fn);
   
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
@@ -847,7 +831,7 @@ void approx_mcmc::is_correction_psi2(ssm_ung model, const unsigned int nsim,
 
 for (unsigned int i = 0; i < n_stored; i++) {
   
-  model.update_model(theta_storage.col(i));
+  model.update_model(theta_storage.col(i), update_fn);
   model.approximate_for_is(mode_storage.slice(i));
   
   unsigned int nsimc = nsim;
@@ -895,7 +879,8 @@ posterior_storage = prior_storage + approx_loglik_storage +
   arma::log(weight_storage);
 }
 
-void approx_mcmc::is_correction_bsf2(ssm_ung model, const unsigned int nsim,
+template<>
+void approx_mcmc::is_correction_bsf<ssm_ung>(ssm_ung model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads) {
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
@@ -903,7 +888,7 @@ void approx_mcmc::is_correction_bsf2(ssm_ung model, const unsigned int nsim,
   
 #ifdef _OPENMP
   
-  parset_ung pars(model, theta_storage);
+  parset_ung pars(model, theta_storage, update_fn);
   
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
@@ -958,7 +943,7 @@ void approx_mcmc::is_correction_bsf2(ssm_ung model, const unsigned int nsim,
 #else
 for (unsigned int i = 0; i < n_stored; i++) {
   
-  model.update_model(theta_storage.col(i));
+  model.update_model(theta_storage.col(i), update_fn);
   
   
   unsigned int nsimc = nsim;
@@ -1006,7 +991,8 @@ if (output_type == 2) {
 posterior_storage = prior_storage + arma::log(weight_storage);
 }
 
-void approx_mcmc::is_correction_spdk2(ssm_ung model, const unsigned int nsim,
+template<>
+void approx_mcmc::is_correction_spdk<ssm_ung>(ssm_ung model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads) {
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
@@ -1014,7 +1000,7 @@ void approx_mcmc::is_correction_spdk2(ssm_ung model, const unsigned int nsim,
   
 #ifdef _OPENMP
   
-  parset_ung pars(model, theta_storage);
+  parset_ung pars(model, theta_storage, update_fn);
   
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
@@ -1114,8 +1100,8 @@ posterior_storage = prior_storage + approx_loglik_storage +
   arma::log(weight_storage);
 }
 
-
-void approx_mcmc::is_correction_psi2(ssm_mng model, const unsigned int nsim,
+template<>
+void approx_mcmc::is_correction_psi<ssm_mng>(ssm_mng model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads) {
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
@@ -1123,7 +1109,7 @@ void approx_mcmc::is_correction_psi2(ssm_mng model, const unsigned int nsim,
   
 #ifdef _OPENMP
   
-  parset_mng pars(model, theta_storage);
+  parset_mng pars(model, theta_storage, update_fn);
   
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
@@ -1182,7 +1168,7 @@ void approx_mcmc::is_correction_psi2(ssm_mng model, const unsigned int nsim,
 
 for (unsigned int i = 0; i < n_stored; i++) {
   
-  model.update_model(theta_storage.col(i));
+  model.update_model(theta_storage.col(i), update_fn);
   model.approximate_for_is(mode_storage.slice(i));
   
   unsigned int nsimc = nsim;
@@ -1230,7 +1216,8 @@ posterior_storage = prior_storage + approx_loglik_storage +
   arma::log(weight_storage);
 }
 
-void approx_mcmc::is_correction_bsf2(ssm_mng model, const unsigned int nsim,
+template<>
+void approx_mcmc::is_correction_bsf<ssm_mng>(ssm_mng model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads) {
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
@@ -1238,7 +1225,7 @@ void approx_mcmc::is_correction_bsf2(ssm_mng model, const unsigned int nsim,
   
 #ifdef _OPENMP
   
-  parset_mng pars(model, theta_storage);
+  parset_mng pars(model, theta_storage, update_fn);
   
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
@@ -1293,7 +1280,7 @@ void approx_mcmc::is_correction_bsf2(ssm_mng model, const unsigned int nsim,
 #else
 for (unsigned int i = 0; i < n_stored; i++) {
   
-  model.update_model(theta_storage.col(i));
+  model.update_model(theta_storage.col(i), update_fn);
   
   
   unsigned int nsimc = nsim;
@@ -1341,7 +1328,8 @@ if (output_type == 2) {
 posterior_storage = prior_storage + arma::log(weight_storage);
 }
 
-void approx_mcmc::is_correction_spdk2(ssm_mng model, const unsigned int nsim,
+template<>
+void approx_mcmc::is_correction_spdk<ssm_mng>(ssm_mng model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads) {
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
@@ -1349,7 +1337,7 @@ void approx_mcmc::is_correction_spdk2(ssm_mng model, const unsigned int nsim,
   
 #ifdef _OPENMP
   
-  parset_mng pars(model, theta_storage);
+  parset_mng pars(model, theta_storage, update_fn);
   
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
@@ -1450,8 +1438,6 @@ posterior_storage = prior_storage + approx_loglik_storage +
 
 
 // Sampling states from approximate posterior using simulation smoother
-template void approx_mcmc::approx_state_posterior(ssm_ung model, const unsigned int n_threads);
-template void approx_mcmc::approx_state_posterior(ssm_mng model, const unsigned int n_threads);
 template void approx_mcmc::approx_state_posterior(ssm_nlg model, const unsigned int n_threads);
 template void approx_mcmc::approx_state_posterior(bsm_ng model, const unsigned int n_threads);
 template void approx_mcmc::approx_state_posterior(svm model, const unsigned int n_threads);
@@ -1468,14 +1454,14 @@ void approx_mcmc::approx_state_posterior(T model, const unsigned int n_threads) 
   
 #pragma omp for schedule(static)  
   for (unsigned int i = 0; i < n_stored; i++) {
-    model.update_model(theta_storage.col(i));
+    model.update_model(theta_storage.col(i), update_fn);
     model.approximate_for_is(mode_storage.slice(i));
     alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
   }
 }
 #else
 for (unsigned int i = 0; i < n_stored; i++) {
-  model.update_model(theta_storage.col(i));
+  model.update_model(theta_storage.col(i), update_fn);
   model.approximate_for_is(mode_storage.slice(i));
   alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
 }
@@ -1484,12 +1470,12 @@ for (unsigned int i = 0; i < n_stored; i++) {
 }
 
 // for avoiding R function call within parallel region (critical pragma is not enough)
-
-void approx_mcmc::approx_state_posterior2(ssm_ung model, const unsigned int n_threads) {
+template<>
+void approx_mcmc::approx_state_posterior<ssm_ung>(ssm_ung model, const unsigned int n_threads) {
   
 #ifdef _OPENMP
   
-  parset_ung pars(model, theta_storage);
+  parset_ung pars(model, theta_storage, update_fn);
   
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
@@ -1505,18 +1491,19 @@ void approx_mcmc::approx_state_posterior2(ssm_ung model, const unsigned int n_th
 }
 #else
 for (unsigned int i = 0; i < n_stored; i++) {
-  model.update_model(theta_storage.col(i));
+  model.update_model(theta_storage.col(i), update_fn);
   model.approximate_for_is(mode_storage.slice(i));
   alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
 }
 #endif
 }
 
-void approx_mcmc::approx_state_posterior2(ssm_mng model, const unsigned int n_threads) {
+template<>
+void approx_mcmc::approx_state_posterior<ssm_mng>(ssm_mng model, const unsigned int n_threads) {
   
 #ifdef _OPENMP
   
-  parset_mng pars(model, theta_storage);
+  parset_mng pars(model, theta_storage, update_fn);
   
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
 {
@@ -1532,13 +1519,14 @@ void approx_mcmc::approx_state_posterior2(ssm_mng model, const unsigned int n_th
 }
 #else
 for (unsigned int i = 0; i < n_stored; i++) {
-  model.update_model(theta_storage.col(i));
+  model.update_model(theta_storage.col(i), update_fn);
   model.approximate_for_is(mode_storage.slice(i));
   alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
 }
 #endif
 }
 
+// should parallelize this as well
 template void approx_mcmc::approx_state_summary(ssm_ung model);
 template void approx_mcmc::approx_state_summary(bsm_ng model);
 template void approx_mcmc::approx_state_summary(svm model);
@@ -1556,7 +1544,7 @@ void approx_mcmc::approx_state_summary(T model) {
   arma::cube Vt_i(model.m, model.m, model.n + 1);
   
   for (unsigned int i = 0; i < n_stored; i++) {
-    model.update_model(theta_storage.col(i));
+    model.update_model(theta_storage.col(i), update_fn);
     model.approximate_for_is(mode_storage.slice(i));
     model.approx_model.smoother(alphahat_i, Vt_i);
     
@@ -1579,9 +1567,9 @@ void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
   
   
   arma::vec theta = model.theta;
-  double logprior = model.log_prior_pdf(theta);
+  double logprior = model.log_prior_pdf(theta, prior_fn);
   
-  model.update_model(theta); // just in case
+  model.update_model(theta, update_fn); // just in case
   // compute the log-likelihood
   double loglik = model.ekf_loglik();
   if (!arma::is_finite(loglik)) {
@@ -1608,7 +1596,7 @@ void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
     // propose new theta
     arma::vec theta_prop = theta + S * u;
     // compute prior
-    double logprior_prop = model.log_prior_pdf(theta_prop);
+    double logprior_prop = model.log_prior_pdf(theta_prop, prior_fn);
     
     if (logprior_prop > -std::numeric_limits<double>::infinity() && !std::isnan(logprior_prop)) {
       // update parameters
@@ -1667,7 +1655,7 @@ void approx_mcmc::ekf_state_sample(ssm_nlg model, const unsigned int n_threads) 
   model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
 #pragma omp for schedule(static)
   for (unsigned int i = 0; i < n_stored; i++) {
-    model.update_model(theta_storage.col(i));
+    model.update_model(theta_storage.col(i), update_fn);
     model.approximate_by_ekf();
     alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
     
@@ -1677,7 +1665,7 @@ void approx_mcmc::ekf_state_sample(ssm_nlg model, const unsigned int n_threads) 
 
 for (unsigned int i = 0; i < n_stored; i++) {
   
-  model.update_model(theta_storage.col(i));
+  model.update_model(theta_storage.col(i), update_fn);
   model.approximate_by_ekf();
   alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
   
@@ -1697,7 +1685,7 @@ void approx_mcmc::ekf_state_summary(ssm_nlg model) {
   
   for (unsigned int i = 0; i < n_stored; i++) {
     
-    model.update_model(theta_storage.col(i));
+    model.update_model(theta_storage.col(i), update_fn);
     model.ekf_smoother(alphahat_i, Vt_i);
     
     sum_w += count_storage(i);

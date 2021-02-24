@@ -240,7 +240,7 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
     L_f, L_c, seed);
 
   approx_mcmc mcmc_run(iter, burnin, thin, model.n, 1, 1,
-    target_acceptance, gamma, S, type);
+    target_acceptance, gamma, S, type, false);
 
   mcmc_run.amcmc(model, nsim, end_ram);
 

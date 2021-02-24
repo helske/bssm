@@ -21,7 +21,7 @@ bsm_lg::bsm_lg(const Rcpp::List model, const unsigned int seed) :
 // update the model given theta
 // standard deviation parameters sigma are sampled in a transformed space
 // with theta = log(sigma) <=> sigma = exp(theta)
-void bsm_lg::update_model(const arma::vec& new_theta) {
+void bsm_lg::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
   
   if (arma::accu(fixed) < 4) {
     if (y_est) {
@@ -50,7 +50,7 @@ void bsm_lg::update_model(const arma::vec& new_theta) {
   theta = new_theta;
 }
 
-double bsm_lg::log_prior_pdf(const arma::vec& x) const {
+double bsm_lg::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const {
   
   double log_prior = 0.0;
   arma::vec pars = x;

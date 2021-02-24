@@ -70,15 +70,11 @@ public:
   arma::cube RR;
   arma::vec xbeta;
   
-  // R functions
-  const Rcpp::Function update_fn;
-  const Rcpp::Function prior_fn;
-  
   ssm_ulg approx_model;
   
-  virtual void update_model(const arma::vec& new_theta);
-  void update_model(const parset_ung& x, unsigned int i);
-  virtual double log_prior_pdf(const arma::vec& x) const;
+  virtual void update_model(const arma::vec& new_theta, const Rcpp::Function update_fn);
+  
+  virtual double log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const;
   void compute_RR(){
     for (unsigned int t = 0; t < R.n_slices; t++) {
       RR.slice(t) = R.slice(t) * R.slice(t).t();
@@ -122,12 +118,12 @@ public:
   double compute_const_term(); 
   
   arma::cube predict_sample(const arma::mat& theta_posterior, const arma::mat& alpha, 
-    const unsigned int predict_type);
+    const unsigned int predict_type, const Rcpp::Function update_fn);
   
   arma::mat sample_model(const unsigned int predict_type);
   
   arma::cube predict_past(const arma::mat& theta_posterior,
-    const arma::cube& alpha, const unsigned int predict_type);
+    const arma::cube& alpha, const unsigned int predict_type, const Rcpp::Function update_fn);
 
 };
 

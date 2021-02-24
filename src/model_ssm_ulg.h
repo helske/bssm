@@ -29,9 +29,7 @@ public:
     const arma::mat& xreg, 
     const arma::vec& beta, 
     const arma::vec& theta,
-    const unsigned int seed,   
-    const Rcpp::Function update_fn,
-    const Rcpp::Function prior_fn,
+    const unsigned int seed,
     const double zero_tol = 1e-12);
   
   arma::vec y;
@@ -70,12 +68,8 @@ public:
   arma::cube RR;
   arma::vec xbeta;
   
-  // R functions
-  const Rcpp::Function update_fn;
-  const Rcpp::Function prior_fn;
-  
-  virtual double log_prior_pdf(const arma::vec& x) const;
-  virtual void update_model(const arma::vec& new_theta);
+  virtual void update_model(const arma::vec& new_theta, const Rcpp::Function update_fn);
+  virtual double log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const;
   
   void compute_RR(){
     for (unsigned int t = 0; t < R.n_slices; t++) {
@@ -111,11 +105,12 @@ public:
   void psi_filter(const unsigned int nsim, arma::cube& alpha);
   
   arma::cube predict_sample(const arma::mat& theta_posterior,
-    const arma::mat& alpha, const unsigned int predict_type);
+    const arma::mat& alpha, const unsigned int predict_type, const Rcpp::Function update_fn);
+  
   arma::mat sample_model(const unsigned int predict_type);
   
   arma::cube predict_past(const arma::mat& theta_posterior,
-    const arma::cube& alpha, const unsigned int predict_type);
+    const arma::cube& alpha, const unsigned int predict_type, const Rcpp::Function update_fn);
   
 };
 

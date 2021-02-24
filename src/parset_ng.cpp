@@ -2,10 +2,9 @@
 #include "model_ssm_ung.h"
 #include "model_ssm_mng.h"
 
-parset_ung::parset_ung(const ssm_ung& model, const arma::mat& theta) {
+parset_ung::parset_ung(const ssm_ung& model, const arma::mat& theta, const Rcpp::Function update_fn) {
   
-  Rcpp::List model_list =
-    model.update_fn(Rcpp::NumericVector(model.theta.begin(), model.theta.end()));
+  Rcpp::List model_list = update_fn(Rcpp::NumericVector(model.theta.begin(), model.theta.end()));
   
   n = theta.n_cols;
   est_phi = model_list.containsElementNamed("phi");
@@ -30,9 +29,8 @@ parset_ung::parset_ung(const ssm_ung& model, const arma::mat& theta) {
   beta = arma::mat(model.beta.n_elem, n * est_beta);
   
   for(unsigned int i = 0; i < n; i++) {
-    // Explicit creation just to make sure we do not get memory issues
     Rcpp::NumericVector theta0(theta.col(i).begin(), theta.col(i).end());
-    Rcpp::List model_list = model.update_fn(theta0);
+    model_list = update_fn(theta0);
     
     if (est_phi) {
       double phidouble = model_list["phi"];
@@ -113,10 +111,9 @@ void parset_ung::update(ssm_ung& model, const unsigned int i) {
 }
 
 
-parset_mng::parset_mng(const ssm_mng& model, const arma::mat& theta) {
+parset_mng::parset_mng(const ssm_mng& model, const arma::mat& theta, const Rcpp::Function update_fn) {
   
-  Rcpp::List model_list =
-    model.update_fn(Rcpp::NumericVector(model.theta.begin(), model.theta.end()));
+  Rcpp::List model_list = update_fn(Rcpp::NumericVector(model.theta.begin(), model.theta.end()));
   
   n = theta.n_cols;
   est_phi = model_list.containsElementNamed("phi");
@@ -140,9 +137,8 @@ parset_mng::parset_mng(const ssm_mng& model, const arma::mat& theta) {
   
   for(unsigned int i = 0; i < n; i++) {
     
-    // Explicit creation just to make sure we do not get memory issues
     Rcpp::NumericVector theta0(theta.col(i).begin(), theta.col(i).end());
-    Rcpp::List model_list = model.update_fn(theta0);
+    model_list = update_fn(theta0);
     
     if (est_phi) {
       phi.col(i) = Rcpp::as<arma::vec>(model_list["phi"]);

@@ -76,8 +76,7 @@ ekf_smoother <- function(model, iekf_iter = 0) {
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
     model$theta, model$log_prior_pdf, model$known_params, 
     model$known_tv_params, model$n_states, model$n_etas, 
-    as.integer(model$time_varying), iekf_iter, 
-    default_update_fn, default_prior_fn)
+    as.integer(model$time_varying), iekf_iter)
   colnames(out$alphahat) <- colnames(out$Vt) <-
     rownames(out$Vt) <- model$state_names
   
@@ -93,8 +92,7 @@ ekf_fast_smoother <- function(model, iekf_iter = 0) {
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
     model$theta, model$log_prior_pdf, model$known_params, 
     model$known_tv_params, model$n_states, model$n_etas, 
-    as.integer(model$time_varying), iekf_iter, 
-    default_update_fn, default_prior_fn)
+    as.integer(model$time_varying), iekf_iter)
   colnames(out$alphahat) <- colnames(out$Vt) <-
     rownames(out$Vt) <- model$state_names
   ts(out[-nrow(out$alphahat), , drop = FALSE], start = start(model$y), 

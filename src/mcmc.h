@@ -7,6 +7,9 @@ class ssm_ulg;
 class ssm_mlg;
 class ssm_sde;
 
+extern Rcpp::Function default_update_fn;
+extern Rcpp::Function default_prior_fn;
+
 class mcmc {
   
 protected:
@@ -28,15 +31,13 @@ public:
   mcmc(const unsigned int iter, const unsigned int burnin, 
     const unsigned int thin, const unsigned int n, const unsigned int m,
     const double target_acceptance, const double gamma, const arma::mat& S, 
-    const unsigned int output_type = 1);
+    const unsigned int output_type = 1, 
+    const Rcpp::Function update_fn = default_update_fn, 
+    const Rcpp::Function prior_fn = default_prior_fn);
 
   // sample states given theta
   template <class T>
   void state_posterior(T model, const unsigned int n_threads);
- 
- // for circumventing R calls within OpenMP
-  void state_posterior2(ssm_ulg model, const unsigned int n_threads);
-  void state_posterior2(ssm_mlg model, const unsigned int n_threads);
   
   template <class T>
   void state_summary(T model);
@@ -68,6 +69,9 @@ public:
   arma::mat S;
   double acceptance_rate;
   unsigned int output_type;
+  
+  const Rcpp::Function update_fn;
+  const Rcpp::Function prior_fn;
   
 };
 

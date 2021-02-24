@@ -9,7 +9,7 @@ ar1_ng::ar1_ng(const Rcpp::List model, const unsigned int seed) :
   phi_est(Rcpp::as<bool>(model["phi_est"])) {
 }
 
-void ar1_ng::update_model(const arma::vec& new_theta) {
+void ar1_ng::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
   
   T(0, 0, 0) = new_theta(0);
   R(0, 0, 0) = new_theta(1);
@@ -34,7 +34,7 @@ void ar1_ng::update_model(const arma::vec& new_theta) {
   if (approx_state > 0) approx_state = 0;
 }
 
-double ar1_ng::log_prior_pdf(const arma::vec& x) const {
+double ar1_ng::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const {
   
   double log_prior = 0.0;
   

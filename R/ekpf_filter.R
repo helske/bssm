@@ -33,7 +33,7 @@ ekpf_filter.ssm_nlg <- function(object, particles, seed = sample(.Machine$intege
     object$theta, object$log_prior_pdf, object$known_params, 
     object$known_tv_params, object$n_states, object$n_etas, 
     as.integer(object$time_varying), particles, 
-    seed, default_update_fn, default_prior_fn)
+    seed)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- 
     rownames(out$alpha) <- object$state_names

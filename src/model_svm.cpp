@@ -9,7 +9,7 @@ svm::svm(const Rcpp::List model, const unsigned int seed) :
 }
 
 // update model given the parameters theta
-void svm::update_model(const arma::vec& new_theta) {
+void svm::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
 
   if(svm_type == 0) {
     phi = new_theta(2);
@@ -29,7 +29,7 @@ void svm::update_model(const arma::vec& new_theta) {
 }
 
 
-double svm::log_prior_pdf(const arma::vec& x) const {
+double svm::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const {
   
   double log_prior = 0.0;
   

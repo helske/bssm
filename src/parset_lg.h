@@ -11,7 +11,7 @@ class ssm_mlg;
 class parset_ulg {
   
 public:
-  parset_ulg(const ssm_ulg& model, const arma::mat& theta);
+  parset_ulg(const ssm_ulg& model, const arma::mat& theta, const Rcpp::Function update_fn);
   
   unsigned int n;
   bool est_H;
@@ -42,7 +42,7 @@ public:
 class parset_mlg {
   
 public:
-  parset_mlg(const ssm_mlg& model, const arma::mat& theta);
+  parset_mlg(const ssm_mlg& model, const arma::mat& theta, const Rcpp::Function update_fn);
   
   unsigned int n;
   bool est_H;

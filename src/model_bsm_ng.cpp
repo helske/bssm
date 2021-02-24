@@ -13,7 +13,7 @@ bsm_ng::bsm_ng(const Rcpp::List model, const unsigned int seed) :
   phi_est(Rcpp::as<bool>(model["phi_est"])) {
 }
 
-void bsm_ng::update_model(const arma::vec& new_theta) {
+void bsm_ng::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
 
   if (arma::accu(fixed) < 3 || noise) {
     
@@ -49,7 +49,7 @@ void bsm_ng::update_model(const arma::vec& new_theta) {
   if (approx_state > 0) approx_state = 0;
 }
 
-double bsm_ng::log_prior_pdf(const arma::vec& x) const {
+double bsm_ng::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const {
   
   double log_prior = 0.0;
   arma::vec pars = x;

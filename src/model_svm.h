@@ -10,8 +10,8 @@ public:
   svm(const Rcpp::List model, unsigned int seed = 1);
 
   // update model given the parameters theta
-  void update_model(const arma::vec& new_theta);
-  double log_prior_pdf(const arma::vec& x) const;  
+  void update_model(const arma::vec& new_theta, const Rcpp::Function update_fn);
+  double log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const;  
 
 private:
   const arma::uvec prior_distributions;
