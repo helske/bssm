@@ -9,6 +9,24 @@ svm::svm(const Rcpp::List model, const unsigned int seed) :
 }
 
 // update model given the parameters theta
+void svm::update_model(const arma::vec& new_theta) {
+  
+  if(svm_type == 0) {
+    phi = new_theta(2);
+  } else {
+    a1(0) = new_theta(2);
+    C.fill(new_theta(2) * (1.0 - new_theta(0)));
+  }
+  
+  T(0, 0, 0) = new_theta(0);
+  R(0, 0, 0) = new_theta(1);
+  compute_RR();
+  P1(0, 0) = new_theta(1) * new_theta(1) / (1 - new_theta(0) * new_theta(0));
+  
+  theta = new_theta;
+  // approximation does not match theta anymore (keep as -1 if so)
+  if (approx_state > 0) approx_state = 0;
+}
 void svm::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
 
   if(svm_type == 0) {

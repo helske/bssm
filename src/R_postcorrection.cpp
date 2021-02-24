@@ -174,8 +174,7 @@ Rcpp::List postcorrection_nongaussian(const Rcpp::List model_,
   }
 
   approx_mcmc mcmc_run(counts.n_elem, 0, 1, n, m, p,
-    0.234, 1, arma::mat(theta.n_rows, theta.n_rows), output_type, 
-    true, model_["update_fn"], model_["prior_fn"]);
+    0.234, 1, arma::mat(theta.n_rows, theta.n_rows), output_type, true);
   
   mcmc_run.n_stored = counts.n_elem;
   // mcmc_run.trim_storage();
@@ -192,7 +191,7 @@ Rcpp::List postcorrection_nongaussian(const Rcpp::List model_,
       if(is_type == 3) {
         mcmc_run.expand();
       }
-      mcmc_run.is_correction_psi(model, nsim, is_type, n_threads);
+      mcmc_run.is_correction_psi(model, nsim, is_type, n_threads, model_["update_fn"]);
       
     } break;
     case 1: {
@@ -200,7 +199,7 @@ Rcpp::List postcorrection_nongaussian(const Rcpp::List model_,
       if(is_type == 3) {
         mcmc_run.expand();
       }
-      mcmc_run.is_correction_psi(model, nsim, is_type, n_threads);
+      mcmc_run.is_correction_psi(model, nsim, is_type, n_threads, model_["update_fn"]);
      
     } break;
     case 2: {

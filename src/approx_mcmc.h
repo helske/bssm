@@ -20,35 +20,40 @@ public:
   approx_mcmc(const unsigned int iter, const unsigned int burnin, const unsigned int thin,
     const unsigned int n, const unsigned int m, const unsigned int p, 
     const double target_acceptance, const double gamma, const arma::mat& S, 
-    const unsigned int output_type = 1, const bool store_modes = true, 
-    const Rcpp::Function update_fn = default_update_fn, 
-    const Rcpp::Function prior_fn = default_prior_fn);
+    const unsigned int output_type = 1, const bool store_modes = true);
 
   void expand();
 
   //approximate mcmc
   template<class T>
-  void amcmc(T model, const unsigned int method, const bool end_ram);
+  void amcmc(T model, const unsigned int method, const bool end_ram, 
+    const Rcpp::Function update_fn = default_update_fn, 
+    const Rcpp::Function prior_fn = default_prior_fn);
 
   void amcmc(ssm_sde model, const unsigned int nsim, const bool end_ram);
     
   template <class T>
   void is_correction_psi(T model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
+    const unsigned int is_type, const unsigned int n_threads, 
+    const Rcpp::Function update_fn = default_update_fn);
 
   template <class T>
   void is_correction_bsf(T model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
+    const unsigned int is_type, const unsigned int n_threads, 
+    const Rcpp::Function update_fn = default_update_fn);
 
   template <class T>
   void is_correction_spdk(T model, const unsigned int nsim,
-    const unsigned int is_type, const unsigned int n_threads);
+    const unsigned int is_type, const unsigned int n_threads, 
+    const Rcpp::Function update_fn = default_update_fn);
   
   template <class T>
-  void approx_state_posterior(T model, const unsigned int n_threads);
+  void approx_state_posterior(T model, const unsigned int n_threads, 
+    const Rcpp::Function update_fn = default_update_fn);
   
   template <class T>
-  void approx_state_summary(T model);
+  void approx_state_summary(T model, 
+    const Rcpp::Function update_fn = default_update_fn);
     
   void ekf_state_summary(ssm_nlg model);
   

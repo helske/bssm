@@ -9,7 +9,8 @@
 
 #include "model_ssm_ulg.h"
 
-class parset_ung;
+extern Rcpp::Function default_update_fn;
+
 class ssm_ung {
   
 public:
@@ -118,12 +119,14 @@ public:
   double compute_const_term(); 
   
   arma::cube predict_sample(const arma::mat& theta_posterior, const arma::mat& alpha, 
-    const unsigned int predict_type, const Rcpp::Function update_fn);
+    const unsigned int predict_type, 
+    const Rcpp::Function update_fn = default_update_fn);
   
   arma::mat sample_model(const unsigned int predict_type);
   
   arma::cube predict_past(const arma::mat& theta_posterior,
-    const arma::cube& alpha, const unsigned int predict_type, const Rcpp::Function update_fn);
+    const arma::cube& alpha, const unsigned int predict_type, 
+    const Rcpp::Function update_fn = default_update_fn);
 
 };
 

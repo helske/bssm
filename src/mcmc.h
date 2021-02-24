@@ -31,28 +31,34 @@ public:
   mcmc(const unsigned int iter, const unsigned int burnin, 
     const unsigned int thin, const unsigned int n, const unsigned int m,
     const double target_acceptance, const double gamma, const arma::mat& S, 
-    const unsigned int output_type = 1, 
-    const Rcpp::Function update_fn = default_update_fn, 
-    const Rcpp::Function prior_fn = default_prior_fn);
+    const unsigned int output_type = 1);
 
   // sample states given theta
   template <class T>
-  void state_posterior(T model, const unsigned int n_threads);
+  void state_posterior(T model, const unsigned int n_threads, 
+    const Rcpp::Function update_fn = default_update_fn);
   
   template <class T>
-  void state_summary(T model);
+  void state_summary(T model, 
+    const Rcpp::Function update_fn = default_update_fn);
   
   // gaussian mcmc
   template<class T>
-  void mcmc_gaussian(T model, const bool end_ram);
+  void mcmc_gaussian(T model, const bool end_ram, 
+    const Rcpp::Function update_fn = default_update_fn, 
+    const Rcpp::Function prior_fn = default_prior_fn);
 
   // pseudo-marginal mcmc
   template<class T>
-  void pm_mcmc(T model, const unsigned int method, const unsigned int nsim, const bool end_ram);
+  void pm_mcmc(T model, const unsigned int method, const unsigned int nsim, 
+    const bool end_ram, const Rcpp::Function update_fn = default_update_fn, 
+    const Rcpp::Function prior_fn = default_prior_fn);
 
   // delayed acceptance mcmc
   template<class T>
-  void da_mcmc(T model, const unsigned int method, const unsigned int nsim, const bool end_ram);
+  void da_mcmc(T model, const unsigned int method, const unsigned int nsim, 
+    const bool end_ram, const Rcpp::Function update_fn = default_update_fn, 
+    const Rcpp::Function prior_fn = default_prior_fn);
 
   // pseudo-marginal mcmc for SDE
   void pm_mcmc(ssm_sde model, const unsigned int nsim, const bool end_ram);
@@ -69,10 +75,6 @@ public:
   arma::mat S;
   double acceptance_rate;
   unsigned int output_type;
-  
-  const Rcpp::Function update_fn;
-  const Rcpp::Function prior_fn;
-  
 };
 
 

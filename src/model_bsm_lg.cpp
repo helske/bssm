@@ -21,6 +21,34 @@ bsm_lg::bsm_lg(const Rcpp::List model, const unsigned int seed) :
 // update the model given theta
 // standard deviation parameters sigma are sampled in a transformed space
 // with theta = log(sigma) <=> sigma = exp(theta)
+void bsm_lg::update_model(const arma::vec& new_theta) {
+  
+  if (arma::accu(fixed) < 4) {
+    if (y_est) {
+      H(0) = std::exp(new_theta(0));
+      HH(0) = std::pow(H(0), 2.0);
+    }
+    // sd_level
+    if (level_est) {
+      R(0, 0, 0) = std::exp(new_theta(y_est));
+    }
+    // sd_slope
+    if (slope_est) {
+      R(1, 1, 0) =  std::exp(new_theta(y_est + level_est));
+    }
+    // sd_seasonal
+    if (seasonal_est) {
+      R(1 + slope, 1 + slope, 0) =
+        std::exp(new_theta(y_est + level_est + slope_est));
+    }
+    compute_RR();
+  }
+  if(xreg.n_cols > 0) {
+    beta = new_theta.subvec(new_theta.n_elem - xreg.n_cols, new_theta.n_elem - 1);
+    compute_xbeta();
+  }
+  theta = new_theta;
+}
 void bsm_lg::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
   
   if (arma::accu(fixed) < 4) {

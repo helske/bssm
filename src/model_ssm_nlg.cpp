@@ -41,6 +41,12 @@ ssm_nlg::ssm_nlg(const arma::mat& y, nvec_fnPtr Z_fn_, nmat_fnPtr H_fn_,
       seed + 1) {
 }
 // note: Rcpp::Function is not actually used, it is here only to accomodate common mcmc method
+void ssm_nlg::update_model(const arma::vec& new_theta) {
+  
+  theta = new_theta;
+  // approximation does not match theta anymore (keep as -1 if so)
+  if (approx_state > 0) approx_state = 0;
+}
 void ssm_nlg::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
   
   theta = new_theta;

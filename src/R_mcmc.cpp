@@ -29,17 +29,17 @@ Rcpp::List gaussian_mcmc(const Rcpp::List model_,
     n = y.n_rows;
   }
   mcmc mcmc_run(iter, burnin, thin, n, m,
-    target_acceptance, gamma, S, output_type, 
-    model_["update_fn"], model_["prior_fn"]);
+    target_acceptance, gamma, S, output_type);
   
   switch (model_type) {
   case 0: {
     ssm_mlg model(model_, seed);
-    mcmc_run.mcmc_gaussian(model, end_ram);
+    mcmc_run.mcmc_gaussian(model, end_ram, 
+      model_["update_fn"], model_["prior_fn"]);
     
     switch (output_type) {
     case 1: {
-      mcmc_run.state_posterior(model, n_threads); //sample states
+      mcmc_run.state_posterior(model, n_threads, model_["update_fn"]); //sample states
       
       return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
         Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
@@ -49,7 +49,7 @@ Rcpp::List gaussian_mcmc(const Rcpp::List model_,
     } break;
     case 2: {
       //summary
-      mcmc_run.state_summary(model);
+      mcmc_run.state_summary(model, model_["update_fn"]);
       return Rcpp::List::create(Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
         Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
         Rcpp::Named("counts") = mcmc_run.count_storage,
@@ -67,12 +67,13 @@ Rcpp::List gaussian_mcmc(const Rcpp::List model_,
   } break;
   case 1: {
     ssm_ulg model(model_, seed);
-    mcmc_run.mcmc_gaussian(model, end_ram);
+    mcmc_run.mcmc_gaussian(model, end_ram, 
+      model_["update_fn"], model_["prior_fn"]);
     
     switch (output_type) {
     case 1: {
       
-      mcmc_run.state_posterior(model, n_threads); //sample states
+      mcmc_run.state_posterior(model, n_threads, model_["update_fn"]); //sample states
       
       return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
         Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
@@ -82,7 +83,7 @@ Rcpp::List gaussian_mcmc(const Rcpp::List model_,
     } break;
     case 2: {
       //summary
-      mcmc_run.state_summary(model);
+      mcmc_run.state_summary(model, model_["update_fn"]);
       return Rcpp::List::create(Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
         Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
         Rcpp::Named("counts") = mcmc_run.count_storage,
@@ -185,17 +186,18 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List model_,
   }
   
   mcmc mcmc_run(iter, burnin, thin, n, m,
-    target_acceptance, gamma, S, output_type, 
-    model_["update_fn"], model_["prior_fn"]);
+    target_acceptance, gamma, S, output_type);
   
   switch (model_type) {
   case 0: {
     ssm_mng model(model_, seed);
-    mcmc_run.pm_mcmc(model, sampling_method, nsim, end_ram);
+    mcmc_run.pm_mcmc(model, sampling_method, nsim, end_ram, 
+      model_["update_fn"], model_["prior_fn"]);
   } break;
   case 1: {
     ssm_ung model(model_, seed);
-    mcmc_run.pm_mcmc(model, sampling_method, nsim, end_ram);
+    mcmc_run.pm_mcmc(model, sampling_method, nsim, end_ram, 
+      model_["update_fn"], model_["prior_fn"]);
   } break;
   case 2: {
     bsm_ng model(model_, seed);
@@ -262,17 +264,18 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List model_,
     arma::mat y = Rcpp::as<arma::mat>(model_["y"]);
     n = y.n_rows;
   }
-  mcmc mcmc_run(iter, burnin, thin, n, m, target_acceptance, gamma, S, output_type, 
-    model_["update_fn"], model_["prior_fn"]);
+  mcmc mcmc_run(iter, burnin, thin, n, m, target_acceptance, gamma, S, output_type);
   
   switch (model_type) {
   case 0: {
     ssm_mng model(model_, seed);
-    mcmc_run.da_mcmc(model, sampling_method, nsim, end_ram);
+    mcmc_run.da_mcmc(model, sampling_method, nsim, end_ram, 
+      model_["update_fn"], model_["prior_fn"]);
   } break;
   case 1: {
     ssm_ung model(model_, seed);
-    mcmc_run.da_mcmc(model, sampling_method, nsim, end_ram);
+    mcmc_run.da_mcmc(model, sampling_method, nsim, end_ram, 
+      model_["update_fn"], model_["prior_fn"]);
   } break;
   case 2: {
     bsm_ng model(model_, seed);
@@ -345,8 +348,7 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
     p = y.n_cols;
   }
   approx_mcmc mcmc_run(iter, burnin, thin, n, m, p,
-    target_acceptance, gamma, S, output_type, true,
-    model_["update_fn"], model_["prior_fn"]);
+    target_acceptance, gamma, S, output_type, true);
   
   if (nsim <= 1) {
     mcmc_run.alpha_storage.zeros();
@@ -357,14 +359,15 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
   switch (model_type) {
   case 0: {
     ssm_mng model(model_, seed);
-    mcmc_run.amcmc(model, 1, end_ram);
+    mcmc_run.amcmc(model, 1, end_ram,
+      model_["update_fn"], model_["prior_fn"]);
     if(approx) {
       if(output_type == 1) {
-        mcmc_run.approx_state_posterior(model, n_threads);
+        mcmc_run.approx_state_posterior(model, n_threads, model_["update_fn"]);
         
       } else {
         if(output_type == 2) {
-          mcmc_run.approx_state_summary(model);
+          mcmc_run.approx_state_summary(model, model_["update_fn"]);
         }
       }
     } else {
@@ -374,13 +377,13 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
       
       switch (sampling_method) {
       case 1:
-        mcmc_run.is_correction_psi(model, nsim, is_type, n_threads);
+        mcmc_run.is_correction_psi(model, nsim, is_type, n_threads, model_["update_fn"]);
         break;
       case 2:
-        mcmc_run.is_correction_bsf(model, nsim, is_type, n_threads);
+        mcmc_run.is_correction_bsf(model, nsim, is_type, n_threads, model_["update_fn"]);
         break;
       case 3:
-        mcmc_run.is_correction_spdk(model, nsim, is_type, n_threads);
+        mcmc_run.is_correction_spdk(model, nsim, is_type, n_threads, model_["update_fn"]);
         break;
       }
       
@@ -388,13 +391,13 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
   } break;
   case 1: {
     ssm_ung model(model_, seed);
-    mcmc_run.amcmc(model, 1, end_ram);
+    mcmc_run.amcmc(model, 1, end_ram, model_["update_fn"], model_["prior_fn"]);
     if(approx) {
       if(output_type == 1) {
-        mcmc_run.approx_state_posterior(model, n_threads);
+        mcmc_run.approx_state_posterior(model, n_threads, model_["update_fn"]);
       } else {
         if(output_type == 2) {
-          mcmc_run.approx_state_summary(model);
+          mcmc_run.approx_state_summary(model, model_["update_fn"]);
         }
       }
     } else {
@@ -404,13 +407,13 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
       
       switch (sampling_method) {
       case 1:
-        mcmc_run.is_correction_psi(model, nsim, is_type, n_threads);
+        mcmc_run.is_correction_psi(model, nsim, is_type, n_threads, model_["update_fn"]);
         break;
       case 2:
-        mcmc_run.is_correction_bsf(model, nsim, is_type, n_threads);
+        mcmc_run.is_correction_bsf(model, nsim, is_type, n_threads, model_["update_fn"]);
         break;
       case 3:
-        mcmc_run.is_correction_spdk(model, nsim, is_type, n_threads);
+        mcmc_run.is_correction_spdk(model, nsim, is_type, n_threads, model_["update_fn"]);
         break;
       }
       

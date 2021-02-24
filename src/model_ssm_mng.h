@@ -8,6 +8,8 @@
 #include "bssm.h"
 #include "model_ssm_mlg.h"
 
+extern Rcpp::Function default_update_fn;
+
 class ssm_mng {
   
 public:
@@ -108,12 +110,13 @@ public:
   arma::vec log_obs_density(const unsigned int t, const arma::cube& alpha) const;
   
   arma::cube predict_sample(const arma::mat& theta_posterior, const arma::mat& alpha,
-    const unsigned int predict_type, const Rcpp::Function update_fn);
+    const unsigned int predict_type, const Rcpp::Function update_fn = default_update_fn);
   
   arma::mat sample_model(const unsigned int predict_type);
   
   arma::cube predict_past(const arma::mat& theta_posterior,
-    const arma::cube& alpha, const unsigned int predict_type, const Rcpp::Function update_fn);
+    const arma::cube& alpha, const unsigned int predict_type, 
+    const Rcpp::Function update_fn = default_update_fn);
 };
 
 

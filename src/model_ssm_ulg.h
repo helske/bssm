@@ -7,6 +7,8 @@
 #include "bssm.h"
 #include <sitmo.h>
 
+extern Rcpp::Function default_update_fn;
+
 class ssm_ulg {
   
 public:
@@ -105,12 +107,14 @@ public:
   void psi_filter(const unsigned int nsim, arma::cube& alpha);
   
   arma::cube predict_sample(const arma::mat& theta_posterior,
-    const arma::mat& alpha, const unsigned int predict_type, const Rcpp::Function update_fn);
+    const arma::mat& alpha, const unsigned int predict_type, 
+    const Rcpp::Function update_fn = default_update_fn);
   
   arma::mat sample_model(const unsigned int predict_type);
   
   arma::cube predict_past(const arma::mat& theta_posterior,
-    const arma::cube& alpha, const unsigned int predict_type, const Rcpp::Function update_fn);
+    const arma::cube& alpha, const unsigned int predict_type, 
+    const Rcpp::Function update_fn = default_update_fn);
   
 };
 

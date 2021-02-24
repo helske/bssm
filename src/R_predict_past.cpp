@@ -26,11 +26,11 @@ arma::cube gaussian_predict_past(const Rcpp::List model_,
     } break;
     case 2: {
       bsm_lg model(model_, seed);
-      return model.predict_past(theta, alpha, predict_type, model_["update_fn"]);
+      return model.predict_past(theta, alpha, predict_type);
     } break;
     case 3: {
       ar1_lg model(model_, seed);
-      return model.predict_past(theta, alpha, predict_type, model_["update_fn"]);
+      return model.predict_past(theta, alpha, predict_type);
     } break;
   }
   return arma::cube(0,0,0);
@@ -53,15 +53,15 @@ arma::cube nongaussian_predict_past(const Rcpp::List model_,
   } break;
   case 2: {
     bsm_ng model(model_, seed);
-    return model.predict_past(theta, alpha, predict_type, model_["update_fn"]);
+    return model.predict_past(theta, alpha, predict_type);
   } break;
   case 3: {
     svm model(model_, seed);
-    return model.predict_past(theta, alpha, predict_type, model_["update_fn"]);
+    return model.predict_past(theta, alpha, predict_type);
   } break;
   case 4: {
     ar1_ng model(model_, seed);
-    return model.predict_past(theta, alpha, predict_type, model_["update_fn"]);
+    return model.predict_past(theta, alpha, predict_type);
   } break;
   }
   return arma::cube(0,0,0);
@@ -89,8 +89,8 @@ arma::cube nonlinear_predict_past(const arma::mat& y, SEXP Z, SEXP H,
   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
   
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
-    *xpfun_a1, *xpfun_P1, theta.col(0), *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
-    time_varying, seed);
+    *xpfun_a1, *xpfun_P1, theta.col(0), *xpfun_prior, known_params, known_tv_params, 
+    n_states, n_etas, time_varying, seed);
   
   return model.predict_past(theta, alpha, predict_type);
   

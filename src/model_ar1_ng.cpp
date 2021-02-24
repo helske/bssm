@@ -9,6 +9,30 @@ ar1_ng::ar1_ng(const Rcpp::List model, const unsigned int seed) :
   phi_est(Rcpp::as<bool>(model["phi_est"])) {
 }
 
+void ar1_ng::update_model(const arma::vec& new_theta) {
+  
+  T(0, 0, 0) = new_theta(0);
+  R(0, 0, 0) = new_theta(1);
+  if (mu_est) {
+    a1(0) = new_theta(2);
+    C.fill(new_theta(2) * (1.0 - new_theta(0)));
+  }
+  P1(0, 0) = std::pow(new_theta(1), 2) / (1.0 - std::pow(new_theta(0), 2));
+  
+  compute_RR();
+  
+  if(phi_est) {
+    phi = new_theta(2 + mu_est);
+  }
+  
+  if(xreg.n_cols > 0) {
+    beta = new_theta.subvec(new_theta.n_elem - xreg.n_cols, new_theta.n_elem - 1);
+    compute_xbeta();
+  }
+  theta = new_theta;  
+  // approximation does not match theta anymore (keep as -1 if so)
+  if (approx_state > 0) approx_state = 0;
+}
 void ar1_ng::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
   
   T(0, 0, 0) = new_theta(0);

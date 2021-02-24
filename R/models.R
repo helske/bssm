@@ -950,8 +950,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     slope = slope, seasonal = seasonal, period = period, 
     fixed = as.integer(!notfixed), 
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
-    theta = theta, prior_fn = default_prior_fn, 
-    update_fn = default_update_fn), class = c("bsm_lg", "ssm_ulg", "gaussian"))
+    theta = theta), class = c("bsm_lg", "ssm_ulg", "gaussian"))
 }
 
 #' Non-Gaussian Basic Structural (Time Series) Model
@@ -1248,8 +1247,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     period = period, fixed = as.integer(!notfixed),
     distribution = distribution, initial_mode = initial_mode, 
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
-    theta = theta, phi_est = phi_est, 
-    prior_fn = default_prior_fn, update_fn = default_update_fn,
+    theta = theta, phi_est = phi_est,
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE), 
     class = c("bsm_ng", "ssm_ung", "nongaussian"))
 }
@@ -1332,7 +1330,7 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
     initial_mode = initial_mode, 
     svm_type = svm_type, distribution = "svm", u = 1, phi_est = !as.logical(svm_type),
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
-    theta = theta, prior_fn = default_prior_fn, update_fn = default_update_fn,
+    theta = theta,
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE),
     class = c("svm", "ssm_ung", "nongaussian"))
 }
@@ -1468,7 +1466,7 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
     initial_mode = initial_mode,
     distribution = distribution, mu_est = mu_est, phi_est = phi_est,
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
-    theta = theta, prior_fn = default_prior_fn, update_fn = default_update_fn,
+    theta = theta, 
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE),
     class = c("ar1_ng", "ssm_ung", "nongaussian"))
 }
@@ -1585,7 +1583,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
     D = D, C = C,
     mu_est = mu_est, sd_y_est = sd_y_est,
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
-    theta = theta, prior_fn = default_prior_fn, update_fn = default_update_fn,
+    theta = theta,
     max_iter = 100, conv_tol = 1e-8),
     class = c("ar1_lg", "ssm_ulg", "gaussian"))
 }

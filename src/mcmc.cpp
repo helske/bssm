@@ -24,6 +24,7 @@
 
 #include "parset_lg.h"
 
+// used as placeholder
 Rcpp::Environment pkg = Rcpp::Environment::namespace_env("bssm");
 
 Rcpp::Function default_update_fn = pkg["default_update_fn"];
@@ -38,8 +39,7 @@ mcmc::mcmc(
   const double target_acceptance, 
   const double gamma, 
   const arma::mat& S,
-  const unsigned int output_type,
-  const Rcpp::Function update_fn, Rcpp::Function prior_fn) :
+  const unsigned int output_type) :
   iter(iter), burnin(burnin), thin(thin),
   n_samples(std::floor(double(iter - burnin) / double(thin))),
   n_par(S.n_rows),
@@ -50,7 +50,7 @@ mcmc::mcmc(
   alpha_storage(arma::cube((output_type == 1) * n + 1, m, (output_type == 1) * n_samples, arma::fill::zeros)), 
   alphahat(arma::mat(m, (output_type == 2) * n + 1, arma::fill::zeros)), 
   Vt(arma::cube(m, m, (output_type == 2) * n + 1, arma::fill::zeros)), S(S),
-  acceptance_rate(0.0), output_type(output_type), update_fn(update_fn), prior_fn(prior_fn) {
+  acceptance_rate(0.0), output_type(output_type){
 }
 
 
@@ -64,11 +64,14 @@ void mcmc::trim_storage() {
 
 // for circumventing calls to R during parallel runs
 
-template void mcmc::state_posterior(bsm_lg model, const unsigned int n_threads);
-template void mcmc::state_posterior(ar1_lg model, const unsigned int n_threads);
+template void mcmc::state_posterior(bsm_lg model, const unsigned int n_threads, 
+  const Rcpp::Function update_fn);
+template void mcmc::state_posterior(ar1_lg model, const unsigned int n_threads,
+  const Rcpp::Function update_fn);
 
 template <class T>
-void mcmc::state_posterior(T model, const unsigned int n_threads) {
+void mcmc::state_posterior(T model, const unsigned int n_threads, 
+  const Rcpp::Function update_fn) {
   
   
 #ifdef _OPENMP
@@ -79,22 +82,22 @@ void mcmc::state_posterior(T model, const unsigned int n_threads) {
   
 #pragma omp for schedule(static)
   for (unsigned int i = 0; i < n_stored; i++) {
-    model.update_model(theta_storage.col(i), update_fn);
+    model.update_model(theta_storage.col(i));
     alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
   }
 }
 #else
   for (unsigned int i = 0; i < n_stored; i++) {
-    model.update_model(theta_storage.col(i), update_fn);
+    model.update_model(theta_storage.col(i));
     alpha_storage.slice(i) = model.simulate_states(1).slice(0).t();
   }
 #endif
 
 }
 
-
 template<>
-void mcmc::state_posterior<ssm_ulg>(ssm_ulg model, const unsigned int n_threads) {
+void mcmc::state_posterior<ssm_ulg>(ssm_ulg model, const unsigned int n_threads, 
+  const Rcpp::Function update_fn) {
   
   
 #ifdef _OPENMP
@@ -120,7 +123,8 @@ for (unsigned int i = 0; i < n_stored; i++) {
 }
 
 template<>
-void mcmc::state_posterior<ssm_mlg>(ssm_mlg model, const unsigned int n_threads) {
+void mcmc::state_posterior<ssm_mlg>(ssm_mlg model, const unsigned int n_threads, 
+  const Rcpp::Function update_fn) {
   
   
 #ifdef _OPENMP
@@ -144,13 +148,18 @@ for (unsigned int i = 0; i < n_stored; i++) {
 #endif
 }
 
-template void mcmc::state_summary(ssm_ulg model);
-template void mcmc::state_summary(bsm_lg model);
-template void mcmc::state_summary(ar1_lg model);
-template void mcmc::state_summary(ssm_mlg model);
+template void mcmc::state_summary(ssm_ulg model, 
+  const Rcpp::Function update_fn);
+template void mcmc::state_summary(bsm_lg model, 
+  const Rcpp::Function update_fn);
+template void mcmc::state_summary(ar1_lg model, 
+  const Rcpp::Function update_fn);
+template void mcmc::state_summary(ssm_mlg model, 
+  const Rcpp::Function update_fn);
 
 template <class T>
-void mcmc::state_summary(T model) {
+void mcmc::state_summary(T model, 
+  const Rcpp::Function update_fn) {
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   
@@ -181,13 +190,19 @@ void mcmc::state_summary(T model) {
 // run MCMC for linear-Gaussian state space model
 // target the marginal p(theta | y)
 // sample states separately given the posterior sample of theta
-template void mcmc::mcmc_gaussian(ssm_ulg model, const bool end_ram);
-template void mcmc::mcmc_gaussian(bsm_lg model, const bool end_ram);
-template void mcmc::mcmc_gaussian(ar1_lg model, const bool end_ram);
-template void mcmc::mcmc_gaussian(ssm_mlg model, const bool end_ram);
+template void mcmc::mcmc_gaussian(ssm_ulg model, const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+template void mcmc::mcmc_gaussian(bsm_lg model, const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+template void mcmc::mcmc_gaussian(ar1_lg model, const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+template void mcmc::mcmc_gaussian(ssm_mlg model, const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template<class T>
-void mcmc::mcmc_gaussian(T model, const bool end_ram) {
+void mcmc::mcmc_gaussian(T model, const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
+  
   arma::vec theta = model.theta;
   model.update_model(theta, update_fn); // just in case
   double logprior = model.log_prior_pdf(theta, prior_fn); 
@@ -277,32 +292,38 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram) {
 template void mcmc::pm_mcmc(ssm_ung model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram);
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template void mcmc::pm_mcmc(bsm_ng model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram);
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template void mcmc::pm_mcmc(ar1_ng model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram);
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template void mcmc::pm_mcmc(svm model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram);
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template void mcmc::pm_mcmc(ssm_nlg model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram);
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template void mcmc::pm_mcmc(ssm_mng model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram);
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 
 template<class T>
@@ -310,7 +331,8 @@ void mcmc::pm_mcmc(
     T model,
     const unsigned int method,
     const unsigned int nsim,
-    const bool end_ram) {
+    const bool end_ram, 
+    const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
   
   unsigned int m = model.m;
   unsigned int n = model.n;
@@ -445,38 +467,45 @@ void mcmc::pm_mcmc(
 template void mcmc::da_mcmc(ssm_ung model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram);
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template void mcmc::da_mcmc(bsm_ng model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram);
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template void mcmc::da_mcmc(ar1_ng model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram);
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template void mcmc::da_mcmc(svm model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram);
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template void mcmc::da_mcmc(ssm_nlg model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram);
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template void mcmc::da_mcmc(ssm_mng model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram);
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template<class T>
 void mcmc::da_mcmc(T model,
   const unsigned int method,
   const unsigned int nsim,
-  const bool end_ram) {
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn) {
   
   unsigned int m = model.m;
   unsigned int n = model.n;

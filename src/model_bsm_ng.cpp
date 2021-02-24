@@ -13,6 +13,44 @@ bsm_ng::bsm_ng(const Rcpp::List model, const unsigned int seed) :
   phi_est(Rcpp::as<bool>(model["phi_est"])) {
 }
 
+// used in parallel regions, does not depend on R
+void bsm_ng::update_model(const arma::vec& new_theta) {
+  
+  if (arma::accu(fixed) < 3 || noise) {
+    
+    // sd_level
+    if (level_est) {
+      R(0, 0, 0) = std::exp(new_theta(0));
+    }
+    // sd_slope
+    if (slope_est) {
+      R(1, 1, 0) = std::exp(new_theta(level_est));
+    }
+    // sd_seasonal
+    if (seasonal_est) {
+      R(1 + slope, 1 + slope, 0) =
+        std::exp(new_theta(level_est + slope_est));
+    }
+    if(noise) {
+      R(m - 1, 1 + slope + seasonal, 0) =
+        std::exp(new_theta(level_est + slope_est + seasonal_est));
+      P1(m - 1, m - 1) = std::pow(R(m - 1, 1 + slope + seasonal, 0), 2.0);
+    }
+    compute_RR();
+  }
+  if(phi_est) {
+    phi = std::exp(new_theta(level_est + slope_est + seasonal_est + noise));
+  }
+  if(xreg.n_cols > 0) {
+    beta = new_theta.subvec(new_theta.n_elem - xreg.n_cols, new_theta.n_elem - 1);
+    compute_xbeta();
+  }
+  theta = new_theta;
+  // approximation does not match theta anymore (keep as -1 if so)
+  if (approx_state > 0) approx_state = 0;
+}
+
+// used in mcmc, latter argument is not actually used
 void bsm_ng::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
 
   if (arma::accu(fixed) < 3 || noise) {
