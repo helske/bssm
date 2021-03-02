@@ -19,7 +19,7 @@
 \item{object}{Model model.}
 
 \item{particles}{Number of samples for particle filter. If 0, 
-approximate log-likelihood is returned either based on the gaussian approximation or EKF, 
+approximate log-likelihood is returned either based on the Gaussian approximation or EKF, 
 depending on the \code{method} argument.}
 
 \item{method}{Sampling method. Default is the bootstrap particle filter (\code{"bsf"}). 
@@ -39,5 +39,5 @@ uses EKF-based particle filter (or just EKF approximation in the case of \code{p
 \item{...}{Ignored.}
 }
 \description{
-Computes the log-likelihood of the state space model of \code{bssm} package.
+Computes the log-likelihood of a state space model of class \code{ssm_nlg} package.
 }

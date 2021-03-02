@@ -2,55 +2,19 @@
 % Please edit documentation in R/loglik.R
 \name{logLik.gaussian}
 \alias{logLik.gaussian}
-\alias{logLik.nongaussian}
 \title{Log-likelihood of a Gaussian State Space Model}
 \usage{
 \method{logLik}{gaussian}(object, ...)
-
-\method{logLik}{nongaussian}(
-  object,
-  particles,
-  method = "psi",
-  max_iter = 100,
-  conv_tol = 1e-08,
-  seed = sample(.Machine$integer.max, size = 1),
-  ...
-)
 }
 \arguments{
 \item{object}{Model model.}
 
 \item{...}{Ignored.}
-
-\item{particles}{Number of samples for particle filter or importance sampling. If 0, 
-approximate log-likelihood based on the Gaussian approximation is returned.}
-
-\item{method}{Sampling method, default is psi-auxiliary filter (\code{"psi"}), 
-other choices are \code{"bsf"} bootstrap particle filter, and \code{"spdk"}, 
-which uses the importance sampling approach by Shephard and Pitt (1997) and 
-Durbin and Koopman (1997).}
-
-\item{max_iter}{Maximum number of iterations for Gaussian approximation algorithm.}
-
-\item{conv_tol}{Tolerance parameter for the approximation algorithm.}
-
-\item{seed}{Seed for the random number generator.}
 }
 \description{
-Computes the log-likelihood of the state space model of \code{bssm} package.
-
-Computes the log-likelihood of the state space model of \code{bssm} package.
+Computes the log-likelihood of a linear-Gaussian state space model of \code{bssm} package.
 }
 \examples{
 model <- ssm_ulg(y = c(1,4,3), Z = 1, H = 1, T = 1, R = 1)
 logLik(model)
-model <- ssm_ung(y = c(1,4,3), Z = 1, T = 1, R = 0.5, P1 = 2,
-  distribution = "poisson")
-  
-model2 <- bsm_ng(y = c(1,4,3), sd_level = 0.5, P1 = 2,
-  distribution = "poisson")
-logLik(model, particles = 0)
-logLik(model2, particles = 0)
-logLik(model, particles = 10, seed = 1)
-logLik(model2, particles = 10, seed = 1)
 }

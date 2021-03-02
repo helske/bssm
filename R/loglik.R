@@ -1,6 +1,6 @@
 #' Log-likelihood of a Gaussian State Space Model
 #'
-#' Computes the log-likelihood of the state space model of \code{bssm} package.
+#' Computes the log-likelihood of a linear-Gaussian state space model of \code{bssm} package.
 #' 
 #' @param object Model model.
 #' @param ... Ignored.
@@ -17,7 +17,7 @@ logLik.gaussian <- function(object, ...) {
 
 #' Log-likelihood of a Non-Gaussian State Space Model
 #'
-#' Computes the log-likelihood of the state space model of \code{bssm} package.
+#' Computes the log-likelihood of a non-Gaussian state space model of \code{bssm} package.
 #' 
 #' @param object Model model.
 #' @param particles Number of samples for particle filter or importance sampling. If 0, 
@@ -31,7 +31,6 @@ logLik.gaussian <- function(object, ...) {
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @method logLik nongaussian
-#' @rdname logLik
 #' @export
 #' @examples 
 #' model <- ssm_ung(y = c(1,4,3), Z = 1, T = 1, R = 0.5, P1 = 2,
@@ -69,11 +68,11 @@ logLik.nongaussian <- function(object, particles, method = "psi",
 }
 #' Log-likelihood of a Non-linear State Space Model
 #'
-#' Computes the log-likelihood of the state space model of \code{bssm} package.
+#' Computes the log-likelihood of a state space model of class \code{ssm_nlg} package.
 #' 
 #' @param object Model model.
 #' @param particles Number of samples for particle filter. If 0, 
-#' approximate log-likelihood is returned either based on the gaussian approximation or EKF, 
+#' approximate log-likelihood is returned either based on the Gaussian approximation or EKF, 
 #' depending on the \code{method} argument.
 #' @param method Sampling method. Default is the bootstrap particle filter (\code{"bsf"}). 
 #' Other choices are \code{"psi"} which uses psi-auxiliary filter 
@@ -113,7 +112,7 @@ logLik.ssm_nlg <- function(object, particles, method = "bsf",
 }
 #' Log-likelihood of a State Space Model with SDE dynamics
 #'
-#' Computes the log-likelihood of the state space model of \code{bssm} package.
+#' Computes the log-likelihood of a state space model of class \code{ssm_sde} package.
 #' 
 #' @param object Model model.
 #' @param particles Number of samples for particle filter. 

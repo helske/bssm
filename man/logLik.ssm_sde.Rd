@@ -24,5 +24,5 @@
 \item{...}{Ignored.}
 }
 \description{
-Computes the log-likelihood of the state space model of \code{bssm} package.
+Computes the log-likelihood of a state space model of class \code{ssm_sde} package.
 }
