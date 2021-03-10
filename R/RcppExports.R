@@ -101,10 +101,6 @@ R_milstein <- function(x0, L, t, theta, drift_pntr, diffusion_pntr, ddiffusion_p
     .Call('_bssm_R_milstein', PACKAGE = 'bssm', x0, L, t, theta, drift_pntr, diffusion_pntr, ddiffusion_pntr, positive, seed)
 }
 
-R_milstein_joint <- function(x0, L_c, L_f, t, theta, drift_pntr, diffusion_pntr, ddiffusion_pntr, positive, seed) {
-    .Call('_bssm_R_milstein_joint', PACKAGE = 'bssm', x0, L_c, L_f, t, theta, drift_pntr, diffusion_pntr, ddiffusion_pntr, positive, seed)
-}
-
 suggest_n_nongaussian <- function(model_, theta, candidates, replications, seed, model_type) {
     .Call('_bssm_suggest_n_nongaussian', PACKAGE = 'bssm', model_, theta, candidates, replications, seed, model_type)
 }

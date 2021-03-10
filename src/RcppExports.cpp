@@ -633,26 +633,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// R_milstein_joint
-double R_milstein_joint(const double x0, const unsigned int L_c, const unsigned int L_f, const double t, const arma::vec& theta, SEXP drift_pntr, SEXP diffusion_pntr, SEXP ddiffusion_pntr, bool positive, const unsigned int seed);
-RcppExport SEXP _bssm_R_milstein_joint(SEXP x0SEXP, SEXP L_cSEXP, SEXP L_fSEXP, SEXP tSEXP, SEXP thetaSEXP, SEXP drift_pntrSEXP, SEXP diffusion_pntrSEXP, SEXP ddiffusion_pntrSEXP, SEXP positiveSEXP, SEXP seedSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const double >::type x0(x0SEXP);
-    Rcpp::traits::input_parameter< const unsigned int >::type L_c(L_cSEXP);
-    Rcpp::traits::input_parameter< const unsigned int >::type L_f(L_fSEXP);
-    Rcpp::traits::input_parameter< const double >::type t(tSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type theta(thetaSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type drift_pntr(drift_pntrSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type diffusion_pntr(diffusion_pntrSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type ddiffusion_pntr(ddiffusion_pntrSEXP);
-    Rcpp::traits::input_parameter< bool >::type positive(positiveSEXP);
-    Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(R_milstein_joint(x0, L_c, L_f, t, theta, drift_pntr, diffusion_pntr, ddiffusion_pntr, positive, seed));
-    return rcpp_result_gen;
-END_RCPP
-}
 // suggest_n_nongaussian
 arma::vec suggest_n_nongaussian(const Rcpp::List model_, const arma::vec theta, const arma::vec candidates, const unsigned int replications, const unsigned int seed, const int model_type);
 RcppExport SEXP _bssm_suggest_n_nongaussian(SEXP model_SEXP, SEXP thetaSEXP, SEXP candidatesSEXP, SEXP replicationsSEXP, SEXP seedSEXP, SEXP model_typeSEXP) {
@@ -1303,7 +1283,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bssm_nonlinear_ekf_mcmc", (DL_FUNC) &_bssm_nonlinear_ekf_mcmc, 27},
     {"_bssm_nonlinear_is_mcmc", (DL_FUNC) &_bssm_nonlinear_is_mcmc, 33},
     {"_bssm_R_milstein", (DL_FUNC) &_bssm_R_milstein, 9},
-    {"_bssm_R_milstein_joint", (DL_FUNC) &_bssm_R_milstein_joint, 10},
     {"_bssm_suggest_n_nongaussian", (DL_FUNC) &_bssm_suggest_n_nongaussian, 6},
     {"_bssm_suggest_n_nonlinear", (DL_FUNC) &_bssm_suggest_n_nonlinear, 20},
     {"_bssm_postcorrection_nongaussian", (DL_FUNC) &_bssm_postcorrection_nongaussian, 10},

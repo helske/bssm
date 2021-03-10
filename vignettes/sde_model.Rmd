@@ -43,7 +43,7 @@ where $B_t$ is a Brownian motion and where $\mu$ and $\sigma$ are real valued fu
 
 ## Example
 
-Discretely observed latent diffusion models can be constructed using the `ssm_sde` function, which takes pointers to `C++` functions defining the drift, diffusion, the derivative of the diffusion function, and the log-densities of the observations and the prior. As an example, let us consider an Ornstein–Uhlenbeck process
+Discretely observed latent diffusion models can be constructed using the `ssm_sde` function, which takes pointers to `C++` functions defining the drift, diffusion, the derivative of the diffusion function, the log-densities of the observations, and the log-prior. As an example, let us consider an Ornstein–Uhlenbeck process
 $$
 \textrm{d} \alpha_t = \rho (\nu - \alpha_t) \textrm{d} t + \sigma \textrm{d} B_t,
 $$
