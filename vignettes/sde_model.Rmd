@@ -36,10 +36,10 @@ This vignette shows how to model discretely observed diffusion models with `bssm
 We assume that the state equation is defined as a continuous time diffusion model of form
 $$
 \textrm{d} \alpha_t =
-\mu(t, \alpha_t,\theta) \textrm{d} t +
-\sigma(t, \alpha_t, \theta) \textrm{d} B_t, \quad t\geq0,
+\mu(\alpha_t,\theta) \textrm{d} t +
+\sigma(\alpha_t, \theta) \textrm{d} B_t, \quad t\geq0,
 $$
-where $B_t$ is a (vector valued) Brownian motion and where $\mu$ and $\sigma$ are vector and matrix valued functions, with the univariate observation density $p(y_k | \alpha_k)$ defined at integer times $k=1\ldots,n$. As these transition densities are generally unavailable for non-linear diffusions, we use Milstein time-discretisation scheme for approximate simulation with bootstrap particle filter. Fine discretisation mesh gives less bias than the coarser one, with increased computational complexity. Here IS-MCMC approach [@vihola-helske-franks] can provide substantial computational savings.
+where $B_t$ is a Brownian motion and where $\mu$ and $\sigma$ are real valued functions, with the univariate observation density $g(y_k | \alpha_k)$ defined at integer times $k=1\ldots,n$. As these transition densities are generally unavailable for non-linear diffusions, we use Milstein time-discretisation scheme for approximate simulation with bootstrap particle filter. Fine discretisation mesh gives less bias than the coarser one, with increased computational complexity. Here IS-MCMC approach [@vihola-helske-franks] can provide substantial computational savings.
 
 ## Example
 

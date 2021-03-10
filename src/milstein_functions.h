@@ -32,14 +32,6 @@ double milstein_worker(double x, arma::vec& dB, double dt, unsigned int n,
   const arma::vec& theta, fnPtr drift, fnPtr diffusion,
   fnPtr ddiffusion, bool positive);
 
-arma::vec brownian_bridge(const double t, const double sd, const unsigned int n,
-  const double X_t, sitmo::prng_engine& eng);
-
-double milstein_joint(const double x0,
-  const unsigned int L_c, const unsigned int L_f, const double t,
-  const arma::vec& theta,
-  fnPtr drift, fnPtr diffusion, fnPtr ddiffusion,
-  bool positive, sitmo::prng_engine& eng_c, sitmo::prng_engine& eng_f);
 
 
 #endif
