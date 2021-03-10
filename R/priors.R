@@ -6,12 +6,14 @@
 #' These simple objects of class \code{bssm_prior} are used to construct a prior distributions for the 
 #' MCMC runs of \code{bssm} package. Currently supported priors are uniform (\code{uniform()}), 
 #' half-normal (\code{halfnormal()}), normal (\code{normal()}), gamma (\code{gamma}), and 
-#' truncated normal distribution  (\code{tnormal()}).
+#' truncated normal distribution  (\code{tnormal()}).All parameters are vectorized so 
+#' for regression coefficient vector beta you can define prior for example 
+#' as \code{normal(0, 0, c(10, 20))}.
 #' 
 #' 
 #' @rdname priors
 #' @param init Initial value for the parameter, used in initializing the model components and as a starting value
-#' in MCMC.
+#' in MCMC. 
 #' @param min Lower bound of the uniform and truncated normal prior.
 #' @param max Upper bound of the uniform and truncated normal prior.
 #' @param sd Standard deviation of the (underlying i.e. non-truncated) Normal distribution.
@@ -20,6 +22,11 @@
 #' @param rate Rate parameter of the Gamma prior.
 #' @return object of class \code{bssm_prior}.
 #' @export
+#' @examples
+#' # create uniform prior on [-1, 1] for one parameter with initial value 0.2:
+#' uniform(0.2, -1, 1)
+#' # two normal priors at once i.e. for coefficients beta:
+#' normal(init = c(0.1, 2), mean = 0, sd = c(1, 2))
 uniform <- function(init, min, max){
   if(any(!is.numeric(init), !is.numeric(min), !is.numeric(max))) {
     stop("Parameters for priors must be numeric.")
