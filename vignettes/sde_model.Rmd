@@ -39,7 +39,7 @@ $$
 \mu(\alpha_t,\theta) \textrm{d} t +
 \sigma(\alpha_t, \theta) \textrm{d} B_t, \quad t\geq0,
 $$
-where $B_t$ is a Brownian motion and where $\mu$ and $\sigma$ are real valued functions, with the univariate observation density $g(y_k | \alpha_k)$ defined at integer times $k=1\ldots,n$. As these transition densities are generally unavailable for non-linear diffusions, we use Milstein time-discretisation scheme for approximate simulation with bootstrap particle filter. Fine discretisation mesh gives less bias than the coarser one, with increased computational complexity. Here IS-MCMC approach [@vihola-helske-franks] can provide substantial computational savings.
+where $B_t$ is a Brownian motion and where $\mu$ and $\sigma$ are scalar-valued functions, with the univariate observation density $g(y_k | \alpha_k)$ defined at integer times $k=1\ldots,n$. As these transition densities are generally unavailable for non-linear diffusions, we use Milstein time-discretisation scheme for approximate simulation with bootstrap particle filter. Fine discretisation mesh gives less bias than the coarser one, with increased computational complexity. Here IS-MCMC approach [@vihola-helske-franks] can provide substantial computational savings.
 
 ## Example
 
