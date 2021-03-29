@@ -1258,12 +1258,13 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' first order autoregressive signal.
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
-#' @param rho prior for autoregressive coefficient.
-#' @param sigma Prior for sigma parameter of observation equation.
 #' @param mu Prior for mu parameter of transition equation.
-#' Ignored if \code{sigma} is provided.
+#' @param rho prior for autoregressive coefficient.
 #' @param sd_ar Prior for the standard deviation of noise of the AR-process.
-#' @return Object of class \code{svm} or \code{svm2}.
+#' @param sigma Prior for sigma parameter of observation equation, internally denoted as phi. Ignored 
+#' if \code{mu} is provided. Note that typically parametrization using mu is preferred due to 
+#' better numerical properties and availability of better Gaussian approximation.
+#' @return Object of class \code{svm}.
 #' @export
 #' @rdname svm
 #' @examples
@@ -1284,7 +1285,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #'   sd_ar = halfnormal(pars[2],sd=5),
 #'   sigma = halfnormal(pars[3],sd=2))
 #'
-svm <- function(y, rho, sd_ar, sigma, mu) {
+svm <- function(y, mu, rho, sd_ar, sigma) {
   
   if(!missing(sigma) && !missing(mu)) {
     stop("Define either sigma or mu, but not both.")
@@ -1294,7 +1295,7 @@ svm <- function(y, rho, sd_ar, sigma, mu) {
   
   check_rho(rho$init)
   check_sd(sd_ar$init, "rho")
-  if(missing(sigma)) {
+  if(!missing(mu)) {
     svm_type <- 1L
     check_mu(mu$init)
     initial_mode <- matrix(log(pmax(1e-4, y^2)), ncol = 1)

@@ -165,6 +165,14 @@ level_sumr \%>\% ggplot(aes(x = time, y = mean)) +
   theme(legend.title = element_blank()) + 
   xlab("Time") + ylab("Level")
 
+# theta
+d_theta <- as.data.frame(fit, variable = "theta")
+ggplot(d_theta, aes(x = value)) + 
+ geom_density(aes(weight = weight), adjust = 2, fill = "#92f0a8") + 
+ facet_wrap(~ variable, scales = "free") + 
+ theme_bw()
+ 
+ 
 # Bivariate Poisson model:
 
 set.seed(1)

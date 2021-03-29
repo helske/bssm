@@ -4,22 +4,23 @@
 \alias{svm}
 \title{Stochastic Volatility Model}
 \usage{
-svm(y, rho, sd_ar, sigma, mu)
+svm(y, mu, rho, sd_ar, sigma)
 }
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
+
+\item{mu}{Prior for mu parameter of transition equation.}
 
 \item{rho}{prior for autoregressive coefficient.}
 
 \item{sd_ar}{Prior for the standard deviation of noise of the AR-process.}
 
-\item{sigma}{Prior for sigma parameter of observation equation.}
-
-\item{mu}{Prior for mu parameter of transition equation.
-Ignored if \code{sigma} is provided.}
+\item{sigma}{Prior for sigma parameter of observation equation, internally denoted as phi. Ignored 
+if \code{mu} is provided. Note that typically parametrization using mu is preferred due to 
+better numerical properties and availability of better Gaussian approximation.}
 }
 \value{
-Object of class \code{svm} or \code{svm2}.
+Object of class \code{svm}.
 }
 \description{
 Constructs a simple stochastic volatility model with Gaussian errors and

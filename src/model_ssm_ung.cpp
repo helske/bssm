@@ -392,7 +392,7 @@ arma::vec ssm_ung::log_weights(
     switch(distribution) {
     case 0  :
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
-        double simsignal = alpha(0, t, i); // D and xbeta always zero
+        double simsignal = alpha(0, t, i);
         weights(i) = -0.5 * (simsignal + std::pow(y(t) / phi, 2.0) * std::exp(-simsignal)) +
           0.5 * std::pow((approx_model.y(t) - simsignal) / approx_model.H(t), 2.0);
       }
@@ -787,6 +787,9 @@ arma::mat ssm_ung::sample_model(const unsigned int predict_type) {
       
       switch(distribution) {
       case 0:
+        for (unsigned int t = 0; t < n; t++) {
+          y(0, t) = phi * exp(0.5 * alpha(0, t)) * normal(engine);
+        }
         break;
       case 1:
         for (unsigned int t = 0; t < n; t++) {
@@ -837,7 +840,6 @@ arma::cube ssm_ung::predict_past(const arma::mat& theta_posterior,
     
     update_model(theta_posterior.col(i), update_fn);
     arma::mat y(1, n);
-    
     switch(distribution) {
       case 0:
         y.zeros();
@@ -873,6 +875,9 @@ arma::cube ssm_ung::predict_past(const arma::mat& theta_posterior,
       
       switch(distribution) {
       case 0:
+        for (unsigned int t = 0; t < n; t++) {
+          y(0, t) = phi * exp(0.5 * alpha(0, t, i)) * normal(engine);
+        }
         break;
       case 1:
         for (unsigned int t = 0; t < n; t++) {
