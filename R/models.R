@@ -1263,7 +1263,9 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' @param sd_ar Prior for the standard deviation of noise of the AR-process.
 #' @param sigma Prior for sigma parameter of observation equation, internally denoted as phi. Ignored 
 #' if \code{mu} is provided. Note that typically parametrization using mu is preferred due to 
-#' better numerical properties and availability of better Gaussian approximation.
+#' better numerical properties and availability of better Gaussian approximation. 
+#' Most notably the global approximation approach does not work with sigma parameterization as 
+#' sigma is not a parameter of the resulting approximate model.
 #' @return Object of class \code{svm}.
 #' @export
 #' @rdname svm
