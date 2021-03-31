@@ -116,7 +116,7 @@ public:
   double bsf_filter(const unsigned int nsim, arma::cube& alphasim, 
       arma::mat& weights, arma::umat& indices);
   
-  double compute_const_term(); 
+  double compute_const_term() const; 
   
   arma::cube predict_sample(const arma::mat& theta_posterior, const arma::mat& alpha, 
     const unsigned int predict_type, 

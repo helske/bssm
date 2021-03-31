@@ -344,7 +344,7 @@ void ssm_ung::laplace_iter(const arma::vec& signal) {
 
 
 // these are really not constant in all cases (note phi)
-double ssm_ung::compute_const_term() {
+double ssm_ung::compute_const_term() const {
   
   double const_term = 0.0;
   

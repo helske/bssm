@@ -9,6 +9,10 @@ gaussian_approx_model_nlg <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_
     .Call('_bssm_gaussian_approx_model_nlg', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, max_iter, conv_tol, iekf_iter)
 }
 
+gaussian_approx_model_gsv <- function(model_) {
+    .Call('_bssm_gaussian_approx_model_gsv', PACKAGE = 'bssm', model_)
+}
+
 bsf <- function(model_, nsim, seed, gaussian, model_type) {
     .Call('_bssm_bsf', PACKAGE = 'bssm', model_, nsim, seed, gaussian, model_type)
 }
@@ -151,6 +155,10 @@ psi_smoother <- function(model_, nsim, seed, model_type) {
 
 psi_smoother_nlg <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, nsim, seed, max_iter, conv_tol, iekf_iter) {
     .Call('_bssm_psi_smoother_nlg', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, nsim, seed, max_iter, conv_tol, iekf_iter)
+}
+
+psi_smoother_gsv <- function(model_, nsim, seed) {
+    .Call('_bssm_psi_smoother_gsv', PACKAGE = 'bssm', model_, nsim, seed)
 }
 
 loglik_sde <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L, seed) {

@@ -6,6 +6,7 @@
 \alias{particle_smoother.nongaussian}
 \alias{particle_smoother.ssm_nlg}
 \alias{particle_smoother.ssm_sde}
+\alias{particle_smoother.ssm_gsv}
 \title{Particle Smoothing}
 \usage{
 particle_smoother(model, particles, ...)
@@ -44,6 +45,16 @@ particle_smoother(model, particles, ...)
   particles,
   L,
   seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
+
+\method{particle_smoother}{ssm_gsv}(
+  model,
+  particles,
+  method = "psi",
+  seed = sample(.Machine$integer.max, size = 1),
+  max_iter = 100,
+  conv_tol = 1e-08,
   ...
 )
 }

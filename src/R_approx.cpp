@@ -4,6 +4,7 @@
 #include "model_ar1_ng.h"
 #include "model_ssm_mng.h"
 #include "model_ssm_nlg.h"
+#include "model_ssm_gsv.h"
 
 // [[Rcpp::export]]
 Rcpp::List gaussian_approx_model(const Rcpp::List model_, const int model_type) {
@@ -76,5 +77,22 @@ Rcpp::List gaussian_approx_model_nlg(const arma::mat& y, SEXP Z, SEXP H,
     Rcpp::Named("Z") = model.approx_model.Z, Rcpp::Named("H") = model.approx_model.H,
     Rcpp::Named("C") = model.approx_model.C, Rcpp::Named("T") = model.approx_model.T,
     Rcpp::Named("R") = model.approx_model.R, Rcpp::Named("a1") = model.approx_model.a1,
+    Rcpp::Named("P1") = model.approx_model.P1);
+}
+
+
+// [[Rcpp::export]]
+Rcpp::List gaussian_approx_model_gsv(const Rcpp::List model_) {
+  
+  ssm_gsv model(model_, 1);
+  model.approximate();
+  return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,
+    Rcpp::Named("H") = model.approx_model.H,
+    Rcpp::Named("Z") = model.approx_model.Z,
+    Rcpp::Named("T") = model.approx_model.T,
+    Rcpp::Named("R") = model.approx_model.R,
+    Rcpp::Named("C") = model.approx_model.C,
+    Rcpp::Named("D") = model.approx_model.D,
+    Rcpp::Named("a1") = model.approx_model.a1,
     Rcpp::Named("P1") = model.approx_model.P1);
 }

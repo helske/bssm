@@ -4,6 +4,7 @@
 \alias{gaussian_approx}
 \alias{gaussian_approx.nongaussian}
 \alias{gaussian_approx.ssm_nlg}
+\alias{gaussian_approx.ssm_gsv}
 \title{Gaussian Approximation of Non-Gaussian/Non-linear State Space Model}
 \usage{
 gaussian_approx(model, max_iter, conv_tol, ...)
@@ -11,6 +12,8 @@ gaussian_approx(model, max_iter, conv_tol, ...)
 \method{gaussian_approx}{nongaussian}(model, max_iter = 100, conv_tol = 1e-08, ...)
 
 \method{gaussian_approx}{ssm_nlg}(model, max_iter = 100, conv_tol = 1e-08, iekf_iter = 0, ...)
+
+\method{gaussian_approx}{ssm_gsv}(model, max_iter = 100, conv_tol = 1e-08, ...)
 }
 \arguments{
 \item{model}{Model to be approximated.}

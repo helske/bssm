@@ -32,7 +32,7 @@ default_update_fn <- function(theta) {}
 #' @param H Vector of standard deviations. Either a scalar or a vector of length n.
 #' @param T System matrix T of the state equation. Either a m x m matrix or a
 #' m x m x n array.
-#' @param R Lower triangular matrix R the state equation. Either a m x k matrix or a
+#' @param R Matrix R of the state equation. Either a m x k matrix or a
 #' m x k x n array.
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
@@ -282,7 +282,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #' a m x n matrix, or object which can be coerced to such.
 #' @param T System matrix T of the state equation. Either a m x m matrix or a
 #' m x m x n array, or object which can be coerced to such.
-#' @param R Lower triangular matrix R the state equation. Either a m x k matrix or a
+#' @param R Matrix R of the state equation. Either a m x k matrix or a
 #' m x k x n array, or object which can be coerced to such.
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
@@ -443,10 +443,10 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
 #' 
 #' @param y Observations as multivariate time series or matrix with dimensions n x p.
 #' @param Z System matrix Z of the observation equation as p x m matrix or p x m x n array.
-#' @param H Lower triangular matrix H of the observation. Either a scalar or a vector of length n.
+#' @param H Matrix H of the observation equation. Either p x p matrix or p x p x n array.
 #' @param T System matrix T of the state equation. Either a m x m matrix or a
 #' m x m x n array.
-#' @param R Lower triangular matrix R the state equation. Either a m x k matrix or a
+#' @param R Matrix R of the state equation. Either a m x k matrix or a
 #' m x k x n array.
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
@@ -579,7 +579,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #' @param Z System matrix Z of the observation equation as p x m matrix or p x m x n array.
 #' @param T System matrix T of the state equation. Either a m x m matrix or a
 #' m x m x n array.
-#' @param R Lower triangular matrix R the state equation. Either a m x k matrix or a
+#' @param R Matrix R of the state equation. Either a m x k matrix or a
 #' m x k x n array.
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
@@ -1725,3 +1725,198 @@ ssm_sde <- function(y, drift, diffusion, ddiffusion, obs_pdf,
 }
 
 
+#' Stochastic Volatility Model with Stochastic Mean and Variance processes
+#'
+#' @param y Observations as time series (or vector) of length \eqn{n}.
+#' @param Z_mu System matrix Z of the mean equation. Either a vector of length m,
+#' a m x n matrix, or object which can be coerced to such.
+#' @param T_mu System matrix T of the mean process. Either a m x m matrix or a
+#' m x m x n array, or object which can be coerced to such.
+#' @param R_mu Matrix R of the mean process. Either a m x k matrix or a
+#' m x k x n array, or object which can be coerced to such.
+#' @param a1_mu Prior mean for the initial states of the mean process as a vector of length m.
+#' @param P1_mu Prior covariance matrix for the initial states of the mean process as m x m matrix.
+#' @param C_mu Intercept terms \eqn{c_t} for the state equation for the mean process, given as a
+#'  m times 1 or m times n matrix.
+#' @param D_mu Intercept terms \eqn{d_t} for the mean equation, given as a
+#' scalar or vector of length n.
+#' @param Z_sv System matrix Z of the variance equation. Either a vector of length m,
+#' a m x n matrix, or object which can be coerced to such.
+#' @param T_sv System matrix T of the variance process. Either a m x m matrix or a
+#' m x m x n array, or object which can be coerced to such.
+#' @param R_sv Matrix R of the variance process. Either a m x k matrix or a
+#' m x k x n array, or object which can be coerced to such.
+#' @param a1_sv Prior mean for the initial states of the variance process as a vector of length m.
+#' @param P1_sv Prior covariance matrix for the initial states of the variance process as m x m matrix.
+#' @param C_sv Intercept terms \eqn{c_t} for the state equation for the variance process, given as a
+#'  m times 1 or m times n matrix.
+#' @param D_sv Intercept terms \eqn{d_t} for the variance equation, given as a
+#' scalar or vector of length n.
+#' @param state_names List of length two with vectors defining the names for the states 
+#' of the mean process and variance process.
+#' @param init_theta Initial values for the unknown hyperparameters theta.
+#' @param update_fn Function which returns list of updated model 
+#' components given input vector theta. See details.
+#' @param prior_fn Function which returns log of prior density 
+#' given input vector theta.
+#' @return Model of class \code{gsv}.
+#' @export
+ssm_gsv <- function(y, Z_mu, T_mu, R_mu, D_mu, C_mu, a1_mu, P1_mu,
+  Z_sv, T_sv, R_sv, D_sv, C_sv, a1_sv, P1_sv, init_theta = numeric(0), 
+  state_names, update_fn = default_update_fn, prior_fn = default_prior_fn) {
+  
+  check_y(y)
+  n <- length(y)
+  
+  if (length(Z_mu) == 1) {
+    dim(Z_mu) <- c(1, 1)
+    m_mu <- 1
+  } else {
+    if (!(dim(Z_mu)[2] %in% c(1, NA, n)))
+      stop("Argument Z_mu must be a vector of length m, or  (m x 1) or (m x n) matrix,
+        where m is the number of states and n is the length of the series. ")
+    m_mu <- dim(Z_mu)[1]
+    dim(Z_mu) <- c(m_mu, (n - 1) * (max(dim(Z_mu)[2], 0, na.rm = TRUE) > 1) + 1)
+  }
+  # create T_mu
+  if (length(T_mu) == 1 && m_mu == 1) {
+    dim(T_mu) <- c(1, 1, 1)
+  } else {
+    if ((length(T_mu) == 1) || any(dim(T_mu)[1:2] != m_mu) || !(dim(T_mu)[3] %in% c(1, NA, n)))
+      stop("Argument T_mu must be a (m x m) matrix, (m x m x 1) or (m x m x n) array, where m is the number of states. ")
+    dim(T_mu) <- c(m_mu, m_mu, (n - 1) * (max(dim(T_mu)[3], 0, na.rm = TRUE) > 1) + 1)
+  }
+  
+  # create R_mu
+  if (length(R_mu) == m_mu) {
+    dim(R_mu) <- c(m_mu, 1, 1)
+    k_mu <- 1
+  } else {
+    if (!(dim(R_mu)[1] == m_mu) || dim(R_mu)[2] > m_mu || !dim(R_mu)[3] %in% c(1, NA, n))
+      stop("Argument R_mu must be a (m x k) matrix, (m x k x 1) or (m x k x n) array, where k<=m is the number of disturbances eta, and m is the number of states. ")
+    k_mu <- dim(R_mu)[2]
+    dim(R_mu) <- c(m_mu, k_mu, (n - 1) * (max(dim(R_mu)[3], 0, na.rm = TRUE) > 1) + 1)
+  }
+  
+  # create a1_mu
+  if (missing(a1_mu)) {
+    a1_mu <- rep(0, m_mu)
+  } else {
+    if (length(a1_mu) <= m_mu) {
+      a1_mu <- rep(a1_mu, length.out = m_mu)
+    } else stop("Misspecified a1_mu, argument a1 must be a vector of length m, where m is the number of state_names and 1<=t<=m.")
+  }
+  # create P1_mu
+  if (missing(P1_mu)) {
+    P1_mu <- matrix(0, m_mu, m_mu)
+  } else {
+    if (length(P1_mu) == 1 && m_mu == 1) {
+      dim(P1_mu) <- c(1, 1)
+    } else {
+      if (any(dim(P1_mu)[1:2] != m_mu))
+        stop("Argument P1_mu must be (m x m) matrix, where m is the number of states. ")
+    }
+  }
+  
+  if (!missing(D_mu)) {
+    check_D(D_mu, 1L, n)
+    D_mu <- as.numeric(D_mu)
+  } else {
+    D_mu <- 0
+  }
+  if (!missing(C_mu)) {
+    check_C(C_mu, m_mu, n)
+  } else {
+    C_mu <- matrix(0, m_mu, 1)
+  }
+  
+  ## SV component
+  
+  if (length(Z_sv) == 1) {
+    dim(Z_sv) <- c(1, 1)
+    m_sv <- 1
+  } else {
+    if (!(dim(Z_sv)[2] %in% c(1, NA, n)))
+      stop("Argument Z_sv must be a vector of length m, or  (m x 1) or (m x n) matrix,
+        where m is the number of states and n is the length of the series. ")
+    m_sv <- dim(Z_sv)[1]
+    dim(Z_sv) <- c(m_sv, (n - 1) * (max(dim(Z_sv)[2], 0, na.rm = TRUE) > 1) + 1)
+  }
+  # create T_sv
+  if (length(T_sv) == 1 && m_sv == 1) {
+    dim(T_sv) <- c(1, 1, 1)
+  } else {
+    if ((length(T_sv) == 1) || any(dim(T_sv)[1:2] != m_sv) || !(dim(T_sv)[3] %in% c(1, NA, n)))
+      stop("Argument T_sv must be a (m x m) matrix, (m x m x 1) or (m x m x n) array, where m is the number of states. ")
+    dim(T_sv) <- c(m_sv, m_sv, (n - 1) * (max(dim(T_sv)[3], 0, na.rm = TRUE) > 1) + 1)
+  }
+  
+  # create R_sv
+  if (length(R_sv) == m_sv) {
+    dim(R_sv) <- c(m_sv, 1, 1)
+    k_sv <- 1
+  } else {
+    if (!(dim(R_sv)[1] == m_sv) || dim(R_sv)[2] > m_sv || !dim(R_sv)[3] %in% c(1, NA, n))
+      stop("Argument R_sv must be a (m x k) matrix, (m x k x 1) or (m x k x n) array, where k<=m is the number of disturbances eta, and m is the number of states. ")
+    k_sv <- dim(R_sv)[2]
+    dim(R_sv) <- c(m_sv, k_sv, (n - 1) * (max(dim(R_sv)[3], 0, na.rm = TRUE) > 1) + 1)
+  }
+  
+  # create a1_sv
+  if (missing(a1_sv)) {
+    a1_sv <- rep(0, m_sv)
+  } else {
+    if (length(a1_sv) <= m_sv) {
+      a1_sv <- rep(a1_sv, length.out = m_sv)
+    } else stop("Misspecified a1_sv, argument a1 must be a vector of length m, where m is the number of state_names and 1<=t<=m.")
+  }
+  # create P1_sv
+  if (missing(P1_sv)) {
+    P1_sv <- matrix(0, m_sv, m_sv)
+  } else {
+    if (length(P1_sv) == 1 && m_sv == 1) {
+      dim(P1_sv) <- c(1, 1)
+    } else {
+      if (any(dim(P1_sv)[1:2] != m_sv))
+        stop("Argument P1_sv must be (m x m) matrix, where m is the number of states. ")
+    }
+  }
+  
+  if (!missing(D_sv)) {
+    check_D(D_sv, 1L, n)
+    D_sv <- as.numeric(D_sv)
+  } else {
+    D_sv <- 0
+  }
+  if (!missing(C_sv)) {
+    check_C(C_sv, m_sv, n)
+  } else {
+    C_sv <- matrix(0, m_sv, 1)
+  }
+  
+  initial_mode <- cbind(y, log(pmax(1e-4, y^2)))
+  initial_mode[is.na(y), 1] <- mean(y, na.rm=TRUE)
+  initial_mode[is.na(y), 2] <- log(1e-4)
+  
+  if (missing(state_names)) {
+    state_names <- list(paste("state_mu", 1:m_mu), paste("state_sv", 1:m_sv))
+  }
+  rownames(Z_mu) <- colnames(T_mu) <- rownames(T_mu) <- rownames(R_mu) <- names(a1_mu) <-
+    rownames(P1_mu) <- colnames(P1_mu) <- state_names[[1]]
+  rownames(Z_sv) <- colnames(T_sv) <- rownames(T_sv) <- rownames(R_sv) <- names(a1_sv) <-
+    rownames(P1_sv) <- colnames(P1_sv) <- state_names[[2]]
+  
+  if(is.null(names(init_theta)) && length(init_theta) > 0) 
+    names(init_theta) <- paste0("theta_", 1:length(init_theta))
+  
+  structure(list(y = as.ts(y), 
+    Z_mu = Z_mu, T_mu = T_mu, R_mu = R_mu, a1_mu = a1_mu, P1_mu = P1_mu, 
+    D_mu = D_mu, C_mu = C_mu, 
+    Z_sv = Z_sv, T_sv = T_sv, R_sv = R_sv, a1_sv = a1_sv, P1_sv = P1_sv, 
+    D_sv = D_sv, C_sv = C_sv, 
+    initial_mode = initial_mode, update_fn = update_fn,
+    prior_fn = prior_fn, theta = init_theta,
+    max_iter = 100, conv_tol = 1e-8, local_approx = TRUE,
+    xreg = matrix(0,0,0), beta = numeric(0)),
+    class = c("ssm_gsv", "nongaussian"))
+}

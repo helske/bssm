@@ -8,6 +8,7 @@
 #include "model_svm.h"
 #include "model_ar1_ng.h"
 #include "model_ssm_nlg.h"
+#include "model_ssm_gsv.h"
 #include "distr_consts.h"
 #include "filter_smoother.h"
 #include "summary.h"
@@ -220,3 +221,32 @@ Rcpp::List psi_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
     Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
 }
 
+
+// [[Rcpp::export]]
+Rcpp::List psi_smoother_gsv(const Rcpp::List model_,
+  const unsigned int nsim, const unsigned int seed) {
+  
+  ssm_gsv model(model_, seed);
+  
+  arma::cube alpha(model.m, model.n + 1, nsim, arma::fill::zeros);
+  arma::mat weights(nsim, model.n + 1, arma::fill::zeros);
+  arma::umat indices(nsim, model.n, arma::fill::zeros);
+  
+  double loglik = model.psi_filter(nsim, alpha, weights, indices);
+  
+  if (!std::isfinite(loglik)) 
+    Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+  
+  arma::mat alphahat(model.m, model.n + 1);
+  arma::cube Vt(model.m, model.m, model.n + 1);
+  
+  filter_smoother(alpha, indices);
+  summary(alpha, alphahat, Vt); // weights are uniform due to extra time point
+  
+  arma::inplace_trans(alphahat);
+  return Rcpp::List::create(
+    Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") = Vt,
+    Rcpp::Named("weights") = weights,
+    Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
+
+}

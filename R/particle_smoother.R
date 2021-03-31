@@ -211,3 +211,38 @@ particle_smoother.ssm_sde <- function(model, particles, L,
   out
 }
 
+#' @rdname particle_smoother
+#' @method particle_smoother ssm_gsv
+#' @export
+particle_smoother.ssm_gsv <- function(model, particles, 
+  method = "psi", 
+  seed = sample(.Machine$integer.max, size = 1), 
+  max_iter = 100, conv_tol = 1e-8, ...) {
+  
+  if(missing(particles)) {
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
+  }
+  
+  method <- match.arg(method, c("bsf", "psi"))
+  if(method == "bsf") stop("BSF for GSV model is not yet implemented.")
+  
+  model$max_iter <- max_iter
+  model$conv_tol <- conv_tol
+  if(method == "psi") {
+    out <- psi_smoother_gsv(model, particles, seed)
+  } else {
+   # out <- bsf_smoother_gsv(model, particles, seed)
+  }
+  colnames(out$alphahat) <- colnames(out$Vt) <-
+    colnames(out$Vt) <- names(model$a1)
+  out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
+  out$alphahat <- ts(out$alphahat[-nrow(out$alphahat), , drop = FALSE], 
+    start = start(model$y), frequency = frequency(model$y))
+  rownames(out$alpha) <- names(model$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
+}

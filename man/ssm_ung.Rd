@@ -31,7 +31,7 @@ a m x n matrix, or object which can be coerced to such.}
 \item{T}{System matrix T of the state equation. Either a m x m matrix or a
 m x m x n array, or object which can be coerced to such.}
 
-\item{R}{Lower triangular matrix R the state equation. Either a m x k matrix or a
+\item{R}{Matrix R of the state equation. Either a m x k matrix or a
 m x k x n array, or object which can be coerced to such.}
 
 \item{a1}{Prior mean for the initial state as a vector of length m.}

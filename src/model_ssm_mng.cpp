@@ -88,7 +88,7 @@ void ssm_mng::approximate() {
     if(!local_approx & (approx_state == 0)) {
       arma::mat alpha = approx_model.fast_smoother();
       for (unsigned int t = 0; t < n; t++) {
-        mode_estimate.col(t) = D.col(Dtv * t) + approx_model.Z.slice(Ztv * t) * alpha.col(t);
+        mode_estimate.col(t) = D.col(Dtv * t) + Z.slice(Ztv * t) * alpha.col(t);
       }
       
     } else {
@@ -161,7 +161,7 @@ arma::vec ssm_mng::log_likelihood(
         // compute unnormalized mode-based correction terms 
         // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
         update_scales();
-        // compute the constant term
+        // compute the constant term (not really constant...)
         double const_term = compute_const_term(); 
         // log-likelihood approximation
         approx_loglik = gaussian_loglik + const_term + arma::accu(scales);

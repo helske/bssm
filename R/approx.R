@@ -75,3 +75,20 @@ gaussian_approx.ssm_nlg <- function(model, max_iter = 100,
     R = out$R, a1 = c(out$a1), P1 = out$P1,
     init_theta = model$theta, D = out$D, C = out$C)
 }
+
+#' @rdname gaussian_approx
+#' @method gaussian_approx ssm_gsv
+#' @export
+gaussian_approx.ssm_gsv <- function(model, max_iter = 100, 
+  conv_tol = 1e-8,  ...) {
+  
+  model$max_iter <- max_iter
+  model$conv_tol <- conv_tol
+  
+  out <- gaussian_approx_model_gsv(model)
+  
+  out$y <- ts(t(out$y), start = start(model$y), end = end(model$y), frequency = frequency(model$y))
+  ssm_mlg(y = out$y, Z = out$Z, H = out$H, T = out$T, 
+    R = out$R, a1 = c(out$a1), P1 = out$P1,
+    init_theta = model$theta, D = out$D, C = out$C)
+}

@@ -47,6 +47,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// gaussian_approx_model_gsv
+Rcpp::List gaussian_approx_model_gsv(const Rcpp::List model_);
+RcppExport SEXP _bssm_gaussian_approx_model_gsv(SEXP model_SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List >::type model_(model_SEXP);
+    rcpp_result_gen = Rcpp::wrap(gaussian_approx_model_gsv(model_));
+    return rcpp_result_gen;
+END_RCPP
+}
 // bsf
 Rcpp::List bsf(const Rcpp::List model_, const unsigned int nsim, const unsigned int seed, bool gaussian, const int model_type);
 RcppExport SEXP _bssm_bsf(SEXP model_SEXP, SEXP nsimSEXP, SEXP seedSEXP, SEXP gaussianSEXP, SEXP model_typeSEXP) {
@@ -914,6 +925,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// psi_smoother_gsv
+Rcpp::List psi_smoother_gsv(const Rcpp::List model_, const unsigned int nsim, const unsigned int seed);
+RcppExport SEXP _bssm_psi_smoother_gsv(SEXP model_SEXP, SEXP nsimSEXP, SEXP seedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List >::type model_(model_SEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type nsim(nsimSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
+    rcpp_result_gen = Rcpp::wrap(psi_smoother_gsv(model_, nsim, seed));
+    return rcpp_result_gen;
+END_RCPP
+}
 // loglik_sde
 double loglik_sde(const arma::vec& y, const double x0, const bool positive, SEXP drift_pntr, SEXP diffusion_pntr, SEXP ddiffusion_pntr, SEXP log_prior_pdf_pntr, SEXP log_obs_density_pntr, const arma::vec& theta, const unsigned int nsim, const unsigned int L, const unsigned int seed);
 RcppExport SEXP _bssm_loglik_sde(SEXP ySEXP, SEXP x0SEXP, SEXP positiveSEXP, SEXP drift_pntrSEXP, SEXP diffusion_pntrSEXP, SEXP ddiffusion_pntrSEXP, SEXP log_prior_pdf_pntrSEXP, SEXP log_obs_density_pntrSEXP, SEXP thetaSEXP, SEXP nsimSEXP, SEXP LSEXP, SEXP seedSEXP) {
@@ -1260,6 +1284,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_bssm_gaussian_approx_model", (DL_FUNC) &_bssm_gaussian_approx_model, 2},
     {"_bssm_gaussian_approx_model_nlg", (DL_FUNC) &_bssm_gaussian_approx_model_nlg, 19},
+    {"_bssm_gaussian_approx_model_gsv", (DL_FUNC) &_bssm_gaussian_approx_model_gsv, 1},
     {"_bssm_bsf", (DL_FUNC) &_bssm_bsf, 5},
     {"_bssm_bsf_smoother", (DL_FUNC) &_bssm_bsf_smoother, 5},
     {"_bssm_bsf_nlg", (DL_FUNC) &_bssm_bsf_nlg, 18},
@@ -1296,6 +1321,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bssm_gaussian_psi_smoother", (DL_FUNC) &_bssm_gaussian_psi_smoother, 4},
     {"_bssm_psi_smoother", (DL_FUNC) &_bssm_psi_smoother, 4},
     {"_bssm_psi_smoother_nlg", (DL_FUNC) &_bssm_psi_smoother_nlg, 21},
+    {"_bssm_psi_smoother_gsv", (DL_FUNC) &_bssm_psi_smoother_gsv, 3},
     {"_bssm_loglik_sde", (DL_FUNC) &_bssm_loglik_sde, 12},
     {"_bssm_bsf_sde", (DL_FUNC) &_bssm_bsf_sde, 12},
     {"_bssm_bsf_smoother_sde", (DL_FUNC) &_bssm_bsf_smoother_sde, 12},

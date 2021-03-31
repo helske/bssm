@@ -25,12 +25,12 @@ ssm_mlg(
 
 \item{Z}{System matrix Z of the observation equation as p x m matrix or p x m x n array.}
 
-\item{H}{Lower triangular matrix H of the observation. Either a scalar or a vector of length n.}
+\item{H}{Matrix H of the observation equation. Either p x p matrix or p x p x n array.}
 
 \item{T}{System matrix T of the state equation. Either a m x m matrix or a
 m x m x n array.}
 
-\item{R}{Lower triangular matrix R the state equation. Either a m x k matrix or a
+\item{R}{Matrix R of the state equation. Either a m x k matrix or a
 m x k x n array.}
 
 \item{a1}{Prior mean for the initial state as a vector of length m.}

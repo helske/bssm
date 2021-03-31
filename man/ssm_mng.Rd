@@ -30,7 +30,7 @@ ssm_mng(
 \item{T}{System matrix T of the state equation. Either a m x m matrix or a
 m x m x n array.}
 
-\item{R}{Lower triangular matrix R the state equation. Either a m x k matrix or a
+\item{R}{Matrix R of the state equation. Either a m x k matrix or a
 m x k x n array.}
 
 \item{a1}{Prior mean for the initial state as a vector of length m.}
