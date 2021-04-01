@@ -886,7 +886,7 @@ Rcpp::List gsv_is_mcmc(const Rcpp::List model_,
   unsigned int m = model.m;
   unsigned int n = model.n;
   
-  approx_mcmc mcmc_run(iter, burnin, thin, n, m, 1,
+  approx_mcmc mcmc_run(iter, burnin, thin, n, m, 2,
     target_acceptance, gamma, S, output_type, true);
   
   if (nsim <= 1) {
