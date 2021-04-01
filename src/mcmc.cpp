@@ -21,6 +21,7 @@
 
 #include "model_ssm_nlg.h"
 #include "model_ssm_sde.h"
+#include "model_ssm_gsv.h"
 
 #include "parset_lg.h"
 
@@ -309,6 +310,12 @@ template void mcmc::pm_mcmc(ssm_nlg model,
   const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template void mcmc::pm_mcmc(ssm_mng model,
+  const unsigned int method,
+  const unsigned int nsim,
+  const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+
+template void mcmc::pm_mcmc(ssm_gsv model,
   const unsigned int method,
   const unsigned int nsim,
   const bool end_ram, 

@@ -91,7 +91,7 @@ public:
       arma::umat& indices);
   
   // update approximating Gaussian model
-  void approximate();
+  unsigned int approximate();
   void approximate_for_is(const arma::mat& mode_estimate_);
   // given the mode_estimate, compute y and H of the approximating Gaussian model
   void laplace_iter(const arma::vec& signal);

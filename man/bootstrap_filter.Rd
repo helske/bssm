@@ -6,6 +6,7 @@
 \alias{bootstrap_filter.nongaussian}
 \alias{bootstrap_filter.ssm_nlg}
 \alias{bootstrap_filter.ssm_sde}
+\alias{bootstrap_filter.ssm_gsv}
 \title{Bootstrap Filtering}
 \usage{
 bootstrap_filter(model, particles, ...)
@@ -35,6 +36,13 @@ bootstrap_filter(model, particles, ...)
   model,
   particles,
   L,
+  seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
+
+\method{bootstrap_filter}{ssm_gsv}(
+  model,
+  particles,
   seed = sample(.Machine$integer.max, size = 1),
   ...
 )

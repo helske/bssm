@@ -12,31 +12,46 @@ Rcpp::List gaussian_approx_model(const Rcpp::List model_, const int model_type) 
   switch (model_type) {
   case 0: {
   ssm_mng model(model_, 1);
-  model.approximate();
+  unsigned int iters = model.approximate();
+  if(iters == model.max_iter) {
+    Rcpp::warning("Approximation did not converge, maximum number of iterations used. ");
+  }
   return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,
     Rcpp::Named("H") = model.approx_model.H);
 } break;
   case 1: {
     ssm_ung model(model_, 1);
-    model.approximate();
+    unsigned int iters = model.approximate();
+    if(iters == model.max_iter) {
+      Rcpp::warning("Approximation did not converge, maximum number of iterations used. ");
+    }
     return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,
       Rcpp::Named("H") = model.approx_model.H);
   } break;
   case 2: {
     bsm_ng model(model_, 1);
-    model.approximate();
+    unsigned int iters = model.approximate();
+    if(iters == model.max_iter) {
+      Rcpp::warning("Approximation did not converge, maximum number of iterations used. ");
+    }
     return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,
       Rcpp::Named("H") = model.approx_model.H);
   } break;
   case 3: {
     svm model(model_, 1);
-    model.approximate();
+    unsigned int iters = model.approximate();
+    if(iters == model.max_iter) {
+      Rcpp::warning("Approximation did not converge, maximum number of iterations used. ");
+    }
     return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,
       Rcpp::Named("H") = model.approx_model.H);
   } break;
   case 4: {
     ar1_ng model(model_, 1);
-    model.approximate();
+    unsigned int iters = model.approximate();
+    if(iters == model.max_iter) {
+      Rcpp::warning("Approximation did not converge, maximum number of iterations used. ");
+    }
     return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,
       Rcpp::Named("H") = model.approx_model.H);
   } break;
@@ -68,9 +83,12 @@ Rcpp::List gaussian_approx_model_nlg(const arma::mat& y, SEXP Z, SEXP H,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     time_varying, 1, iekf_iter, max_iter, conv_tol);
 
-  model.approximate();
+  unsigned int iters = model.approximate();
+  if(iters == model.max_iter) {
+    Rcpp::warning("Approximation did not converge, maximum number of iterations used. ");
+  }
   if(!arma::is_finite(model.mode_estimate)) {
-    Rcpp::warning("Approximation did not converge. ");
+    Rcpp::warning("Approximation did not converge, nonfinite values in mode estimate. ");
   }
   return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,
     Rcpp::Named("D") = model.approx_model.D,
@@ -85,7 +103,10 @@ Rcpp::List gaussian_approx_model_nlg(const arma::mat& y, SEXP Z, SEXP H,
 Rcpp::List gaussian_approx_model_gsv(const Rcpp::List model_) {
   
   ssm_gsv model(model_, 1);
-  model.approximate();
+  unsigned int iters = model.approximate();
+  if(iters == model.max_iter) {
+    Rcpp::warning("Approximation did not converge, maximum number of iterations used. ");
+  }
   return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,
     Rcpp::Named("H") = model.approx_model.H,
     Rcpp::Named("Z") = model.approx_model.Z,

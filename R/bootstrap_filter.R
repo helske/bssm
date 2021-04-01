@@ -141,3 +141,27 @@ bootstrap_filter.ssm_sde <- function(model, particles, L,
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
+
+
+#' @method bootstrap_filter ssm_gsv
+#' @rdname bootstrap_filter
+#' @export
+bootstrap_filter.ssm_gsv <- function(model, particles,
+  seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  if(missing(particles)) {
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
+  }
+  out <- bsf_gsv(model, particles, seed)
+  colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(model$a1)
+  out$at <- ts(out$at, start = start(model$y), frequency = frequency(model$y))
+  out$att <- ts(out$att, start = start(model$y), frequency = frequency(model$y))
+  rownames(out$alpha) <- names(model$a1)
+  out$alpha <- aperm(out$alpha, c(2, 1, 3))
+  out
+}

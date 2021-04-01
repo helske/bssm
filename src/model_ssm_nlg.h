@@ -102,7 +102,7 @@ public:
   void update_model(const arma::vec& new_theta, const Rcpp::Function update_fn);
   double log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const;
   // update the approximating Gaussian model
-  void approximate();
+  unsigned int approximate();
   void approximate_for_is(const arma::mat& mode_estimate);
   void approximate_by_ekf();
   

@@ -83,7 +83,7 @@ public:
   double log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const;
   
   // update the approximating Gaussian model
-  void approximate();
+  unsigned int approximate();
   void approximate_for_is(const arma::mat& mode_estimate_);
   
   double compute_const_term() const;

@@ -9,6 +9,7 @@
 #include "model_ar1_ng.h"
 #include "model_svm.h"
 #include "model_ssm_nlg.h"
+#include "model_ssm_gsv.h"
 
 // [[Rcpp::export]]
 Rcpp::List gaussian_mcmc(const Rcpp::List model_,
@@ -753,14 +754,14 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   Rcpp::XPtr<a1_fnPtr> xpfun_a1(a1);
   Rcpp::XPtr<P1_fnPtr> xpfun_P1(P1);
   Rcpp::XPtr<prior_fnPtr> xpfun_prior(log_prior_pdf);
-
+  
   ssm_nlg model(y, *xpfun_Z, *xpfun_H, *xpfun_T, *xpfun_R, *xpfun_Zg, *xpfun_Tg,
     *xpfun_a1, *xpfun_P1,  theta, *xpfun_prior, known_params, known_tv_params, n_states, n_etas,
     time_varying, seed, iekf_iter, max_iter, conv_tol);
-
+  
   approx_mcmc mcmc_run(iter, burnin, thin, model.n,
     model.m, model.m, target_acceptance, gamma, S, output_type);
-
+  
   mcmc_run.amcmc(model, sampling_method, end_ram);
   if(approx) {
     if(output_type == 1) {
@@ -780,6 +781,150 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
       mcmc_run.is_correction_bsf(model, nsim, is_type, n_threads);
     }
   } 
+  
+  switch (output_type) {
+  case 1: {
+    return Rcpp::List::create(
+      Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("weights") = mcmc_run.weight_storage,
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S, 
+      Rcpp::Named("posterior") = mcmc_run.posterior_storage,
+      Rcpp::Named("modes") = mcmc_run.mode_storage);
+  } break;
+  case 2: {
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("weights") = mcmc_run.weight_storage,
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S, 
+      Rcpp::Named("posterior") = mcmc_run.posterior_storage,
+      Rcpp::Named("modes") = mcmc_run.mode_storage);
+  } break;
+  case 3: {
+    return Rcpp::List::create(
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("weights") = mcmc_run.weight_storage,
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S, 
+      Rcpp::Named("posterior") = mcmc_run.posterior_storage,
+      Rcpp::Named("modes") = mcmc_run.mode_storage);
+  } break;
+  }
+  
+  return Rcpp::List::create(Rcpp::Named("error") = "error");
+}
+
+
+// [[Rcpp::export]]
+Rcpp::List gsv_pm_mcmc(const Rcpp::List model_,
+  const unsigned int output_type,
+  const unsigned int nsim, const unsigned int iter,
+  const unsigned int burnin, const unsigned int thin,
+  const double gamma, const double target_acceptance, const arma::mat S,
+  const unsigned int seed, const bool end_ram, const unsigned int n_threads,
+  const unsigned int sampling_method) {
+  
+  ssm_gsv model(model_, seed);
+  unsigned int m = model.m;
+  unsigned int n = model.n;
+  
+  mcmc mcmc_run(iter, burnin, thin, n, m,
+    target_acceptance, gamma, S, output_type);
+  
+  mcmc_run.pm_mcmc(model, sampling_method, nsim, end_ram, 
+    model_["update_fn"], model_["prior_fn"]);
+  
+  switch (output_type) {
+  case 1: {
+    return Rcpp::List::create(Rcpp::Named("alpha") = mcmc_run.alpha_storage,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,
+      Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 2: {
+    return Rcpp::List::create(
+      Rcpp::Named("alphahat") = mcmc_run.alphahat.t(), Rcpp::Named("Vt") = mcmc_run.Vt,
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,
+      Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  case 3: {
+    return Rcpp::List::create(
+      Rcpp::Named("theta") = mcmc_run.theta_storage.t(),
+      Rcpp::Named("counts") = mcmc_run.count_storage,
+      Rcpp::Named("acceptance_rate") = mcmc_run.acceptance_rate,
+      Rcpp::Named("S") = mcmc_run.S,  
+      Rcpp::Named("posterior") = mcmc_run.posterior_storage);
+  } break;
+  }
+  
+  return Rcpp::List::create(Rcpp::Named("error") = "error");
+}
+
+
+// [[Rcpp::export]]
+Rcpp::List gsv_is_mcmc(const Rcpp::List model_,
+  const unsigned int output_type,
+  const unsigned int nsim, const unsigned int iter,
+  const unsigned int burnin, const unsigned int thin, const  double gamma,
+  const double target_acceptance, const arma::mat S, const unsigned int seed,
+  const bool end_ram, const unsigned int n_threads,
+  const unsigned int sampling_method, const unsigned int is_type,
+  const bool approx) {
+  ssm_gsv model(model_, seed);
+  unsigned int m = model.m;
+  unsigned int n = model.n;
+  
+  approx_mcmc mcmc_run(iter, burnin, thin, n, m, 1,
+    target_acceptance, gamma, S, output_type, true);
+  
+  if (nsim <= 1) {
+    mcmc_run.alpha_storage.zeros();
+    mcmc_run.weight_storage.ones();
+    mcmc_run.posterior_storage.zeros();
+  }
+  
+  mcmc_run.amcmc(model, 1, end_ram,
+    model_["update_fn"], model_["prior_fn"]);
+  if(approx) {
+    if(output_type == 1) {
+      mcmc_run.approx_state_posterior(model, n_threads, model_["update_fn"]);
+      
+    } else {
+      if(output_type == 2) {
+        mcmc_run.approx_state_summary(model, model_["update_fn"]);
+      }
+    }
+  } else {
+    if(is_type == 3) {
+      mcmc_run.expand();
+    }
+    
+    switch (sampling_method) {
+    case 1:
+      mcmc_run.is_correction_psi(model, nsim, is_type, n_threads, model_["update_fn"]);
+      break;
+    case 2:
+      Rcpp::stop("BSF IS-correction for GSV model is not implemented.");
+     // mcmc_run.is_correction_bsf(model, nsim, is_type, n_threads, model_["update_fn"]);
+      break;
+    case 3:
+      Rcpp::stop("SPDK for GSV model is not implemented.");
+      //mcmc_run.is_correction_spdk(model, nsim, is_type, n_threads, model_["update_fn"]);
+      break;
+    }
+  } 
+  
   
   switch (output_type) {
   case 1: {

@@ -84,7 +84,9 @@ double ssm_ung::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn)
 // update the approximating Gaussian model
 // Note that the convergence is assessed only
 // by checking the changes in mode, not the actual function values
-void ssm_ung::approximate() {
+unsigned int ssm_ung::approximate() {
+  
+  unsigned int iters_used = 0;
   
   // check if there is need to update the approximation
   if (approx_state < 1) {
@@ -134,9 +136,11 @@ void ssm_ung::approximate() {
         diff = arma::accu(arma::square(mode_estimate_new - mode_estimate)) / n;
         mode_estimate = mode_estimate_new;
       }
+      iters_used = i;
     }
     approx_state = 1;
   }
+  return iters_used;
 }
 // construct approximating model from fixed mode estimate, no iterations
 // used in IS-correction

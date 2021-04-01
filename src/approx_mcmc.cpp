@@ -10,6 +10,7 @@
 #include "model_ar1_ng.h"
 #include "model_ssm_nlg.h"
 #include "model_ssm_sde.h"
+#include "model_ssm_gsv.h"
 
 #include "rep_mat.h"
 #include "distr_consts.h"
@@ -17,6 +18,7 @@
 #include "summary.h"
 
 #include "parset_ng.h"
+#include "parset_gsv.h"
 
 approx_mcmc::approx_mcmc(const unsigned int iter,
   const unsigned int burnin, const unsigned int thin, const unsigned int n,
@@ -105,6 +107,9 @@ template void approx_mcmc::amcmc(ssm_nlg model, const unsigned int method, const
   const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template void approx_mcmc::amcmc(ssm_mng model, const unsigned int method, const bool end_ram, 
+  const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
+
+template void approx_mcmc::amcmc(ssm_gsv model, const unsigned int method, const bool end_ram, 
   const Rcpp::Function update_fn, const Rcpp::Function prior_fn);
 
 template<class T>
@@ -1311,6 +1316,127 @@ posterior_storage = prior_storage + approx_loglik_storage +
 }
 
 
+// is-correction function for ssm_gsv to be used with parallelization
+// avoids calling or sharing R function withing parallel region
+// downside is additional memory requirements due to 
+// storing of all n_stored * estimated model components
+template<>
+void approx_mcmc::is_correction_psi(ssm_gsv model, const unsigned int nsim,
+  const unsigned int is_type, const unsigned int n_threads, 
+  const Rcpp::Function update_fn) {
+  
+  arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
+  double sum_w = 0.0;
+  
+#ifdef _OPENMP
+  
+  parset_gsv pars(model, theta_storage, update_fn);
+  
+#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
+{
+  
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
+  
+#pragma omp for schedule(static)
+  for (unsigned int i = 0; i < n_stored; i++) {
+    
+    pars.update(model, i);
+    
+    model.approximate_for_is(mode_storage.slice(i));
+    
+    unsigned int nsimc = nsim;
+    if (is_type == 1) {
+      nsimc *= count_storage(i);
+    }
+    arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+    arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+    arma::umat indices(nsimc, model.n, arma::fill::zeros);
+    
+    double loglik = model.psi_filter(nsimc, alpha_i, weights_i, indices);
+    
+    weight_storage(i) = std::exp(loglik);
+    
+    if (output_type != 3) {
+      filter_smoother(alpha_i, indices);
+      
+      if (output_type == 1) {
+        std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
+        alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
+      } else {
+        arma::mat alphahat_i(model.m, model.n + 1);
+        arma::cube Vt_i(model.m, model.m, model.n + 1);
+        summary(alpha_i, alphahat_i, Vt_i);
+        
+#pragma omp critical
+{
+  double wnew = weight_storage(i) * count_storage(i);
+  sum_w += wnew;
+  arma::mat diff = alphahat_i - alphahat;
+  alphahat += wnew / sum_w * diff; // update E(alpha)
+  arma::mat diff2 = (alphahat_i - alphahat).t();
+  for (unsigned int t = 0; t < model.n + 1; t++) {
+    // update Var(alpha)
+    Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
+  }
+  // update Var(E(alpha))
+  Vt += wnew / sum_w * (Vt_i - Vt);
+}
+      }
+    }
+  }
+}
+#else
+
+for (unsigned int i = 0; i < n_stored; i++) {
+  
+  model.update_model(theta_storage.col(i), update_fn);
+  model.approximate_for_is(mode_storage.slice(i));
+  
+  unsigned int nsimc = nsim;
+  if (is_type == 1) {
+    nsimc *= count_storage(i);
+  }
+  arma::cube alpha_i(model.m, model.n + 1, nsimc, arma::fill::zeros);
+  arma::mat weights_i(nsimc, model.n + 1, arma::fill::zeros);
+  arma::umat indices(nsimc, model.n, arma::fill::zeros);
+  
+  double loglik = model.psi_filter(nsimc, alpha_i, weights_i, indices);
+  weight_storage(i) = std::exp(loglik);
+  
+  if (output_type != 3) {
+    filter_smoother(alpha_i, indices);
+    
+    if (output_type == 1) {
+      std::uniform_int_distribution<unsigned int> sample(0, nsimc - 1);
+      alpha_storage.slice(i) = alpha_i.slice(sample(model.engine)).t();
+    } else {
+      arma::mat alphahat_i(model.m, model.n + 1);
+      arma::cube Vt_i(model.m, model.m, model.n + 1);
+      summary(alpha_i, alphahat_i, Vt_i);
+      
+      double wnew = weight_storage(i) * count_storage(i);
+      sum_w += wnew;
+      arma::mat diff = alphahat_i - alphahat;
+      alphahat += wnew / sum_w * diff; // update E(alpha)
+      arma::mat diff2 = (alphahat_i - alphahat).t();
+      for (unsigned int t = 0; t < model.n + 1; t++) {
+        // update Var(alpha)
+        Valpha.slice(t) += wnew * diff.col(t) * diff2.row(t);
+      }
+      // update Var(E(alpha))
+      Vt += wnew / sum_w * (Vt_i - Vt);
+    }
+  }
+}
+
+#endif
+if (output_type == 2) {
+  Vt += Valpha / sum_w; // Var[E(alpha)] + E[Var(alpha)]
+}
+posterior_storage = prior_storage + approx_loglik_storage +
+  arma::log(weight_storage);
+}
+
 // Sampling states from approximate posterior using simulation smoother
 template void approx_mcmc::approx_state_posterior(ssm_nlg model, const unsigned int n_threads, 
   const Rcpp::Function update_fn);
@@ -1401,6 +1527,35 @@ for (unsigned int i = 0; i < n_stored; i++) {
 #endif
 }
 
+template<>
+void approx_mcmc::approx_state_posterior(ssm_gsv model, const unsigned int n_threads, 
+  const Rcpp::Function update_fn) {
+  
+#ifdef _OPENMP
+  
+  parset_gsv pars(model, theta_storage, update_fn);
+  
+#pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
+{
+  
+  model.engine = sitmo::prng_engine(omp_get_thread_num() + 1);
+  
+#pragma omp for schedule(static)
+  for (unsigned int i = 0; i < n_stored; i++) {
+    pars.update(model, i);
+    model.approximate_for_is(mode_storage.slice(i));
+    alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
+  }
+}
+#else
+for (unsigned int i = 0; i < n_stored; i++) {
+  model.update_model(theta_storage.col(i), update_fn);
+  model.approximate_for_is(mode_storage.slice(i));
+  alpha_storage.slice(i) = model.approx_model.simulate_states(1).slice(0).t();
+}
+#endif
+}
+
 // should parallelize this as well
 template void approx_mcmc::approx_state_summary(ssm_ung model, 
   const Rcpp::Function update_fn);
@@ -1413,6 +1568,8 @@ template void approx_mcmc::approx_state_summary(ar1_ng model,
 template void approx_mcmc::approx_state_summary(ssm_nlg model, 
   const Rcpp::Function update_fn);
 template void approx_mcmc::approx_state_summary(ssm_mng model, 
+  const Rcpp::Function update_fn);
+template void approx_mcmc::approx_state_summary(ssm_gsv model, 
   const Rcpp::Function update_fn);
 
 template <class T>

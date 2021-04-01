@@ -8,6 +8,7 @@
 #include "model_ar1_ng.h"
 #include "model_ssm_nlg.h"
 #include "model_ssm_mng.h"
+#include "model_ssm_gsv.h"
 
 #include "filter_smoother.h"
 #include "summary.h"
@@ -549,3 +550,65 @@ Rcpp::List bsf_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
     Rcpp::Named("weights") = weights,
     Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
 }
+
+
+// [[Rcpp::export]]
+Rcpp::List bsf_smoother_gsv(const Rcpp::List model_,
+  const unsigned int nsim, const unsigned int seed) {
+  
+  ssm_gsv model(model_, seed);
+  unsigned int m = model.m;
+  unsigned n = model.n;
+  
+  arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+  arma::mat weights(nsim, n + 1, arma::fill::zeros);
+  arma::umat indices(nsim, n, arma::fill::zeros);
+  double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+  if (!std::isfinite(loglik)) 
+    Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+  
+  arma::mat alphahat(model.m, model.n + 1);
+  arma::cube Vt(model.m, model.m, model.n + 1);
+  
+  filter_smoother(alpha, indices);
+  summary(alpha, alphahat, Vt);
+  
+  arma::inplace_trans(alphahat);
+  return Rcpp::List::create(
+    Rcpp::Named("alphahat") = alphahat, Rcpp::Named("Vt") = Vt,
+    Rcpp::Named("weights") = weights,
+    Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
+}
+
+// [[Rcpp::export]]
+Rcpp::List bsf_gsv(const Rcpp::List model_,
+  const unsigned int nsim, const unsigned int seed) {
+  
+  ssm_gsv model(model_, seed);
+  unsigned int m = model.m;
+  unsigned n = model.n;
+  
+  arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
+  arma::mat weights(nsim, n + 1, arma::fill::zeros);
+  arma::umat indices(nsim, n, arma::fill::zeros);
+  double loglik = model.bsf_filter(nsim, alpha, weights, indices);
+  if (!std::isfinite(loglik)) 
+    Rcpp::warning("Particle filtering stopped prematurely due to nonfinite log-likelihood.");
+  
+  arma::mat at(m, n + 1);
+  arma::mat att(m, n);
+  arma::cube Pt(m, m, n + 1);
+  arma::cube Ptt(m, m, n);
+  filter_summary(alpha, at, att, Pt, Ptt, weights);
+  
+  arma::inplace_trans(at);
+  arma::inplace_trans(att);
+  return Rcpp::List::create(
+    Rcpp::Named("at") = at, Rcpp::Named("att") = att,
+    Rcpp::Named("Pt") = Pt, Rcpp::Named("Ptt") = Ptt,
+    Rcpp::Named("weights") = weights,
+    Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
+  
+}
+
+

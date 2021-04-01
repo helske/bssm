@@ -1,8 +1,10 @@
 bssm 1.1.4 (Release date: 2021-03-)
 ==============
+   * Added a new model class `ssm_gsv`, for a gaussian model with separate processes for mean and variance.
    * Better documentation for SV model, and changed ordering of arguments to emphasise the 
      recommended parameterization.
    * Fixed predict method for SV model.
+   * Added a warning to `gaussian_approx` regarding the nonconvergence.
      
 bssm 1.1.3-2 (Release date: 2021-02-24)
 ==============

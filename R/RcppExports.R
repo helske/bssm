@@ -29,6 +29,14 @@ bsf_smoother_nlg <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf
     .Call('_bssm_bsf_smoother_nlg', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, nsim, seed)
 }
 
+bsf_smoother_gsv <- function(model_, nsim, seed) {
+    .Call('_bssm_bsf_smoother_gsv', PACKAGE = 'bssm', model_, nsim, seed)
+}
+
+bsf_gsv <- function(model_, nsim, seed) {
+    .Call('_bssm_bsf_gsv', PACKAGE = 'bssm', model_, nsim, seed)
+}
+
 ekf_nlg <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, iekf_iter) {
     .Call('_bssm_ekf_nlg', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, iekf_iter)
 }
@@ -99,6 +107,14 @@ nonlinear_ekf_mcmc <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_p
 
 nonlinear_is_mcmc <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, is_type, sampling_method, max_iter, conv_tol, iekf_iter, output_type, approx) {
     .Call('_bssm_nonlinear_is_mcmc', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, is_type, sampling_method, max_iter, conv_tol, iekf_iter, output_type, approx)
+}
+
+gsv_pm_mcmc <- function(model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method) {
+    .Call('_bssm_gsv_pm_mcmc', PACKAGE = 'bssm', model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method)
+}
+
+gsv_is_mcmc <- function(model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, is_type, approx) {
+    .Call('_bssm_gsv_is_mcmc', PACKAGE = 'bssm', model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, is_type, approx)
 }
 
 R_milstein <- function(x0, L, t, theta, drift_pntr, diffusion_pntr, ddiffusion_pntr, positive, seed) {

@@ -13,7 +13,10 @@ Rcpp::List importance_sample_ng(const Rcpp::List model_,
   switch (model_type) { 
   case 0: {
     ssm_mng model(model_, seed);
-    model.approximate();
+  unsigned int iters = model.approximate();
+  if(iters == model.max_iter) {
+    Rcpp::warning("Approximation did not converge, maximum number of iterations used. ");
+  }
     arma::cube alpha = model.approx_model.simulate_states(nsim);
     model.update_scales();
     arma::vec weights = model.importance_weights(alpha) - arma::accu(model.scales);
@@ -25,7 +28,10 @@ Rcpp::List importance_sample_ng(const Rcpp::List model_,
   } break;
   case 1: {
     ssm_ung model(model_, seed);
-    model.approximate();
+    unsigned int iters = model.approximate();
+    if(iters == model.max_iter) {
+      Rcpp::warning("Approximation did not converge, maximum number of iterations used. ");
+    }
     arma::cube alpha = model.approx_model.simulate_states(nsim);
     model.update_scales();
     arma::vec weights = model.importance_weights(alpha) - arma::accu(model.scales);
@@ -37,7 +43,10 @@ Rcpp::List importance_sample_ng(const Rcpp::List model_,
   } break;
   case 2: {
     bsm_ng model(model_, seed);
-    model.approximate();
+    unsigned int iters = model.approximate();
+    if(iters == model.max_iter) {
+      Rcpp::warning("Approximation did not converge, maximum number of iterations used. ");
+    }
     arma::cube alpha = model.approx_model.simulate_states(nsim);
     model.update_scales();
     arma::vec weights = model.importance_weights(alpha) - arma::accu(model.scales);
@@ -49,7 +58,10 @@ Rcpp::List importance_sample_ng(const Rcpp::List model_,
   } break;
   case 3: {
     svm model(model_, seed);
-    model.approximate();
+    unsigned int iters = model.approximate();
+    if(iters == model.max_iter) {
+      Rcpp::warning("Approximation did not converge, maximum number of iterations used. ");
+    }
     arma::cube alpha = model.approx_model.simulate_states(nsim);
     model.update_scales();
     arma::vec weights = model.importance_weights(alpha) - arma::accu(model.scales);
@@ -61,7 +73,10 @@ Rcpp::List importance_sample_ng(const Rcpp::List model_,
   } break;
   case 4: {
     ar1_ng model(model_, seed);
-    model.approximate();
+    unsigned int iters = model.approximate();
+    if(iters == model.max_iter) {
+      Rcpp::warning("Approximation did not converge, maximum number of iterations used. ");
+    }
     arma::cube alpha = model.approx_model.simulate_states(nsim);
     model.update_scales();
     arma::vec weights = model.importance_weights(alpha) - arma::accu(model.scales);

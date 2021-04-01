@@ -100,7 +100,8 @@ public:
   double log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) const;
   
   // update the approximating Gaussian model
-  void approximate();
+  void joint_model();
+  unsigned int approximate();
   void approximate_for_is(const arma::mat& mode_estimate_);
   
   double compute_const_term() const;
@@ -109,8 +110,8 @@ public:
   void laplace_iter(const arma::mat& signal);
   
   // bootstrap filter
-  // double bsf_filter(const unsigned int nsim, arma::cube& alpha,
-  //   arma::mat& weights, arma::umat& indices);
+  double bsf_filter(const unsigned int nsim, arma::cube& alpha,
+    arma::mat& weights, arma::umat& indices);
   
   // psi-particle filter
   double psi_filter(const unsigned int nsim, arma::cube& alpha, arma::mat& weights,

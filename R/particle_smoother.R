@@ -228,14 +228,13 @@ particle_smoother.ssm_gsv <- function(model, particles,
   }
   
   method <- match.arg(method, c("bsf", "psi"))
-  if(method == "bsf") stop("BSF for GSV model is not yet implemented.")
   
   model$max_iter <- max_iter
   model$conv_tol <- conv_tol
   if(method == "psi") {
     out <- psi_smoother_gsv(model, particles, seed)
   } else {
-   # out <- bsf_smoother_gsv(model, particles, seed)
+    out <- bsf_smoother_gsv(model, particles, seed)
   }
   colnames(out$alphahat) <- colnames(out$Vt) <-
     colnames(out$Vt) <- names(model$a1)

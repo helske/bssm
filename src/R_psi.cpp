@@ -198,9 +198,12 @@ Rcpp::List psi_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
   unsigned int m = model.m;
   unsigned n = model.n;
 
-  model.approximate();
+  unsigned int iters = model.approximate();
+  if(iters == model.max_iter) {
+    Rcpp::warning("Approximation did not converge, maximum number of iterations used. ");
+  }
   if(!arma::is_finite(model.mode_estimate)) {
-    Rcpp::warning("Approximation did not converge. ");
+    Rcpp::warning("Approximation did not converge, nonfinite values in mode estimate. ");
   }
   arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);
   arma::mat weights(nsim, n + 1, arma::fill::zeros);

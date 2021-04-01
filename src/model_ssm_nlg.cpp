@@ -59,15 +59,16 @@ double ssm_nlg::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn)
   
   return log_prior_pdf_(x);
 }
-void ssm_nlg::approximate() {
+unsigned int ssm_nlg::approximate() {
   
+  unsigned int iters_used = 0;
   if(approx_state < 1) {
     
     // initial approximation is based on EKF (at and att)
     approximate_by_ekf();
     mode_estimate = approx_model.fast_smoother().head_cols(n);
     if (!arma::is_finite(mode_estimate)) {
-      return;
+      return iters_used;
     }
     double ll;
     if (max_iter > 0) ll = log_signal_pdf(mode_estimate);
@@ -114,7 +115,7 @@ void ssm_nlg::approximate() {
       rel_diff = abs_diff / std::abs(ll);
       if (!arma::is_finite(mode_estimate_new) || !arma::is_finite(ll_new)) {
         mode_estimate.fill(std::numeric_limits<double>::infinity());
-        return;
+        return iters_used;
       }
       if(rel_diff < -conv_tol && i > 1 && abs_diff > 1e-4) {
         
@@ -133,21 +134,22 @@ void ssm_nlg::approximate() {
           ii++;
           if (!arma::is_finite(mode_estimate) || !arma::is_finite(ll_new)) {
             mode_estimate.fill(std::numeric_limits<double>::infinity());
-            return;
+            return iters_used;
           }
         }
         if (ii == 15) {
           mode_estimate.fill(std::numeric_limits<double>::infinity());
-          return;
+          return iters_used;
         }
         mode_estimate_new = mode_estimate;
       }
       mode_estimate = mode_estimate_new;
       ll = ll_new;
-      
     }
+    iters_used = i;
     approx_state = 1;
   }
+  return iters_used;
 }
 
 void ssm_nlg::approximate_for_is(const arma::mat& mode_estimate) {

@@ -716,3 +716,100 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
     list(start = start(model$y), end = end(model$y), frequency=frequency(model$y))
   out
 }
+#' Bayesian Inference of GSV 
+#'
+#' Methods for posterior inference of states and parameters.
+#'
+#' @method run_mcmc ssm_gsv
+#' @export
+run_mcmc.ssm_gsv <- function(model, iter, particles, output_type = "full",
+  mcmc_type = "is2", sampling_method = "psi", burnin = floor(iter/2),
+  thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
+  local_approx  = TRUE, threads = 1,
+  seed = sample(.Machine$integer.max, size = 1), max_iter = 100, conv_tol = 1e-8, ...) {
+  
+  if(missing(particles)) {
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
+  }
+  
+  if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
+  a <- proc.time()
+  check_target(target_acceptance)
+  
+  output_type <- pmatch(output_type, c("full", "summary", "theta"))
+  mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), "approx"))
+  if (mcmc_type == "approx") particles <- 0
+  if (particles < 2 && mcmc_type != "approx") 
+    stop("Number of state samples less than 2, use 'mcmc_type' 'approx' instead.")
+  
+  sampling_method <- pmatch(match.arg(sampling_method, c("psi", "bsf", "spdk")), 
+    c("psi", "bsf", "spdk"))
+  
+  model$max_iter <- max_iter
+  model$conv_tol <- conv_tol
+  model$local_approx <- local_approx
+  
+  if (missing(S)) {
+    S <- diag(0.1 * pmax(0.1, abs(model$theta)), length(model$theta))
+  }
+  if(mcmc_type %in% c("da", "approx")) stop("Not yet implemented.")
+  
+  switch(mcmc_type,
+    "da" = {
+      # out <- nongaussian_da_mcmc(model, 
+      #   output_type, particles, iter, burnin, thin, gamma, target_acceptance, S,
+      #   seed, end_adaptive_phase, threads,
+      #   sampling_method, model_type(model))
+    },
+    "pm" = {
+      out <- gsv_pm_mcmc(model, output_type,
+        particles, iter, burnin, thin, gamma, target_acceptance, S,
+        seed, end_adaptive_phase, threads, 
+        sampling_method)
+    },
+    "is1" =,
+    "is2" =,
+    "is3" = {
+      out <- nongaussian_is_mcmc(model, output_type,
+        particles, iter, burnin, thin, gamma, target_acceptance, S,
+        seed, end_adaptive_phase, threads,
+        sampling_method,
+        pmatch(mcmc_type, paste0("is", 1:3)), model_type(model), FALSE)
+    },
+    "approx" = {
+      # out <- nongaussian_is_mcmc(model, output_type,
+      #   particles, iter, burnin, thin, gamma, target_acceptance, S,
+      #   seed, end_adaptive_phase, threads, 
+      #   sampling_method, 2, model_type(model), TRUE)
+    })
+  if (output_type == 1) {
+    colnames(out$alpha) <- c(names(model$a1_mu), names(model$a1_sv))
+  } else {
+    if (output_type == 2) {
+      colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <-
+        c(names(model$a1_mu), names(model$a1_sv))
+      out$alphahat <- ts(out$alphahat, start = start(model$y),
+        frequency = frequency(model$y))
+    }
+  }
+  
+  colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(model$theta)
+
+  out$iter <- iter
+  out$burnin <- burnin
+  out$thin <- thin
+  out$mcmc_type <- mcmc_type
+  out$output_type <- output_type
+  out$call <- match.call()
+  out$seed <- seed
+  out$time <- proc.time() - a
+  class(out) <- "mcmc_output"
+  attr(out, "model_type") <- class(model)[1]
+  attr(out, "ts") <- 
+    list(start = start(model$y), end = end(model$y), frequency=frequency(model$y))
+  out
+}
