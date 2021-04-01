@@ -294,8 +294,9 @@ void ssm_gsv::update_scales() {
   
   for(unsigned int t = 0; t < n; t++) {
     if (arma::is_finite(y(t))) {
-      scales(t) = -0.5 * (mode_estimate(1, t) + std::pow(y(t) - mode_estimate(0, t), 2.0) * std::exp(-mode_estimate(1,t))) -
-        dmvnorm(approx_model.y.col(t), mode_estimate.col(t), approx_model.HH.slice(t), false, true);
+      scales(t) = -0.5 * (mode_estimate(1, t) + std::pow(y(t) - mode_estimate(0, t), 2.0) * std::exp(-mode_estimate(1,t))) +
+        (0.5 * std::pow((approx_model.y(0, t) - mode_estimate(0, t)) / approx_model.H(0, 0, t), 2.0) +
+        0.5 * std::pow((approx_model.y(1, t) - mode_estimate(1, t)) / approx_model.H(1, 1, t), 2.0));
     }
   }
   
@@ -427,23 +428,17 @@ double ssm_gsv::psi_filter(const unsigned int nsim, arma::cube& alpha,
   if(approx_state < 2) {
     if (approx_state < 1) {
       mode_estimate = initial_mode;
-      
       approximate(); 
     }
-    
     // compute the log-likelihood of the approximate model
     double gaussian_loglik = approx_model.log_likelihood();
-    
     // compute unnormalized mode-based correction terms 
     // log[g(y_t | ^alpha_t) / ~g(y_t | ^alpha_t)]
     update_scales();
-    
     // compute the constant term
     double const_term = compute_const_term(); 
-    
     // log-likelihood approximation
     approx_loglik = gaussian_loglik + const_term + arma::accu(scales);
-    
   }
   
   arma::mat alphahat(m, n + 1);
