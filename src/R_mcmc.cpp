@@ -881,6 +881,7 @@ Rcpp::List gsv_is_mcmc(const Rcpp::List model_,
   const bool end_ram, const unsigned int n_threads,
   const unsigned int sampling_method, const unsigned int is_type,
   const bool approx) {
+  
   ssm_gsv model(model_, seed);
   unsigned int m = model.m;
   unsigned int n = model.n;

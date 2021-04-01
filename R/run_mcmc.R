@@ -756,7 +756,7 @@ run_mcmc.ssm_gsv <- function(model, iter, particles, output_type = "full",
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(model$theta)), length(model$theta))
   }
-  if(mcmc_type %in% c("da", "approx")) stop("Not yet implemented.")
+  if(mcmc_type == "da") stop("da not yet implemented.")
   
   switch(mcmc_type,
     "da" = {
@@ -774,17 +774,17 @@ run_mcmc.ssm_gsv <- function(model, iter, particles, output_type = "full",
     "is1" =,
     "is2" =,
     "is3" = {
-      out <- nongaussian_is_mcmc(model, output_type,
+      out <- gsv_is_mcmc(model, output_type,
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, threads,
         sampling_method,
-        pmatch(mcmc_type, paste0("is", 1:3)), model_type(model), FALSE)
+        pmatch(mcmc_type, paste0("is", 1:3)), FALSE)
     },
     "approx" = {
-      # out <- nongaussian_is_mcmc(model, output_type,
-      #   particles, iter, burnin, thin, gamma, target_acceptance, S,
-      #   seed, end_adaptive_phase, threads, 
-      #   sampling_method, 2, model_type(model), TRUE)
+      out <- gsv_is_mcmc(model, output_type,
+        particles, iter, burnin, thin, gamma, target_acceptance, S,
+        seed, end_adaptive_phase, threads,
+        sampling_method, 2, TRUE)
     })
   if (output_type == 1) {
     colnames(out$alpha) <- c(names(model$a1_mu), names(model$a1_sv))
