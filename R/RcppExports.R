@@ -77,6 +77,10 @@ nonlinear_loglik <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf
     .Call('_bssm_nonlinear_loglik', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, nsim, seed, max_iter, conv_tol, iekf_iter, method)
 }
 
+gsv_loglik <- function(model_, nsim, sampling_method, seed) {
+    .Call('_bssm_gsv_loglik', PACKAGE = 'bssm', model_, nsim, sampling_method, seed)
+}
+
 gaussian_mcmc <- function(model_, output_type, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type) {
     .Call('_bssm_gaussian_mcmc', PACKAGE = 'bssm', model_, output_type, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type)
 }

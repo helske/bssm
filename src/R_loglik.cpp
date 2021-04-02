@@ -8,6 +8,7 @@
 #include "model_ar1_ng.h"
 #include "model_ssm_mng.h"
 #include "model_ssm_nlg.h"
+#include "model_ssm_gsv.h"
 
 // [[Rcpp::export]]
 double gaussian_loglik(const Rcpp::List model_, const int model_type) {
@@ -44,7 +45,7 @@ double nongaussian_loglik(const Rcpp::List model_,
   
   arma::vec loglik(2);
   loglik.fill(-std::numeric_limits<double>::infinity());
-
+  
   switch (model_type) {
   case 0: {
     ssm_mng model(model_, seed);
@@ -119,6 +120,24 @@ double nonlinear_loglik(const arma::mat& y, SEXP Z, SEXP H,
   arma::mat weights(nsim, model.n + 1);
   arma::umat indices(nsim, model.n);
   arma::vec loglik = model.log_likelihood(method, nsim, alpha, weights, indices);
+  
+  return loglik(0);
+}
+
+
+// [[Rcpp::export]]
+double gsv_loglik(const Rcpp::List model_,
+  const unsigned int nsim, const unsigned int sampling_method,
+  const unsigned int seed) {
+  
+  arma::vec loglik(2);
+  loglik.fill(-std::numeric_limits<double>::infinity());
+  
+  ssm_gsv model(model_, seed);
+  arma::cube alpha(model.m, model.n + 1, nsim);
+  arma::mat weights(nsim, model.n + 1);
+  arma::umat indices(nsim, model.n);
+  loglik = model.log_likelihood(sampling_method, nsim, alpha, weights, indices);
   
   return loglik(0);
 }

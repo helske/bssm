@@ -393,6 +393,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// gsv_loglik
+double gsv_loglik(const Rcpp::List model_, const unsigned int nsim, const unsigned int sampling_method, const unsigned int seed);
+RcppExport SEXP _bssm_gsv_loglik(SEXP model_SEXP, SEXP nsimSEXP, SEXP sampling_methodSEXP, SEXP seedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List >::type model_(model_SEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type nsim(nsimSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type sampling_method(sampling_methodSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type seed(seedSEXP);
+    rcpp_result_gen = Rcpp::wrap(gsv_loglik(model_, nsim, sampling_method, seed));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gaussian_mcmc
 Rcpp::List gaussian_mcmc(const Rcpp::List model_, const unsigned int output_type, const unsigned int iter, const unsigned int burnin, const unsigned int thin, const double gamma, const double target_acceptance, const arma::mat S, const unsigned int seed, const bool end_ram, const unsigned int n_threads, const int model_type);
 RcppExport SEXP _bssm_gaussian_mcmc(SEXP model_SEXP, SEXP output_typeSEXP, SEXP iterSEXP, SEXP burninSEXP, SEXP thinSEXP, SEXP gammaSEXP, SEXP target_acceptanceSEXP, SEXP SSEXP, SEXP seedSEXP, SEXP end_ramSEXP, SEXP n_threadsSEXP, SEXP model_typeSEXP) {
@@ -1375,6 +1389,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bssm_gaussian_loglik", (DL_FUNC) &_bssm_gaussian_loglik, 2},
     {"_bssm_nongaussian_loglik", (DL_FUNC) &_bssm_nongaussian_loglik, 5},
     {"_bssm_nonlinear_loglik", (DL_FUNC) &_bssm_nonlinear_loglik, 22},
+    {"_bssm_gsv_loglik", (DL_FUNC) &_bssm_gsv_loglik, 4},
     {"_bssm_gaussian_mcmc", (DL_FUNC) &_bssm_gaussian_mcmc, 12},
     {"_bssm_nongaussian_pm_mcmc", (DL_FUNC) &_bssm_nongaussian_pm_mcmc, 14},
     {"_bssm_nongaussian_da_mcmc", (DL_FUNC) &_bssm_nongaussian_da_mcmc, 14},

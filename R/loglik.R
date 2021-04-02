@@ -137,4 +137,39 @@ logLik.ssm_sde <- function(object, particles, L,
     particles, L, seed)
 }
 
-
+#' Log-likelihood of a General SV Model
+#'
+#' Computes the log-likelihood of a a general SV model of \code{bssm} package.
+#' 
+#' @param object Model model.
+#' @param particles Number of samples for particle filter or importance sampling. If 0, 
+#' approximate log-likelihood based on the Gaussian approximation is returned.
+#' @param method Sampling method, default is psi-auxiliary filter (\code{"psi"}), 
+#' other choice us \code{"bsf"}, bootstrap particle filter.
+#' @param max_iter Maximum number of iterations for Gaussian approximation algorithm.
+#' @param conv_tol Tolerance parameter for the approximation algorithm.
+#' @param seed Seed for the random number generator.
+#' @param ... Ignored.
+#' @method logLik ssm_gsv
+#' @export
+logLik.ssm_gsv <- function(object, particles, method = "psi", 
+  max_iter = 100, conv_tol = 1e-8, seed = sample(.Machine$integer.max, size = 1),...) {
+  
+  object$max_iter <- max_iter
+  object$conv_tol <- conv_tol
+  
+  if(missing(particles)) {
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      particles <- nsim
+    }
+  }
+  
+  method <- match.arg(method, c("psi", "bsf", "spdk"))
+  if(method == "spdk") stop("SPDK sampling not supported for ssm_gsv.")
+  if (method == "bsf" && particles == 0) stop("'particles' must be positive for bootstrap filter.")
+  method <- pmatch(method, c("psi", "bsf", "spdk"))
+  
+  gsv_loglik(object, particles, method, seed)
+}

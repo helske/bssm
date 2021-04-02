@@ -294,7 +294,8 @@ void ssm_gsv::update_scales() {
   
   for(unsigned int t = 0; t < n; t++) {
     if (arma::is_finite(y(t))) {
-      scales(t) = -0.5 * (mode_estimate(1, t) + std::pow(y(t) - mode_estimate(0, t), 2.0) * std::exp(-mode_estimate(1,t))) +
+      scales(t) = -0.5 * (mode_estimate(1, t) + 
+        std::pow(y(t) - mode_estimate(0, t), 2.0) * std::exp(-mode_estimate(1,t))) +
         (0.5 * std::pow((approx_model.y(0, t) - mode_estimate(0, t)) / approx_model.H(0, 0, t), 2.0) +
         0.5 * std::pow((approx_model.y(1, t) - mode_estimate(1, t)) / approx_model.H(1, 1, t), 2.0));
     }
@@ -346,8 +347,10 @@ void ssm_gsv::laplace_iter(const arma::mat& signal) {
 double ssm_gsv::compute_const_term() const {
   
   arma::uvec y_ind(find_finite(y));
-  return arma::accu(log(arma::vec(approx_model.H.tube(0, 0)).elem(y_ind))) + 
-    arma::accu(log(arma::vec(approx_model.H.tube(1, 1)).elem(y_ind)));
+  double const_term = 0.5 * y_ind.n_elem * std::log(2 * M_PI) +
+  arma::accu(log(arma::vec(approx_model.H.tube(0, 0)).elem(y_ind))) + 
+  arma::accu(log(arma::vec(approx_model.H.tube(1, 1)).elem(y_ind)));
+  return const_term;
 }
 
 arma::vec ssm_gsv::importance_weights(const arma::cube& alpha) const {
@@ -376,8 +379,9 @@ arma::vec ssm_gsv::log_weights(
         arma::vec simsignal = approx_model.D.col(t * approx_model.Dtv) + 
           approx_model.Z.slice(t * approx_model.Ztv) * alpha.slice(i).col(t);
         
-        weights(i) = -0.5 * (simsignal(1) + std::pow(y(t) - simsignal(0), 2.0) * std::exp(-simsignal(1))) -
-          dmvnorm(approx_model.y.col(t), simsignal, approx_model.HH.slice(t), false, true);
+        weights(i) = -0.5 * (simsignal(1) + std::pow(y(t) - simsignal(0), 2.0) * std::exp(-simsignal(1))) +
+          (0.5 * std::pow((approx_model.y(0, t) - simsignal(0)) / approx_model.H(0, 0, t), 2.0) +
+          0.5 * std::pow((approx_model.y(1, t) - simsignal(1)) / approx_model.H(1, 1, t), 2.0));
       }
   }
   return weights;
