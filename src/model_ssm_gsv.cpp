@@ -324,24 +324,6 @@ void ssm_gsv::laplace_iter(const arma::mat& signal) {
   
   approx_model.y.row(0) = y.t();
   approx_model.y.row(1) = signal.row(1) + arma::square(tmp) / tmp2  - 1;
-  
- // double delta = 0.001+std::max(arma::max(tmp2 * (1 + 2 / tmp)), arma::max(2 * tmp2 / tmp * (1 + 1 / tmp)));
-  // approx_model.HH.tube(0, 0) = -tmp2;
-  // approx_model.HH.tube(0, 1) = 2 * tmp2 / tmp;
-  // approx_model.HH.tube(1, 0) = approx_model.HH.tube(0, 1);
-  // approx_model.HH.tube(1, 1) = -2 * tmp2 / arma::square(tmp);
-  // for(unsigned int t = 0; t < n; t++) {
-  //   approx_model.H.slice(t) = arma::chol(approx_model.HH.slice(t), "lower");
-  // }
-  // cholesky cannot be computed here as H is not positive definite (but will be when mode is used)
-  // approx_model.H.tube(0, 0) = arma::sqrt(tmp2);
-  // approx_model.H.tube(0, 1).zeros();
-  // approx_model.H.tube(1, 0) = arma::vectorise(approx_model.H.tube(0, 0)) / tmp;
-  // approx_model.H.tube(1, 1) = approx_model.H.tube(1, 0);
-    
-  // approx_model.y.row(0) = signal.row(0) - tmp2 / tmp;
-  // approx_model.y.row(1) = signal.row(1) + 1 + tmp2 / arma::square(tmp);
-
 }
 
 double ssm_gsv::compute_const_term() const {
