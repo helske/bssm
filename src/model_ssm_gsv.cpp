@@ -49,8 +49,8 @@ ssm_gsv::ssm_gsv(const Rcpp::List model, const unsigned int seed, const double z
     arma::cube(m, m, (Ttv_mu || Ttv_sv) * (n - 1) + 1, arma::fill::zeros),
     arma::cube(m, k, (Rtv_mu || Rtv_sv) * (n - 1) + 1, arma::fill::zeros),
     arma::vec(m, arma::fill::zeros), arma::mat(m, m, arma::fill::zeros),
-    arma::mat(m, (Dtv_mu || Dtv_sv) * (n - 1) + 1, arma::fill::zeros), 
-    arma::mat(2, (Ctv_mu || Ctv_sv) * (n - 1) + 1, arma::fill::zeros),
+    arma::mat(2, (Dtv_mu || Dtv_sv) * (n - 1) + 1, arma::fill::zeros), 
+    arma::mat(m, (Ctv_mu || Ctv_sv) * (n - 1) + 1, arma::fill::zeros),
     theta, seed + 1) {
     compute_RR();
   }
@@ -120,8 +120,8 @@ double ssm_gsv::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn)
 void ssm_gsv::joint_model() {
   //update model, probably not the most efficient way
   for(unsigned int t = 0; t < approx_model.Ztv * (n - 1) + 1; t++) {
-    approx_model.Z.slice(t).submat(0, 0, 0, m_mu - 1) = Z_mu.col(Ztv_mu * t);
-    approx_model.Z.slice(t).submat(1, m_mu, 1, m - 1) = Z_sv.col(Ztv_sv * t);
+    approx_model.Z.slice(t).submat(0, 0, 0, m_mu - 1) = Z_mu.col(Ztv_mu * t).t();
+    approx_model.Z.slice(t).submat(1, m_mu, 1, m - 1) = Z_sv.col(Ztv_sv * t).t();
   }
   
   for(unsigned int t = 0; t < approx_model.Ttv * (n - 1) + 1; t++) {
@@ -159,9 +159,7 @@ unsigned int ssm_gsv::approximate() {
   unsigned int iters_used = 0;
   // check if there is a need to update the approximation
   if (approx_state < 1) {
-    
     joint_model();
-    
     // don't update y and H if using global approximation and we have updated them already
     if(!local_approx & (approx_state == 0)) {
       arma::mat alpha = approx_model.fast_smoother();
@@ -170,7 +168,6 @@ unsigned int ssm_gsv::approximate() {
           approx_model.Z.slice(approx_model.Ztv * t) * alpha.col(t);
       }
     } else {
-      
       unsigned int i = 0;
       double diff = conv_tol + 1;
       while(i < max_iter && diff > conv_tol) {
@@ -308,22 +305,23 @@ void ssm_gsv::update_scales() {
 // signal_t is (C^mu_t + Z^mu * mu_t, C^eta_t + Z^eta_t* eta_t)
 void ssm_gsv::laplace_iter(const arma::mat& signal) {
   
-  arma::rowvec tmp = y.t() - signal.row(0);
-  // avoid dividing by zero
-  tmp(arma::find(arma::abs(tmp) < 1e-4)).fill(1e-4);
-  arma::rowvec tmp2 = arma::exp(signal.row(1));
-
-  approx_model.HH.tube(0, 0) = tmp2;
-  approx_model.HH.tube(0, 1).zeros();
-  approx_model.HH.tube(1, 0).zeros();
-  approx_model.HH.tube(1, 1).fill(2);
-  approx_model.H.tube(0,0) = arma::sqrt(tmp2);
-  approx_model.H.tube(0, 1).zeros();
-  approx_model.H.tube(1, 0).zeros();
-  approx_model.H.tube(1, 1).fill(sqrt(2));
+     arma::rowvec tmp = y.t() - signal.row(0);
+    // avoid dividing by zero
+   // tmp(arma::find(arma::abs(tmp) < 1e-4)).fill(1e-4);
+    arma::rowvec tmp2 = arma::exp(signal.row(1));
   
-  approx_model.y.row(0) = y.t();
-  approx_model.y.row(1) = signal.row(1) + arma::square(tmp) / tmp2  - 1;
+    approx_model.HH.tube(0, 0) = tmp2;
+    approx_model.HH.tube(0, 1).zeros();
+    approx_model.HH.tube(1, 0).zeros();
+    approx_model.HH.tube(1, 1).fill(2);
+    approx_model.H.tube(0,0) = arma::sqrt(tmp2);
+    approx_model.H.tube(0, 1).zeros();
+    approx_model.H.tube(1, 0).zeros();
+    approx_model.H.tube(1, 1).fill(sqrt(2));
+    
+    approx_model.y.row(0) = y.t();
+    approx_model.y.row(1) = signal.row(1) + arma::square(tmp) / tmp2  - 1;
+ 
 }
 
 double ssm_gsv::compute_const_term() const {
