@@ -136,9 +136,8 @@ model <- bsm_ng(y, xreg = x,
 
 # run IS-MCMC
 # Note small number of iterations for CRAN checks
-# so no real use of parallelization
 fit <- run_mcmc(model, iter = 5000,
-  particles = 10, mcmc_type = "is2", seed = 1, threads = 2)
+  particles = 10, mcmc_type = "is2", seed = 1)
 
 # extract states   
 d_states <- as.data.frame(fit, variable = "states", time = 1:n)

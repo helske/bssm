@@ -3,6 +3,7 @@ bssm 1.1.4 (Release date: 2021-03-)
    * Better documentation for SV model, and changed ordering of arguments to emphasise the 
      recommended parameterization.
    * Fixed predict method for SV model.
+   * Removed parallelization in one example which failed on Solaris for some unknown reason.
      
 bssm 1.1.3-2 (Release date: 2021-02-24)
 ==============

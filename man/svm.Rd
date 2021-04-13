@@ -17,7 +17,9 @@ svm(y, mu, rho, sd_ar, sigma)
 
 \item{sigma}{Prior for sigma parameter of observation equation, internally denoted as phi. Ignored 
 if \code{mu} is provided. Note that typically parametrization using mu is preferred due to 
-better numerical properties and availability of better Gaussian approximation.}
+better numerical properties and availability of better Gaussian approximation. 
+Most notably the global approximation approach does not work with sigma parameterization as 
+sigma is not a parameter of the resulting approximate model.}
 }
 \value{
 Object of class \code{svm}.
