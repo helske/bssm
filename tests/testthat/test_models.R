@@ -61,7 +61,8 @@ test_that("bad argument values for svm throws an error",{
 })
 
 test_that("proper arguments for svm don't throw an error",{
-  expect_error(svm(1:10, uniform(0.9,-0.9, 0.99), halfnormal(1,2), halfnormal(1,2)), NA)
+  expect_error(svm(1:10, rho = uniform(0.9,-0.9, 0.99), 
+    mu = normal(0, 0,2), sd_ar = halfnormal(1, 2)), NA)
 })
 
 test_that("multivariate non-gaussian model", {
