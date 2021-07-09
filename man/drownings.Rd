@@ -3,17 +3,19 @@
 \docType{data}
 \name{drownings}
 \alias{drownings}
-\title{Deaths by drowning in Finland in 1969-2014}
+\title{Deaths by drowning in Finland in 1969-2019}
 \format{
-A time series object containing 46 observations.
+A time series object containing 51 observations.
 }
 \source{
 Statistics Finland \url{https://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
 }
 \description{
-Dataset containing number of deaths by drowning in Finland in 1969-2014,
-yearly average summer temperatures (June to August) and
-corresponding population sizes (in hundreds of thousands).
+Dataset containing number of deaths by drowning in Finland in 1969-2019,
+corresponding population sizes (in hundreds of thousands), and
+yearly average summer temperatures (June to August), based on simple 
+unweighted average of three weather stations: Helsinki (Southern Finland), 
+Jyväskylä (Central Finland), and Sodankylä (Northern Finland).
 }
 \examples{
 data("drownings")

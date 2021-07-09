@@ -2,6 +2,7 @@
 % Please edit documentation in R/predict.R
 \name{predict.mcmc_output}
 \alias{predict.mcmc_output}
+\alias{predict}
 \title{Predictions for State Space Models}
 \usage{
 \method{predict}{mcmc_output}(
@@ -29,7 +30,9 @@ posterior predictive checks. In this case, set argument \code{future} to \code{F
 
 \item{nsim}{Number of samples to draw.}
 
-\item{future}{Default is \code{TRUE}, in which case predictions are future. 
+\item{future}{Default is \code{TRUE}, in which case predictions are for the future, 
+using posterior samples of (theta, alpha_T+1) i.e. the 
+posterior samples of hyperparameters and latest states. 
 Otherwise it is assumed that \code{model} corresponds to the original model.}
 
 \item{seed}{Seed for RNG.}
