@@ -1,32 +1,42 @@
 
 check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
-  
-  if(multivariate) {
-    if (!is.matrix(x)) {
-      stop("Argument y must be a numeric matrix or multivariate ts object.")
+  if (any(!is.na(x))) {
+    if(multivariate) {
+      if (!is.matrix(x)) {
+        stop("Argument y must be a numeric matrix or multivariate ts object.")
+      }
+    } else {
+      if (!(is.vector(x) && !is.list(x)) && !is.numeric(x)) {
+        stop("Argument y must be a numeric vector or ts object.")
+      }
+      if(distribution != "gaussian" && any(na.omit(x) < 0)) {
+        stop(paste0("Negative values not allowed for ", distribution, " distribution. "))
+      } else {
+        if(distribution %in% 
+            c("negative binomial", "binomial", "poisson") && any(na.omit(x != as.integer(x)))) {
+          stop(paste0("Non-integer values not allowed for ", distribution, " distribution. "))
+        }
+      }
     }
-  } else {
-    if (!(is.vector(x) && !is.list(x)) && !is.numeric(x)) {
-      stop("Argument y must be a numeric vector or ts object.")
+    if (any(is.infinite(x))) {
+      stop("Argument y must contain only finite or NA values.")
     }
-    if(distribution != "gaussian" && any(x < 0)) {
-      stop(paste0("Negative values not allowed for ", distribution, " distribution. "))
+    if (length(x) < 2) {
+      stop("Length of argument y must be at least two.")
     }
   }
-  if (any(is.infinite(x))) {
-    stop("Argument y must contain only finite or NA values.")
-  }
-  if (length(x) < 2) {
-    stop("Length of argument y must be at least two.")
-  }
-  
   
 }
 
 check_distribution <- function(x, distribution) {
   for(i in 1:ncol(x)) {
-    if(distribution[i] != "gaussian" && any(x[,i] < 0)) {
+    if(distribution[i] != "gaussian" && any(na.omit(x[,i]) < 0)) {
       stop(paste0("Negative values not allowed for ", distribution[i], " distribution. "))
+    } else {
+      if(distribution[i] %in% 
+          c("negative binomial", "binomial", "poisson") && any(na.omit(x[,i] != as.integer(x[,i])))) {
+        stop(paste0("Non-integer values not allowed for ", distribution[i], " distribution. "))
+      }
     }
   }
 }

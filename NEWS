@@ -1,4 +1,12 @@
-bssm 1.1.4 (Release date: 2021-03-)
+bssm 1.1.5 (Release date: 2021-06-14)
+==============
+   * Added explicit check for nsim > 0 in predict method as sample function 
+     works with missing argument causing crypting warnings later.
+   * Updated drownings data until 2019 and changed the temperature variable
+     to an average over three stations.
+   * Improved checks for observations and distributions in model building.
+
+bssm 1.1.4 (Release date: 2021-04-13)
 ==============
    * Better documentation for SV model, and changed ordering of arguments to emphasise the 
      recommended parameterization.

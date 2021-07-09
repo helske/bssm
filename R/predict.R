@@ -15,13 +15,15 @@
 #' It is also possible to input the original model, which can be useful for example for 
 #' posterior predictive checks. In this case, set argument \code{future} to \code{FALSE}.
 #' @param nsim Number of samples to draw.
-#' @param future Default is \code{TRUE}, in which case predictions are future. 
+#' @param future Default is \code{TRUE}, in which case predictions are for the future, 
+#' using posterior samples of (theta, alpha_T+1) i.e. the 
+#' posterior samples of hyperparameters and latest states. 
 #' Otherwise it is assumed that \code{model} corresponds to the original model.
 #' @param seed Seed for RNG.
 #' @param ... Ignored.
 #' @return Data frame of predicted samples.
 #' @method predict mcmc_output
-#' @rdname predict
+#' @aliases predict predict.mcmc_output
 #' @export
 #' @examples
 #' require("graphics")
@@ -123,6 +125,7 @@ predict.mcmc_output <- function(object, model, type = "response", nsim, future =
   if(!identical(ncol(object$theta), length(model$theta))) {
     stop("Number of unknown parameters 'theta' does not correspond to the MCMC output. ")
   }
+  if(nsim < 1) stop("Number of samples 'nsim' should be at least one.")
   
   if(future) {
     
