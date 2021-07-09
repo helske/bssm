@@ -15,7 +15,13 @@ and linear-Gaussian state dynamics, as well as general non-linear Gaussian model
 For details, see [paper on ArXiv](https://arxiv.org/abs/2101.08492), [package vignettes at CRAN](https://cran.r-project.org/web/packages/bssm/index.html) and paper on [Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo](https://onlinelibrary.wiley.com/doi/abs/10.1111/sjos.12492). There are also couple posters related to IS-correction methodology: [SMC 2017 workshop: Accelerating MCMC with an approximation ](http://users.jyu.fi/~jovetale/posters/SMC2017) and [UseR!2017: Bayesian non-Gaussian state space models in R](http://users.jyu.fi/~jovetale/posters/user2017.pdf).
 
 
-You can install the latest development version by using the devtools package:
+You can install the latest development version from R-universe with 
+
+```R
+install.packages("bssm", repos = "https://helske.r-universe.dev")
+```
+
+Or by using the devtools package:
 
 ```R
 install.packages("devtools")
@@ -25,7 +31,13 @@ devtools::install_github("helske/bssm")
 Recent changes (For all changes, see NEWS file.)
 ==========================================================================
 
-bssm 1.1.3-2 (Release date: 2021-02-23)
+bssm 1.1.4 (Release date: 2021-04-13)
+==============
+   * Better documentation for SV model, and changed ordering of arguments to emphasise the 
+     recommended parameterization.
+   * Fixed predict method for SV model.
+     
+bssm 1.1.3-2 (Release date: 2021-02-24)
 ==============
    * Fixed missing parenthesis causing compilation fail in case of no OpenMP support.
    * Added pandoc version >= 1.12.3 to system requirements.
