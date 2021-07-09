@@ -1,0 +1,399 @@
+---
+title: "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R"
+author: "Jouni Helske (joint work with Matti Vihola)"
+institute: "University of Jyväskylä, Finland"
+date: "9/7/2021"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: ["useR", "useR-fonts"]
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+```
+
+```{r, echo = FALSE}
+suppressPackageStartupMessages(library("bssm"))
+suppressPackageStartupMessages(library("dplyr"))
+suppressPackageStartupMessages(library("ggplot2"))
+```
+
+
+## What are state space models?
+
+- The bssm package (Helske, Vihola, 2021) allows fully Bayesian inference of state space models (SSMs)
+  - E.g. structural time series, ARIMA models, generalized linear models with time-varying coefficients, cubic splines, SDEs, ...
+- In general we have 
+  - Observations $y=(y_1,\ldots,y_T)$ with conditional distribution $g_t(y_t | \alpha_t)$
+  - Latent *states* $\alpha=(\alpha_1,\ldots,\alpha_T)$ with a transition distribution $p_t(\alpha_{t+1} | \alpha_t)$
+  - Both observations $y_t$ and states $\alpha_t$ can be multivariate
+- Both distributions can depend on some hyperparameters $\theta$
+- Our interest is in the posterior distribution $p(\theta, \alpha | y)$
+  - Prediction problems $p(y_{T+k} | y)$ and interpolation $p(y_t | y)$ are also straightforward with SSM setting
+
+???
+
+So what are state space models? State space models are large class of statistical models including, for example, structural time series models, ARIMA models, and generalized linear models with time-varying coefficients.
+
+In general we have some observations $y$, from $y_1$ to $y_T$, where the subscript denotes time or other ordering variable, and where $y$ at time $t$ follows a conditional distribution $g_t$ where we condition on $\alpha_t$.
+
+Here $\alpha_t$ are called latent states, which go similarly from $1$ to $T$, and they follow a transition distribution $p_t$, which gives us the distribution of next state given the current state.
+
+Both observations $y_t$ and states $\alpha_t$ can be multivariate, and both of these distributions, $p_t$ and $g_t$ can depend on some hyperparameters $\theta$, and our interest is in the joint posterior distribution states $\alpha$ and parameters $\theta$ given our data $y$.
+
+Also predicting future observations and states, as well interpolation of missing observations is straightforward within this SSM setting.
+
+---
+
+## But wait, what about KFAS?
+
+- Compared to the KFAS package (Helske, 2017) for state space modelling:
+  - KFAS is mainly for maximum likelihood inference vs Bayesian approach of bssm 
+  - bssm supports more model types (nonlinear models, stochastic volatility models, SDEs)
+  - KFAS uses importance sampling for non-Gaussian models, bssm uses particle filtering (scales better)
+  - bssm is easier to maintain and extend further (written in C++ instead of Fortran)
+  - Creating models is more user-friendly with KFAS (but see `as_bssm` function!)
+
+???
+
+But wait, what about KFAS? Some of you might be familiar with this other state space modelling package in R, so what's the difference with the bssm? 
+
+KFAS was designed from the perspective of maximum likelihood estimation whereas bssm leans to Bayesian inference, although maximum likelihood estimation is also possible.
+
+Second, bssm supports wider variety of models, and instead of simple importance sampling, bssm uses particle filtering which scales better with the number of time points. 
+
+bssm is also easier to maintain and extend in future, but on the other hand creating models is currently bit easier using the formula syntax of KFAS. But actually, you can convert KFAS models to bssm format with a helper function `as_bssm` which can be useful when constructing complex models.
+---
+
+## Bayesian estimation of SSMs
+
+- Two important special cases: 
+  - Both observation equation and state equation are linear-Gaussian
+  - States $\alpha_t$ are categorical (often called hidden Markov models, not covered by bssm)
+- In these cases the marginal likelihood $p(y | \theta)$ can be computed easily
+  - Marginalization of latent states results in highly efficient Markov chain Monte Carlo (MCMC) algorithms
+  - Run MCMC targeting the marginal posterior of hyperparameters $\theta$.
+  - Given samples from $p(\theta|y)$, simulate latent states from the smoothing distribution $p(\alpha | y, \theta)$.
+  - $\theta$ is often low dimensional so simple adaptive random walk Metropolis works well.
+  
+???
+
+Bayesian estimation of state space models, so how do you estimate these kind of models? There are two special classes of SSMs, first a case where the distributions of observations and states are both linear-Gaussian. Another one is where states are categorical, but I will not discuss this here because that is not supported by bssm.
+
+What is so special about these models is that the marginal likelihood can be computed in analytically tractable way. For this linear-Gaussian case we can use Kalman filter algorithm gives us the marginal likelihood of $y$ given $\theta$. This marginalization of latent states alpha can be used to construct an efficient Markov chain Monte Carlo (MCMC) algorithm.
+
+So what we what to do is to run MCMC targeting only the marginal posterior of hyperparameters $\theta$, and given samples from this marginal posterior, we simulate the states from the so called smoothing distribution which is the conditional distribution of all the latent states given all the data and current $\theta$.
+
+And because $\theta$ is often low-dimensional, simple adaptive random walk Metropolis works typically well.
+
+---
+
+## Bayesian inference for general SSMs
+
+- In general, marginal likelihood $p(y | \theta)$ is not analytically tractable. Three routes forward:
+  - Sample both $\theta$ and $\alpha$ directly using, e.g., BUGS (Lunn et al. 2000) or Stan (Stan Development Team 2021). Typically inefficient due to strong correlation structures and high dimensionality of $\alpha$.
+  - Use (deterministic) approximation of $p(y | \theta)$, e.g, INLA (Rue et al. 2009), extended Kalman filter (EKF). Fast(er) but biased. Bias is hard to quantify.
+  - Use particle MCMC (Andrieu et al. 2010) where $p(y|\theta)$ is replaced with its unbiased estimator from particle filter. Leads to asymptotically exact inference, but often computationally intensive. Tuning of MCMC nontrivial with respect to number of particles and acceptance rate.
+
+???
+
+For the Bayesian inference of general SSMs, things are more complicated because the marginal likelihood is now longer analytically tractable. Instead, we could consider at least three different options:
+
+First would be that we forget the special nature of the states and treat the states similarly as $\theta$, and sample both using some general MCMC machinery provided for example by BUGS or Stan. Unfortunately, this is often inefficient, due to the strong correlation structures and high dimensionality of alpha.
+
+Second option is to leverage some approximate methods, such as Laplace approximations as in INLA. This is often fast, but by biased by construction. Although the bias can often be negligible in practice, but it is hard to quantify the amount of bias in specific application.
+
+Third option would be to use so-called pseudo-marginal MCMC or particle MCMC methods where the marginal likelihood is replaced by its unbiased estimator from particle filter. This is asymptotically exact like the first option, but often computationally heavy as we need to run particle filter at each iteration, possibly with large number of particles. It can also be bit tricky to tune the MCMC algorithm and define a good number of particles for efficient inference.
+
+---
+
+## IS-MCMC for state space models
+
+- What if we could combine fast approximations and exact methods?
+- Vihola, Helske and Franks (2020) suggest targeting an approximate marginal posterior of $\theta$, combined with importance sampling type post-correction (IS-MCMC):
+  - Given $\theta$, assume that we can compute approximation $\hat p(y | \theta) = p(y | \theta) / w(\theta)$.
+  - Run MCMC targeting $\hat p(\theta | y)$, where the marginal likelihood is replaced with the the approximation $\hat p(y | \theta)$.
+  - For each $\theta$ from approximate marginal, run particle filter to obtain samples of $\alpha$ and unbiased estimate of $p(y | \theta)$.
+  - We now have weighted samples of $(\theta, \alpha)$ from the correct posterior, with weights $w(\theta)= p(y | \theta) / \hat p(y | \theta)$.
+
+???
+
+IS-MCMC for state space models. So, what bssm does is it combines the fast approximations and exact methods by first finding an approximate marginal posterior of $\theta$s, and then correcting this with importance sampling type of weighting. We call this IS-MCMC method.
+
+First, assume that we can compute approximation $\hat p(y | \theta)$ of the marginal likelihood for a given $\theta$.
+Then we run MCMC targeting approximate marginal posterior of $\theta$ where true likelihood is replaced by its approximation.
+Then, for each theta from this approximate posterior, we run particle filter which gives us samples of $\alpha$ and unbiased estimate of likelihood.
+So in the end we have a weighted samples from the joint posterior where weights correspond to the ratio of true and approximate likelihood terms.
+
+This works really well for the models supported for bssm, but of course in general the approximation should be "good enough", similarly as in typical importance sampling.
+
+---
+
+
+## Post-correction
+
+- For post-correction we recommend particle filter called $\psi$-APF (Vihola, Helske, Franks, 2020), which uses the dynamics of the approximating model with look-ahead strategy.
+- Based on the approximating densities $\hat g_t(y_t | \alpha_t)$, and $\hat p_t(\alpha_{t+1} | \alpha_t)$
+- Produces correct smoothing distribution and unbiased estimate of the marginal likelihood
+- For state space models supported by `bssm`, often only a small number (e.g. 10) particles is enough for accurate likelihood estimate.
+
+- Post-correction is easy to parallelize and the needs to be done only for accepted $\theta$.
+
+???
+
+For the post correction, bssm uses by default a particle filter called $\psi$-APF, which again leverages the approximate model computed earlier, leading to a particle filter which in many cases needs only few particles, making it computationally efficient. Other particle filters could also be used, for example the basic bootstrap particle filter is also implemented in bssm.
+
+Note that the post correction needs only be done for each accepted $\theta$ independently, so it is trivial to parallelize efficiently.
+
+
+---
+
+## Linear-Gaussian state space models (LGSSM)
+
+$$
+\begin{aligned}
+y_t &= d_t + Z_t \alpha_t + H_t\epsilon_t, \quad \epsilon_t \sim N(0, I)\\
+\alpha_{t+1} &= c_t + T_t\alpha_t + R_t \eta_t, \quad \eta_t \sim N(0, I)\\
+\alpha_1 &\sim N(a_1, P_1)
+\end{aligned}
+$$
+
+- $d_t$, $Z_t$, $H_t$, $c_t$, $T_t$, $R_t$, $a_1$, $P_1$ can depend on $\theta$.
+- Kalman filter gives us marginal likelihood $p(y|\theta)$.
+- Smoothing algorithms give $p(\alpha|y,\theta)$.
+- Building general LGSSM and some special cases in bssm:
+
+```{r, eval = FALSE}
+# univariate LGSSM, ssm_mlg for multivariate version
+ssm_ulg(y, Z, H, T, R, a1, P1, D, C, 
+  init_theta, prior_fn, update_fn)
+
+# Basic structural time series model
+bsm_lg(y, sd_level = gamma(1, 2, 10), sd_y = 1, 
+  xreg = X, beta = normal(0, 0, 10))
+```
+
+???
+
+Ok, so what kind of models bssm supports? 
+
+First we have linear-Gaussian models, where observations y are a linear combination of states plus some Gaussian error term and optional intercept term, and similarly states depend on states of the previous time points.
+
+Different models can be defined by defining different model components d, Z, H, c, T, R, a1 and P1. These are vectors, matrices or arrays, depending on whether we have univariate or multivariate model, and whether these model components depend on time. 
+
+Often we know the structure of some of the model components whereas some of these depend on the parameter vector $\theta$.
+
+We can build these models with the bssm using several functions, for example ssm_ulg defines general univariate model, and bsm_lg can be used to define structural time series model, where unknown parameters correspond standard deviations of the noise terms as well as possible regression coefficients of the exogenous variables X.
+---
+
+## Non-Gaussian observations
+
+- State equation has the same form as in LGSSMs, but observations are non-Gaussian
+- For example, $g_t(y_t | \alpha_t) = \textrm{Poisson}(u_t \exp(d_t + Z_t \alpha_t))$, where $u_t$ is the known exposure at time $t$.
+- Filtering, smoothing and likelihood available via sequential Monte Carlo (SMC) i.e. particle filtering.
+- Approximate inference possible via Laplace approximation
+   - Find LGSSM with same mode of $p(\alpha | y, \theta)$ (iteratively)
+```{r, eval = FALSE}
+ssm_ung(y, Z, T, R, distribution = "poisson")
+ssm_mng(...)
+bsm_ng(...)
+svm(...)
+ar1_ng(...)
+```
+
+???
+
+Non-Gaussian observations. This is another class of models supported by the bssm. Here the observations are non-Gaussian, while states are still linear-Gaussian. Model building is similar as in the previous case, we just now have to define the distribution of observations as well.
+
+Bssm currently supports, Gaussian, Poisson, Binomial, negative binomial, and gamma models, and you can have multivariate models with mixed distributions as well. For these, we can use Laplace approximation for efficient approximate inference, or exact inference based on the IS-MCMC approach. Essentially we iteratively find a linear-Gaussian model which has the same conditional mode of the states as the original model.
+
+---
+
+## Bivariate Poisson model with bssm
+
+```{r mng, eval = FALSE}
+
+# latent random walk
+alpha <- cumsum(rnorm(100, sd = 0.1))
+# observations
+y <- cbind(rpois(100, exp(alpha)), rpois(100, exp(alpha)))
+
+# function which defines the log-prior density
+prior_fun <- function(theta) {
+  dgamma(theta, 2, 0.01, log = TRUE)
+}
+# function which returns updated model components
+update_fun <- function(theta) {
+  list(R = array(theta, c(1, 1, 1)))
+}
+
+model <- ssm_mng(y = y, Z = matrix(1, 2, 1), T = 1,
+  R = 0.1, P1 = 1, distribution = "poisson",
+  init_theta = 0.1,
+  prior_fn = prior_fun, update_fn = update_fun)
+```
+
+???
+
+Here is an example of simple bivariate Poisson model where we assume that both time series are generated by the same latent state process $\alpha$.
+
+So I'm first simulating some data, and then I define two R functions which are used within ssm_mng function which defines the whole model. 
+
+So these two R functions, prior_fun and update_fun which define the log-prior density and how the model components depend on the parameters $\theta$. Even though these are R functions which are used within the compiled C++ code, we only need to call these functions once per each MCMC iteration, so the overhead is small compared actual likelihood computations and so on. These functions, together with definition of model components such as Z and T are then given to the ssm_mng function, which returns a model object usable as an input for other functions of the package.
+
+---
+
+## Other models supported by bssm
+
+- Non-linear Gaussian models:
+$$
+\begin{aligned}
+y_t &= Z_t(\alpha_t) + H_t(\alpha_t)\epsilon_t,\\
+\alpha_{t+1} &= T_t(\alpha_t) + R_t(\alpha_t)\eta_t,\\
+\alpha_1 &\sim N(a_1, P_1),
+\end{aligned}
+$$
+
+  - Unbiased estimation via particle filtering.
+  - Approximations with mode matching based on extended Kalman filter and smoother.
+
+- Models where the state equation is defined as a continuous-time diffusion:
+$$
+\textrm{d} \alpha_t =
+\mu(\alpha_t) \textrm{d} t +
+\sigma(\alpha_t) \textrm{d} B_t, \quad t\geq0,
+$$
+
+  - $B_t$ is a Brownian motion, $\mu$ and $\sigma$ are real-valued functions
+  - Observation density $p_k(y_k | \alpha_k)$ defined at integer times $k=1\ldots,n$. 
+
+- These use user-defined C++ -snippets for model components based on a template provided
+
+???
+
+In addition, bssm also supports two model types, non-linear models and models where the state equation is defined as a continuous-time diffusion.
+
+For the nonlinear model, the approximation is based on mode matching similarly as in the non-Gaussian case, but this time using extended Kalman filter and smoother. And unbiased estimation is possibly using particle filter.
+
+For models where the state equation is defined as a continuous-time diffusion, we assume that we have observations at integer times. Here the approximation is related to the coarseness of the time-discretization mesh. So finer the time-discretization, more computationally demanding the particle filter is, so we can use coarser approximation in the first phase and then do the post-correction using the finer mesh.
+
+These models are quite general in a way that these nonlinear functions are defined, so we can't use R functions for defining those, as we would need to go go back-and-forth from R and C++ within particle filtering. So instead users should define the models using small C++-snippets using templates provided in the vignettes.
+
+---
+
+
+## Illustration: Modelling deaths by drowning in Finland 1969-2019
+
+- Yearly drownings $y_t$ assumed to follow Poisson distribution
+- Predictor $x_t$ is (centered) average summer temperature (June to August)
+- Exposure $u_t$ is the yearly population in hundreds of thousands
+$$
+\begin{aligned}
+y_t &\sim Poisson(u_t\exp(\beta x_t + \mu_t)) & t=1,\ldots, T\\
+\mu_{t+1} &= \mu_t + \nu_t + \eta_t, & \eta_t \sim N(0, \sigma_\eta^2)\\
+\nu_{t+1} &= \nu_t + \xi_t, & \xi_t \sim N(0, \sigma_\xi^2)
+\end{aligned}
+$$
+- Hyperparameters $\theta = (\beta, \sigma_\eta, \sigma_\xi)$
+- Latent states $\alpha_t = (\mu_t, \nu_t)$
+
+???
+
+Now as an example, I show how to analyse yearly drownings in Finland from 1969 to 2019.
+
+We have data on yearly drownings, which we assume follows Poisson distribution, conditional on the latent level $\mu$, average summer temperature, and yearly population.
+
+The latent process $\mu$ is assumed to follow a random walk with random slope, and the random slope is again defined as a random walk.
+
+So we have three hyperparameters, regression coefficient $\beta$, and two standard deviation parameters, and the latent state vector $\alpha_t$ contains the level and the slope terms.
+---
+
+## Estimating the model with bssm
+
+```{r, echo = TRUE}
+data("drownings")
+
+model <- bsm_ng(
+  y = drownings[, "deaths"], 
+  u = drownings[, "population"],
+  xreg = drownings[, "summer_temp"], 
+  distribution = "poisson", 
+  beta = normal(init = 0, mean = 0, sd = 1),
+  sd_level = gamma(init = 0.1, shape = 2, rate = 10), 
+  sd_slope = gamma(0, 2, 10))
+
+fit <- run_mcmc(model, iter = 20000, particles = 10)
+summary(fit, TRUE)[,1:4]
+```
+
+
+???
+
+Estimating this model with the bssm: We can build this model using bsm_ng function, where we define our data, the population size (exposure), the distribution (Poisson), and predictor variable (summer temperature), and finally some priors. For priors of basic structural model we can use helper functions normal for regression coefficient and gamma for standard deviations, where we first define the initial value and the parameters of the prior.
+
+Then we just call the function run_mcmc, with certain number of iterations and number of particles used in the post-correction phase. By default, this uses the IS-MCMC, but fully approximate inference is also possible, as well as normal particle MCMC methods and it's delayed acceptance variant.
+
+We then see from the summary of theta that the temperature has a small effect, one degree rise in average summer temperature, in Celsius, leads to about 10% more deaths.
+
+
+---
+
+## Decrease in drownings after adjusting temperature and population growth
+
+```{r, echo = FALSE, fig.height = 5, fig.width = 10, fig.align = "center", alt = "Figure showing how the number of drownings per 100,00 has decreased from over 5 to under 2 per year in last 50 years."}
+
+d_states <- as.data.frame(fit, variable = "states", 
+  time = 1:length(model$y))
+
+# weighted summary statistics with Hmisc
+intensity <- d_states %>%
+  filter(variable == "level") %>%
+  group_by(time) %>%
+  summarise(mean = Hmisc::wtd.mean(exp(value), weight, normwt = TRUE), 
+    lwr = Hmisc::wtd.quantile(exp(value), weight, 
+      0.025, normwt = TRUE), 
+    upr = Hmisc::wtd.quantile(exp(value), weight, 
+      0.975, normwt = TRUE))
+intensity$observations <- model$y / model$u
+
+intensity %>% 
+  ggplot(aes(x = time, y = mean)) +
+  geom_ribbon(aes(ymin = lwr, ymax = upr), fill = "#0038A8", alpha = 0.3) +
+  geom_line(aes(colour = "estimated intensity")) +
+  geom_point(aes(y = observations, 
+    colour = "observations"),show.legend=FALSE) +
+  theme_bw() +
+  theme(legend.title = element_blank()) +
+  scale_x_continuous("Time") +
+  ylab("Deaths per 100,000") + 
+  ggtitle("Temperature-adjusted drownings per 100,000 in Finland") + 
+  scale_colour_manual(values = c("#0038A8", "#C85300"))
+
+```
+
+???
+
+And finally we have a figure of intensity $\exp(\mu)$, number of deaths per 100,000, which shows that the drownings have drastically decreased in recent decades. In the seventies we had around six drownings per year, per 100,000, and now only have around two. 
+---
+
+### Thank you!
+
+Some references:
+
+*  Helske, J. (2017). KFAS: Exponential Family State Space Models in R. Journal of Statistical Software, 78(10),
+  1-39. https://www.jstatsoft.org/article/view/v078i10
+*  Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R. ArXiv preprint 2101.08492, https://arxiv.org/abs/2101.08492
+*  Vihola M, Helske J, Franks J (2020). Importance Sampling Type Estimators Based on Approximate Marginal MCMC.
+Scandinavian Journal of Statistics. https://doi.org/10.1111/sjos.12492
+*  Lunn, D.J., Thomas, A., Best, N., and Spiegelhalter, D. (2000) WinBUGS — a Bayesian modelling framework: concepts, structure, and extensibility. Statistics and Computing, 10:325–337.
+*  Stan Development Team (2021). Stan Modeling Language Users Guide and Reference Manual, 2.27. https://mc-stan.org
+*  Rue, H., Martino, S. and Chopin, N. (2009). Approximate Bayesian inference for latent Gaussian models by using integrated nested Laplace approximations. Journal of the Royal Statistical Society: Series B, 71: 319-392. https://doi.org/10.1111/j.1467-9868.2008.00700.x
+* Andrieu, C., Doucet, A. and Holenstein, R. (2010), Particle Markov chain Monte Carlo methods. Journal of the Royal Statistical Society: Series B, 72: 269-342. https://doi.org/10.1111/j.1467-9868.2009.00736.x
+
+???
+Thank you for listening! Here are some references, please check out the package on CRAN if you're interested in state space modellling.
