@@ -155,3 +155,35 @@ check_C <- function(x, m, n) {
     stop("'C' must be m x 1 or m x n matrix, where m is the number of states.")
   } 
 }
+
+create_regression <- function(beta, xreg, n) {
+  if(is.null(xreg)) {
+    list(xreg = matrix(0, 0, 0), coefs = numeric(0), beta = NULL)
+  } else {
+    if (missing(beta) || is.null(beta)) {
+      stop("No prior defined for beta. ")
+    } else {
+      if(!is_prior(beta) && !is_prior_list(beta)) {
+        stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
+      } else {
+        if (is.null(dim(xreg)) && length(xreg) == n) {
+          dim(xreg) <- c(n, 1)
+        }
+        check_xreg(xreg, n)
+        nx <- ncol(xreg)
+        if (nx == 1 && is_prior_list(beta)) beta <- beta[[1]]
+        if(nx > 1) {
+          coefs <- vapply(beta, "[[", "init", FUN.VALUE = 1)
+        } else {
+          coefs <- beta$init
+        }
+        check_beta(coefs, nx)
+        if (nx > 0 && is.null(colnames(xreg))) {
+          colnames(xreg) <- paste0("coef_", seq_len(ncol(xreg)))
+        }
+        names(coefs) <- colnames(xreg)
+      }
+    }
+    list(xreg = xreg, coefs = coefs, beta = beta)
+  }
+}

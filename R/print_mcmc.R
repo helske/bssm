@@ -221,16 +221,16 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
       
     } else {
       alpha <- expand_sample(object, "states")
-      mean_alpha <- ts(sapply(alpha, colMeans),
+      mean_alpha <- ts(vapply(alpha, colMeans, numeric(nrow(object$alpha))),
         start = attr(object, "ts")$start,
         frequency = attr(object, "ts")$frequency, names = colnames(object$alpha))
-      sd_alpha <- sapply(alpha, function(x) apply(x, 2, sd))
+      sd_alpha <- vapply(alpha, function(x) apply(x, 2, sd), numeric(nrow(object$alpha)))
       
       if(return_se) {
         
-        se_alpha <- sapply(alpha, function(x) 
+        se_alpha <- vapply(alpha, function(x) 
           apply(x, 2, function(z) 
-            sqrt(spectrum0.ar(z)$spec / length(z))))
+            sqrt(spectrum0.ar(z)$spec / length(z))), numeric(nrow(object$alpha)))
         ess_alpha <- (sd_alpha / se_alpha)^2
         summary_alpha <- list(
           "Mean" = mean_alpha, "SD" = sd_alpha, 

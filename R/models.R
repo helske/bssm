@@ -756,37 +756,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   check_y(y)
   n <- length(y)
   
-  if (is.null(xreg)) {
-    xreg <- matrix(0, 0, 0)
-    coefs <- numeric(0)
-    beta <- NULL
-  } else {
-    
-    if (missing(beta) || is.null(beta)) {
-      stop("No prior defined for beta. ")
-    }
-    if(!is_prior(beta) && !is_prior_list(beta)) {
-      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
-    }
-    
-    if (is.null(dim(xreg)) && length(xreg) == n) {
-      xreg <- matrix(xreg, n, 1)
-    }
-    
-    check_xreg(xreg, n)
-    nx <- ncol(xreg)
-    if (nx == 1 && is_prior_list(beta)) beta <- beta[[1]]
-    if(nx > 1) {
-      coefs <- sapply(beta, "[[", "init")
-    } else {
-      coefs <- beta$init
-    }
-    check_beta(coefs, nx)
-    if (nx > 0 && is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_", seq_len(ncol(xreg)))
-    }
-    names(coefs) <- colnames(xreg)
-  }
+  regression_part <- create_regression(beta, xreg, n)
   
   notfixed <- c("y" = 1, "level" = 1, "slope" = 1, "seasonal" = 1)
   
@@ -923,12 +893,15 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   
   
   if(ncol(xreg) > 1) {
-    priors <- c(list(sd_y, sd_level, sd_slope, sd_seasonal), beta)
+    priors <- c(list(sd_y, sd_level, sd_slope, sd_seasonal), 
+      regression_part$beta)
   } else {
-    priors <- list(sd_y, sd_level, sd_slope, sd_seasonal, beta)
+    priors <- list(sd_y, sd_level, sd_slope, sd_seasonal, 
+      regresssion_part$beta)
   }
-  names(priors) <- c("sd_y", "sd_level", "sd_slope", "sd_seasonal", names(coefs))
-  priors <- priors[sapply(priors, is_prior)]
+  names(priors) <- c("sd_y", "sd_level", "sd_slope", "sd_seasonal", 
+    names(regression_part$coefs))
+  priors <- priors[vapply(priors, is_prior, TRUE)]
   
   if (!missing(D)) {
     check_D(D, 1L, n)
@@ -940,11 +913,11 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   } else {
     C <- matrix(0, m, 1)
   }
-  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
+  theta <- if (length(priors) > 0) vapply(priors, "[[", "init", FUN.VALUE = 1) else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
-    a1 = a1, P1 = P1, xreg = xreg, beta = coefs,
+    a1 = a1, P1 = P1, xreg = regression_part$xreg, beta = regression_part$coefs,
     D = D,
     C = C,
     slope = slope, seasonal = seasonal, period = period, 
@@ -1027,39 +1000,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   check_y(y, multivariate = FALSE, distribution)
   n <- length(y)
   
-  if (is.null(xreg)) {
-    xreg <- matrix(0, 0, 0)
-    coefs <- numeric(0)
-    beta <- NULL
-  } else {
-    
-    if (missing(beta) || is.null(beta)) {
-      stop("No prior defined for beta. ")
-    }
-    if(!is_prior(beta) && !is_prior_list(beta)) {
-      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
-    }
-    
-    if (is.null(dim(xreg)) && length(xreg) == n) {
-      xreg <- matrix(xreg, n, 1)
-    }
-    
-    check_xreg(xreg, n)
-    nx <- ncol(xreg)
-    if (nx == 1 && is_prior_list(beta)) beta <- beta[[1]]
-    if(nx > 1) {
-      coefs <- sapply(beta, "[[", "init")
-    } else {
-      coefs <- beta$init
-    }
-    check_beta(coefs, nx)
-    
-    if (nx > 0 && is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_", seq_len(ncol(xreg)))
-    }
-    names(coefs) <- colnames(xreg)
-    
-  }
+  regression_part <- create_regression(beta, xreg, n)
   
   notfixed <- c("level" = 1, "slope" = 1, "seasonal" = 1)
   
@@ -1217,13 +1158,15 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
   
   if(ncol(xreg) > 1) {
-    priors <- c(list(sd_level, sd_slope, sd_seasonal, sd_noise, phi), beta)
+    priors <- c(list(sd_level, sd_slope, sd_seasonal, sd_noise, phi), 
+      regression_part$beta)
   } else {
-    priors <- list(sd_level, sd_slope, sd_seasonal, sd_noise, phi, beta)
+    priors <- list(sd_level, sd_slope, sd_seasonal, sd_noise, phi, 
+      regression_part$beta)
   }
   names(priors) <- c("sd_level", "sd_slope", "sd_seasonal", "sd_noise", "phi",
-    names(coefs))
-  priors <- priors[sapply(priors, is_prior)]
+    names(regression_part$coefs))
+  priors <- priors[vapply(priors, is_prior, TRUE)]
   
   if (phi_est) {
     phi <- phi$init
@@ -1236,17 +1179,17 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   } else {
     C <- matrix(0, m, 1)
   }
-  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
+  theta <- if (length(priors) > 0) vapply(priors, "[[", "init", FUN.VALUE = 1) else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
-    a1 = a1, P1 = P1, phi = phi, u = u, xreg = xreg, beta = coefs, 
-    D = D,
-    C = C,
+    a1 = a1, P1 = P1, phi = phi, u = u, xreg = regression_part$xreg, 
+    beta = regression_part$coefs, D = D, C = C,
     slope = slope, seasonal = seasonal, noise = noise,
     period = period, fixed = as.integer(!notfixed),
     distribution = distribution, initial_mode = initial_mode, 
-    prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
+    prior_distributions = priors$prior_distribution, 
+    prior_parameters = priors$parameters,
     theta = theta, phi_est = phi_est,
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE), 
     class = c("bsm_ng", "ssm_ung", "nongaussian"))
@@ -1317,14 +1260,14 @@ svm <- function(y, mu, rho, sd_ar, sigma) {
     rownames(T) <- colnames(T) <- rownames(R) <- "signal"
   
   priors <- list(rho, sd_ar, if(svm_type==0) sigma else mu)
-  priors <- priors[!sapply(priors, is.null)]
+  priors <- priors[!vapply(priors, is.null, TRUE)]
   names(priors) <-
     c("rho", "sd_ar", if(svm_type==0) "sigma" else "mu")
   
   C <- if (svm_type) matrix(mu$init * (1 - T[1])) else matrix(0)
   D <- matrix(0)
   
-  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
+  theta <- if (length(priors) > 0) vapply(priors, "[[", "init", FUN.VALUE = 1) else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
@@ -1366,39 +1309,7 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
   check_y(y, multivariate = FALSE, distribution)
   
   n <- length(y)
-  if (is.null(xreg)) {
-    xreg <- matrix(0, 0, 0)
-    coefs <- numeric(0)
-    beta <- NULL
-  } else {
-    
-    if (missing(beta) || is.null(beta)) {
-      stop("No prior defined for beta. ")
-    }
-    if(!is_prior(beta) && !is_prior_list(beta)) {
-      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
-    }
-    n <- length(y)
-    if (is.null(dim(xreg)) && length(xreg) == n) {
-      xreg <- matrix(xreg, n, 1)
-    }
-    check_xreg(xreg, n)
-    nx <- ncol(xreg)
-    if (nx == 1 && is_prior_list(beta)) beta <- beta[[1]]
-    if(nx > 1) {
-      coefs <- sapply(beta, "[[", "init")
-    } else {
-      coefs <- beta$init
-    }
-    check_beta(coefs, nx)
-    
-    if (nx > 0 && is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_", seq_len(ncol(xreg)))
-    }
-    names(coefs) <- colnames(xreg)
-    
-  }
-  
+  regression_part <- create_regression(beta, xreg, n)
   
   check_rho(rho$init)
   check_sd(sigma$init, "rho")
@@ -1452,19 +1363,20 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
     priors <- list(rho, sigma, mu, phi, beta)
   }
   names(priors) <-
-    c("rho", "sigma", "mu", "phi", names(coefs))
-  priors <- priors[sapply(priors, is_prior)]
+    c("rho", "sigma", "mu", "phi", names(regression_part$coefs))
+  priors <- priors[vapply(priors, is_prior, TRUE)]
   
   if (phi_est) {
     phi <- phi$init
   }
   D <- matrix(0)
   
-  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
+  theta <- if (length(priors) > 0) vapply(priors, "[[", "init", FUN.VALUE = 1) else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R,
-    a1 = a1, P1 = P1, phi = phi, u = u, xreg = xreg, beta = coefs,
+    a1 = a1, P1 = P1, phi = phi, u = u, 
+    regression_part$xreg = xreg, beta = regression_part$coefs,
     D = D, C = C,
     initial_mode = initial_mode,
     distribution = distribution, mu_est = mu_est, phi_est = phi_est,
@@ -1497,39 +1409,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
   
   check_y(y)
   n <- length(y)
-  if (is.null(xreg)) {
-    xreg <- matrix(0, 0, 0)
-    coefs <- numeric(0)
-    beta <- NULL
-  } else {
-    
-    if (missing(beta) || is.null(beta)) {
-      stop("No prior defined for beta. ")
-    }
-    if(!is_prior(beta) && !is_prior_list(beta)) {
-      stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
-    }
-    n <- length(y)
-    if (is.null(dim(xreg)) && length(xreg) == n) {
-      xreg <- matrix(xreg, n, 1)
-    }
-    check_xreg(xreg, n)
-    nx <- ncol(xreg)
-    if (nx == 1 && is_prior_list(beta)) beta <- beta[[1]]
-    if(nx > 1) {
-      coefs <- sapply(beta, "[[", "init")
-    } else {
-      coefs <- beta$init
-    }
-    check_beta(coefs, nx)
-    
-    if (nx > 0 && is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_", seq_len(ncol(xreg)))
-    }
-    names(coefs) <- colnames(xreg)
-    
-  }
-  
+  regression_part <- create_regression(beta, xreg, n)
   
   check_rho(rho$init)
   check_sd(sigma$init, "rho")
@@ -1568,21 +1448,22 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
   
   
   if(ncol(xreg) > 1) {
-    priors <- c(list(rho, sigma, mu, sd_y), beta)
+    priors <- c(list(rho, sigma, mu, sd_y), regression_part$beta)
   } else {
-    priors <- list(rho, sigma, mu, sd_y, beta)
+    priors <- list(rho, sigma, mu, sd_y, regression_part$beta)
   }
   names(priors) <-
-    c("rho", "sigma", "mu", "sd_y", names(coefs))
-  priors <- priors[sapply(priors, is_prior)]
+    c("rho", "sigma", "mu", "sd_y", names(regression_part$coefs))
+  priors <- priors[vapply(priors, is_prior, TRUE)]
   
   D <- matrix(0)
   
-  theta <- if (length(priors) > 0) sapply(priors, "[[", "init") else numeric(0)
+  theta <- if (length(priors) > 0) vapply(priors, "[[", "init", FUN.VALUE = 1) else numeric(0)
   priors <- combine_priors(priors)
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R,
-    a1 = a1, P1 = P1, xreg = xreg, beta = coefs,
+    a1 = a1, P1 = P1, 
+    xreg = regression_part$xreg, beta = regression_part$coefs,
     D = D, C = C,
     mu_est = mu_est, sd_y_est = sd_y_est,
     prior_distributions = priors$prior_distribution, prior_parameters = priors$parameters,
