@@ -1,7 +1,9 @@
 #' Gaussian Approximation of Non-Gaussian/Non-linear State Space Model
 #'
-#' Returns the approximating Gaussian model. This function is rarely needed itself, 
-#' and is mainly available for testing and debugging purposes.
+#' Returns the approximating Gaussian model which has the same conditional 
+#' mode of p(alpha|y, theta) as the original model. 
+#' This function is rarely needed itself, and is mainly available for 
+#' testing and debugging purposes.
 #' 
 #' @param model Model to be approximated.
 #' @param max_iter Maximum number of iterations.

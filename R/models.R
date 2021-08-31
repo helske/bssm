@@ -242,7 +242,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
     rownames(P1) <- colnames(P1) <- state_names
   
   if(is.null(names(init_theta)) && length(init_theta) > 0) 
-    names(init_theta) <- paste0("theta_", 1:length(init_theta))
+    names(init_theta) <- paste0("theta_", seq_along(init_theta))
   
   
   # xreg and beta are need in C++ side in order to combine constructors 
@@ -404,7 +404,7 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
     rownames(P1) <- colnames(P1) <- state_names
   
   if(is.null(names(init_theta)) && length(init_theta) > 0) 
-    names(init_theta) <- paste0("theta_", 1:length(init_theta))
+    names(init_theta) <- paste0("theta_", seq_along(init_theta))
   
   # xreg and beta are need in C++ side in order to combine constructors 
   structure(list(y = as.ts(y), Z = Z, T = T, R = R, a1 = a1, P1 = P1, 
@@ -550,7 +550,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
     rownames(P1) <- colnames(P1) <- state_names
   
   if(is.null(names(init_theta)) && length(init_theta) > 0)
-    names(init_theta) <- paste0("theta_", 1:length(init_theta))
+    names(init_theta) <- paste0("theta_", seq_along(init_theta))
   
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, 
     P1 = P1, D = D, C = C, update_fn = update_fn,
@@ -702,7 +702,7 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
     rownames(P1) <- colnames(P1) <- state_names
   
   if(is.null(names(init_theta)) && length(init_theta) > 0)
-    names(init_theta) <- paste0("theta_", 1:length(init_theta))
+    names(init_theta) <- paste0("theta_", seq_along(init_theta))
   
   
   structure(list(y = as.ts(y), Z = Z, T = T, R = R, a1 = a1, P1 = P1, phi = phi, u = u,
@@ -783,7 +783,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     }
     check_beta(coefs, nx)
     if (nx > 0 && is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+      colnames(xreg) <- paste0("coef_", seq_len(ncol(xreg)))
     }
     names(coefs) <- colnames(xreg)
   }
@@ -1055,7 +1055,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     check_beta(coefs, nx)
     
     if (nx > 0 && is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+      colnames(xreg) <- paste0("coef_", seq_len(ncol(xreg)))
     }
     names(coefs) <- colnames(xreg)
     
@@ -1393,7 +1393,7 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NUL
     check_beta(coefs, nx)
     
     if (nx > 0 && is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+      colnames(xreg) <- paste0("coef_", seq_len(ncol(xreg)))
     }
     names(coefs) <- colnames(xreg)
     
@@ -1524,7 +1524,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
     check_beta(coefs, nx)
     
     if (nx > 0 && is.null(colnames(xreg))) {
-      colnames(xreg) <- paste0("coef_",1:ncol(xreg))
+      colnames(xreg) <- paste0("coef_", seq_len(ncol(xreg)))
     }
     names(coefs) <- colnames(xreg)
     

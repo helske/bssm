@@ -46,7 +46,7 @@ as_bssm <- function(model, kappa = 100, ...) {
     Z <- aperm(model$Z, c(2, 3, 1))
     dim(Z) <- dim(Z)[1:2]
   } else {
-    Z = model$Z
+    Z <- model$Z
   }
   
   if (any(model$distribution != "gaussian")) {
@@ -121,8 +121,7 @@ as_bssm <- function(model, kappa = 100, ...) {
     
   } else {
     if (attr(model, "p") == 1) {
-      H = sqrt(c(model$H))
-      out <- ssm_ulg(y = model$y, Z =Z, H = H, T = model$T, R = R, 
+      out <- ssm_ulg(y = model$y, Z = Z, H = sqrt(c(model$H)), T = model$T, R = R, 
         a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
     } else {
       H <- model$H

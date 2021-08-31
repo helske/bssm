@@ -29,7 +29,7 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
 }
 
 check_distribution <- function(x, distribution) {
-  for(i in 1:ncol(x)) {
+  for(i in seq_len(ncol(x))) {
     if(distribution[i] != "gaussian" && any(na.omit(x[,i]) < 0)) {
       stop(paste0("Negative values not allowed for ", distribution[i], " distribution. "))
     } else {

@@ -271,8 +271,8 @@ expand_sample <- function(x, variable = "theta", times, states, by_states = TRUE
     out <- apply(x$theta, 2, rep, times = x$counts)
   } else {
     if (x$output_type == 1) {
-      if(missing(times)) times <- 1:nrow(x$alpha)
-      if(missing(states)) states <- 1:ncol(x$alpha)
+      if(missing(times)) times <- seq_len(nrow(x$alpha))
+      if(missing(states)) states <- seq_len(ncol(x$alpha))
       
       if(by_states) {
         out <- lapply(states, function(i) {

@@ -134,7 +134,7 @@ predict.mcmc_output <- function(object, model, type = "response", nsim, future =
         log(object$theta[,1:(ncol(object$theta) - length(model$beta))])
     }
     w <- object$counts * (if(object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
-    idx <- sample(1:nrow(object$theta), size = nsim, prob = w, replace = TRUE)
+    idx <- sample(seq_len(nrow(object$theta)), size = nsim, prob = w, replace = TRUE)
     theta <- t(object$theta[idx, ])
     alpha <- matrix(object$alpha[nrow(object$alpha),,idx], nrow = ncol(object$alpha))
     
@@ -207,7 +207,7 @@ predict.mcmc_output <- function(object, model, type = "response", nsim, future =
     }
     
     w <- object$counts * (if(object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
-    idx <- sample(1:nrow(object$theta), size = nsim, prob = w, replace = TRUE)
+    idx <- sample(seq_len(nrow(object$theta)), size = nsim, prob = w, replace = TRUE)
     n <- nrow(object$alpha) - 1L
     m <- ncol(object$alpha)
     

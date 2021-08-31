@@ -75,7 +75,7 @@ particle_smoother.gaussian <- function(model, particles,  method = "psi",
       out$Vt <- array(apply(out$alpha[1, , ], 1, var), c(1, 1, nrow(out$alphahat)))
     } else {
       out$Vt <- array(NA, c(ncol(out$alphahat), ncol(out$alphahat), nrow(out$alphahat)))
-      for(i in 1:nrow(out$alphahat)) {
+      for(i in seq_len(nrow(out$alphahat))) {
         out$Vt[,, i] <- cov(t(out$alpha[,i,]))
       }
     }
