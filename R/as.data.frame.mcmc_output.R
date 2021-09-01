@@ -48,14 +48,14 @@ as.data.frame.mcmc_output <- function(x,
     if (expand) {
       values <- suppressWarnings(expand_sample(x, "theta"))
       iters <- seq(x$burnin + 1, x$iter, by = x$thin)
-      weights <- if(x$mcmc_type %in% paste0("is", 1:3)) { 
+      weights <- if (x$mcmc_type %in% paste0("is", 1:3)) {
         rep(x$weights, times = x$counts) 
       } else 1
     } else {
       values <- x$theta
       iters <- x$burnin + cumsum(x$counts)
       weights <- 
-        x$counts * (if(x$mcmc_type %in% paste0("is", 1:3)) x$weights else 1)
+        x$counts * (if (x$mcmc_type %in% paste0("is", 1:3)) x$weights else 1)
     }
     d <- data.frame(iter = iters,
       value = as.numeric(values),
@@ -68,14 +68,14 @@ as.data.frame.mcmc_output <- function(x,
       values <- aperm(x$alpha[times, states, 
         rep(seq_len(nrow(x$theta)), times = x$counts), drop = FALSE], 3:1)
       iters <- seq(x$burnin + 1, x$iter, by = x$thin)
-      weights <-  if(x$mcmc_type %in% paste0("is", 1:3)) {
+      weights <-  if (x$mcmc_type %in% paste0("is", 1:3)) {
         rep(x$weights, times = x$counts) 
       } else 1
     } else {
       values <- aperm(x$alpha[times, states, , drop = FALSE], 3:1)
       iters <- x$burnin + cumsum(x$counts)
       weights <- x$counts * 
-        (if(x$mcmc_type %in% paste0("is", 1:3)) x$weights else 1)
+        (if (x$mcmc_type %in% paste0("is", 1:3)) x$weights else 1)
     }
     times <- time(ts(seq_len(nrow(x$alpha)), 
       start = attr(x, "ts")$start, 
@@ -88,4 +88,3 @@ as.data.frame.mcmc_output <- function(x,
   }
   d
 }
-

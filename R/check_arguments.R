@@ -1,7 +1,7 @@
 
 check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
   if (any(!is.na(x))) {
-    if(multivariate) {
+    if (multivariate) {
       if (!is.matrix(x)) {
         stop("Argument y must be a numeric matrix or multivariate ts object.")
       }
@@ -9,11 +9,11 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
       if (!(is.vector(x) && !is.list(x)) && !is.numeric(x)) {
         stop("Argument y must be a numeric vector or ts object.")
       }
-      if(distribution != "gaussian" && any(na.omit(x) < 0)) {
+      if (distribution != "gaussian" && any(na.omit(x) < 0)) {
         stop(paste0("Negative values not allowed for ", distribution, 
           " distribution. "))
       } else {
-        if(distribution %in% 
+        if (distribution %in% 
             c("negative binomial", "binomial", "poisson") && 
             any(na.omit(x != as.integer(x)))) {
           stop(paste0("Non-integer values not allowed for ", distribution, 
@@ -32,14 +32,14 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
 }
 
 check_distribution <- function(x, distribution) {
-  for(i in seq_len(ncol(x))) {
-    if(distribution[i] != "gaussian" && any(na.omit(x[,i]) < 0)) {
+  for (i in seq_len(ncol(x))) {
+    if (distribution[i] != "gaussian" && any(na.omit(x[, i]) < 0)) {
       stop(paste0("Negative values not allowed for ", distribution[i], 
         " distribution. "))
     } else {
-      if(distribution[i] %in% 
+      if (distribution[i] %in% 
           c("negative binomial", "binomial", "poisson") && 
-          any(na.omit(x[,i] != as.integer(x[,i])))) {
+          any(na.omit(x[, i] != as.integer(x[, i])))) {
         stop(paste0("Non-integer values not allowed for ", distribution[i], 
           " distribution. "))
       }
@@ -120,7 +120,7 @@ check_u <- function(x, multivariate = FALSE) {
   if (any(x < 0)) {
     stop("All values of 'u' must be non-negative.")
   }
-  if(multivariate) {
+  if (multivariate) {
     if (!is.matrix(x) && !is.numeric(x)) {
       stop("Argument 'u' must be a numeric matrix or multivariate ts object.")
     }
@@ -140,17 +140,17 @@ check_prior <- function(x, name) {
 }
 
 check_target <- function(target) {
-  if(length(target) > 1 || target >= 1 || target <= 0) {
+  if (length(target) > 1 || target >= 1 || target <= 0) {
     stop("Argument 'target' must be on interval (0, 1).")
   }
 }
 
 
 check_D <- function(x, p, n) {
-  if(missing(x)) {
-    if(p == 1) 0 else matrix(0, p, 1)
+  if (missing(x)) {
+    if (p == 1) 0 else matrix(0, p, 1)
   } else {
-    if(p == 1) {
+    if (p == 1) {
       if (!(length(x) %in% c(1, n))) {
         stop(paste("'D' must be a scalar or length n, where n is the number of",
           "observations.", sep = " "))
@@ -167,10 +167,10 @@ check_D <- function(x, p, n) {
 }
 
 check_C <- function(x, m, n) {
-  if(missing(x)) {
+  if (missing(x)) {
     matrix(0, m, 1)
   } else {
-    if (is.null(dim(x)) || nrow(x) != m || !(ncol(x) %in% c(1,n))) {
+    if (is.null(dim(x)) || nrow(x) != m || !(ncol(x) %in% c(1, n))) {
       stop(paste("'C' must be m x 1 or m x n matrix, where m is", 
       "the number of states.", sep = " "))
     } 
@@ -179,13 +179,13 @@ check_C <- function(x, m, n) {
 }
 
 create_regression <- function(beta, xreg, n) {
-  if(is.null(xreg)) {
+  if (is.null(xreg)) {
     list(xreg = matrix(0, 0, 0), coefs = numeric(0), beta = NULL)
   } else {
     if (missing(beta) || is.null(beta)) {
       stop("No prior defined for beta. ")
     } else {
-      if(!is_prior(beta) && !is_prior_list(beta)) {
+      if (!is_prior(beta) && !is_prior_list(beta)) {
         stop(paste("Prior for beta must be of class 'bssm_prior' or", 
           "'bssm_prior_list.", sep = " " ))
       } else {
@@ -195,7 +195,7 @@ create_regression <- function(beta, xreg, n) {
         check_xreg(xreg, n)
         nx <- ncol(xreg)
         if (nx == 1 && is_prior_list(beta)) beta <- beta[[1]]
-        if(nx > 1) {
+        if (nx > 1) {
           coefs <- vapply(beta, "[[", "init", FUN.VALUE = 1)
         } else {
           coefs <- beta$init
@@ -212,7 +212,7 @@ create_regression <- function(beta, xreg, n) {
 }
 
 check_Z <- function(x, p, n) {
-  if(p == 1) {
+  if (p == 1) {
     if (length(x) == 1) {
       dim(x) <- c(1, 1)
     } else {
@@ -298,7 +298,7 @@ check_P1 <- function(x, m) {
 }
 
 check_H <- function(x, p, n) {
-  if(p == 1) {
+  if (p == 1) {
     if (!(length(x) %in% c(1, n))) {
       stop(paste("'H' must be a scalar or length n, where n is the length of",
         "the time series y", sep = " "))

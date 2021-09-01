@@ -54,12 +54,12 @@ logLik.gaussian <- function(object, ...) {
 #' logLik(model2, particles = 10, seed = 1)
 logLik.nongaussian <- function(object, particles, method = "psi", 
   max_iter = 100, conv_tol = 1e-8, 
-  seed = sample(.Machine$integer.max, size = 1),...) {
+  seed = sample(.Machine$integer.max, size = 1), ...) {
   
   object$max_iter <- max_iter
   object$conv_tol <- conv_tol
   
-  if(missing(particles)) {
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`",
@@ -107,7 +107,7 @@ logLik.ssm_nlg <- function(object, particles, method = "bsf",
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  if(missing(particles)) {
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`", 
@@ -142,8 +142,8 @@ logLik.ssm_nlg <- function(object, particles, method = "bsf",
 #' @export
 logLik.ssm_sde <- function(object, particles, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {
-  if(L <= 0) stop("Discretization level L must be larger than 0.")
-  if(missing(particles)) {
+  if (L <= 0) stop("Discretization level L must be larger than 0.")
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`", 
@@ -156,5 +156,3 @@ logLik.ssm_sde <- function(object, particles, L,
     object$prior_pdf, object$obs_pdf, object$theta, 
     particles, L, seed)
 }
-
-

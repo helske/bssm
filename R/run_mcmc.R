@@ -81,12 +81,12 @@ run_mcmc <- function(model, iter, ...) {
 #'   geom_point(data = data.frame(mean = LakeHuron, time = time(LakeHuron)),
 #'     col = 2)
 run_mcmc.gaussian <- function(model, iter, output_type = "full",
-  burnin = floor(iter / 2), thin = 1, gamma = 2/3,
+  burnin = floor(iter / 2), thin = 1, gamma = 2 / 3,
   target_acceptance = 0.234, S, end_adaptive_phase = FALSE, threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   
-  if(length(model$theta) == 0) 
+  if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   
@@ -316,27 +316,29 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' ggplot(sumr, aes(time, mean)) + 
 #' geom_ribbon(aes(ymin = ymin, ymax = ymax),alpha = 0.25) + 
 #' geom_line() + 
-#' geom_line(data = data.frame(mean = y[, 1], time = 1:20), colour = "tomato") + 
-#' geom_line(data = data.frame(mean = y[, 2], time = 1:20), colour = "tomato") +
+#' geom_line(data = data.frame(mean = y[, 1], time = 1:20), 
+#'   colour = "tomato") + 
+#' geom_line(data = data.frame(mean = y[, 2], time = 1:20), 
+#'   colour = "tomato") +
 #' theme_bw()
 #' 
 run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
-  mcmc_type = "is2", sampling_method = "psi", burnin = floor(iter/2),
-  thin = 1, gamma = 2/3, target_acceptance = 0.234, S, 
+  mcmc_type = "is2", sampling_method = "psi", burnin = floor(iter / 2),
+  thin = 1, gamma = 2 / 3, target_acceptance = 0.234, S, 
   end_adaptive_phase = FALSE, local_approx  = TRUE, threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100, 
   conv_tol = 1e-8, ...) {
   
-  if(missing(particles)) {
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`",
-      "instead.", sep = " "))
+        "instead.", sep = " "))
       particles <- nsim
     }
   }
   
-  if(length(model$theta) == 0) 
+  if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   check_target(target_acceptance)
@@ -346,16 +348,17 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   if (mcmc_type == "approx") particles <- 0
   if (particles < 2 && mcmc_type != "approx") 
     stop(paste("Number of state samples less than 2, use 'mcmc_type' 'approx'",
-    "instead.", sep = " "))
+      "instead.", sep = " "))
   
-  sampling_method <- pmatch(match.arg(sampling_method, c("psi", "bsf", "spdk")), 
-    c("psi", "bsf", "spdk"))
+  sampling_method <- 
+    pmatch(match.arg(sampling_method, c("psi", "bsf", "spdk")), 
+      c("psi", "bsf", "spdk"))
   
   model$max_iter <- max_iter
   model$conv_tol <- conv_tol
   model$local_approx <- local_approx
   
-  if(inherits(model, "bsm_ng")) {
+  if (inherits(model, "bsm_ng")) {
     names_ind <-
       c(!model$fixed & c(TRUE, model$slope, model$seasonal), model$noise)
     transformed <- c(
@@ -413,7 +416,7 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- 
     names(model$theta)
-  if(inherits(model, "bsm_ng")) {
+  if (inherits(model, "bsm_ng")) {
     out$theta[, transformed] <- exp(out$theta[, transformed])
   }
   out$iter <- iter
@@ -499,12 +502,12 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
 #' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   mcmc_type = "is2", sampling_method = "bsf",
-  burnin = floor(iter/2), thin = 1,
-  gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
+  burnin = floor(iter / 2), thin = 1,
+  gamma = 2 / 3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
   conv_tol = 1e-8, iekf_iter = 0, ...) {
   
-  if(missing(particles)) {
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`",
@@ -513,7 +516,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
     }
   }
   
-  if(length(model$theta) == 0) 
+  if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   check_target(target_acceptance)
@@ -521,7 +524,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
   mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), 
     "ekf", "approx"))
-  if(mcmc_type %in% c("ekf", "approx")) particles <- 0
+  if (mcmc_type %in% c("ekf", "approx")) particles <- 0
   sampling_method <- pmatch(match.arg(sampling_method, c("psi", "bsf", "ekf")), 
     c("psi", "bsf", NA, "ekf"))
   
@@ -530,9 +533,9 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   }
   
   if (particles < 2 && !(mcmc_type %in% c("ekf", "approx")))
-     stop(paste("Number of state samples less than 2, use 'mcmc_type'",
-     "'approx' or 'ekf' instead.", sep = " "))
- 
+    stop(paste("Number of state samples less than 2, use 'mcmc_type'",
+      "'approx' or 'ekf' instead.", sep = " "))
+  
   
   out <- switch(mcmc_type,
     "da" = {
@@ -543,7 +546,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
         model$n_states, model$n_etas, seed,
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, max_iter, conv_tol,
-        sampling_method,iekf_iter, output_type)
+        sampling_method, iekf_iter, output_type)
     },
     "pm" = {
       nonlinear_pm_mcmc(t(model$y), model$Z, model$H, model$T,
@@ -553,7 +556,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
         model$n_states, model$n_etas, seed,
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, max_iter, conv_tol,
-        sampling_method,iekf_iter, output_type)
+        sampling_method, iekf_iter, output_type)
     },
     "is1" =,
     "is2" =,
@@ -683,26 +686,28 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  if(any(c(model$drift, model$diffusion, model$ddiffusion,model$prior_pdf, 
+  if (any(c(model$drift, model$diffusion, model$ddiffusion, model$prior_pdf, 
     model$obs_pdf) %in% c("<pointer: (nil)>", "<pointer: 0x0>"))) {
     stop(paste("NULL pointer detected, please recompile the pointer file", 
-    "and reconstruct the model.", sep = " "))
+      "and reconstruct the model.", sep = " "))
   }
   
-  if(missing(particles)) {
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`",
         "instead.", sep = " "))
       particles <- nsim
     }
+  } else {
+    if (particles <= 0) stop("particles should be positive integer.")
   }
   
-  if(length(model$theta) == 0) 
+  if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   check_target(target_acceptance)
-  if(particles <= 0) stop("particles should be positive integer.")
+  
   
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
   mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3)))
@@ -711,31 +716,36 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
     S <- diag(0.1 * pmax(0.1, abs(model$theta)), length(model$theta))
   }
   
-  if (mcmc_type == "da"){
+  if (mcmc_type != "pm") {
     if (L_f <= L_c) stop("L_f should be larger than L_c.")
-    if(L_c < 1) stop("L_c should be at least 1")
-    out <- sde_da_mcmc(model$y, model$x0, model$positive,
-      model$drift, model$diffusion, model$ddiffusion,
-      model$prior_pdf, model$obs_pdf, model$theta,
-      particles, L_c, L_f, seed,
-      iter, burnin, thin, gamma, target_acceptance, S,
-      end_adaptive_phase, output_type)
+    if (L_c < 1) stop("L_c should be at least 1")
   } else {
-    if(mcmc_type == "pm") {
-      if (missing(L_c)) L_c <- 0
-      if (missing(L_f)) L_f <- 0
-      L <- max(L_c, L_f)
-      if(L <= 0) stop("L should be positive.")
+    if (missing(L_c)) L_c <- 0
+    if (missing(L_f)) L_f <- 0
+    L <- max(L_c, L_f)
+    if (L <= 0) stop("L should be positive.")
+  }
+  out <- switch(mcmc_type,
+    "da" = {
+      out <- sde_da_mcmc(model$y, model$x0, model$positive,
+        model$drift, model$diffusion, model$ddiffusion,
+        model$prior_pdf, model$obs_pdf, model$theta,
+        particles, L_c, L_f, seed,
+        iter, burnin, thin, gamma, target_acceptance, S,
+        end_adaptive_phase, output_type)
+    },
+    "pm" = {
+      
       out <- sde_pm_mcmc(model$y, model$x0, model$positive,
         model$drift, model$diffusion, model$ddiffusion,
         model$prior_pdf, model$obs_pdf, model$theta,
         particles, L, seed,
         iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, output_type)
-    } else {
-      if (L_f <= L_c) stop("L_f should be larger than L_c.")
-      if(L_c < 1) stop("L_c should be at least 1")
-      
+    },
+    "is1" =, 
+    "is2" =, 
+    "is3" = {
       out <- sde_is_mcmc(model$y, model$x0, model$positive,
         model$drift, model$diffusion, model$ddiffusion,
         model$prior_pdf, model$obs_pdf, model$theta,
@@ -743,8 +753,8 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
         iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, pmatch(mcmc_type, paste0("is", 1:3)), 
         threads, output_type)
-    }
-  }
+    })
+  
   colnames(out$alpha) <- model$state_names
   
   colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- 

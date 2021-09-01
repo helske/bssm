@@ -75,7 +75,7 @@ particle_smoother <- function(model, particles, ...) {
 particle_smoother.gaussian <- function(model, particles,  method = "psi",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  if(missing(particles)) {
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`", 
@@ -84,19 +84,19 @@ particle_smoother.gaussian <- function(model, particles,  method = "psi",
     }
   }
   
-  if(method == "psi") {
+  if (method == "psi") {
     out <- list()
     out$alpha <- gaussian_psi_smoother(model, particles, seed, 
       model_type(model))
     out$alphahat <- t(apply(out$alpha, 1:2, mean))
-    if(ncol(out$alphahat) == 1L) {
+    if (ncol(out$alphahat) == 1L) {
       out$Vt <- array(apply(out$alpha[1, , ], 1, var), 
         c(1, 1, nrow(out$alphahat)))
     } else {
       out$Vt <- array(NA, c(ncol(out$alphahat), ncol(out$alphahat), 
         nrow(out$alphahat)))
-      for(i in seq_len(nrow(out$alphahat))) {
-        out$Vt[,, i] <- cov(t(out$alpha[,i,]))
+      for (i in seq_len(nrow(out$alphahat))) {
+        out$Vt[, , i] <- cov(t(out$alpha[, i, ]))
       }
     }
   } else {
@@ -120,7 +120,7 @@ particle_smoother.nongaussian <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1), 
   max_iter = 100, conv_tol = 1e-8, ...) {
   
-  if(missing(particles)) {
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`", 
@@ -137,7 +137,7 @@ particle_smoother.nongaussian <- function(model, particles,
     c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
     duplicates.ok = TRUE) - 1
   
-  if(method == "psi") {
+  if (method == "psi") {
     out <- psi_smoother(model, particles, seed, model_type(model))
   } else {
     out <- bsf_smoother(model, particles, seed, FALSE, model_type(model))
@@ -160,7 +160,7 @@ particle_smoother.ssm_nlg <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0, ...) {
   
-  if(missing(particles)) {
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`", 
@@ -208,9 +208,9 @@ particle_smoother.ssm_nlg <- function(model, particles,
 particle_smoother.ssm_sde <- function(model, particles, L, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  if(L < 1) stop("Discretization level L must be larger than 0.")
+  if (L < 1) stop("Discretization level L must be larger than 0.")
   
-  if(missing(particles)) {
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`", 

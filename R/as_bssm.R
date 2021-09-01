@@ -53,7 +53,6 @@ as_bssm <- function(model, kappa = 100, ...) {
   
   if (any(model$distribution != "gaussian")) {
     if (attr(model, "p") == 1) {
-      
       if (model$distribution == "negative binomial" && 
           length(unique(model$u)) > 1) {
         stop(paste("Time-varying dispersion parameter for negative binomial",
@@ -88,37 +87,37 @@ as_bssm <- function(model, kappa = 100, ...) {
     } else {
       phi <- numeric(attr(model, "p"))
       u <- model$u
-      for(i in 1:attr(model, "p")) {
+      for (i in 1:attr(model, "p")) {
         switch(model$distribution[i],
           poisson = {
             phi[i] <- 1
-            u[,i] <- model$u[,i]
+            u[, i] <- model$u[, i]
           },
           binomial = {
             phi[i] <- 1
-            u[,i] <- model$u[,i]
+            u[, i] <- model$u[, i]
           },
           gamma = {
-            if(length(unique(model$u[,i])) > 1)
+            if (length(unique(model$u[, i])) > 1)
               stop(paste0("Time-varying shape parameter for gamma is not",
               "(yet) supported in 'bssm'.", sep = " "))
-            phi[i] <- model$u[1,i]
-            u[,i] <- 1 # no exposure for Gamma in KFAS
+            phi[i] <- model$u[1, i]
+            u[, i] <- 1 # no exposure for Gamma in KFAS
           },
           "negative binomial" = {
-            if(length(unique(model$u[,i])) > 1)
+            if (length(unique(model$u[, i])) > 1)
               stop(paste("Time-varying dispersion parameter for negative",
                 "binomial is not (yet) supported in 'bssm'.", sep = " "))
-            phi[i] <- model$u[1,i]
-            u[,i] <- 1 # no exposure for NB in KFAS
+            phi[i] <- model$u[1, i]
+            u[, i] <- 1 # no exposure for NB in KFAS
           }, 
           gaussian = {
-            if(length(unique(model$u[,i])) > 1)
+            if (length(unique(model$u[, i])) > 1)
               stop(paste("Time-varying standard deviation for gaussian", 
               "distribution with non-gaussian series is not supported",
               "in 'bssm'.", sep = " "))
-            phi[i] <- sqrt(model$u[1,i])
-            u[,i] <- 1
+            phi[i] <- sqrt(model$u[1, i])
+            u[, i] <- 1
           })
       }
       
@@ -149,4 +148,3 @@ as_bssm <- function(model, kappa = 100, ...) {
   
   out
 }
-

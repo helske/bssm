@@ -1,6 +1,10 @@
 ## placeholder functions for fixed models
-default_prior_fn <- function(theta) {0}
-default_update_fn <- function(theta) {}
+default_prior_fn <- function(theta) {
+  0
+}
+default_update_fn <- function(theta) {
+  
+}
 #'
 #' General univariate linear-Gaussian state space models
 #'
@@ -81,10 +85,10 @@ default_update_fn <- function(theta) {}
 #' }
 #' # prior for standard deviations as half-normal(1)
 #' prior_fn <- function(theta) {
-#'   if(any(theta < 0)){
-#'   log_p <- -Inf 
+#'   if(any(theta < 0)) {
+#'     log_p <- -Inf 
 #'   } else {
-#'   log_p <- sum(dnorm(theta, 0, 1, log = TRUE))
+#'     log_p <- sum(dnorm(theta, 0, 1, log = TRUE))
 #'   }
 #'   log_p
 #' }
@@ -118,7 +122,7 @@ default_update_fn <- function(theta) {}
 #' # "manually" by constructing only necessary matrices,
 #' # i.e., in this case  a list with H and Q)
 #' 
-#' updatefn <- function(theta){
+#' updatefn <- function(theta) {
 #'   
 #'   model_kfas <- SSModel(log(drivers) ~ SSMtrend(1, Q = theta[1]^2)+
 #'     SSMseasonal(period = 12, 
@@ -190,11 +194,10 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
   
   # create R
   R <- check_R(R)
-  k <- dim(R)[2]
   
   a1 <- check_a1(a1, m)
   
-  P1 <- check_P1(P1, m, m)
+  P1 <- check_P1(P1, m)
   
   D <- check_D(D, 1L, n)
   C <- check_C(C, m, n)
@@ -207,7 +210,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
   rownames(Z) <- colnames(T) <- rownames(T) <- rownames(R) <- names(a1) <-
     rownames(P1) <- colnames(P1) <- state_names
   
-  if(is.null(names(init_theta)) && length(init_theta) > 0) 
+  if (is.null(names(init_theta)) && length(init_theta) > 0) 
     names(init_theta) <- paste0("theta_", seq_along(init_theta))
   
   
@@ -215,7 +218,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
     D = D, C = C, update_fn = update_fn,
     prior_fn = prior_fn, theta = init_theta,
-    xreg = matrix(0,0,0), beta = numeric(0)), class = c("ssm_ulg", "gaussian"))
+    xreg = matrix(0, 0, 0), beta = numeric(0)), class = c("ssm_ulg", "gaussian"))
 }
 #' General univariate non-Gaussian state space model
 #'
@@ -308,11 +311,10 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   
   # create R
   R <- check_R(R)
-  k <- dim(R)[2]
   
   a1 <- check_a1(a1, m)
   
-  P1 <- check_P1(P1, m, m)
+  P1 <- check_P1(P1, m)
   
   D <- check_D(D, 1L, n)
   C <- check_C(C, m, n)
@@ -341,7 +343,7 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
     initial_mode = initial_mode, update_fn = update_fn,
     prior_fn = prior_fn, theta = init_theta,
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE,
-    xreg = matrix(0,0,0), beta = numeric(0)),
+    xreg = matrix(0, 0, 0), beta = numeric(0)),
     class = c("ssm_ung", "nongaussian"))
 }
 
@@ -426,10 +428,9 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
   
   # create R
   R <- check_R(R)
-  k <- dim(R)[2]
   
   a1 <- check_a1(a1, m)
-  P1 <- check_P1(P1, m, m)
+  P1 <- check_P1(P1, m)
   
   D <- check_D(D, p, n)
   C <- check_C(C, m, n)
@@ -535,10 +536,9 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   
   # create R
   R <- check_R(R)
-  k <- dim(R)[2]
   
   a1 <- check_a1(a1, m)
-  P1 <- check_P1(P1, m, m)
+  P1 <- check_P1(P1, m)
   
   D <- check_D(D, p, n)
   C <- check_C(C, m, n)
@@ -687,7 +687,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   if (missing(P1)) {
     P1 <- diag(100, m)
   } else {
-    P1 <- check_P1(P1, m, m)
+    P1 <- check_P1(P1, m)
   }
   
   
@@ -915,7 +915,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   if (missing(P1)) {
     P1 <- diag(100, m)
   } else {
-    P1 <- check_P1(P1, m, m)
+    P1 <- check_P1(P1, m)
   }
   
   if (slope) {
@@ -1379,7 +1379,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
 ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
   known_params = NA, known_tv_params = matrix(NA), n_states, n_etas,
   log_prior_pdf, time_varying = rep(TRUE, 4), 
-  state_names = paste0("state",1:n_states)) {
+  state_names = paste0("state", 1:n_states)) {
   
   if (is.null(dim(y))) {
     dim(y) <- c(length(y), 1)
@@ -1465,7 +1465,6 @@ ssm_sde <- function(y, drift, diffusion, ddiffusion, obs_pdf,
   prior_pdf, theta, x0, positive) {
   
   check_y(y)
-  n <- length(y)
   
   structure(list(y = as.ts(y), drift = drift,
     diffusion = diffusion,

@@ -1,15 +1,15 @@
 context("Test basics")
 
-test_that("results for Gaussian models are comparable to KFAS",{
+test_that("results for Gaussian models are comparable to KFAS", {
   library("KFAS")
   model_KFAS <- SSModel(1:10 ~ SSMtrend(2, Q = list(0.01^2, 0)), H = 2)
   model_KFAS$P1inf[] <- 0
   diag(model_KFAS$P1) <- 1e2
   
-  model_bssm <- bsm_lg(1:10, P1 = diag(1e2,2), sd_slope = 0,
+  model_bssm <- bsm_lg(1:10, P1 = diag(1e2, 2), sd_slope = 0,
     sd_level = 0.01, sd_y = sqrt(2))
   
-  expect_equal(logLik(model_KFAS,convtol = 1e-12), logLik(model_bssm,0))
+  expect_equal(logLik(model_KFAS, convtol = 1e-12), logLik(model_bssm, 0))
   out_KFAS <- KFS(model_KFAS, filtering = "state", convtol = 1e-12)
   expect_error(out_bssm <- kfilter(model_bssm), NA)
   expect_equivalent(out_KFAS$a, out_bssm$at)
@@ -19,7 +19,7 @@ test_that("results for Gaussian models are comparable to KFAS",{
   expect_equivalent(out_KFAS$V, out_bssm$Vt)
 })
 
-test_that("results for multivariate Gaussian model are comparable to KFAS",{
+test_that("results for multivariate Gaussian model are comparable to KFAS", {
   library("KFAS")
   # From the help page of ?KFAS
   data("Seatbelts", package = "datasets")
@@ -49,13 +49,13 @@ test_that("results for multivariate Gaussian model are comparable to KFAS",{
     NULL))
   
   bssm_model <- as_bssm(kfas_model)
-  expect_equivalent(logLik(kfas_model),logLik(bssm_model))
+  expect_equivalent(logLik(kfas_model), logLik(bssm_model))
   expect_equivalent(KFS(kfas_model)$alphahat, smoother(bssm_model)$alphahat)
   
 })
 
-test_that("different smoothers give identical results",{
-  model_bssm <- bsm_lg(log10(AirPassengers), P1 = diag(1e2,13), sd_slope = 0,
+test_that("different smoothers give identical results", {
+  model_bssm <- bsm_lg(log10(AirPassengers), P1 = diag(1e2, 13), sd_slope = 0,
     sd_y = uniform(0.005, 0, 10), sd_level = uniform(0.01, 0, 10), 
     sd_seasonal = uniform(0.005, 0, 1))
   
@@ -65,7 +65,7 @@ test_that("different smoothers give identical results",{
 })
 
 
-test_that("results for Poisson model are comparable to KFAS",{
+test_that("results for Poisson model are comparable to KFAS", {
   library("KFAS")
   set.seed(1)
   model_KFAS <- SSModel(rpois(10, exp(0.2) * (2:11)) ~ 
@@ -74,7 +74,7 @@ test_that("results for Poisson model are comparable to KFAS",{
   model_KFAS$P1inf[] <- 0
   diag(model_KFAS$P1) <- 1e2
   
-  model_bssm <- bsm_ng(model_KFAS$y, P1 = diag(1e2,2), sd_slope = 0,
+  model_bssm <- bsm_ng(model_KFAS$y, P1 = diag(1e2, 2), sd_slope = 0,
     sd_level = 0.01, u = 2:11, distribution = "poisson")
   
   expect_equal(logLik(model_KFAS), logLik(model_bssm, 0))
@@ -97,7 +97,7 @@ test_that("results for binomial model are comparable to KFAS", {
   model_KFAS$P1inf[] <- 0
   diag(model_KFAS$P1) <- 1e2
   
-  model_bssm <- bsm_ng(model_KFAS$y, P1 = diag(1e2,2), sd_slope = 0,
+  model_bssm <- bsm_ng(model_KFAS$y, P1 = diag(1e2, 2), sd_slope = 0,
     sd_level = 0.01, u = 2:11, distribution = "binomial")
   
   expect_equal(logLik(model_KFAS), logLik(model_bssm, 0))
@@ -156,9 +156,9 @@ test_that("results for bivariate non-Gaussian model are comparable to KFAS", {
   expect_equivalent(out_KFAS$V, out_bssm$Vt, tolerance = 1e-8)
   is_KFAS <- importanceSSM(model_KFAS, nsim = 1e4)
   expect_error(is_bssm <- importance_sample(model_bssm, nsim = 1e4), NA)
-  expect_equivalent(apply(is_bssm$alpha, 1:2, mean)[1:n,], 
+  expect_equivalent(apply(is_bssm$alpha, 1:2, mean)[1:n, ], 
     apply(is_KFAS$samples, 1:2, mean), tolerance = 0.1)
-  expect_equivalent(apply(is_bssm$alpha, 1:2, sd)[1:n,], 
+  expect_equivalent(apply(is_bssm$alpha, 1:2, sd)[1:n, ], 
     apply(is_KFAS$samples, 1:2, sd), tolerance = 0.1)
 
 })
@@ -184,9 +184,9 @@ test_that("multivariate normal pdf works", {
   b <- matrix(0, 3, 3)
   constant <- bssm:::precompute_dmvnorm(a, b, 0:2)
   expect_equivalent(logp1, 
-    bssm:::fast_dmvnorm(1:3, -0.1*(3:1), b, 0:2, constant), tolerance = 1e-8)
+    bssm:::fast_dmvnorm(1:3, -0.1 * (3:1), b, 0:2, constant), tolerance = 1e-8)
   
-  a[2,] <- a[, 2] <- 0
+  a[2, ] <- a[, 2] <- 0
   logp3 <- expect_error(bssm:::dmvnorm(1:3, -0.1 * (3:1), a, FALSE, TRUE), NA)
   expect_equivalent(logp3, -12.5587625856078, tolerance = 1e-6)
 })

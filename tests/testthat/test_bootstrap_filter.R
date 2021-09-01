@@ -2,7 +2,7 @@
 context("Test that bootstrap_filter works")
 
 
-test_that("Test that bsm_lg gives identical results with ssm_ulg",{
+test_that("Test that bsm_lg gives identical results with ssm_ulg", {
   expect_error(model_ssm_ulg <- ssm_ulg(y = 1:10, Z = matrix(c(1, 0), 2, 1), 
     H = 2, T = array(c(1, 0, 1, 1), c(2, 2, 1)), 
     R = array(diag(2, 2), c(2, 2, 1)), 
@@ -18,7 +18,7 @@ test_that("Test that bsm_lg gives identical results with ssm_ulg",{
 
 
 tol <- 1e-8
-test_that("Test that gaussian bsf still works",{
+test_that("Test that gaussian bsf still works", {
   
   expect_error(model_ssm_ulg <- ssm_ulg(y = 1:10, Z = matrix(c(1, 0), 2, 1),
     H = 2, T = array(c(1, 0, 1, 1), c(2, 2, 1)), 
@@ -34,7 +34,7 @@ test_that("Test that gaussian bsf still works",{
   expect_true(is.finite(sum(bsf_ssm_ulg$Ptt)))
 })
 
-test_that("Test that poisson bsm_ng still works",{
+test_that("Test that poisson bsm_ng still works", {
   
   expect_error(model <- bsm_ng(1:10, sd_level = 2, sd_slope = 2, 
     P1 = diag(2, 2), distribution = "poisson"), NA)
@@ -47,9 +47,9 @@ test_that("Test that poisson bsm_ng still works",{
   expect_true(is.finite(sum(bsf_poisson$Ptt)))
 })
 
-test_that("Test that binomial bsm_ng still works",{
+test_that("Test that binomial bsm_ng still works", {
   
-  expect_error(model <- bsm_ng(c(1,0,1,1,1,0,0,0), sd_level = 2, 
+  expect_error(model <- bsm_ng(c(1, 0, 1, 1, 1, 0, 0, 0), sd_level = 2, 
     sd_slope = 2, P1 = diag(2, 2), 
     distribution = "binomial"), NA)
   expect_error(bsf_binomial <- bootstrap_filter(model, 10, seed = 1), NA)
@@ -64,9 +64,9 @@ test_that("Test that binomial bsm_ng still works",{
 
 
 
-test_that("Test that negative binomial bsm_ng still works",{
+test_that("Test that negative binomial bsm_ng still works", {
   
-  expect_error(model <- bsm_ng(c(1,0,1,1,1,0,0,0), sd_level = 2, 
+  expect_error(model <- bsm_ng(c(1, 0, 1, 1, 1, 0, 0, 0), sd_level = 2, 
     sd_slope = 2, P1 = diag(2, 2), 
     distribution = "negative binomial", phi = 0.1, u = 2), NA)
   expect_error(bsf_nbinomial <- bootstrap_filter(model, 10, seed = 1), NA)
@@ -79,9 +79,9 @@ test_that("Test that negative binomial bsm_ng still works",{
 })
 
 
-test_that("Test that still svm works",{
+test_that("Test that still svm works", {
   data("exchange")
-  model <- svm(exchange, rho = uniform(0.98,-0.999,0.999), 
+  model <- svm(exchange, rho = uniform(0.98, -0.999, 0.999), 
     sd_ar = halfnormal(0.2, 5), sigma = halfnormal(1, 2))
   
   expect_error(bsf_svm <- bootstrap_filter(model, 10, seed = 1), NA)

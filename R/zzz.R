@@ -1,3 +1,3 @@
-.onUnload <- function (libpath) {
+.onUnload <- function(libpath) {
   library.dynam.unload("bssm", libpath)
 }

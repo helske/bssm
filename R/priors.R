@@ -30,21 +30,21 @@
 #' uniform(0.2, -1, 1)
 #' # two normal priors at once i.e. for coefficients beta:
 #' normal(init = c(0.1, 2), mean = 0, sd = c(1, 2))
-uniform <- function(init, min, max){
-  if(any(!is.numeric(init), !is.numeric(min), !is.numeric(max))) {
+uniform <- function(init, min, max) {
+  if (any(!is.numeric(init), !is.numeric(min), !is.numeric(max))) {
     stop("Parameters for priors must be numeric.")
   }
-  if (any(min > max)){
+  if (any(min > max)) {
     stop(paste("Lower bound of uniform distribution must be smaller than",
      "upper bound.", sep = " "))
   }
-  if(any(init < min) || any(init > max)) {
+  if (any(init < min) || any(init > max)) {
     stop(paste("Initial value for parameter with uniform prior is not",
     "in the support of the prior.", sep = " "))
   }
   n <- max(length(init), length(min), length(max))
   
-  if(n > 1) {
+  if (n > 1) {
     structure(lapply(1:n, function(i) 
       structure(list(prior_distribution = "uniform", init = safe_pick(init, i),
       min = safe_pick(min, i), max = safe_pick(max, i)), 
@@ -58,9 +58,9 @@ uniform <- function(init, min, max){
 
 #' @rdname priors
 #' @export
-halfnormal <- function(init, sd){
+halfnormal <- function(init, sd) {
   
-  if(any(!is.numeric(init), !is.numeric(sd))) {
+  if (any(!is.numeric(init), !is.numeric(sd))) {
     stop("Parameters for priors must be numeric.")
   }
   if (any(sd < 0)) {
@@ -87,9 +87,9 @@ halfnormal <- function(init, sd){
 
 #' @rdname priors
 #' @export
-normal <- function(init, mean, sd){
+normal <- function(init, mean, sd) {
   
-  if(any(!is.numeric(init), !is.numeric(mean), !is.numeric(sd))) {
+  if (any(!is.numeric(init), !is.numeric(mean), !is.numeric(sd))) {
     stop("Parameters for priors must be numeric.")
   }
   if (any(sd < 0)) {
@@ -112,9 +112,9 @@ normal <- function(init, mean, sd){
 }
 #' @rdname priors
 #' @export
-tnormal <- function(init, mean, sd, min = -Inf, max = Inf){
+tnormal <- function(init, mean, sd, min = -Inf, max = Inf) {
   
-  if(any(!is.numeric(init), !is.numeric(mean), !is.numeric(sd))) {
+  if (any(!is.numeric(init), !is.numeric(mean), !is.numeric(sd))) {
     stop("Parameters for priors must be numeric.")
   }
   if (any(sd < 0)) {
@@ -142,19 +142,19 @@ combine_priors <- function(x) {
   
   prior_distributions <- vapply(x, "[[", "prior_distribution", character(1))
   parameters <- matrix(NA, 4, length(prior_distributions))
-  for(i in seq_along(prior_distributions)) {
-    parameters[1:(length(x[[i]])-2), i] <- as.numeric(x[[i]][-(1:2)])
+  for (i in seq_along(prior_distributions)) {
+    parameters[1:(length(x[[i]]) - 2), i] <- as.numeric(x[[i]][-(1:2)])
   }
   list(prior_distributions = 
       pmatch(prior_distributions, c("uniform", "halfnormal", "normal", 
-        "tnormal", "gamma"), duplicates.ok = TRUE)-1, 
+        "tnormal", "gamma"), duplicates.ok = TRUE) - 1, 
     parameters = parameters)
 }
 #' @rdname priors
 #' @export
-gamma <- function(init, shape, rate){
+gamma <- function(init, shape, rate) {
   
-  if(any(!is.numeric(init), !is.numeric(shape), !is.numeric(rate))) {
+  if (any(!is.numeric(init), !is.numeric(shape), !is.numeric(rate))) {
     stop("Parameters for priors must be numeric.")
   }
   if (any(shape < 0)) {
@@ -177,10 +177,10 @@ gamma <- function(init, shape, rate){
       class = "bssm_prior")
   }
 }
-is_prior <- function(x){
+is_prior <- function(x) {
   inherits(x, "bssm_prior")
 }
-is_prior_list <- function(x){
+is_prior_list <- function(x) {
   inherits(x, "bssm_prior_list")
 }
 safe_pick <- function(x, i) {

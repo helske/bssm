@@ -5,9 +5,9 @@ iact <- function(x) {
   # Monte Carlo Methods in Statistical Mechanics: Foundations and New Algorithms
   C <- max(5.0, log10(n))
   tau <- 1
-  for(k in 1:(n-1)) {
+  for (k in 1:(n - 1)) {
     tau <- tau + 2.0 * (x_[1:(n-k)] %*% x_[(1+k):n]) / (n - k)
-    if(k > C * tau) break
+    if (k > C * tau) break
   }
   max(0.0, tau)
 }
@@ -41,13 +41,13 @@ print.mcmc_output <- function(x, ...) {
   
   if (x$mcmc_type %in% paste0("is", 1:3)) {
     theta <- mcmc(x$theta)
-    if(x$output_type == 1)
-      alpha <- mcmc(matrix(x$alpha[nrow(x$alpha),,], ncol = ncol(x$alpha), 
+    if (x$output_type == 1)
+      alpha <- mcmc(matrix(x$alpha[nrow(x$alpha), , ], ncol = ncol(x$alpha), 
         byrow = TRUE, dimnames = list(NULL, colnames(x$alpha))))
     w <- x$counts * x$weights
   } else {
     theta <- expand_sample(x, "theta")
-    if(x$output_type == 1)
+    if (x$output_type == 1)
       alpha <- 
         expand_sample(x, "state", times = nrow(x$alpha), by_states = FALSE)[[1]]
   }
@@ -56,10 +56,10 @@ print.mcmc_output <- function(x, ...) {
     "\n", sep = "")
   
   cat("\n", "Iterations = ", x$burnin + 1, ":", x$iter, "\n", sep = "")
-  cat("Thinning interval = ",x$thin, "\n", sep = "")
+  cat("Thinning interval = ", x$thin, "\n", sep = "")
   cat("Length of the final jump chain = ", length(x$counts), "\n", sep = "")
   cat("\nAcceptance rate after the burn-in period: ", 
-    paste(round(x$acceptance_rate,3),"\n", sep = ""))
+    paste(round(x$acceptance_rate, 3), "\n", sep = ""))
   
   cat("\nSummary for theta:\n\n")
   if (x$mcmc_type %in% paste0("is", 1:3)) {
@@ -73,7 +73,7 @@ print.mcmc_output <- function(x, ...) {
   } else {
     mean_theta <- colMeans(theta)
     sd_theta <- apply(theta, 2, sd)
-    se_theta <-  sqrt(spectrum0.ar(theta)$spec/nrow(theta))
+    se_theta <-  sqrt(spectrum0.ar(theta)$spec / nrow(theta))
     stats <- matrix(c(mean_theta, sd_theta, se_theta), ncol = 3, 
       dimnames = list(colnames(x$theta), c("Mean", "SD", "SE")))
   }
@@ -84,7 +84,7 @@ print.mcmc_output <- function(x, ...) {
   esss <- matrix((sd_theta / se_theta)^2, ncol = 1, 
     dimnames = list(colnames(x$theta), c("ESS")))
   print(esss)
-  if(x$output_type != 3) {
+  if (x$output_type != 3) {
     
     n <- nrow(x$alpha)
     cat(paste0("\nSummary for alpha_", n), ":\n\n", sep = "")
@@ -95,7 +95,7 @@ print.mcmc_output <- function(x, ...) {
         sd_alpha <- sqrt(diag(weighted_var(alpha, w, method = "moment")))
         se_alpha_is <- weighted_se(alpha, w)
         se_alpha <- sqrt(apply(alpha, 2, function(x) asymptotic_var(x, w)))
-        stats <- matrix(c(mean_alpha, sd_alpha, se_alpha,se_alpha_is),
+        stats <- matrix(c(mean_alpha, sd_alpha, se_alpha, se_alpha_is),
           ncol = 4, 
           dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE", "SE-IS")))
       } else {
@@ -116,9 +116,9 @@ print.mcmc_output <- function(x, ...) {
       
     } else {
       if (ncol(x$alphahat) == 1) {
-        print(cbind("Mean" = x$alphahat[n, ], "SD" = sqrt(x$Vt[,,n])))
+        print(cbind("Mean" = x$alphahat[n, ], "SD" = sqrt(x$Vt[, , n])))
       } else {
-        print(cbind("Mean" = x$alphahat[n, ], "SD" = sqrt(diag(x$Vt[,,n]))))
+        print(cbind("Mean" = x$alphahat[n, ], "SD" = sqrt(diag(x$Vt[, , n]))))
       }
     }
   } else cat("\nNo posterior samples for states available.\n")
@@ -154,20 +154,20 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
   only_theta = FALSE, ...) {
   
   if (only_theta) {
-    parameters <- "theta"
+    variable <- "theta"
     warning(paste("Argument 'only_theta' is deprecated. Use argument", 
     "'variable' instead. ", sep = " "))
   }
   variable <- match.arg(variable, c("theta", "states", "both"))
   
-  if(variable %in% c("theta", "both")) {
+  if (variable %in% c("theta", "both")) {
     if (object$mcmc_type %in% paste0("is", 1:3)) {
       theta <- mcmc(object$theta)
       w <- object$counts * object$weights
       mean_theta <- weighted_mean(theta, w)
       sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
       
-      if(return_se) {
+      if (return_se) {
         mean_theta <- weighted_mean(theta, w)
         sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
         se_theta_is <- weighted_se(theta, w)
@@ -187,10 +187,10 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
       mean_theta <- colMeans(theta)
       sd_theta <- apply(theta, 2, sd)
       
-      if(return_se) {
+      if (return_se) {
         mean_theta <- colMeans(theta)
         sd_theta <- apply(theta, 2, sd)
-        se_theta <-  sqrt(spectrum0.ar(theta)$spec/nrow(theta))
+        se_theta <-  sqrt(spectrum0.ar(theta)$spec / nrow(theta))
         ess_theta <- (sd_theta / se_theta)^2
         summary_theta <- matrix(c(mean_theta, sd_theta, se_theta, ess_theta), 
           ncol = 4, 
@@ -215,12 +215,12 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
         frequency = attr(object, "ts")$frequency, 
         names = colnames(object$alpha))
       sd_alpha <- weighted_var(object$alpha, w, method = "moment")
-      sd_alpha <- if(m > 1) {
+      sd_alpha <- if (m > 1) {
         sqrt(t(apply(sd_alpha, 3, diag))) 
       } else matrix(sqrt(sd_alpha), ncol = 1)
       
       
-      if(return_se) {
+      if (return_se) {
         se_alpha_is <- apply(object$alpha, 2, 
           function(x) weighted_se(t(x), w))
         
@@ -246,8 +246,7 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
       sd_alpha <- vapply(alpha, function(x) apply(x, 2, sd), 
         numeric(nrow(object$alpha)))
       
-      if(return_se) {
-        
+      if (return_se) {
         se_alpha <- vapply(alpha, function(x) 
           apply(x, 2, function(z) 
             sqrt(spectrum0.ar(z)$spec / length(z))), 
@@ -294,14 +293,14 @@ expand_sample <- function(x, variable = "theta", times, states,
   if (x$mcmc_type %in% paste0("is", 1:3)) 
     warning(paste("Input is based on a IS-weighted MCMC, the results", 
     "correspond to the approximate posteriors.", sep = " "))
-  if(variable == "theta") {
+  if (variable == "theta") {
     out <- apply(x$theta, 2, rep, times = x$counts)
   } else {
     if (x$output_type == 1) {
-      if(missing(times)) times <- seq_len(nrow(x$alpha))
-      if(missing(states)) states <- seq_len(ncol(x$alpha))
+      if (missing(times)) times <- seq_len(nrow(x$alpha))
+      if (missing(states)) states <- seq_len(ncol(x$alpha))
       
-      if(by_states) {
+      if (by_states) {
         out <- lapply(states, function(i) {
           z <- apply(x$alpha[times, i, , drop = FALSE], 1, rep, x$counts)
           colnames(z) <- times

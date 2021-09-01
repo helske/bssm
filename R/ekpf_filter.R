@@ -23,7 +23,7 @@ ekpf_filter <- function(object, particles, ...) {
 ekpf_filter.ssm_nlg <- function(object, particles, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  if(missing(particles)) {
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument",

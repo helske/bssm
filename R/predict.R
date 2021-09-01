@@ -122,34 +122,33 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
   if (object$output_type != 1) 
     stop("MCMC output must contain posterior samples of the states.")
   
-  
-  if(!identical(attr(object, "model_type"), class(model)[1])) {
+  if (!identical(attr(object, "model_type"), class(model)[1])) {
     stop("Model class does not correspond to the MCMC output. ")
   }
-  if(!identical(ncol(object$theta), length(model$theta))) {
+  if (!identical(ncol(object$theta), length(model$theta))) {
     stop(paste("Number of unknown parameters 'theta' does not correspond to",
     "the MCMC output. ", sep = " "))
   }
-  if(nsim < 1) stop("Number of samples 'nsim' should be at least one.")
+  if (nsim < 1) stop("Number of samples 'nsim' should be at least one.")
   
-  if(future) {
+  if (future) {
     
     if (attr(object, "model_type") %in% c("bsm_lg", "bsm_ng")) {
-      object$theta[,1:(ncol(object$theta) - length(model$beta))] <- 
-        log(object$theta[,1:(ncol(object$theta) - length(model$beta))])
+      object$theta[, 1:(ncol(object$theta) - length(model$beta))] <- 
+        log(object$theta[, 1:(ncol(object$theta) - length(model$beta))])
     }
     w <- object$counts * 
-      (if(object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
+      (if (object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
     idx <- sample(seq_len(nrow(object$theta)), size = nsim, prob = w, 
       replace = TRUE)
     theta <- t(object$theta[idx, ])
-    alpha <- matrix(object$alpha[nrow(object$alpha),,idx], 
+    alpha <- matrix(object$alpha[nrow(object$alpha), , idx], 
       nrow = ncol(object$alpha))
     
     switch(attr(object, "model_type"),
-      ssm_mlg = ,
-      ssm_ulg = ,
-      bsm_lg = ,
+      ssm_mlg =,
+      ssm_ulg =,
+      bsm_lg =,
       ar1_lg = {
         if (!identical(length(model$a1), ncol(object$alpha))) {
           stop(paste("Model does not correspond to the MCMC output:",
@@ -162,10 +161,10 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
             c("ssm_mng", "ssm_ulg", "bsm_lg", "ar1_lg")) - 1L)
         
       },
-      ssm_mng = , 
-      ssm_ung = , 
-      bsm_ng = , 
-      svm = ,
+      ssm_mng =, 
+      ssm_ung =, 
+      bsm_ng =, 
+      svm =,
       ar1_ng = {
         if (!identical(length(model$a1), ncol(object$alpha))) {
           stop(paste("Model does not correspond to the MCMC output:",
@@ -180,7 +179,7 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
           pmatch(attr(object, "model_type"), 
             c("ssm_mng", "ssm_ung", "bsm_ng", "svm", "ar1_ng")) - 1L)
         
-        if(anyNA(pred)) 
+        if (anyNA(pred)) 
           warning("NA or NaN values in predictions, possible under/overflow?")
       },
       ssm_nlg = {
@@ -198,15 +197,15 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
         
       }
       , stop("Not yet implemented for ssm_sde. "))
-    if(type == "state") {
-      if(attr(object, "model_type") == "ssm_nlg") {
+    if (type == "state") {
+      if (attr(object, "model_type") == "ssm_nlg") {
         variables <- model$state_names
       } else {
         variables <- names(model$a1)
       }
     } else {
       variables <- colnames(model$y)
-      if(is.null(variables)) variables <- "Series 1"
+      if (is.null(variables)) variables <- "Series 1"
     }
     d <- data.frame(value = as.numeric(pred),
       variable = variables,
@@ -215,12 +214,12 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
     
   } else {
     
-    if(!identical(nrow(object$alpha) - 1L, length(model$y))) {
+    if (!identical(nrow(object$alpha) - 1L, length(model$y))) {
       stop("Number of observations of the model and MCMC output do not match.") 
     }
     
     w <- object$counts * 
-      (if(object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
+      (if (object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
     idx <- sample(seq_len(nrow(object$theta)), size = nsim, prob = w, 
       replace = TRUE)
     n <- nrow(object$alpha) - 1L
@@ -228,8 +227,8 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
     
     states <- object$alpha[1:n, , idx, drop = FALSE]
     
-    if(type == "state") {
-      if(attr(object, "model_type") == "ssm_nlg") {
+    if (type == "state") {
+      if (attr(object, "model_type") == "ssm_nlg") {
         variables <- model$state_names
       } else {
         variables <- names(model$a1)
@@ -241,20 +240,20 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
     } else {
       
       variables <- colnames(model$y)
-      if(is.null(variables)) variables <- "Series 1"
+      if (is.null(variables)) variables <- "Series 1"
       
       if (attr(object, "model_type") %in% c("bsm_lg", "bsm_ng")) {
-        object$theta[,1:(ncol(object$theta) - length(model$beta))] <- 
-          log(object$theta[,1:(ncol(object$theta) - length(model$beta))])
+        object$theta[, 1:(ncol(object$theta) - length(model$beta))] <- 
+          log(object$theta[, 1:(ncol(object$theta) - length(model$beta))])
       }
       theta <- t(object$theta[idx, ])
       states <- aperm(states, c(2, 1, 3))
       
   
       switch(attr(object, "model_type"),
-        ssm_mlg = ,
-        ssm_ulg = ,
-        bsm_lg = ,
+        ssm_mlg =,
+        ssm_ulg =,
+        bsm_lg =,
         ar1_lg = {
           if (!identical(length(model$a1), m)) {
             stop(paste("Model does not correspond to the MCMC output:",
@@ -267,10 +266,10 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
               c("ssm_mng", "ssm_ulg", "bsm_lg", "ar1_lg")) - 1L)
           
         },
-        ssm_mng = , 
-        ssm_ung = , 
-        bsm_ng = , 
-        svm = ,
+        ssm_mng =, 
+        ssm_ung =, 
+        bsm_ng =, 
+        svm =,
         ar1_ng = {
           if (!identical(length(model$a1), m)) {
             stop(paste("Model does not correspond to the MCMC output:",
@@ -285,7 +284,7 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
             pmatch(attr(object, "model_type"), 
               c("ssm_mng", "ssm_ung", "bsm_ng", "svm", "ar1_ng")) - 1L)
           
-          if(anyNA(pred)) 
+          if (anyNA(pred)) 
             warning("NA or NaN values in predictions, possible under/overflow?")
         },
         ssm_nlg = {

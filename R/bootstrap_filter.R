@@ -35,7 +35,7 @@ bootstrap_filter <- function(model, particles, ...) {
 bootstrap_filter.gaussian <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  if(missing(particles)) {
+  if (missing(particles)) {
     particles <- match.call(expand.dots = TRUE)$particles
     if (!is.null(particles)) particles <- particles
   }
@@ -66,7 +66,7 @@ bootstrap_filter.gaussian <- function(model, particles,
 bootstrap_filter.nongaussian <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
-  if(missing(particles)) {
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste0("Argument `nsim` is deprecated. Use argument `particles`",
@@ -96,7 +96,7 @@ bootstrap_filter.nongaussian <- function(model, particles,
 bootstrap_filter.ssm_nlg <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
-  if(missing(particles)) {
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`",
@@ -126,9 +126,9 @@ bootstrap_filter.ssm_nlg <- function(model, particles,
 bootstrap_filter.ssm_sde <- function(model, particles, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  if(L < 1) stop("Discretization level L must be larger than 0.")
+  if (L < 1) stop("Discretization level L must be larger than 0.")
   
-  if(missing(particles)) {
+  if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`",
