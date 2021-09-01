@@ -45,7 +45,8 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100,
     out$y <- ts(c(out$y), start = start(model$y), end = end(model$y), 
       frequency = frequency(model$y))
     D <- model$D
-    if (length(model$beta) > 0) D <- as.numeric(D) + t(model$xreg %*% model$beta)
+    if (length(model$beta) > 0) 
+      D <- as.numeric(D) + t(model$xreg %*% model$beta)
     approx_model <- ssm_ulg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
       R = model$R, a1 = model$a1, P1 = model$P1, init_theta = model$theta,
       D = D, C = model$C, state_names = names(model$a1), 

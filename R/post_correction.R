@@ -255,7 +255,8 @@ post_correct <- function(model, mcmc_output, particles, threads = 1L,
     }
   }
   mcmc_output$time <- 
-    rbind("approx" = mcmc_output$time, "postcorrection" = proc.time() - a)[, 1:3]
+    rbind("approx" = mcmc_output$time, 
+      "postcorrection" = proc.time() - a)[, 1:3]
   mcmc_output$mcmc_type <- paste0("is", is_type)
   mcmc_output$seed <- c(mcmc_output$seed, seed)
   mcmc_output$call <- c(mcmc_output$call, match.call()) 

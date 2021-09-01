@@ -178,7 +178,8 @@ default_update_fn <- function(theta) {
 #' out2 <- run_mcmc(model_bssm2, iter = 10000, burnin = 5000) 
 #' out2
 #' }
-ssm_ulg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL, init_theta = numeric(0),
+ssm_ulg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL, 
+  init_theta = numeric(0),
   D = NULL, C = NULL, state_names, update_fn = default_update_fn, 
   prior_fn = default_prior_fn) {
   
@@ -218,7 +219,8 @@ ssm_ulg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL, init_theta = numeric(0)
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, P1 = P1,
     D = D, C = C, update_fn = update_fn,
     prior_fn = prior_fn, theta = init_theta,
-    xreg = matrix(0, 0, 0), beta = numeric(0)), class = c("ssm_ulg", "gaussian"))
+    xreg = matrix(0, 0, 0), beta = numeric(0)), 
+    class = c("ssm_ulg", "gaussian"))
 }
 #' General univariate non-Gaussian state space model
 #'
