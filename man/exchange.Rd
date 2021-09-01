@@ -22,7 +22,7 @@ out <- particle_smoother(model, particles = 500)
 plot.ts(cbind(model$y, exp(out$alphahat))) 
 }
 \references{
-James Durbin, Siem Jan Koopman (2012). "Time Series Analysis by State Space Methods". 
-Oxford University Press.
+James Durbin, Siem Jan Koopman (2012). 
+Time Series Analysis by State Space Methods. Oxford University Press.
 }
 \keyword{datasets}

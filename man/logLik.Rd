@@ -12,7 +12,8 @@
 \item{...}{Ignored.}
 }
 \description{
-Computes the log-likelihood of a linear-Gaussian state space model of \code{bssm} package.
+Computes the log-likelihood of a linear-Gaussian state space model of 
+\code{bssm} package.
 }
 \examples{
 model <- ssm_ulg(y = c(1,4,3), Z = 1, H = 1, T = 1, R = 1)

@@ -20,7 +20,8 @@ test_that("proper arguments for bsm don't throw an error",{
   expect_error(bsm_lg(1:10, uniform(0, 0, 1), 1), NA)
   expect_error(bsm_lg(1:10, 1, 1, uniform(0, 0, 1)), NA)
   expect_error(bsm_lg(1:10, 1, 1, 1, 1, period = 3), NA)
-  expect_error(bsm_lg(1:10, 1, 1, 1, 1, period = 3, xreg = matrix(1:10, 10), beta = normal(0,0,10)), NA)
+  expect_error(bsm_lg(1:10, 1, 1, 1, 1, period = 3, xreg = matrix(1:10, 10), 
+    beta = normal(0,0,10)), NA)
 })
 
 
@@ -32,7 +33,8 @@ test_that("bad argument values for bsm_ng throws an error",{
   expect_error(bsm_ng(1:10, sd_level = "character", distribution = "poisson"))
   expect_error(bsm_ng(1:10, sd_y = Inf, distribution = "poisson"))
   expect_error(bsm_ng(1:10, no_argument = 5, distribution = "poisson"))
-  expect_error(bsm_ng(1:10, xreg = matrix(1:20), beta = uniform(0, 0, 1), distribution = "poisson"))
+  expect_error(bsm_ng(1:10, xreg = matrix(1:20), beta = uniform(0, 0, 1), 
+    distribution = "poisson"))
   expect_error(bsm_ng(1:10, xreg = 1:10, beta = NA, distribution = "poisson"))
   expect_error(bsm_ng(1:10, 1, 1, a1 = 1, distribution = "poisson"))
   expect_error(bsm_ng(1:10, 1, 1, 1, 1, distribution = "poisson"))

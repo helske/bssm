@@ -33,14 +33,15 @@ test_that("results for multivariate Gaussian model are comparable to KFAS",{
   
   diag(kfas_model$P1) <- 50
   diag(kfas_model$P1inf) <- 0
-  kfas_model$H <- structure(c(0.00544500509177812, 0.00437558178720609, 0.00437558178720609, 
-    0.00885692410165593), .Dim = c(2L, 2L, 1L))
-  kfas_model$R <- structure(c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0152150188066314, 0.0144897116711475
+  kfas_model$H <- structure(c(0.00544500509177812, 0.00437558178720609, 
+    0.00437558178720609, 0.00885692410165593), .Dim = c(2L, 2L, 1L))
+  kfas_model$R <- structure(c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0152150188066314, 0.0144897116711475
   ), .Dim = c(29L, 1L, 1L), .Dimnames = list(c("log(PetrolPrice).front", 
     "log(kms).front", "log(PetrolPrice).rear", "log(kms).rear", "law.front", 
-    "sea_trig1.front", "sea_trig*1.front", "sea_trig2.front", "sea_trig*2.front", 
-    "sea_trig3.front", "sea_trig*3.front", "sea_trig4.front", "sea_trig*4.front", 
+    "sea_trig1.front", "sea_trig*1.front", "sea_trig2.front", 
+    "sea_trig*2.front", "sea_trig3.front", "sea_trig*3.front", 
+    "sea_trig4.front", "sea_trig*4.front", 
     "sea_trig5.front", "sea_trig*5.front", "sea_trig6.front", "sea_trig1.rear", 
     "sea_trig*1.rear", "sea_trig2.rear", "sea_trig*2.rear", "sea_trig3.rear", 
     "sea_trig*3.rear", "sea_trig4.rear", "sea_trig*4.rear", "sea_trig5.rear", 
@@ -67,7 +68,8 @@ test_that("different smoothers give identical results",{
 test_that("results for Poisson model are comparable to KFAS",{
   library("KFAS")
   set.seed(1)
-  model_KFAS <- SSModel(rpois(10, exp(0.2) * (2:11)) ~ SSMtrend(2, Q = list(0.01^2, 0)),
+  model_KFAS <- SSModel(rpois(10, exp(0.2) * (2:11)) ~ 
+      SSMtrend(2, Q = list(0.01^2, 0)),
     distribution = "poisson", u = 2:11)
   model_KFAS$P1inf[] <- 0
   diag(model_KFAS$P1) <- 1e2
@@ -89,7 +91,8 @@ test_that("results for Poisson model are comparable to KFAS",{
 test_that("results for binomial model are comparable to KFAS", {
   library("KFAS")
   set.seed(1)
-  model_KFAS <- SSModel(rbinom(10, 2:11, 0.4) ~ SSMtrend(2, Q = list(0.01^2, 0)),
+  model_KFAS <- SSModel(rbinom(10, 2:11, 0.4) ~ 
+      SSMtrend(2, Q = list(0.01^2, 0)),
     distribution = "binomial", u = 2:11)
   model_KFAS$P1inf[] <- 0
   diag(model_KFAS$P1) <- 1e2
@@ -107,7 +110,7 @@ test_that("results for binomial model are comparable to KFAS", {
   expect_equivalent(out_KFAS$V, out_bssm$Vt)
 })
 
-test_that("results for multivariate non-Gaussian model are comparable to KFAS", {
+test_that("results for bivariate non-Gaussian model are comparable to KFAS", {
   library("KFAS")
   set.seed(1)
   n <- 10
@@ -133,16 +136,19 @@ test_that("results for multivariate non-Gaussian model are comparable to KFAS", 
   expect_equivalent(logLik(model_KFAS, nsim = 0), 
     logLik(model_bssm, particles = 0), tol = 1e-8)
   expect_equivalent(logLik(model_KFAS, nsim = 100, seed = 1), 
-    logLik(model_bssm, particles = 100, method = "spdk", seed = 1), tolerance = 1)
+    logLik(model_bssm, particles = 100, method = "spdk", seed = 1), 
+    tolerance = 1)
   
   expect_equivalent(
     logLik(model_bssm, particles = 100, method = "psi", seed = 1),
-    logLik(model_bssm, particles = 100, method = "spdk", seed = 1), tolerance = 1)
+    logLik(model_bssm, particles = 100, method = "spdk", seed = 1), 
+    tolerance = 1)
   
   # note large tolerance due to the sd of bsf
   expect_equivalent(
     logLik(model_bssm, particles = 100, method = "psi", seed = 1),
-    logLik(model_bssm, particles = 100, method = "bsf", seed = 1), tolerance = 10)
+    logLik(model_bssm, particles = 100, method = "bsf", seed = 1), 
+    tolerance = 10)
   
   out_KFAS <- KFS(model_KFAS)
   expect_error(out_bssm <- smoother(model_bssm), NA)
@@ -171,12 +177,14 @@ test_that("multivariate normal pdf works", {
   expect_equivalent(logp1, -14.0607446337904, tolerance = 1e-6)
   
   chola <- t(chol(a))
-  logp2 <- expect_error(bssm:::dmvnorm(1:3, -0.1 * (3:1), chola, TRUE, TRUE), NA)
+  logp2 <- expect_error(bssm:::dmvnorm(1:3, -0.1 * (3:1), chola, TRUE, TRUE), 
+    NA)
   expect_equivalent(logp2, logp1, tolerance = 1e-8)
   
   b <- matrix(0, 3, 3)
   constant <- bssm:::precompute_dmvnorm(a, b, 0:2)
-  expect_equivalent(logp1, bssm:::fast_dmvnorm(1:3, -0.1*(3:1), b, 0:2, constant), tolerance = 1e-8)
+  expect_equivalent(logp1, 
+    bssm:::fast_dmvnorm(1:3, -0.1*(3:1), b, 0:2, constant), tolerance = 1e-8)
   
   a[2,] <- a[, 2] <- 0
   logp3 <- expect_error(bssm:::dmvnorm(1:3, -0.1 * (3:1), a, FALSE, TRUE), NA)

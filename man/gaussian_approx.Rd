@@ -21,11 +21,14 @@ gaussian_approx(model, max_iter, conv_tol, ...)
 
 \item{...}{Ignored.}
 
-\item{iekf_iter}{For non-linear models, number of iterations in iterated EKF (defaults to 0).}
+\item{iekf_iter}{For non-linear models, number of iterations in iterated EKF
+(defaults to 0).}
 }
 \description{
-Returns the approximating Gaussian model. This function is rarely needed itself, 
-and is mainly available for testing and debugging purposes.
+Returns the approximating Gaussian model which has the same conditional 
+mode of p(alpha|y, theta) as the original model. 
+This function is rarely needed itself, and is mainly available for 
+testing and debugging purposes.
 }
 \examples{
 data("poisson_series")
@@ -34,7 +37,10 @@ model <- bsm_ng(y = poisson_series, sd_slope = 0.01, sd_level = 0.1,
 out <- gaussian_approx(model)
 }
 \references{
-Koopman, S.J. and Durbin J. (2012). Time Series Analysis by State Space Methods. Second edition. Oxford: Oxford University Press.
-Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+Koopman, S.J. and Durbin J. (2012). Time Series Analysis by State Space 
+Methods. Second edition. Oxford: Oxford University Press.
+
+Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
+on approximate marginal Markov chain Monte Carlo. 
 Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 }

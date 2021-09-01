@@ -10,11 +10,14 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
         stop("Argument y must be a numeric vector or ts object.")
       }
       if(distribution != "gaussian" && any(na.omit(x) < 0)) {
-        stop(paste0("Negative values not allowed for ", distribution, " distribution. "))
+        stop(paste0("Negative values not allowed for ", distribution, 
+          " distribution. "))
       } else {
         if(distribution %in% 
-            c("negative binomial", "binomial", "poisson") && any(na.omit(x != as.integer(x)))) {
-          stop(paste0("Non-integer values not allowed for ", distribution, " distribution. "))
+            c("negative binomial", "binomial", "poisson") && 
+            any(na.omit(x != as.integer(x)))) {
+          stop(paste0("Non-integer values not allowed for ", distribution, 
+            " distribution. "))
         }
       }
     }
@@ -31,11 +34,14 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
 check_distribution <- function(x, distribution) {
   for(i in seq_len(ncol(x))) {
     if(distribution[i] != "gaussian" && any(na.omit(x[,i]) < 0)) {
-      stop(paste0("Negative values not allowed for ", distribution[i], " distribution. "))
+      stop(paste0("Negative values not allowed for ", distribution[i], 
+        " distribution. "))
     } else {
       if(distribution[i] %in% 
-          c("negative binomial", "binomial", "poisson") && any(na.omit(x[,i] != as.integer(x[,i])))) {
-        stop(paste0("Non-integer values not allowed for ", distribution[i], " distribution. "))
+          c("negative binomial", "binomial", "poisson") && 
+          any(na.omit(x[,i] != as.integer(x[,i])))) {
+        stop(paste0("Non-integer values not allowed for ", distribution[i], 
+          " distribution. "))
       }
     }
   }
@@ -76,7 +82,8 @@ check_xreg <- function(x, n) {
 check_beta <- function(x, k) {
   
   if (length(x) != k) {
-    stop("Number of coefficients in beta is not equal to the number of columns of xreg.")
+    stop(paste("Number of coefficients in beta is not equal to the number",
+      "of columns of xreg.", sep = " "))
   }
   if (any(!is.finite(x))) {
     stop("Argument 'beta' must contain only finite values. ")
@@ -138,22 +145,37 @@ check_target <- function(target) {
   }
 }
 
+
 check_D <- function(x, p, n) {
-  if(p == 1) {
-    if (!(length(x) %in% c(1,n))) {
-      stop("'D' must be a scalar or length n, where n is the number of observations.")
-    } 
+  if(missing(x)) {
+    if(p == 1) 0 else matrix(0, p, 1)
   } else {
-    if (is.null(dim(x)) || nrow(x) != p || !(ncol(x) %in% c(1,n))) {
-      stop("'D' must be p x 1 or p x n matrix, where p is the number of series.")
-    } 
+    if(p == 1) {
+      if (!(length(x) %in% c(1, n))) {
+        stop(paste("'D' must be a scalar or length n, where n is the number of",
+          "observations.", sep = " "))
+        x <- as.numeric(x)
+      } 
+    } else {
+      if (is.null(dim(x)) || nrow(x) != p || !(ncol(x) %in% c(1, n))) {
+        stop(paste("'D' must be p x 1 or p x n matrix, where p is the number",
+          "of series.", sep = " "))
+      } 
+    }
   }
+  x
 }
 
 check_C <- function(x, m, n) {
-  if (is.null(dim(x)) || nrow(x) != m || !(ncol(x) %in% c(1,n))) {
-    stop("'C' must be m x 1 or m x n matrix, where m is the number of states.")
-  } 
+  if(missing(x)) {
+    matrix(0, m, 1)
+  } else {
+    if (is.null(dim(x)) || nrow(x) != m || !(ncol(x) %in% c(1,n))) {
+      stop(paste("'C' must be m x 1 or m x n matrix, where m is", 
+      "the number of states.", sep = " "))
+    } 
+  }
+  x
 }
 
 create_regression <- function(beta, xreg, n) {
@@ -164,7 +186,8 @@ create_regression <- function(beta, xreg, n) {
       stop("No prior defined for beta. ")
     } else {
       if(!is_prior(beta) && !is_prior_list(beta)) {
-        stop("Prior for beta must be of class 'bssm_prior' or 'bssm_prior_list.")
+        stop(paste("Prior for beta must be of class 'bssm_prior' or", 
+          "'bssm_prior_list.", sep = " " ))
       } else {
         if (is.null(dim(xreg)) && length(xreg) == n) {
           dim(xreg) <- c(n, 1)
@@ -186,4 +209,107 @@ create_regression <- function(beta, xreg, n) {
     }
     list(xreg = xreg, coefs = coefs, beta = beta)
   }
+}
+
+check_Z <- function(x, p, n) {
+  if(p == 1) {
+    if (length(x) == 1) {
+      dim(x) <- c(1, 1)
+    } else {
+      if (!(dim(x)[2] %in% c(1, NA, n))) {
+        stop(paste("'Z' must be a (m x 1) or (m x n) matrix, where",
+         "m is the number of states and n is the length of the series. ",
+          sep = " "))
+      } else {
+        dim(x) <- 
+          c(dim(x)[1], (n - 1) * (max(dim(x)[2], 0, na.rm = TRUE) > 1) + 1)
+      }
+    } 
+  } else {
+    if (dim(x)[1] != p || !(dim(x)[3] %in% c(1, NA, n))) {
+      stop(paste("'Z' must be a (p x m) matrix or (p x m x n) array",
+      "where p is the number of series, m is the number of states,", 
+      "and n is the length of the series. ", sep = " "))
+    } else {
+      dim(x) <- 
+        c(p, dim(x)[2], (n - 1) * (max(dim(x)[3], 0, na.rm = TRUE) > 1) + 1)
+    }
+  }
+  x
+}
+
+check_T <- function(x, m, n) {
+  if (length(x) == 1 && m == 1) {
+    dim(x) <- c(1, 1, 1)
+  } else {
+    if ((length(x) == 1) || any(dim(x)[1:2] != m) || 
+        !(dim(x)[3] %in% c(1, NA, n))) {
+      stop(paste("'T' must be a (m x m) matrix, (m x m x 1) or",
+        "(m x m x n) array, where m is the number of states. ", sep = " "))
+    }
+    dim(x) <- c(m, m, (n - 1) * (max(dim(x)[3], 0, na.rm = TRUE) > 1) + 1)
+  }
+  x
+}
+
+check_R <- function(x, m, n) {
+  if (length(x) == m) {
+    dim(x) <- c(m, 1, 1)
+  } else {
+    if (!(dim(x)[1] == m) || dim(x)[2] > m || !dim(x)[3] %in% c(1, NA, n)) {
+      stop(paste("'R' must be a (m x k) matrix, (m x k x 1) or", 
+        "(m x k x n) array, where k<=m is the number of disturbances eta,", 
+        "and m is the number of states. ", sep = " "))
+    } else {
+      dim(x) <- 
+        c(m, dim(x)[2], (n - 1) * (max(dim(x)[3], 0, na.rm = TRUE) > 1) + 1)
+    }
+  }
+  x
+}
+
+check_a1 <- function(x, m) {
+  if (missing(x)) {
+    x <- numeric(m)
+  } else {
+    if (length(x) == 1 || length(x) == m) {
+      x <- rep(x, length.out = m)
+    } else {
+      stop(paste("Misspecified a1, argument a1 must be a vector of length m,",
+        "where m is the number of state_names and 1<=t<=m.", sep = " "))
+    }
+  }
+  x
+}
+
+check_P1 <- function(x, m) {
+  if (missing(x)) {
+    x <- matrix(0, m, m)
+  } else {
+    if (length(x) == 1 && m == 1) {
+      dim(x) <- c(1, 1)
+    } else {
+      if (!identical(dim(x), c(m, m)))
+        stop(paste("Argument P1 must be (m x m) matrix, where m is the number",
+          "of states. ", sep = " "))
+    }
+  }
+  x
+}
+
+check_H <- function(x, p, n) {
+  if(p == 1) {
+    if (!(length(x) %in% c(1, n))) {
+      stop(paste("'H' must be a scalar or length n, where n is the length of",
+        "the time series y", sep = " "))
+    } else x <- as.numeric(x)
+  } else {
+    if (any(dim(x)[1:2] != p) || !(dim(x)[3] %in% c(1, n, NA))) {
+      stop(paste("'H' must be p x p matrix or p x p x n array, where p is the",
+        "number of series and n is the length of the series.", sep = " "))
+    } else {
+      dim(x) <- c(p, p, (n - 1) * (max(dim(x)[3], 0, na.rm = TRUE) > 1) + 1)
+    }
+  }
+  x
 }

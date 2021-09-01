@@ -51,13 +51,14 @@ bootstrap_filter(model, particles, ...)
 \item{L}{Integer defining the discretization level for SDE models.}
 }
 \value{
-List with samples (\code{alpha}) from the filtering distribution and corresponding weights (\code{weights}),
- as well as filtered and predicted states and corresponding covariances (\code{at}, \code{att}, \code{Pt}, \code{Ptt}), 
- and estimated log-likelihood (\code{logLik}).
+List with samples (\code{alpha}) from the filtering distribution and 
+corresponding weights (\code{weights}), as well as filtered and predicted 
+states and corresponding covariances (\code{at}, \code{att}, \code{Pt}, 
+\code{Ptt}), and estimated log-likelihood (\code{logLik}).
 }
 \description{
-Function \code{bootstrap_filter} performs a bootstrap filtering with stratification
-resampling.
+Function \code{bootstrap_filter} performs a bootstrap filtering with 
+stratification resampling.
 }
 \examples{
 set.seed(1)
@@ -79,5 +80,6 @@ ts.plot(cbind(poisson_series, exp(out$att[, 1])), col = 1:2)
 }
 \references{
 Gordon, N. J., Salmond, D. J., & Smith, A. F. M. (1993). 
-Novel approach to nonlinear/non-Gaussian Bayesian state estimation. IEE Proceedings-F, 140, 107–113.
+Novel approach to nonlinear/non-Gaussian Bayesian state estimation. 
+IEE Proceedings-F, 140, 107–113.
 }

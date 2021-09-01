@@ -7,7 +7,8 @@
 #' @importFrom stats tsp
 #' @param model State space model model of \code{bssm} package.
 #' @param iter Number of MCMC iterations.
-#' @param ... Parameters to specific methods. See \code{\link{run_mcmc.gaussian}},
+#' @param ... Parameters to specific methods. See 
+#' \code{\link{run_mcmc.gaussian}},
 #' \code{\link{run_mcmc.nongaussian}}, \code{\link{run_mcmc.ssm_nlg}}, 
 #' and \code{\link{run_mcmc.ssm_sde}} for details.
 #' @export
@@ -25,16 +26,20 @@ run_mcmc <- function(model, iter, ...) {
 #' @param model Model model.
 #' @param iter Number of MCMC iterations.
 #' @param output_type Type of output. Default is \code{"full"}, which returns
-#' samples from the posterior \eqn{p(\alpha, \theta)}. Option \code{"summary"} does not simulate
-#' states directly but computes the posterior means and variances of states using
-#' fast Kalman smoothing. This is slightly faster, more memory efficient and
-#' more accurate than calculations based on simulation smoother. Using option \code{"theta"} will only
-#' return samples from the marginal posterior of the hyperparameters \eqn{\theta}.
+#' samples from the posterior \eqn{p(\alpha, \theta)}. 
+#' Option \code{"summary"} does not simulate
+#' states directly but computes the posterior means and variances of states 
+#' using fast Kalman smoothing. This is slightly faster, 
+#' more memory efficient and more accurate than calculations based on 
+#' simulation smoother. Using option \code{"theta"} will only
+#' return samples from the marginal posterior of the hyperparameters 
+#' \eqn{\theta}.
 #' @param burnin Length of the burn-in period which is disregarded from the
-#' results. Defaults to \code{iter / 2}. Note that all MCMC algorithms of \code{bssm}
-#'  used adaptive MCMC during the burn-in period in order to find good proposal.
-#' @param thin Thinning rate. All MCMC algorithms in \code{bssm} use the jump chain
-#' representation, and the thinning is applied to these blocks.
+#' results. Defaults to \code{iter / 2}. Note that all MCMC algorithms of 
+#' \code{bssm} used adaptive MCMC during the burn-in period in order to find 
+#' good proposal.
+#' @param thin Thinning rate. All MCMC algorithms in \code{bssm} use the 
+#' jump chain representation, and the thinning is applied to these blocks.
 #' Defaults to 1.
 #' @param gamma Tuning parameter for the adaptation of RAM algorithm. Must be
 #' between 0 and 1 (not checked).
@@ -42,14 +47,17 @@ run_mcmc <- function(model, iter, ...) {
 #' @param S Initial value for the lower triangular matrix of RAM
 #' algorithm, so that the covariance matrix of the Gaussian proposal
 #' distribution is \eqn{SS'}. Note that for some parameters 
-#' (currently the standard deviation and dispersion parameters of bsm_lg models) the sampling
-#' is done for transformed parameters with internal_theta = log(theta).
-#' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.
+#' (currently the standard deviation and dispersion parameters of bsm_lg 
+#' models) the sampling is done for transformed parameters with 
+#' internal_theta = log(theta).
+#' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the
+#'  burnin period. Default is \code{FALSE}.
 #' @param threads Number of threads for state simulation. The default is 1.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @references 
-#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
+#' on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @examples 
@@ -78,7 +86,8 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   
-  if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
+  if(length(model$theta) == 0) 
+    stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   
   check_target(target_acceptance)
@@ -88,7 +97,8 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   if (inherits(model, "bsm_lg")) {
     names_ind <- !model$fixed & c(TRUE, TRUE, model$slope, model$seasonal)
     model$theta[c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]] <- 
-      log(pmax(1e-8, model$theta[c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]]))
+      log(pmax(1e-8, model$theta[
+        c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]]))
   }
   
   if (missing(S)) {
@@ -111,11 +121,13 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
     }
   }
   
-  colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(model$theta)
+  colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- 
+    names(model$theta)
   
   if (inherits(model, "bsm_lg")) {
     out$theta[, c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]] <- 
-      exp(out$theta[, c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]])
+      exp(out$theta[, 
+        c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]])
   }
   out$call <- match.call()
   out$seed <- seed
@@ -128,7 +140,8 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- class(model)[1]
   attr(out, "ts") <- 
-    list(start = start(model$y), end = end(model$y), frequency=frequency(model$y))
+    list(start = start(model$y), end = end(model$y), 
+      frequency = frequency(model$y))
   out
 }
 
@@ -145,8 +158,8 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' @param particles Number of state samples per MCMC iteration.
 #' Ignored if \code{mcmc_type} is \code{"approx"}.
 #' @param output_type Either \code{"full"} 
-#' (default, returns posterior samples of states alpha and hyperparameters theta), 
-#' \code{"theta"} (for marginal posterior of theta), 
+#' (default, returns posterior samples of states alpha and 
+#' hyperparameters theta), \code{"theta"} (for marginal posterior of theta), 
 #' or \code{"summary"} (return the mean and variance estimates of the states 
 #' and posterior samples of theta).  In case of \code{"summary"}, means and 
 #' covariances are computed using the full output of particle filter 
@@ -154,40 +167,46 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' @param mcmc_type What MCMC algorithm to use? Possible choices are
 #' \code{"pm"} for pseudo-marginal MCMC,
 #' \code{"da"} for delayed acceptance version of PMCMC , 
-#' \code{"approx"} for approximate inference based on the Gaussian approximation of the model,
+#' \code{"approx"} for approximate inference based on the Gaussian 
+#' approximation of the model,
 #' or one of the three importance sampling type weighting schemes:
-#' \code{"is3"} for simple importance sampling (weight is computed for each MCMC iteration independently),
+#' \code{"is3"} for simple importance sampling (weight is computed for each 
+#' MCMC iteration independently),
 #' \code{"is2"} for jump chain importance sampling type weighting (default), or
-#' \code{"is1"} for importance sampling type weighting where the number of particles used for
+#' \code{"is1"} for importance sampling type weighting where the number of 
+#' particles used for
 #' weight computations is proportional to the length of the jump chain block.
-#' @param sampling_method If \code{"psi"}, \eqn{\psi}-APF is used for state sampling
-#' (default). If \code{"spdk"}, non-sequential importance sampling based
-#' on Gaussian approximation is used. If \code{"bsf"}, bootstrap filter
+#' @param sampling_method If \code{"psi"}, \eqn{\psi}-APF is used for state 
+#' sampling (default). If \code{"spdk"}, non-sequential importance sampling
+#'  based on Gaussian approximation is used. If \code{"bsf"}, bootstrap filter
 #' is used.
 #' @param burnin Length of the burn-in period which is disregarded from the
 #' results. Defaults to \code{iter / 2}.
 #' @param thin Thinning rate. Defaults to 1. Increase for large models in
-#' order to save memory. For IS-corrected methods, larger
-#' value can also be statistically more effective. 
-#' Note: With \code{output_type = "summary"}, the thinning does not affect the computations 
-#' of the summary statistics in case of pseudo-marginal methods.
+#' order to save memory. For IS-corrected methods, larger value can also be 
+#' statistically more effective. Note: With \code{output_type = "summary"}, 
+#' the thinning does not affect the  computations of the summary statistics in 
+#' case of pseudo-marginal methods.
 #' @param gamma Tuning parameter for the adaptation of RAM algorithm. Must be
 #' between 0 and 1 (not checked).
 #' @param target_acceptance Target acceptance rate for MCMC. Defaults to 0.234. 
-#' For DA-MCMC, this corresponds to first stage acceptance rate, i.e., the total acceptance 
-#' rate will be smaller. 
+#' For DA-MCMC, this corresponds to first stage acceptance rate, i.e., the 
+#' total acceptance rate will be smaller. 
 #' @param S Initial value for the lower triangular matrix of RAM
 #' algorithm, so that the covariance matrix of the Gaussian proposal
 #' distribution is \eqn{SS'}. Note that for some parameters 
-#' (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
-#' is done for transformed parameters with internal_theta = log(theta).
-#' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.
-#' @param local_approx If \code{TRUE} (default), Gaussian approximation needed for
-#' importance sampling is performed at each iteration. If \code{FALSE}, approximation is updated only
-#' once at the start of the MCMC using the initial model.
+#' (currently the standard deviation and dispersion parameters of 
+#' bsm_ng models) the sampling is done for transformed parameters with 
+#' internal_theta = log(theta).
+#' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the 
+#' burnin period. Default is \code{FALSE}.
+#' @param local_approx If \code{TRUE} (default), Gaussian approximation
+#'  needed for importance sampling is performed at each iteration. 
+#'  If \code{FALSE}, approximation is updated only once at the start of the 
+#'  MCMC using the initial model.
 #' @param threads Number of threads for state simulation. The default is 1. 
-#' Note that parallel computing is only used in the post-correction phase of IS-MCMC 
-#' and when sampling the states in case of approximate models.
+#' Note that parallel computing is only used in the post-correction phase of
+#'  IS-MCMC and when sampling the states in case of approximate models.
 #' @param seed Seed for the random number generator.
 #' @param max_iter Maximum number of iterations used in Gaussian approximation.
 #' @param conv_tol Tolerance parameter used in Gaussian approximation.
@@ -303,19 +322,22 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' 
 run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   mcmc_type = "is2", sampling_method = "psi", burnin = floor(iter/2),
-  thin = 1, gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
-  local_approx  = TRUE, threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), max_iter = 100, conv_tol = 1e-8, ...) {
+  thin = 1, gamma = 2/3, target_acceptance = 0.234, S, 
+  end_adaptive_phase = FALSE, local_approx  = TRUE, threads = 1,
+  seed = sample(.Machine$integer.max, size = 1), max_iter = 100, 
+  conv_tol = 1e-8, ...) {
   
   if(missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
-      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      warning(paste("Argument `nsim` is deprecated. Use argument `particles`",
+      "instead.", sep = " "))
       particles <- nsim
     }
   }
   
-  if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
+  if(length(model$theta) == 0) 
+    stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   check_target(target_acceptance)
   
@@ -323,7 +345,8 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), "approx"))
   if (mcmc_type == "approx") particles <- 0
   if (particles < 2 && mcmc_type != "approx") 
-    stop("Number of state samples less than 2, use 'mcmc_type' 'approx' instead.")
+    stop(paste("Number of state samples less than 2, use 'mcmc_type' 'approx'",
+    "instead.", sep = " "))
   
   sampling_method <- pmatch(match.arg(sampling_method, c("psi", "bsf", "spdk")), 
     c("psi", "bsf", "spdk"))
@@ -335,7 +358,8 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   if(inherits(model, "bsm_ng")) {
     names_ind <-
       c(!model$fixed & c(TRUE, model$slope, model$seasonal), model$noise)
-    transformed <- c(c("sd_level", "sd_slope", "sd_seasonal", "sd_noise")[names_ind], 
+    transformed <- c(
+      c("sd_level", "sd_slope", "sd_seasonal", "sd_noise")[names_ind], 
       if (model$distribution == "negative binomial") "phi")
     model$theta[transformed] <- log(pmax(1e-8, model$theta[transformed]))
   }
@@ -387,7 +411,8 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
     }
   }
   
-  colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(model$theta)
+  colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- 
+    names(model$theta)
   if(inherits(model, "bsm_ng")) {
     out$theta[, transformed] <- exp(out$theta[, transformed])
   }
@@ -402,7 +427,8 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- class(model)[1]
   attr(out, "ts") <- 
-    list(start = start(model$y), end = end(model$y), frequency=frequency(model$y))
+    list(start = start(model$y), end = end(model$y), 
+      frequency = frequency(model$y))
   out
 }
 #' Bayesian Inference of non-linear state space models 
@@ -415,8 +441,8 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
 #' @param particles Number of state samples per MCMC iteration. 
 #' Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.
 #' @param output_type Either \code{"full"} 
-#' (default, returns posterior samples of states alpha and hyperparameters theta), 
-#' \code{"theta"} (for marginal posterior of theta), 
+#' (default, returns posterior samples of states alpha and 
+#' hyperparameters theta), \code{"theta"} (for marginal posterior of theta), 
 #' or \code{"summary"} (return the mean and variance estimates of the states 
 #' and posterior samples of theta).  In case of \code{"summary"}, means and 
 #' covariances are computed using the full output of particle filter 
@@ -424,14 +450,18 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
 #' @param mcmc_type What MCMC algorithm to use? Possible choices are
 #' \code{"pm"} for pseudo-marginal MCMC,
 #' \code{"da"} for delayed acceptance version of pseudo-marginal MCMC, 
-#' \code{"approx"} for approximate inference based on the Gaussian approximation of the model,
+#' \code{"approx"} for approximate inference based on the Gaussian 
+#' approximation of the model,
 #' \code{"ekf"} for approximate inference using extended Kalman filter, 
 #' or one of the three importance sampling type weighting schemes:
-#' \code{"is3"} for simple importance sampling (weight is computed for each MCMC iteration independently),
+#' \code{"is3"} for simple importance sampling (weight is computed for each 
+#' MCMC iteration independently),
 #' \code{"is2"} for jump chain importance sampling type weighting (default), or
-#' \code{"is1"} for importance sampling type weighting where the number of particles used for
+#' \code{"is1"} for importance sampling type weighting where the number of 
+#' particles used for
 #' weight computations is proportional to the length of the jump chain block.
-#' @param sampling_method If \code{"bsf"} (default), bootstrap filter is used for state sampling. 
+#' @param sampling_method If \code{"bsf"} (default), bootstrap filter is used 
+#' for state sampling. 
 #' If \code{"ekf"}, particle filter based on EKF-proposals are used. 
 #' If \code{"psi"}, \eqn{\psi}-APF is used.
 #' @param burnin Length of the burn-in period which is disregarded from the
@@ -439,29 +469,33 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
 #' @param thin Thinning rate. Defaults to 1. Increase for large models in
 #' order to save memory. For IS-corrected methods, larger
 #' value can also be statistically more effective. 
-#' Note: With \code{output_type = "summary"}, the thinning does not affect the computations 
-#' of the summary statistics in case of pseudo-marginal methods.
+#' Note: With \code{output_type = "summary"}, the thinning does not affect the 
+#' computations of the summary statistics in case of pseudo-marginal methods.
 #' @param gamma Tuning parameter for the adaptation of RAM algorithm. Must be
 #' between 0 and 1 (not checked).
 #' @param target_acceptance Target acceptance ratio for RAM. Defaults to 0.234.
-#' For DA-MCMC, this corresponds to first stage acceptance rate, i.e., the total acceptance 
-#' rate will be smaller. 
+#' For DA-MCMC, this corresponds to first stage acceptance rate, i.e., the 
+#' total acceptance rate will be smaller. 
 #' @param S Initial value for the lower triangular matrix of RAM
 #' algorithm, so that the covariance matrix of the Gaussian proposal
 #' distribution is \eqn{SS'}. Note that for some parameters 
-#' (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
+#' (currently the standard deviation and dispersion parameters of 
+#' bsm_ng models) the sampling
 #' is done for transformed parameters with internal_theta = log(theta).
-#' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.
+#' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the burnin 
+#' period. Default is \code{FALSE}.
 #' @param threads Number of threads for state simulation.
 #' @param seed Seed for the random number generator.
 #' @param max_iter Maximum number of iterations used in Gaussian approximation.
 #' @param conv_tol Tolerance parameter used in Gaussian approximation.
-#' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter is used with
-#' \code{iekf_iter} iterations in place of standard EKF. Defaults to zero.
+#' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter is 
+#' used with \code{iekf_iter} iterations in place of standard EKF. 
+#' Defaults to zero.
 #' @param ... Ignored.
 #' @export
 #' @references 
-#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
+#' on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   mcmc_type = "is2", sampling_method = "bsf",
@@ -473,17 +507,20 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   if(missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
-      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      warning(paste("Argument `nsim` is deprecated. Use argument `particles`",
+        "instead.", sep = " "))
       particles <- nsim
     }
   }
   
-  if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
+  if(length(model$theta) == 0) 
+    stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   check_target(target_acceptance)
   
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
-  mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), "ekf", "approx"))
+  mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), 
+    "ekf", "approx"))
   if(mcmc_type %in% c("ekf", "approx")) particles <- 0
   sampling_method <- pmatch(match.arg(sampling_method, c("psi", "bsf", "ekf")), 
     c("psi", "bsf", NA, "ekf"))
@@ -493,7 +530,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   }
   
   if (particles < 2 && !(mcmc_type %in% c("ekf", "approx")))
-     stop("Number of state samples less than 2, use 'mcmc_type' 'approx' or 'ekf' instead.")
+     stop(paste("Number of state samples less than 2, use 'mcmc_type'",
+     "'approx' or 'ekf' instead.", sep = " "))
  
   
   out <- switch(mcmc_type,
@@ -565,7 +603,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   }
   
   
-  colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(model$theta)
+  colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- 
+    names(model$theta)
   
   out$iter <- iter
   out$burnin <- burnin
@@ -578,7 +617,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "ssm_nlg"
   attr(out, "ts") <- 
-    list(start = start(model$y), end = end(model$y), frequency=frequency(model$y))
+    list(start = start(model$y), end = end(model$y), 
+      frequency = frequency(model$y))
   out
 }
 #' Bayesian Inference of SDE 
@@ -590,8 +630,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
 #' @param iter Number of MCMC iterations.
 #' @param particles Number of state samples per MCMC iteration.
 #' @param output_type Either \code{"full"} 
-#' (default, returns posterior samples of states alpha and hyperparameters theta), 
-#' \code{"theta"} (for marginal posterior of theta), 
+#' (default, returns posterior samples of states alpha and hyperparameters 
+#' theta), \code{"theta"} (for marginal posterior of theta), 
 #' or \code{"summary"} (return the mean and variance estimates of the states 
 #' and posterior samples of theta). In case of \code{"summary"}, means and 
 #' covariances are computed using the full output of particle filter 
@@ -601,36 +641,41 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
 #' \code{"pm"} for pseudo-marginal MCMC,
 #' \code{"da"} for delayed acceptance version of pseudo-marginal MCMC, 
 #' or one of the three importance sampling type weighting schemes:
-#' \code{"is3"} for simple importance sampling (weight is computed for each MCMC iteration independently),
+#' \code{"is3"} for simple importance sampling (weight is computed for each 
+#' MCMC iteration independently),
 #' \code{"is2"} for jump chain importance sampling type weighting (default), or
-#' \code{"is1"} for importance sampling type weighting where the number of particles used for
+#' \code{"is1"} for importance sampling type weighting where the number of
+#'  particles used for
 #' weight computations is proportional to the length of the jump chain block.
 #' @param burnin Length of the burn-in period which is disregarded from the
 #' results. Defaults to \code{iter / 2}.
 #' @param thin Thinning rate. Defaults to 1. Increase for large models in
 #' order to save memory. For IS-corrected methods, larger
 #' value can also be statistically more effective. 
-#' Note: With \code{output_type = "summary"}, the thinning does not affect the computations 
-#' of the summary statistics in case of pseudo-marginal methods.
+#' Note: With \code{output_type = "summary"}, the thinning does not affect the 
+#' computations of the summary statistics in case of pseudo-marginal methods.
 #' @param gamma Tuning parameter for the adaptation of RAM algorithm. Must be
 #' between 0 and 1 (not checked).
 #' @param target_acceptance Target acceptance ratio for RAM. Defaults to 0.234.
-#' For DA-MCMC, this corresponds to first stage acceptance rate, i.e., the total acceptance 
-#' rate will be smaller. 
+#' For DA-MCMC, this corresponds to first stage acceptance rate, i.e., 
+#' the total acceptance rate will be smaller. 
 #' @param S Initial value for the lower triangular matrix of RAM
 #' algorithm, so that the covariance matrix of the Gaussian proposal
 #' distribution is \eqn{SS'}. Note that for some parameters 
-#' (currently the standard deviation and dispersion parameters of bsm_ng models) the sampling
-#' is done for transformed parameters with internal_theta = log(theta).
-#' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.
+#' (currently the standard deviation and dispersion parameters of 
+#' bsm_ng models) the sampling is done for transformed parameters with 
+#' internal_theta = log(theta).
+#' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the burnin 
+#' period. Default is \code{FALSE}.
 #' @param threads Number of threads for state simulation.
-#' @param L_c,L_f Integer values defining the discretization levels for first and second stages (defined as 2^L). 
-#' For PM methods, maximum of these is used.
+#' @param L_c,L_f Integer values defining the discretization levels for first 
+#' and second stages (defined as 2^L). For PM methods, maximum of these is used.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @export
 #' @references 
-#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
+#' on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   mcmc_type = "is2", L_c, L_f,
@@ -638,20 +683,23 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  if(any(c(model$drift, model$diffusion, model$ddiffusion,
-    model$prior_pdf, model$obs_pdf) %in% c("<pointer: (nil)>", "<pointer: 0x0>"))) {
-    stop("NULL pointer detected, please recompile the pointer file and reconstruct the model.")
+  if(any(c(model$drift, model$diffusion, model$ddiffusion,model$prior_pdf, 
+    model$obs_pdf) %in% c("<pointer: (nil)>", "<pointer: 0x0>"))) {
+    stop(paste("NULL pointer detected, please recompile the pointer file", 
+    "and reconstruct the model.", sep = " "))
   }
   
   if(missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
-      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      warning(paste("Argument `nsim` is deprecated. Use argument `particles`",
+        "instead.", sep = " "))
       particles <- nsim
     }
   }
   
-  if(length(model$theta) == 0) stop("No unknown parameters ('model$theta' has length of zero).")
+  if(length(model$theta) == 0) 
+    stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   check_target(target_acceptance)
   if(particles <= 0) stop("particles should be positive integer.")
@@ -699,7 +747,8 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   }
   colnames(out$alpha) <- model$state_names
   
-  colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- names(model$theta)
+  colnames(out$theta) <- rownames(out$S) <- colnames(out$S) <- 
+    names(model$theta)
   
   out$iter <- iter
   out$burnin <- burnin
@@ -712,6 +761,7 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "ssm_sde"
   attr(out, "ts") <- 
-    list(start = start(model$y), end = end(model$y), frequency=frequency(model$y))
+    list(start = start(model$y), end = end(model$y), 
+      frequency = frequency(model$y))
   out
 }

@@ -104,7 +104,7 @@ arma::mat T_gn(const unsigned int t, const arma::vec& alpha, const arma::vec& th
   return Tg;
 }
 
-// # log-prior pdf for theta
+// log-prior pdf for theta
 // [[Rcpp::export]]
 double log_prior_pdf(const arma::vec& theta) {
   

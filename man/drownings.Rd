@@ -8,7 +8,8 @@
 A time series object containing 51 observations.
 }
 \source{
-Statistics Finland \url{https://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
+Statistics Finland 
+\url{https://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
 }
 \description{
 Dataset containing number of deaths by drowning in Finland in 1969-2019,

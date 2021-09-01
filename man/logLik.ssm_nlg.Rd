@@ -19,19 +19,22 @@
 \item{object}{Model model.}
 
 \item{particles}{Number of samples for particle filter. If 0, 
-approximate log-likelihood is returned either based on the Gaussian approximation or EKF, 
-depending on the \code{method} argument.}
+approximate log-likelihood is returned either based on the Gaussian 
+approximation or EKF, depending on the \code{method} argument.}
 
-\item{method}{Sampling method. Default is the bootstrap particle filter (\code{"bsf"}). 
-Other choices are \code{"psi"} which uses psi-auxiliary filter 
-(or approximating Gaussian model in the case of \code{particles = 0}), and \code{"ekf"} which 
-uses EKF-based particle filter (or just EKF approximation in the case of \code{particles = 0}).}
+\item{method}{Sampling method. Default is the bootstrap particle filter 
+(\code{"bsf"}). Other choices are \code{"psi"} which uses 
+psi-auxiliary filter (or approximating Gaussian model in the case of 
+\code{particles = 0}), and \code{"ekf"} which uses EKF-based particle 
+filter (or just EKF approximation in the case of \code{particles = 0}).}
 
-\item{max_iter}{Maximum number of iterations for gaussian approximation algorithm.}
+\item{max_iter}{Maximum number of iterations for the gaussian approximation 
+algorithm.}
 
 \item{conv_tol}{Tolerance parameter for the approximation algorithm.}
 
-\item{iekf_iter}{If \code{iekf_iter > 0}, iterated extended Kalman filter is used with
+\item{iekf_iter}{If \code{iekf_iter > 0}, iterated extended Kalman filter 
+is used with
 \code{iekf_iter} iterations in place of standard EKF. Defaults to zero.}
 
 \item{seed}{Seed for the random number generator.}
@@ -39,5 +42,6 @@ uses EKF-based particle filter (or just EKF approximation in the case of \code{p
 \item{...}{Ignored.}
 }
 \description{
-Computes the log-likelihood of a state space model of class \code{ssm_nlg} package.
+Computes the log-likelihood of a state space model of class 
+\code{ssm_nlg} package.
 }

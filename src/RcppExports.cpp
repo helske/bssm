@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // gaussian_approx_model
 Rcpp::List gaussian_approx_model(const Rcpp::List model_, const int model_type);
 RcppExport SEXP _bssm_gaussian_approx_model(SEXP model_SEXP, SEXP model_typeSEXP) {

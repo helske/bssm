@@ -1,6 +1,7 @@
 #' Log-likelihood of a Gaussian State Space Model
 #'
-#' Computes the log-likelihood of a linear-Gaussian state space model of \code{bssm} package.
+#' Computes the log-likelihood of a linear-Gaussian state space model of 
+#' \code{bssm} package.
 #' 
 #' @param object Model model.
 #' @param ... Ignored.
@@ -17,21 +18,30 @@ logLik.gaussian <- function(object, ...) {
 
 #' Log-likelihood of a Non-Gaussian State Space Model
 #'
-#' Computes the log-likelihood of a non-Gaussian state space model of \code{bssm} package.
+#' Computes the log-likelihood of a non-Gaussian state space model of 
+#' \code{bssm} package.
 #' 
 #' @param object Model model.
-#' @param particles Number of samples for particle filter or importance sampling. If 0, 
+#' @param particles Number of samples for particle filter or 
+#' importance sampling. If 0, 
 #' approximate log-likelihood based on the Gaussian approximation is returned.
-#' @param method Sampling method, default is psi-auxiliary filter (\code{"psi"}), 
-#' other choices are \code{"bsf"} bootstrap particle filter, and \code{"spdk"}, 
-#' which uses the importance sampling approach by Shephard and Pitt (1997) and 
-#' Durbin and Koopman (1997). 
-#' @param max_iter Maximum number of iterations for Gaussian approximation algorithm.
+#' @param method Sampling method, default is psi-auxiliary filter 
+#' (\code{"psi"}). Other choices are \code{"bsf"} bootstrap particle filter, 
+#' and \code{"spdk"}, which uses the importance sampling approach by 
+#' Shephard and Pitt (1997) and Durbin and Koopman (1997). 
+#' @param max_iter Maximum number of iterations for Gaussian approximation 
+#' algorithm.
 #' @param conv_tol Tolerance parameter for the approximation algorithm.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @method logLik nongaussian
 #' @export
+#' @references
+#' Durbin, J., & Koopman, S. (2002). A Simple and Efficient Simulation 
+#' Smoother for State Space Time Series Analysis. Biometrika, 89(3), 603-615. 
+#' 
+#' Shephard, N., & Pitt, M. (1997). Likelihood Analysis of 
+#' Non-Gaussian Measurement Time Series. Biometrika, 84(3), 653-667.
 #' @examples 
 #' model <- ssm_ung(y = c(1,4,3), Z = 1, T = 1, R = 0.5, P1 = 2,
 #'   distribution = "poisson")
@@ -43,7 +53,8 @@ logLik.gaussian <- function(object, ...) {
 #' logLik(model, particles = 10, seed = 1)
 #' logLik(model2, particles = 10, seed = 1)
 logLik.nongaussian <- function(object, particles, method = "psi", 
-  max_iter = 100, conv_tol = 1e-8, seed = sample(.Machine$integer.max, size = 1),...) {
+  max_iter = 100, conv_tol = 1e-8, 
+  seed = sample(.Machine$integer.max, size = 1),...) {
   
   object$max_iter <- max_iter
   object$conv_tol <- conv_tol
@@ -51,14 +62,16 @@ logLik.nongaussian <- function(object, particles, method = "psi",
   if(missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
-      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      warning(paste("Argument `nsim` is deprecated. Use argument `particles`",
+      "instead.", sep = " "))
       particles <- nsim
     }
   }
   
   method <- match.arg(method, c("psi", "bsf", "spdk"))
   method <- pmatch(method, c("psi", "bsf", "spdk"))
-  if (method == 2 && particles == 0) stop("'particles' must be positive for bootstrap filter.")
+  if (method == 2 && particles == 0) 
+    stop("'particles' must be positive for bootstrap filter.")
   
   object$distribution <- pmatch(object$distribution,
     c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
@@ -68,19 +81,23 @@ logLik.nongaussian <- function(object, particles, method = "psi",
 }
 #' Log-likelihood of a Non-linear State Space Model
 #'
-#' Computes the log-likelihood of a state space model of class \code{ssm_nlg} package.
+#' Computes the log-likelihood of a state space model of class 
+#' \code{ssm_nlg} package.
 #' 
 #' @param object Model model.
 #' @param particles Number of samples for particle filter. If 0, 
-#' approximate log-likelihood is returned either based on the Gaussian approximation or EKF, 
-#' depending on the \code{method} argument.
-#' @param method Sampling method. Default is the bootstrap particle filter (\code{"bsf"}). 
-#' Other choices are \code{"psi"} which uses psi-auxiliary filter 
-#' (or approximating Gaussian model in the case of \code{particles = 0}), and \code{"ekf"} which 
-#' uses EKF-based particle filter (or just EKF approximation in the case of \code{particles = 0}).
-#' @param max_iter Maximum number of iterations for gaussian approximation algorithm.
+#' approximate log-likelihood is returned either based on the Gaussian 
+#' approximation or EKF, depending on the \code{method} argument.
+#' @param method Sampling method. Default is the bootstrap particle filter 
+#' (\code{"bsf"}). Other choices are \code{"psi"} which uses 
+#' psi-auxiliary filter (or approximating Gaussian model in the case of 
+#' \code{particles = 0}), and \code{"ekf"} which uses EKF-based particle 
+#' filter (or just EKF approximation in the case of \code{particles = 0}).
+#' @param max_iter Maximum number of iterations for the gaussian approximation 
+#' algorithm.
 #' @param conv_tol Tolerance parameter for the approximation algorithm.
-#' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter is used with
+#' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter 
+#' is used with
 #' \code{iekf_iter} iterations in place of standard EKF. Defaults to zero.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
@@ -93,7 +110,8 @@ logLik.ssm_nlg <- function(object, particles, method = "bsf",
   if(missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
-      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      warning(paste("Argument `nsim` is deprecated. Use argument `particles`", 
+      "instead.", sep = " "))
       particles <- nsim
     }
   }
@@ -112,7 +130,8 @@ logLik.ssm_nlg <- function(object, particles, method = "bsf",
 }
 #' Log-likelihood of a State Space Model with SDE dynamics
 #'
-#' Computes the log-likelihood of a state space model of class \code{ssm_sde} package.
+#' Computes the log-likelihood of a state space model of class 
+#' \code{ssm_sde} package.
 #' 
 #' @param object Model model.
 #' @param particles Number of samples for particle filter. 
@@ -127,7 +146,8 @@ logLik.ssm_sde <- function(object, particles, L,
   if(missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
-      warning("Argument `nsim` is deprecated. Use argument `particles` instead.")
+      warning(paste("Argument `nsim` is deprecated. Use argument `particles`", 
+      "instead.", sep = " "))
       particles <- nsim
     }
   }

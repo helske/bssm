@@ -4,14 +4,15 @@
 #' and returns the filtered estimates and one-step-ahead predictions of the 
 #' states \eqn{\alpha_t} given the data up to time \eqn{t}.
 #'
-#' For non-Gaussian models, the filtering is based on the approximate Gaussian model.
+#' For non-Gaussian models, the filtering is based on the approximate 
+#' Gaussian model.
 #'
 #' @param model Model Model object.
 #' @param ... Ignored.
-#' @return List containing the log-likelihood (approximate in non-Gaussian case),
-#' one-step-ahead predictions \code{at} and filtered
-#' estimates \code{att} of states, and the corresponding variances \code{Pt} and
-#'  \code{Ptt}.
+#' @return List containing the log-likelihood 
+#' (approximate in non-Gaussian case), one-step-ahead predictions \code{at} 
+#' and filtered estimates \code{att} of states, and the corresponding 
+#' variances \code{Pt} and \code{Ptt}.
 #' @seealso \code{\link{bootstrap_filter}}
 #' @export
 #' @rdname kfilter
@@ -30,7 +31,8 @@ kfilter.gaussian <- function(model, ...) {
   
   out <- gaussian_kfilter(model, model_type = model_type(model))
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
-    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- names(model$a1)
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- 
+    names(model$a1)
   out$at <- ts(out$at, start = start(model$y), frequency = frequency(model$y))
   out$att <- ts(out$att, start = start(model$y), frequency = frequency(model$y))
   out
@@ -69,7 +71,8 @@ ekf <- function(model, iekf_iter = 0) {
     as.integer(model$time_varying), iekf_iter)
   
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
-    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- model$state_names
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- 
+    model$state_names
   
   out$at <- ts(out$at, start = start(model$y), frequency = frequency(model$y))
   out$att <- ts(out$att, start = start(model$y), frequency = frequency(model$y))
@@ -101,7 +104,8 @@ ukf <- function(model, alpha = 1, beta = 0, kappa = 2) {
     alpha, beta, kappa)
   
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
-    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- model$state_names
+    colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- 
+    model$state_names
   
   out$at <- ts(out$at, start = start(model$y), frequency = frequency(model$y))
   out$att <- ts(out$att, start = start(model$y), frequency = frequency(model$y))

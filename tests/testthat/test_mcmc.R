@@ -11,14 +11,19 @@ test_that("MCMC results for Gaussian model are correct",{
   
   expect_equal(run_mcmc(model_bssm, iter = 100, seed = 1)[-14], 
     run_mcmc(model_bssm, iter = 100, seed = 1)[-14])
-  expect_equal(run_mcmc(model_bssm, iter = 100, seed = 1, output_type = "summary")[-15], 
+  expect_equal(run_mcmc(model_bssm, iter = 100, seed = 1, 
+    output_type = "summary")[-15], 
     run_mcmc(model_bssm, iter = 100, seed = 1, output_type = "summary")[-15])
-  expect_equal(run_mcmc(model_bssm, iter = 100, seed = 1, output_type = "theta")[-13], 
+  expect_equal(run_mcmc(model_bssm, iter = 100, seed = 1, 
+    output_type = "theta")[-13], 
     run_mcmc(model_bssm, iter = 100, seed = 1, output_type = "theta")[-13])
-  expect_equal(run_mcmc(model_bssm, iter = 100, seed = 1, output_type = "theta")$theta, 
+  expect_equal(run_mcmc(model_bssm, iter = 100, seed = 1, 
+    output_type = "theta")$theta, 
     run_mcmc(model_bssm, iter = 100, seed = 1, output_type = "summary")$theta)
-  expect_equal(run_mcmc(model_bssm, iter = 100, seed = 1, output_type = "theta")$acceptance_rate, 
-    run_mcmc(model_bssm, iter = 100, seed = 1, output_type = "summary")$acceptance_rate)
+  expect_equal(run_mcmc(model_bssm, iter = 100, seed = 1, 
+    output_type = "theta")$acceptance_rate, 
+    run_mcmc(model_bssm, iter = 100, seed = 1, 
+      output_type = "summary")$acceptance_rate)
   
   expect_gt(mcmc_bsm$acceptance_rate, 0)
   expect_gte(min(mcmc_bsm$theta), 0)
@@ -30,18 +35,25 @@ test_that("MCMC results for Gaussian model are correct",{
 
 test_that("DA-MCMC results for Poisson model are correct",{
   set.seed(123)
-  model_bssm <- bsm_ng(rpois(10, exp(0.2) * (2:11)), P1 = diag(2, 2), sd_slope = 0,
-    sd_level = uniform(2, 0, 10), u = 2:11, distribution = "poisson")
+  model_bssm <- bsm_ng(rpois(10, exp(0.2) * (2:11)), P1 = diag(2, 2), 
+    sd_slope = 0, sd_level = uniform(2, 0, 10), u = 2:11, 
+    distribution = "poisson")
   
   expect_error(mcmc_poisson <- run_mcmc(model_bssm, mcmc_type = "da", 
     iter = 100, particles = 5, seed = 42), NA)
   
-  expect_equal(run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, particles = 5)[-14], 
-    run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, particles = 5)[-14])
-  expect_equal(run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, output_type = "summary", particles = 5)[-15], 
-    run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, output_type = "summary", particles = 5)[-15])
-  expect_equal(run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, output_type = "theta", particles = 5)[-13], 
-    run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, output_type = "theta", particles = 5)[-13])
+  expect_equal(run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, 
+    particles = 5)[-14], 
+    run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, 
+      particles = 5)[-14])
+  expect_equal(run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, 
+    output_type = "summary", particles = 5)[-15], 
+    run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, 
+      output_type = "summary", particles = 5)[-15])
+  expect_equal(run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, 
+    output_type = "theta", particles = 5)[-13], 
+    run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, 
+      output_type = "theta", particles = 5)[-13])
 
   expect_gt(mcmc_poisson$acceptance_rate, 0)
   expect_gte(min(mcmc_poisson$theta), 0)
@@ -58,15 +70,18 @@ test_that("MCMC results for SV model using IS-correction are correct",{
   
   expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
     mcmc_type = "is1", seed = 1)[-16], 
-    run_mcmc(model_bssm, iter = 100, particles = 10, mcmc_type = "is1", seed = 1)[-16])
+    run_mcmc(model_bssm, iter = 100, particles = 10, mcmc_type = "is1", 
+      seed = 1)[-16])
   
   expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
     mcmc_type = "is2", seed = 1)[-16], 
-    run_mcmc(model_bssm, iter = 100, particles = 10, mcmc_type = "is2", seed = 1)[-16])
+    run_mcmc(model_bssm, iter = 100, particles = 10, mcmc_type = "is2", 
+      seed = 1)[-16])
   
   expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
     mcmc_type = "is3", seed = 1)[-16], 
-    run_mcmc(model_bssm, iter = 100, particles = 10, mcmc_type = "is3", seed = 1)[-16])
+    run_mcmc(model_bssm, iter = 100, particles = 10, mcmc_type = "is3", 
+      seed = 1)[-16])
   
   expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
     mcmc_type = "is2", seed = 1, sampling_mcmc_type = "psi")[-16], 

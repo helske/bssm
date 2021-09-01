@@ -24,13 +24,15 @@ ekpf_filter(object, particles, ...)
 \item{seed}{Seed for RNG.}
 }
 \value{
-A list containing samples, filtered estimates and the corresponding covariances,
-weights, and an estimate of log-likelihood.
+A list containing samples, filtered estimates and the 
+corresponding covariances, weights, and an estimate of log-likelihood.
 }
 \description{
-Function \code{ekpf_filter} performs a extended Kalman particle filtering with stratification
-resampling, based on Van Der Merwe et al (2001).
+Function \code{ekpf_filter} performs a extended Kalman particle filtering 
+with stratification resampling, based on Van Der Merwe et al (2001).
 }
 \references{
-Van Der Merwe, R., Doucet, A., De Freitas, N., & Wan, E. A. (2001). The unscented particle filter. In Advances in neural information processing systems (pp. 584-590).
+Van Der Merwe, R., Doucet, A., De Freitas, N., & Wan, E. A. 
+(2001). The unscented particle filter. In Advances in neural 
+information processing systems (pp. 584-590).
 }

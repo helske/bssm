@@ -6,13 +6,16 @@
 #' @param x Output from \code{\link{run_mcmc}}.
 #' @param row.names Ignored.
 #' @param optional Ignored.
-#' @param variable Return samples of \code{"theta"} (default) or \code{"states"}?
-#' @param times Vector of indices. In case of states, what time points to return? Default is all.
-#' @param states Vector of indices. In case of states, what states to return? Default is all.
+#' @param variable Return samples of \code{"theta"} (default) or 
+#' \code{"states"}?
+#' @param times Vector of indices. In case of states, 
+#' what time points to return? Default is all.
+#' @param states Vector of indices. In case of states, 
+#' what states to return? Default is all.
 #' @param expand Should the jump-chain be expanded? 
 #' Defaults to \code{TRUE} for non-IS-MCMC, and \code{FALSE} for IS-MCMC. 
 #' For \code{expand = FALSE} and always for IS-MCMC, 
-#' the resulting data.frame contains variable weight (= counts times IS-weights).
+#' the resulting data.frame contains variable weight (= counts * IS-weights).
 #' @param ... Ignored.
 #' @export
 #' @examples
@@ -45,11 +48,14 @@ as.data.frame.mcmc_output <- function(x,
     if (expand) {
       values <- suppressWarnings(expand_sample(x, "theta"))
       iters <- seq(x$burnin + 1, x$iter, by = x$thin)
-      weights <- if(x$mcmc_type %in% paste0("is", 1:3)) rep(x$weights, times = x$counts) else 1
+      weights <- if(x$mcmc_type %in% paste0("is", 1:3)) { 
+        rep(x$weights, times = x$counts) 
+      } else 1
     } else {
       values <- x$theta
       iters <- x$burnin + cumsum(x$counts)
-      weights <- x$counts * (if(x$mcmc_type %in% paste0("is", 1:3)) x$weights else 1)
+      weights <- 
+        x$counts * (if(x$mcmc_type %in% paste0("is", 1:3)) x$weights else 1)
     }
     d <- data.frame(iter = iters,
       value = as.numeric(values),
@@ -59,13 +65,17 @@ as.data.frame.mcmc_output <- function(x,
     if (missing(times)) times <- seq_len(nrow(x$alpha))
     if (missing(states)) states <- seq_len(ncol(x$alpha))
     if (expand) {
-      values <- aperm(x$alpha[times, states, rep(seq_len(nrow(x$theta)), times = x$counts), drop = FALSE], 3:1)
+      values <- aperm(x$alpha[times, states, 
+        rep(seq_len(nrow(x$theta)), times = x$counts), drop = FALSE], 3:1)
       iters <- seq(x$burnin + 1, x$iter, by = x$thin)
-      weights <-  if(x$mcmc_type %in% paste0("is", 1:3)) rep(x$weights, times = x$counts) else 1
+      weights <-  if(x$mcmc_type %in% paste0("is", 1:3)) {
+        rep(x$weights, times = x$counts) 
+      } else 1
     } else {
       values <- aperm(x$alpha[times, states, , drop = FALSE], 3:1)
       iters <- x$burnin + cumsum(x$counts)
-      weights <- x$counts * (if(x$mcmc_type %in% paste0("is", 1:3)) x$weights else 1)
+      weights <- x$counts * 
+        (if(x$mcmc_type %in% paste0("is", 1:3)) x$weights else 1)
     }
     times <- time(ts(seq_len(nrow(x$alpha)), 
       start = attr(x, "ts")$start, 

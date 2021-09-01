@@ -8,11 +8,15 @@
 #' @param model Model to be approximated.
 #' @param max_iter Maximum number of iterations.
 #' @param conv_tol Tolerance parameter.
-#' @param iekf_iter For non-linear models, number of iterations in iterated EKF (defaults to 0).
+#' @param iekf_iter For non-linear models, number of iterations in iterated EKF
+#' (defaults to 0).
 #' @param ... Ignored.
 #' @references 
-#' Koopman, S.J. and Durbin J. (2012). Time Series Analysis by State Space Methods. Second edition. Oxford: Oxford University Press.
-#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+#' Koopman, S.J. and Durbin J. (2012). Time Series Analysis by State Space 
+#' Methods. Second edition. Oxford: Oxford University Press.
+#' 
+#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
+#' on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @rdname gaussian_approx
@@ -27,7 +31,8 @@ gaussian_approx <- function(model, max_iter, conv_tol, ...) {
 #' @rdname gaussian_approx
 #' @method gaussian_approx nongaussian
 #' @export
-gaussian_approx.nongaussian <- function(model, max_iter = 100, conv_tol = 1e-8, ...) {
+gaussian_approx.nongaussian <- function(model, max_iter = 100, 
+  conv_tol = 1e-8, ...) {
   
   model$max_iter <- max_iter
   model$conv_tol <- conv_tol
@@ -43,8 +48,8 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100, conv_tol = 1e-8, 
     if(length(model$beta) > 0) D <- as.numeric(D) + t(model$xreg %*% model$beta)
     approx_model <- ssm_ulg(y = out$y, Z = model$Z, H = out$H, T = model$T, 
       R = model$R, a1 = model$a1, P1 = model$P1, init_theta = model$theta,
-      D = D, C = model$C, state_names = names(model$a1), update_fn = model$update_fn,
-      prior_fn = model$prior_fn)
+      D = D, C = model$C, state_names = names(model$a1), 
+      update_fn = model$update_fn, prior_fn = model$prior_fn)
   } else {
     out$y <- ts(t(out$y), start = start(model$y), end = end(model$y), 
       frequency = frequency(model$y))
@@ -72,7 +77,8 @@ gaussian_approx.ssm_nlg <- function(model, max_iter = 100,
     as.integer(model$time_varying),
     max_iter, conv_tol, iekf_iter)
   
-  out$y <- ts(t(out$y), start = start(model$y), end = end(model$y), frequency = frequency(model$y))
+  out$y <- ts(t(out$y), start = start(model$y), end = end(model$y), 
+    frequency = frequency(model$y))
   ssm_mlg(y = out$y, Z = out$Z, H = out$H, T = out$T, 
     R = out$R, a1 = c(out$a1), P1 = out$P1,
     init_theta = model$theta, D = out$D, C = out$C)

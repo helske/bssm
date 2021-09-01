@@ -18,12 +18,14 @@ importance_sample(model, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
 )
 }
 \arguments{
-\item{model}{of class \code{bsm_ng}, \code{ar1_ng} \code{svm}, \code{ssm_ung}, or \code{ssm_mng}.}
+\item{model}{of class \code{bsm_ng}, \code{ar1_ng} \code{svm}, 
+\code{ssm_ung}, or \code{ssm_mng}.}
 
 \item{nsim}{Number of samples.}
 
 \item{use_antithetic}{Logical. If \code{TRUE} (default), use antithetic 
-variable for location in simulation smoothing. Ignored for \code{ssm_mng} models.}
+variable for location in simulation smoothing. Ignored for \code{ssm_mng} 
+models.}
 
 \item{max_iter}{Maximum number of iterations used for the approximation.}
 
@@ -36,12 +38,14 @@ less than \code{conv_tol}.}
 \item{...}{Ignored.}
 }
 \description{
-Returns \code{nsim} samples from the approximating Gaussian model with corresponding
-(scaled) importance weights. Probably mostly useful for comparing KFAS and bssm packages.
+Returns \code{nsim} samples from the approximating Gaussian model with 
+corresponding (scaled) importance weights. 
+Probably mostly useful for comparing KFAS and bssm packages.
 }
 \examples{
 data("sexratio", package = "KFAS")
-model <- bsm_ng(sexratio[, "Male"], sd_level = 0.001, u = sexratio[, "Total"],
+model <- bsm_ng(sexratio[, "Male"], sd_level = 0.001, 
+  u = sexratio[, "Total"],
   distribution = "binomial")
 
 imp <- importance_sample(model, nsim = 1000)

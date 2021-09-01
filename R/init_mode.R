@@ -24,7 +24,8 @@ init_mode <- function(y, u, distribution) {
     gaussian = {
       
     },
-    stop("Argument distribution must be 'poisson', 'binomial', 'gamma', 'gaussian', or 'negative binomial'.")
+    stop(paste("Argument distribution must be 'poisson', 'binomial', 'gamma',",
+    "'gaussian', or 'negative binomial'.", sep = " "))
   )
   y
 }

@@ -55,15 +55,17 @@ given input vector theta.}
 Object of class \code{ssm_ulg}.
 }
 \description{
-Construct an object of class \code{ssm_ulg} by directly defining the corresponding terms of 
-the model.
+Construct an object of class \code{ssm_ulg} by directly defining the 
+corresponding terms of the model.
 }
 \details{
 The general univariate linear-Gaussian model is defined using the following 
 observational and state equations:
 
-\deqn{y_t = D_t + Z_t \alpha_t + H_t \epsilon_t, (\textrm{observation equation})}
-\deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
+\deqn{y_t = D_t + Z_t \alpha_t + H_t \epsilon_t, 
+(\textrm{observation equation})}
+\deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, 
+(\textrm{transition equation})}
 
 where \eqn{\epsilon_t \sim N(0, 1)}, \eqn{\eta_t \sim N(0, I_k)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.

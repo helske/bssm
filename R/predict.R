@@ -1,9 +1,10 @@
 #' Predictions for State Space Models
 #' 
-#' Draw samples from the posterior predictive distribution for future time points 
-#' given the posterior draws of hyperparameters \eqn{\theta} and \eqn{alpha_{n+1}}. 
-#' Function can also be used to draw samples from the posterior predictive distribution
-#' \eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
+#' Draw samples from the posterior predictive distribution for future 
+#' time points given the posterior draws of hyperparameters \eqn{\theta} and 
+#' \eqn{alpha_{n+1}}. Function can also be used to draw samples from the 
+#' posterior predictive distribution
+#'  \eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
 #'
 #' @param object mcmc_output object obtained from 
 #' \code{\link{run_mcmc}}
@@ -11,12 +12,14 @@
 #' \code{"response"}, or  \code{"state"} level. 
 #' @param model Model for future observations. 
 #' Should have same structure as the original model which was used in MCMC,
-#' in order to plug the posterior samples of the model parameters to the right places. 
-#' It is also possible to input the original model, which can be useful for example for 
-#' posterior predictive checks. In this case, set argument \code{future} to \code{FALSE}.
+#' in order to plug the posterior samples of the model parameters to the right 
+#' places. 
+#' It is also possible to input the original model, which can be useful for 
+#' example for posterior predictive checks. In this case, set argument 
+#' \code{future} to \code{FALSE}.
 #' @param nsim Number of samples to draw.
-#' @param future Default is \code{TRUE}, in which case predictions are for the future, 
-#' using posterior samples of (theta, alpha_T+1) i.e. the 
+#' @param future Default is \code{TRUE}, in which case predictions are for the 
+#' future, using posterior samples of (theta, alpha_T+1) i.e. the 
 #' posterior samples of hyperparameters and latest states. 
 #' Otherwise it is assumed that \code{model} corresponds to the original model.
 #' @param seed Seed for RNG.
@@ -111,19 +114,21 @@
 #'     time = time(model$y)))    
 #' 
 #' 
-predict.mcmc_output <- function(object, model, type = "response", nsim, future = TRUE,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
+predict.mcmc_output <- function(object, model, type = "response", nsim, 
+  future = TRUE, seed = sample(.Machine$integer.max, size = 1), ...) {
   
   type <- match.arg(type, c("response", "mean", "state"))
   
-  if (object$output_type != 1) stop("MCMC output must contain posterior samples of the states.")
+  if (object$output_type != 1) 
+    stop("MCMC output must contain posterior samples of the states.")
   
   
   if(!identical(attr(object, "model_type"), class(model)[1])) {
     stop("Model class does not correspond to the MCMC output. ")
   }
   if(!identical(ncol(object$theta), length(model$theta))) {
-    stop("Number of unknown parameters 'theta' does not correspond to the MCMC output. ")
+    stop(paste("Number of unknown parameters 'theta' does not correspond to",
+    "the MCMC output. ", sep = " "))
   }
   if(nsim < 1) stop("Number of samples 'nsim' should be at least one.")
   
@@ -133,10 +138,13 @@ predict.mcmc_output <- function(object, model, type = "response", nsim, future =
       object$theta[,1:(ncol(object$theta) - length(model$beta))] <- 
         log(object$theta[,1:(ncol(object$theta) - length(model$beta))])
     }
-    w <- object$counts * (if(object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
-    idx <- sample(seq_len(nrow(object$theta)), size = nsim, prob = w, replace = TRUE)
+    w <- object$counts * 
+      (if(object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
+    idx <- sample(seq_len(nrow(object$theta)), size = nsim, prob = w, 
+      replace = TRUE)
     theta <- t(object$theta[idx, ])
-    alpha <- matrix(object$alpha[nrow(object$alpha),,idx], nrow = ncol(object$alpha))
+    alpha <- matrix(object$alpha[nrow(object$alpha),,idx], 
+      nrow = ncol(object$alpha))
     
     switch(attr(object, "model_type"),
       ssm_mlg = ,
@@ -144,7 +152,8 @@ predict.mcmc_output <- function(object, model, type = "response", nsim, future =
       bsm_lg = ,
       ar1_lg = {
         if (!identical(length(model$a1), ncol(object$alpha))) {
-          stop("Model does not correspond to the MCMC output: Wrong number of states. ")
+          stop(paste("Model does not correspond to the MCMC output:",
+          "Wrong number of states. ", sep = " "))
         }
         pred <- gaussian_predict(model, theta, alpha,
           pmatch(type, c("response", "mean", "state")), 
@@ -159,21 +168,25 @@ predict.mcmc_output <- function(object, model, type = "response", nsim, future =
       svm = ,
       ar1_ng = {
         if (!identical(length(model$a1), ncol(object$alpha))) {
-          stop("Model does not correspond to the MCMC output: Wrong number of states. ")
+          stop(paste("Model does not correspond to the MCMC output:",
+            "Wrong number of states. ", sep = " "))
         }
         model$distribution <- pmatch(model$distribution,
-          c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
+          c("svm", "poisson", "binomial", "negative binomial", "gamma", 
+            "gaussian"), 
           duplicates.ok = TRUE) - 1
         pred <- nongaussian_predict(model, theta, alpha,
           pmatch(type, c("response", "mean", "state")), seed, 
           pmatch(attr(object, "model_type"), 
             c("ssm_mng", "ssm_ung", "bsm_ng", "svm", "ar1_ng")) - 1L)
         
-        if(anyNA(pred)) warning("NA or NaN values in predictions, possible under/overflow?")
+        if(anyNA(pred)) 
+          warning("NA or NaN values in predictions, possible under/overflow?")
       },
       ssm_nlg = {
         if (!identical(model$n_states, ncol(object$alpha))) {
-          stop("Model does not correspond to the MCMC output: Wrong number of states. ")
+          stop(paste("Model does not correspond to the MCMC output:",
+            "Wrong number of states. ", sep = " "))
         }
         pred <- nonlinear_predict(t(model$y), model$Z, 
           model$H, model$T, model$R, model$Z_gn, 
@@ -203,11 +216,13 @@ predict.mcmc_output <- function(object, model, type = "response", nsim, future =
   } else {
     
     if(!identical(nrow(object$alpha) - 1L, length(model$y))) {
-      stop("Number of observations of the model and MCMC output do not match. ") 
+      stop("Number of observations of the model and MCMC output do not match.") 
     }
     
-    w <- object$counts * (if(object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
-    idx <- sample(seq_len(nrow(object$theta)), size = nsim, prob = w, replace = TRUE)
+    w <- object$counts * 
+      (if(object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
+    idx <- sample(seq_len(nrow(object$theta)), size = nsim, prob = w, 
+      replace = TRUE)
     n <- nrow(object$alpha) - 1L
     m <- ncol(object$alpha)
     
@@ -242,7 +257,8 @@ predict.mcmc_output <- function(object, model, type = "response", nsim, future =
         bsm_lg = ,
         ar1_lg = {
           if (!identical(length(model$a1), m)) {
-            stop("Model does not correspond to the MCMC output: Wrong number of states. ")
+            stop(paste("Model does not correspond to the MCMC output:",
+              "Wrong number of states. ", sep = " "))
           }
           pred <- gaussian_predict_past(model, theta, states,
             pmatch(type, c("response", "mean", "state")), 
@@ -257,21 +273,25 @@ predict.mcmc_output <- function(object, model, type = "response", nsim, future =
         svm = ,
         ar1_ng = {
           if (!identical(length(model$a1), m)) {
-            stop("Model does not correspond to the MCMC output: Wrong number of states. ")
+            stop(paste("Model does not correspond to the MCMC output:",
+              "Wrong number of states. ", sep = " "))
           }
           model$distribution <- pmatch(model$distribution,
-            c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
+            c("svm", "poisson", "binomial", "negative binomial", "gamma", 
+              "gaussian"), 
             duplicates.ok = TRUE) - 1
           pred <- nongaussian_predict_past(model, theta, states,
             pmatch(type, c("response", "mean", "state")), seed, 
             pmatch(attr(object, "model_type"), 
               c("ssm_mng", "ssm_ung", "bsm_ng", "svm", "ar1_ng")) - 1L)
           
-          if(anyNA(pred)) warning("NA or NaN values in predictions, possible under/overflow?")
+          if(anyNA(pred)) 
+            warning("NA or NaN values in predictions, possible under/overflow?")
         },
         ssm_nlg = {
           if (!identical(model$n_states, m)) {
-            stop("Model does not correspond to the MCMC output: Wrong number of states. ")
+            stop(paste("Model does not correspond to the MCMC output:",
+              "Wrong number of states. ", sep = " "))
           }
           pred <- nonlinear_predict_past(t(model$y), model$Z, 
             model$H, model$T, model$R, model$Z_gn, 

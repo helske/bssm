@@ -4,7 +4,8 @@
 #' computes only smoothed estimates of the states, and function
 #' \code{smoother} computes also smoothed variances.
 #' 
-#' For non-Gaussian models, the smoothing is based on the approximate Gaussian model.
+#' For non-Gaussian models, the smoothing is based on the approximate Gaussian 
+#' model.
 #'
 #' @param model Model model.
 #' @param ... Ignored.
@@ -40,7 +41,8 @@ smoother <- function(model, ...) {
 smoother.gaussian <- function(model, ...) {
   
   out <-  gaussian_smoother(model, model_type(model))
-  colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- names(model$a1)
+  colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- 
+    names(model$a1)
   
   out$Vt <- out$Vt[, , -nrow(out$alphahat), drop = FALSE]
   out$alphahat <- ts(out$alphahat[-nrow(out$alphahat), , drop = FALSE], 
@@ -57,16 +59,17 @@ smoother.nongaussian <- function(model, ...) {
 
 #' Extended Kalman Smoothing
 #'
-#' Function \code{ekf_smoother} runs the (iterated) extended Kalman smoother for 
-#' the given non-linear Gaussian model of class \code{ssm_nlg}, 
-#' and returns the smoothed estimates of the states and the corresponding variances.
+#' Function \code{ekf_smoother} runs the (iterated) extended Kalman smoother 
+#' for the given non-linear Gaussian model of class \code{ssm_nlg}, 
+#' and returns the smoothed estimates of the states and the corresponding 
+#' variances.
 #'
 #' @param model Model model
 #' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter is 
 #' used with \code{iekf_iter} iterations.
 #' @return List containing the log-likelihood,
-#' smoothed state estimates \code{alphahat}, and the corresponding variances \code{Vt} and
-#'  \code{Ptt}.
+#' smoothed state estimates \code{alphahat}, and the corresponding variances 
+#' \code{Vt} and \code{Ptt}.
 #' @export
 #' @rdname ekf_smoother
 #' @export

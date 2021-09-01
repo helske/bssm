@@ -17,15 +17,17 @@
 \arguments{
 \item{object}{Model model.}
 
-\item{particles}{Number of samples for particle filter or importance sampling. If 0, 
+\item{particles}{Number of samples for particle filter or 
+importance sampling. If 0, 
 approximate log-likelihood based on the Gaussian approximation is returned.}
 
-\item{method}{Sampling method, default is psi-auxiliary filter (\code{"psi"}), 
-other choices are \code{"bsf"} bootstrap particle filter, and \code{"spdk"}, 
-which uses the importance sampling approach by Shephard and Pitt (1997) and 
-Durbin and Koopman (1997).}
+\item{method}{Sampling method, default is psi-auxiliary filter 
+(\code{"psi"}). Other choices are \code{"bsf"} bootstrap particle filter, 
+and \code{"spdk"}, which uses the importance sampling approach by 
+Shephard and Pitt (1997) and Durbin and Koopman (1997).}
 
-\item{max_iter}{Maximum number of iterations for Gaussian approximation algorithm.}
+\item{max_iter}{Maximum number of iterations for Gaussian approximation 
+algorithm.}
 
 \item{conv_tol}{Tolerance parameter for the approximation algorithm.}
 
@@ -34,7 +36,8 @@ Durbin and Koopman (1997).}
 \item{...}{Ignored.}
 }
 \description{
-Computes the log-likelihood of a non-Gaussian state space model of \code{bssm} package.
+Computes the log-likelihood of a non-Gaussian state space model of 
+\code{bssm} package.
 }
 \examples{
 model <- ssm_ung(y = c(1,4,3), Z = 1, T = 1, R = 0.5, P1 = 2,
@@ -46,4 +49,11 @@ logLik(model, particles = 0)
 logLik(model2, particles = 0)
 logLik(model, particles = 10, seed = 1)
 logLik(model2, particles = 10, seed = 1)
+}
+\references{
+Durbin, J., & Koopman, S. (2002). A Simple and Efficient Simulation 
+Smoother for State Space Time Series Analysis. Biometrika, 89(3), 603-615. 
+
+Shephard, N., & Pitt, M. (1997). Likelihood Analysis of 
+Non-Gaussian Measurement Time Series. Biometrika, 84(3), 653-667.
 }

@@ -1,15 +1,25 @@
 #' Bayesian Inference of State Space Models
 #'
-#' This package contains functions for Bayesian inference of basic stochastic volatility model
-#' and exponential family state space models, where the state equation is linear and Gaussian,
-#' and the conditional observation density is either Gaussian, Poisson,
-#' binomial, negative binomial or Gamma density. General non-linear Gaussian models and models 
-#' with continuous SDE dynamics are also supported. For formal definition of the
-#' currently supported models and methods, as well as some theory behind the IS-MCMC and \eqn{\psi}{psi}-APF, 
-#' see the package vignettes and Vihola, Helske, Franks (2020).
+#' This package contains functions for efficient Bayesian inference of state 
+#' space models, where model is assumed to be either
+#' * Exponential family state space models, where the state equation is linear 
+#'   Gaussian, and the conditional observation density is either Gaussian, 
+#'   Poisson, binomial, negative binomial or Gamma density. 
+#' * Basic stochastic volatility model.
+#' * General non-linear model with Gaussian noise terms.
+#' * Model with continuous SDE dynamics. 
+#' For formal definition of the currently supported models and methods, as 
+#' well as some theory behind the IS-MCMC and \eqn{\psi}{psi}-APF, 
+#' see Helske and Vihola (2021), Vihola, Helske, Franks (2020) and the package 
+#' vignettes.
 #' 
 #' @references 
-#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+#' Helske J, Vihola M (2021). “bssm: Bayesian Inference of Non-linear and 
+#' Non-Gaussian State Space Models in R.” 2101.08492, 
+#' <URL: https://arxiv.org/abs/2101.08492>.
+#' 
+#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
+#' on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 #'
 #' @docType package
@@ -17,7 +27,8 @@
 #' @aliases bssm
 #' @importFrom Rcpp evalCpp
 #' @importFrom coda mcmc
-#' @importFrom stats as.ts dnorm  end frequency is.ts logLik quantile start time ts ts.union tsp tsp<- sd na.omit
+#' @importFrom stats as.ts dnorm  end frequency is.ts logLik quantile start 
+#' time ts ts.union tsp tsp<- sd na.omit
 #' @useDynLib bssm
 NULL
 #' Deaths by drowning in Finland in 1969-2019
@@ -31,7 +42,8 @@ NULL
 #' @name drownings
 #' @docType data
 #' @format A time series object containing 51 observations.
-#' @source Statistics Finland \url{https://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
+#' @source Statistics Finland 
+#' \url{https://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
 #' @keywords datasets
 #' @examples
 #' data("drownings")
@@ -54,8 +66,8 @@ NULL
 #' @format A vector of length 945.
 #' @source \url{http://www.ssfpack.com/DKbook.html}.
 #' @keywords datasets
-#' @references James Durbin, Siem Jan Koopman (2012). "Time Series Analysis by State Space Methods". 
-#' Oxford University Press.
+#' @references James Durbin, Siem Jan Koopman (2012). 
+#' Time Series Analysis by State Space Methods. Oxford University Press.
 #' @examples
 #' data("exchange")
 #' model <- svm(exchange, rho = uniform(0.97,-0.999,0.999),

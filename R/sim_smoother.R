@@ -1,10 +1,11 @@
 #' Simulation Smoothing
 #'
-#' Function \code{sim_smoother} performs simulation smoothing i.e. simulates the states
-#' from the conditional distribution \eqn{p(\alpha | y, \theta)} for linear-Gaussian models.
+#' Function \code{sim_smoother} performs simulation smoothing i.e. simulates 
+#' the states from the conditional distribution \eqn{p(\alpha | y, \theta)} 
+#' for linear-Gaussian models.
 #' 
-#' For non-Gaussian/non-linear models, the simulation is based on the approximating
-#' Gaussian model.
+#' For non-Gaussian/non-linear models, the simulation is based on the 
+#' approximating Gaussian model.
 #'
 #' @param model Model object.
 #' @param nsim Number of independent samples.
@@ -16,7 +17,8 @@
 #' @export
 #' @rdname sim_smoother
 #' @examples
-#' model <- bsm_lg(rep(NA, 50), sd_level = uniform(1,0,5), sd_y = uniform(1,0,5))
+#' model <- bsm_lg(rep(NA, 50), sd_level = uniform(1,0,5), 
+#'   sd_y = uniform(1,0,5))
 #' sim <- sim_smoother(model, 12)
 #' ts.plot(sim[, 1, ])
 sim_smoother <- function(model, nsim, seed, use_antithetic = FALSE, ...) {
@@ -28,7 +30,8 @@ sim_smoother <- function(model, nsim, seed, use_antithetic = FALSE, ...) {
 sim_smoother.gaussian <- function(model, nsim = 1, 
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
 
-  out <- gaussian_sim_smoother(model, nsim, use_antithetic, seed, model_type(model))
+  out <- gaussian_sim_smoother(model, nsim, use_antithetic, seed, 
+    model_type(model))
   rownames(out) <- names(model$a1)
   aperm(out, c(2, 1, 3))[-(length(model$y) + 1), , , drop = FALSE]
 }
