@@ -748,7 +748,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
       regression_part$beta)
   } else {
     priors <- list(sd_y, sd_level, sd_slope, sd_seasonal, 
-      regresssion_part$beta)
+      regression_part$beta)
   }
   names(priors) <- c("sd_y", "sd_level", "sd_slope", "sd_seasonal", 
     names(regression_part$coefs))
