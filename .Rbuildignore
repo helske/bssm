@@ -14,3 +14,4 @@
 ^vignettes/psi_pf_experiments/.*\.R$
 ^\.github$
 slides_UseR2021
+^codecov\.yml$

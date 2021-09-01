@@ -24,8 +24,19 @@ Description: Efficient methods for Bayesian inference of state space models
     diffusion models are supported.
 License: GPL (>= 2)
 Depends: R (>= 3.5.0)
-Suggests: dplyr, ggplot2 (>= 2.0.0), Hmisc, KFAS (>= 1.2.1), knitr (>=
-        1.11), MASS, ramcmc, rmarkdown (>= 0.8.1), sde, sitmo, testthat
+Suggests: 
+    covr,
+    dplyr,
+    ggplot2 (>= 2.0.0),
+    Hmisc,
+    KFAS (>= 1.2.1),
+    knitr (>= 1.11),
+    MASS,
+    ramcmc,
+    rmarkdown (>= 0.8.1),
+    sde,
+    sitmo,
+    testthat
 Imports: coda (>= 0.18-1), diagis, Rcpp (>= 0.12.3)
 LinkingTo: Rcpp, RcppArmadillo, ramcmc, sitmo
 SystemRequirements: C++11, pandoc (>= 1.12.3, needed for vignettes)
