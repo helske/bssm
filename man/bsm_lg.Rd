@@ -13,10 +13,10 @@ bsm_lg(
   beta,
   xreg = NULL,
   period = frequency(y),
-  a1,
-  P1,
-  D,
-  C
+  a1 = NULL,
+  P1 = NULL,
+  D = NULL,
+  C = NULL
 )
 }
 \arguments{
@@ -49,14 +49,15 @@ Defaults to vector of zeros.}
 Default is diagonal matrix with 1000 on the diagonal.}
 
 \item{D, C}{Intercept terms for observation and
-state equations, given as a length n vector and m times n matrix respectively.}
+state equations, given as a length n vector and m times n matrix 
+respectively (or scalar and m times 1 matrix).}
 }
 \value{
 Object of class \code{bsm_lg}.
 }
 \description{
-Constructs a basic structural model with local level or local trend component
-and seasonal component.
+Constructs a basic structural model with local level or local trend 
+component and seasonal component.
 }
 \examples{
 

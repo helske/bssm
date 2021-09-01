@@ -19,14 +19,15 @@ tnormal(init, mean, sd, min = -Inf, max = Inf)
 gamma(init, shape, rate)
 }
 \arguments{
-\item{init}{Initial value for the parameter, used in initializing the model components and as a starting value
-in MCMC.}
+\item{init}{Initial value for the parameter, used in initializing the model 
+components and as a starting values in MCMC.}
 
 \item{min}{Lower bound of the uniform and truncated normal prior.}
 
 \item{max}{Upper bound of the uniform and truncated normal prior.}
 
-\item{sd}{Standard deviation of the (underlying i.e. non-truncated) Normal distribution.}
+\item{sd}{Standard deviation of the (underlying i.e. non-truncated) 
+Normal distribution.}
 
 \item{mean}{Mean of the Normal prior.}
 
@@ -38,12 +39,14 @@ in MCMC.}
 object of class \code{bssm_prior}.
 }
 \description{
-These simple objects of class \code{bssm_prior} are used to construct a prior distributions for the 
-MCMC runs of \code{bssm} package. Currently supported priors are uniform (\code{uniform()}), 
-half-normal (\code{halfnormal()}), normal (\code{normal()}), gamma (\code{gamma}), and 
-truncated normal distribution  (\code{tnormal()}).All parameters are vectorized so 
-for regression coefficient vector beta you can define prior for example 
-as \code{normal(0, 0, c(10, 20))}.
+These simple objects of class \code{bssm_prior} are used to construct a 
+prior distributions for the 
+MCMC runs of \code{bssm} package. Currently supported priors are uniform 
+(\code{uniform()}), half-normal (\code{halfnormal()}), 
+normal (\code{normal()}), gamma (\code{gamma}), and 
+truncated normal distribution  (\code{tnormal()}). All parameters are 
+vectorized so for regression coefficient vector beta you can define prior 
+for example as \code{normal(0, 0, c(10, 20))}.
 }
 \examples{
 # create uniform prior on [-1, 1] for one parameter with initial value 0.2:

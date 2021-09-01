@@ -25,18 +25,22 @@
 \item{iter}{Number of MCMC iterations.}
 
 \item{output_type}{Type of output. Default is \code{"full"}, which returns
-samples from the posterior \eqn{p(\alpha, \theta)}. Option \code{"summary"} does not simulate
-states directly but computes the posterior means and variances of states using
-fast Kalman smoothing. This is slightly faster, more memory efficient and
-more accurate than calculations based on simulation smoother. Using option \code{"theta"} will only
-return samples from the marginal posterior of the hyperparameters \eqn{\theta}.}
+samples from the posterior \eqn{p(\alpha, \theta)}. 
+Option \code{"summary"} does not simulate
+states directly but computes the posterior means and variances of states 
+using fast Kalman smoothing. This is slightly faster, 
+more memory efficient and more accurate than calculations based on 
+simulation smoother. Using option \code{"theta"} will only
+return samples from the marginal posterior of the hyperparameters 
+\eqn{\theta}.}
 
 \item{burnin}{Length of the burn-in period which is disregarded from the
-results. Defaults to \code{iter / 2}. Note that all MCMC algorithms of \code{bssm}
- used adaptive MCMC during the burn-in period in order to find good proposal.}
+results. Defaults to \code{iter / 2}. Note that all MCMC algorithms of 
+\code{bssm} used adaptive MCMC during the burn-in period in order to find 
+good proposal.}
 
-\item{thin}{Thinning rate. All MCMC algorithms in \code{bssm} use the jump chain
-representation, and the thinning is applied to these blocks.
+\item{thin}{Thinning rate. All MCMC algorithms in \code{bssm} use the 
+jump chain representation, and the thinning is applied to these blocks.
 Defaults to 1.}
 
 \item{gamma}{Tuning parameter for the adaptation of RAM algorithm. Must be
@@ -47,10 +51,12 @@ between 0 and 1 (not checked).}
 \item{S}{Initial value for the lower triangular matrix of RAM
 algorithm, so that the covariance matrix of the Gaussian proposal
 distribution is \eqn{SS'}. Note that for some parameters 
-(currently the standard deviation and dispersion parameters of bsm_lg models) the sampling
-is done for transformed parameters with internal_theta = log(theta).}
+(currently the standard deviation and dispersion parameters of bsm_lg 
+models) the sampling is done for transformed parameters with 
+internal_theta = log(theta).}
 
-\item{end_adaptive_phase}{If \code{TRUE}, S is held fixed after the burnin period. Default is \code{FALSE}.}
+\item{end_adaptive_phase}{If \code{TRUE}, S is held fixed after the
+burnin period. Default is \code{FALSE}.}
 
 \item{threads}{Number of threads for state simulation. The default is 1.}
 
@@ -83,6 +89,7 @@ sumr \%>\% ggplot(aes(time, mean)) +
     col = 2)
 }
 \references{
-Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
+on approximate marginal Markov chain Monte Carlo. 
 Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 }

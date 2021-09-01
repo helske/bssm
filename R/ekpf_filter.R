@@ -20,6 +20,29 @@ ekpf_filter <- function(object, particles, ...) {
 #' @method ekpf_filter ssm_nlg
 #' @export
 #' @rdname ekpf_filter
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' n <- 50
+#' x <- y <- numeric(n)
+#' y[1] <- rnorm(1, exp(x[1]), 0.1)
+#' for(i in 1:(n-1)) {
+#'  x[i+1] <- rnorm(1, sin(x[i]), 0.1)
+#'  y[i+1] <- rnorm(1, exp(x[i+1]), 0.1)
+#' }
+#' 
+#' pntrs <- nlg_example_models("sin_exp")
+#' 
+#' model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
+#'   Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
+#'   Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+#'   theta = c(log_H = log(0.1), log_R = log(0.1)), 
+#'   log_prior_pdf = pntrs$log_prior_pdf,
+#'   n_states = 1, n_etas = 1, state_names = "state")
+#'
+#' out <- ekpf_filter(model_nlg, 100)
+#' ts.plot(cbind(x, out$at[1:n], out$att[1:n]), col = 1:3)
+#' }
 ekpf_filter.ssm_nlg <- function(object, particles, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
@@ -27,7 +50,7 @@ ekpf_filter.ssm_nlg <- function(object, particles,
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument",
-       "`particles` instead.", sep = " "))
+        "`particles` instead.", sep = " "))
       particles <- nsim
     }
   }

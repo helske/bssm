@@ -29,8 +29,8 @@ models.}
 
 \item{max_iter}{Maximum number of iterations used for the approximation.}
 
-\item{conv_tol}{Convergence threshold for the approximation. Approximation is 
-claimed to be converged when the mean squared difference of the modes is 
+\item{conv_tol}{Convergence threshold for the approximation. Approximation 
+is claimed to be converged when the mean squared difference of the modes is 
 less than \code{conv_tol}.}
 
 \item{seed}{Seed for the random number generator.}

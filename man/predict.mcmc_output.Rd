@@ -21,17 +21,19 @@
 
 \item{model}{Model for future observations. 
 Should have same structure as the original model which was used in MCMC,
-in order to plug the posterior samples of the model parameters to the right places. 
-It is also possible to input the original model, which can be useful for example for 
-posterior predictive checks. In this case, set argument \code{future} to \code{FALSE}.}
+in order to plug the posterior samples of the model parameters to the right 
+places. 
+It is also possible to input the original model, which can be useful for 
+example for posterior predictive checks. In this case, set argument 
+\code{future} to \code{FALSE}.}
 
 \item{type}{Return predictions on \code{"mean"} 
 \code{"response"}, or  \code{"state"} level.}
 
 \item{nsim}{Number of samples to draw.}
 
-\item{future}{Default is \code{TRUE}, in which case predictions are for the future, 
-using posterior samples of (theta, alpha_T+1) i.e. the 
+\item{future}{Default is \code{TRUE}, in which case predictions are for the 
+future, using posterior samples of (theta, alpha_T+1) i.e. the 
 posterior samples of hyperparameters and latest states. 
 Otherwise it is assumed that \code{model} corresponds to the original model.}
 
@@ -43,10 +45,11 @@ Otherwise it is assumed that \code{model} corresponds to the original model.}
 Data frame of predicted samples.
 }
 \description{
-Draw samples from the posterior predictive distribution for future time points 
-given the posterior draws of hyperparameters \eqn{\theta} and \eqn{alpha_{n+1}}. 
-Function can also be used to draw samples from the posterior predictive distribution
-\eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
+Draw samples from the posterior predictive distribution for future 
+time points given the posterior draws of hyperparameters \eqn{\theta} and 
+\eqn{alpha_{n+1}}. Function can also be used to draw samples from the 
+posterior predictive distribution
+ \eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
 }
 \examples{
 require("graphics")

@@ -9,41 +9,46 @@ ssm_mng(
   Z,
   T,
   R,
-  a1,
-  P1,
+  a1 = NULL,
+  P1 = NULL,
   distribution,
   phi = 1,
   u = 1,
   init_theta = numeric(0),
-  D,
-  C,
+  D = NULL,
+  C = NULL,
   state_names,
   update_fn = default_update_fn,
   prior_fn = default_prior_fn
 )
 }
 \arguments{
-\item{y}{Observations as multivariate time series or matrix with dimensions n x p.}
+\item{y}{Observations as multivariate time series or matrix with dimensions 
+n x p.}
 
-\item{Z}{System matrix Z of the observation equation as p x m matrix or p x m x n array.}
+\item{Z}{System matrix Z of the observation equation as p x m matrix or 
+p x m x n array.}
 
 \item{T}{System matrix T of the state equation. Either a m x m matrix or a
 m x m x n array.}
 
-\item{R}{Lower triangular matrix R the state equation. Either a m x k matrix or a
+\item{R}{Lower triangular matrix R the state equation. Either a m x k 
+matrix or a
 m x k x n array.}
 
 \item{a1}{Prior mean for the initial state as a vector of length m.}
 
 \item{P1}{Prior covariance matrix for the initial state as m x m matrix.}
 
-\item{distribution}{vector of distributions of the observed series. Possible choices are
-\code{"poisson"}, \code{"binomial"}, \code{"negative binomial"}, \code{"gamma"},
-and \code{"gaussian"}.}
+\item{distribution}{vector of distributions of the observed series. 
+Possible choices are
+\code{"poisson"}, \code{"binomial"}, \code{"negative binomial"}, 
+\code{"gamma"}, and \code{"gaussian"}.}
 
 \item{phi}{Additional parameters relating to the non-Gaussian distributions.
-For negative binomial distribution this is the dispersion term, for gamma distribution
-this is the shape parameter, for Gaussian this is standard deviation, 
+For negative binomial distribution this is the dispersion term, for 
+gamma distribution this is the shape parameter, for Gaussian this is 
+standard deviation, 
 and for other distributions this is ignored.}
 
 \item{u}{Constant parameter for non-Gaussian models. For Poisson, gamma, 
@@ -64,7 +69,8 @@ vector argument which is used to create list with elements named as
 \code{Z}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, \code{C}, and
 \code{phi},
 where each element matches the dimensions of the original model.
-If any of these components is missing, it is assumed to be constant wrt. theta.}
+If any of these components is missing, it is assumed to be constant wrt. 
+theta.}
 
 \item{prior_fn}{Function which returns log of prior density 
 given input vector theta.}
@@ -73,19 +79,21 @@ given input vector theta.}
 Object of class \code{ssm_mng}.
 }
 \description{
-Construct an object of class \code{ssm_mng} by directly defining the corresponding terms of 
-the model.
+Construct an object of class \code{ssm_mng} by directly defining the 
+corresponding terms of the model.
 }
 \details{
 The general multivariate non-Gaussian model is defined using the following 
 observational and state equations:
 
 \deqn{p^i(y^i_t | D_t + Z_t \alpha_t), (\textrm{observation equation})}
-\deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, (\textrm{transition equation})}
+\deqn{\alpha_{t+1} = C_t + T_t \alpha_t + R_t \eta_t, 
+(\textrm{transition equation})}
 
 where \eqn{\eta_t \sim N(0, I_k)} and
-\eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and \eqn{p^i(y_t | .)}
-is either Poisson, binomial, gamma, Gaussian, or negative binomial distribution for 
-each observation series \eqn{i=1,...,p}.Here k is the number of disturbance terms 
-(which can be less than m, the number of states).
+\eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and 
+\eqn{p^i(y_t | .)} is either Poisson, binomial, gamma, Gaussian, or 
+negative binomial distribution for each observation series \eqn{i=1,...,p}. 
+Here k is the number of disturbance terms (which can be less than m, 
+the number of states).
 }

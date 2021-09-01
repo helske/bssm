@@ -11,7 +11,8 @@ run_mcmc(model, iter, ...)
 
 \item{iter}{Number of MCMC iterations.}
 
-\item{...}{Parameters to specific methods. See \code{\link{run_mcmc.gaussian}},
+\item{...}{Parameters to specific methods. See 
+\code{\link{run_mcmc.gaussian}},
 \code{\link{run_mcmc.nongaussian}}, \code{\link{run_mcmc.ssm_nlg}}, 
 and \code{\link{run_mcmc.ssm_sde}} for details.}
 }

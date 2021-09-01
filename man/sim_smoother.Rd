@@ -40,15 +40,17 @@ Default is \code{FALSE}. Ignored for multivariate models.}
 An array containing the generated samples.
 }
 \description{
-Function \code{sim_smoother} performs simulation smoothing i.e. simulates the states
-from the conditional distribution \eqn{p(\alpha | y, \theta)} for linear-Gaussian models.
+Function \code{sim_smoother} performs simulation smoothing i.e. simulates 
+the states from the conditional distribution \eqn{p(\alpha | y, \theta)} 
+for linear-Gaussian models.
 }
 \details{
-For non-Gaussian/non-linear models, the simulation is based on the approximating
-Gaussian model.
+For non-Gaussian/non-linear models, the simulation is based on the 
+approximating Gaussian model.
 }
 \examples{
-model <- bsm_lg(rep(NA, 50), sd_level = uniform(1,0,5), sd_y = uniform(1,0,5))
+model <- bsm_lg(rep(NA, 50), sd_level = uniform(1,0,5), 
+  sd_y = uniform(1,0,5))
 sim <- sim_smoother(model, 12)
 ts.plot(sim[, 1, ])
 }

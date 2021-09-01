@@ -15,11 +15,13 @@ svm(y, mu, rho, sd_ar, sigma)
 
 \item{sd_ar}{Prior for the standard deviation of noise of the AR-process.}
 
-\item{sigma}{Prior for sigma parameter of observation equation, internally denoted as phi. Ignored 
-if \code{mu} is provided. Note that typically parametrization using mu is preferred due to 
-better numerical properties and availability of better Gaussian approximation. 
-Most notably the global approximation approach does not work with sigma parameterization as 
-sigma is not a parameter of the resulting approximate model.}
+\item{sigma}{Prior for sigma parameter of observation equation, internally 
+denoted as phi. Ignored if \code{mu} is provided. Note that typically 
+parametrization using mu is preferred due to better numerical properties and 
+availability of better Gaussian approximation. 
+Most notably the global approximation approach does not work with sigma 
+parameterization as sigma is not a parameter of the resulting approximate 
+model.}
 }
 \value{
 Object of class \code{svm}.
@@ -40,7 +42,8 @@ obj <- function(pars) {
    sd_ar = halfnormal(pars[2],sd=5),
    sigma = halfnormal(pars[3],sd=2)), particles = 0)
 }
-opt <- nlminb(c(0.98, 0.15, 0.6), obj, lower = c(-0.999, 1e-4, 1e-4), upper = c(0.999,10,10))
+opt <- nlminb(c(0.98, 0.15, 0.6), obj, lower = c(-0.999, 1e-4, 1e-4),
+  upper = c(0.999,10,10))
 pars <- opt$par
 model <- svm(exchange, rho = uniform(pars[1],-0.999,0.999),
   sd_ar = halfnormal(pars[2],sd=5),

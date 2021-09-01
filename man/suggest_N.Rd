@@ -15,33 +15,35 @@ suggest_N(
 \arguments{
 \item{model}{Model of class \code{nongaussian} or \code{ssm_nlg}.}
 
-\item{mcmc_output}{An output from \code{run_mcmc} used to compute the MAP estimate of theta. 
-While the intended use assumes this is from approximate MCMC, it is not actually checked, i.e., 
+\item{mcmc_output}{An output from \code{run_mcmc} used to compute the MAP 
+estimate of theta. While the intended use assumes this is from 
+approximate MCMC, it is not actually checked, i.e., 
 it is also possible to input previous (asymptotically) exact output.}
 
-\item{candidates}{Vector containing the candidate number of particles to test. Default 
-is \code{seq(10, 100, by = 10)}.}
+\item{candidates}{Vector containing the candidate number of particles to 
+test. Default is \code{seq(10, 100, by = 10)}.}
 
-\item{replications}{How many replications should be used for computing the standard deviations? 
-Default is 100.}
+\item{replications}{How many replications should be used for computing 
+the standard deviations? Default is 100.}
 
 \item{seed}{Seed for the random number generator.}
 }
 \value{
-List with suggested number of particles \code{N} and matrix containing 
-estimated standard deviations of the log-weights and corresponding number of particles.
+List with suggested number of particles \code{N} and matrix 
+containing estimated standard deviations of the log-weights and 
+corresponding number of particles.
 }
 \description{
-Function \code{estimate_N} estimates suitable number particles needed for accurate 
-post-correction of approximate MCMC
+Function \code{estimate_N} estimates suitable number particles needed for 
+accurate post-correction of approximate MCMC.
 }
 \details{
 Function \code{suggest_N} estimates the standard deviation of the 
 logarithm of the post-correction weights at approximate MAP of theta, 
 using various particle sizes and suggest smallest number of particles 
-which still leads standard deviation less than 1. Similar approach was suggested in
-the context of pseudo-marginal MCMC by Doucet et al. (2015), but see also 
-Section 10.3 in Vihola et al (2020).
+which still leads standard deviation less than 1. Similar approach was 
+suggested in the context of pseudo-marginal MCMC by Doucet et al. (2015),
+ but see also Section 10.3 in Vihola et al (2020).
 }
 \examples{
 \dontrun{
@@ -78,8 +80,11 @@ estN$N
 }
 \references{
 A. Doucet, M. K. Pitt, G. Deligiannidis, R. Kohn, 
-Efficient implementation of Markov chain Monte Carlo when using an unbiased likelihood estimator, 
-Biometrika, Volume 102, Issue 2, 2015, Pages 295–313, https://doi.org/10.1093/biomet/asu075
-Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+Efficient implementation of Markov chain Monte Carlo when using an 
+unbiased likelihood estimator, Biometrika, 102, 2, 2015, Pages 295–313, 
+https://doi.org/10.1093/biomet/asu075
+
+Vihola, M, Helske, J, Franks, J. Importance sampling type estimators 
+based on approximate marginal Markov chain Monte Carlo. 
 Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
 }

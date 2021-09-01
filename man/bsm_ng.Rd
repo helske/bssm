@@ -16,9 +16,9 @@ bsm_ng(
   beta,
   xreg = NULL,
   period = frequency(y),
-  a1,
-  P1,
-  C
+  a1 = NULL,
+  P1 = NULL,
+  C = NULL
 )
 }
 \arguments{
@@ -36,18 +36,22 @@ of the noise in seasonal equation. See \link[=uniform]{priors} for details.
 If missing, the seasonal component is omitted from the model.}
 
 \item{sd_noise}{Prior for the standard error of the additional noise term.
-See \link[=uniform]{priors} for details. If missing, no additional noise term is used.}
+See \link[=uniform]{priors} for details. If missing, no additional noise 
+term is used.}
 
-\item{distribution}{Distribution of the observed time series. Possible choices are
-\code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and \code{"negative binomial"}.}
+\item{distribution}{Distribution of the observed time series. Possible 
+choices are
+\code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and 
+\code{"negative binomial"}.}
 
 \item{phi}{Additional parameter relating to the non-Gaussian distribution.
-For negative binomial distribution this is the dispersion term, for gamma distribution
-this is the shape parameter, and for other distributions this is ignored.}
+For negative binomial distribution this is the dispersion term, for 
+gamma distribution this is the shape parameter, and for other distributions 
+this is ignored.}
 
-\item{u}{Constant parameter vector for non-Gaussian models. For Poisson, gamma, and 
-negative binomial distribution, this corresponds to the offset term. For binomial, 
-this is the number of trials.}
+\item{u}{Constant parameter vector for non-Gaussian models. For Poisson, 
+gamma, and negative binomial distribution, this corresponds to the offset 
+term. For binomial, this is the number of trials.}
 
 \item{beta}{Prior for the regression coefficients.}
 

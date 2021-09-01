@@ -25,7 +25,8 @@ ssm_nlg(
 )
 }
 \arguments{
-\item{y}{Observations as multivariate time series (or matrix) of length \eqn{n}.}
+\item{y}{Observations as multivariate time series (or matrix) of length 
+\eqn{n}.}
 
 \item{Z, H, T, R}{An external pointers for the C++ functions which
 define the corresponding model functions.}
@@ -39,9 +40,11 @@ define the gradients of the corresponding model functions.}
 
 \item{theta}{Parameter vector passed to all model functions.}
 
-\item{known_params}{Vector of known parameters passed to all model functions.}
+\item{known_params}{Vector of known parameters passed to all model 
+functions.}
 
-\item{known_tv_params}{Matrix of known parameters passed to all model functions.}
+\item{known_tv_params}{Matrix of known parameters passed to all model 
+functions.}
 
 \item{n_states}{Number of states in the model.}
 
@@ -50,7 +53,8 @@ define the gradients of the corresponding model functions.}
 \item{log_prior_pdf}{An external pointer for the C++ function which
 computes the log-prior density given theta.}
 
-\item{time_varying}{Optional logical vector of length 4, denoting whether the values of
+\item{time_varying}{Optional logical vector of length 4, denoting whether 
+the values of
 Z, H, T, and R vary with respect to time variable (given identical states).
 If used, this can speed up some computations.}
 
@@ -60,18 +64,21 @@ If used, this can speed up some computations.}
 Object of class \code{ssm_nlg}.
 }
 \description{
-Constructs an object of class \code{ssm_nlg} by defining the corresponding terms
-of the observation and state equation.
+Constructs an object of class \code{ssm_nlg} by defining the corresponding 
+terms of the observation and state equation.
 }
 \details{
 The nonlinear Gaussian model is defined as
 
-\deqn{y_t = Z(t, \alpha_t, \theta) + H(t, \theta) \epsilon_t, (\textrm{observation equation})}
-\deqn{\alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \theta)\eta_t, (\textrm{transition equation})}
+\deqn{y_t = Z(t, \alpha_t, \theta) + H(t, \theta) \epsilon_t, 
+(\textrm{observation equation})}
+\deqn{\alpha_{t+1} = T(t, \alpha_t, \theta) + R(t, \theta)\eta_t, 
+(\textrm{transition equation})}
 
 where \eqn{\epsilon_t \sim N(0, I_p)}, \eqn{\eta_t \sim N(0, I_m)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and functions
-\eqn{Z, H, T, R} can depend on \eqn{\alpha_t} and parameter vector \eqn{\theta}.
+\eqn{Z, H, T, R} can depend on \eqn{\alpha_t} and parameter vector 
+\eqn{\theta}.
 
 Compared to other models, these general models need a bit more effort from
 the user, as you must provide the several small C++ snippets which define the

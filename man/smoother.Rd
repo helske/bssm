@@ -24,5 +24,6 @@ computes only smoothed estimates of the states, and function
 \code{smoother} computes also smoothed variances.
 }
 \details{
-For non-Gaussian models, the smoothing is based on the approximate Gaussian model.
+For non-Gaussian models, the smoothing is based on the approximate Gaussian 
+model.
 }

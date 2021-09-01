@@ -56,16 +56,19 @@ particle_smoother(model, particles, ...)
 
 \item{method}{Choice of particle filter algorithm. 
 For Gaussian and non-Gaussian models with linear dynamics,
-options are \code{"bsf"} (bootstrap particle filter, default for non-linear models) 
+options are \code{"bsf"} (bootstrap particle filter, default for 
+non-linear models) 
 and \code{"psi"} (\eqn{\psi}-APF, the default for other models), and 
 for non-linear models options \code{"ekf"} (extended Kalman particle filter) 
 is also available.}
 
 \item{seed}{Seed for RNG.}
 
-\item{max_iter}{Maximum number of iterations used in Gaussian approximation. Used \eqn{\psi}-APF.}
+\item{max_iter}{Maximum number of iterations used in Gaussian approximation. 
+Used \eqn{\psi}-APF.}
 
-\item{conv_tol}{Tolerance parameter used in Gaussian approximation. Used \eqn{\psi}-APF.}
+\item{conv_tol}{Tolerance parameter used in Gaussian approximation. 
+Used \eqn{\psi}-APF.}
 
 \item{iekf_iter}{If zero (default), first approximation for non-linear 
 Gaussian models is obtained from extended Kalman filter. If 
@@ -75,13 +78,16 @@ Gaussian models is obtained from extended Kalman filter. If
 \item{L}{Integer defining the discretization level.}
 }
 \value{
-List with samples (\code{alpha}) from the smoothing distribution and corresponding weights (\code{weights}),
- as well as smoothed means and covariances (\code{alphahat} and \code{Vt}) of the states and 
+List with samples (\code{alpha}) from the smoothing distribution 
+and corresponding weights (\code{weights}),
+ as well as smoothed means and covariances (\code{alphahat} and \code{Vt}) 
+ of the states and 
  estimated log-likelihood (\code{logLik}).
 }
 \description{
 Function \code{particle_smoother} performs particle smoothing 
-based on either bootstrap particle filter [1], \eqn{\psi}-auxiliary particle filter (\eqn{\psi}-APF) [2], 
+based on either bootstrap particle filter [1], \eqn{\psi}-auxiliary 
+particle filter (\eqn{\psi}-APF) [2], 
 or extended Kalman particle filter [3] (or its iterated version [4]). 
 The smoothing phase is based on the filter-smoother algorithm by [5].
 }
@@ -95,18 +101,28 @@ y <- rnorm(100, x)
 model <- ssm_ulg(y, Z = 1, T = 1, R = 1, H = 1, P1 = 1)
 system.time(out <- particle_smoother(model, particles = 1000))
 # same with simulation smoother:
-system.time(out2 <- sim_smoother(model, particles = 1000, use_antithetic = TRUE))
+system.time(out2 <- sim_smoother(model, particles = 1000, 
+  use_antithetic = TRUE))
 ts.plot(out$alphahat, rowMeans(out2), col = 1:2)
 
 }
 \references{
 [1] Gordon, N. J., Salmond, D. J., & Smith, A. F. M. (1993). 
-Novel approach to nonlinear/non-Gaussian Bayesian state estimation. IEE Proceedings-F, 140, 107–113.
-[2] Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo. 
+Novel approach to nonlinear/non-Gaussian Bayesian state estimation. 
+IEE Proceedings-F, 140, 107–113.
+
+[2] Vihola, M, Helske, J, Franks, J. Importance sampling type estimators 
+based on approximate marginal Markov chain Monte Carlo. 
 Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
-[3] Van Der Merwe, R., Doucet, A., De Freitas, N., & Wan, E. A. (2001). The unscented particle filter. 
+
+[3] Van Der Merwe, R., Doucet, A., De Freitas, N., & Wan, E. A. (2001). 
+The unscented particle filter. 
 In Advances in neural information processing systems (pp. 584-590).
-[4] Jazwinski, A. 1970. Stochastic Processes and Filtering Theory. Academic Press.
-[5] Kitagawa, G. (1996). Monte Carlo filter and smoother for non-Gaussian nonlinear state space models. 
+
+[4] Jazwinski, A. 1970. Stochastic Processes and Filtering Theory. 
+Academic Press.
+
+[5] Kitagawa, G. (1996). Monte Carlo filter and smoother for non-Gaussian 
+nonlinear state space models. 
 Journal of Computational and Graphical Statistics, 5, 1–25.
 }

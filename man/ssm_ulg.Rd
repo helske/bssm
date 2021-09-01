@@ -10,11 +10,11 @@ ssm_ulg(
   H,
   T,
   R,
-  a1,
-  P1,
+  a1 = NULL,
+  P1 = NULL,
   init_theta = numeric(0),
-  D,
-  C,
+  D = NULL,
+  C = NULL,
   state_names,
   update_fn = default_update_fn,
   prior_fn = default_prior_fn
@@ -23,15 +23,17 @@ ssm_ulg(
 \arguments{
 \item{y}{Observations as time series (or vector) of length \eqn{n}.}
 
-\item{Z}{System matrix Z of the observation equation as m x 1 or m x n matrix.}
+\item{Z}{System matrix Z of the observation equation as m x 1 or 
+m x n matrix.}
 
-\item{H}{Vector of standard deviations. Either a scalar or a vector of length n.}
+\item{H}{Vector of standard deviations. Either a scalar or a vector of 
+length n.}
 
 \item{T}{System matrix T of the state equation. Either a m x m matrix or a
 m x m x n array.}
 
-\item{R}{Lower triangular matrix R the state equation. Either a m x k matrix or a
-m x k x n array.}
+\item{R}{Lower triangular matrix R the state equation. Either a 
+m x k matrix or a m x k x n array.}
 
 \item{a1}{Prior mean for the initial state as a vector of length m.}
 
@@ -39,7 +41,8 @@ m x k x n array.}
 
 \item{init_theta}{Initial values for the unknown hyperparameters theta.}
 
-\item{D}{Intercept terms for observation equation, given as a length n vector.}
+\item{D}{Intercept terms for observation equation, given as a 
+length n vector.}
 
 \item{C}{Intercept terms for state equation, given as m x n matrix.}
 
@@ -69,17 +72,21 @@ observational and state equations:
 
 where \eqn{\epsilon_t \sim N(0, 1)}, \eqn{\eta_t \sim N(0, I_k)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
-Here k is the number of disturbance terms which can be less than m, the number of states.
+Here k is the number of disturbance terms which can be less than m, the 
+number of states.
 
 The \code{update_fn} function should take only one 
 vector argument which is used to create list with elements named as
-\code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, and \code{C},
+\code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, 
+and \code{C},
 where each element matches the dimensions of the original model.
-If any of these components is missing, it is assumed to be constant wrt. theta.
+If any of these components is missing, it is assumed to be constant wrt. 
+theta.
 Note that while you can input say R as m x k matrix for \code{ssm_ulg}, 
 \code{update_fn} should return R as m x k x 1 in this case. 
-It might be useful to first construct the model without updating function and then check 
-the expected structure of the model components from the output.
+It might be useful to first construct the model without updating function 
+and then check the expected structure of the model components from the 
+output.
 }
 \examples{
 
@@ -107,10 +114,10 @@ update_fn <- function(theta) {
 }
 # prior for standard deviations as half-normal(1)
 prior_fn <- function(theta) {
-  if(any(theta < 0)){
-  log_p <- -Inf 
+  if(any(theta < 0)) {
+    log_p <- -Inf 
   } else {
-  log_p <- sum(dnorm(theta, 0, 1, log = TRUE))
+    log_p <- sum(dnorm(theta, 0, 1, log = TRUE))
   }
   log_p
 }
@@ -144,7 +151,7 @@ model_bssm <- as_bssm(model_kfas, kappa = 100)
 # "manually" by constructing only necessary matrices,
 # i.e., in this case  a list with H and Q)
 
-updatefn <- function(theta){
+updatefn <- function(theta) {
   
   model_kfas <- SSModel(log(drivers) ~ SSMtrend(1, Q = theta[1]^2)+
     SSMseasonal(period = 12, 
@@ -167,7 +174,8 @@ model_bssm <- as_bssm(model_kfas, kappa = 100,
 out <- run_mcmc(model_bssm, iter = 10000, burnin = 5000) 
 out
 
-# Above the regression coefficients are modelled as time-invariant latent states. 
+# Above the regression coefficients are modelled as 
+# time-invariant latent states. 
 # Here is an alternative way where we use variable D so that the
 # coefficients are part of parameter vector theta:
 
