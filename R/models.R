@@ -193,7 +193,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
   T <- check_T(T, m, n)
   
   # create R
-  R <- check_R(R)
+  R <- check_R(R, m, n)
   
   a1 <- check_a1(a1, m)
   
@@ -310,7 +310,7 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   T <- check_T(T, m, n)
   
   # create R
-  R <- check_R(R)
+  R <- check_R(R, m, n)
   
   a1 <- check_a1(a1, m)
   
@@ -427,7 +427,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
   T <- check_T(T, m, n)
   
   # create R
-  R <- check_R(R)
+  R <- check_R(R, m, n)
   
   a1 <- check_a1(a1, m)
   P1 <- check_P1(P1, m)
@@ -535,7 +535,7 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   T <- check_T(T, m, n)
   
   # create R
-  R <- check_R(R)
+  R <- check_R(R, m, n)
   
   a1 <- check_a1(a1, m)
   P1 <- check_P1(P1, m)
