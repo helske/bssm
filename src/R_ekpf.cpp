@@ -43,6 +43,7 @@ Rcpp::List ekpf(const arma::mat& y, SEXP Z, SEXP H,
   arma::cube Ptt(m, m, n + 1);
   filter_summary(alpha, at, att, Pt, Ptt, weights);
 
+  arma::inplace_trans(at);
   arma::inplace_trans(att);
   return Rcpp::List::create(
     Rcpp::Named("at") = at, Rcpp::Named("att") = att,
