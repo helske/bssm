@@ -743,7 +743,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
   
   
-  if(ncol(xreg) > 1) {
+  if(ncol(regression_part$xreg) > 1) {
     priors <- c(list(sd_y, sd_level, sd_slope, sd_seasonal), 
       regression_part$beta)
   } else {
@@ -997,7 +997,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   names(a1) <- rownames(P1) <- colnames(P1) <- rownames(Z) <-
     rownames(T) <- colnames(T) <- rownames(R) <- state_names
   
-  if(ncol(xreg) > 1) {
+  if(ncol(regression_part$xreg) > 1) {
     priors <- c(list(sd_level, sd_slope, sd_seasonal, sd_noise, phi), 
       regression_part$beta)
   } else {
@@ -1209,7 +1209,7 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta,
     rownames(T) <- colnames(T) <- rownames(R) <- "signal"
   
   
-  if(ncol(xreg) > 1) {
+  if(ncol(regression_part$xreg) > 1) {
     priors <- c(list(rho, sigma, mu, phi), beta)
   } else {
     priors <- list(rho, sigma, mu, phi, beta)
@@ -1303,7 +1303,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
     rownames(T) <- colnames(T) <- rownames(R) <- "signal"
   
   
-  if(ncol(xreg) > 1) {
+  if(ncol(regression_part$xreg) > 1) {
     priors <- c(list(rho, sigma, mu, sd_y), regression_part$beta)
   } else {
     priors <- list(rho, sigma, mu, sd_y, regression_part$beta)
