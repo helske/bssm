@@ -140,7 +140,8 @@ combine_priors <- function(x) {
   if (length(x) == 0) 
     return(list(prior_distributions = 0, parameters = matrix(0, 0, 0)))
   
-  prior_distributions <- vapply(x, "[[", "prior_distribution", character(1))
+  prior_distributions <- vapply(x, "[[", "prior_distribution", 
+    FUN.VALUE = character(1))
   parameters <- matrix(NA, 4, length(prior_distributions))
   for (i in seq_along(prior_distributions)) {
     parameters[1:(length(x[[i]]) - 2), i] <- as.numeric(x[[i]][-(1:2)])

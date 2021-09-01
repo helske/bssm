@@ -11,7 +11,7 @@ test_that("bad argument values for bsm throws an error", {
   expect_error(bsm_lg(1:10, xreg = matrix(NA)))
   expect_error(bsm_lg(1:10, xreg = matrix(1:20), beta = uniform(0, 0, 1)))
   expect_error(bsm_lg(1:10, xreg = 1:10, beta = NA))
-  expect_error(bsm_lg(1:10, 1, 1, 1, a1 = 1))
+  expect_error(bsm_lg(1:10, 1, 1, 1, a1 = 1:4))
   expect_error(bsm_lg(1:10, 1, 1, 1, 1))
 })
 
@@ -36,7 +36,7 @@ test_that("bad argument values for bsm_ng throws an error", {
   expect_error(bsm_ng(1:10, xreg = matrix(1:20), beta = uniform(0, 0, 1), 
     distribution = "poisson"))
   expect_error(bsm_ng(1:10, xreg = 1:10, beta = NA, distribution = "poisson"))
-  expect_error(bsm_ng(1:10, 1, 1, a1 = 1, distribution = "poisson"))
+  expect_error(bsm_ng(1:10, 1, 1, a1 = "a", distribution = "poisson"))
   expect_error(bsm_ng(1:10, 1, 1, 1, 1, distribution = "poisson"))
 })
 

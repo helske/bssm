@@ -6,7 +6,7 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
         stop("Argument y must be a numeric matrix or multivariate ts object.")
       }
     } else {
-      if (!(is.vector(x) && !is.list(x)) && !is.numeric(x)) {
+      if (!is.numeric(unclass(x))) {
         stop("Argument y must be a numeric vector or ts object.")
       }
       if (distribution != "gaussian" && any(na.omit(x) < 0)) {
@@ -15,7 +15,7 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
       } else {
         if (distribution %in% 
             c("negative binomial", "binomial", "poisson") && 
-            any(na.omit(x != as.integer(x)))) {
+            any(na.omit(x[is.finite(x)] != as.integer(x[is.finite(x)])))) {
           stop(paste0("Non-integer values not allowed for ", distribution, 
             " distribution. "))
         }
@@ -28,7 +28,6 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
       stop("Length of argument y must be at least two.")
     }
   }
-  
 }
 
 check_distribution <- function(x, distribution) {
@@ -80,7 +79,7 @@ check_xreg <- function(x, n) {
 }
 
 check_beta <- function(x, k) {
-  
+  if(!is.numeric(x)) stop("'beta' must be numeric. ")
   if (length(x) != k) {
     stop(paste("Number of coefficients in beta is not equal to the number",
       "of columns of xreg.", sep = " "))
@@ -147,9 +146,10 @@ check_target <- function(target) {
 
 
 check_D <- function(x, p, n) {
-  if (missing(x)) {
-    if (p == 1) 0 else matrix(0, p, 1)
+  if (missing(x) || is.null(x)) {
+    x <- if (p == 1) 0 else matrix(0, p, 1)
   } else {
+    if(!is.numeric(x)) stop("'D' must be numeric. ")
     if (p == 1) {
       if (!(length(x) %in% c(1, n))) {
         stop(paste("'D' must be a scalar or length n, where n is the number of",
@@ -167,9 +167,10 @@ check_D <- function(x, p, n) {
 }
 
 check_C <- function(x, m, n) {
-  if (missing(x)) {
-    matrix(0, m, 1)
+  if (missing(x) || is.null(x)) {
+    x <- matrix(0, m, 1)
   } else {
+    if(!is.numeric(x)) stop("'C' must be numeric. ")
     if (is.null(dim(x)) || nrow(x) != m || !(ncol(x) %in% c(1, n))) {
       stop(paste("'C' must be m x 1 or m x n matrix, where m is", 
       "the number of states.", sep = " "))
@@ -179,7 +180,7 @@ check_C <- function(x, m, n) {
 }
 
 create_regression <- function(beta, xreg, n) {
-  if (is.null(xreg)) {
+  if (missing(xreg) || is.null(xreg)) {
     list(xreg = matrix(0, 0, 0), coefs = numeric(0), beta = NULL)
   } else {
     if (missing(beta) || is.null(beta)) {
@@ -211,8 +212,9 @@ create_regression <- function(beta, xreg, n) {
   }
 }
 
-check_Z <- function(x, p, n) {
-  if (p == 1) {
+check_Z <- function(x, p, n, multivariate = FALSE) {
+  if(!is.numeric(x)) stop("'Z' must be numeric. ")
+  if (!multivariate) {
     if (length(x) == 1) {
       dim(x) <- c(1, 1)
     } else {
@@ -239,6 +241,7 @@ check_Z <- function(x, p, n) {
 }
 
 check_T <- function(x, m, n) {
+  if(!is.numeric(x)) stop("'T' must be numeric. ")
   if (length(x) == 1 && m == 1) {
     dim(x) <- c(1, 1, 1)
   } else {
@@ -256,6 +259,7 @@ check_R <- function(x, m, n) {
   if (length(x) == m) {
     dim(x) <- c(m, 1, 1)
   } else {
+    if(!is.numeric(x)) stop("'R' must be numeric. ")
     if (!(dim(x)[1] == m) || dim(x)[2] > m || !dim(x)[3] %in% c(1, NA, n)) {
       stop(paste("'R' must be a (m x k) matrix, (m x k x 1) or", 
         "(m x k x n) array, where k<=m is the number of disturbances eta,", 
@@ -269,9 +273,10 @@ check_R <- function(x, m, n) {
 }
 
 check_a1 <- function(x, m) {
-  if (missing(x)) {
+  if (missing(x) || is.null(x)) {
     x <- numeric(m)
   } else {
+    if(!is.numeric(x)) stop("'a1' must be numeric. ")
     if (length(x) == 1 || length(x) == m) {
       x <- rep(x, length.out = m)
     } else {
@@ -283,9 +288,10 @@ check_a1 <- function(x, m) {
 }
 
 check_P1 <- function(x, m) {
-  if (missing(x)) {
+  if (missing(x) || is.null(x)) {
     x <- matrix(0, m, m)
   } else {
+    if(!is.numeric(x)) stop("'P1' must be numeric. ")
     if (length(x) == 1 && m == 1) {
       dim(x) <- c(1, 1)
     } else {
@@ -297,8 +303,11 @@ check_P1 <- function(x, m) {
   x
 }
 
-check_H <- function(x, p, n) {
-  if (p == 1) {
+check_H <- function(x, p, n, multivariate = FALSE) {
+  
+  if(!is.numeric(x)) stop("'H' must be numeric. ")
+  
+  if (!multivariate) {
     if (!(length(x) %in% c(1, n))) {
       stop(paste("'H' must be a scalar or length n, where n is the length of",
         "the time series y", sep = " "))

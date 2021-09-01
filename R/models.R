@@ -178,8 +178,8 @@ default_update_fn <- function(theta) {
 #' out2 <- run_mcmc(model_bssm2, iter = 10000, burnin = 5000) 
 #' out2
 #' }
-ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
-  D, C, state_names, update_fn = default_update_fn, 
+ssm_ulg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL, init_theta = numeric(0),
+  D = NULL, C = NULL, state_names, update_fn = default_update_fn, 
   prior_fn = default_prior_fn) {
   
   check_y(y)
@@ -294,8 +294,9 @@ ssm_ulg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #' # approximate results based on Gaussian approximation
 #' out <- smoother(model)
 #' ts.plot(cbind(model$y / model$u, exp(out$alphahat)), col = 1:2)
-ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, 
-  init_theta = numeric(0), D, C, state_names, update_fn = default_update_fn,
+ssm_ung <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution, phi = 1, 
+  u = 1, init_theta = numeric(0), D = NULL, C = NULL, state_names, 
+  update_fn = default_update_fn,
   prior_fn = default_prior_fn) {
   
   
@@ -411,9 +412,9 @@ ssm_ung <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
 #'   R = 0.05, Z = matrix(1, 2, 1), T = 1, P1 = 10)
 #' ts.plot(cbind(model_temp$y, smoother(model_temp)$alphahat),col=1:3)
 #' 
-ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
-  D, C, state_names, update_fn = default_update_fn, 
-  prior_fn = default_prior_fn) {
+ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL, 
+  init_theta = numeric(0), D = NULL, C = NULL, state_names, 
+  update_fn = default_update_fn, prior_fn = default_prior_fn) {
   
   # create y
   check_y(y, multivariate = TRUE)
@@ -421,7 +422,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
   p <- ncol(y)
   
   # create Z
-  Z <- check_Z(Z, p, n)
+  Z <- check_Z(Z, p, n, multivariate = TRUE)
   m <- dim(Z)[2]
   
   T <- check_T(T, m, n)
@@ -435,7 +436,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
   D <- check_D(D, p, n)
   C <- check_C(C, m, n)
   
-  H <- check_H(H, p, n)
+  H <- check_H(H, p, n, multivariate = TRUE)
   
   if (missing(state_names)) {
     state_names <- paste("state", 1:m)
@@ -510,9 +511,9 @@ ssm_mlg <- function(y, Z, H, T, R, a1, P1, init_theta = numeric(0),
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_mng}.
 #' @export
-ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1, 
-  init_theta = numeric(0), D, C, state_names, update_fn = default_update_fn,
-  prior_fn = default_prior_fn) {
+ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution, 
+  phi = 1, u = 1, init_theta = numeric(0), D = NULL, C = NULL, state_names, 
+  update_fn = default_update_fn, prior_fn = default_prior_fn) {
   
   # create y
   
@@ -529,7 +530,7 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
   }
   
   # create Z
-  Z <- check_Z(Z, p, n)
+  Z <- check_Z(Z, p, n, multivariate = TRUE)
   m <- dim(Z)[2]
   
   T <- check_T(T, m, n)
@@ -611,7 +612,8 @@ ssm_mng <- function(y, Z, T, R, a1, P1, distribution, phi = 1, u = 1,
 #' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
 #'
 bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
-  beta, xreg = NULL, period = frequency(y), a1, P1, D, C) {
+  beta, xreg = NULL, period = frequency(y), a1 = NULL, P1 = NULL, D = NULL, 
+  C = NULL) {
   
   check_y(y)
   n <- length(y)
@@ -840,8 +842,8 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'   ggplot(aes(y = value, x = iter)) + geom_line()
 #' }
 bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
-  distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), a1, P1,
-  C) {
+  distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), 
+  a1 = NULL, P1 = NULL, C = NULL) {
   
   
   distribution <- match.arg(distribution, 
