@@ -45,8 +45,8 @@ Rcpp::List ekpf(const arma::mat& y, SEXP Z, SEXP H,
 
   arma::inplace_trans(att);
   return Rcpp::List::create(
-    Rcpp::Named("att") = att,
-    Rcpp::Named("Ptt") = Ptt,
+    Rcpp::Named("at") = at, Rcpp::Named("att") = att,
+    Rcpp::Named("Pt") = Pt, Rcpp::Named("Ptt") = Ptt,
     Rcpp::Named("weights") = weights,
     Rcpp::Named("logLik") = loglik, Rcpp::Named("alpha") = alpha);
 }
