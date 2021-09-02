@@ -29,7 +29,7 @@ test_that("MCMC results for Gaussian model are correct", {
   expect_gte(min(mcmc_bsm$theta), 0)
   expect_lt(max(mcmc_bsm$theta), Inf)
   expect_true(is.finite(sum(mcmc_bsm$alpha)))
-
+  
 })
 
 
@@ -66,7 +66,7 @@ test_that("DA-MCMC results for Poisson model are correct", {
     output_type = "theta", particles = 5)[-13], 
     run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, 
       output_type = "theta", particles = 5)[-13])
-
+  
   expect_gt(mcmc_poisson$acceptance_rate, 0)
   expect_gte(min(mcmc_poisson$theta), 0)
   expect_lt(max(mcmc_poisson$theta), Inf)
@@ -84,7 +84,7 @@ test_that("MCMC results for SV model using IS-correction are correct", {
     mcmc_type = "is1", seed = 1)[-16], 
     run_mcmc(model_bssm, iter = 100, particles = 10, mcmc_type = "is1", 
       seed = 1)[-16])
-
+  
   expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
     mcmc_type = "is2", seed = 1)[-16], 
     run_mcmc(model_bssm, iter = 100, particles = 10, mcmc_type = "is2", 
@@ -105,9 +105,16 @@ test_that("MCMC results for SV model using IS-correction are correct", {
     run_mcmc(model_bssm, iter = 100, particles = 10, 
       mcmc_type = "is2", seed = 1, sampling_mcmc_type = "bsf")[-16])
   
+  expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
+    mcmc_type = "is2", seed = 1, sampling_mcmc_type = "psi", 
+    threads = 2L)[-16], 
+    run_mcmc(model_bssm, iter = 100, particles = 10, 
+      mcmc_type = "is2", seed = 1, sampling_mcmc_type = "psi", 
+      threads = 2L)[-16])
+  
   expect_error(mcmc_sv <- run_mcmc(model_bssm, iter = 100, particles = 10,
     mcmc_type = "is2", seed = 1, sampling_mcmc_type = "bsf"), NA)
-    
+  
   expect_warning(expand_sample(mcmc_sv))
   
   expect_gt(mcmc_sv$acceptance_rate, 0)

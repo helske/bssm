@@ -1,7 +1,7 @@
-context("Test Gaussian approximation")
+context("Test EKF")
 
 
-test_that("Gaussian approximation results of bssm and KFAS coincide", {
+test_that("Particle filtering based on EKF works", {
   
   skip_on_cran()
   set.seed(1)
@@ -22,10 +22,40 @@ test_that("Gaussian approximation results of bssm and KFAS coincide", {
     log_prior_pdf = pntrs$log_prior_pdf,
     n_states = 1, n_etas = 1, state_names = "state"), NA)
   
-  expect_error(out <- ekpf_filter(model_nlg, 10), NA)
+  expect_error(out <- ekpf_filter(model_nlg, 100), NA)
   expect_lt(out$logLik, 6)
   expect_gt(out$logLik, 1)
   expect_gte(min(out$w), 0-1e16)
   expect_lte(max(out$w), 1+1e16)
   expect_warning(ekpf_filter(model_nlg, nsim = 10))
+  
+  out_ekf <- particle_smoother(model_nlg, 1000, method = "ekf")
+  out_psi <- particle_smoother(model_nlg, 1000, method = "psi")
+  out_bsf <- particle_smoother(model_nlg, 1000, method = "bsf")
+  expect_equal(out_ekf$alphahat[9:10], 
+    c(0.0263875638744833, 0.0734903567971838), tol = 0.1)
+  expect_equal(out_psi$alphahat[9:10], 
+    c(0.0263875638744833, 0.0734903567971838), tol = 0.1)
+  expect_equal(out_bsf$alphahat[9:10], 
+    c(0.0263875638744833, 0.0734903567971838), tol = 0.1)
+  
+})
+
+test_that("EKF and IEKF work", {
+  skip_on_cran()
+  set.seed(1)
+  n <- 10
+  x <- y <- numeric(n)
+  y[1] <- rnorm(1, exp(x[1]), 0.1)
+  for(i in 1:(n-1)) {
+    x[i+1] <- rnorm(1, sin(x[i]), 0.1)
+    y[i+1] <- rnorm(1, exp(x[i+1]), 0.1)
+  }
+  
+  pntrs <- nlg_example_models("sin_exp")
+  
+  expect_equal(ekf(model_nlg)$logLik, 3.55814184565819)
+  expect_equal(ekf(model_nlg, iekf_iter = 1)$logLik, 3.69550903344128)
+  expect_equal(ekf(model_nlg, iekf_iter = 1), 
+    ekf(model_nlg, iekf_iter = 2))
 })
