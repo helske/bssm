@@ -18,9 +18,9 @@ test_that("Test that BSF and PSI particle_smoother for LGSSM are with MC error",
       particle_smoother(model_bsm, 1e4, method = "psi", seed = 1), NA)
   expect_error(out2 <- 
       particle_smoother(model_bsm, 1e4, method = "bsf", seed = 1), NA)
-  expect_equal(out$alphahat, 
+  expect_equal(out1$alphahat, 
     out2$alphahat, tolerance = 1e-2)
-  expect_equal(out$Vt, 
+  expect_equal(out1$Vt, 
     out2$Vtt, tolerance = 1e-2)
 })
 
@@ -81,11 +81,11 @@ test_that("Particle smoother for NB bsm_ng returns finite values", {
 test_that("Particle smoother for svm returns finite values", {
   
   data("exchange")
-  model <- svm(exchange[1:20], rho = uniform(0.98, -0.999, 0.999), 
-    sd_ar = halfnormal(0.2, 5), sigma = halfnormal(0.2, 2))
+  model <- svm(exchange[1:20], rho = uniform(0.98, -1, 1),
+    sd_ar = halfnormal(0.01,0.1), mu = normal(0, 0, 1))
   
   expect_error(out1 <- 
-      particle_smoother(model, 1000, method = "psi", seed = 1), NA)
+      particle_smoother(model, 100, method = "psi", seed = 1), NA)
   expect_error(out2 <- 
       particle_smoother(model, 10000, method = "bsf", seed = 1), NA)
   
@@ -93,6 +93,6 @@ test_that("Particle smoother for svm returns finite values", {
   expect_true(is.finite(sum(out1$alphahat)))
   expect_true(is.finite(sum(out1$Vt)))
   
-  expect_equal(out1$alphahat, out2$alphahat, tol = 1e-2)
+  expect_equal(out1$alphahat, out2$alphahat, tol = 0.1)
 })
 
