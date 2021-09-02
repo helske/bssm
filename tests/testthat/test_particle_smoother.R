@@ -21,7 +21,7 @@ test_that("Test that BSF and PSI particle_smoother for LGSSM are with MC error",
   expect_equal(out1$alphahat, 
     out2$alphahat, tolerance = 1e-2)
   expect_equal(out1$Vt, 
-    out2$Vtt, tolerance = 1e-2)
+    out2$Vt, tolerance = 1e-2)
 })
 
 test_that("Particle smoother for LGSSM returns finite values", {
