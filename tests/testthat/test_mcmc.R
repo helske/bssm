@@ -42,6 +42,21 @@ test_that("DA-MCMC results for Poisson model are correct", {
   expect_error(mcmc_poisson <- run_mcmc(model_bssm, mcmc_type = "da", 
     iter = 100, particles = 5, seed = 42), NA)
   
+  expect_warning(summary(mcmc_poisson, only_theta = TRUE))
+  
+  sumr <- expect_error(summary(mcmc_poisson, variable = "both"), NA)
+  
+  expect_equal(sumr$theta, 
+    structure(c(0.25892090511681, 0.186796779799571), 
+      .Dim = 1:2, .Dimnames = list(
+    "sd_level", c("Mean", "SD"))), tol = 0.01)
+  
+  
+  states <- expand_sample(mcmc_poisson, variable = "states")
+  
+  expect_equal(as.numeric(sumr$states$Mean[,1]), 
+    as.numeric(colMeans(states$level)))
+  
   expect_equal(run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, 
     particles = 5)[-14], 
     run_mcmc(model_bssm, mcmc_type = "da", iter = 100, seed = 1, 
@@ -72,7 +87,7 @@ test_that("MCMC results for SV model using IS-correction are correct", {
     mcmc_type = "is1", seed = 1)[-16], 
     run_mcmc(model_bssm, iter = 100, particles = 10, mcmc_type = "is1", 
       seed = 1)[-16])
-  
+
   expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
     mcmc_type = "is2", seed = 1)[-16], 
     run_mcmc(model_bssm, iter = 100, particles = 10, mcmc_type = "is2", 
@@ -95,7 +110,9 @@ test_that("MCMC results for SV model using IS-correction are correct", {
   
   expect_error(mcmc_sv <- run_mcmc(model_bssm, iter = 100, particles = 10,
     mcmc_type = "is2", seed = 1, sampling_mcmc_type = "bsf"), NA)
-      
+    
+  expect_warning(expand_sample(mcmc_sv))
+  
   expect_gt(mcmc_sv$acceptance_rate, 0)
   expect_true(is.finite(sum(mcmc_sv$theta)))
   expect_true(is.finite(sum(mcmc_sv$alpha)))
