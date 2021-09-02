@@ -87,9 +87,9 @@ test_that("Particle smoother for svm returns finite values", {
   expect_error(out2 <- 
       particle_smoother(model, 10000, method = "bsf", seed = 1), NA)
   
-  expect_true(is.finite(sum(out$alpha)))
-  expect_true(is.finite(sum(out$alphahat)))
-  expect_true(is.finite(sum(out$Vt)))
+  expect_true(is.finite(sum(out1$alpha)))
+  expect_true(is.finite(sum(out1$alphahat)))
+  expect_true(is.finite(sum(out1$Vt)))
   
   expect_equal(out1$alphahat, out2$alphahat, tol = 1e-2)
 })
