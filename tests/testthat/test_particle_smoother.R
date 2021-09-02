@@ -64,8 +64,10 @@ test_that("Particle smoother for binomial bsm_ng returns finite values", {
 
 test_that("Particle smoother for NB bsm_ng returns finite values", {
   
-  expect_error(model <- bsm_ng(c(1, 0, 1, 1, 1, 0, 0, 0), sd_level = 2, 
-    sd_slope = 2, P1 = diag(2, 2), 
+  expect_error(model <- bsm_ng(c(1, 0, 1, 1, 1, 0, 0, 0), 
+    sd_level = uniform(0.1,0,1), 
+    sd_slope = halfnormal(0.1, 1), 
+    P1 = diag(2, 2), phi = gamma(1, 2, 2),
     distribution = "negative binomial"), NA)
   expect_error(out <- particle_smoother(model, 10, seed = 1), NA)
   
