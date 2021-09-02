@@ -17,11 +17,10 @@ arma::vec suggest_n_nongaussian(const Rcpp::List model_,
   const int model_type) {
   
   arma::vec sds(candidates.n_elem);
-  Rcpp::Function update_fn = model_["update_fn"];
   switch (model_type) {
   case 0: {
     ssm_mng model(model_, seed);
-    model.update_model(theta, update_fn);
+    model.update_model(theta, model_["update_fn"]);
     for(unsigned int i = 0; i < candidates.n_elem; i++) {
       int nsim = candidates(i);
       arma::cube alpha(model.m, model.n + 1, nsim);
@@ -37,7 +36,7 @@ arma::vec suggest_n_nongaussian(const Rcpp::List model_,
   } break;
   case 1: {
     ssm_ung model(model_, seed);
-    model.update_model(theta, update_fn);
+    model.update_model(theta, model_["update_fn"]);
     for(unsigned int i = 0; i < candidates.n_elem; i++) {
       int nsim = candidates(i);
       arma::cube alpha(model.m, model.n + 1, nsim);
@@ -53,7 +52,7 @@ arma::vec suggest_n_nongaussian(const Rcpp::List model_,
   } break;
   case 2: {
     bsm_ng model(model_, seed);
-    model.update_model(theta, update_fn);
+    model.update_model(theta);
     for(unsigned int i = 0; i < candidates.n_elem; i++) {
       int nsim = candidates(i);
       arma::cube alpha(model.m, model.n + 1, nsim);
@@ -69,7 +68,7 @@ arma::vec suggest_n_nongaussian(const Rcpp::List model_,
   } break;
   case 3: {
     svm model(model_, seed);
-    model.update_model(theta, update_fn);
+    model.update_model(theta);
     for(unsigned int i = 0; i < candidates.n_elem; i++) {
       int nsim = candidates(i);
       arma::cube alpha(model.m, model.n + 1, nsim);
@@ -85,7 +84,7 @@ arma::vec suggest_n_nongaussian(const Rcpp::List model_,
   } break;
   case 4: {
     ar1_ng model(model_, seed);
-    model.update_model(theta, update_fn);
+    model.update_model(theta);
     for(unsigned int i = 0; i < candidates.n_elem; i++) {
       int nsim = candidates(i);
       arma::cube alpha(model.m, model.n + 1, nsim);
@@ -113,7 +112,6 @@ arma::vec suggest_n_nonlinear(const arma::mat& y, SEXP Z, SEXP H,
   const unsigned int n_etas,  const arma::uvec& time_varying,
   const arma::vec theta_map, const arma::vec candidates,
   const unsigned int replications, const unsigned int seed) {
-  
   
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
   Rcpp::XPtr<nmat_fnPtr> xpfun_H(H);
