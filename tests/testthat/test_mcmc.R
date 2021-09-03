@@ -122,6 +122,22 @@ test_that("MCMC results for SV model using IS-correction are correct", {
   expect_true(is.finite(sum(mcmc_sv$alpha)))
   expect_gte(min(mcmc_sv$weights), 0)
   expect_lt(max(mcmc_sv$weights), Inf)
+  
+  expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
+    mcmc_type = "pm", seed = 1, sampling_mcmc_type = "psi",
+    output_type = "summary")[-15], 
+    run_mcmc(model_bssm, iter = 100, particles = 10, 
+      mcmc_type = "pm", seed = 1, sampling_mcmc_type = "psi", 
+      output_type = "summary")[-15])
+  
+  expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
+    mcmc_type = "is2", seed = 1, sampling_mcmc_type = "psi", 
+    output_type = "summary",
+    threads = 2L)[-17], 
+    run_mcmc(model_bssm, iter = 100, particles = 10, 
+      mcmc_type = "is2", seed = 1, sampling_mcmc_type = "psi", 
+      output_type = "summary",
+      threads = 2L)[-17])
 })
 
 
