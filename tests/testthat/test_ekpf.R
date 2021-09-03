@@ -54,6 +54,13 @@ test_that("EKF and IEKF work", {
   
   pntrs <- nlg_example_models("sin_exp")
   
+  expect_error(model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
+    Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
+    Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+    theta = c(log_H = log(0.1), log_R = log(0.1)), 
+    log_prior_pdf = pntrs$log_prior_pdf,
+    n_states = 1, n_etas = 1, state_names = "state"), NA)
+  
   expect_equal(ekf(model_nlg)$logLik, 3.55814184565819)
   expect_equal(ekf(model_nlg, iekf_iter = 1)$logLik, 3.69550903344128)
   expect_equal(ekf(model_nlg, iekf_iter = 1), 

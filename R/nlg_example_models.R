@@ -261,6 +261,8 @@ nlg_example_models <- function(example, return_code = FALSE) {
       '
     })
   if (!return_code) {
+    # create dummy variable to get rid of "undefined variable" note
+    create_xptrs <- NULL
     Rcpp::sourceCpp(code = code)
     create_xptrs()
   } else code
