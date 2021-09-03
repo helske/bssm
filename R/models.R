@@ -1214,9 +1214,9 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta,
   
   
   if(ncol(regression_part$xreg) > 1) {
-    priors <- c(list(rho, sigma, mu, phi), beta)
+    priors <- c(list(rho, sigma, mu, phi), regression_part$beta)
   } else {
-    priors <- list(rho, sigma, mu, phi, beta)
+    priors <- list(rho, sigma, mu, phi, regression_part$beta)
   }
   names(priors) <-
     c("rho", "sigma", "mu", "phi", names(regression_part$coefs))

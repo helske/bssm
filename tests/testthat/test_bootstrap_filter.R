@@ -32,6 +32,16 @@ test_that("Test that gaussian bsf still works", {
   expect_true(is.finite(bsf_ssm_ulg$logLik))
   expect_true(is.finite(sum(bsf_ssm_ulg$att)))
   expect_true(is.finite(sum(bsf_ssm_ulg$Ptt)))
+  
+  expect_error(model_ar1_lg <- ar1_lg(y = 1:10, rho = tnormal(0.6, 0, 0.5, -1, 1),
+    sigma = gamma(1,2,2), sd_y = 0.1, mu = 1), NA)
+  expect_error(bsf_ar1_lg <- bootstrap_filter(model_ar1_lg, 10, seed = 1), 
+    NA)
+  expect_gte(min(bsf_ar1_lg$weights), 0)
+  expect_lt(max(bsf_ar1_lg$weights), Inf)
+  expect_true(is.finite(bsf_ar1_lg$logLik))
+  expect_true(is.finite(sum(bsf_ar1_lg$att)))
+  expect_true(is.finite(sum(bsf_ar1_lg$Ptt)))
 })
 
 test_that("Test that poisson bsm_ng still works", {
@@ -47,10 +57,12 @@ test_that("Test that poisson bsm_ng still works", {
   expect_true(is.finite(sum(bsf_poisson$Ptt)))
 })
 
-test_that("Test that binomial bsm_ng still works", {
+test_that("Test that binomial ar1_ng still works", {
   
-  expect_error(model <- bsm_ng(c(1, 0, 1, 1, 1, 0, 0, 0), sd_level = 2, 
-    sd_slope = 2, P1 = diag(2, 2), 
+  expect_error(model <- ar1_ng(c(1, 0, 1, 1, 1, 0, 0, 0), 
+    rho = uniform(0.9, 0, 1), sigma = gamma(1, 2, 2), 
+    mu = normal(1, 0, 1), 
+    xreg = 1:8, beta = normal(0, 0, 0.1),
     distribution = "binomial"), NA)
   expect_error(bsf_binomial <- bootstrap_filter(model, 10, seed = 1), NA)
   
@@ -61,7 +73,6 @@ test_that("Test that binomial bsm_ng still works", {
   expect_true(is.finite(sum(bsf_binomial$Ptt)))
   
 })
-
 
 
 test_that("Test that negative binomial bsm_ng still works", {

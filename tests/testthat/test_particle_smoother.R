@@ -96,3 +96,49 @@ test_that("Particle smoother for svm returns finite values", {
   expect_equal(out1$alphahat, out2$alphahat, tol = 0.1)
 })
 
+tol <- 1e-8
+test_that("Test that gaussian bsf smoother still works", {
+  
+  expect_error(model_ssm_ulg <- ssm_ulg(y = 1:10, Z = matrix(c(1, 0), 2, 1),
+    H = 2, T = array(c(1, 0, 1, 1), c(2, 2, 1)), 
+    R = array(diag(2, 2), c(2, 2, 1)), 
+    a1 = matrix(0, 2, 1), P1 = diag(2, 2), state_names = c("level", "slope")), 
+    NA)
+  expect_error(bsf_ssm_ulg <- particle_smoother(model_ssm_ulg, 10, seed = 1, 
+    method = "bsf"), 
+    NA)
+  expect_gte(min(bsf_ssm_ulg$weights), 0)
+  expect_lt(max(bsf_ssm_ulg$weights), Inf)
+  expect_true(is.finite(bsf_ssm_ulg$logLik))
+  expect_true(is.finite(sum(bsf_ssm_ulg$alphahat)))
+  expect_true(is.finite(sum(bsf_ssm_ulg$Vt)))
+  
+  expect_error(model_ar1_lg <- ar1_lg(y = 1:10, rho = tnormal(0.6, 0, 0.5, -1, 1),
+    sigma = gamma(1,2,2), sd_y = 0.1, mu = 1), NA)
+  expect_error(bsf_ar1_lg <- particle_smoother(model_ar1_lg, 10, seed = 1, 
+    method = "bsf"), NA)
+  expect_gte(min(bsf_ar1_lg$weights), 0)
+  expect_lt(max(bsf_ar1_lg$weights), Inf)
+  expect_true(is.finite(bsf_ar1_lg$logLik))
+  expect_true(is.finite(sum(bsf_ar1_lg$alphahat)))
+  expect_true(is.finite(sum(bsf_ar1_lg$Vt)))
+})
+
+
+test_that("Test that binomial ar1_ng still works", {
+  
+  expect_error(model <- ar1_ng(c(1, 0, 1, 1, 1, 0, 0, 0), 
+    rho = uniform(0.9, 0, 1), sigma = gamma(1, 2, 2), 
+    mu = normal(1, 0, 1), 
+    xreg = 1:8, beta = normal(0, 0, 0.1),
+    distribution = "binomial"), NA)
+  expect_error(bsf_binomial <- particle_smoother(model, 10, method = "bsf", 
+    seed = 1), NA)
+  
+  expect_gte(min(bsf_binomial$weights), 0)
+  expect_lt(max(bsf_binomial$weights), Inf)
+  expect_true(is.finite(bsf_binomial$logLik))
+  expect_true(is.finite(sum(bsf_binomial$alphahat)))
+  expect_true(is.finite(sum(bsf_binomial$Vt)))
+  
+})
