@@ -65,4 +65,12 @@ test_that("EKF and IEKF work", {
   expect_equal(ekf(model_nlg, iekf_iter = 1)$logLik, 3.69550903344128)
   expect_equal(ekf(model_nlg, iekf_iter = 1), 
     ekf(model_nlg, iekf_iter = 2))
+  
+  out_ekf1 <- ekf_smoother(model_nlg)
+  out_ekf2 <- ekf_fast_smoother(model_nlg)
+  expect_equal(out_ekf1$alphahat[9:10], 
+    c(0.0333634309012196, 0.0797729159367873), tol = 0.1)
+  expect_equal(out_ekf1$alphahat, out_ekf2)
+  
+  expect_error(ukf(model_nlg), NA)
 })

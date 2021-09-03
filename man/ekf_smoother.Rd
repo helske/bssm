@@ -2,9 +2,12 @@
 % Please edit documentation in R/smoother.R
 \name{ekf_smoother}
 \alias{ekf_smoother}
+\alias{ekf_fast_smoother}
 \title{Extended Kalman Smoothing}
 \usage{
 ekf_smoother(model, iekf_iter = 0)
+
+ekf_fast_smoother(model, iekf_iter = 0)
 }
 \arguments{
 \item{model}{Model model}
@@ -21,5 +24,6 @@ smoothed state estimates \code{alphahat}, and the corresponding variances
 Function \code{ekf_smoother} runs the (iterated) extended Kalman smoother 
 for the given non-linear Gaussian model of class \code{ssm_nlg}, 
 and returns the smoothed estimates of the states and the corresponding 
-variances.
+variances. Function \code{ekf_fast_smoother} computes only smoothed 
+estimates of the states.
 }

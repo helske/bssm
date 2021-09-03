@@ -62,7 +62,8 @@ smoother.nongaussian <- function(model, ...) {
 #' Function \code{ekf_smoother} runs the (iterated) extended Kalman smoother 
 #' for the given non-linear Gaussian model of class \code{ssm_nlg}, 
 #' and returns the smoothed estimates of the states and the corresponding 
-#' variances.
+#' variances. Function \code{ekf_fast_smoother} computes only smoothed 
+#' estimates of the states.
 #'
 #' @param model Model model
 #' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter is 
@@ -72,7 +73,6 @@ smoother.nongaussian <- function(model, ...) {
 #' \code{Vt} and \code{Ptt}.
 #' @export
 #' @rdname ekf_smoother
-#' @export
 ekf_smoother <- function(model, iekf_iter = 0) {
   
   out <- ekf_smoother_nlg(t(model$y), model$Z, model$H, model$T, 
@@ -88,7 +88,8 @@ ekf_smoother <- function(model, iekf_iter = 0) {
     start = start(model$y), frequency = frequency(model$y))
   out
 }
-
+#' @rdname ekf_smoother
+#' @export
 ekf_fast_smoother <- function(model, iekf_iter = 0) {
   
   out <- ekf_fast_smoother_nlg(t(model$y), model$Z, model$H, model$T, 
@@ -96,9 +97,7 @@ ekf_fast_smoother <- function(model, iekf_iter = 0) {
     model$theta, model$log_prior_pdf, model$known_params, 
     model$known_tv_params, model$n_states, model$n_etas, 
     as.integer(model$time_varying), iekf_iter)
-  colnames(out$alphahat) <- colnames(out$Vt) <-
-    rownames(out$Vt) <- model$state_names
-  ts(out[-nrow(out$alphahat), , drop = FALSE], start = start(model$y), 
+  colnames(out$alphahat) <- model$state_names
+  ts(out$alphahat[-nrow(out$alphahat),, drop = FALSE], start = start(model$y), 
     frequency = frequency(model$y))
 }
-
