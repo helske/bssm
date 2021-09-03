@@ -101,7 +101,7 @@ test_that("MCMC for SDE works", {
   expect_gt(out$acceptance_rate, 0)
   
   expect_error(out <- run_mcmc(model, iter = 500, 
-    particles = 10, mcmc_type = "da", L_c = 2, LL_f = 3), NA)
+    particles = 10, mcmc_type = "da", L_c = 2, L_f = 3), NA)
   expect_gt(out$acceptance_rate, 0)
   
   expect_error(out2 <- run_mcmc(model, iter = 500, 

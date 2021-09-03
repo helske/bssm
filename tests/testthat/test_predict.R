@@ -43,7 +43,7 @@ test_that("Predictions for nlg_ssm work", {
   
   pntrs <- nlg_example_models("sin_exp")
   
-  expect_error(model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
+  expect_error(model <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
     Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
     Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
     theta = c(log_H = log(0.1), log_R = log(0.1)), 
