@@ -123,3 +123,75 @@ test_that("MCMC results for SV model using IS-correction are correct", {
   expect_gte(min(mcmc_sv$weights), 0)
   expect_lt(max(mcmc_sv$weights), Inf)
 })
+
+
+
+test_that("MCMC for nonlinear models work", {
+  skip_on_cran()
+  set.seed(1)
+  n <- 10
+  x <- y <- numeric(n)
+  y[1] <- rnorm(1, exp(x[1]), 0.1)
+  for(i in 1:(n-1)) {
+    x[i+1] <- rnorm(1, sin(x[i]), 0.1)
+    y[i+1] <- rnorm(1, exp(x[i+1]), 0.1)
+  }
+  
+  pntrs <- nlg_example_models("sin_exp")
+  
+  expect_error(model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
+    Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
+    Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+    theta = c(log_H = log(0.1), log_R = log(0.1)), 
+    log_prior_pdf = pntrs$log_prior_pdf,
+    n_states = 1, n_etas = 1, state_names = "state"), NA)
+  
+  
+  expect_equal(run_mcmc(model_nlg, iter = 100, particles = 10,
+    mcmc_type = "is1", seed = 1, sampling_mcmc_type = "psi")[-16], 
+    run_mcmc(model_nlg, iter = 100, particles = 10, 
+      mcmc_type = "is1", seed = 1, sampling_mcmc_type = "psi")[-16])
+  
+  expect_equal(run_mcmc(model_nlg, iter = 100, particles = 10,
+    mcmc_type = "is2", seed = 1, sampling_mcmc_type = "bsf")[-16], 
+    run_mcmc(model_nlg, iter = 100, particles = 10, 
+      mcmc_type = "is2", seed = 1, sampling_mcmc_type = "bsf")[-16])
+  
+  expect_equal(run_mcmc(model_nlg, iter = 100, particles = 10,
+    mcmc_type = "is3", seed = 1, sampling_mcmc_type = "ekf")[-16], 
+    run_mcmc(model_nlg, iter = 100, particles = 10, 
+      mcmc_type = "is3", seed = 1, sampling_mcmc_type = "ekf")[-16])
+  
+  expect_equal(run_mcmc(model_nlg, iter = 100, particles = 10,
+    mcmc_type = "is2", seed = 1, sampling_mcmc_type = "psi", 
+    threads = 2L)[-16], 
+    run_mcmc(model_nlg, iter = 100, particles = 10, 
+      mcmc_type = "is2", seed = 1, sampling_mcmc_type = "psi", 
+      threads = 2L)[-16])
+  
+  
+  expect_equal(run_mcmc(model_nlg, iter = 100, particles = 10,
+    mcmc_type = "pm", seed = 1, sampling_mcmc_type = "psi",
+    output_type = "summary")[-15], 
+    run_mcmc(model_nlg, iter = 100, particles = 10, 
+      mcmc_type = "pm", seed = 1, sampling_mcmc_type = "psi", 
+      output_type = "summary")[-15])
+  
+  expect_equal(run_mcmc(model_nlg, iter = 100, particles = 10,
+    mcmc_type = "is2", seed = 1, sampling_mcmc_type = "psi", 
+    output_type = "summary",
+    threads = 2L)[-17], 
+    run_mcmc(model_nlg, iter = 100, particles = 10, 
+      mcmc_type = "is2", seed = 1, sampling_mcmc_type = "psi", 
+      output_type = "summary",
+      threads = 2L)[-17])
+  
+  expect_error(out<-run_mcmc(model_nlg, iter = 100, particles = 10,
+    mcmc_type = "da", seed = 1, sampling_mcmc_type = "bsf"), NA)
+  
+  expect_equal(sum(is.na(out$theta)), 0)
+  expect_equal(sum(is.na(out$alpha)), 0)
+  expect_equal(sum(!is.finite(out$theta)), 0)
+  expect_equal(sum(!is.finite(out$alpha)), 0)
+  
+})
