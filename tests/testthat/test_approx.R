@@ -138,6 +138,8 @@ test_that("Two iid model gives same results as two univariate models", {
 
 test_that("Gaussian approximation works for nonlinear models", {
  
+  skip_on_cran()
+  
   pntrs <- nlg_example_models("linear_gaussian")
   set.seed(1)
   y <- cumsum(rnorm(10)) + rnorm(10)
@@ -151,4 +153,26 @@ test_that("Gaussian approximation works for nonlinear models", {
     logLik(model_nlg, method = "ekf", particles = 0),
     logLik(gaussian_approx(model_nlg)))
   expect_equal(logLik(model_gaussian), logLik(gaussian_approx(model_nlg)))
+  
+  set.seed(1)
+  n <- 30
+  x <- y <- numeric(n)
+  y[1] <- rnorm(1, exp(x[1]), 0.1)
+  for(i in 1:(n-1)) {
+    x[i+1] <- rnorm(1, sin(x[i]), 0.1)
+    y[i+1] <- rnorm(1, exp(x[i+1]), 0.1)
+  }
+  y[2:5] <- NA
+  pntrs <- nlg_example_models("sin_exp")
+  
+  expect_error(model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
+    Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
+    Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+    theta = c(log_H = log(0.1), log_R = log(0.1)), 
+    log_prior_pdf = pntrs$log_prior_pdf,
+    n_states = 1, n_etas = 1, state_names = "state"), NA)
+  
+  expect_equal(gaussian_approx(model_nlg), 
+    gaussian_approx(model_nlg, max_iter = 2))
+  
 })

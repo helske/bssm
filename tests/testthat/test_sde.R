@@ -98,7 +98,10 @@ test_that("MCMC for SDE works", {
   
   expect_error(out <- run_mcmc(model, iter = 500, 
     particles = 10, mcmc_type = "pm", L_f = 2), NA)
+  expect_gt(out$acceptance_rate, 0)
   
+  expect_error(out <- run_mcmc(model, iter = 500, 
+    particles = 10, mcmc_type = "da", L_c = 2, LL_f = 3), NA)
   expect_gt(out$acceptance_rate, 0)
   
   expect_error(out2 <- run_mcmc(model, iter = 500, 
@@ -106,4 +109,11 @@ test_that("MCMC for SDE works", {
   
   expect_gt(out2$acceptance_rate, 0)
   expect_equal(mean(colMeans(out$theta)-colMeans(out2$theta)), 0, tol = 1)
+  
+  expect_error(out2 <- run_mcmc(model, iter = 500, 
+    particles = 10, mcmc_type = "is1", L_c = 1, L_f = 2, threads = 2), NA)
+  
+  expect_gt(out2$acceptance_rate, 0)
+  expect_equal(mean(colMeans(out$theta)-colMeans(out2$theta)), 0, tol = 1)
+  
 })
