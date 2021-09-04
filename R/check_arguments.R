@@ -3,11 +3,27 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
   if (any(!is.na(x))) {
     if (multivariate) {
       if (!is.matrix(x)) {
-        stop("Argument y must be a numeric matrix or multivariate ts object.")
+        stop("Argument y must be a matrix or multivariate ts object.")
+      }
+      if (nrow(x) < 2) {
+        stop("Number of rows in y, i.e. number of time points, must be > 1. ")
       }
     } else {
-      if (!is.numeric(unclass(x)) || !is.vector(unclass(x))) {
-        stop("Argument y must be a numeric vector or ts object.")
+      if (!is.vector(x) || is.list(x)) {
+        if (is.ts(x) || is.matrix(x)) {
+          if (ncol(x) == 1 || length(dim(x)) < 3) {
+            dim(x) <- NULL
+          } else {
+            if(ncol(x) > 1) {
+              stop("Argument y must be a vector or univariate ts object.")
+            }
+          }
+        } else {
+          stop("Argument y must be a vector or univariate ts object.")
+        }
+      }
+      if (length(x) < 2) {
+        stop("Length of argument y, i.e. number of time points, must be > 1.")
       }
       if (distribution != "gaussian" && any(na.omit(x) < 0)) {
         stop(paste0("Negative values not allowed for ", distribution, 
@@ -24,10 +40,8 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
     if (any(is.infinite(x))) {
       stop("Argument y must contain only finite or NA values.")
     }
-    if (length(x) < 2) {
-      stop("Length of argument y must be at least two.")
-    }
   }
+  x
 }
 
 check_distribution <- function(x, distribution) {
@@ -173,7 +187,7 @@ check_C <- function(x, m, n) {
     if(!is.numeric(x)) stop("'C' must be numeric. ")
     if (is.null(dim(x)) || nrow(x) != m || !(ncol(x) %in% c(1, n))) {
       stop(paste("'C' must be m x 1 or m x n matrix, where m is", 
-      "the number of states.", sep = " "))
+        "the number of states.", sep = " "))
     } 
   }
   x
@@ -220,7 +234,7 @@ check_Z <- function(x, p, n, multivariate = FALSE) {
     } else {
       if (!(dim(x)[2] %in% c(1, NA, n))) {
         stop(paste("'Z' must be a (m x 1) or (m x n) matrix, where",
-         "m is the number of states and n is the length of the series. ",
+          "m is the number of states and n is the length of the series. ",
           sep = " "))
       } else {
         dim(x) <- 
@@ -230,8 +244,8 @@ check_Z <- function(x, p, n, multivariate = FALSE) {
   } else {
     if (dim(x)[1] != p || !(dim(x)[3] %in% c(1, NA, n))) {
       stop(paste("'Z' must be a (p x m) matrix or (p x m x n) array",
-      "where p is the number of series, m is the number of states,", 
-      "and n is the length of the series. ", sep = " "))
+        "where p is the number of series, m is the number of states,", 
+        "and n is the length of the series. ", sep = " "))
     } else {
       dim(x) <- 
         c(p, dim(x)[2], (n - 1) * (max(dim(x)[3], 0, na.rm = TRUE) > 1) + 1)

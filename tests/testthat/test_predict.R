@@ -37,6 +37,7 @@ test_that("Non-gaussian predictions work", {
     rho = uniform(0.9, 0, 0.99), mu = 0, 
     sigma = halfnormal(0.1, 1), distribution = "poisson")
   
+  set.seed(123)
   expect_error(mcmc_results <- run_mcmc(model, iter = 1000, particles = 5), NA)
   future_model <- model
   future_model$y <- rep(NA, 3)
@@ -54,6 +55,41 @@ test_that("Non-gaussian predictions work", {
   
   expect_equal(mean(yrep$value-meanrep$value), 0, tol = 0.1)
   
+  update_fn <- function(x) {
+    T <- array(x[1])
+    R <- array(x[2])
+    dim(T) <- dim(R) <- c(1, 1, 1)
+    P1 <- matrix(x[2]^2) / (1 - x[1]^2)
+    list(T = T, R = R, P1 = P1)
+  }
+  prior_fn <- function(x) {
+    ifelse(x[1] < 0 | x[1] > 0.99 | x[2] < 0, -Inf, - 0.5 * x[2]^2)
+  }
+  model2 <- ssm_ung(model$y, Z = 1, T = model$T, R = model$R, a1 = model$a1,
+    P1 = model$P1, distribution = "poisson", update_fn = update_fn, 
+    prior_fn = prior_fn, init_theta = model$theta, state_names = "signal")
+  
+  set.seed(123)
+  expect_error(mcmc_results2 <- run_mcmc(model2, iter = 1000, particles = 5), 
+    NA)
+  expect_equal(mcmc_results$theta, mcmc_results2$theta)
+  expect_equal(mcmc_results$alpha, mcmc_results2$alpha)
+  expect_equal(mcmc_results$posterior, mcmc_results2$posterior)
+  
+  future_model2 <- model2
+  future_model2$y <- rep(NA, 3)
+  expect_error(pred2 <- predict(mcmc_results2, future_model2, type = "mean", 
+    nsim = 100), NA)
+  expect_equal(pred, pred2)
+  # Posterior predictions for past observations:
+  yrep2 <- predict(mcmc_results2, model2, type = "response", 
+    future = FALSE, nsim = 100)
+  meanrep2 <- predict(mcmc_results2, model2, type = "mean", 
+    future = FALSE, nsim = 100)
+  expect_equal(yrep, yrep2)
+  expect_equal(meanrep, meanrep2)
+  expect_error(predict(mcmc_results2, model, type = "response", 
+    future = FALSE, nsim = 100))
 })
 
 test_that("Predictions for nlg_ssm work", {

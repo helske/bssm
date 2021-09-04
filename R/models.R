@@ -183,7 +183,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
   D = NULL, C = NULL, state_names, update_fn = default_update_fn, 
   prior_fn = default_prior_fn) {
   
-  check_y(y)
+  y <- check_y(y)
   n <- length(y)
   
   # create Z
@@ -305,7 +305,7 @@ ssm_ung <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution, phi = 1,
   distribution <- match.arg(distribution, 
     c("poisson", "binomial", "negative binomial", "gamma"))
   
-  check_y(y, distribution = distribution)
+  y <- check_y(y, distribution = distribution)
   n <- length(y)
   Z <- check_Z(Z, 1L, n)
   m <- dim(Z)[1]
@@ -419,7 +419,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
   update_fn = default_update_fn, prior_fn = default_prior_fn) {
   
   # create y
-  check_y(y, multivariate = TRUE)
+  y <- check_y(y, multivariate = TRUE)
   n <- nrow(y)
   p <- ncol(y)
   
@@ -519,7 +519,7 @@ ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution,
   
   # create y
   
-  check_y(y, multivariate = TRUE)
+  y <- check_y(y, multivariate = TRUE)
   n <- nrow(y)
   p <- ncol(y)
   if(length(distribution) == 1) distribution <- rep(distribution, p)
@@ -618,7 +618,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   beta, xreg = NULL, period = frequency(y), a1 = NULL, P1 = NULL, D = NULL, 
   C = NULL) {
   
-  check_y(y)
+  y <- check_y(y)
   n <- length(y)
   
   regression_part <- create_regression(beta, xreg, n)
@@ -852,7 +852,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   distribution <- match.arg(distribution, 
     c("poisson", "binomial", "negative binomial", "gamma"))
   
-  check_y(y, multivariate = FALSE, distribution)
+  y <- check_y(y, multivariate = FALSE, distribution)
   n <- length(y)
   
   regression_part <- create_regression(beta, xreg, n)
@@ -1082,7 +1082,7 @@ svm <- function(y, mu, rho, sd_ar, sigma) {
     stop("Define either sigma or mu, but not both.")
   }
   
-  check_y(y)
+  y <- check_y(y)
   
   check_rho(rho$init)
   check_sd(sd_ar$init, "rho")
@@ -1163,7 +1163,7 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta,
   distribution <- match.arg(distribution, 
     c("poisson", "binomial", "negative binomial", "gamma"))
   
-  check_y(y, multivariate = FALSE, distribution)
+  y <- check_y(y, multivariate = FALSE, distribution)
   
   n <- length(y)
   regression_part <- create_regression(beta, xreg, n)
@@ -1268,7 +1268,7 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta,
 #' summary(out, return_se = TRUE)
 ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
   
-  check_y(y)
+  y <- check_y(y)
   n <- length(y)
   regression_part <- create_regression(beta, xreg, n)
   
@@ -1471,7 +1471,7 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
 ssm_sde <- function(y, drift, diffusion, ddiffusion, obs_pdf,
   prior_pdf, theta, x0, positive) {
   
-  check_y(y)
+  y <- check_y(y)
   
   structure(list(y = as.ts(y), drift = drift,
     diffusion = diffusion,
