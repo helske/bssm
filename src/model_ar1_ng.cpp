@@ -13,13 +13,12 @@ void ar1_ng::update_model(const arma::vec& new_theta) {
   
   T(0, 0, 0) = new_theta(0);
   R(0, 0, 0) = new_theta(1);
+  RR(0, 0, 0) = std::pow(new_theta(1));
   if (mu_est) {
     a1(0) = new_theta(2);
     C.fill(new_theta(2) * (1.0 - new_theta(0)));
   }
-  P1(0, 0) = std::pow(new_theta(1), 2) / (1.0 - std::pow(new_theta(0), 2));
-  
-  compute_RR();
+  P1(0, 0) = RR(0, 0, 0) / (1.0 - std::pow(new_theta(0), 2));
   
   if(phi_est) {
     phi = new_theta(2 + mu_est);
@@ -37,13 +36,12 @@ void ar1_ng::update_model(const arma::vec& new_theta, const Rcpp::Function updat
   
   T(0, 0, 0) = new_theta(0);
   R(0, 0, 0) = new_theta(1);
+  RR(0, 0, 0) = std::pow(new_theta(1));
   if (mu_est) {
     a1(0) = new_theta(2);
     C.fill(new_theta(2) * (1.0 - new_theta(0)));
   }
-  P1(0, 0) = std::pow(new_theta(1), 2) / (1.0 - std::pow(new_theta(0), 2));
-  
-  compute_RR();
+  P1(0, 0) = RR(0, 0, 0) / (1.0 - std::pow(new_theta(0), 2));
   
   if(phi_est) {
     phi = new_theta(2 + mu_est);
