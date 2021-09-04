@@ -158,7 +158,7 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
           pmatch(type, c("response", "mean", "state")), 
           seed, 
           pmatch(attr(object, "model_type"), 
-            c("ssm_mng", "ssm_ulg", "bsm_lg", "ar1_lg")) - 1L)
+            c("ssm_mlg", "ssm_ulg", "bsm_lg", "ar1_lg")) - 1L)
         
       },
       ssm_mng =, 
