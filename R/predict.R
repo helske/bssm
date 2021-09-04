@@ -205,7 +205,8 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
       }
     } else {
       variables <- colnames(model$y)
-      if (is.null(variables)) variables <- "Series 1"
+      if (is.null(variables)) 
+        variables <- paste("Series", 1:max(1, ncol(model$y)))
     }
     d <- data.frame(value = as.numeric(pred),
       variable = variables,
@@ -240,7 +241,8 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
     } else {
       
       variables <- colnames(model$y)
-      if (is.null(variables)) variables <- "Series 1"
+      if (is.null(variables)) 
+        variables <- paste("Series", 1:max(1, ncol(model$y)))
       
       if (attr(object, "model_type") %in% c("bsm_lg", "bsm_ng")) {
         object$theta[, 1:(ncol(object$theta) - length(model$beta))] <- 
@@ -263,7 +265,7 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
             pmatch(type, c("response", "mean", "state")), 
             seed, 
             pmatch(attr(object, "model_type"), 
-              c("ssm_mng", "ssm_ulg", "bsm_lg", "ar1_lg")) - 1L)
+              c("ssm_mlg", "ssm_ulg", "bsm_lg", "ar1_lg")) - 1L)
           
         },
         ssm_mng =, 

@@ -6,10 +6,11 @@ test_that("Gaussian predictions work", {
   set.seed(1)
   y <- rnorm(10, cumsum(rnorm(10, 0, 0.1)), 0.1)
   model <- ar1_lg(y, 
-    rho = uniform(0.9, 0, 0.99), mu = 0, 
+    rho = uniform(0.9, 0, 1), mu = 0, 
     sigma = halfnormal(0.1, 1),
     sd_y = halfnormal(0.1, 1))
   
+  set.seed(123)
   mcmc_results <- run_mcmc(model, iter = 1000)
   future_model <- model
   future_model$y <- rep(NA, 3)
@@ -25,7 +26,47 @@ test_that("Gaussian predictions work", {
   meanrep <- predict(mcmc_results, model, type = "mean", 
     future = FALSE, nsim = 100)
   
-  expect_equal(mean(yrep$value-meanrep$value), 0, tol = 0.1)
+  expect_equal(mean(yrep$value - meanrep$value), 0, tol = 0.1)
+  
+  ufun <- function(x) {
+    T <- array(x[1])
+    R <- array(x[2])
+    H <- array(x[3])
+    dim(T) <- dim(R) <- dim(H) <- c(1, 1, 1)
+    P1 <- matrix(x[2]^2) / (1 - x[1]^2)
+    list(T = T, R = R, P1 = P1, H = H)
+  }
+  pfun <- function(x) {
+    ifelse(x[1] > 1 | any(x < 0), -Inf, - sum(0.5 * x[2:3]^2))
+  }
+  
+  expect_warning(model2 <- ssm_mlg(matrix(model$y, length(model$y), 1), 
+    Z = 1, H = model$H, T = model$T, R = model$R,
+    a1 = model$a1, P1 = model$P1, 
+    init_theta = c(rho = 0.9, sigma = 0.1, sd_y = 0.1),
+    update_fn = ufun, prior_fn = pfun, state_names = "signal"))
+  
+  set.seed(123)
+  expect_error(mcmc_results2 <- run_mcmc(model2, iter = 1000), 
+    NA)
+  expect_equal(mcmc_results$theta, mcmc_results2$theta)
+  expect_equal(mcmc_results$alpha, mcmc_results2$alpha)
+  expect_equal(mcmc_results$posterior, mcmc_results2$posterior)
+  
+  future_model2 <- model2
+  future_model2$y <- matrix(NA, 3, 1)
+  expect_error(pred2 <- predict(mcmc_results2, future_model2, type = "mean", 
+    nsim = 100), NA)
+  expect_equal(pred, pred2)
+  # Posterior predictions for past observations:
+  yrep2 <- predict(mcmc_results2, model2, type = "response", 
+    future = FALSE, nsim = 100)
+  meanrep2 <- predict(mcmc_results2, model2, type = "mean", 
+    future = FALSE, nsim = 100)
+  expect_equal(yrep, yrep2)
+  expect_equal(meanrep, meanrep2)
+  expect_error(predict(mcmc_results2, model, type = "response", 
+    future = FALSE, nsim = 100))
 
 })
 
