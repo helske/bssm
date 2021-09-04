@@ -128,7 +128,7 @@ arma::vec suggest_n_nonlinear(const arma::mat& y, SEXP Z, SEXP H,
     n_states, n_etas,
     time_varying, seed);
   
-  model.update_model(theta_map, R_NilValue);
+  model.update_model(theta_map);
   arma::vec sds(candidates.n_elem);
   for(unsigned int i = 0; i < candidates.n_elem; i++) {
     int nsim = candidates(i);
