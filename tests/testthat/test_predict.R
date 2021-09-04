@@ -34,7 +34,7 @@ test_that("Non-gaussian predictions work", {
   set.seed(1)
   y <- rpois(10, exp(cumsum(rnorm(10, 0, 0.1))))
   model <- ar1_ng(y, 
-    rho = uniform(0.9, 0, 0.99), mu = 0, 
+    rho = uniform(0.9, 0, 1), mu = 0, 
     sigma = halfnormal(0.1, 1), distribution = "poisson")
   
   set.seed(123)
@@ -63,7 +63,7 @@ test_that("Non-gaussian predictions work", {
     list(T = T, R = R, P1 = P1)
   }
   prior_fn <- function(x) {
-    ifelse(x[1] < 0 | x[1] > 0.99 | x[2] < 0, -Inf, - 0.5 * x[2]^2)
+    ifelse(x[1] < 0 | x[1] > 1 | x[2] < 0, -Inf, - 0.5 * x[2]^2)
   }
   model2 <- ssm_ung(model$y, Z = 1, T = model$T, R = model$R, a1 = model$a1,
     P1 = model$P1, distribution = "poisson", update_fn = update_fn, 

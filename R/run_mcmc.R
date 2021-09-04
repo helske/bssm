@@ -158,7 +158,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' @param particles Number of state samples per MCMC iteration.
 #' Ignored if \code{mcmc_type} is \code{"approx"}.
 #' @param output_type Either \code{"full"} 
-#' (default, returns posterior samples of states alpha and 
+#' (default, returns posterior samples of latent states alpha and 
 #' hyperparameters theta), \code{"theta"} (for marginal posterior of theta), 
 #' or \code{"summary"} (return the mean and variance estimates of the states 
 #' and posterior samples of theta).  In case of \code{"summary"}, means and 
@@ -444,7 +444,7 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
 #' @param particles Number of state samples per MCMC iteration. 
 #' Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.
 #' @param output_type Either \code{"full"} 
-#' (default, returns posterior samples of states alpha and 
+#' (default, returns posterior samples of latent states alpha and 
 #' hyperparameters theta), \code{"theta"} (for marginal posterior of theta), 
 #' or \code{"summary"} (return the mean and variance estimates of the states 
 #' and posterior samples of theta).  In case of \code{"summary"}, means and 
@@ -633,8 +633,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
 #' @param iter Number of MCMC iterations.
 #' @param particles Number of state samples per MCMC iteration.
 #' @param output_type Either \code{"full"} 
-#' (default, returns posterior samples of states alpha and hyperparameters 
-#' theta), \code{"theta"} (for marginal posterior of theta), 
+#' (default, returns posterior samples of latent states alpha and 
+#' hyperparameters theta), \code{"theta"} (for marginal posterior of theta), 
 #' or \code{"summary"} (return the mean and variance estimates of the states 
 #' and posterior samples of theta). In case of \code{"summary"}, means and 
 #' covariances are computed using the full output of particle filter 

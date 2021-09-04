@@ -513,6 +513,40 @@ ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_mng}.
 #' @export
+#' @examples
+#'  
+#' set.seed(1)
+#' n <- 20
+#' x <- cumsum(rnorm(n, sd = 0.5))
+#' phi <- 2
+#' y <- cbind(
+#'   rgamma(n, shape = phi, scale = exp(x) / phi),
+#'   rbinom(n, 10, plogis(x)))
+#' 
+#' Z <- matrix(1, 2, 1)
+#' T <- 1
+#' R <- 0.5
+#' a1 <- 0
+#' P1 <- 1
+#' 
+#' update_fn <- function(theta) {
+#'   list(R = array(theta[1], c(1, 1, 1)), phi = c(theta[2], 1))
+#' }
+#' 
+#' prior_fn <- function(theta) {
+#'   ifelse(all(theta > 0), sum(dnorm(theta, 0, 1, log = TRUE)), -Inf)
+#' }
+#' 
+#' model <- ssm_mng(y, Z, T, R, a1, P1, phi = c(2, 1), 
+#'   init_theta = c(0.5, 2), 
+#'   distribution = c("gamma", "binomial"),
+#'   u = cbind(1, rep(10, n)),
+#'   update_fn = update_fn, prior_fn = prior_fn)
+#'
+#' # smoothing based on approximating gaussian model
+#' ts.plot(cbind(y, fast_smoother(model)), 
+#'   col = 1:3, lty = c(1, 1, 2))
+#'     
 ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution, 
   phi = 1, u = 1, init_theta = numeric(0), D = NULL, C = NULL, state_names, 
   update_fn = default_update_fn, prior_fn = default_prior_fn) {
@@ -1157,6 +1191,15 @@ svm <- function(y, mu, rho, sd_ar, sigma) {
 #' @return Object of class \code{ar1_ng}.
 #' @export
 #' @rdname ar1_ng
+#' @examples 
+#' model <- ar1_ng(discoveries, rho = uniform(0.5,-1,1), 
+#'   sigma = halfnormal(0.1, 1), mu = normal(0, 0, 1), 
+#'   distribution = "poisson")
+#' out <- run_mcmc(model, iter = 1e4, mcmc_type = "approx",
+#'   output_type = "summary")
+#'   
+#' ts.plot(cbind(discoveries, exp(out$alphahat)), col = 1:2)
+#' 
 ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, 
   xreg = NULL) {
   
@@ -1381,6 +1424,29 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
 #' @param state_names Names for the states.
 #' @return Object of class \code{ssm_nlg}.
 #' @export
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' n <- 50
+#' x <- y <- numeric(n)
+#' y[1] <- rnorm(1, exp(x[1]), 0.1)
+#' for(i in 1:(n-1)) {
+#'  x[i+1] <- rnorm(1, sin(x[i]), 0.1)
+#'  y[i+1] <- rnorm(1, exp(x[i+1]), 0.1)
+#' }
+#' 
+#' pntrs <- nlg_example_models("sin_exp")
+#' 
+#' model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
+#'   Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
+#'   Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+#'   theta = c(log_H = log(0.1), log_R = log(0.1)), 
+#'   log_prior_pdf = pntrs$log_prior_pdf,
+#'   n_states = 1, n_etas = 1, state_names = "state")
+#'
+#' out <- ekf(model_nlg, 100)
+#' ts.plot(cbind(x, out$at[1:n], out$att[1:n]), col = 1:3)
+#' }
 ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
   known_params = NA, known_tv_params = matrix(NA), n_states, n_etas,
   log_prior_pdf, time_varying = rep(TRUE, 4), 
