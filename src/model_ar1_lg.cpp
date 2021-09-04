@@ -14,7 +14,7 @@ void ar1_lg::update_model(const arma::vec& new_theta) {
   
   T(0, 0, 0) = new_theta(0);
   R(0, 0, 0) = new_theta(1);
-  RR(0, 0, 0) = std::pow(new_theta(1));
+  RR(0, 0, 0) = std::pow(new_theta(1), 2);
   if (mu_est) {
     a1(0) = new_theta(2);
     C.fill(new_theta(2) * (1.0 - new_theta(0)));
@@ -35,10 +35,11 @@ void ar1_lg::update_model(const arma::vec& new_theta) {
 }
 void ar1_lg::update_model(const arma::vec& new_theta, const Rcpp::Function update_fn) {
   
-  
+  // sampling of all parameters is on constrained scale, would make sense to 
+  // modify as in bsm models
   T(0, 0, 0) = new_theta(0);
   R(0, 0, 0) = new_theta(1);
-  RR(0, 0, 0) = std::pow(new_theta(1));
+  RR(0, 0, 0) = std::pow(new_theta(1), 2);
   if (mu_est) {
     a1(0) = new_theta(2);
     C.fill(new_theta(2) * (1.0 - new_theta(0)));

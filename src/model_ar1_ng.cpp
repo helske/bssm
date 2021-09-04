@@ -13,7 +13,7 @@ void ar1_ng::update_model(const arma::vec& new_theta) {
   
   T(0, 0, 0) = new_theta(0);
   R(0, 0, 0) = new_theta(1);
-  RR(0, 0, 0) = std::pow(new_theta(1));
+  RR(0, 0, 0) = std::pow(new_theta(1), 2);
   if (mu_est) {
     a1(0) = new_theta(2);
     C.fill(new_theta(2) * (1.0 - new_theta(0)));
@@ -36,7 +36,7 @@ void ar1_ng::update_model(const arma::vec& new_theta, const Rcpp::Function updat
   
   T(0, 0, 0) = new_theta(0);
   R(0, 0, 0) = new_theta(1);
-  RR(0, 0, 0) = std::pow(new_theta(1));
+  RR(0, 0, 0) = std::pow(new_theta(1), 2);
   if (mu_est) {
     a1(0) = new_theta(2);
     C.fill(new_theta(2) * (1.0 - new_theta(0)));
