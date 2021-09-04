@@ -32,6 +32,12 @@ devtools::install_github("helske/bssm")
 Recent changes (For all changes, see NEWS file.)
 ==========================================================================
 
+bssm 1.1.6 (Release date: )
+==============
+   * Fixed a bug in EKF-based particle filter which returned filtered estimates 
+     also in place of one-step ahead predictions.
+   * Cleaned codes and added more comprehensive tests in line with pkgcheck tests.
+   
 bssm 1.1.4 (Release date: 2021-04-13)
 ==============
    * Better documentation for SV model, and changed ordering of arguments to emphasise the 
