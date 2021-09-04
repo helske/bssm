@@ -14,17 +14,17 @@ void ar1_lg::update_model(const arma::vec& new_theta) {
   
   T(0, 0, 0) = new_theta(0);
   R(0, 0, 0) = new_theta(1);
+  RR(0, 0, 0) = std::pow(new_theta(1));
   if (mu_est) {
     a1(0) = new_theta(2);
     C.fill(new_theta(2) * (1.0 - new_theta(0)));
   }
-  P1(0, 0) = std::pow(new_theta(1), 2) / (1.0 - std::pow(new_theta(0), 2));
+  P1(0, 0) = RR(0, 0, 0) / (1.0 - std::pow(new_theta(0), 2));
   
-  compute_RR();
   
   if(sd_y_est) {
     H(0) = new_theta(2 + mu_est);
-    HH(0) = H(0);
+    HH(0) = std::pow(H(0), 2);
   }
   
   if(xreg.n_cols > 0) {
@@ -38,17 +38,16 @@ void ar1_lg::update_model(const arma::vec& new_theta, const Rcpp::Function updat
   
   T(0, 0, 0) = new_theta(0);
   R(0, 0, 0) = new_theta(1);
+  RR(0, 0, 0) = std::pow(new_theta(1));
   if (mu_est) {
     a1(0) = new_theta(2);
     C.fill(new_theta(2) * (1.0 - new_theta(0)));
   }
-  P1(0, 0) = std::pow(new_theta(1), 2) / (1.0 - std::pow(new_theta(0), 2));
-  
-  compute_RR();
+  P1(0, 0) = RR(0, 0, 0) / (1.0 - std::pow(new_theta(0), 2));
   
   if(sd_y_est) {
     H(0) = new_theta(2 + mu_est);
-    HH(0) = H(0);
+    HH(0) = std::pow(H(0), 2);
   }
   
   if(xreg.n_cols > 0) {
