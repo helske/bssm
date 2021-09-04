@@ -242,14 +242,17 @@ check_Z <- function(x, p, n, multivariate = FALSE) {
       }
     } 
   } else {
-    if (dim(x)[1] != p || !(dim(x)[3] %in% c(1, NA, n))) {
-      stop(paste("'Z' must be a (p x m) matrix or (p x m x n) array",
-        "where p is the number of series, m is the number of states,", 
-        "and n is the length of the series. ", sep = " "))
+    if(p == 1 && length(x) == 1) {
+      dim(x) <- c(1, 1, 1)
     } else {
-      dim(x) <- 
-        c(p, dim(x)[2], (n - 1) * (max(dim(x)[3], 0, na.rm = TRUE) > 1) + 1)
+      if (is.null(dim(x)) || dim(x)[1] != p || !(dim(x)[3] %in% c(1, NA, n))) {
+        stop(paste("'Z' must be a (p x m) matrix or (p x m x n) array",
+          "where p is the number of series, m is the number of states,", 
+          "and n is the length of the series. ", sep = " "))
+      }
     }
+    dim(x) <- 
+      c(p, dim(x)[2], (n - 1) * (max(dim(x)[3], 0, na.rm = TRUE) > 1) + 1)
   }
   x
 }

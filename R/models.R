@@ -422,7 +422,12 @@ ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
   y <- check_y(y, multivariate = TRUE)
   n <- nrow(y)
   p <- ncol(y)
-  
+  if (p == 1) {
+    warning(paste(
+      "Found univariate series as input but defining multivariate model.",
+      "It can be more efficient to use 'ssm_ulg' instead of 'ssm_mlg'.", 
+      sep = " "))
+  }
   # create Z
   Z <- check_Z(Z, p, n, multivariate = TRUE)
   m <- dim(Z)[2]
@@ -436,6 +441,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
   P1 <- check_P1(P1, m)
   
   D <- check_D(D, p, n)
+  D <- as.matrix(D) # p = 1
   C <- check_C(C, m, n)
   
   H <- check_H(H, p, n, multivariate = TRUE)
