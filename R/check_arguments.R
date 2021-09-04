@@ -11,10 +11,10 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
     } else {
       if (!is.vector(x) || is.list(x)) {
         if (is.ts(x) || is.matrix(x)) {
-          if (ncol(x) == 1 && length(dim(x)) < 3) {
+          if (!is.null(dim(x)) && ncol(x) == 1 && length(dim(x)) < 3) {
             dim(x) <- NULL
           } else {
-            if(ncol(x) > 1) {
+            if(!is.null(dim(x)) && ncol(x) > 1) {
               stop("Argument y must be a vector or univariate ts object.")
             }
           }
