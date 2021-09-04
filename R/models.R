@@ -562,6 +562,12 @@ ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution,
   y <- check_y(y, multivariate = TRUE)
   n <- nrow(y)
   p <- ncol(y)
+  if (p == 1) {
+    warning(paste(
+      "Found univariate series as input but defining multivariate model.",
+      "It can be more efficient to use 'ssm_ung' instead of 'ssm_mng'.", 
+      sep = " "))
+  }
   if(length(distribution) == 1) distribution <- rep(distribution, p)
   check_distribution(y, distribution)
   if(length(phi) == 1) phi <- rep(phi, p)
@@ -584,6 +590,7 @@ ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution,
   P1 <- check_P1(P1, m)
   
   D <- check_D(D, p, n)
+  if (p == 1) D <- as.matrix(D)
   C <- check_C(C, m, n)
   
   if (length(u) == 1) {
