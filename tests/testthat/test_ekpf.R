@@ -51,7 +51,7 @@ test_that("EKF and IEKF work", {
     x[i+1] <- rnorm(1, sin(x[i]), 0.1)
     y[i+1] <- rnorm(1, exp(x[i+1]), 0.1)
   }
-  
+  y[2:3] <- NA
   pntrs <- nlg_example_models("sin_exp")
   
   expect_error(model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
@@ -62,6 +62,8 @@ test_that("EKF and IEKF work", {
     n_states = 1, n_etas = 1, state_names = "state"), NA)
   
   expect_equal(ekf(model_nlg)$logLik, 3.55814184565819)
+  expect_equal(ekf(model_nlg, iekf_iter = 2)$logLik, 
+    logLik(model_nlg, method = "ekf", iekf_iter = 2))
   expect_equal(ekf(model_nlg, iekf_iter = 1)$logLik, 3.69550903344128)
   expect_equal(ekf(model_nlg, iekf_iter = 1), 
     ekf(model_nlg, iekf_iter = 2))
@@ -71,6 +73,10 @@ test_that("EKF and IEKF work", {
   expect_equal(out_ekf1$alphahat[9:10], 
     c(0.0333634309012196, 0.0797729159367873), tol = 0.1)
   expect_equal(out_ekf1$alphahat, out_ekf2)
+  expect_equal(
+    ekf_fast_smoother(model_nlg, iekf_iter = 2), 
+    ekf_smoother(model_nlg)$alphahat, iekf_iter = 2)
   
   expect_error(ukf(model_nlg), NA)
+  expect_error(bootstrap_filter(model_nlg, 10), NA)
 })

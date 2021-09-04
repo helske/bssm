@@ -43,6 +43,8 @@ test_that("Particle smoother for poisson bsm_ng returns finite values", {
   expect_error(model <- bsm_ng(1:10, sd_level = 2, sd_slope = 2, 
     P1 = diag(2, 2), distribution = "poisson"), NA)
   expect_error(out <- particle_smoother(model, 10, seed = 1), NA)
+  expect_error(out <- particle_smoother(model, 10, method = "bsf", seed = 1), 
+    NA)
   
   expect_true(is.finite(sum(out$alpha)))
   expect_true(is.finite(sum(out$alphahat)))
@@ -69,8 +71,14 @@ test_that("Particle smoother for NB bsm_ng returns finite values", {
     sd_slope = halfnormal(0.1, 1), 
     P1 = diag(2, 2), phi = gamma(1, 2, 2),
     distribution = "negative binomial"), NA)
-  expect_error(out <- particle_smoother(model, 10, seed = 1), NA)
   
+  expect_error(out <- particle_smoother(model, 10, seed = 1), NA)
+  expect_true(is.finite(sum(out$alpha)))
+  expect_true(is.finite(sum(out$alphahat)))
+  expect_true(is.finite(sum(out$Vt)))
+  
+  expect_error(out <- particle_smoother(model, 10, method = "bsf", seed = 1), 
+    NA)
   expect_true(is.finite(sum(out$alpha)))
   expect_true(is.finite(sum(out$alphahat)))
   expect_true(is.finite(sum(out$Vt)))

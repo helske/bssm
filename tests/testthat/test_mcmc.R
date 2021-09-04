@@ -137,6 +137,8 @@ test_that("MCMC for ssm_mng work", {
       }
     }
   }
+  
+  expect_error(boostrap_filter(model, 10), NA)
 })
 
 test_that("MCMC results with psi-APF for Poisson model are correct", {
@@ -183,6 +185,7 @@ test_that("MCMC results with psi-APF for Poisson model are correct", {
       run_mcmc(model_bssm, mcmc_type = type, iter = 100, seed = 1, 
         output_type = "theta", particles = 5)[-13 - z])
   }
+  
 })
 
 
