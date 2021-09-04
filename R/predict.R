@@ -127,7 +127,7 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
   }
   if (!identical(ncol(object$theta), length(model$theta))) {
     stop(paste("Number of unknown parameters 'theta' does not correspond to",
-    "the MCMC output. ", sep = " "))
+      "the MCMC output. ", sep = " "))
   }
   if (nsim < 1) stop("Number of samples 'nsim' should be at least one.")
   
@@ -152,7 +152,7 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
       ar1_lg = {
         if (!identical(length(model$a1), ncol(object$alpha))) {
           stop(paste("Model does not correspond to the MCMC output:",
-          "Wrong number of states. ", sep = " "))
+            "Wrong number of states. ", sep = " "))
         }
         pred <- gaussian_predict(model, theta, alpha,
           pmatch(type, c("response", "mean", "state")), 
@@ -215,10 +215,15 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
     
   } else {
     
-    if (!identical(nrow(object$alpha) - 1L, length(model$y))) {
-      stop("Number of observations of the model and MCMC output do not match.") 
+    if (inherits(model, c("ssm_mng", "ssm_mlg", "ssm_nlg"))) {
+      if (!identical(nrow(object$alpha) - 1L, nrow(model$y))) {
+        stop("Number of observations of the model and MCMC output do not match.") 
+      }
+    } else {
+      if (!identical(nrow(object$alpha) - 1L, length(model$y))) {
+        stop("Number of observations of the model and MCMC output do not match.") 
+      }
     }
-    
     w <- object$counts * 
       (if (object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
     idx <- sample(seq_len(nrow(object$theta)), size = nsim, prob = w, 
@@ -251,7 +256,6 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
       theta <- t(object$theta[idx, ])
       states <- aperm(states, c(2, 1, 3))
       
-  
       switch(attr(object, "model_type"),
         ssm_mlg =,
         ssm_ulg =,
@@ -304,7 +308,7 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
           
         }
         , stop("Not yet implemented for ssm_sde. "))
-     
+      
       d <- data.frame(value = as.numeric(pred),
         variable = variables,
         time = rep(time(model$y), each = nrow(pred)),

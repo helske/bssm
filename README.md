@@ -34,9 +34,15 @@ Recent changes (For all changes, see NEWS file.)
 
 bssm 1.1.6 (Release date: )
 ==============
+   * Cleaned codes and added more comprehensive tests in line with pkgcheck 
+     tests. This resulted in finding and fixing multiple bugs:
    * Fixed a bug in EKF-based particle filter which returned filtered estimates 
      also in place of one-step ahead predictions.
-   * Cleaned codes and added more comprehensive tests in line with pkgcheck tests.
+   * Fixed a bug which caused an error in suggest_N for nlg_ssm.
+   * Fixed a bug which caused incorrect sampling of smoothing distribution for 
+     ar1_lg model when predicting past or when using simulation smoother.
+   * Fixed a bug which caused an error when predicting past values in 
+     multivariate time series case.
    
 bssm 1.1.4 (Release date: 2021-04-13)
 ==============
