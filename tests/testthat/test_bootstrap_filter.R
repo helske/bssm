@@ -33,7 +33,8 @@ test_that("Test that gaussian bsf still works", {
   expect_true(is.finite(sum(bsf_ssm_ulg$att)))
   expect_true(is.finite(sum(bsf_ssm_ulg$Ptt)))
   
-  expect_error(model_ar1_lg <- ar1_lg(y = 1:10, rho = tnormal(0.6, 0, 0.5, -1, 1),
+  expect_error(model_ar1_lg <- ar1_lg(y = 1:10, 
+    rho = tnormal(0.6, 0, 0.5, -1, 1),
     sigma = gamma(1,2,2), sd_y = 0.1, mu = 1), NA)
   expect_error(bsf_ar1_lg <- bootstrap_filter(model_ar1_lg, 10, seed = 1), 
     NA)

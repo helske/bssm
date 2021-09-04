@@ -592,7 +592,8 @@ ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution,
 #' If missing, the seasonal component is omitted from the model.
 #' @param xreg Matrix containing covariates.
 #' @param beta Prior for the regression coefficients.
-#' @param period Length of the seasonal component i.e. the number of
+#' @param period Length of the seasonal pattern. 
+#' Default is \code{frequency(y)}. Must be at least 3.
 #' @param a1 Prior means for the initial states (level, slope, seasonals).
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
@@ -669,8 +670,8 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     seasonal <- FALSE
     sd_seasonal <- NULL
   } else {
-    if (period < 2) {
-      stop("Period of seasonal component must be larger than 1. ")
+    if (period < 3) {
+      stop("Period of seasonal component must be larger than 2. ")
     }
     if (is_prior(sd_seasonal)) {
       check_sd(sd_seasonal$init, "seasonal")
@@ -807,8 +808,8 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' term. For binomial, this is the number of trials.
 #' @param beta Prior for the regression coefficients.
 #' @param xreg Matrix containing covariates.
-#' @param period Length of the seasonal component i.e. the number of
-#' observations per season. Default is \code{frequency(y)}.
+#' @param period Length of the seasonal pattern. 
+#' Default is \code{frequency(y)}. Must be at least 3.
 #' @param a1 Prior means for the initial states (level, slope, seasonals).
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
@@ -888,8 +889,8 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     seasonal <- FALSE
     sd_seasonal <- NULL
   } else {
-    if (period < 2) {
-      stop("Period of seasonal component must be larger than 1. ")
+    if (period < 3) {
+      stop("Period of seasonal component must be larger than 2. ")
     }
     if (is_prior(sd_seasonal)) {
       check_sd(sd_seasonal$init, "seasonal")

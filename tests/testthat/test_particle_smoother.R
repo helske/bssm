@@ -10,7 +10,7 @@ test_that("Test that particle_smoother for LGSSM works as Kalman smoother", {
     particle_smoother(model_bsm, 1e5, seed = 1)$alphahat, tolerance = 1e-2)
 })
 
-test_that("Test that BSF and PSI particle_smoother for LGSSM are with MC error", {
+test_that("Test that BSF&PSI particle_smoother for LGSSM are with MC error", {
   
   expect_error(model_bsm <- bsm_lg(rep(1, 5), sd_level = 0.05, sd_slope = 0.01, 
     sd_y = 0.01, a1 = c(1, 0), P1 = diag(0.01, 2)), NA)
@@ -113,7 +113,8 @@ test_that("Test that gaussian bsf smoother still works", {
   expect_true(is.finite(sum(bsf_ssm_ulg$alphahat)))
   expect_true(is.finite(sum(bsf_ssm_ulg$Vt)))
   
-  expect_error(model_ar1_lg <- ar1_lg(y = 1:10, rho = tnormal(0.6, 0, 0.5, -1, 1),
+  expect_error(model_ar1_lg <- ar1_lg(y = 1:10, 
+    rho = tnormal(0.6, 0, 0.5, -1, 1),
     sigma = gamma(1,2,2), sd_y = 0.1, mu = 1), NA)
   expect_error(bsf_ar1_lg <- particle_smoother(model_ar1_lg, 10, seed = 1, 
     method = "bsf"), NA)

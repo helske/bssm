@@ -29,6 +29,32 @@ test_that("Gaussian predictions work", {
 
 })
 
+test_that("Non-gaussian predictions work", {
+  
+  set.seed(1)
+  y <- rpois(10, exp(cumsum(rnorm(10, 0, 0.1))))
+  model <- ar1_ng(y, 
+    rho = uniform(0.9, 0, 0.99), mu = 0, 
+    sigma = halfnormal(0.1, 1), distribution = "poisson")
+  
+  expect_error(mcmc_results <- run_mcmc(model, iter = 1000, particles = 5), NA)
+  future_model <- model
+  future_model$y <- rep(NA, 3)
+  expect_error(pred <- predict(mcmc_results, future_model, type = "mean", 
+    nsim = 100), NA)
+  
+  expect_gt(mean(pred$value[pred$time == 3]), 1)
+  expect_lt(mean(pred$value[pred$time == 3]), 2.5)
+  
+  # Posterior predictions for past observations:
+  yrep <- predict(mcmc_results, model, type = "response", 
+    future = FALSE, nsim = 100)
+  meanrep <- predict(mcmc_results, model, type = "mean", 
+    future = FALSE, nsim = 100)
+  
+  expect_equal(mean(yrep$value-meanrep$value), 0, tol = 0.1)
+  
+})
 
 test_that("Predictions for nlg_ssm work", {
   skip_on_cran()

@@ -227,7 +227,7 @@ test_that("MCMC results for SV model using IS-correction are correct", {
     mcmc_type = "is2", seed = 1, sampling_mcmc_type = "bsf"), NA)
   
   expect_warning(expand_sample(mcmc_sv))
-  
+  sumr <- expect_error(summary(mcmc_sv, variable = "both"), NA)
   expect_gt(mcmc_sv$acceptance_rate, 0)
   expect_true(is.finite(sum(mcmc_sv$theta)))
   expect_true(is.finite(sum(mcmc_sv$alpha)))
@@ -278,12 +278,14 @@ test_that("MCMC for nonlinear models work", {
     for(method in c("psi", "bsf", "ekf")) {
       for(output in c("full", "summary", "theta")) {
         if(type %in% c("is1", "is2", "is3") && method == "ekf") {
-          expect_error(run_mcmc(model_nlg, mcmc_type = type, sampling_method = method,
-            output_type = output, iter = 100, seed = 1, particles = 5))
+          expect_error(run_mcmc(model_nlg, mcmc_type = type, 
+            sampling_method = method, output_type = output, iter = 100, 
+            seed = 1, particles = 5))
         } else {
           expect_error(
-            run_mcmc(out <- model_nlg, mcmc_type = type, sampling_method = method,
-              output_type = output, iter = 100, seed = 1, particles = 5), NA)
+            run_mcmc(out <- model_nlg, mcmc_type = type, 
+              sampling_method = method, output_type = output, iter = 100, 
+              seed = 1, particles = 5), NA)
           expect_equal(sum(is.na(out$theta)), 0)
           expect_equal(sum(is.na(out$alpha)), 0)
           expect_equal(sum(!is.finite(out$theta)), 0)

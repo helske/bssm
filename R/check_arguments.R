@@ -6,7 +6,7 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
         stop("Argument y must be a numeric matrix or multivariate ts object.")
       }
     } else {
-      if (!is.numeric(unclass(x))) {
+      if (!is.numeric(unclass(x)) || !is.vector(unclass(x))) {
         stop("Argument y must be a numeric vector or ts object.")
       }
       if (distribution != "gaussian" && any(na.omit(x) < 0)) {
