@@ -1392,6 +1392,8 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
   if(missing(n_etas)) {
     n_etas <- n_states
   }
+  n_states <- as.integer(n_states)
+  n_etas <- as.integer(n_etas)
   structure(list(y = as.ts(y), Z = Z, H = H, T = T,
     R = R, Z_gn = Z_gn, T_gn = T_gn, a1 = a1, P1 = P1, theta = theta,
     log_prior_pdf = log_prior_pdf, known_params = known_params,

@@ -50,15 +50,15 @@ test_that("Predictions for nlg_ssm work", {
     log_prior_pdf = pntrs$log_prior_pdf,
     n_states = 1, n_etas = 1, state_names = "state"), NA)
   
-  expect_error(mcmc_results <- run_mcmc(model, iter = 1000, particles = 10), 
+  expect_error(mcmc_results <- run_mcmc(model, iter = 5000, particles = 10), 
     NA)
   future_model <- model
   future_model$y <- rep(NA, 3)
   expect_error(pred <- predict(mcmc_results, particles = 10, 
     future_model, type = "mean", nsim = 1000), NA)
   
-  expect_gt(mean(pred$value[pred$time == 3]), 0)
-  expect_lt(mean(pred$value[pred$time == 3]), 1)
+  expect_gt(mean(pred$value[pred$time == 3]), 0.5)
+  expect_lt(mean(pred$value[pred$time == 3]), 1.5)
   
   # Posterior predictions for past observations:
   yrep <- predict(mcmc_results, model, type = "response", 
