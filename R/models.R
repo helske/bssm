@@ -422,12 +422,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
   y <- check_y(y, multivariate = TRUE)
   n <- nrow(y)
   p <- ncol(y)
-  if (p == 1) {
-    warning(paste(
-      "Found univariate series as input but defining multivariate model.",
-      "It can be more efficient to use 'ssm_ulg' instead of 'ssm_mlg'.", 
-      sep = " "))
-  }
+
   # create Z
   Z <- check_Z(Z, p, n, multivariate = TRUE)
   m <- dim(Z)[2]
@@ -562,12 +557,7 @@ ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution,
   y <- check_y(y, multivariate = TRUE)
   n <- nrow(y)
   p <- ncol(y)
-  if (p == 1) {
-    warning(paste(
-      "Found univariate series as input but defining multivariate model.",
-      "It can be more efficient to use 'ssm_ung' instead of 'ssm_mng'.", 
-      sep = " "))
-  }
+
   if(length(distribution) == 1) distribution <- rep(distribution, p)
   check_distribution(y, distribution)
   if(length(phi) == 1) phi <- rep(phi, p)
