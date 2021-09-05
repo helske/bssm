@@ -283,7 +283,7 @@ void ssm_ung::update_scales() {
   case 4  :
     for(unsigned int t = 0; t < n; t++) {
       if (arma::is_finite(y(t))) {
-        scales(t) = -phi * mode_estimate(t) - (y(t) * phi * exp(-mode_estimate(t)) / u(t)) +
+        scales(t) = -phi * (mode_estimate(t) + (y(t) * exp(-mode_estimate(t)) / u(t))) +
           0.5 * std::pow((approx_model.y(t) - mode_estimate(t)) / approx_model.H(t), 2.0);
       } 
     }
@@ -426,7 +426,7 @@ arma::vec ssm_ung::log_weights(
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
         double simsignal = arma::as_scalar(D(t * Dtv) + Z.col(t * Ztv).t() *
           alpha.slice(i).col(t) + xbeta(t));
-        weights(i) = -phi * simsignal - (y(t) * phi * exp(-simsignal) / u(t)) +
+        weights(i) = -phi * (simsignal + (y(t) * exp(-simsignal) / u(t))) +
           0.5 * std::pow((approx_model.y(t) - simsignal) / approx_model.H(t), 2.0);
       }
       break;
@@ -483,7 +483,7 @@ arma::vec ssm_ung::log_obs_density(const unsigned int t,
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
         double simsignal = arma::as_scalar(D(t * Dtv) + Z.col(t * Ztv).t() *
           alpha.slice(i).col(t) + xbeta(t));
-        weights(i) = -phi * simsignal - (y(t) * phi * exp(-simsignal) / u(t));
+        weights(i) = -phi * (simsignal + (y(t) * exp(-simsignal) / u(t)));
         
       }
       break;

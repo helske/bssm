@@ -91,7 +91,7 @@ double bsm_ng::log_prior_pdf(const arma::vec& x, const Rcpp::Function prior_fn) 
   
   double log_prior = 0.0;
   arma::vec pars = x;
-  if (arma::accu(fixed) < 3 || noise) {
+  if (arma::accu(fixed) < 3 || noise || phi_est) {
     pars.subvec(0, pars.n_elem - xreg.n_cols - 1) = 
       arma::exp(pars.subvec(0, pars.n_elem - xreg.n_cols - 1));
     // add jacobian

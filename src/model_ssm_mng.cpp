@@ -378,10 +378,10 @@ arma::vec ssm_mng::log_weights(const unsigned int t,  const arma::cube& alpha) c
             std::log(phi(j) + u(j,t) * std::exp(simsignal(j)));
           break;
         case 4 :
-          weights(i) += -phi(j) * simsignal(j) - (y(j,t) * phi(j) * exp(-simsignal(j)) / u(j,t));
+          weights(i) -= phi(j) * (simsignal(j) + (y(j,t) * exp(-simsignal(j)) / u(j,t)));
           break;
         case 5 :
-          weights(i) += -0.5 * std::pow((y(j,t) - simsignal(j)) / phi(j), 2.0);
+          weights(i) -= 0.5 * std::pow((y(j,t) - simsignal(j)) / phi(j), 2.0);
           break;
         }
         weights(i) += 
@@ -429,7 +429,7 @@ arma::vec ssm_mng::log_obs_density(const unsigned int t,
             std::log(phi(j) + u(j,t) * std::exp(simsignal(j)));
           break;
         case 4 :
-          weights(i) += -phi(j) * simsignal(j) - (y(j,t) * phi(j) * exp(-simsignal(j)) / u(j,t));
+          weights(i) += -phi(j) * (simsignal(j) + (y(j,t) * exp(-simsignal(j)) / u(j, t)));
           break;
         case 5 :
           weights(i) += -0.5 * std::pow((y(j,t) - simsignal(j)) / phi(j), 2.0);

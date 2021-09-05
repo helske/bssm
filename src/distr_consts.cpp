@@ -26,7 +26,7 @@ double negbin_log_const(double y, double u, double phi) {
 }
 
 double gamma_log_const(double y, double u, double phi) {
-  return phi * std::log(phi) - std::lgamma(phi) + (phi - 1) * std::log(y) - std::log(u);
+  return phi * std::log(phi) - std::lgamma(phi) + (phi - 1) * std::log(y) - phi * std::log(u);
 }
 
 
@@ -61,7 +61,7 @@ double negbin_log_const(const arma::vec&  y, const arma::vec& u, double phi) {
 double gamma_log_const(const arma::vec&  y, const arma::vec& u, double phi) {
   double res = 0;
   for(unsigned int i = 0; i < y.n_elem; i++) {
-    res += phi * std::log(phi) - std::lgamma(phi) + (phi - 1) * std::log(y(i)) - std::log(u(i));
+    res += phi * std::log(phi) - std::lgamma(phi) + (phi - 1) * std::log(y(i)) - phi * std::log(u(i));
   }
   return res;
 }

@@ -189,6 +189,32 @@ test_that("MCMC results with psi-APF for Poisson model are correct", {
 })
 
 
+
+test_that("MCMC using SPDK for Gamma model works", {
+  
+  set.seed(123)
+  n <- 20
+  u <- rgamma(n, 3, 1)
+  phi <- 5
+  x <- cumsum(rnorm(n, 0, 0.5))
+  y <- rgamma(n, shape = phi, scale = u * exp(x) / phi)
+  model_bssm <- bsm_ng(y, 
+    sd_level = gamma(0.1, 2, 10), u = u, phi = gamma(2, 2, 0.1),
+    distribution = "gamma", P1 = 2)
+  
+  expect_error(mcmc_gamma <- run_mcmc(model_bssm, sampling_method = "spdk",
+    iter = 1000, particles = 5, seed = 42), NA)
+  
+  expect_gt(mcmc_gamma$acceptance_rate, 0)
+  expect_gte(min(mcmc_gamma$theta), 0)
+  expect_lt(max(mcmc_gamma$theta), Inf)
+  expect_true(is.finite(sum(mcmc_gamma$alpha)))
+  
+  expect_lt(sum(abs(summary(mcmc_gamma)[,"Mean"] - 
+      c(0.520146284042284, 2.17575390744017))), 0.3)
+  
+})
+
 test_that("MCMC results for SV model using IS-correction are correct", {
   set.seed(123)
   expect_error(model_bssm <- svm(rnorm(10), rho = uniform(0.95, -0.999, 0.999), 

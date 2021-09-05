@@ -8,6 +8,8 @@ bssm 1.1.6 (Release date: )
      ar1_lg model when predicting past or when using simulation smoother.
    * Fixed a bug which caused an error when predicting past values in 
      multivariate time series case.
+   * Fixed log-likelihood computation for gamma model with non-constant shape 
+     parameter when using (intermediate) Gaussian approximation.
    * Fixed sampling of negative binomial distribution in predict method, which 
      used std::negative_binomial which converts non-integer phi to integer. 
      Sampling now uses Gamma-Poisson mixture for simulation.
