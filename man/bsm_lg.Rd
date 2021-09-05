@@ -40,7 +40,8 @@ If missing, the seasonal component is omitted from the model.}
 
 \item{xreg}{Matrix containing covariates.}
 
-\item{period}{Length of the seasonal component i.e. the number of}
+\item{period}{Length of the seasonal pattern. 
+Default is \code{frequency(y)}. Must be at least 3.}
 
 \item{a1}{Prior means for the initial states (level, slope, seasonals).
 Defaults to vector of zeros.}

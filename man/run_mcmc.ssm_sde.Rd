@@ -31,8 +31,8 @@
 \item{particles}{Number of state samples per MCMC iteration.}
 
 \item{output_type}{Either \code{"full"} 
-(default, returns posterior samples of states alpha and hyperparameters 
-theta), \code{"theta"} (for marginal posterior of theta), 
+(default, returns posterior samples of latent states alpha and 
+hyperparameters theta), \code{"theta"} (for marginal posterior of theta), 
 or \code{"summary"} (return the mean and variance estimates of the states 
 and posterior samples of theta). In case of \code{"summary"}, means and 
 covariances are computed using the full output of particle filter 

@@ -40,3 +40,13 @@ Object of class \code{ar1_ng}.
 Constructs a simple non-Gaussian model where the state dynamics follow an 
 AR(1) process.
 }
+\examples{
+model <- ar1_ng(discoveries, rho = uniform(0.5,-1,1), 
+  sigma = halfnormal(0.1, 1), mu = normal(0, 0, 1), 
+  distribution = "poisson")
+out <- run_mcmc(model, iter = 1e4, mcmc_type = "approx",
+  output_type = "summary")
+  
+ts.plot(cbind(discoveries, exp(out$alphahat)), col = 1:2)
+
+}

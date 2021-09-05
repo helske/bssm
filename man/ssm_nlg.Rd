@@ -84,3 +84,27 @@ Compared to other models, these general models need a bit more effort from
 the user, as you must provide the several small C++ snippets which define the
 model structure. See examples in the vignette.
 }
+\examples{
+\dontrun{
+set.seed(1)
+n <- 50
+x <- y <- numeric(n)
+y[1] <- rnorm(1, exp(x[1]), 0.1)
+for(i in 1:(n-1)) {
+ x[i+1] <- rnorm(1, sin(x[i]), 0.1)
+ y[i+1] <- rnorm(1, exp(x[i+1]), 0.1)
+}
+
+pntrs <- nlg_example_models("sin_exp")
+
+model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
+  Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
+  Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+  theta = c(log_H = log(0.1), log_R = log(0.1)), 
+  log_prior_pdf = pntrs$log_prior_pdf,
+  n_states = 1, n_etas = 1, state_names = "state")
+
+out <- ekf(model_nlg, 100)
+ts.plot(cbind(x, out$at[1:n], out$att[1:n]), col = 1:3)
+}
+}

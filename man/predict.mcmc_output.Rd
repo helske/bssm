@@ -47,8 +47,8 @@ Data frame of predicted samples.
 \description{
 Draw samples from the posterior predictive distribution for future 
 time points given the posterior draws of hyperparameters \eqn{\theta} and 
-\eqn{alpha_{n+1}}. Function can also be used to draw samples from the 
-posterior predictive distribution
+latent state \eqn{alpha_{n+1}}. Function can also be used to draw samples 
+from the posterior predictive distribution
  \eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
 }
 \examples{

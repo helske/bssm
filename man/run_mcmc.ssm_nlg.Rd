@@ -34,7 +34,7 @@
 Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.}
 
 \item{output_type}{Either \code{"full"} 
-(default, returns posterior samples of states alpha and 
+(default, returns posterior samples of latent states alpha and 
 hyperparameters theta), \code{"theta"} (for marginal posterior of theta), 
 or \code{"summary"} (return the mean and variance estimates of the states 
 and posterior samples of theta).  In case of \code{"summary"}, means and 

@@ -97,3 +97,38 @@ negative binomial distribution for each observation series \eqn{i=1,...,p}.
 Here k is the number of disturbance terms (which can be less than m, 
 the number of states).
 }
+\examples{
+ 
+set.seed(1)
+n <- 20
+x <- cumsum(rnorm(n, sd = 0.5))
+phi <- 2
+y <- cbind(
+  rgamma(n, shape = phi, scale = exp(x) / phi),
+  rbinom(n, 10, plogis(x)))
+
+Z <- matrix(1, 2, 1)
+T <- 1
+R <- 0.5
+a1 <- 0
+P1 <- 1
+
+update_fn <- function(theta) {
+  list(R = array(theta[1], c(1, 1, 1)), phi = c(theta[2], 1))
+}
+
+prior_fn <- function(theta) {
+  ifelse(all(theta > 0), sum(dnorm(theta, 0, 1, log = TRUE)), -Inf)
+}
+
+model <- ssm_mng(y, Z, T, R, a1, P1, phi = c(2, 1), 
+  init_theta = c(0.5, 2), 
+  distribution = c("gamma", "binomial"),
+  u = cbind(1, rep(10, n)),
+  update_fn = update_fn, prior_fn = prior_fn)
+
+# smoothing based on approximating gaussian model
+ts.plot(cbind(y, fast_smoother(model)), 
+  col = 1:3, lty = c(1, 1, 2))
+    
+}
