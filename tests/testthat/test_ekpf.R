@@ -61,10 +61,10 @@ test_that("EKF and IEKF work", {
     log_prior_pdf = pntrs$log_prior_pdf,
     n_states = 1, n_etas = 1, state_names = "state"), NA)
   
-  expect_equal(ekf(model_nlg)$logLik, 3.55814184565819)
+  expect_equal(ekf(model_nlg)$logLik, 2.65163101109689)
   expect_equal(ekf(model_nlg, iekf_iter = 2)$logLik, 
-    logLik(model_nlg, method = "ekf", iekf_iter = 2))
-  expect_equal(ekf(model_nlg, iekf_iter = 1)$logLik, 3.69550903344128)
+    logLik(model_nlg, method = "ekf", iekf_iter = 2, particles = 0))
+  expect_equal(ekf(model_nlg, iekf_iter = 1)$logLik, 2.61650080342709)
   expect_equal(ekf(model_nlg, iekf_iter = 1), 
     ekf(model_nlg, iekf_iter = 2))
   
@@ -75,7 +75,7 @@ test_that("EKF and IEKF work", {
   expect_equal(out_ekf1$alphahat, out_ekf2)
   expect_equal(
     ekf_fast_smoother(model_nlg, iekf_iter = 2), 
-    ekf_smoother(model_nlg)$alphahat, iekf_iter = 2)
+    ekf_smoother(model_nlg, iekf_iter = 2)$alphahat)
   
   expect_error(ukf(model_nlg), NA)
   expect_error(bootstrap_filter(model_nlg, 10), NA)

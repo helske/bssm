@@ -40,11 +40,11 @@ test_that("Gaussian predictions work", {
     ifelse(x[1] > 1 | any(x < 0), -Inf, - sum(0.5 * x[2:3]^2))
   }
   
-  expect_warning(model2 <- ssm_mlg(matrix(model$y, length(model$y), 1), 
+  expect_error(model2 <- ssm_mlg(matrix(model$y, length(model$y), 1), 
     Z = 1, H = model$H, T = model$T, R = model$R,
     a1 = model$a1, P1 = model$P1, 
     init_theta = c(rho = 0.9, sigma = 0.1, sd_y = 0.1),
-    update_fn = ufun, prior_fn = pfun, state_names = "signal"))
+    update_fn = ufun, prior_fn = pfun, state_names = "signal"), NA)
   
   set.seed(123)
   expect_error(mcmc_results2 <- run_mcmc(model2, iter = 1000), 
