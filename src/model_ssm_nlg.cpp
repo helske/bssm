@@ -353,7 +353,7 @@ double ssm_nlg::ekf(arma::mat& at, arma::mat& att, arma::cube& Pt, arma::cube& P
         Kt = Pt.slice(t) * Zg.t() * inv_cholF * inv_cholF.t();
         
         arma::vec atthat_new = at.col(t) + Kt * vt;
-        diff = arma::mean(arma::square(atthat-atthat_new));
+        diff = arma::mean(arma::square(atthat - atthat_new));
         atthat = atthat_new;
       }
       att.col(t) = atthat;
@@ -448,14 +448,14 @@ double ssm_nlg::ekf_loglik() const {
         
         vt = y.col(t) - 
           Z_fn(t, atthat, theta, known_params, known_tv_params) - 
-          Zg * (at.col(t) - atthat);
+          Zg * (at - atthat);
         vt.rows(na_y).zeros();
         
         inv_cholF = arma::inv(arma::trimatu(cholF));
         Kt = Pt * Zg.t() * inv_cholF * inv_cholF.t();
         
         arma::vec atthat_new = at + Kt * vt;
-        diff = arma::mean(arma::square(atthat-atthat_new));
+        diff = arma::mean(arma::square(atthat - atthat_new));
         atthat = atthat_new;
       }
       att = atthat;
@@ -562,7 +562,7 @@ double ssm_nlg::ekf_smoother(arma::mat& at, arma::cube& Pt) const {
         
         arma::vec atthat_new = at.col(t) + Kt.slice(t) * vt.col(t);
         
-        diff = arma::mean(arma::square(atthat-atthat_new));
+        diff = arma::mean(arma::square(atthat - atthat_new));
         atthat = atthat_new;
       }
       att.col(t) = atthat;
@@ -691,7 +691,7 @@ double ssm_nlg::ekf_fast_smoother(arma::mat& at) const {
         Kt.slice(t) = Pt.slice(t) * Zg.t() * inv_cholF * inv_cholF.t();
         
         arma::vec atthat_new = at.col(t) + Kt.slice(t) * vt.col(t);
-        diff = arma::mean(arma::square(atthat-atthat_new));
+        diff = arma::mean(arma::square(atthat - atthat_new));
         atthat = atthat_new;
       }
       att.col(t) = atthat;
