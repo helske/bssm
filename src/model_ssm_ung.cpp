@@ -809,9 +809,13 @@ arma::mat ssm_ung::sample_model(const unsigned int predict_type) {
         break;
       case 3:
         for (unsigned int t = 0; t < n; t++) {
-          std::negative_binomial_distribution<>
-          negative_binomial(phi, phi / (phi + u(t) * y(0, t)));
-          y(0, t) = negative_binomial(engine);
+          // std::negative_binomial_distribution<>
+          // negative_binomial(phi, phi / (phi + u(t) * y(0, t)));
+          // y(0, t) = negative_binomial(engine);
+          double prob = phi / (phi + u(t) * y(0, t));
+          std::gamma_distribution<> gamma(phi, (1 - prob) / prob);
+          std::poisson_distribution<> poisson(gamma(engine));
+          y(0, t) = poisson(engine);
         }
         break;
       case 4:
@@ -897,9 +901,10 @@ arma::cube ssm_ung::predict_past(const arma::mat& theta_posterior,
         break;
       case 3:
         for (unsigned int t = 0; t < n; t++) {
-          std::negative_binomial_distribution<>
-          negative_binomial(phi, phi / (phi + u(t) * y(0, t)));
-          y(0, t) = negative_binomial(engine);
+          double prob = phi / (phi + u(t) * y(0, t));
+          std::gamma_distribution<> gamma(phi, (1 - prob) / prob);
+          std::poisson_distribution<> poisson(gamma(engine));
+          y(0, t) = poisson(engine);
         }
         break;
       case 4:

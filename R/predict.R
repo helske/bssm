@@ -141,7 +141,7 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
       (if (object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
     idx <- sample(seq_len(nrow(object$theta)), size = nsim, prob = w, 
       replace = TRUE)
-    theta <- t(object$theta[idx, ])
+    theta <- t(object$theta[idx, , drop = FALSE])
     alpha <- matrix(object$alpha[nrow(object$alpha), , idx], 
       nrow = ncol(object$alpha))
     

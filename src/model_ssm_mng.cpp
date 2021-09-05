@@ -731,13 +731,13 @@ arma::mat ssm_mng::sample_model(const unsigned int predict_type) {
           
           switch(distribution(j)) {
           case 1: {
-          std::poisson_distribution<> poisson(u(j,t) * y(j, t));
-          if ((u(j,t) * y(j, t)) < poisson.max()) {
-            y(j, t) = poisson(engine);
-          } else {
-            y(j, t) = std::numeric_limits<double>::quiet_NaN();
-          }
-        } 
+            std::poisson_distribution<> poisson(u(j,t) * y(j, t));
+            if ((u(j,t) * y(j, t)) < poisson.max()) {
+              y(j, t) = poisson(engine);
+            } else {
+              y(j, t) = std::numeric_limits<double>::quiet_NaN();
+            }
+          } 
             break;
           case 2: {
             std::binomial_distribution<> binomial(u(j,t), y(j, t));
@@ -745,9 +745,10 @@ arma::mat ssm_mng::sample_model(const unsigned int predict_type) {
           }
             break;
           case 3: {
-            std::negative_binomial_distribution<>
-            negative_binomial(phi(j), phi(j) / (phi(j) + u(j,t) * y(j, t)));
-            y(j, t) = negative_binomial(engine);
+            double prob = phi(j) / (phi(j) + u(j,t) * y(j, t));
+            std::gamma_distribution<> gamma(phi(j), (1 - prob) / prob);
+            std::poisson_distribution<> poisson(gamma(engine));
+            y(j, t) = poisson(engine);
           }
             break;
           case 4: {
@@ -814,9 +815,10 @@ arma::cube ssm_mng::predict_past(const arma::mat& theta_posterior,
           }
             break;
           case 3: {
-            std::negative_binomial_distribution<>
-            negative_binomial(phi(j), phi(j) / (phi(j) + u(j,t) * y(j, t)));
-            y(j, t) = negative_binomial(engine);
+            double prob = phi(j) / (phi(j) + u(j,t) * y(j, t));
+            std::gamma_distribution<> gamma(phi(j), (1 - prob) / prob);
+            std::poisson_distribution<> poisson(gamma(engine));
+            y(j, t) = poisson(engine);
           }
             break;
           case 4: {
