@@ -30,6 +30,10 @@ sim_smoother <- function(model, nsim, seed, use_antithetic = FALSE, ...) {
 sim_smoother.gaussian <- function(model, nsim = 1, 
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
 
+  nsim <- check_integer(nsim, "nsim")  
+  if (!test_flag(use_antithetic)) 
+    stop("Argument 'use_antithetic' should be TRUE or FALSE. ")
+  
   out <- gaussian_sim_smoother(model, nsim, use_antithetic, seed, 
     model_type(model))
   rownames(out) <- names(model$a1)
@@ -40,6 +44,11 @@ sim_smoother.gaussian <- function(model, nsim = 1,
 #' @export
 sim_smoother.nongaussian <- function(model, nsim = 1,
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
+  
+  nsim <- check_integer(nsim, "nsim")
+  if (!test_flag(use_antithetic)) 
+    stop("Argument 'use_antithetic' should be TRUE or FALSE. ")
+  
   sim_smoother(gaussian_approx(model), nsim = nsim, 
     use_antithetic = use_antithetic, seed = seed)
 }

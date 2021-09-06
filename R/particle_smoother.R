@@ -84,6 +84,8 @@ particle_smoother.gaussian <- function(model, particles,  method = "psi",
     }
   }
   
+  particles <- check_integer(particles, "particles")
+  
   if (method == "psi") {
     out <- list()
     out$alpha <- gaussian_psi_smoother(model, particles, seed, 
@@ -128,11 +130,12 @@ particle_smoother.nongaussian <- function(model, particles,
       particles <- nsim
     }
   }
+  particles <- check_integer(particles, "particles")
+  model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
   
   method <- match.arg(method, c("bsf", "psi"))
-  
-  model$max_iter <- max_iter
-  model$conv_tol <- conv_tol
+
   model$distribution <- pmatch(model$distribution,
     c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
     duplicates.ok = TRUE) - 1
@@ -168,6 +171,10 @@ particle_smoother.ssm_nlg <- function(model, particles,
       particles <- nsim
     }
   }
+  particles <- check_integer(particles, "particles")
+  max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  conv_tol <- check_positive_real(conv_tol, "conv_tol")
+  iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
   
   method <- match.arg(method, c("bsf", "psi", "ekf"))
   
@@ -218,6 +225,7 @@ particle_smoother.ssm_sde <- function(model, particles, L,
       particles <- nsim
     }
   }
+  particles <- check_integer(particles, "particles")
   
   out <-  bsf_smoother_sde(model$y, model$x0, model$positive, 
     model$drift, model$diffusion, model$ddiffusion, 

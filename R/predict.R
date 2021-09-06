@@ -117,6 +117,9 @@
 predict.mcmc_output <- function(object, model, type = "response", nsim, 
   future = TRUE, seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  nsim <- check_integer(nsim, "nsim")
+  if (!test_flag(future)) stop("Argument 'future' should be TRUE or FALSE. ")
+  
   type <- match.arg(type, c("response", "mean", "state"))
   
   if (object$output_type != 1) 

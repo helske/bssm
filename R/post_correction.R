@@ -73,6 +73,15 @@ get_map <- function(x) {
 suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10), 
   replications = 100, seed = sample(.Machine$integer.max, size = 1)) {
   
+  replications <- check_integer(replications, "replications")
+  if (!test_integerish(candidates, lower = 1, any.missing = FALSE, 
+    min.len = 1)) {
+    stop("Argument 'candidates' should be vector of positive integers. ")
+  } 
+  if (max(candidates) > 1e7) 
+    stop(paste("I don't believe you want to use over 1e7 particles",
+      "If you really do, please file an issue at Github.", sep = " "))
+  
   if (!inherits(mcmc_output, "mcmc_output")) 
     stop("Object 'mcmc_output' is not valid output from 'run_mcmc'.")
   theta <- get_map(mcmc_output)
@@ -94,7 +103,7 @@ suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10),
         theta, candidates, replications, seed)
     } else 
       stop(paste("Function 'suggest_N' is only available for models of",
-      "class 'nongaussian' and 'nlg_ssm'.", sep = " "))
+        "class 'nongaussian' and 'nlg_ssm'.", sep = " "))
   }
   list(N = candidates[which(out < 1)[1]], results = data.frame(N = candidates, 
     sd = out))
@@ -209,6 +218,9 @@ suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10),
 post_correct <- function(model, mcmc_output, particles, threads = 1L, 
   is_type = "is2", seed = sample(.Machine$integer.max, size = 1)) {
   
+  particles <- check_integer(particles, "particles")
+  threads <- check_integer(threads, "threads")
+  
   if (!inherits(mcmc_output, "mcmc_output")) 
     stop("Object 'mcmc_output' is not valid output from 'run_mcmc'.")
   is_type <- pmatch(match.arg(is_type, paste0("is", 1:3)), paste0("is", 1:3))
@@ -237,7 +249,7 @@ post_correct <- function(model, mcmc_output, particles, threads = 1L,
         mcmc_output$counts, t(mcmc_output$theta), mcmc_output$modes)
     } else 
       stop(paste("Function 'post_correct' is only available for models of", 
-      "class 'nongaussian' and 'ssm_nlg'.", sep = " "))
+        "class 'nongaussian' and 'ssm_nlg'.", sep = " "))
   }
   mcmc_output$weights <- out$weights
   mcmc_output$posterior <- mcmc_output$posterior + out$posterior

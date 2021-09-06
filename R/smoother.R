@@ -75,6 +75,8 @@ smoother.nongaussian <- function(model, ...) {
 #' @rdname ekf_smoother
 ekf_smoother <- function(model, iekf_iter = 0) {
   
+  iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
+  
   out <- ekf_smoother_nlg(t(model$y), model$Z, model$H, model$T, 
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
     model$theta, model$log_prior_pdf, model$known_params, 
@@ -91,6 +93,9 @@ ekf_smoother <- function(model, iekf_iter = 0) {
 #' @rdname ekf_smoother
 #' @export
 ekf_fast_smoother <- function(model, iekf_iter = 0) {
+  
+  
+  iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
   
   out <- ekf_fast_smoother_nlg(t(model$y), model$Z, model$H, model$T, 
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 

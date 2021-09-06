@@ -54,6 +54,7 @@ ekpf_filter.ssm_nlg <- function(object, particles,
       particles <- nsim
     }
   }
+  particles <- check_integer(particles, "particles")
   
   out <- ekpf(t(object$y), object$Z, object$H, object$T, 
     object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 

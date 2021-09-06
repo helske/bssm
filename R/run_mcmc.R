@@ -85,6 +85,13 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   target_acceptance = 0.234, S, end_adaptive_phase = FALSE, threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  if (!test_flag(end_adaptive_phase)) 
+    stop("Argument 'end_adaptive_phase' should be TRUE or FALSE. ")
+  
+  threads <- check_integer(threads, "threads")
+  thin <- check_integer(thin, "thin", max = 100)
+  iter <- check_integer(iter, "iter", positive = FALSE, max = 1e12)
+  burnin <- check_integer(burnin, "burnin", max = 1e12)
   
   if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
@@ -329,14 +336,26 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100, 
   conv_tol = 1e-8, ...) {
   
+  if (!test_flag(end_adaptive_phase)) 
+    stop("Argument 'end_adaptive_phase' should be TRUE or FALSE. ")
+  
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`",
         "instead.", sep = " "))
       particles <- nsim
+      particles <- check_integer(particles, "particles")
     }
+  } else {
+    particles <- check_integer(particles, "particles")
   }
+  threads <- check_integer(threads, "threads")
+  max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  conv_tol <- check_positive_real(conv_tol, "conv_tol")
+  thin <- check_integer(thin, "thin", max = 100)
+  iter <- check_integer(iter, "iter", positive = FALSE, max = 1e12)
+  burnin <- check_integer(burnin, "burnin", max = 1e12)
   
   if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
@@ -507,14 +526,27 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
   conv_tol = 1e-8, iekf_iter = 0, ...) {
   
+  if (!test_flag(end_adaptive_phase)) 
+    stop("Argument 'end_adaptive_phase' should be TRUE or FALSE. ")
+  
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
       warning(paste("Argument `nsim` is deprecated. Use argument `particles`",
         "instead.", sep = " "))
       particles <- nsim
+      particles <- check_integer(particles, "particles")
     }
+  } else {
+    particles <- check_integer(particles, "particles")
   }
+  threads <- check_integer(threads, "threads")
+  max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  conv_tol <- check_positive_real(conv_tol, "conv_tol")
+  thin <- check_integer(thin, "thin", max = 100)
+  iter <- check_integer(iter, "iter", positive = FALSE, max = 1e12)
+  burnin <- check_integer(burnin, "burnin", max = 1e12)
+  iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
   
   if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
@@ -692,6 +724,9 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
       "and reconstruct the model.", sep = " "))
   }
   
+  if (!test_flag(end_adaptive_phase)) 
+    stop("Argument 'end_adaptive_phase' should be TRUE or FALSE. ")
+  
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
@@ -699,9 +734,12 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
         "instead.", sep = " "))
       particles <- nsim
     }
-  } else {
-    if (particles <= 0) stop("particles should be positive integer.")
   }
+  particles <- check_integer(particles, "particles")
+  threads <- check_integer(threads, "threads")
+  thin <- check_integer(thin, "thin", max = 100)
+  iter <- check_integer(iter, "iter", positive = FALSE, max = 1e12)
+  burnin <- check_integer(burnin, "burnin", max = 1e12)
   
   if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")

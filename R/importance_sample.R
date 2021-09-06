@@ -45,8 +45,10 @@ importance_sample.nongaussian <- function(model, nsim, use_antithetic = TRUE,
   max_iter = 100, conv_tol = 1e-8, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
-  model$max_iter <- max_iter
-  model$conv_tol <- conv_tol
+  model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
+  nsim <- check_integer(nsim, "nsim")
+  
   model$distribution <- pmatch(model$distribution,
     c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
     duplicates.ok = TRUE) - 1

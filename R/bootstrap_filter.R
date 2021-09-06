@@ -36,9 +36,14 @@ bootstrap_filter.gaussian <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   if (missing(particles)) {
-    particles <- match.call(expand.dots = TRUE)$particles
-    if (!is.null(particles)) particles <- particles
+    nsim <- eval(match.call(expand.dots = TRUE)$nsim)
+    if (!is.null(nsim)) {
+      warning(paste0("Argument `nsim` is deprecated. Use argument `particles`",
+        "instead.", sep = " "))
+      particles <- nsim
+    }
   }
+  particles <- check_integer(particles, "particles")
   
   out <- bsf(model, particles, seed, TRUE, model_type(model))
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
@@ -74,6 +79,7 @@ bootstrap_filter.nongaussian <- function(model, particles,
       particles <- nsim
     }
   }
+  particles <- check_integer(particles, "particles")
   
   model$distribution <- 
     pmatch(model$distribution, 
@@ -104,6 +110,7 @@ bootstrap_filter.ssm_nlg <- function(model, particles,
       particles <- nsim
     }
   }
+  particles <- check_integer(particles, "particles")
   
   out <- bsf_nlg(t(model$y), model$Z, model$H, model$T,
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1,
@@ -126,7 +133,8 @@ bootstrap_filter.ssm_nlg <- function(model, particles,
 bootstrap_filter.ssm_sde <- function(model, particles, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  if (L < 1) stop("Discretization level L must be larger than 0.")
+  if (test_count(L, positive=TRUE)) 
+    stop("Discretization level L must be a positive integer.")
   
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
@@ -136,6 +144,8 @@ bootstrap_filter.ssm_sde <- function(model, particles, L,
       particles <- nsim
     }
   }
+  
+  particles <- check_integer(particles, "particles")
   
   out <- bsf_sde(model$y, model$x0, model$positive,
     model$drift, model$diffusion, model$ddiffusion,

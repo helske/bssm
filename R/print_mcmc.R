@@ -153,6 +153,12 @@ print.mcmc_output <- function(x, ...) {
 summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta", 
   only_theta = FALSE, ...) {
   
+  
+  if (!test_flag(return_se)) 
+    stop("Argument 'return_se' should be TRUE or FALSE. ")
+  if (!test_flag(only_theta)) 
+    stop("Argument 'only_theta' should be TRUE or FALSE. ")
+  
   if (only_theta) {
     variable <- "theta"
     warning(paste("Argument 'only_theta' is deprecated. Use argument", 
@@ -284,6 +290,9 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
 #' @export
 expand_sample <- function(x, variable = "theta", times, states, 
   by_states = TRUE) {
+  
+  if (!test_flag(by_states)) 
+    stop("Argument 'by_states' should be TRUE or FALSE. ")
   
   variable <- match.arg(variable, c("theta", "states"))
   if (x$mcmc_type %in% paste0("is", 1:3)) 

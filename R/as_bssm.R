@@ -22,6 +22,7 @@
 #' 
 as_bssm <- function(model, kappa = 100, ...) {
   
+  kappa <- check_positive_real(kappa, "kappa")
   if (!requireNamespace("KFAS", quietly = TRUE)) {
     stop("This function depends on the KFAS package. ", call. = FALSE)
   }

@@ -339,3 +339,23 @@ check_H <- function(x, p, n, multivariate = FALSE) {
   }
   x
 }
+
+
+check_integer <- function(x, name = "particles", positive = TRUE, max = 1e7) {
+  if (!test_count(x, positive)) {
+    stop(paste0("Argument '", name, "' should be a ",
+      ifelse(positive, "positive", "non-negative"), " integer. "))
+  }
+  if (x > max) {
+    stop(paste0("I don't believe you want '", name, "' > ", max,
+      ". If you really do, file an issue at Github."))
+  }
+  as.integer(x)
+}
+
+check_positive_real <- function(x, name) {
+  if (!check_double(x, lower=0, finite = TRUE, any.missing = FALSE, len = 1)) {
+    stop(paste0("Argument '", name, "' should be positive real value."))
+  }
+ x
+}

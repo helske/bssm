@@ -34,8 +34,9 @@ gaussian_approx <- function(model, max_iter, conv_tol, ...) {
 gaussian_approx.nongaussian <- function(model, max_iter = 100, 
   conv_tol = 1e-8, ...) {
   
-  model$max_iter <- max_iter
-  model$conv_tol <- conv_tol
+  model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
+  
   model$distribution <- pmatch(model$distribution,
     c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
     duplicates.ok = TRUE) - 1
@@ -67,9 +68,9 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100,
 gaussian_approx.ssm_nlg <- function(model, max_iter = 100, 
   conv_tol = 1e-8, iekf_iter = 0, ...) {
   
-  model$max_iter <- max_iter
-  model$conv_tol <- conv_tol
-  model$iekf_iter <- iekf_iter
+  model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
+  model$iekf_iter <- check_integer(iekf_iter, "iekf_iter")
   
   out <- gaussian_approx_model_nlg(t(model$y), model$Z, model$H, model$T, 
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
