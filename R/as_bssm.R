@@ -13,12 +13,13 @@
 #' \code{ssm_mng}.
 #' @export
 #' @examples
-#' library("KFAS")
-#' model_KFAS <- SSModel(Nile ~
-#'   SSMtrend(1, Q = 2, P1 = 1e4), H = 2)
-#' model_bssm <- as_bssm(model_KFAS)  
-#' logLik(model_KFAS)
-#' logLik(model_bssm)
+#' if (require("KFAS"))) {
+#'   model_KFAS <- SSModel(Nile ~
+#'     SSMtrend(1, Q = 2, P1 = 1e4), H = 2)
+#'   model_bssm <- as_bssm(model_KFAS)  
+#'   logLik(model_KFAS)
+#'   logLik(model_bssm)
+#' }
 #' 
 as_bssm <- function(model, kappa = 100, ...) {
   

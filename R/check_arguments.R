@@ -354,7 +354,7 @@ check_integer <- function(x, name = "particles", positive = TRUE, max = 1e7) {
 }
 
 check_positive_real <- function(x, name) {
-  if (!check_double(x, lower=0, finite = TRUE, any.missing = FALSE, len = 1)) {
+  if (!test_double(x, lower=0, finite = TRUE, any.missing = FALSE, len = 1)) {
     stop(paste0("Argument '", name, "' should be positive real value."))
   }
  x

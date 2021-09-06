@@ -32,12 +32,10 @@ Suggests:
     KFAS (>= 1.2.1),
     knitr (>= 1.11),
     MASS,
-    ramcmc,
     rmarkdown (>= 0.8.1),
     sde,
-    sitmo,
     testthat
-Imports: coda (>= 0.18-1), diagis, Rcpp (>= 0.12.3)
+Imports: checkmate, coda (>= 0.18-1), diagis, Rcpp (>= 0.12.3)
 LinkingTo: Rcpp, RcppArmadillo, ramcmc, sitmo
 SystemRequirements: C++11, pandoc (>= 1.12.3, needed for vignettes)
 RoxygenNote: 7.1.1
