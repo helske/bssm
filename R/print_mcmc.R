@@ -168,8 +168,6 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
       sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
       
       if (return_se) {
-        mean_theta <- weighted_mean(theta, w)
-        sd_theta <- sqrt(diag(weighted_var(theta, w, method = "moment")))
         se_theta_is <- weighted_se(theta, w)
         se_theta <- sqrt(apply(theta, 2, function(x) asymptotic_var(x, w)))
         ess_theta <- (sd_theta / se_theta)^2
@@ -188,8 +186,6 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
       sd_theta <- apply(theta, 2, sd)
       
       if (return_se) {
-        mean_theta <- colMeans(theta)
-        sd_theta <- apply(theta, 2, sd)
         se_theta <-  sqrt(spectrum0.ar(theta)$spec / nrow(theta))
         ess_theta <- (sd_theta / se_theta)^2
         summary_theta <- matrix(c(mean_theta, sd_theta, se_theta, ess_theta), 
