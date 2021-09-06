@@ -52,7 +52,7 @@ from the posterior predictive distribution
  \eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
 }
 \examples{
-require("graphics")
+library("graphics")
 y <- log10(JohnsonJohnson)
 prior <- uniform(0.01, 0, 1)
 model <- bsm_lg(window(y, end = c(1974, 4)), sd_y = prior,
@@ -67,7 +67,7 @@ future_model$y <- ts(rep(NA, 25),
 pred <- predict(mcmc_results, future_model, type = "state", 
   nsim = 1000)
 
-require("dplyr")
+library("dplyr")
 sumr_fit <- as.data.frame(mcmc_results, variable = "states") \%>\%
   group_by(time, iter) \%>\% 
   mutate(signal = 
@@ -95,7 +95,7 @@ sumr_pred <- pred \%>\%
 #     lwr = quantile(value, 0.025), 
 #     upr = quantile(value, 0.975)) 
     
-require("ggplot2")
+library("ggplot2")
 rbind(sumr_fit, sumr_pred) \%>\% 
   ggplot(aes(x = time, y = mean)) + 
   geom_ribbon(aes(ymin = lwr, ymax = upr), 

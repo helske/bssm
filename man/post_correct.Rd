@@ -111,7 +111,7 @@ p_exact <- predict(out_is2, model, type = "mean",
   group_by(time) \%>\%
   summarise(mean = mean(value))
 
-dplyr:: bind_rows(approx = p_approx, 
+dplyr::bind_rows(approx = p_approx, 
   exact = p_exact, .id = "method") \%>\%
   filter(time > 200) \%>\%
 ggplot(aes(time, mean, colour = method)) + 

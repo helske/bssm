@@ -75,13 +75,13 @@ model <- ar1_lg(LakeHuron, rho = uniform(0.5,-1,1),
 mcmc_results <- run_mcmc(model, iter = 2e4)
 summary(mcmc_results, return_se = TRUE)
 
-require("dplyr")
+library("dplyr")
 sumr <- as.data.frame(mcmc_results, variable = "states") \%>\%
   group_by(time) \%>\%
   summarise(mean = mean(value), 
     lwr = quantile(value, 0.025), 
     upr = quantile(value, 0.975))
-require("ggplot2")
+library("ggplot2")
 sumr \%>\% ggplot(aes(time, mean)) + 
   geom_ribbon(aes(ymin = lwr, ymax = upr),alpha=0.25) + 
   geom_line() + theme_bw() +
