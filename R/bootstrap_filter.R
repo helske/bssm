@@ -133,7 +133,7 @@ bootstrap_filter.ssm_nlg <- function(model, particles,
 bootstrap_filter.ssm_sde <- function(model, particles, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  if (test_count(L, positive=TRUE)) 
+  if (!test_count(L, positive=TRUE)) 
     stop("Discretization level L must be a positive integer.")
   
   if (missing(particles)) {

@@ -33,7 +33,9 @@ Suggests:
     knitr (>= 1.11),
     MASS,
     rmarkdown (>= 0.8.1),
+    ramcmc,
     sde,
+    sitmo,
     testthat
 Imports: checkmate, coda (>= 0.18-1), diagis, Rcpp (>= 0.12.3)
 LinkingTo: Rcpp, RcppArmadillo, ramcmc, sitmo
