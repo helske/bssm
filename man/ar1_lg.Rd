@@ -30,9 +30,24 @@ Constructs a simple Gaussian model where the state dynamics
 follow an AR(1) process.
 }
 \examples{
-model <- ar1_lg(BJsales, rho = uniform(0.5,-1,1), 
-  sigma = halfnormal(1, 10), mu = normal(200, 200, 100), 
-  sd_y = halfnormal(1, 10))
+set.seed(1)
+mu <- 2
+phi <- 0.7
+sd_y <- 0.1
+sigma <- 0.5
+beta <- -1
+x <- rnorm(30)
+z <- y <- numeric(30)
+z[1] <- rnorm(1, mu, sigma / sqrt(1 - phi^2))
+y[1] <- rnorm(1, beta * x[1] + z[1], sd_y)
+for(i in 2:30) {
+  z[i] <- rnorm(1, mu * (1 - phi) + phi * z[i-1], sigma)
+  y[i] <- rnorm(1, beta * x[i] + z[i], sd_y)
+}
+model <- ar1_lg(y, rho = uniform(0.5,-1,1), 
+  sigma = halfnormal(1, 10), mu = normal(0, 0, 1), 
+  sd_y = halfnormal(1, 10), 
+  xreg = x,  beta = normal(0, 0, 1))
 out <- run_mcmc(model, iter = 2e4)
 summary(out, return_se = TRUE)
 }

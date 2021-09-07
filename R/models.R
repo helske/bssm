@@ -412,8 +412,8 @@ ssm_ung <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution, phi = 1,
 #' data("GlobalTemp", package = "KFAS")
 #' model_temp <- ssm_mlg(GlobalTemp, H = matrix(c(0.15,0.05,0, 0.05), 2, 2), 
 #'   R = 0.05, Z = matrix(1, 2, 1), T = 1, P1 = 10)
-#' ts.plot(cbind(model_temp$y, smoother(model_temp)$alphahat),col=1:3)
-#' 
+#' ts.plot(cbind(model_temp$y, smoother(model_temp)$alphahat), col = 1:3)
+#'
 ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL, 
   init_theta = numeric(0), D = NULL, C = NULL, state_names, 
   update_fn = default_update_fn, prior_fn = default_prior_fn) {
@@ -1307,9 +1307,24 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta,
 #' @export
 #' @rdname ar1_lg
 #' @examples 
-#' model <- ar1_lg(BJsales, rho = uniform(0.5,-1,1), 
-#'   sigma = halfnormal(1, 10), mu = normal(200, 200, 100), 
-#'   sd_y = halfnormal(1, 10))
+#' set.seed(1)
+#' mu <- 2
+#' phi <- 0.7
+#' sd_y <- 0.1
+#' sigma <- 0.5
+#' beta <- -1
+#' x <- rnorm(30)
+#' z <- y <- numeric(30)
+#' z[1] <- rnorm(1, mu, sigma / sqrt(1 - phi^2))
+#' y[1] <- rnorm(1, beta * x[1] + z[1], sd_y)
+#' for(i in 2:30) {
+#'   z[i] <- rnorm(1, mu * (1 - phi) + phi * z[i-1], sigma)
+#'   y[i] <- rnorm(1, beta * x[i] + z[i], sd_y)
+#' }
+#' model <- ar1_lg(y, rho = uniform(0.5,-1,1), 
+#'   sigma = halfnormal(1, 10), mu = normal(0, 0, 1), 
+#'   sd_y = halfnormal(1, 10), 
+#'   xreg = x,  beta = normal(0, 0, 1))
 #' out <- run_mcmc(model, iter = 2e4)
 #' summary(out, return_se = TRUE)
 ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
