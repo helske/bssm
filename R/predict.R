@@ -154,10 +154,6 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
   
   if (future) {
     
-    if (attr(object, "model_type") %in% c("bsm_lg", "bsm_ng")) {
-      object$theta[, 1:(ncol(object$theta) - length(model$beta))] <- 
-        log(object$theta[, 1:(ncol(object$theta) - length(model$beta))])
-    }
     w <- object$counts * 
       (if (object$mcmc_type %in% paste0("is", 1:3)) object$weights else 1)
     idx <- sample(seq_len(nrow(object$theta)), size = nsim, prob = w, 

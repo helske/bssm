@@ -8,19 +8,22 @@
 #' approximating Gaussian model.
 #'
 #' @param model Model object.
-#' @param nsim Number of independent samples.
-#' @param use_antithetic Use an antithetic variable for location. 
-#' Default is \code{FALSE}. Ignored for multivariate models.
+#' @param nsim Positive integer defining the number of independent samples.
+#' @param use_antithetic Use an antithetic variable for location? 
+#' Default is \code{FALSE}. Currently not used for multivariate models.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @return An array containing the generated samples.
 #' @export
 #' @rdname sim_smoother
 #' @examples
-#' model <- bsm_lg(rep(NA, 50), sd_level = uniform(1,0,5), 
-#'   sd_y = uniform(1,0,5))
-#' sim <- sim_smoother(model, 12)
+#' # only missing data, simulates from prior
+#' model <- bsm_lg(rep(NA, 25), sd_level = 1, 
+#'   sd_y = 1)
+#' # use antithetic variable for location
+#' sim <- sim_smoother(model, nsim = 4, use_antithetic = TRUE, seed = 1)
 #' ts.plot(sim[, 1, ])
+#' cor(sim[, 1, ])
 sim_smoother <- function(model, nsim, seed, use_antithetic = FALSE, ...) {
   UseMethod("sim_smoother", model)
 }

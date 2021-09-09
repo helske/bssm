@@ -24,6 +24,11 @@ gaussian_approx(model, max_iter, conv_tol, ...)
 \item{iekf_iter}{For non-linear models, number of iterations in iterated EKF
 (defaults to 0).}
 }
+\value{
+Returns linear-Gaussian SSM of class \code{ssm_ulg} or 
+\code{ssm_mlg} which has the same conditional mode of p(alpha|y, theta) as 
+  the original model.
+}
 \description{
 Returns the approximating Gaussian model which has the same conditional 
 mode of p(alpha|y, theta) as the original model. 
@@ -35,6 +40,10 @@ data("poisson_series")
 model <- bsm_ng(y = poisson_series, sd_slope = 0.01, sd_level = 0.1,
   distribution = "poisson")
 out <- gaussian_approx(model)
+for(i in 1:7)
+ cat("Number of iterations used: ", i, ", y[1] = ",
+   gaussian_approx(model, max_iter = i, conv_tol = 0)$y[1], "\n", sep ="")
+   
 }
 \references{
 Koopman, S.J. and Durbin J. (2012). Time Series Analysis by State Space 
