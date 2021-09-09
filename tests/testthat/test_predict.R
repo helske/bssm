@@ -23,36 +23,39 @@ test_that("Gaussian predictions work", {
   # Posterior predictions for past observations:
   expect_error(yrep <- predict(mcmc_results, model, type = "response", 
     future = FALSE, nsim = 100), NA)
-    expect_error(meanrep <- predict(mcmc_results, model, type = "mean", 
+  expect_error(meanrep <- predict(mcmc_results, model, type = "mean", 
     future = FALSE, nsim = 100), NA)
   
   expect_equal(mean(yrep$value - meanrep$value), 0, tol = 0.1)
   
   ufun <- function(x) {
     T <- array(x[1])
-    R <- array(x[2])
-    H <- array(x[3])
+    R <- array(exp(x[2]))
+    H <- array(exp(x[3]))
     dim(T) <- dim(R) <- dim(H) <- c(1, 1, 1)
-    P1 <- matrix(x[2]^2) / (1 - x[1]^2)
+    P1 <- matrix(exp(x[2])^2) / (1 - x[1]^2)
     list(T = T, R = R, P1 = P1, H = H)
   }
   pfun <- function(x) {
-    ifelse(x[1] > 1 | any(x < 0), -Inf, - sum(0.5 * x[2:3]^2))
+    ifelse(x[1] > 1 | x[1] < 0, -Inf, sum(-0.5 * exp(x[2:3])^2 + x[2:3]))
   }
   
   expect_error(model2 <- ssm_mlg(matrix(model$y, length(model$y), 1), 
     Z = 1, H = model$H, T = model$T, R = model$R,
     a1 = model$a1, P1 = model$P1, 
-    init_theta = c(rho = 0.9, sigma = 0.1, sd_y = 0.1),
+    init_theta = c(rho = 0.9, sigma = log(0.1), sd_y = log(0.1)),
     update_fn = ufun, prior_fn = pfun, state_names = "signal"), NA)
   
   set.seed(123)
   expect_error(mcmc_results2 <- run_mcmc(model2, iter = 1000), 
     NA)
+  # transform manually
+  mcmc_results2$theta[, 2:3] <- exp(mcmc_results2$theta[, 2:3])
   expect_equal(mcmc_results$theta, mcmc_results2$theta)
   expect_equal(mcmc_results$alpha, mcmc_results2$alpha)
   expect_equal(mcmc_results$posterior, mcmc_results2$posterior)
-  
+  # transform back to predict...
+  mcmc_results2$theta[, 2:3] <- log(mcmc_results2$theta[, 2:3])
   future_model2 <- model2
   future_model2$y <- matrix(NA, 3, 1)
   expect_error(pred2 <- predict(mcmc_results2, future_model2, type = "mean", 
@@ -86,7 +89,7 @@ test_that("Non-gaussian predictions work", {
     nsim = 100), NA)
   
   expect_gt(mean(pred$value[pred$time == 3]), 1)
-  expect_lt(mean(pred$value[pred$time == 3]), 2.5)
+  expect_lt(mean(pred$value[pred$time == 3]), 1.5)
   
   # Posterior predictions for past observations:
   expect_error(yrep <- predict(mcmc_results, model, type = "response", 
@@ -98,24 +101,30 @@ test_that("Non-gaussian predictions work", {
   
   update_fn <- function(x) {
     T <- array(x[1])
-    R <- array(x[2])
+    R <- array(exp(x[2]))
     dim(T) <- dim(R) <- c(1, 1, 1)
-    P1 <- matrix(x[2]^2) / (1 - x[1]^2)
+    P1 <- matrix(exp(x[2])^2) / (1 - x[1]^2)
     list(T = T, R = R, P1 = P1)
   }
   prior_fn <- function(x) {
-    ifelse(x[1] < 0 | x[1] > 1 | x[2] < 0, -Inf, - 0.5 * x[2]^2)
+    ifelse(x[1] < 0 | x[1] > 1, -Inf, - 0.5 * exp(x[2])^2 + x[2])
   }
   model2 <- ssm_ung(model$y, Z = 1, T = model$T, R = model$R, a1 = model$a1,
     P1 = model$P1, distribution = "poisson", update_fn = update_fn, 
-    prior_fn = prior_fn, init_theta = model$theta, state_names = "signal")
+    prior_fn = prior_fn, init_theta = c(rho = 0.9, log(model$theta[2])), 
+    state_names = "signal")
   
   set.seed(123)
   expect_error(mcmc_results2 <- run_mcmc(model2, iter = 1000, particles = 5), 
     NA)
+  # transform manually
+  mcmc_results2$theta[, 2] <- exp(mcmc_results2$theta[, 2])
   expect_equal(mcmc_results$theta, mcmc_results2$theta)
   expect_equal(mcmc_results$alpha, mcmc_results2$alpha)
   expect_equal(mcmc_results$posterior, mcmc_results2$posterior)
+  
+  # transform back for predict
+  mcmc_results2$theta[, 2] <- log(mcmc_results2$theta[, 2])
   
   future_model2 <- model2
   future_model2$y <- rep(NA, 3)

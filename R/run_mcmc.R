@@ -47,9 +47,9 @@ run_mcmc <- function(model, iter, ...) {
 #' @param S Initial value for the lower triangular matrix of RAM
 #' algorithm, so that the covariance matrix of the Gaussian proposal
 #' distribution is \eqn{SS'}. Note that for some parameters 
-#' (currently the standard deviation and dispersion parameters of bsm_lg 
-#' models) the sampling is done for transformed parameters with 
-#' internal_theta = log(theta).
+#' (currently the standard deviation, dispersion, and autoregressive parameters 
+#' of bsm_lg and ar1_lg models) the sampling is done in unconstrained parameter 
+#' space, i.e. internal_theta = log(theta) (and logit(rho) or AR coefficient).
 #' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the
 #'  burnin period. Default is \code{FALSE}.
 #' @param threads Number of threads for state simulation. The default is 1.
@@ -103,9 +103,14 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   
   if (inherits(model, "bsm_lg")) {
     names_ind <- !model$fixed & c(TRUE, TRUE, model$slope, model$seasonal)
-    model$theta[c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]] <- 
-      log(pmax(1e-8, model$theta[
-        c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]]))
+    transformed <- 
+      c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]
+    model$theta[transformed] <- log(pmax(0.001, model$theta[transformed]))
+  } else {
+    if (inherits(model, "ar1_lg")) {
+      transformed <- c("sigma", "sd_y")
+      model$theta[transformed] <- log(pmax(0.001, model$theta[transformed]))
+    }
   }
   
   if (missing(S)) {
@@ -132,9 +137,11 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
     names(model$theta)
   
   if (inherits(model, "bsm_lg")) {
-    out$theta[, c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]] <- 
-      exp(out$theta[, 
-        c("sd_y", "sd_level", "sd_slope", "sd_seasonal")[names_ind]])
+    out$theta[, transformed] <- exp(out$theta[, transformed])
+  } else {
+    if (inherits(model, "ar1_lg")) {
+      out$theta[, transformed] <- exp(out$theta[, transformed])
+    }
   }
   out$call <- match.call()
   out$seed <- seed
@@ -202,9 +209,9 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' @param S Initial value for the lower triangular matrix of RAM
 #' algorithm, so that the covariance matrix of the Gaussian proposal
 #' distribution is \eqn{SS'}. Note that for some parameters 
-#' (currently the standard deviation and dispersion parameters of 
-#' bsm_ng models) the sampling is done for transformed parameters with 
-#' internal_theta = log(theta).
+#' (currently the standard deviation, dispersion, and autoregressive parameters 
+#' of bsm_ng and ar1_ng models) the sampling is done in unconstrained parameter 
+#' space, i.e. internal_theta = log(theta) (and logit(rho) or AR coefficient).
 #' @param end_adaptive_phase If \code{TRUE}, S is held fixed after the 
 #' burnin period. Default is \code{FALSE}.
 #' @param local_approx If \code{TRUE} (default), Gaussian approximation
@@ -351,12 +358,15 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
     particles <- check_integer(particles, "particles")
   }
   threads <- check_integer(threads, "threads")
-  max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
-  conv_tol <- check_positive_real(conv_tol, "conv_tol")
+  model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
   thin <- check_integer(thin, "thin", max = 100)
   iter <- check_integer(iter, "iter", positive = FALSE, max = 1e12)
   burnin <- check_integer(burnin, "burnin", max = 1e12)
-  
+  if (!test_flag(local_approx))  {
+    stop("Argument 'local_approx' should be TRUE or FALSE. ")
+  } else model$local_approx <- local_approx
+
   if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
@@ -373,26 +383,36 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
     pmatch(match.arg(sampling_method, c("psi", "bsf", "spdk")), 
       c("psi", "bsf", "spdk"))
   
-  model$max_iter <- max_iter
-  model$conv_tol <- conv_tol
-  model$local_approx <- local_approx
+  dists <- 
+    c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian")
+  model$distribution <- 
+    pmatch(model$distribution, dists, duplicates.ok = TRUE) - 1
   
   if (inherits(model, "bsm_ng")) {
+    
     names_ind <-
       c(!model$fixed & c(TRUE, model$slope, model$seasonal), model$noise)
+    
     transformed <- c(
       c("sd_level", "sd_slope", "sd_seasonal", "sd_noise")[names_ind], 
-      if (model$distribution == "negative binomial") "phi")
-    model$theta[transformed] <- log(pmax(1e-8, model$theta[transformed]))
+      if (dists[model$distribution + 1] %in% dists[4:5]) "phi")
+    
+    model$theta[transformed] <- log(pmax(0.001, model$theta[transformed]))
+  } else {
+    if (inherits(model, "ar1_ng")) {
+      
+      transformed <- c("sigma", 
+        if (dists[model$distribution + 1] %in% dists[4:5]) "phi")
+      
+      model$theta[transformed] <- log(pmax(0.001, model$theta[transformed]))
+    }
   }
   
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(model$theta)), length(model$theta))
   }
   
-  model$distribution <- pmatch(model$distribution,
-    c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
-    duplicates.ok = TRUE) - 1
+  
   
   switch(mcmc_type,
     "da" = {
@@ -437,6 +457,10 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
     names(model$theta)
   if (inherits(model, "bsm_ng")) {
     out$theta[, transformed] <- exp(out$theta[, transformed])
+  } else {
+    if (inherits(model, "ar1_ng")) {
+      out$theta[, transformed] <- exp(out$theta[, transformed])
+    }
   }
   out$iter <- iter
   out$burnin <- burnin

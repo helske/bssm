@@ -211,7 +211,7 @@ test_that("MCMC using SPDK for Gamma model works", {
   expect_true(is.finite(sum(mcmc_gamma$alpha)))
   
   expect_lt(sum(abs(summary(mcmc_gamma)[,"Mean"] - 
-      c(0.520146284042284, 2.17575390744017))), 0.3)
+      c(0.542149368711246, 12.353642743311))), 0.3)
   
 })
 
@@ -279,8 +279,6 @@ test_that("MCMC results for SV model using IS-correction are correct", {
       output_type = "summary",
       threads = 2L)[-17])
 })
-
-
 
 test_that("MCMC for nonlinear models work", {
   skip_on_cran()

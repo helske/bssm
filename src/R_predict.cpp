@@ -15,6 +15,7 @@ arma::cube gaussian_predict(const Rcpp::List model_,
   const unsigned int predict_type, const unsigned int seed, 
   const int model_type) {
   
+  // needs a deep copy via cloning in ar1 and bsm case, I don't understand why
   switch (model_type) {
     case 0: {
     ssm_mlg model(model_, seed);
@@ -25,11 +26,11 @@ arma::cube gaussian_predict(const Rcpp::List model_,
       return model.predict_sample(theta, alpha, predict_type, model_["update_fn"]);
     } break;
     case 2: {
-      bsm_lg model(model_, seed);
+      bsm_lg model(Rcpp::clone(model_), seed);
       return model.predict_sample(theta, alpha, predict_type);
     } break;
     case 3: {
-      ar1_lg model(model_, seed);
+      ar1_lg model(Rcpp::clone(model_), seed);
       return model.predict_sample(theta, alpha, predict_type);
     } break;
   }
@@ -42,6 +43,7 @@ arma::cube nongaussian_predict(const Rcpp::List model_,
   const unsigned int predict_type,const unsigned int seed, 
   const unsigned int model_type) {
   
+  // needs a deep copy via cloning in ar1, bsm and svm cases, I don't understand why
   switch (model_type) {
   case 0: {
   ssm_mng model(model_, seed);
@@ -52,15 +54,15 @@ arma::cube nongaussian_predict(const Rcpp::List model_,
   return model.predict_sample(theta, alpha, predict_type, model_["update_fn"]);
 } break;
   case 2: {
-    bsm_ng model(model_, seed);
+    bsm_ng model(Rcpp::clone(model_), seed);
     return model.predict_sample(theta, alpha, predict_type);
   } break;
   case 3: {
-    svm model(model_, seed);
+    svm model(Rcpp::clone(model_), seed);
     return model.predict_sample(theta, alpha, predict_type);
   } break;
   case 4: {
-    ar1_ng model(model_, seed);
+    ar1_ng model(Rcpp::clone(model_), seed);
     return model.predict_sample(theta, alpha, predict_type);
   } break;
   }

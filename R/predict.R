@@ -134,6 +134,24 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
   }
   if (nsim < 1) stop("Number of samples 'nsim' should be at least one.")
   
+  if (attr(object, "model_type") %in% c("bsm_lg", "bsm_ng")) {
+    object$theta[, 1:(ncol(object$theta) - length(model$beta))] <- 
+      log(object$theta[, 1:(ncol(object$theta) - length(model$beta))])
+  } else {
+    if (attr(object, "model_type") == "ar1_lg") {
+      object$theta[, c("sigma", "sd_y")] <- 
+        log(object$theta[, c("sigma", "sd_y")])
+    } else {
+      if (attr(object, "model_type") == "ar1_ng") {
+        disp <- ifelse(
+          object$distribution %in% c("negative binomial", "gamma"), 
+          "phi", NULL)
+        object$theta[, c("sigma", disp)] <- 
+          log(object$theta[, c("sigma", disp)])
+      }
+    }
+  }
+  
   if (future) {
     
     if (attr(object, "model_type") %in% c("bsm_lg", "bsm_ng")) {
@@ -252,10 +270,6 @@ predict.mcmc_output <- function(object, model, type = "response", nsim,
       if (is.null(variables)) 
         variables <- paste("Series", 1:max(1, ncol(model$y)))
       
-      if (attr(object, "model_type") %in% c("bsm_lg", "bsm_ng")) {
-        object$theta[, 1:(ncol(object$theta) - length(model$beta))] <- 
-          log(object$theta[, 1:(ncol(object$theta) - length(model$beta))])
-      }
       theta <- t(object$theta[idx, ])
       states <- aperm(states, c(2, 1, 3))
       

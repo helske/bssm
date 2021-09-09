@@ -51,9 +51,9 @@ between 0 and 1 (not checked).}
 \item{S}{Initial value for the lower triangular matrix of RAM
 algorithm, so that the covariance matrix of the Gaussian proposal
 distribution is \eqn{SS'}. Note that for some parameters 
-(currently the standard deviation and dispersion parameters of bsm_lg 
-models) the sampling is done for transformed parameters with 
-internal_theta = log(theta).}
+(currently the standard deviation, dispersion, and autoregressive parameters 
+of bsm_lg and ar1_lg models) the sampling is done in unconstrained parameter 
+space, i.e. internal_theta = log(theta) (and logit(rho) or AR coefficient).}
 
 \item{end_adaptive_phase}{If \code{TRUE}, S is held fixed after the
 burnin period. Default is \code{FALSE}.}
