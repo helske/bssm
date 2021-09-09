@@ -49,4 +49,24 @@ out <- run_mcmc(model, iter = 1e4, mcmc_type = "approx",
   
 ts.plot(cbind(discoveries, exp(out$alphahat)), col = 1:2)
 
+set.seed(1)
+n <- 30
+phi <- 2
+rho <- 0.9
+sigma <- 0.1
+beta <- 0.5
+x <- rnorm(n)
+z <- y <- numeric(n)
+z[1] <- rnorm(1, 0, sigma / sqrt(1 - rho^2))
+y[1] <- rnbinom(1, mu = exp(beta * x[1] + z[1]), size = phi)
+for(i in 2:n) {
+  z[i] <- rnorm(1, rho * z[i - 1], sigma)
+  y[i] <- rnbinom(1, mu = exp(beta * x[i] + z[i]), size = phi)
+}
+
+model <- ar1_ng(y, rho = uniform(0.9, 0, 1), 
+  sigma = gamma(0.1, 2, 10), mu = 0, 
+  phi = gamma(2, 2, 1), distribution = "negative binomial",
+  xreg = x, beta = normal(0.5, 0, 1))
+
 }

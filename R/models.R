@@ -1203,6 +1203,26 @@ svm <- function(y, mu, rho, sd_ar, sigma) {
 #'   
 #' ts.plot(cbind(discoveries, exp(out$alphahat)), col = 1:2)
 #' 
+#' set.seed(1)
+#' n <- 30
+#' phi <- 2
+#' rho <- 0.9
+#' sigma <- 0.1
+#' beta <- 0.5
+#' x <- rnorm(n)
+#' z <- y <- numeric(n)
+#' z[1] <- rnorm(1, 0, sigma / sqrt(1 - rho^2))
+#' y[1] <- rnbinom(1, mu = exp(beta * x[1] + z[1]), size = phi)
+#' for(i in 2:n) {
+#'   z[i] <- rnorm(1, rho * z[i - 1], sigma)
+#'   y[i] <- rnbinom(1, mu = exp(beta * x[i] + z[i]), size = phi)
+#' }
+#' 
+#' model <- ar1_ng(y, rho = uniform(0.9, 0, 1), 
+#'   sigma = gamma(0.1, 2, 10), mu = 0, 
+#'   phi = gamma(2, 2, 1), distribution = "negative binomial",
+#'   xreg = x, beta = normal(0.5, 0, 1))
+#' 
 ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, 
   xreg = NULL) {
   
@@ -1309,24 +1329,25 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta,
 #' @examples 
 #' set.seed(1)
 #' mu <- 2
-#' phi <- 0.7
+#' rho <- 0.7
 #' sd_y <- 0.1
 #' sigma <- 0.5
 #' beta <- -1
 #' x <- rnorm(30)
 #' z <- y <- numeric(30)
-#' z[1] <- rnorm(1, mu, sigma / sqrt(1 - phi^2))
+#' z[1] <- rnorm(1, mu, sigma / sqrt(1 - rho^2))
 #' y[1] <- rnorm(1, beta * x[1] + z[1], sd_y)
 #' for(i in 2:30) {
-#'   z[i] <- rnorm(1, mu * (1 - phi) + phi * z[i-1], sigma)
+#'   z[i] <- rnorm(1, mu * (1 - rho) + rho * z[i - 1], sigma)
 #'   y[i] <- rnorm(1, beta * x[i] + z[i], sd_y)
 #' }
-#' model <- ar1_lg(y, rho = uniform(0.5,-1,1), 
+#' model <- ar1_lg(y, rho = uniform(0.5, -1, 1), 
 #'   sigma = halfnormal(1, 10), mu = normal(0, 0, 1), 
 #'   sd_y = halfnormal(1, 10), 
 #'   xreg = x,  beta = normal(0, 0, 1))
 #' out <- run_mcmc(model, iter = 2e4)
 #' summary(out, return_se = TRUE)
+#' 
 ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
   
   y <- check_y(y)
