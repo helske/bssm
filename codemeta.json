@@ -1,5 +1,8 @@
 {
-  "@context": ["https://doi.org/10.5063/schema/codemeta-2.0", "http://schema.org"],
+  "@context": [
+    "https://doi.org/10.5063/schema/codemeta-2.0",
+    "http://schema.org"
+  ],
   "@type": "SoftwareSourceCode",
   "identifier": "bssm",
   "description": "Efficient methods for Bayesian inference of state space models \n    via particle Markov chain Monte Carlo (MCMC) and MCMC based on parallel \n    importance sampling type weighted estimators \n    (Vihola, Helske, and Franks, 2020, <doi:10.1111/sjos.12492>). \n    Gaussian, Poisson, binomial, negative binomial, and Gamma\n    observation densities and basic stochastic volatility models \n    with linear-Gaussian state dynamics, \n    as well as general non-linear Gaussian models and discretised \n    diffusion models are supported.",
@@ -7,7 +10,7 @@
   "codeRepository": "https://github.com/helske/bssm",
   "issueTracker": "https://github.com/helske/bssm/issues",
   "license": "https://spdx.org/licenses/GPL-2.0",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -48,6 +51,18 @@
     }
   ],
   "softwareSuggestions": [
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "covr",
+      "name": "covr",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=covr"
+    },
     {
       "@type": "SoftwareApplication",
       "identifier": "dplyr",
@@ -125,18 +140,6 @@
     },
     {
       "@type": "SoftwareApplication",
-      "identifier": "ramcmc",
-      "name": "ramcmc",
-      "provider": {
-        "@id": "https://cran.r-project.org",
-        "@type": "Organization",
-        "name": "Comprehensive R Archive Network (CRAN)",
-        "url": "https://cran.r-project.org"
-      },
-      "sameAs": "https://CRAN.R-project.org/package=ramcmc"
-    },
-    {
-      "@type": "SoftwareApplication",
       "identifier": "rmarkdown",
       "name": "rmarkdown",
       "version": ">= 0.8.1",
@@ -147,6 +150,18 @@
         "url": "https://cran.r-project.org"
       },
       "sameAs": "https://CRAN.R-project.org/package=rmarkdown"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "ramcmc",
+      "name": "ramcmc",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=ramcmc"
     },
     {
       "@type": "SoftwareApplication",
@@ -191,6 +206,18 @@
       "identifier": "R",
       "name": "R",
       "version": ">= 3.5.0"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "checkmate",
+      "name": "checkmate",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=checkmate"
     },
     {
       "@type": "SoftwareApplication",
@@ -241,9 +268,17 @@
   ],
   "releaseNotes": "https://github.com/helske/bssm/blob/master/NEWS",
   "readme": "https://github.com/helske/bssm/blob/master/README.md",
-  "fileSize": "984.687KB",
-  "contIntegration": "https://github.com/helske/bssm/actions",
-  "keywords": ["bayesian-inference", "markov-chain-monte-carlo", "particle-filter", "time-series", "state-space", "r", "cpp"],
+  "fileSize": "10636.929KB",
+  "contIntegration": ["https://github.com/helske/bssm/actions", "https://codecov.io/gh/helske/bssm?branch=master"],
+  "keywords": [
+    "bayesian-inference",
+    "markov-chain-monte-carlo",
+    "particle-filter",
+    "time-series",
+    "state-space",
+    "r",
+    "cpp"
+  ],
   "citation": [
     {
       "@type": "CreativeWork",
@@ -297,5 +332,6 @@
         }
       }
     }
-  ]
+  ],
+  "developmentStatus": "https://www.repostatus.org/#active"
 }
