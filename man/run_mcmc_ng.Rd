@@ -217,3 +217,8 @@ geom_line(data = data.frame(mean = y[, 2], time = 1:20),
 theme_bw()
 
 }
+\references{
+Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
+on approximate marginal Markov chain Monte Carlo. 
+Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
+}

@@ -29,14 +29,14 @@ get_map <- function(x) {
 #' containing estimated standard deviations of the log-weights and 
 #' corresponding number of particles.
 #' @references 
-#' A. Doucet, M. K. Pitt, G. Deligiannidis, R. Kohn, 
+#'Doucet, A, Pitt, MK, Deligiannidis, G, Kohn, R (2015). 
 #' Efficient implementation of Markov chain Monte Carlo when using an 
-#' unbiased likelihood estimator, Biometrika, 102, 2, 2015, Pages 295–313, 
+#' unbiased likelihood estimator, Biometrika, 102(2) p. 295-313,
 #' https://doi.org/10.1093/biomet/asu075
 #' 
-#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators 
+#' Vihola, M, Helske, J, Franks, J (2020). Importance sampling type estimators 
 #' based on approximate marginal Markov chain Monte Carlo. 
-#' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
+#' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @examples 
 #' \dontrun{
@@ -58,7 +58,7 @@ get_map <- function(x) {
 #' ts.plot(y / u)
 #' 
 #' model <- ar1_ng(y, distribution = "binomial", 
-#'   rho = uniform(0.5, -1, 1), sigma = gamma(1, 2, 0.001),
+#'   rho = uniform(0.5, -1, 1), sigma = gamma_prior(1, 2, 0.001),
 #'   mu = normal(0, 0, 10),
 #'   xreg = cbind(x1,x2), beta = normal(c(0, 0), 0, 5),
 #'   u = u)
@@ -136,14 +136,14 @@ suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10),
 #' containing estimated standard deviations of the log-weights and 
 #' corresponding number of particles.
 #' @references 
-#' A. Doucet, M. K. Pitt, G. Deligiannidis, R. Kohn, 
+#' A. Doucet, M. K. Pitt, G. Deligiannidis, R. Kohn (2018). 
 #' Efficient implementation of Markov chain Monte Carlo when using an unbiased 
-#' likelihood estimator. Biometrika, 102, 2, 2015, Pages 295–313, 
+#' likelihood estimator. Biometrika, 102, 2, 295-313, 
 #' https://doi.org/10.1093/biomet/asu075
 #' 
-#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
+#' Vihola, M, Helske, J, Franks, J (2020). Importance sampling type estimators based 
 #' on approximate marginal Markov chain Monte Carlo. 
-#' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
+#' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @examples 
 #' \dontrun{
@@ -165,7 +165,7 @@ suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10),
 #' ts.plot(y / u)
 #' 
 #' model <- ar1_ng(y, distribution = "binomial", 
-#'   rho = uniform(0.5, -1, 1), sigma = gamma(1, 2, 0.001),
+#'   rho = uniform(0.5, -1, 1), sigma = gamma_prior(1, 2, 0.001),
 #'   mu = normal(0, 0, 10),
 #'   xreg = cbind(x1,x2), beta = normal(c(0, 0), 0, 5),
 #'   u = u)

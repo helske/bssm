@@ -37,7 +37,8 @@ default_update_fn <- function(theta) {
 #' and then check the expected structure of the model components from the 
 #' output.
 #' 
-#' @param y Observations as time series (or vector) of length \eqn{n}.
+#' @param y Observations as numeric vector or univariate \code{ts} object of 
+#' length n.
 #' @param Z System matrix Z of the observation equation as m x 1 or 
 #' m x n matrix.
 #' @param H Vector of standard deviations. Either a scalar or a vector of 
@@ -95,7 +96,8 @@ default_update_fn <- function(theta) {
 #' 
 #' model <- ssm_ulg(y, Z, H, T, R, a1, P1, 
 #'   init_theta = c(1, 0.1, 0.1), 
-#'   update_fn = update_fn, prior_fn = prior_fn)
+#'   update_fn = update_fn, prior_fn = prior_fn, 
+#'   state_names = c("level", "b1", "b2"))
 #' 
 #' out <- run_mcmc(model, iter = 10000)
 #' out
@@ -272,7 +274,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #' For negative binomial distribution this is the dispersion term, for 
 #' gamma distribution this is the shape parameter, and for other 
 #' distributions this is ignored.
-#' @param u Constant parameter vector for non-Gaussian models. For Poisson, 
+#' @param u Vector of positive constants for non-Gaussian models. For Poisson, 
 #' gamma, and negative binomial distribution, this corresponds to the offset 
 #' term. For binomial, this is the number of trials.
 #' @param state_names Names for the states.
@@ -297,16 +299,18 @@ ssm_ulg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #' out <- smoother(model)
 #' ts.plot(cbind(model$y / model$u, exp(out$alphahat)), col = 1:2)
 ssm_ung <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution, phi = 1, 
-  u = 1, init_theta = numeric(0), D = NULL, C = NULL, state_names, 
+  u, init_theta = numeric(0), D = NULL, C = NULL, state_names, 
   update_fn = default_update_fn,
   prior_fn = default_prior_fn) {
   
   
-  distribution <- match.arg(distribution, 
+  distribution <- match.arg(tolower(distribution), 
     c("poisson", "binomial", "negative binomial", "gamma"))
   
   y <- check_y(y, distribution = distribution)
   n <- length(y)
+  if (missing(u)) u <- rep(1, n)
+  u <- check_u(u, y)
   Z <- check_Z(Z, 1L, n)
   m <- dim(Z)[1]
   
@@ -323,11 +327,6 @@ ssm_ung <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution, phi = 1,
   C <- check_C(C, m, n)
   
   check_phi(phi)
-  
-  if (length(u) == 1) {
-    u <- rep(u, length.out = n)
-  }
-  check_u(u)
   
   initial_mode <- matrix(init_mode(y, u, distribution), ncol = 1)
   
@@ -495,9 +494,10 @@ ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #' gamma distribution this is the shape parameter, for Gaussian this is 
 #' standard deviation, 
 #' and for other distributions this is ignored.
-#' @param u Constant parameter for non-Gaussian models. For Poisson, gamma, 
-#' and negative binomial distribution, this corresponds to the offset term. 
-#' For binomial, this is the number of trials.
+#' @param u Matrix of positive constants for non-Gaussian models 
+#' (of same dimensions as y). For Poisson,  gamma, and negative binomial 
+#' distribution, this corresponds to the offset term. For binomial, this is the 
+#' number of trials.
 #' @param init_theta Initial values for the unknown hyperparameters theta.
 #' @param D Intercept terms for observation equation, given as p x n matrix.
 #' @param C Intercept terms for state equation, given as m x n matrix.
@@ -549,7 +549,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #'   col = 1:3, lty = c(1, 1, 2))
 #'     
 ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution, 
-  phi = 1, u = 1, init_theta = numeric(0), D = NULL, C = NULL, state_names, 
+  phi = 1, u, init_theta = numeric(0), D = NULL, C = NULL, state_names, 
   update_fn = default_update_fn, prior_fn = default_prior_fn) {
   
   # create y
@@ -557,12 +557,15 @@ ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution,
   y <- check_y(y, multivariate = TRUE)
   n <- nrow(y)
   p <- ncol(y)
-
+  
+  if (missing(u)) u <- matrix(1, n, p)
+  u <- check_u(u, y, multivariate = TRUE)
+  
   if(length(distribution) == 1) distribution <- rep(distribution, p)
   check_distribution(y, distribution)
   if(length(phi) == 1) phi <- rep(phi, p)
   for(i in 1:p) {
-    distribution[i] <- match.arg(distribution[i], 
+    distribution[i] <- match.arg(tolower(distribution[i]), 
       c("poisson", "binomial", "negative binomial", "gamma", "gaussian"))
     check_phi(phi[i])
   }
@@ -583,12 +586,6 @@ ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution,
   if (p == 1) D <- as.matrix(D)
   C <- check_C(C, m, n)
   
-  if (length(u) == 1) {
-    u <- matrix(u, n, p)
-  }
-  check_u(u) 
-  if(!identical(dim(y), dim(u))) 
-    stop("Dimensions of 'y' and 'u' do not match. ")
   initial_mode <- y
   for(i in 1:p) {
     initial_mode[, i] <- init_mode(y[, i], u[, i], distribution[i])
@@ -628,7 +625,9 @@ ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution,
 #' of the noise in seasonal equation. See \link[=uniform]{priors} for details.
 #' If missing, the seasonal component is omitted from the model.
 #' @param xreg Matrix containing covariates.
-#' @param beta Prior for the regression coefficients.
+#' @param beta Prior for the regression coefficients. 
+#' Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
+#' (in case of multiple coefficients) or missing in case of no covariates.
 #' @param period Length of the seasonal pattern. 
 #' Default is \code{frequency(y)}. Must be at least 3.
 #' @param a1 Prior means for the initial states (level, slope, seasonals).
@@ -840,10 +839,12 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' For negative binomial distribution this is the dispersion term, for 
 #' gamma distribution this is the shape parameter, and for other distributions 
 #' this is ignored.
-#' @param u Constant parameter vector for non-Gaussian models. For Poisson, 
+#' @param u Vector of positive constants for non-Gaussian models. For Poisson, 
 #' gamma, and negative binomial distribution, this corresponds to the offset 
 #' term. For binomial, this is the number of trials.
-#' @param beta Prior for the regression coefficients.
+#' @param beta Prior for the regression coefficients. 
+#' Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
+#' (in case of multiple coefficients) or missing in case of no covariates.
 #' @param xreg Matrix containing covariates.
 #' @param period Length of the seasonal pattern. 
 #' Default is \code{frequency(y)}. Must be at least 3.
@@ -882,15 +883,18 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'   ggplot(aes(y = value, x = iter)) + geom_line()
 #' }
 bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
-  distribution, phi, u = 1, beta, xreg = NULL, period = frequency(y), 
+  distribution, phi, u, beta, xreg = NULL, period = frequency(y), 
   a1 = NULL, P1 = NULL, C = NULL) {
   
   
-  distribution <- match.arg(distribution, 
+  distribution <- match.arg(tolower(distribution), 
     c("poisson", "binomial", "negative binomial", "gamma"))
   
   y <- check_y(y, multivariate = FALSE, distribution)
   n <- length(y)
+  
+  if (missing(u)) u <- rep(1, n)
+  u <- check_u(u, y)
   
   regression_part <- create_regression(beta, xreg, n)
   
@@ -1024,12 +1028,6 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   } else {
     phi <- 1
   }
-  
-  check_u(u)
-  if (length(u) != n) {
-    u <- rep(u, length.out = n)
-  }
-  
   
   initial_mode <- matrix(init_mode(y, u, distribution), ncol = 1)
   
@@ -1175,20 +1173,26 @@ svm <- function(y, mu, rho, sd_ar, sigma) {
 #' AR(1) process.
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
-#' @param rho prior for autoregressive coefficient.
+#' @param rho Prior for autoregressive coefficient. 
+#' Should be an object of class \code{bssm_prior}.
 #' @param mu A fixed value or a prior for the stationary mean of the latent 
-#' AR(1) process. Parameter is omitted if this is set to 0.
-#' @param sigma Prior for the standard deviation of noise of the AR-process.
-#' @param beta Prior for the regression coefficients.
-#' @param xreg Matrix containing covariates.
+#' AR(1) process. Should be an object of class \code{bssm_prior} or scalar 
+#' value defining a fixed mean such as 0.
+#' @param sigma Prior for the standard deviation of noise of the AR-process. 
+#' Should be an object of class \code{bssm_prior}
+#' @param beta Prior for the regression coefficients. 
+#' Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
+#' (in case of multiple coefficients) or missing in case of no covariates.
+#' @param xreg Matrix containing covariates with number of rows matching the 
+#' length of \code{y}.
 #' @param distribution Distribution of the observed time series. Possible 
 #' choices are \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and 
 #' \code{"negative binomial"}.
 #' @param phi Additional parameter relating to the non-Gaussian distribution.
 #' For negative binomial distribution this is the dispersion term, for gamma 
 #' distribution this is the shape parameter, and for other distributions this 
-#' is ignored.
-#' @param u Constant parameter vector for non-Gaussian models. For Poisson, 
+#' is ignored. Should be an object of class \code{bssm_prior} or fixed value.
+#' @param u Vector of positive constants for non-Gaussian models. For Poisson, 
 #' gamma, and negative binomial distribution, this corresponds to the offset 
 #' term. For binomial, this is the number of trials.
 #' @return Object of class \code{ar1_ng}.
@@ -1209,29 +1213,33 @@ svm <- function(y, mu, rho, sd_ar, sigma) {
 #' rho <- 0.9
 #' sigma <- 0.1
 #' beta <- 0.5
+#' u <- rexp(n, 0.1)
 #' x <- rnorm(n)
 #' z <- y <- numeric(n)
 #' z[1] <- rnorm(1, 0, sigma / sqrt(1 - rho^2))
-#' y[1] <- rnbinom(1, mu = exp(beta * x[1] + z[1]), size = phi)
+#' y[1] <- rnbinom(1, mu = u * exp(beta * x[1] + z[1]), size = phi)
 #' for(i in 2:n) {
 #'   z[i] <- rnorm(1, rho * z[i - 1], sigma)
-#'   y[i] <- rnbinom(1, mu = exp(beta * x[i] + z[i]), size = phi)
+#'   y[i] <- rnbinom(1, mu = u * exp(beta * x[i] + z[i]), size = phi)
 #' }
 #' 
-#' model <- ar1_ng(y, rho = uniform(0.9, 0, 1), 
-#'   sigma = gamma(0.1, 2, 10), mu = 0, 
-#'   phi = gamma(2, 2, 1), distribution = "negative binomial",
-#'   xreg = x, beta = normal(0.5, 0, 1))
+#' model <- ar1_ng(y, rho = uniform_prior(0.9, 0, 1), 
+#'   sigma = gamma_prior(0.1, 2, 10), mu = 0., 
+#'   phi = gamma_prior(2, 2, 1), distribution = "negative binomial",
+#'   xreg = x, beta = normal_prior(0.5, 0, 1), u = u)
 #' 
-ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta, 
+ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u, beta, 
   xreg = NULL) {
   
-  distribution <- match.arg(distribution, 
+  distribution <- match.arg(tolower(distribution), 
     c("poisson", "binomial", "negative binomial", "gamma"))
   
   y <- check_y(y, multivariate = FALSE, distribution)
-  
   n <- length(y)
+  
+  if (missing(u)) u <- rep(1, n)
+  u <- check_u(u, y)
+  
   regression_part <- create_regression(beta, xreg, n)
   
   check_rho(rho$init)
@@ -1248,7 +1256,7 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta,
     a1 <- mu
     C <- matrix(mu * (1 - rho$init))
   }
-  distribution <- match.arg(distribution, c("poisson", "binomial",
+  distribution <- match.arg(tolower(distribution), c("poisson", "binomial",
     "negative binomial", "gamma"))
   
   use_phi <- distribution %in% c("negative binomial", "gamma")
@@ -1262,11 +1270,6 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta,
     }
   } else {
     phi <- 1
-  }
-  
-  check_u(u)
-  if (length(u) != n) {
-    u <- rep(u, length.out = n)
   }
   
   initial_mode <- matrix(init_mode(y, u, distribution), ncol = 1)
@@ -1315,13 +1318,15 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u = 1, beta,
 #' Constructs a simple Gaussian model where the state dynamics 
 #' follow an AR(1) process.
 #'
-#' @param y Vector or a \code{\link{ts}} object of observations.
-#' @param rho prior for autoregressive coefficient.
-#' @param mu A fixed value or a prior for the stationary mean of the latent 
+#' @param y A numeric vector or a \code{\link{ts}} object of observations.
+#' @param rho A prior (as \code{bssm_prior} object) defining the prior for autoregressive coefficient.
+#' @param mu A fixed value or a bssm prior for the stationary mean of the latent 
 #' AR(1) process. Parameter is omitted if this is set to 0.
-#' @param sigma Prior for the standard deviation of noise of the AR-process.
-#' @param sd_y Prior for the standard deviation of observation equation.
-#' @param beta Prior for the regression coefficients.
+#' @param sigma A prior for the standard deviation of noise of the AR-process.
+#' @param sd_y A prior for the standard deviation of observation equation.
+#' @param beta Prior for the regression coefficients. 
+#' Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
+#' (in case of multiple coefficients) or missing in case of no covariates.
 #' @param xreg Matrix containing covariates.
 #' @return Object of class \code{ar1_lg}.
 #' @export

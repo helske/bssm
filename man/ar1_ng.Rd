@@ -4,17 +4,20 @@
 \alias{ar1_ng}
 \title{Non-Gaussian model with AR(1) latent process}
 \usage{
-ar1_ng(y, rho, sigma, mu, distribution, phi, u = 1, beta, xreg = NULL)
+ar1_ng(y, rho, sigma, mu, distribution, phi, u, beta, xreg = NULL)
 }
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
 
-\item{rho}{prior for autoregressive coefficient.}
+\item{rho}{Prior for autoregressive coefficient. 
+Should be an object of class \code{bssm_prior}.}
 
-\item{sigma}{Prior for the standard deviation of noise of the AR-process.}
+\item{sigma}{Prior for the standard deviation of noise of the AR-process. 
+Should be an object of class \code{bssm_prior}}
 
 \item{mu}{A fixed value or a prior for the stationary mean of the latent 
-AR(1) process. Parameter is omitted if this is set to 0.}
+AR(1) process. Should be an object of class \code{bssm_prior} or scalar 
+value defining a fixed mean such as 0.}
 
 \item{distribution}{Distribution of the observed time series. Possible 
 choices are \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and 
@@ -23,15 +26,18 @@ choices are \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and
 \item{phi}{Additional parameter relating to the non-Gaussian distribution.
 For negative binomial distribution this is the dispersion term, for gamma 
 distribution this is the shape parameter, and for other distributions this 
-is ignored.}
+is ignored. Should be an object of class \code{bssm_prior} or fixed value.}
 
-\item{u}{Constant parameter vector for non-Gaussian models. For Poisson, 
+\item{u}{Vector of positive constants for non-Gaussian models. For Poisson, 
 gamma, and negative binomial distribution, this corresponds to the offset 
 term. For binomial, this is the number of trials.}
 
-\item{beta}{Prior for the regression coefficients.}
+\item{beta}{Prior for the regression coefficients. 
+Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
+(in case of multiple coefficients) or missing in case of no covariates.}
 
-\item{xreg}{Matrix containing covariates.}
+\item{xreg}{Matrix containing covariates with number of rows matching the 
+length of \code{y}.}
 }
 \value{
 Object of class \code{ar1_ng}.
@@ -55,18 +61,19 @@ phi <- 2
 rho <- 0.9
 sigma <- 0.1
 beta <- 0.5
+u <- rexp(n, 0.1)
 x <- rnorm(n)
 z <- y <- numeric(n)
 z[1] <- rnorm(1, 0, sigma / sqrt(1 - rho^2))
-y[1] <- rnbinom(1, mu = exp(beta * x[1] + z[1]), size = phi)
+y[1] <- rnbinom(1, mu = u * exp(beta * x[1] + z[1]), size = phi)
 for(i in 2:n) {
   z[i] <- rnorm(1, rho * z[i - 1], sigma)
-  y[i] <- rnbinom(1, mu = exp(beta * x[i] + z[i]), size = phi)
+  y[i] <- rnbinom(1, mu = u * exp(beta * x[i] + z[i]), size = phi)
 }
 
-model <- ar1_ng(y, rho = uniform(0.9, 0, 1), 
-  sigma = gamma(0.1, 2, 10), mu = 0, 
-  phi = gamma(2, 2, 1), distribution = "negative binomial",
-  xreg = x, beta = normal(0.5, 0, 1))
+model <- ar1_ng(y, rho = uniform_prior(0.9, 0, 1), 
+  sigma = gamma_prior(0.1, 2, 10), mu = 0., 
+  phi = gamma_prior(2, 2, 1), distribution = "negative binomial",
+  xreg = x, beta = normal_prior(0.5, 0, 1), u = u)
 
 }

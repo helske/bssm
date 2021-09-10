@@ -15,12 +15,12 @@
 #' \code{ssm_mlg} which has the same conditional mode of p(alpha|y, theta) as 
 #'   the original model.
 #' @references 
-#' Koopman, S.J. and Durbin J. (2012). Time Series Analysis by State Space 
+#' Koopman, SJ and Durbin J (2012). Time Series Analysis by State Space 
 #' Methods. Second edition. Oxford: Oxford University Press.
 #' 
-#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
+#' Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators based 
 #' on approximate marginal Markov chain Monte Carlo. 
-#' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
+#' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @rdname gaussian_approx
 #' @examples 

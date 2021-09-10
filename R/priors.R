@@ -1,19 +1,21 @@
-## will add more choices later...
-## add recycling of parameters later
-
 #' Prior objects for bssm models
 #'
 #' These simple objects of class \code{bssm_prior} are used to construct a 
-#' prior distributions for the 
-#' MCMC runs of \code{bssm} package. Currently supported priors are uniform 
+#' prior distributions for the some of the model objects of \code{bssm} 
+#' package. Currently supported priors are uniform 
 #' (\code{uniform()}), half-normal (\code{halfnormal()}), 
 #' normal (\code{normal()}), gamma (\code{gamma}), and 
 #' truncated normal distribution  (\code{tnormal()}). All parameters are 
 #' vectorized so for regression coefficient vector beta you can define prior 
 #' for example as \code{normal(0, 0, c(10, 20))}.
 #' 
+#' The longer name versions of the prior functions with \code{_prior} ending 
+#' are identical with shorter versions and they are available only to 
+#' avoid clash with R's primitive function \code{gamma} (other long prior names 
+#' are just for consistent naming).
 #' 
-#' @rdname priors
+#' @rdname bssm_prior
+#' @aliases bssm_prior_list
 #' @param init Initial value for the parameter, used in initializing the model 
 #' components and as a starting values in MCMC. 
 #' @param min Lower bound of the uniform and truncated normal prior.
@@ -23,14 +25,15 @@
 #' @param mean Mean of the Normal prior.
 #' @param shape Shape parameter of the Gamma prior.
 #' @param rate Rate parameter of the Gamma prior.
-#' @return object of class \code{bssm_prior}.
+#' @return object of class \code{bssm_prior} or \code{bssm_prior_list} in case 
+#' of multiple priors (i.e. multiple regression coefficients).
 #' @export
 #' @examples
 #' # create uniform prior on [-1, 1] for one parameter with initial value 0.2:
 #' uniform(0.2, -1, 1)
 #' # two normal priors at once i.e. for coefficients beta:
 #' normal(init = c(0.1, 2), mean = 0, sd = c(1, 2))
-uniform <- function(init, min, max) {
+uniform_prior <- function(init, min, max) {
   if (any(!is.numeric(init), !is.numeric(min), !is.numeric(max))) {
     stop("Parameters for priors must be numeric.")
   }
@@ -55,10 +58,13 @@ uniform <- function(init, min, max) {
       min = min, max = max), class = "bssm_prior")
   }
 }
-
-#' @rdname priors
+#' @rdname bssm_prior
 #' @export
-halfnormal <- function(init, sd) {
+uniform <- uniform_prior
+
+#' @rdname bssm_prior
+#' @export
+halfnormal_prior <- function(init, sd) {
   
   if (any(!is.numeric(init), !is.numeric(sd))) {
     stop("Parameters for priors must be numeric.")
@@ -83,11 +89,13 @@ halfnormal <- function(init, sd) {
       class = "bssm_prior")
   }
 }
-
-
-#' @rdname priors
+#' @rdname bssm_prior
 #' @export
-normal <- function(init, mean, sd) {
+halfnormal <- halfnormal_prior
+
+#' @rdname bssm_prior
+#' @export
+normal_prior <- function(init, mean, sd) {
   
   if (any(!is.numeric(init), !is.numeric(mean), !is.numeric(sd))) {
     stop("Parameters for priors must be numeric.")
@@ -110,9 +118,14 @@ normal <- function(init, mean, sd) {
       sd = sd), class = "bssm_prior")
   }
 }
-#' @rdname priors
+
+#' @rdname bssm_prior
 #' @export
-tnormal <- function(init, mean, sd, min = -Inf, max = Inf) {
+normal <- normal_prior
+
+#' @rdname bssm_prior
+#' @export
+tnormal_prior <- function(init, mean, sd, min = -Inf, max = Inf) {
   
   if (any(!is.numeric(init), !is.numeric(mean), !is.numeric(sd))) {
     stop("Parameters for priors must be numeric.")
@@ -135,6 +148,42 @@ tnormal <- function(init, mean, sd, min = -Inf, max = Inf) {
       sd = sd, min = min, max = max), class = "bssm_prior")
   }
 }
+
+#' @rdname bssm_prior
+#' @export
+tnormal <- tnormal_prior
+
+#' @rdname bssm_prior
+#' @export
+gamma_prior <- function(init, shape, rate) {
+  
+  if (any(!is.numeric(init), !is.numeric(shape), !is.numeric(rate))) {
+    stop("Parameters for priors must be numeric.")
+  }
+  if (any(shape < 0)) {
+    stop("Shape parameter for Gamma distribution must be positive.")
+  }
+  if (any(rate < 0)) {
+    stop("Rate parameter for Gamma distribution must be positive.")
+  }
+  n <- max(length(init), length(shape), length(rate))
+  if (n > 1) {
+    structure(lapply(1:n, function(i) 
+      structure(list(prior_distribution = "gamma", 
+        init = safe_pick(init, i), shape = safe_pick(shape, i), 
+        rate = safe_pick(rate, i)), 
+        class = "bssm_prior")), class = "bssm_prior_list")
+    
+  } else {
+    structure(list(prior_distribution = "gamma", init = init, 
+      shape = shape, rate = rate), 
+      class = "bssm_prior")
+  }
+}
+#' @rdname bssm_prior
+#' @export
+gamma <- gamma_prior
+
 combine_priors <- function(x) {
   
   if (length(x) == 0) 
@@ -151,33 +200,10 @@ combine_priors <- function(x) {
         "tnormal", "gamma"), duplicates.ok = TRUE) - 1, 
     parameters = parameters)
 }
-#' @rdname priors
-#' @export
-gamma <- function(init, shape, rate) {
-  
-  if (any(!is.numeric(init), !is.numeric(shape), !is.numeric(rate))) {
-    stop("Parameters for priors must be numeric.")
-  }
-  if (any(shape < 0)) {
-    stop("Shape parameter for Gamma distribution must be positive.")
-  }
-  if (any(rate < 0)) {
-    stop("Rate parameter for Gamma distribution must be positive.")
-  }
-  n <- max(length(init), length(shape), length(rate))
-  if (n > 1) {
-    structure(lapply(1:n, function(i) 
-      structure(list(prior_distribution = "gamma", 
-      init = safe_pick(init, i), shape = safe_pick(shape, i), 
-        rate = safe_pick(rate, i)), 
-      class = "bssm_prior")), class = "bssm_prior_list")
-    
-  } else {
-    structure(list(prior_distribution = "gamma", init = init, 
-      shape = shape, rate = rate), 
-      class = "bssm_prior")
-  }
-}
+
+
+
+
 is_prior <- function(x) {
   inherits(x, "bssm_prior")
 }

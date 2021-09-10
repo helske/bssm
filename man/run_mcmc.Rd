@@ -22,7 +22,6 @@ Robust Adaptive Metropolis algorithm by Vihola (2012).
 See specific methods for various model types for details.
 }
 \references{
-Matti Vihola (2012). "Robust adaptive Metropolis algorithm with
-coerced acceptance rate". Statistics and Computing, Volume 22, Issue 5,
-pages 997--1008.
+Matti Vihola (2012). Robust adaptive Metropolis algorithm with
+coerced acceptance rate. Statistics and Computing, 22(5), p 997-1008.
 }

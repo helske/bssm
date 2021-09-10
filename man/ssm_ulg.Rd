@@ -21,7 +21,8 @@ ssm_ulg(
 )
 }
 \arguments{
-\item{y}{Observations as time series (or vector) of length \eqn{n}.}
+\item{y}{Observations as numeric vector or univariate \code{ts} object of 
+length n.}
 
 \item{Z}{System matrix Z of the observation equation as m x 1 or 
 m x n matrix.}
@@ -124,7 +125,8 @@ prior_fn <- function(theta) {
 
 model <- ssm_ulg(y, Z, H, T, R, a1, P1, 
   init_theta = c(1, 0.1, 0.1), 
-  update_fn = update_fn, prior_fn = prior_fn)
+  update_fn = update_fn, prior_fn = prior_fn, 
+  state_names = c("level", "b1", "b2"))
 
 out <- run_mcmc(model, iter = 10000)
 out

@@ -148,7 +148,7 @@ print.mcmc_output <- function(x, ...) {
 #' @references 
 #' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
 #' on approximate marginal Markov chain Monte Carlo. 
-#' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
+#' Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
 summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta", 
   only_theta = FALSE, ...) {

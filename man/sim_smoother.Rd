@@ -27,11 +27,11 @@ sim_smoother(model, nsim, seed, use_antithetic = FALSE, ...)
 \arguments{
 \item{model}{Model object.}
 
-\item{nsim}{Number of independent samples.}
+\item{nsim}{Positive integer defining the number of independent samples.}
 
 \item{seed}{Seed for the random number generator.}
 
-\item{use_antithetic}{Use an antithetic variable for location. 
+\item{use_antithetic}{Use an antithetic variable for location? 
 Default is \code{FALSE}. Currently not used for multivariate models.}
 
 \item{...}{Ignored.}

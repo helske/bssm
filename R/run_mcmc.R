@@ -13,9 +13,8 @@
 #' and \code{\link{run_mcmc.ssm_sde}} for details.
 #' @export
 #' @rdname run_mcmc
-#' @references Matti Vihola (2012). "Robust adaptive Metropolis algorithm with
-#' coerced acceptance rate". Statistics and Computing, Volume 22, Issue 5,
-#' pages 997--1008.
+#' @references Matti Vihola (2012). Robust adaptive Metropolis algorithm with
+#' coerced acceptance rate. Statistics and Computing, 22(5), p 997-1008.
 run_mcmc <- function(model, iter, ...) {
   UseMethod("run_mcmc", model)
 }
@@ -58,7 +57,7 @@ run_mcmc <- function(model, iter, ...) {
 #' @references 
 #' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
 #' on approximate marginal Markov chain Monte Carlo. 
-#' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
+#' Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @examples 
 #' model <- ar1_lg(LakeHuron, rho = uniform(0.5,-1,1), 
@@ -225,6 +224,10 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' @param max_iter Maximum number of iterations used in Gaussian approximation.
 #' @param conv_tol Tolerance parameter used in Gaussian approximation.
 #' @param ... Ignored.
+#' @references 
+#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
+#' on approximate marginal Markov chain Monte Carlo. 
+#' Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 #' @examples
 #' set.seed(1)
 #' n <- 50 
@@ -542,7 +545,7 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
 #' @references 
 #' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
 #' on approximate marginal Markov chain Monte Carlo. 
-#' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
+#' Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   mcmc_type = "is2", sampling_method = "bsf",
   burnin = floor(iter / 2), thin = 1,
@@ -735,7 +738,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
 #' @references 
 #' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
 #' on approximate marginal Markov chain Monte Carlo. 
-#' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
+#' Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   mcmc_type = "is2", L_c, L_f,
   burnin = floor(iter/2), thin = 1,

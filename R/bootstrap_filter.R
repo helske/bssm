@@ -12,9 +12,9 @@
 #' \code{Ptt}), and estimated log-likelihood (\code{logLik}).
 #' @export
 #' @references 
-#' Gordon, N. J., Salmond, D. J., & Smith, A. F. M. (1993). 
-#' Novel approach to nonlinear/non-Gaussian Bayesian state estimation. 
-#' IEE Proceedings-F, 140, 107–113.
+#' Gordon, NJ, Salmond, DJ, Smith, AFM (1993) Novel approach to 
+#' nonlinear/non-Gaussian Bayesian state estimation. IEE Proceedings F, 
+#' 140(2), p. 107-113.
 #' @rdname bootstrap_filter
 bootstrap_filter <- function(model, particles, ...) {
   UseMethod("bootstrap_filter", model)

@@ -129,23 +129,33 @@ check_phi <- function(x, distribution) {
     stop("Parameter 'phi' must be non-negative.")
   }
 }
-check_u <- function(x, multivariate = FALSE) {
+check_u <- function(x, y, multivariate = FALSE) {
   if (any(x < 0)) {
     stop("All values of 'u' must be non-negative.")
   }
   if (multivariate) {
+    if (length(x) == 1) x <- matrix(x, nrow(y), ncol(y))
+    
     if (!is.matrix(x) && !is.numeric(x)) {
       stop("Argument 'u' must be a numeric matrix or multivariate ts object.")
     }
+    if(!identical(dim(y), dim(x))) 
+      stop("Dimensions of 'y' and 'u' do not match. ")
   } else {
+    if (length(x) == 1) u <- rep(x, length(y))
     if (!(is.vector(x) && !is.list(x)) && !is.numeric(x)) {
       stop("Argument 'u' must be a numeric vector or ts object.")
     }
+    if (length(x) != length(y))
+      stop("Lengths of 'u' and 'y' do not match.")
+    dim(x) <- NULL
   }
   if (any(is.infinite(x))) {
     stop("Argument 'u' must contain only finite values.")
   }
+  x
 }
+
 check_prior <- function(x, name) {
   if (!is_prior(x) && !is_prior_list(x)) {
     stop(paste(name, "must be of class 'bssm_prior' or 'bssm_prior_list'."))

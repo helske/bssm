@@ -12,7 +12,7 @@ bsm_ng(
   sd_noise,
   distribution,
   phi,
-  u = 1,
+  u,
   beta,
   xreg = NULL,
   period = frequency(y),
@@ -49,11 +49,13 @@ For negative binomial distribution this is the dispersion term, for
 gamma distribution this is the shape parameter, and for other distributions 
 this is ignored.}
 
-\item{u}{Constant parameter vector for non-Gaussian models. For Poisson, 
+\item{u}{Vector of positive constants for non-Gaussian models. For Poisson, 
 gamma, and negative binomial distribution, this corresponds to the offset 
 term. For binomial, this is the number of trials.}
 
-\item{beta}{Prior for the regression coefficients.}
+\item{beta}{Prior for the regression coefficients. 
+Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
+(in case of multiple coefficients) or missing in case of no covariates.}
 
 \item{xreg}{Matrix containing covariates.}
 

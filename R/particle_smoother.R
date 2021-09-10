@@ -34,24 +34,24 @@
 #'  of the states and 
 #'  estimated log-likelihood (\code{logLik}).
 #' @references 
-#' [1] Gordon, N. J., Salmond, D. J., & Smith, A. F. M. (1993). 
+#' [1] Gordon, NJ, Salmond, DJ, Smith, AFM (1993). 
 #' Novel approach to nonlinear/non-Gaussian Bayesian state estimation. 
-#' IEE Proceedings-F, 140, 107–113.
+#' IEE Proceedings-F, 140, 107-113.
 #' 
 #' [2] Vihola, M, Helske, J, Franks, J. Importance sampling type estimators 
 #' based on approximate marginal Markov chain Monte Carlo. 
-#' Scand J Statist. 2020; 1– 38. https://doi.org/10.1111/sjos.12492
+#' Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 #' 
-#' [3] Van Der Merwe, R., Doucet, A., De Freitas, N., & Wan, E. A. (2001). 
+#' [3] Van Der Merwe, R, Doucet, A, De Freitas, N,  Wan, EA (2001). 
 #' The unscented particle filter. 
-#' In Advances in neural information processing systems (pp. 584-590).
+#' In Advances in neural information processing systems, p 584-590.
 #' 
-#' [4] Jazwinski, A. 1970. Stochastic Processes and Filtering Theory. 
+#' [4] Jazwinski, A 1970. Stochastic Processes and Filtering Theory. 
 #' Academic Press.
 #' 
-#' [5] Kitagawa, G. (1996). Monte Carlo filter and smoother for non-Gaussian 
+#' [5] Kitagawa, G (1996). Monte Carlo filter and smoother for non-Gaussian 
 #' nonlinear state space models. 
-#' Journal of Computational and Graphical Statistics, 5, 1–25.
+#' Journal of Computational and Graphical Statistics, 5, 1-25.
 #' @export
 #' @rdname particle_smoother
 particle_smoother <- function(model, particles, ...) {

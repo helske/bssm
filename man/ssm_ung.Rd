@@ -13,7 +13,7 @@ ssm_ung(
   P1 = NULL,
   distribution,
   phi = 1,
-  u = 1,
+  u,
   init_theta = numeric(0),
   D = NULL,
   C = NULL,
@@ -49,7 +49,7 @@ For negative binomial distribution this is the dispersion term, for
 gamma distribution this is the shape parameter, and for other 
 distributions this is ignored.}
 
-\item{u}{Constant parameter vector for non-Gaussian models. For Poisson, 
+\item{u}{Vector of positive constants for non-Gaussian models. For Poisson, 
 gamma, and negative binomial distribution, this corresponds to the offset 
 term. For binomial, this is the number of trials.}
 

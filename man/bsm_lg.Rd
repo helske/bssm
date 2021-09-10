@@ -36,7 +36,9 @@ If missing, the slope term is omitted from the model.}
 of the noise in seasonal equation. See \link[=uniform]{priors} for details.
 If missing, the seasonal component is omitted from the model.}
 
-\item{beta}{Prior for the regression coefficients.}
+\item{beta}{Prior for the regression coefficients. 
+Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
+(in case of multiple coefficients) or missing in case of no covariates.}
 
 \item{xreg}{Matrix containing covariates.}
 

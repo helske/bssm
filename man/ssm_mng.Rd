@@ -13,7 +13,7 @@ ssm_mng(
   P1 = NULL,
   distribution,
   phi = 1,
-  u = 1,
+  u,
   init_theta = numeric(0),
   D = NULL,
   C = NULL,
@@ -51,9 +51,10 @@ gamma distribution this is the shape parameter, for Gaussian this is
 standard deviation, 
 and for other distributions this is ignored.}
 
-\item{u}{Constant parameter for non-Gaussian models. For Poisson, gamma, 
-and negative binomial distribution, this corresponds to the offset term. 
-For binomial, this is the number of trials.}
+\item{u}{Matrix of positive constants for non-Gaussian models 
+(of same dimensions as y). For Poisson,  gamma, and negative binomial 
+distribution, this corresponds to the offset term. For binomial, this is the 
+number of trials.}
 
 \item{init_theta}{Initial values for the unknown hyperparameters theta.}
 

@@ -79,7 +79,7 @@ ts.plot(cbind(poisson_series, exp(out$att[, 1])), col = 1:2)
 
 }
 \references{
-Gordon, N. J., Salmond, D. J., & Smith, A. F. M. (1993). 
-Novel approach to nonlinear/non-Gaussian Bayesian state estimation. 
-IEE Proceedings-F, 140, 107–113.
+Gordon, NJ, Salmond, DJ, Smith, AFM (1993) Novel approach to 
+nonlinear/non-Gaussian Bayesian state estimation. IEE Proceedings F, 
+140(2), p. 107-113.
 }

@@ -7,18 +7,20 @@
 ar1_lg(y, rho, sigma, mu, sd_y, beta, xreg = NULL)
 }
 \arguments{
-\item{y}{Vector or a \code{\link{ts}} object of observations.}
+\item{y}{A numeric vector or a \code{\link{ts}} object of observations.}
 
-\item{rho}{prior for autoregressive coefficient.}
+\item{rho}{A prior (as \code{bssm_prior} object) defining the prior for autoregressive coefficient.}
 
-\item{sigma}{Prior for the standard deviation of noise of the AR-process.}
+\item{sigma}{A prior for the standard deviation of noise of the AR-process.}
 
-\item{mu}{A fixed value or a prior for the stationary mean of the latent 
+\item{mu}{A fixed value or a bssm prior for the stationary mean of the latent 
 AR(1) process. Parameter is omitted if this is set to 0.}
 
-\item{sd_y}{Prior for the standard deviation of observation equation.}
+\item{sd_y}{A prior for the standard deviation of observation equation.}
 
-\item{beta}{Prior for the regression coefficients.}
+\item{beta}{Prior for the regression coefficients. 
+Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
+(in case of multiple coefficients) or missing in case of no covariates.}
 
 \item{xreg}{Matrix containing covariates.}
 }
