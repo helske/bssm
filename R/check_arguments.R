@@ -142,7 +142,7 @@ check_u <- function(x, y, multivariate = FALSE) {
     if(!identical(dim(y), dim(x))) 
       stop("Dimensions of 'y' and 'u' do not match. ")
   } else {
-    if (length(x) == 1) u <- rep(x, length(y))
+    if (length(x) == 1) x <- rep(x, length(y))
     if (!(is.vector(x) && !is.list(x)) && !is.numeric(x)) {
       stop("Argument 'u' must be a numeric vector or ts object.")
     }
