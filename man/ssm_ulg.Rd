@@ -180,7 +180,7 @@ model_bssm <- as_bssm(model_kfas, kappa = 100,
   init_theta = init_theta, 
   prior_fn = prior, update_fn = updatefn)
 
-\dontrun{
+\donttest{
 out <- run_mcmc(model_bssm, iter = 10000, burnin = 5000) 
 out
 

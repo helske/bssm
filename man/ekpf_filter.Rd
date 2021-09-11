@@ -32,7 +32,7 @@ Function \code{ekpf_filter} performs a extended Kalman particle filtering
 with stratification resampling, based on Van Der Merwe et al (2001).
 }
 \examples{
-\dontrun{
+\donttest{
 set.seed(1)
 n <- 50
 x <- y <- numeric(n)

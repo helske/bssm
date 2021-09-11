@@ -126,7 +126,10 @@ model <- ssm_mng(y, Z, T, R, a1, P1, phi = c(2, 1),
   init_theta = c(0.5, 2), 
   distribution = c("gamma", "binomial"),
   u = cbind(1, rep(10, n)),
-  update_fn = update_fn, prior_fn = prior_fn)
+  update_fn = update_fn, prior_fn = prior_fn,
+  state_names = "random_walk",
+  # using default values, but being explicit for testing purposes
+  D = matrix(0, 2, 1), C = matrix(0, 1, 1))
 
 # smoothing based on approximating gaussian model
 ts.plot(cbind(y, fast_smoother(model)), 

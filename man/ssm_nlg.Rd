@@ -85,7 +85,7 @@ the user, as you must provide the several small C++ snippets which define the
 model structure. See examples in the vignette.
 }
 \examples{
-\dontrun{
+\donttest{
 set.seed(1)
 n <- 50
 x <- y <- numeric(n)

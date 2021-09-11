@@ -53,7 +53,7 @@ effort from the user, as you must provide the several small C++ snippets
 which define the model structure. See vignettes for an example.
 }
 \examples{
-\dontrun{
+\donttest{
 library("sde")
 set.seed(1)
 # theta_0 = rho = 0.5

@@ -21,7 +21,7 @@ ekpf_filter <- function(object, particles, ...) {
 #' @export
 #' @rdname ekpf_filter
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' set.seed(1)
 #' n <- 50
 #' x <- y <- numeric(n)

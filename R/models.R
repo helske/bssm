@@ -134,7 +134,7 @@ default_update_fn <- function(theta) {
 #'   init_theta = init_theta, 
 #'   prior_fn = prior, update_fn = updatefn)
 #' 
-#' \dontrun{
+#' \donttest{
 #' out <- run_mcmc(model_bssm, iter = 10000, burnin = 5000) 
 #' out
 #' 
@@ -835,7 +835,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'   C = matrix(0, 12, 1),
 #'   u = rep(1, nrow(Seatbelts))
 #'   )
-#' \dontrun{
+#' \donttest{
 #' set.seed(123)
 #' mcmc_out <- run_mcmc(model, iter = 5000, particles = 10, mcmc_type = "da")
 #' mcmc_out$acceptance_rate
@@ -1461,7 +1461,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
 #' @return Object of class \code{ssm_nlg}.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' set.seed(1)
 #' n <- 50
 #' x <- y <- numeric(n)
@@ -1537,7 +1537,7 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
 #' @return Object of class \code{ssm_sde}.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library("sde")
 #' set.seed(1)
 #' # theta_0 = rho = 0.5

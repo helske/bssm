@@ -49,7 +49,7 @@ weighted posterior, and returns updated MCMC output where components
  \code{Vt} are updated (depending on the original output type).
 }
 \examples{
-\dontrun{
+\donttest{
 set.seed(1)
 n <- 300
 x1 <- sin((2 * pi / 12) * 1:n)

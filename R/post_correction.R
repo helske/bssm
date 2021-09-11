@@ -39,7 +39,7 @@ get_map <- function(x) {
 #' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @examples 
-#' \dontrun{
+#' \donttest{
 #' set.seed(1)
 #' n <- 300
 #' x1 <- sin((2 * pi / 12) * 1:n)
@@ -146,7 +146,7 @@ suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10),
 #' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @examples 
-#' \dontrun{
+#' \donttest{
 #' set.seed(1)
 #' n <- 300
 #' x1 <- sin((2 * pi / 12) * 1:n)

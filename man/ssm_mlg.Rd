@@ -97,7 +97,10 @@ It might be useful to first construct the model without updating function
 
 data("GlobalTemp", package = "KFAS")
 model_temp <- ssm_mlg(GlobalTemp, H = matrix(c(0.15,0.05,0, 0.05), 2, 2), 
-  R = 0.05, Z = matrix(1, 2, 1), T = 1, P1 = 10)
+  R = 0.05, Z = matrix(1, 2, 1), T = 1, P1 = 10,
+  state_names = "temperature",
+  # using default values, but being explicit for testing purposes
+  D = matrix(0, 2, 1), C = matrix(0, 1, 1))
 ts.plot(cbind(model_temp$y, smoother(model_temp)$alphahat), col = 1:3)
 
 }

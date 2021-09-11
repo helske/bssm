@@ -32,25 +32,50 @@ Object of class \code{svm}.
 }
 \description{
 Constructs a simple stochastic volatility model with Gaussian errors and
-first order autoregressive signal.
+first order autoregressive signal. See the main vignette for details.
 }
 \examples{
 
 data("exchange")
 exchange <- exchange[1:100] # faster CRAN check
-model <- svm(exchange, rho = uniform(0.98,-0.999,0.999),
+model <- svm(exchange, rho = uniform(0.98, -0.999, 0.999),
  sd_ar = halfnormal(0.15, 5), sigma = halfnormal(0.6, 2))
 
 obj <- function(pars) {
-   -logLik(svm(exchange, rho = uniform(pars[1],-0.999,0.999),
-   sd_ar = halfnormal(pars[2],sd=5),
-   sigma = halfnormal(pars[3],sd=2)), particles = 0)
+   -logLik(svm(exchange, 
+     rho = uniform(pars[1], -0.999, 0.999),
+     sd_ar = halfnormal(pars[2], 5),
+     sigma = halfnormal(pars[3], 2)), particles = 0)
 }
-opt <- nlminb(c(0.98, 0.15, 0.6), obj, lower = c(-0.999, 1e-4, 1e-4),
-  upper = c(0.999,10,10))
+opt <- optim(c(0.98, 0.15, 0.6), obj, 
+  lower = c(-0.999, 1e-4, 1e-4),
+  upper = c(0.999, 10, 10), method = "L-BFGS-B")
 pars <- opt$par
-model <- svm(exchange, rho = uniform(pars[1],-0.999,0.999),
-  sd_ar = halfnormal(pars[2],sd=5),
-  sigma = halfnormal(pars[3],sd=2))
+model <- svm(exchange, 
+  rho = uniform(pars[1],-0.999,0.999),
+  sd_ar = halfnormal(pars[2], 5),
+  sigma = halfnormal(pars[3], 2))
+
+# alternative parameterization  
+model2 <- svm(exchange, rho = uniform(0.98,-0.999, 0.999),
+ sd_ar = halfnormal(0.15, 5), mu = normal(0, 0, 1))
+
+obj2 <- function(pars) {
+   -logLik(svm(exchange, 
+     rho = uniform(pars[1], -0.999, 0.999),
+     sd_ar = halfnormal(pars[2], 5),
+     mu = normal(pars[3], 0, 1)), particles = 0)
+}
+opt2 <- optim(c(0.98, 0.15, 0), obj2, lower = c(-0.999, 1e-4, -Inf),
+  upper = c(0.999, 10, Inf), method = "L-BFGS-B")
+pars2 <- opt2$par
+model2 <- svm(exchange, 
+  rho = uniform(pars2[1],-0.999,0.999),
+  sd_ar = halfnormal(pars2[2], 5),
+  mu = normal(pars2[3], 0, 1))
+
+# sigma is internally stored in phi
+ts.plot(cbind(model$phi * exp(0.5 * fast_smoother(model)), 
+  exp(0.5 * fast_smoother(model2))), col = 1:2)
 
 }

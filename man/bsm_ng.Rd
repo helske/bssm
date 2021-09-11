@@ -96,7 +96,7 @@ model <- bsm_ng(Seatbelts[, "VanKilled"], distribution = "poisson",
   C = matrix(0, 12, 1),
   u = rep(1, nrow(Seatbelts))
   )
-\dontrun{
+\donttest{
 set.seed(123)
 mcmc_out <- run_mcmc(model, iter = 5000, particles = 10, mcmc_type = "da")
 mcmc_out$acceptance_rate

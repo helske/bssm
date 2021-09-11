@@ -46,7 +46,7 @@ suggested in the context of pseudo-marginal MCMC by Doucet et al. (2015),
  but see also Section 10.3 in Vihola et al (2020).
 }
 \examples{
-\dontrun{
+\donttest{
 set.seed(1)
 n <- 300
 x1 <- sin((2 * pi / 12) * 1:n)
