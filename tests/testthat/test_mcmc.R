@@ -211,7 +211,7 @@ test_that("MCMC using SPDK for Gamma model works", {
   expect_true(is.finite(sum(mcmc_gamma$alpha)))
   
   expect_lt(sum(abs(summary(mcmc_gamma)[,"Mean"] - 
-      c(0.542149368711246, 12.353642743311))), 0.3)
+      c(0.542149368711246, 12.353642743311))), 2)
   
 })
 
