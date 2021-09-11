@@ -6,25 +6,26 @@
 #' from the posterior predictive distribution
 #'  \eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
 #'
-#' @param object mcmc_output object obtained from 
+#' @param object Results object of class \code{mcmc_output} from 
 #' \code{\link{run_mcmc}}
-#' @param type Return predictions on \code{"mean"} 
-#' \code{"response"}, or  \code{"state"} level. 
-#' @param model Model for future observations. 
-#' Should have same structure as the original model which was used in MCMC,
-#' in order to plug the posterior samples of the model parameters to the right 
-#' places. 
-#' It is also possible to input the original model, which can be useful for 
-#' example for posterior predictive checks. In this case, set argument 
+#' @param model A \code{bssm_model} object.. 
+#' Should have same structure and class as the original model which was used in 
+#' \code{run_mcmc}, in order to plug the posterior samples of the model 
+#' parameters to the right places. 
+#' It is also possible to input the original model for obtaining predictions 
+#' for past time points. In this case, set argument 
 #' \code{future} to \code{FALSE}.
-#' @param nsim Number of samples to draw.
+#' @param type Type of predictions. Possible choices are 
+#' \code{"mean"} \code{"response"}, or  \code{"state"} level. 
+#' @param nsim Positive integer defining number of samples to draw.
 #' @param future Default is \code{TRUE}, in which case predictions are for the 
 #' future, using posterior samples of (theta, alpha_T+1) i.e. the 
 #' posterior samples of hyperparameters and latest states. 
 #' Otherwise it is assumed that \code{model} corresponds to the original model.
 #' @param seed Seed for RNG.
 #' @param ... Ignored.
-#' @return Data frame of predicted samples.
+#' @return A \code{data.frame} consisting of samples from the predictive 
+#' posterior distribution.
 #' @method predict mcmc_output
 #' @aliases predict predict.mcmc_output
 #' @export
@@ -114,9 +115,12 @@
 #'     time = time(model$y)))    
 #' 
 #' 
-predict.mcmc_output <- function(object, model, type = "response", nsim, 
+predict.mcmc_output <- function(object, model, nsim, type = "response",  
   future = TRUE, seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  if (!inherits(model, "bssm_model")) {
+    stop("Argument 'model' should be of class 'bssm_model'. ")
+  }
   nsim <- check_integer(nsim, "nsim")
   if (!test_flag(future)) stop("Argument 'future' should be TRUE or FALSE. ")
   

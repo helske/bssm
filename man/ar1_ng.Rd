@@ -26,7 +26,8 @@ choices are \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and
 \item{phi}{Additional parameter relating to the non-Gaussian distribution.
 For negative binomial distribution this is the dispersion term, for gamma 
 distribution this is the shape parameter, and for other distributions this 
-is ignored. Should be an object of class \code{bssm_prior} or fixed value.}
+is ignored. Should an object of class \code{bssm_prior} or 
+a positive scalar.}
 
 \item{u}{Vector of positive constants for non-Gaussian models. For Poisson, 
 gamma, and negative binomial distribution, this corresponds to the offset 

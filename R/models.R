@@ -37,27 +37,18 @@ default_update_fn <- function(theta) {
 #' and then check the expected structure of the model components from the 
 #' output.
 #' 
-#' @param y Observations as numeric vector or univariate \code{ts} object of 
-#' length n.
-#' @param Z System matrix Z of the observation equation as m x 1 or 
-#' m x n matrix.
+#' @inheritParams ssm_ung
 #' @param H Vector of standard deviations. Either a scalar or a vector of 
-#' length n.
-#' @param T System matrix T of the state equation. Either a m x m matrix or a
-#' m x m x n array.
-#' @param R Lower triangular matrix R the state equation. Either a 
-#' m x k matrix or a m x k x n array.
-#' @param a1 Prior mean for the initial state as a vector of length m.
-#' @param P1 Prior covariance matrix for the initial state as m x m matrix.
-#' @param init_theta Initial values for the unknown hyperparameters theta.
-#' @param D Intercept terms for observation equation, given as a 
-#' length n vector.
-#' @param C Intercept terms for state equation, given as m x n matrix.
+#' length n. 
 #' @param update_fn Function which returns list of updated model 
-#' components given input vector theta. See details.
-#' @param prior_fn Function which returns log of prior density 
-#' given input vector theta.
-#' @param state_names Names for the states.
+#' components given input vector theta. This function should take only one 
+#' vector argument which is used to create list with elements named as
+#' \code{Z}, \code{H}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, and
+#' \code{C}, where each element matches the dimensions of the original model 
+#' It's best to check the internal dimensions with \code{str(model_object)} as 
+#' the dimensions of input arguments can differ from the final dimensions.
+#' If any of these components is missing, it is assumed to be constant wrt. 
+#' theta.
 #' @return Object of class \code{ssm_ulg}.
 #' @export
 #' @examples 
@@ -222,7 +213,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
     D = D, C = C, update_fn = update_fn,
     prior_fn = prior_fn, theta = init_theta,
     xreg = matrix(0, 0, 0), beta = numeric(0)), 
-    class = c("ssm_ulg", "gaussian"))
+    class = c("ssm_ulg", "gaussian", "bssm_model"))
 }
 #' General univariate non-Gaussian state space model
 #'
@@ -256,6 +247,7 @@ ssm_ulg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #' and then check the expected structure of the model components from 
 #' the output.
 #' 
+#' @inheritParams bsm_ng
 #' @param y Observations as time series (or vector) of length \eqn{n}.
 #' @param Z System matrix Z of the observation equation. Either a 
 #' vector of length m,
@@ -266,17 +258,6 @@ ssm_ulg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #' a m x k matrix or a m x k x n array, or object which can be coerced to such.
 #' @param a1 Prior mean for the initial state as a vector of length m.
 #' @param P1 Prior covariance matrix for the initial state as m x m matrix.
-#' @param distribution Distribution of the observed time series. Possible 
-#' choices are
-#' \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and 
-#' \code{"negative binomial"}.
-#' @param phi Additional parameter relating to the non-Gaussian distribution.
-#' For negative binomial distribution this is the dispersion term, for 
-#' gamma distribution this is the shape parameter, and for other 
-#' distributions this is ignored.
-#' @param u Vector of positive constants for non-Gaussian models. For Poisson, 
-#' gamma, and negative binomial distribution, this corresponds to the offset 
-#' term. For binomial, this is the number of trials.
 #' @param state_names Names for the states.
 #' @param C Intercept terms \eqn{C_t} for the state equation, given as a
 #'  m times 1 or m times n matrix.
@@ -284,7 +265,14 @@ ssm_ulg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #' scalar or vector of length n.
 #' @param init_theta Initial values for the unknown hyperparameters theta.
 #' @param update_fn Function which returns list of updated model 
-#' components given input vector theta. See details.
+#' components given input vector theta. This function should take only one 
+#' vector argument which is used to create list with elements named as
+#' \code{Z}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, \code{C}, and
+#' \code{phi}, where each element matches the dimensions of the original model.
+#' If any of these components is missing, it is assumed to be constant wrt. 
+#' theta. It's best to check the internal dimensions with 
+#' \code{str(model_object)} as the dimensions of input arguments can differ 
+#' from the final dimensions.
 #' @param prior_fn Function which returns log of prior density 
 #' given input vector theta.
 #' @return Object of class \code{ssm_ung}.
@@ -346,7 +334,7 @@ ssm_ung <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution, phi = 1,
     prior_fn = prior_fn, theta = init_theta,
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE,
     xreg = matrix(0, 0, 0), beta = numeric(0)),
-    class = c("ssm_ung", "nongaussian"))
+    class = c("ssm_ung", "nongaussian", "bssm_model"))
 }
 
 #' General multivariate linear Gaussian state space models
@@ -378,6 +366,7 @@ ssm_ung <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution, phi = 1,
 #' \code{update_fn} should return R as m x k x 1 in this case. 
 #' It might be useful to first construct the model without updating function
 #' 
+#' @inheritParams ssm_ulg
 #' @param y Observations as multivariate time series or matrix with 
 #' dimensions n x p.
 #' @param Z System matrix Z of the observation equation as p x m matrix or 
@@ -388,22 +377,8 @@ ssm_ung <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution, phi = 1,
 #' m x m x n array.
 #' @param R Lower triangular matrix R the state equation. Either a m x k matrix 
 #' or a m x k x n array.
-#' @param a1 Prior mean for the initial state as a vector of length m.
-#' @param P1 Prior covariance matrix for the initial state as m x m matrix.
-#' @param init_theta Initial values for the unknown hyperparameters theta.
 #' @param D Intercept terms for observation equation, given as a p x n matrix.
 #' @param C Intercept terms for state equation, given as m x n matrix.
-#' @param update_fn Function which returns list of updated model 
-#' components given input vector theta. This function should take only one 
-#' vector argument which is used to create list with elements named as
-#' \code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, 
-#' and \code{C},
-#' where each element matches the dimensions of the original model.
-#' If any of these components is missing, it is assumed to be 
-#' onstant wrt. theta.
-#' @param prior_fn Function which returns log of prior density 
-#' given input vector theta.
-#' @param state_names Names for the states.
 #' @return Object of class \code{ssm_mlg}.
 #' @export
 #' @examples
@@ -452,7 +427,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
   structure(list(y = as.ts(y), Z = Z, H = H, T = T, R = R, a1 = a1, 
     P1 = P1, D = D, C = C, update_fn = update_fn,
     prior_fn = prior_fn, theta = init_theta, 
-    state_names = state_names), class = c("ssm_mlg", "gaussian"))
+    state_names = state_names), class = c("ssm_mlg", "gaussian", "bssm_model"))
 }
 
 #' General Non-Gaussian State Space Model
@@ -473,7 +448,7 @@ ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #' negative binomial distribution for each observation series \eqn{i=1,...,p}. 
 #' Here k is the number of disturbance terms (which can be less than m, 
 #' the number of states).
-#' 
+#' @inheritParams ssm_ung
 #' @param y Observations as multivariate time series or matrix with dimensions 
 #' n x p.
 #' @param Z System matrix Z of the observation equation as p x m matrix or 
@@ -483,8 +458,6 @@ ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #' @param R Lower triangular matrix R the state equation. Either a m x k 
 #' matrix or a
 #' m x k x n array.
-#' @param a1 Prior mean for the initial state as a vector of length m.
-#' @param P1 Prior covariance matrix for the initial state as m x m matrix.
 #' @param distribution vector of distributions of the observed series. 
 #' Possible choices are
 #' \code{"poisson"}, \code{"binomial"}, \code{"negative binomial"}, 
@@ -492,26 +465,13 @@ ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #' @param phi Additional parameters relating to the non-Gaussian distributions.
 #' For negative binomial distribution this is the dispersion term, for 
 #' gamma distribution this is the shape parameter, for Gaussian this is 
-#' standard deviation, 
-#' and for other distributions this is ignored.
+#' standard deviation, and for other distributions this is ignored.
 #' @param u Matrix of positive constants for non-Gaussian models 
 #' (of same dimensions as y). For Poisson,  gamma, and negative binomial 
 #' distribution, this corresponds to the offset term. For binomial, this is the 
 #' number of trials.
-#' @param init_theta Initial values for the unknown hyperparameters theta.
 #' @param D Intercept terms for observation equation, given as p x n matrix.
 #' @param C Intercept terms for state equation, given as m x n matrix.
-#' @param update_fn Function which returns list of updated model 
-#' components given input vector theta. This function should take only one 
-#' vector argument which is used to create list with elements named as
-#' \code{Z}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, \code{C}, and
-#' \code{phi},
-#' where each element matches the dimensions of the original model.
-#' If any of these components is missing, it is assumed to be constant wrt. 
-#' theta.
-#' @param prior_fn Function which returns log of prior density 
-#' given input vector theta.
-#' @param state_names Names for the states.
 #' @return Object of class \code{ssm_mng}.
 #' @export
 #' @examples
@@ -606,34 +566,16 @@ ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution,
     initial_mode = initial_mode, update_fn = update_fn,
     prior_fn = prior_fn, theta = init_theta,
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE), 
-    class = c("ssm_mng", "nongaussian"))
+    class = c("ssm_mng", "nongaussian", "bssm_model"))
 }
 #' Basic Structural (Time Series) Model
 #'
 #' Constructs a basic structural model with local level or local trend 
 #' component and seasonal component.
-#'
-#' @param y Vector or a \code{\link{ts}} object of observations.
-#' @param sd_y A fixed value or prior for the standard error of
-#' observation equation. See \link[=uniform]{priors} for details.
-#' @param sd_level A fixed value or a prior for the standard error
-#' of the noise in level equation. See \link[=uniform]{priors} for details.
-#' @param sd_slope A fixed value or a prior for the standard error
-#' of the noise in slope equation. See \link[=uniform]{priors} for details.
-#' If missing, the slope term is omitted from the model.
-#' @param sd_seasonal A fixed value or a prior for the standard error
-#' of the noise in seasonal equation. See \link[=uniform]{priors} for details.
-#' If missing, the seasonal component is omitted from the model.
-#' @param xreg Matrix containing covariates.
-#' @param beta Prior for the regression coefficients. 
-#' Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
-#' (in case of multiple coefficients) or missing in case of no covariates.
-#' @param period Length of the seasonal pattern. 
-#' Default is \code{frequency(y)}. Must be at least 3.
-#' @param a1 Prior means for the initial states (level, slope, seasonals).
-#' Defaults to vector of zeros.
-#' @param P1 Prior covariance for the initial states (level, slope, seasonals).
-#' Default is diagonal matrix with 1000 on the diagonal.
+#' 
+#' @inheritParams bsm_ng
+#' @param sd_y Standard deviation of the noise of observation equation.
+#' Should be an object of class \code{bssm_prior} or scalar 
 #' @param D,C Intercept terms for observation and
 #' state equations, given as a length n vector and m times n matrix 
 #' respectively (or scalar and m times 1 matrix).
@@ -642,14 +584,28 @@ ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution,
 #' @examples
 #'
 #' prior <- uniform(0.1 * sd(log10(UKgas)), 0, 1)
+#' # period here is redundant as frequency(UKgas) = 4
 #' model <- bsm_lg(log10(UKgas), sd_y = prior, sd_level =  prior,
-#'   sd_slope =  prior, sd_seasonal =  prior)
+#'   sd_slope =  prior, sd_seasonal =  prior, period = 4)
 #'
 #' mcmc_out <- run_mcmc(model, iter = 5000)
 #' summary(expand_sample(mcmc_out, "theta"))$stat
 #' mcmc_out$theta[which.max(mcmc_out$posterior), ]
 #' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
 #'
+#' set.seed(1)
+#' n <- 10
+#' x <- rnorm(n)
+#' level <- numeric(n)
+#' level[1] <- rnorm(1)
+#' for (i in 2:n) level[i] <- rnorm(1, -0.2 + level[i-1], sd = 0.1)
+#' y <- rnorm(n, 2.1 + x + level)
+#' model <- bsm_lg(y, sd_y = halfnormal(1, 5), sd_level = 0.1, a1 = level[1], 
+#'   P1 = matrix(0, 1, 1), xreg = x, beta = normal(1, 0, 1),
+#'   D = 2.1, C = matrix(-0.2, 1, 1))
+#'   
+#' ts.plot(cbind(fast_smoother(model), level), col = 1:2)
+#' 
 bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
   beta, xreg = NULL, period = frequency(y), a1 = NULL, P1 = NULL, D = NULL, 
   C = NULL) {
@@ -810,7 +766,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     fixed = as.integer(!notfixed), 
     prior_distributions = priors$prior_distribution, 
     prior_parameters = priors$parameters,
-    theta = theta), class = c("bsm_lg", "ssm_ulg", "gaussian"))
+    theta = theta), class = c("bsm_lg", "ssm_ulg", "gaussian", "bssm_model"))
 }
 
 #' Non-Gaussian Basic Structural (Time Series) Model
@@ -820,40 +776,44 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' (or subset of these components).
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
-#' @param sd_level A fixed value or a prior for the standard error
-#' of the noise in level equation. See \link[=uniform]{priors} for details.
-#' @param sd_slope A fixed value or a prior for the standard error
-#' of the noise in slope equation. See \link[=uniform]{priors} for details.
-#' If missing, the slope term is omitted from the model.
-#' @param sd_seasonal A fixed value or a prior for the standard error
-#' of the noise in seasonal equation. See \link[=uniform]{priors} for details.
-#' If missing, the seasonal component is omitted from the model.
-#' @param sd_noise Prior for the standard error of the additional noise term.
-#' See \link[=uniform]{priors} for details. If missing, no additional noise 
-#' term is used.
+#' @param sd_level Standard deviation of the noise of level equation.
+#' Should be an object of class \code{bssm_prior} or scalar 
+#' value defining a known value such as 0. 
+#' @param sd_slope Standard deviation of the noise of slope equation.
+#' Should be an object of class \code{bssm_prior}, scalar 
+#' value defining a known value such as 0, or missing, in which case the slope 
+#' term is omitted from the model.
+#' @param sd_seasonal Standard deviation of the noise of seasonal equation.
+#' Should be an object of class \code{bssm_prior}, scalar 
+#' value defining a known value such as 0, or missing, in which case the 
+#' seasonal term is omitted from the model.
+#' @param sd_noise Prior for the standard deviation of the additional noise 
+#' term to be added to linear predictor, defined as an object of class 
+#' \code{bssm_prior}. If missing, no additional noise term is used.
 #' @param distribution Distribution of the observed time series. Possible 
-#' choices are
-#' \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and 
+#' choices are \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and 
 #' \code{"negative binomial"}.
 #' @param phi Additional parameter relating to the non-Gaussian distribution.
-#' For negative binomial distribution this is the dispersion term, for 
-#' gamma distribution this is the shape parameter, and for other distributions 
-#' this is ignored.
+#' For negative binomial distribution this is the dispersion term, for gamma 
+#' distribution this is the shape parameter, and for other distributions this 
+#' is ignored. Should an object of class \code{bssm_prior} or 
+#' a positive scalar.
 #' @param u Vector of positive constants for non-Gaussian models. For Poisson, 
 #' gamma, and negative binomial distribution, this corresponds to the offset 
 #' term. For binomial, this is the number of trials.
 #' @param beta Prior for the regression coefficients. 
 #' Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
 #' (in case of multiple coefficients) or missing in case of no covariates.
-#' @param xreg Matrix containing covariates.
+#' @param xreg Matrix containing covariates with number of rows matching the 
+#' length of \code{y}.
 #' @param period Length of the seasonal pattern. 
 #' Default is \code{frequency(y)}. Must be at least 3.
 #' @param a1 Prior means for the initial states (level, slope, seasonals).
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).
-#' Default is diagonal matrix with 1e5 on the diagonal.
-#' @param C Intercept terms for state equation, given as a
-#'  m times n matrix.
+#' Default is diagonal matrix with 1000 on the diagonal.
+#' @param C Intercept terms for state equation, given as a m x n or m x 1 
+#' matrix.
 #' @return Object of class \code{bsm_ng}.
 #' @export
 #' @examples
@@ -861,10 +821,17 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'   sd_level = halfnormal(0.01, 1),
 #'   sd_seasonal = halfnormal(0.01, 1),
 #'   beta = normal(0, 0, 10),
-#'   xreg = Seatbelts[, "law"])
+#'   xreg = Seatbelts[, "law"],
+#'   # default values, just for illustration
+#'   period = 12,
+#'   a1 = rep(0, 1 + 11), # level + period - 1 seasonal states
+#'   P1 = diag(1, 12),
+#'   C = matrix(0, 12, 1),
+#'   u = rep(1, nrow(Seatbelts))
+#'   )
 #' \dontrun{
 #' set.seed(123)
-#' mcmc_out <- run_mcmc(model, iter = 5000, particles = 10)
+#' mcmc_out <- run_mcmc(model, iter = 5000, particles = 10, mcmc_type = "da")
 #' mcmc_out$acceptance_rate
 #' theta <- expand_sample(mcmc_out, "theta")
 #' plot(theta)
@@ -875,12 +842,25 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'   geom_point() + stat_density2d(aes(fill = ..level.., alpha = ..level..),
 #'   geom = "polygon") + scale_fill_continuous(low = "green", high = "blue") +
 #'   guides(alpha = "none")
+#'
+#' 
 #'   
-#' # Traceplot using as.data.frame method for MCMC output:
+#' # Traceplot using as.data.frame method for MCMC output
 #' library("dplyr")
 #' as.data.frame(mcmc_out) %>% 
 #'   filter(variable == "sd_level") %>% 
 #'   ggplot(aes(y = value, x = iter)) + geom_line()
+#'   
+#' # Model with slope term and additional noise to linear predictor to capture 
+#' # excess variation   
+#' model2 <- bsm_ng(Seatbelts[, "VanKilled"], distribution = "poisson",
+#'   sd_level = halfnormal(0.01, 1),
+#'   sd_seasonal = halfnormal(0.01, 1),
+#'   beta = normal(0, 0, 10),
+#'   xreg = Seatbelts[, "law"],
+#'   sd_slope = halfnormal(0.01, 0.1),
+#'   sd_noise = halfnormal(0.01, 1)
+#'   )
 #' }
 bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   distribution, phi, u, beta, xreg = NULL, period = frequency(y), 
@@ -1070,7 +1050,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     prior_parameters = priors$parameters,
     theta = theta, phi_est = phi_est,
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE), 
-    class = c("bsm_ng", "ssm_ung", "nongaussian"))
+    class = c("bsm_ng", "ssm_ung", "nongaussian", "bssm_model"))
 }
 
 #' Stochastic Volatility Model
@@ -1079,11 +1059,15 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' first order autoregressive signal.
 #'
 #' @param y Vector or a \code{\link{ts}} object of observations.
-#' @param mu Prior for mu parameter of transition equation.
-#' @param rho prior for autoregressive coefficient.
+#' @param mu Prior for mu parameter of transition equation. 
+#' Should be an object of class \code{bssm_prior}.
+#' @param rho prior for autoregressive coefficient. 
+#' Should be an object of class \code{bssm_prior}.
 #' @param sd_ar Prior for the standard deviation of noise of the AR-process.
+#' Should be an object of class \code{bssm_prior}.
 #' @param sigma Prior for sigma parameter of observation equation, internally 
-#' denoted as phi. Ignored if \code{mu} is provided. Note that typically 
+#' denoted as phi. Should be an object of class \code{bssm_prior}. 
+#' Ignored if \code{mu} is provided. Note that typically 
 #' parametrization using mu is preferred due to better numerical properties and 
 #' availability of better Gaussian approximation. 
 #' Most notably the global approximation approach does not work with sigma 
@@ -1165,14 +1149,14 @@ svm <- function(y, mu, rho, sd_ar, sigma) {
     prior_parameters = priors$parameters,
     theta = theta,
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE),
-    class = c("svm", "ssm_ung", "nongaussian"))
+    class = c("svm", "ssm_ung", "nongaussian", "bssm_model"))
 }
 #' Non-Gaussian model with AR(1) latent process
 #'
 #' Constructs a simple non-Gaussian model where the state dynamics follow an 
 #' AR(1) process.
-#'
-#' @param y Vector or a \code{\link{ts}} object of observations.
+#' 
+#' @inheritParams bsm_ng
 #' @param rho Prior for autoregressive coefficient. 
 #' Should be an object of class \code{bssm_prior}.
 #' @param mu A fixed value or a prior for the stationary mean of the latent 
@@ -1180,21 +1164,6 @@ svm <- function(y, mu, rho, sd_ar, sigma) {
 #' value defining a fixed mean such as 0.
 #' @param sigma Prior for the standard deviation of noise of the AR-process. 
 #' Should be an object of class \code{bssm_prior}
-#' @param beta Prior for the regression coefficients. 
-#' Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
-#' (in case of multiple coefficients) or missing in case of no covariates.
-#' @param xreg Matrix containing covariates with number of rows matching the 
-#' length of \code{y}.
-#' @param distribution Distribution of the observed time series. Possible 
-#' choices are \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and 
-#' \code{"negative binomial"}.
-#' @param phi Additional parameter relating to the non-Gaussian distribution.
-#' For negative binomial distribution this is the dispersion term, for gamma 
-#' distribution this is the shape parameter, and for other distributions this 
-#' is ignored. Should be an object of class \code{bssm_prior} or fixed value.
-#' @param u Vector of positive constants for non-Gaussian models. For Poisson, 
-#' gamma, and negative binomial distribution, this corresponds to the offset 
-#' term. For binomial, this is the number of trials.
 #' @return Object of class \code{ar1_ng}.
 #' @export
 #' @rdname ar1_ng
@@ -1311,23 +1280,15 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u, beta,
     prior_distributions = priors$prior_distribution, 
     prior_parameters = priors$parameters, theta = theta, 
     max_iter = 100, conv_tol = 1e-8, local_approx = TRUE),
-    class = c("ar1_ng", "ssm_ung", "nongaussian"))
+    class = c("ar1_ng", "ssm_ung", "nongaussian", "bssm_model"))
 }
 #' Univariate Gaussian model with AR(1) latent process
 #'
 #' Constructs a simple Gaussian model where the state dynamics 
 #' follow an AR(1) process.
-#'
-#' @param y A numeric vector or a \code{\link{ts}} object of observations.
-#' @param rho A prior (as \code{bssm_prior} object) defining the prior for autoregressive coefficient.
-#' @param mu A fixed value or a bssm prior for the stationary mean of the latent 
-#' AR(1) process. Parameter is omitted if this is set to 0.
-#' @param sigma A prior for the standard deviation of noise of the AR-process.
+#' 
+#' @inheritParams ar1_ng
 #' @param sd_y A prior for the standard deviation of observation equation.
-#' @param beta Prior for the regression coefficients. 
-#' Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
-#' (in case of multiple coefficients) or missing in case of no covariates.
-#' @param xreg Matrix containing covariates.
 #' @return Object of class \code{ar1_lg}.
 #' @export
 #' @rdname ar1_lg
@@ -1419,7 +1380,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
     prior_distributions = priors$prior_distribution, 
     prior_parameters = priors$parameters, theta = theta,
     max_iter = 100, conv_tol = 1e-8),
-    class = c("ar1_lg", "ssm_ulg", "gaussian"))
+    class = c("ar1_lg", "ssm_ulg", "gaussian", "bssm_model"))
 }
 
 #'
@@ -1513,7 +1474,7 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
     time_varying = time_varying,
     state_names = state_names,
     max_iter = 100, conv_tol = 1e-8), 
-    class = "ssm_nlg")
+    class = c("ssm_nlg", "bssm_model"))
 }
 
 #'
@@ -1587,7 +1548,8 @@ ssm_sde <- function(y, drift, diffusion, ddiffusion, obs_pdf,
     diffusion = diffusion,
     ddiffusion = ddiffusion, obs_pdf = obs_pdf,
     prior_pdf = prior_pdf, theta = theta, x0 = x0,
-    positive = positive, state_names = "x"), class = "ssm_sde")
+    positive = positive, state_names = "x"), 
+    class = c("ssm_sde", "bssm_model"))
 }
 
 

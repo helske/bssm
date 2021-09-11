@@ -51,11 +51,12 @@ or a m x k x n array.}
 \item{update_fn}{Function which returns list of updated model 
 components given input vector theta. This function should take only one 
 vector argument which is used to create list with elements named as
-\code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, 
-and \code{C},
-where each element matches the dimensions of the original model.
-If any of these components is missing, it is assumed to be 
-onstant wrt. theta.}
+\code{Z}, \code{H}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, and
+\code{C}, where each element matches the dimensions of the original model 
+It's best to check the internal dimensions with \code{str(model_object)} as 
+the dimensions of input arguments can differ from the final dimensions.
+If any of these components is missing, it is assumed to be constant wrt. 
+theta.}
 
 \item{prior_fn}{Function which returns log of prior density 
 given input vector theta.}

@@ -7,12 +7,18 @@
 \description{
 This package contains functions for efficient Bayesian inference of state 
 space models, where model is assumed to be either
+}
+\details{
 * Exponential family state space models, where the state equation is linear 
   Gaussian, and the conditional observation density is either Gaussian, 
   Poisson, binomial, negative binomial or Gamma density. 
+  
 * Basic stochastic volatility model.
+
 * General non-linear model with Gaussian noise terms.
+
 * Model with continuous SDE dynamics. 
+
 For formal definition of the currently supported models and methods, as 
 well as some theory behind the IS-MCMC and \eqn{\psi}{psi}-APF, 
 see Helske and Vihola (2021), Vihola, Helske, Franks (2020) and the package 

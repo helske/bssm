@@ -21,20 +21,20 @@ ssm_ulg(
 )
 }
 \arguments{
-\item{y}{Observations as numeric vector or univariate \code{ts} object of 
-length n.}
+\item{y}{Observations as time series (or vector) of length \eqn{n}.}
 
-\item{Z}{System matrix Z of the observation equation as m x 1 or 
-m x n matrix.}
+\item{Z}{System matrix Z of the observation equation. Either a 
+vector of length m,
+a m x n matrix, or object which can be coerced to such.}
 
 \item{H}{Vector of standard deviations. Either a scalar or a vector of 
 length n.}
 
 \item{T}{System matrix T of the state equation. Either a m x m matrix or a
-m x m x n array.}
+m x m x n array, or object which can be coerced to such.}
 
-\item{R}{Lower triangular matrix R the state equation. Either a 
-m x k matrix or a m x k x n array.}
+\item{R}{Lower triangular matrix R the state equation. Either 
+a m x k matrix or a m x k x n array, or object which can be coerced to such.}
 
 \item{a1}{Prior mean for the initial state as a vector of length m.}
 
@@ -42,15 +42,23 @@ m x k matrix or a m x k x n array.}
 
 \item{init_theta}{Initial values for the unknown hyperparameters theta.}
 
-\item{D}{Intercept terms for observation equation, given as a 
-length n vector.}
+\item{D}{Intercept terms \eqn{D_t} for the observations equation, given as a
+scalar or vector of length n.}
 
-\item{C}{Intercept terms for state equation, given as m x n matrix.}
+\item{C}{Intercept terms \eqn{C_t} for the state equation, given as a
+m times 1 or m times n matrix.}
 
 \item{state_names}{Names for the states.}
 
 \item{update_fn}{Function which returns list of updated model 
-components given input vector theta. See details.}
+components given input vector theta. This function should take only one 
+vector argument which is used to create list with elements named as
+\code{Z}, \code{H}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, and
+\code{C}, where each element matches the dimensions of the original model 
+It's best to check the internal dimensions with \code{str(model_object)} as 
+the dimensions of input arguments can differ from the final dimensions.
+If any of these components is missing, it is assumed to be constant wrt. 
+theta.}
 
 \item{prior_fn}{Function which returns log of prior density 
 given input vector theta.}

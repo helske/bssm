@@ -40,14 +40,14 @@ a m x k matrix or a m x k x n array, or object which can be coerced to such.}
 \item{P1}{Prior covariance matrix for the initial state as m x m matrix.}
 
 \item{distribution}{Distribution of the observed time series. Possible 
-choices are
-\code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and 
+choices are \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and 
 \code{"negative binomial"}.}
 
 \item{phi}{Additional parameter relating to the non-Gaussian distribution.
-For negative binomial distribution this is the dispersion term, for 
-gamma distribution this is the shape parameter, and for other 
-distributions this is ignored.}
+For negative binomial distribution this is the dispersion term, for gamma 
+distribution this is the shape parameter, and for other distributions this 
+is ignored. Should an object of class \code{bssm_prior} or 
+a positive scalar.}
 
 \item{u}{Vector of positive constants for non-Gaussian models. For Poisson, 
 gamma, and negative binomial distribution, this corresponds to the offset 
@@ -64,7 +64,14 @@ m times 1 or m times n matrix.}
 \item{state_names}{Names for the states.}
 
 \item{update_fn}{Function which returns list of updated model 
-components given input vector theta. See details.}
+components given input vector theta. This function should take only one 
+vector argument which is used to create list with elements named as
+\code{Z}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, \code{C}, and
+\code{phi}, where each element matches the dimensions of the original model.
+If any of these components is missing, it is assumed to be constant wrt. 
+theta. It's best to check the internal dimensions with 
+\code{str(model_object)} as the dimensions of input arguments can differ 
+from the final dimensions.}
 
 \item{prior_fn}{Function which returns log of prior density 
 given input vector theta.}

@@ -9,14 +9,18 @@ svm(y, mu, rho, sd_ar, sigma)
 \arguments{
 \item{y}{Vector or a \code{\link{ts}} object of observations.}
 
-\item{mu}{Prior for mu parameter of transition equation.}
+\item{mu}{Prior for mu parameter of transition equation. 
+Should be an object of class \code{bssm_prior}.}
 
-\item{rho}{prior for autoregressive coefficient.}
+\item{rho}{prior for autoregressive coefficient. 
+Should be an object of class \code{bssm_prior}.}
 
-\item{sd_ar}{Prior for the standard deviation of noise of the AR-process.}
+\item{sd_ar}{Prior for the standard deviation of noise of the AR-process.
+Should be an object of class \code{bssm_prior}.}
 
 \item{sigma}{Prior for sigma parameter of observation equation, internally 
-denoted as phi. Ignored if \code{mu} is provided. Note that typically 
+denoted as phi. Should be an object of class \code{bssm_prior}. 
+Ignored if \code{mu} is provided. Note that typically 
 parametrization using mu is preferred due to better numerical properties and 
 availability of better Gaussian approximation. 
 Most notably the global approximation approach does not work with sigma 

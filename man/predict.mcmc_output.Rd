@@ -8,29 +8,29 @@
 \method{predict}{mcmc_output}(
   object,
   model,
-  type = "response",
   nsim,
+  type = "response",
   future = TRUE,
   seed = sample(.Machine$integer.max, size = 1),
   ...
 )
 }
 \arguments{
-\item{object}{mcmc_output object obtained from 
+\item{object}{Results object of class \code{mcmc_output} from 
 \code{\link{run_mcmc}}}
 
-\item{model}{Model for future observations. 
-Should have same structure as the original model which was used in MCMC,
-in order to plug the posterior samples of the model parameters to the right 
-places. 
-It is also possible to input the original model, which can be useful for 
-example for posterior predictive checks. In this case, set argument 
+\item{model}{A \code{bssm_model} object.. 
+Should have same structure and class as the original model which was used in 
+\code{run_mcmc}, in order to plug the posterior samples of the model 
+parameters to the right places. 
+It is also possible to input the original model for obtaining predictions 
+for past time points. In this case, set argument 
 \code{future} to \code{FALSE}.}
 
-\item{type}{Return predictions on \code{"mean"} 
-\code{"response"}, or  \code{"state"} level.}
+\item{nsim}{Positive integer defining number of samples to draw.}
 
-\item{nsim}{Number of samples to draw.}
+\item{type}{Type of predictions. Possible choices are 
+\code{"mean"} \code{"response"}, or  \code{"state"} level.}
 
 \item{future}{Default is \code{TRUE}, in which case predictions are for the 
 future, using posterior samples of (theta, alpha_T+1) i.e. the 
@@ -42,7 +42,8 @@ Otherwise it is assumed that \code{model} corresponds to the original model.}
 \item{...}{Ignored.}
 }
 \value{
-Data frame of predicted samples.
+A \code{data.frame} consisting of samples from the predictive 
+posterior distribution.
 }
 \description{
 Draw samples from the posterior predictive distribution for future 

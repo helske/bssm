@@ -48,8 +48,7 @@ Possible choices are
 \item{phi}{Additional parameters relating to the non-Gaussian distributions.
 For negative binomial distribution this is the dispersion term, for 
 gamma distribution this is the shape parameter, for Gaussian this is 
-standard deviation, 
-and for other distributions this is ignored.}
+standard deviation, and for other distributions this is ignored.}
 
 \item{u}{Matrix of positive constants for non-Gaussian models 
 (of same dimensions as y). For Poisson,  gamma, and negative binomial 
@@ -68,10 +67,11 @@ number of trials.}
 components given input vector theta. This function should take only one 
 vector argument which is used to create list with elements named as
 \code{Z}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, \code{C}, and
-\code{phi},
-where each element matches the dimensions of the original model.
+\code{phi}, where each element matches the dimensions of the original model.
 If any of these components is missing, it is assumed to be constant wrt. 
-theta.}
+theta. It's best to check the internal dimensions with 
+\code{str(model_object)} as the dimensions of input arguments can differ 
+from the final dimensions.}
 
 \item{prior_fn}{Function which returns log of prior density 
 given input vector theta.}
