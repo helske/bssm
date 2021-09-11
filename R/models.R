@@ -385,7 +385,10 @@ ssm_ung <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution, phi = 1,
 #' 
 #' data("GlobalTemp", package = "KFAS")
 #' model_temp <- ssm_mlg(GlobalTemp, H = matrix(c(0.15,0.05,0, 0.05), 2, 2), 
-#'   R = 0.05, Z = matrix(1, 2, 1), T = 1, P1 = 10)
+#'   R = 0.05, Z = matrix(1, 2, 1), T = 1, P1 = 10,
+#'   state_names = "temperature",
+#'   # using default values, but being explicit for testing purposes
+#'   D = matrix(0, 2, 1), C = matrix(0, 1, 1))
 #' ts.plot(cbind(model_temp$y, smoother(model_temp)$alphahat), col = 1:3)
 #'
 ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL, 
@@ -502,7 +505,10 @@ ssm_mlg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #'   init_theta = c(0.5, 2), 
 #'   distribution = c("gamma", "binomial"),
 #'   u = cbind(1, rep(10, n)),
-#'   update_fn = update_fn, prior_fn = prior_fn)
+#'   update_fn = update_fn, prior_fn = prior_fn,
+#'   state_names = "random_walk",
+#'   # using default values, but being explicit for testing purposes
+#'   D = matrix(0, 2, 1), C = matrix(0, 1, 1))
 #'
 #' # smoothing based on approximating gaussian model
 #' ts.plot(cbind(y, fast_smoother(model)), 
@@ -1056,8 +1062,8 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #' Stochastic Volatility Model
 #'
 #' Constructs a simple stochastic volatility model with Gaussian errors and
-#' first order autoregressive signal.
-#'
+#' first order autoregressive signal. See the main vignette for details.
+#' 
 #' @param y Vector or a \code{\link{ts}} object of observations.
 #' @param mu Prior for mu parameter of transition equation. 
 #' Should be an object of class \code{bssm_prior}.
@@ -1080,20 +1086,45 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
 #'
 #' data("exchange")
 #' exchange <- exchange[1:100] # faster CRAN check
-#' model <- svm(exchange, rho = uniform(0.98,-0.999,0.999),
+#' model <- svm(exchange, rho = uniform(0.98, -0.999, 0.999),
 #'  sd_ar = halfnormal(0.15, 5), sigma = halfnormal(0.6, 2))
 #'
 #' obj <- function(pars) {
-#'    -logLik(svm(exchange, rho = uniform(pars[1],-0.999,0.999),
-#'    sd_ar = halfnormal(pars[2],sd=5),
-#'    sigma = halfnormal(pars[3],sd=2)), particles = 0)
+#'    -logLik(svm(exchange, 
+#'      rho = uniform(pars[1], -0.999, 0.999),
+#'      sd_ar = halfnormal(pars[2], 5),
+#'      sigma = halfnormal(pars[3], 2)), particles = 0)
 #' }
-#' opt <- nlminb(c(0.98, 0.15, 0.6), obj, lower = c(-0.999, 1e-4, 1e-4),
-#'   upper = c(0.999,10,10))
+#' opt <- optim(c(0.98, 0.15, 0.6), obj, 
+#'   lower = c(-0.999, 1e-4, 1e-4),
+#'   upper = c(0.999, 10, 10), method = "L-BFGS-B")
 #' pars <- opt$par
-#' model <- svm(exchange, rho = uniform(pars[1],-0.999,0.999),
-#'   sd_ar = halfnormal(pars[2],sd=5),
-#'   sigma = halfnormal(pars[3],sd=2))
+#' model <- svm(exchange, 
+#'   rho = uniform(pars[1],-0.999,0.999),
+#'   sd_ar = halfnormal(pars[2], 5),
+#'   sigma = halfnormal(pars[3], 2))
+#' 
+#' # alternative parameterization  
+#' model2 <- svm(exchange, rho = uniform(0.98,-0.999, 0.999),
+#'  sd_ar = halfnormal(0.15, 5), mu = normal(0, 0, 1))
+#'
+#' obj2 <- function(pars) {
+#'    -logLik(svm(exchange, 
+#'      rho = uniform(pars[1], -0.999, 0.999),
+#'      sd_ar = halfnormal(pars[2], 5),
+#'      mu = normal(pars[3], 0, 1)), particles = 0)
+#' }
+#' opt2 <- optim(c(0.98, 0.15, 0), obj2, lower = c(-0.999, 1e-4, -Inf),
+#'   upper = c(0.999, 10, Inf), method = "L-BFGS-B")
+#' pars2 <- opt2$par
+#' model2 <- svm(exchange, 
+#'   rho = uniform(pars2[1],-0.999,0.999),
+#'   sd_ar = halfnormal(pars2[2], 5),
+#'   mu = normal(pars2[3], 0, 1))
+#'
+#' # sigma is internally stored in phi
+#' ts.plot(cbind(model$phi * exp(0.5 * fast_smoother(model)), 
+#'   exp(0.5 * fast_smoother(model2))), col = 1:2)
 #'
 svm <- function(y, mu, rho, sd_ar, sigma) {
   

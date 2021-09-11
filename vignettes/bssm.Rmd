@@ -58,7 +58,7 @@ where $d_t$ is a again known input, $x_t$ contains the exogenous covariate value
 
 For stochastic volatility model, there are two possible parameterizations available. In general for we have
 $$
-y_t = x'_t\beta + \sigma \exp(\alpha_t / 2)\epsilon_t, \quad \epsilon_t \sim N(0, 1),
+y_t = \sigma \exp(\alpha_t / 2)\epsilon_t, \quad \epsilon_t \sim N(0, 1),
 $$
 and
 $$
