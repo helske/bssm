@@ -140,7 +140,7 @@ test_that("Gaussian approximation works for nonlinear models", {
  
   skip_on_cran()
   
-  pntrs <- nlg_example_models("linear_gaussian")
+  pntrs <- cpp_example_model("nlg_linear_gaussian")
   set.seed(1)
   y <- cumsum(rnorm(10)) + rnorm(10)
   model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
@@ -163,7 +163,7 @@ test_that("Gaussian approximation works for nonlinear models", {
     y[i+1] <- rnorm(1, exp(x[i+1]), 0.1)
   }
   y[2:5] <- NA
-  pntrs <- nlg_example_models("sin_exp")
+  pntrs <- cpp_example_model("nlg_sin_exp")
   
   expect_error(model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
     Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 

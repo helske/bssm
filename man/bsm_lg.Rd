@@ -20,7 +20,7 @@ bsm_lg(
 )
 }
 \arguments{
-\item{y}{Vector or a \code{\link{ts}} object of observations.}
+\item{y}{Vector or a \code{ts} object of observations.}
 
 \item{sd_y}{Standard deviation of the noise of observation equation.
 Should be an object of class \code{bssm_prior} or scalar}

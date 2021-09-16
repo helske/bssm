@@ -53,7 +53,7 @@ effort from the user, as you must provide the several small C++ snippets
 which define the model structure. See vignettes for an example.
 }
 \examples{
-\donttest{
+
 library("sde")
 set.seed(1)
 # theta_0 = rho = 0.5
@@ -65,9 +65,8 @@ x <- sde.sim(t0 = 0, T = 50, X0 = 1, N = 50,
        sigma.x = expression(0))
 y <- rpois(50, exp(x[-1]))
 
-# Template can be found in the vignette
-Rcpp::sourceCpp("ssm_sde_template.cpp")
-pntrs <- create_xptrs()
+# source c++ snippets
+pntrs <- cpp_example_model("sde_poisson_OU")
 
 sde_model <- ssm_sde(y, pntrs$drift, pntrs$diffusion,
  pntrs$ddiffusion, pntrs$obs_density, pntrs$prior,
@@ -85,5 +84,5 @@ out <- run_mcmc(sde_model, L_c = 4, L_f = 8,
   particles = 50, iter = 2e4,
   threads = 4L)
 
-}
+
 }

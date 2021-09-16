@@ -7,7 +7,7 @@
 ar1_ng(y, rho, sigma, mu, distribution, phi, u, beta, xreg = NULL)
 }
 \arguments{
-\item{y}{Vector or a \code{\link{ts}} object of observations.}
+\item{y}{Vector or a \code{ts} object of observations.}
 
 \item{rho}{Prior for autoregressive coefficient. 
 Should be an object of class \code{bssm_prior}.}

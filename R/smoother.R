@@ -18,6 +18,12 @@ fast_smoother <- function(model, ...) {
 }
 #' @method fast_smoother gaussian
 #' @export
+#' @examples
+#' model <- bsm_lg(Nile, 
+#'   sd_level = tnormal(120, 100, 20, min = 0),
+#'   sd_y = tnormal(50, 50, 25, min = 0),
+#'   a1 = 1000, P1 = 200)
+#' ts.plot(cbind(Nile, fast_smoother(model)), col = 1:2)
 fast_smoother.gaussian <- function(model, ...) {
   
   out <- gaussian_fast_smoother(model, model_type(model))
@@ -38,6 +44,15 @@ smoother <- function(model, ...) {
 }
 #' @method smoother gaussian
 #' @export
+#' @examples
+#' model <- bsm_lg(Nile, 
+#'   sd_y = tnormal(120, 100, 20, min = 0),
+#'   sd_level = tnormal(50, 50, 25, min = 0),
+#'   a1 = 1000, P1 = 500^2)
+#' 
+#' out <- smoother(model)
+#' ts.plot(cbind(Nile, out$alphahat), col = 1:2)
+#' ts.plot(sqrt(out$Vt[1, 1, ]))
 smoother.gaussian <- function(model, ...) {
   
   out <-  gaussian_smoother(model, model_type(model))
@@ -73,6 +88,34 @@ smoother.nongaussian <- function(model, ...) {
 #' \code{Vt} and \code{Ptt}.
 #' @export
 #' @rdname ekf_smoother
+#' @examples
+#' 
+#' set.seed(1)
+#' mu <- -0.2
+#' rho <- 0.7
+#' sigma_y <- 0.1
+#' sigma_x <- 1
+#' x <- numeric(50)
+#' x[1] <- rnorm(1, mu, sigma_x / sqrt(1 - rho^2))
+#' for(i in 2:length(x)) {
+#'   x[i] <- rnorm(1, mu * (1 - rho) + rho * x[i - 1], sigma_x)
+#' }
+#' y <- rnorm(length(x), exp(x), sigma_y)
+#' 
+#' pntrs <- cpp_example_model("nlg_ar_exp")
+#' 
+#' model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
+#'   Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
+#'   Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+#'   theta = c(mu= mu, rho = rho, 
+#'     log_sigma_x = log(sigma_x), log_sigma_y = log(sigma_y)), 
+#'   log_prior_pdf = pntrs$log_prior_pdf,
+#'   n_states = 1, n_etas = 1, state_names = "state")
+#'
+#' out_ekf <- ekf_smoother(model_nlg, iekf_iter = 0)
+#' out_iekf <- ekf_smoother(model_nlg, iekf_iter = 1)
+#' ts.plot(cbind(x, out_ekf$alphahat, out_iekf$alphahat), col = 1:3)
+#' 
 ekf_smoother <- function(model, iekf_iter = 0) {
   
   iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)

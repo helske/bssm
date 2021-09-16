@@ -291,7 +291,7 @@ test_that("MCMC for nonlinear models work", {
     y[i+1] <- rnorm(1, exp(x[i+1]), 0.1)
   }
   
-  pntrs <- nlg_example_models("sin_exp")
+  pntrs <- cpp_example_model("nlg_sin_exp")
   
   expect_error(model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
     Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 

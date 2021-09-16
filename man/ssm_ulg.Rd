@@ -134,7 +134,9 @@ prior_fn <- function(theta) {
 model <- ssm_ulg(y, Z, H, T, R, a1, P1, 
   init_theta = c(1, 0.1, 0.1), 
   update_fn = update_fn, prior_fn = prior_fn, 
-  state_names = c("level", "b1", "b2"))
+  state_names = c("level", "b1", "b2"),
+  # using default values, but being explicit for testing purposes
+  C = matrix(0, 3, 1), D = numeric(1))
 
 out <- run_mcmc(model, iter = 10000)
 out
@@ -183,7 +185,7 @@ model_bssm <- as_bssm(model_kfas, kappa = 100,
 \donttest{
 out <- run_mcmc(model_bssm, iter = 10000, burnin = 5000) 
 out
-
+}
 # Above the regression coefficients are modelled as 
 # time-invariant latent states. 
 # Here is an alternative way where we use variable D so that the
@@ -213,7 +215,7 @@ model_bssm2 <- updatefn2(init_theta)
 model_bssm2$theta <- init_theta
 model_bssm2$prior_fn <- prior2
 model_bssm2$update_fn <- updatefn2
-
+\donttest{
 out2 <- run_mcmc(model_bssm2, iter = 10000, burnin = 5000) 
 out2
 }

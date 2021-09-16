@@ -1,8 +1,10 @@
+#' Integrated Autocorrelation Time
+#'
+#' Here IACT is based on Sokal, 
+#' Monte Carlo Methods in Statistical Mechanics: Foundations and New Algorithms
 iact <- function(x) {
   n <- length(x)
   x_ <- (x - mean(x)) / sd(x)
-  # Sokal: 
-  # Monte Carlo Methods in Statistical Mechanics: Foundations and New Algorithms
   C <- max(5.0, log10(n))
   tau <- 1
   for (k in 1:(n - 1)) {
@@ -18,7 +20,6 @@ iact <- function(x) {
 #'  
 #' @param x Vector of samples.
 #' @param w Vector of weights.
-#' @export
 asymptotic_var <- function(x, w) {
   estimate_c <- mean(w)
   estimate_mean <- weighted_mean(x, w)

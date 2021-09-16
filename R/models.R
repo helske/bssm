@@ -88,7 +88,9 @@ default_update_fn <- function(theta) {
 #' model <- ssm_ulg(y, Z, H, T, R, a1, P1, 
 #'   init_theta = c(1, 0.1, 0.1), 
 #'   update_fn = update_fn, prior_fn = prior_fn, 
-#'   state_names = c("level", "b1", "b2"))
+#'   state_names = c("level", "b1", "b2"),
+#'   # using default values, but being explicit for testing purposes
+#'   C = matrix(0, 3, 1), D = numeric(1))
 #' 
 #' out <- run_mcmc(model, iter = 10000)
 #' out
@@ -137,7 +139,7 @@ default_update_fn <- function(theta) {
 #' \donttest{
 #' out <- run_mcmc(model_bssm, iter = 10000, burnin = 5000) 
 #' out
-#' 
+#' }
 #' # Above the regression coefficients are modelled as 
 #' # time-invariant latent states. 
 #' # Here is an alternative way where we use variable D so that the
@@ -167,7 +169,7 @@ default_update_fn <- function(theta) {
 #' model_bssm2$theta <- init_theta
 #' model_bssm2$prior_fn <- prior2
 #' model_bssm2$update_fn <- updatefn2
-#' 
+#' \donttest{
 #' out2 <- run_mcmc(model_bssm2, iter = 10000, burnin = 5000) 
 #' out2
 #' }
@@ -781,7 +783,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' local trend component, a seasonal component, and regression component
 #' (or subset of these components).
 #'
-#' @param y Vector or a \code{\link{ts}} object of observations.
+#' @param y Vector or a \code{ts} object of observations.
 #' @param sd_level Standard deviation of the noise of level equation.
 #' Should be an object of class \code{bssm_prior} or scalar 
 #' value defining a known value such as 0. 
@@ -833,8 +835,8 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'   a1 = rep(0, 1 + 11), # level + period - 1 seasonal states
 #'   P1 = diag(1, 12),
 #'   C = matrix(0, 12, 1),
-#'   u = rep(1, nrow(Seatbelts))
-#'   )
+#'   u = rep(1, nrow(Seatbelts)))
+#'
 #' \donttest{
 #' set.seed(123)
 #' mcmc_out <- run_mcmc(model, iter = 5000, particles = 10, mcmc_type = "da")
@@ -849,14 +851,13 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'   geom = "polygon") + scale_fill_continuous(low = "green", high = "blue") +
 #'   guides(alpha = "none")
 #'
-#' 
-#'   
 #' # Traceplot using as.data.frame method for MCMC output
 #' library("dplyr")
 #' as.data.frame(mcmc_out) %>% 
 #'   filter(variable == "sd_level") %>% 
 #'   ggplot(aes(y = value, x = iter)) + geom_line()
 #'   
+#' }
 #' # Model with slope term and additional noise to linear predictor to capture 
 #' # excess variation   
 #' model2 <- bsm_ng(Seatbelts[, "VanKilled"], distribution = "poisson",
@@ -865,9 +866,18 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'   beta = normal(0, 0, 10),
 #'   xreg = Seatbelts[, "law"],
 #'   sd_slope = halfnormal(0.01, 0.1),
-#'   sd_noise = halfnormal(0.01, 1)
-#'   )
-#' }
+#'   sd_noise = halfnormal(0.01, 1))
+#'
+#' # instead of extra noise term, model using negative binomial distribution:
+#' model3 <- bsm_ng(Seatbelts[, "VanKilled"], 
+#'   distribution = "negative binomial",
+#'   sd_level = halfnormal(0.01, 1),
+#'   sd_seasonal = halfnormal(0.01, 1),
+#'   beta = normal(0, 0, 10),
+#'   xreg = Seatbelts[, "law"],
+#'   sd_slope = halfnormal(0.01, 0.1),
+#'   phi = gamma_prior(1, 5, 5)) 
+#' 
 bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   distribution, phi, u, beta, xreg = NULL, period = frequency(y), 
   a1 = NULL, P1 = NULL, C = NULL) {
@@ -1461,7 +1471,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
 #' @return Object of class \code{ssm_nlg}.
 #' @export
 #' @examples
-#' \donttest{
+#' 
 #' set.seed(1)
 #' n <- 50
 #' x <- y <- numeric(n)
@@ -1471,7 +1481,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
 #'  y[i+1] <- rnorm(1, exp(x[i+1]), 0.1)
 #' }
 #' 
-#' pntrs <- nlg_example_models("sin_exp")
+#' pntrs <- cpp_example_model("nlg_sin_exp")
 #' 
 #' model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
 #'   Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
@@ -1480,9 +1490,9 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
 #'   log_prior_pdf = pntrs$log_prior_pdf,
 #'   n_states = 1, n_etas = 1, state_names = "state")
 #'
-#' out <- ekf(model_nlg, 100)
+#' out <- ekf(model_nlg, iekf_iter = 100)
 #' ts.plot(cbind(x, out$at[1:n], out$att[1:n]), col = 1:3)
-#' }
+#' 
 ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
   known_params = NA, known_tv_params = matrix(NA), n_states, n_etas,
   log_prior_pdf, time_varying = rep(TRUE, 4), 
@@ -1537,7 +1547,7 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
 #' @return Object of class \code{ssm_sde}.
 #' @export
 #' @examples
-#' \donttest{
+#' 
 #' library("sde")
 #' set.seed(1)
 #' # theta_0 = rho = 0.5
@@ -1549,9 +1559,8 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
 #'        sigma.x = expression(0))
 #' y <- rpois(50, exp(x[-1]))
 #'
-#' # Template can be found in the vignette
-#' Rcpp::sourceCpp("ssm_sde_template.cpp")
-#' pntrs <- create_xptrs()
+#' # source c++ snippets
+#' pntrs <- cpp_example_model("sde_poisson_OU")
 #' 
 #' sde_model <- ssm_sde(y, pntrs$drift, pntrs$diffusion,
 #'  pntrs$ddiffusion, pntrs$obs_density, pntrs$prior,
@@ -1569,7 +1578,7 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
 #'   particles = 50, iter = 2e4,
 #'   threads = 4L)
 #' 
-#' }
+#'
 ssm_sde <- function(y, drift, diffusion, ddiffusion, obs_pdf,
   prior_pdf, theta, x0, positive) {
   

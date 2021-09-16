@@ -22,7 +22,7 @@ bsm_ng(
 )
 }
 \arguments{
-\item{y}{Vector or a \code{\link{ts}} object of observations.}
+\item{y}{Vector or a \code{ts} object of observations.}
 
 \item{sd_level}{Standard deviation of the noise of level equation.
 Should be an object of class \code{bssm_prior} or scalar 
@@ -94,8 +94,8 @@ model <- bsm_ng(Seatbelts[, "VanKilled"], distribution = "poisson",
   a1 = rep(0, 1 + 11), # level + period - 1 seasonal states
   P1 = diag(1, 12),
   C = matrix(0, 12, 1),
-  u = rep(1, nrow(Seatbelts))
-  )
+  u = rep(1, nrow(Seatbelts)))
+
 \donttest{
 set.seed(123)
 mcmc_out <- run_mcmc(model, iter = 5000, particles = 10, mcmc_type = "da")
@@ -110,14 +110,13 @@ ggplot(as.data.frame(theta[,1:2]), aes(x = sd_level, y = sd_seasonal)) +
   geom = "polygon") + scale_fill_continuous(low = "green", high = "blue") +
   guides(alpha = "none")
 
-
-  
 # Traceplot using as.data.frame method for MCMC output
 library("dplyr")
 as.data.frame(mcmc_out) \%>\% 
   filter(variable == "sd_level") \%>\% 
   ggplot(aes(y = value, x = iter)) + geom_line()
   
+}
 # Model with slope term and additional noise to linear predictor to capture 
 # excess variation   
 model2 <- bsm_ng(Seatbelts[, "VanKilled"], distribution = "poisson",
@@ -126,7 +125,16 @@ model2 <- bsm_ng(Seatbelts[, "VanKilled"], distribution = "poisson",
   beta = normal(0, 0, 10),
   xreg = Seatbelts[, "law"],
   sd_slope = halfnormal(0.01, 0.1),
-  sd_noise = halfnormal(0.01, 1)
-  )
-}
+  sd_noise = halfnormal(0.01, 1))
+
+# instead of extra noise term, model using negative binomial distribution:
+model3 <- bsm_ng(Seatbelts[, "VanKilled"], 
+  distribution = "negative binomial",
+  sd_level = halfnormal(0.01, 1),
+  sd_seasonal = halfnormal(0.01, 1),
+  beta = normal(0, 0, 10),
+  xreg = Seatbelts[, "law"],
+  sd_slope = halfnormal(0.01, 0.1),
+  phi = gamma_prior(1, 5, 5)) 
+
 }

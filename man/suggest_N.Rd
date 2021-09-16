@@ -6,7 +6,7 @@
 \usage{
 suggest_N(
   model,
-  mcmc_output,
+  theta,
   candidates = seq(10, 100, by = 10),
   replications = 100,
   seed = sample(.Machine$integer.max, size = 1)
@@ -15,10 +15,11 @@ suggest_N(
 \arguments{
 \item{model}{Model of class \code{nongaussian} or \code{ssm_nlg}.}
 
-\item{mcmc_output}{An output from \code{run_mcmc} used to compute the MAP 
-estimate of theta. While the intended use assumes this is from 
-approximate MCMC, it is not actually checked, i.e., 
-it is also possible to input previous (asymptotically) exact output.}
+\item{theta}{A vector of theta corresponding to the model, at which point 
+the standard deviation of the log-likelihood is computed. Typically MAP 
+estimate from the (approximate) MCMC run. Can also be an output from 
+\code{run_mcmc} which is then used to compute the MAP 
+estimate of theta.}
 
 \item{candidates}{Vector containing the candidate number of particles to 
 test. Default is \code{seq(10, 100, by = 10)}.}
@@ -46,7 +47,7 @@ suggested in the context of pseudo-marginal MCMC by Doucet et al. (2015),
  but see also Section 10.3 in Vihola et al (2020).
 }
 \examples{
-\donttest{
+
 set.seed(1)
 n <- 300
 x1 <- sin((2 * pi / 12) * 1:n)
@@ -54,7 +55,7 @@ x2 <- cos((2 * pi / 12) * 1:n)
 alpha <- numeric(n)
 alpha[1] <- 0
 rho <- 0.7
-sigma <- 2
+sigma <- 1.2
 mu <- 1
 for(i in 2:n) {
   alpha[i] <- rnorm(1, mu * (1 - rho) + rho * alpha[i-1], sigma)
@@ -70,13 +71,18 @@ model <- ar1_ng(y, distribution = "binomial",
   xreg = cbind(x1,x2), beta = normal(c(0, 0), 0, 5),
   u = u)
 
-out_approx <- run_mcmc(model, mcmc_type = "approx", 
- iter = 5000)
+# theta from earlier approximate MCMC run
+# out_approx <- run_mcmc(model, mcmc_type = "approx", 
+#   iter = 5000) 
+# theta <- out_approx$theta[which.max(out_approx$posterior), ]
 
-estN <- suggest_N(model, out_approx, candidates = seq(10, 50, by = 10))
+theta <- c(rho = 0.64, sigma = 1.16, mu = 1.1, x1 = 0.56, x2 = 1.28)
+
+estN <- suggest_N(model, theta, candidates = seq(10, 50, by = 10),
+  replications = 50, seed = 1)
 plot(x = estN$results$N, y = estN$results$sd, type = "b")
 estN$N
-}
+
 }
 \references{
 Doucet, A, Pitt, MK, Deligiannidis, G, Kohn, R (2015). 

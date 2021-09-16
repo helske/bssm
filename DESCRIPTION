@@ -32,6 +32,7 @@ Suggests:
     KFAS (>= 1.2.1),
     knitr (>= 1.11),
     MASS,
+    posterior,
     rmarkdown (>= 0.8.1),
     ramcmc,
     sde,

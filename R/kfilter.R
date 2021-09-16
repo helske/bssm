@@ -62,6 +62,33 @@ kfilter.nongaussian <- function(model, ...) {
 #' @export
 #' @rdname ekf
 #' @export
+#' @examples
+#' 
+#' set.seed(1)
+#' mu <- -0.2
+#' rho <- 0.7
+#' sigma_y <- 0.1
+#' sigma_x <- 1
+#' x <- numeric(50)
+#' x[1] <- rnorm(1, mu, sigma_x / sqrt(1 - rho^2))
+#' for(i in 2:length(x)) {
+#'   x[i] <- rnorm(1, mu * (1 - rho) + rho * x[i - 1], sigma_x)
+#' }
+#' y <- rnorm(50, exp(x), sigma_y)
+#' 
+#' pntrs <- cpp_example_model("nlg_ar_exp")
+#' 
+#' model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
+#'   Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
+#'   Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+#'   theta = c(mu= mu, rho = rho, 
+#'     log_sigma_x = log(sigma_x), log_sigma_y = log(sigma_y)), 
+#'   log_prior_pdf = pntrs$log_prior_pdf,
+#'   n_states = 1, n_etas = 1, state_names = "state")
+#'
+#' out_ekf <- ekf(model_nlg, iekf_iter = 0)
+#' out_iekf <- ekf(model_nlg, iekf_iter = 5)
+#' ts.plot(cbind(x, out_ekf$att, out_iekf$att), col = 1:3)
 ekf <- function(model, iekf_iter = 0) {
   
   iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
@@ -88,7 +115,12 @@ ekf <- function(model, iekf_iter = 0) {
 #' states \eqn{\alpha_t} given the data up to time \eqn{t}.
 #'
 #' @param model Model model
-#' @param alpha,beta,kappa Tuning parameters for the UKF.
+#' @param alpha Positive tuning parameter of the UKF. Default is 0.001. Smaller 
+#' the value, closer the sigma point are to the mean of the state. 
+#' @param beta Non-negative tuning parameter of the UKF. The default value is 
+#' 2, which is optimal for Gaussian states.
+#' @param kappa Non-negative tuning parameter of the UKF, which also affects 
+#' the spread of sigma points. Default value is 0.
 #' @return List containing the log-likelihood,
 #' one-step-ahead predictions \code{at} and filtered
 #' estimates \code{att} of states, and the corresponding variances \code{Pt} and
@@ -96,7 +128,38 @@ ekf <- function(model, iekf_iter = 0) {
 #' @export
 #' @rdname ukf
 #' @export
-ukf <- function(model, alpha = 1, beta = 0, kappa = 2) {
+#' @examples
+#' set.seed(1)
+#' mu <- -0.2
+#' rho <- 0.7
+#' sigma_y <- 0.1
+#' sigma_x <- 1
+#' x <- numeric(50)
+#' x[1] <- rnorm(1, mu, sigma_x / sqrt(1 - rho^2))
+#' for(i in 2:length(x)) {
+#'   x[i] <- rnorm(1, mu * (1 - rho) + rho * x[i - 1], sigma_x)
+#' }
+#' y <- rnorm(50, exp(x), sigma_y)
+#' 
+#' pntrs <- cpp_example_model("nlg_ar_exp")
+#' 
+#' model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1, 
+#'   Z = pntrs$Z_fn, H = pntrs$H_fn, T = pntrs$T_fn, R = pntrs$R_fn, 
+#'   Z_gn = pntrs$Z_gn, T_gn = pntrs$T_gn,
+#'   theta = c(mu= mu, rho = rho, 
+#'     log_sigma_x = log(sigma_x), log_sigma_y = log(sigma_y)), 
+#'   log_prior_pdf = pntrs$log_prior_pdf,
+#'   n_states = 1, n_etas = 1, state_names = "state")
+#'
+#' out_iekf <- ekf(model_nlg, iekf_iter = 5)
+#' out_ukf <- ukf(model_nlg, alpha = 0.01, beta = 2, kappa = 1)
+#' ts.plot(cbind(x, out_iekf$att, out_ukf$att), col = 1:3)
+#' 
+ukf <- function(model, alpha = 0.001, beta = 2, kappa = 0) {
+  
+  if (alpha <= 0) stop("Parameter 'alpha' should be positive. ")
+  if (beta < 0) stop("Parameter 'beta' should be non-negative. ")
+  if (kappa < 0) stop("Parameter 'kappa' should be non-negative. ")
   
   out <- ukf_nlg(t(model$y), model$Z, model$H, model$T, 
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 

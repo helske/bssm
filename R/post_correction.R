@@ -16,10 +16,11 @@ get_map <- function(x) {
 #'  but see also Section 10.3 in Vihola et al (2020).
 #' 
 #' @param model Model of class \code{nongaussian} or \code{ssm_nlg}.
-#' @param mcmc_output An output from \code{run_mcmc} used to compute the MAP 
-#' estimate of theta. While the intended use assumes this is from 
-#' approximate MCMC, it is not actually checked, i.e., 
-#' it is also possible to input previous (asymptotically) exact output.
+#' @param theta A vector of theta corresponding to the model, at which point 
+#' the standard deviation of the log-likelihood is computed. Typically MAP 
+#' estimate from the (approximate) MCMC run. Can also be an output from 
+#' \code{run_mcmc} which is then used to compute the MAP 
+#' estimate of theta.
 #' @param candidates Vector containing the candidate number of particles to 
 #' test. Default is \code{seq(10, 100, by = 10)}. 
 #' @param replications How many replications should be used for computing 
@@ -39,7 +40,7 @@ get_map <- function(x) {
 #' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @examples 
-#' \donttest{
+#' 
 #' set.seed(1)
 #' n <- 300
 #' x1 <- sin((2 * pi / 12) * 1:n)
@@ -47,7 +48,7 @@ get_map <- function(x) {
 #' alpha <- numeric(n)
 #' alpha[1] <- 0
 #' rho <- 0.7
-#' sigma <- 2
+#' sigma <- 1.2
 #' mu <- 1
 #' for(i in 2:n) {
 #'   alpha[i] <- rnorm(1, mu * (1 - rho) + rho * alpha[i-1], sigma)
@@ -63,15 +64,21 @@ get_map <- function(x) {
 #'   xreg = cbind(x1,x2), beta = normal(c(0, 0), 0, 5),
 #'   u = u)
 #' 
-#' out_approx <- run_mcmc(model, mcmc_type = "approx", 
-#'  iter = 5000)
-#' 
-#' estN <- suggest_N(model, out_approx, candidates = seq(10, 50, by = 10))
+#' # theta from earlier approximate MCMC run
+#' # out_approx <- run_mcmc(model, mcmc_type = "approx", 
+#' #   iter = 5000) 
+#' # theta <- out_approx$theta[which.max(out_approx$posterior), ]
+#'
+#' theta <- c(rho = 0.64, sigma = 1.16, mu = 1.1, x1 = 0.56, x2 = 1.28)
+#'
+#' estN <- suggest_N(model, theta, candidates = seq(10, 50, by = 10),
+#'   replications = 50, seed = 1)
 #' plot(x = estN$results$N, y = estN$results$sd, type = "b")
 #' estN$N
-#' }
-suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10), 
-  replications = 100, seed = sample(.Machine$integer.max, size = 1)) {
+#' 
+suggest_N <- function(model, theta, 
+  candidates = seq(10, 100, by = 10), replications = 100, 
+  seed = sample(.Machine$integer.max, size = 1)) {
   
   replications <- check_integer(replications, "replications")
   if (!test_integerish(candidates, lower = 1, any.missing = FALSE, 
@@ -82,9 +89,16 @@ suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10),
     stop(paste("I don't believe you want to use over 1e7 particles",
       "If you really do, please file an issue at Github.", sep = " "))
   
-  if (!inherits(mcmc_output, "mcmc_output")) 
-    stop("Object 'mcmc_output' is not valid output from 'run_mcmc'.")
-  theta <- get_map(mcmc_output)
+  if (missing(theta) | (!is.vector(theta) & !inherits(theta, "mcmc_output"))) {
+    stop("'theta' should be either a vector or object of class 'mcmc_output'.")
+  }
+  if (inherits(theta, "mcmc_output")) {
+    theta <- get_map(theta)
+  } else {
+    if (length(theta) != length(model$theta)) {
+      stop("Length of 'theta' does not match length of 'model$theta'.")
+    }
+  }
   
   if (inherits(model, "nongaussian")) {
     model$distribution <- pmatch(model$distribution,
@@ -96,7 +110,7 @@ suggest_N <- function(model, mcmc_output, candidates = seq(10, 100, by = 10),
   } else {
     if (inherits(model, "ssm_nlg")) {
       out <- suggest_n_nonlinear(t(model$y), model$Z, model$H, model$T, 
-        model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
+        modtel$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
         model$theta, model$log_prior_pdf, model$known_params, 
         model$known_tv_params, model$n_states, model$n_etas, 
         as.integer(model$time_varying), 
