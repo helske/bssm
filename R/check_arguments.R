@@ -3,10 +3,10 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
   if (any(!is.na(x))) {
     if (multivariate) {
       if (!is.matrix(x)) {
-        stop("Argument y must be a matrix or multivariate ts object.")
+        stop("Argument 'y' must be a matrix or multivariate ts object.")
       }
       if (nrow(x) < 2) {
-        stop("Number of rows in y, i.e. number of time points, must be > 1. ")
+        stop("Number of rows in 'y', i.e. number of time points, must be > 1. ")
       }
     } else {
       if (!is.vector(x) || is.list(x)) {
@@ -15,11 +15,11 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
             dim(x) <- NULL
           } else {
             if(!is.null(dim(x)) && ncol(x) > 1) {
-              stop("Argument y must be a vector or univariate ts object.")
+              stop("Argument 'y' must be a vector or univariate ts object.")
             }
           }
         } else {
-          stop("Argument y must be a vector or univariate ts object.")
+          stop("Argument 'y' must be a vector or univariate ts object.")
         }
       }
       if (length(x) < 2) {
@@ -38,7 +38,17 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
       }
     }
     if (any(is.infinite(x))) {
-      stop("Argument y must contain only finite or NA values.")
+      stop("Argument 'y' must contain only finite or NA values.")
+    }
+  }
+  x
+}
+check_period <- function(x) {
+  if (!test_int(x)) {
+    stop("Argument 'period' should be a single integer. ")
+  } else {
+    if (x < 3) {
+      stop("Argument 'period' should be a integer larger than 2. ")
     }
   }
   x
@@ -367,5 +377,5 @@ check_positive_real <- function(x, name) {
   if (!test_double(x, lower=0, finite = TRUE, any.missing = FALSE, len = 1)) {
     stop(paste0("Argument '", name, "' should be positive real value."))
   }
- x
+  x
 }

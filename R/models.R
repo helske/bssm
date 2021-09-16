@@ -670,9 +670,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     seasonal <- FALSE
     sd_seasonal <- NULL
   } else {
-    if (period < 3) {
-      stop("Period of seasonal component must be larger than 2. ")
-    }
+    period <- check_period(period)
     if (is_prior(sd_seasonal)) {
       check_sd(sd_seasonal$init, "seasonal")
     } else {
@@ -926,9 +924,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     seasonal <- FALSE
     sd_seasonal <- NULL
   } else {
-    if (period < 3) {
-      stop("Period of seasonal component must be larger than 2. ")
-    }
+    period <- check_period(period)
     if (is_prior(sd_seasonal)) {
       check_sd(sd_seasonal$init, "seasonal")
     } else {
