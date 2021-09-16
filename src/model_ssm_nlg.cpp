@@ -527,6 +527,7 @@ double ssm_nlg::ekf_smoother(arma::mat& at, arma::cube& Pt) const {
       arma::mat inv_cholF = arma::inv(arma::trimatu(cholF));
       ZFinv.slice(t) = Zg.t() * inv_cholF * inv_cholF.t();
       Kt.slice(t) = Pt.slice(t) * ZFinv.slice(t);
+      
       arma::vec atthat = at.col(t) + Kt.slice(t) * vt.col(t);
       
       double diff = 1.0;
@@ -558,7 +559,8 @@ double ssm_nlg::ekf_smoother(arma::mat& at, arma::cube& Pt) const {
         vt.rows(na_y).zeros();
         
         inv_cholF = arma::inv(arma::trimatu(cholF));
-        Kt.slice(t) = Pt.slice(t) * Zg.t() * inv_cholF * inv_cholF.t();
+        ZFinv.slice(t) = Zg.t() * inv_cholF * inv_cholF.t();
+        Kt.slice(t) = Pt.slice(t) * ZFinv.slice(t);
         
         arma::vec atthat_new = at.col(t) + Kt.slice(t) * vt.col(t);
         
@@ -603,9 +605,13 @@ double ssm_nlg::ekf_smoother(arma::mat& at, arma::cube& Pt) const {
     at.col(t) += Pt.slice(t) * rt;
     Pt.slice(t) -= Pt.slice(t) * Nt * Pt.slice(t);
   }
+  
   return logLik;
 }
 
+// does not actually use the fast state smoothing recursions of 4.6.2 of DK2021
+// fast here means only that it does not compute the smoothed variances
+// in gaussian case fast means fast state smoothing...
 double ssm_nlg::ekf_fast_smoother(arma::mat& at) const {
   
   at.col(0) = a1_fn(theta, known_params);
@@ -657,8 +663,8 @@ double ssm_nlg::ekf_fast_smoother(arma::mat& at) const {
       ZFinv.slice(t) = Zg.t() * inv_cholF * inv_cholF.t();
       Kt.slice(t) = Pt.slice(t) * ZFinv.slice(t);
       
-      
       arma::vec atthat = at.col(t) + Kt.slice(t) * vt.col(t);
+      
       double diff = 1.0;
       unsigned int i = 0;
       while (diff > 1e-4 && i < iekf_iter) {
@@ -688,7 +694,8 @@ double ssm_nlg::ekf_fast_smoother(arma::mat& at) const {
         vt.rows(na_y).zeros();
         
         inv_cholF = arma::inv(arma::trimatu(cholF));
-        Kt.slice(t) = Pt.slice(t) * Zg.t() * inv_cholF * inv_cholF.t();
+        ZFinv.slice(t) = Zg.t() * inv_cholF * inv_cholF.t();
+        Kt.slice(t) = Pt.slice(t) * ZFinv.slice(t);
         
         arma::vec atthat_new = at.col(t) + Kt.slice(t) * vt.col(t);
         diff = arma::mean(arma::square(atthat - atthat_new));
