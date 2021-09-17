@@ -29,7 +29,7 @@ Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and
 Non-Gaussian State Space Models in R. ArXiv 2101.08492, 
 <URL: https://arxiv.org/abs/2101.08492>.
 
-Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators based 
-on approximate marginal Markov chain Monte Carlo. 
+Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators 
+based on approximate marginal Markov chain Monte Carlo. 
 Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 }

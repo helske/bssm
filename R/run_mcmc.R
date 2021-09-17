@@ -115,8 +115,14 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(model$theta)), length(model$theta))
   }
-  
-  
+  if(output_type == "full") {
+    nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+      length(model$a1) * (iter - burnin) / thin * target_acceptance
+    if (nsamples > 1e12) {
+      warning(paste("Number of state samples to be stored is approximately", 
+        nsamples, "you might run out of memory."))
+    }
+  }
   out <- gaussian_mcmc(model, output_type,
     iter, burnin, thin, gamma, target_acceptance, S, seed,
     end_adaptive_phase, threads, model_type(model))
@@ -391,6 +397,15 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   model$distribution <- 
     pmatch(model$distribution, dists, duplicates.ok = TRUE) - 1
   
+  if(output_type == "full") {
+    nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+      length(model$a1) * (iter - burnin) / thin * target_acceptance
+    if (nsamples > 1e12) {
+      warning(paste("Number of state samples to be stored is approximately", 
+        nsamples, "you might run out of memory."))
+    }
+  }
+  
   if (inherits(model, "bsm_ng")) {
     
     names_ind <-
@@ -595,7 +610,14 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
     stop(paste("Number of state samples less than 2, use 'mcmc_type'",
       "'approx' or 'ekf' instead.", sep = " "))
   
-  
+  if(output_type == "full") {
+    nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+      model$n_states * (iter - burnin) / thin * target_acceptance
+    if (nsamples > 1e12) {
+      warning(paste("Number of state samples to be stored is approximately", 
+        nsamples, "you might run out of memory."))
+    }
+  }
   out <- switch(mcmc_type,
     "da" = {
       nonlinear_da_mcmc(t(model$y), model$Z, model$H, model$T,
@@ -767,12 +789,11 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   thin <- check_integer(thin, "thin", max = 100)
   iter <- check_integer(iter, "iter", positive = FALSE, max = 1e12)
   burnin <- check_integer(burnin, "burnin", max = 1e12)
-  
+
   if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   check_target(target_acceptance)
-  
   
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
   mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3)))
@@ -789,6 +810,13 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
     if (missing(L_f)) L_f <- 0
     L <- max(L_c, L_f)
     if (L <= 0) stop("L should be positive.")
+  }
+  if(output_type == "full") {
+    nsamples <- length(model$y) * (iter - burnin) / thin * target_acceptance
+    if (nsamples > 1e12) {
+      warning(paste("Number of state samples to be stored is approximately", 
+        nsamples, "you might run out of memory."))
+    }
   }
   out <- switch(mcmc_type,
     "da" = {

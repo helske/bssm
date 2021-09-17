@@ -23,8 +23,8 @@
 #' Non-Gaussian State Space Models in R. ArXiv 2101.08492, 
 #' <URL: https://arxiv.org/abs/2101.08492>.
 #' 
-#' Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators based 
-#' on approximate marginal Markov chain Monte Carlo. 
+#' Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators 
+#' based on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #'
 #' @docType package
@@ -34,7 +34,7 @@
 #' @importFrom coda mcmc
 #' @importFrom stats as.ts dnorm  end frequency is.ts logLik quantile start 
 #' time ts ts.union tsp tsp<- sd na.omit
-#' @importFrom checkmate test_count test_double test_flag test_integerish
+#' @importFrom checkmate test_count test_double test_flag test_integerish test_int
 #' @useDynLib bssm
 NULL
 #' Deaths by drowning in Finland in 1969-2019

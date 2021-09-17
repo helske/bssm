@@ -43,12 +43,15 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
   }
   x
 }
-check_period <- function(x) {
+check_period <- function(x, n) {
   if (!test_int(x)) {
     stop("Argument 'period' should be a single integer. ")
   } else {
     if (x < 3) {
       stop("Argument 'period' should be a integer larger than 2. ")
+    }
+    if (x >= n) {
+      stop("Period should be less than the number of time points.")
     }
   }
   x
@@ -77,7 +80,7 @@ check_sd <- function(x, type, add_prefix = TRUE) {
     param <- type
   }
   if (length(x) != 1) {
-    stop(paste0("Argument ", param, " must be of length one."))
+    stop(paste0("Argument ", param, " must be of length one (scalar or bssm_prior)."))
   }
   if (!is.numeric(x)) {
     stop(paste0("Argument ", param, " must be numeric."))

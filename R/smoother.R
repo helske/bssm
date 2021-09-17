@@ -17,6 +17,7 @@ fast_smoother <- function(model, ...) {
   UseMethod("fast_smoother", model)
 }
 #' @method fast_smoother gaussian
+#' @rdname smoother
 #' @export
 #' @examples
 #' model <- bsm_lg(Nile, 
@@ -43,6 +44,7 @@ smoother <- function(model, ...) {
   UseMethod("smoother", model)
 }
 #' @method smoother gaussian
+#' @rdname smoother
 #' @export
 #' @examples
 #' model <- bsm_lg(Nile, 

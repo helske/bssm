@@ -45,6 +45,12 @@ bootstrap_filter.gaussian <- function(model, particles,
   }
   particles <- check_integer(particles, "particles")
   
+  nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+    length(model$a1) * particles
+  if (particles > 100 & nsamples > 1e12) {
+    warning(paste("Trying to sample ", nsamples, 
+      "particles, you might run out of memory."))
+  }
   out <- bsf(model, particles, seed, TRUE, model_type(model))
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- 
@@ -80,7 +86,12 @@ bootstrap_filter.nongaussian <- function(model, particles,
     }
   }
   particles <- check_integer(particles, "particles")
-  
+  nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+    length(model$a1) * particles
+  if (particles > 100 & nsamples > 1e12) {
+    warning(paste("Trying to sample ", nsamples, 
+      "particles, you might run out of memory."))
+  }
   model$distribution <- 
     pmatch(model$distribution, 
       c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"),
@@ -111,6 +122,13 @@ bootstrap_filter.ssm_nlg <- function(model, particles,
     }
   }
   particles <- check_integer(particles, "particles")
+  
+  nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+    model$n_states * particles
+  if (particles > 100 & nsamples > 1e12) {
+    warning(paste("Trying to sample ", nsamples, 
+      "particles, you might run out of memory."))
+  }
   
   out <- bsf_nlg(t(model$y), model$Z, model$H, model$T,
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1,
@@ -146,6 +164,12 @@ bootstrap_filter.ssm_sde <- function(model, particles, L,
   }
   
   particles <- check_integer(particles, "particles")
+  
+  nsamples <- length(model$y) * particles
+  if (particles > 100 & nsamples > 1e12) {
+    warning(paste("Trying to sample ", nsamples, 
+      "particles, you might run out of memory."))
+  }
   
   out <- bsf_sde(model$y, model$x0, model$positive,
     model$drift, model$diffusion, model$ddiffusion,

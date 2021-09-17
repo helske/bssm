@@ -23,7 +23,7 @@ bsm_lg(
 \item{y}{Vector or a \code{ts} object of observations.}
 
 \item{sd_y}{Standard deviation of the noise of observation equation.
-Should be an object of class \code{bssm_prior} or scalar}
+Should be an object of class \code{bssm_prior} or scalar.}
 
 \item{sd_level}{Standard deviation of the noise of level equation.
 Should be an object of class \code{bssm_prior} or scalar 

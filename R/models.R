@@ -583,7 +583,7 @@ ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution,
 #' 
 #' @inheritParams bsm_ng
 #' @param sd_y Standard deviation of the noise of observation equation.
-#' Should be an object of class \code{bssm_prior} or scalar 
+#' Should be an object of class \code{bssm_prior} or scalar. 
 #' @param D,C Intercept terms for observation and
 #' state equations, given as a length n vector and m times n matrix 
 #' respectively (or scalar and m times 1 matrix).
@@ -670,7 +670,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
     seasonal <- FALSE
     sd_seasonal <- NULL
   } else {
-    period <- check_period(period)
+    period <- check_period(period, n)
     if (is_prior(sd_seasonal)) {
       check_sd(sd_seasonal$init, "seasonal")
     } else {
@@ -924,7 +924,7 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
     seasonal <- FALSE
     sd_seasonal <- NULL
   } else {
-    period <- check_period(period)
+    period <- check_period(period, n)
     if (is_prior(sd_seasonal)) {
       check_sd(sd_seasonal$init, "seasonal")
     } else {

@@ -86,6 +86,12 @@ particle_smoother.gaussian <- function(model, particles,  method = "psi",
   
   particles <- check_integer(particles, "particles")
   
+  nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+    length(model$a1) * particles
+  if (particles > 100 & nsamples > 1e12) {
+    warning(paste("Trying to sample ", nsamples, 
+      "particles, you might run out of memory."))
+  }
   if (method == "psi") {
     out <- list()
     out$alpha <- gaussian_psi_smoother(model, particles, seed, 
@@ -131,6 +137,12 @@ particle_smoother.nongaussian <- function(model, particles,
     }
   }
   particles <- check_integer(particles, "particles")
+  nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+    length(model$a1) * particles
+  if (particles > 100 & nsamples > 1e12) {
+    warning(paste("Trying to sample ", nsamples, 
+      "particles, you might run out of memory."))
+  }
   model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
   
@@ -172,6 +184,14 @@ particle_smoother.ssm_nlg <- function(model, particles,
     }
   }
   particles <- check_integer(particles, "particles")
+  
+  nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+    model$n_states * particles
+  if (particles > 100 & nsamples > 1e12) {
+    warning(paste("Trying to sample ", nsamples, 
+      "particles, you might run out of memory."))
+  }
+  
   max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
   conv_tol <- check_positive_real(conv_tol, "conv_tol")
   iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
@@ -226,7 +246,11 @@ particle_smoother.ssm_sde <- function(model, particles, L,
     }
   }
   particles <- check_integer(particles, "particles")
-  
+  nsamples <- length(model$y) * particles
+  if (particles > 100 & nsamples > 1e12) {
+    warning(paste("Trying to sample ", nsamples, 
+      "particles, you might run out of memory."))
+  }
   out <-  bsf_smoother_sde(model$y, model$x0, model$positive, 
     model$drift, model$diffusion, model$ddiffusion, 
     model$prior_pdf, model$obs_pdf, model$theta, 

@@ -49,6 +49,13 @@ importance_sample.nongaussian <- function(model, nsim, use_antithetic = TRUE,
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
   nsim <- check_integer(nsim, "nsim")
   
+  nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+    length(model$a1) * nsim
+  if (nsim > 100 & nsamples > 1e12) {
+    warning(paste("Trying to sample ", nsamples, 
+      "values, you might run out of memory."))
+  }
+  
   model$distribution <- pmatch(model$distribution,
     c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
     duplicates.ok = TRUE) - 1
