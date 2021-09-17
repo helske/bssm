@@ -32,8 +32,9 @@ model <- bsm_lg(Nile,
   a1 = 1000, P1 = 500^2)
 
 fit1 <- run_mcmc(model, iter = 2e4)
+library("posterior")
 head(as_draws(fit1), 4)
-posterior::ess_bulk(draws$sd_y)
+ess_bulk(draws$sd_y)
 summary(fit1, return_se = TRUE)
 
 # More chains:
@@ -42,12 +43,12 @@ fit2 <- run_mcmc(model, iter = 2e4)
 model$theta[] <- c(150, 50) # change initial value
 fit3 <- run_mcmc(model, iter = 2e4)
 
-draws <- posterior::bind_draws(as_draws(fit1),
+draws <- bind_draws(as_draws(fit1),
   as_draws(fit2), as_draws(fit3), along = "chain")
 # it is actually enough to transform first mcmc_output to draws object, 
 # rest are transformed automatically inside bind_draws
-posterior::rhat(draws$sd_y)
-posterior::ess_bulk(draws$sd_y)
-posterior::ess_tail(draws$sd_y)
+rhat(draws$sd_y)
+ess_bulk(draws$sd_y)
+ess_tail(draws$sd_y)
 
 }

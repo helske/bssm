@@ -1,7 +1,8 @@
-#' Integrated Autocorrelation Time
-#'
-#' Here IACT is based on Sokal, 
-#' Monte Carlo Methods in Statistical Mechanics: Foundations and New Algorithms
+# Integrated Autocorrelation Time
+#
+# Here IACT is based on Sokal, 
+# Monte Carlo Methods in Statistical Mechanics: Foundations and New Algorithms
+# @param x A vector.
 iact <- function(x) {
   n <- length(x)
   x_ <- (x - mean(x)) / sd(x)
@@ -13,13 +14,13 @@ iact <- function(x) {
   }
   max(0.0, tau)
 }
-#' Asymptotic Variance of IS-type Estimators
-#'
-#' Estimates the asymptotic variance based on Corollary 1 
-#' of Vihola et al. (2020) from weighted samples from IS-MCMC.
-#'  
-#' @param x Vector of samples.
-#' @param w Vector of weights.
+# Asymptotic Variance of IS-type Estimators
+#
+# Estimates the asymptotic variance based on Corollary 1 
+# of Vihola et al. (2020) from weighted samples from IS-MCMC.
+#  
+# @param x Vector of samples.
+# @param w Vector of weights.
 asymptotic_var <- function(x, w) {
   estimate_c <- mean(w)
   estimate_mean <- weighted_mean(x, w)

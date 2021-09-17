@@ -56,8 +56,8 @@ ekpf_filter.ssm_nlg <- function(object, particles,
   }
   particles <- check_integer(particles, "particles")
   
-  nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
-    model$n_states * particles
+  nsamples <- ifelse(!is.null(nrow(object$y)), nrow(object$y), 
+    length(object$y)) * object$n_states * particles
   if (particles > 100 & nsamples > 1e12) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))

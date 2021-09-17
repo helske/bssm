@@ -110,7 +110,7 @@ suggest_N <- function(model, theta,
   } else {
     if (inherits(model, "ssm_nlg")) {
       out <- suggest_n_nonlinear(t(model$y), model$Z, model$H, model$T, 
-        modtel$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
+        model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
         model$theta, model$log_prior_pdf, model$known_params, 
         model$known_tv_params, model$n_states, model$n_etas, 
         as.integer(model$time_varying), 
