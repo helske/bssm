@@ -33,7 +33,8 @@ model <- bsm_lg(Nile,
 
 fit1 <- run_mcmc(model, iter = 2e4)
 library("posterior")
-head(as_draws(fit1), 4)
+draws <- as_draws(fit1)
+head(draws, 4)
 ess_bulk(draws$sd_y)
 summary(fit1, return_se = TRUE)
 
