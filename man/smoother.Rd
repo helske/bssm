@@ -16,7 +16,10 @@ smoother(model, ...)
 \method{smoother}{gaussian}(model, ...)
 }
 \arguments{
-\item{model}{Model model.}
+\item{model}{Model to be approximated. Should be of class 
+\code{bsm_ng}, \code{ar1_ng} \code{svm}, 
+\code{ssm_ung}, or \code{ssm_mng}, or \code{ssm_nlg}, i.e. non-gaussian or 
+non-linear \code{bssm_model}.}
 
 \item{...}{Ignored.}
 }
