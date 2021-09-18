@@ -146,7 +146,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   thin <- check_integer(thin, "thin", max = 100)
   iter <- check_integer(iter, "iter", positive = FALSE, max = 1e12)
   burnin <- check_integer(burnin, "burnin", max = 1e12)
-  check_targer(gamma)
+  
   if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
