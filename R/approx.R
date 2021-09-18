@@ -5,11 +5,17 @@
 #' This function is rarely needed itself, and is mainly available for 
 #' testing and debugging purposes.
 #' 
-#' @param model Model to be approximated.
-#' @param max_iter Maximum number of iterations.
-#' @param conv_tol Tolerance parameter.
-#' @param iekf_iter For non-linear models, number of iterations in iterated EKF
-#' (defaults to 0).
+#' @param model Model to be approximated. Should be of class 
+#' \code{bsm_ng}, \code{ar1_ng} \code{svm}, 
+#' \code{ssm_ung}, or \code{ssm_mng}, or \code{ssm_nlg}, i.e. non-gaussian or 
+#' non-linear \code{bssm_model}.
+#' @param max_iter Maximum number of iterations as a positive integer. 
+#' Default is 100 (although typically only few iterations are needed).
+#' @param conv_tol Positive tolerance parameter. Default is 1e-8. Approximation 
+#' is claimed to be converged when the mean squared difference of the modes of 
+#' is less than \code{conv_tol}.
+#' @param iekf_iter For non-linear models, non-negative number of iterations in 
+#' iterated EKF (defaults to 0).
 #' @param ... Ignored.
 #' @return Returns linear-Gaussian SSM of class \code{ssm_ulg} or 
 #' \code{ssm_mlg} which has the same conditional mode of p(alpha|y, theta) as 

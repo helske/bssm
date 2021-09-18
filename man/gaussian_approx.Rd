@@ -13,16 +13,22 @@ gaussian_approx(model, max_iter, conv_tol, ...)
 \method{gaussian_approx}{ssm_nlg}(model, max_iter = 100, conv_tol = 1e-08, iekf_iter = 0, ...)
 }
 \arguments{
-\item{model}{Model to be approximated.}
+\item{model}{Model to be approximated. Should be of class 
+\code{bsm_ng}, \code{ar1_ng} \code{svm}, 
+\code{ssm_ung}, or \code{ssm_mng}, or \code{ssm_nlg}, i.e. non-gaussian or 
+non-linear \code{bssm_model}.}
 
-\item{max_iter}{Maximum number of iterations.}
+\item{max_iter}{Maximum number of iterations as a positive integer. 
+Default is 100 (although typically only few iterations are needed).}
 
-\item{conv_tol}{Tolerance parameter.}
+\item{conv_tol}{Positive tolerance parameter. Default is 1e-8. Approximation 
+is claimed to be converged when the mean squared difference of the modes of 
+is less than \code{conv_tol}.}
 
 \item{...}{Ignored.}
 
-\item{iekf_iter}{For non-linear models, number of iterations in iterated EKF
-(defaults to 0).}
+\item{iekf_iter}{For non-linear models, non-negative number of iterations in 
+iterated EKF (defaults to 0).}
 }
 \value{
 Returns linear-Gaussian SSM of class \code{ssm_ulg} or 

@@ -9,8 +9,7 @@
 #' See one of the vignettes for \eqn{\psi}-APF in case of nonlinear models.
 #'
 #' @importFrom stats cov
-#' @param model Model.
-#' @param particles Number of samples for particle filter.
+#' @inheritParams bootstrap_filter
 #' @param method Choice of particle filter algorithm. 
 #' For Gaussian and non-Gaussian models with linear dynamics,
 #' options are \code{"bsf"} (bootstrap particle filter, default for 
@@ -18,15 +17,16 @@
 #' and \code{"psi"} (\eqn{\psi}-APF, the default for other models), and 
 #' for non-linear models options \code{"ekf"} (extended Kalman particle filter) 
 #' is also available.
-#' @param max_iter Maximum number of iterations used in Gaussian approximation. 
-#' Used \eqn{\psi}-APF.
-#' @param conv_tol Tolerance parameter used in Gaussian approximation. 
-#' Used \eqn{\psi}-APF.
+#' @param max_iter Maximum number of iterations used in Gaussian approximation,
+#' as a positive integer. 
+#' Default is 100 (although typically only few iterations are needed).
+#' Used in \eqn{\psi}-APF.
+#' @param conv_tol Positive tolerance parameter used in Gaussian approximation. 
+#' Default is 1e-8. Used \eqn{\psi}-APF.
 #' @param iekf_iter If zero (default), first approximation for non-linear 
 #' Gaussian models is obtained from extended Kalman filter. If 
 #' \code{iekf_iter > 0}, iterated extended Kalman filter is used with 
 #' \code{iekf_iter} iterations.
-#' @param seed Seed for RNG.
 #' @param ... Ignored.
 #' @return List with samples (\code{alpha}) from the smoothing distribution 
 #' and corresponding weights (\code{weights}),
@@ -230,7 +230,7 @@ particle_smoother.ssm_nlg <- function(model, particles,
 
 #' @rdname particle_smoother
 #' @method particle_smoother ssm_sde
-#' @param L Integer defining the discretization level.
+#' @param L Positive integer defining the discretization level for SDE model.
 #' @export
 particle_smoother.ssm_sde <- function(model, particles, L, 
   seed = sample(.Machine$integer.max, size = 1), ...) {

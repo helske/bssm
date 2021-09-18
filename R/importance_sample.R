@@ -4,16 +4,12 @@
 #' corresponding (scaled) importance weights. 
 #' Probably mostly useful for comparing KFAS and bssm packages.
 #' 
-#' @param model of class \code{bsm_ng}, \code{ar1_ng} \code{svm}, 
-#' \code{ssm_ung}, or \code{ssm_mng}.
+#' 
+#' @inheritParams gaussian_approx
 #' @param nsim Number of samples.
 #' @param use_antithetic Logical. If \code{TRUE} (default), use antithetic 
 #' variable for location in simulation smoothing. Ignored for \code{ssm_mng} 
 #' models.
-#' @param max_iter Maximum number of iterations used for the approximation.
-#' @param conv_tol Convergence threshold for the approximation. Approximation 
-#' is claimed to be converged when the mean squared difference of the modes is 
-#' less than \code{conv_tol}.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @export

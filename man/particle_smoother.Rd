@@ -48,9 +48,9 @@ particle_smoother(model, particles, ...)
 )
 }
 \arguments{
-\item{model}{Model.}
+\item{model}{A model object of class \code{bssm_model}.}
 
-\item{particles}{Number of samples for particle filter.}
+\item{particles}{Number of particles as a positive integer.}
 
 \item{...}{Ignored.}
 
@@ -64,18 +64,20 @@ is also available.}
 
 \item{seed}{Seed for RNG.}
 
-\item{max_iter}{Maximum number of iterations used in Gaussian approximation. 
-Used \eqn{\psi}-APF.}
+\item{max_iter}{Maximum number of iterations used in Gaussian approximation,
+as a positive integer. 
+Default is 100 (although typically only few iterations are needed).
+Used in \eqn{\psi}-APF.}
 
-\item{conv_tol}{Tolerance parameter used in Gaussian approximation. 
-Used \eqn{\psi}-APF.}
+\item{conv_tol}{Positive tolerance parameter used in Gaussian approximation. 
+Default is 1e-8. Used \eqn{\psi}-APF.}
 
 \item{iekf_iter}{If zero (default), first approximation for non-linear 
 Gaussian models is obtained from extended Kalman filter. If 
 \code{iekf_iter > 0}, iterated extended Kalman filter is used with 
 \code{iekf_iter} iterations.}
 
-\item{L}{Integer defining the discretization level.}
+\item{L}{Positive integer defining the discretization level for SDE model.}
 }
 \value{
 List with samples (\code{alpha}) from the smoothing distribution 

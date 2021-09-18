@@ -40,15 +40,15 @@ bootstrap_filter(model, particles, ...)
 )
 }
 \arguments{
-\item{model}{of class \code{bsm_lg}, \code{bsm_ng} or \code{svm}.}
+\item{model}{A model object of class \code{bssm_model}.}
 
-\item{particles}{Number of particles.}
+\item{particles}{Number of particles as a positive integer.}
 
 \item{...}{Ignored.}
 
 \item{seed}{Seed for RNG.}
 
-\item{L}{Integer defining the discretization level for SDE models.}
+\item{L}{Positive integer defining the discretization level for SDE models.}
 }
 \value{
 List with samples (\code{alpha}) from the filtering distribution and 

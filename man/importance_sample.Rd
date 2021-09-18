@@ -18,8 +18,10 @@ importance_sample(model, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
 )
 }
 \arguments{
-\item{model}{of class \code{bsm_ng}, \code{ar1_ng} \code{svm}, 
-\code{ssm_ung}, or \code{ssm_mng}.}
+\item{model}{Model to be approximated. Should be of class 
+\code{bsm_ng}, \code{ar1_ng} \code{svm}, 
+\code{ssm_ung}, or \code{ssm_mng}, or \code{ssm_nlg}, i.e. non-gaussian or 
+non-linear \code{bssm_model}.}
 
 \item{nsim}{Number of samples.}
 
@@ -27,11 +29,12 @@ importance_sample(model, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
 variable for location in simulation smoothing. Ignored for \code{ssm_mng} 
 models.}
 
-\item{max_iter}{Maximum number of iterations used for the approximation.}
+\item{max_iter}{Maximum number of iterations as a positive integer. 
+Default is 100 (although typically only few iterations are needed).}
 
-\item{conv_tol}{Convergence threshold for the approximation. Approximation 
-is claimed to be converged when the mean squared difference of the modes is 
-less than \code{conv_tol}.}
+\item{conv_tol}{Positive tolerance parameter. Default is 1e-8. Approximation 
+is claimed to be converged when the mean squared difference of the modes of 
+is less than \code{conv_tol}.}
 
 \item{seed}{Seed for the random number generator.}
 

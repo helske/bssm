@@ -96,9 +96,11 @@ Note that parallel computing is only used in the post-correction phase of
 
 \item{seed}{Seed for the random number generator.}
 
-\item{max_iter}{Maximum number of iterations used in Gaussian approximation.}
+\item{max_iter}{Maximum number of iterations used in Gaussian approximation,
+as a positive integer. 
+Default is 100 (although typically only few iterations are needed).}
 
-\item{conv_tol}{Tolerance parameter used in Gaussian approximation.}
+\item{conv_tol}{Positive tolerance parameter used in Gaussian approximation.}
 
 \item{...}{Ignored.}
 }

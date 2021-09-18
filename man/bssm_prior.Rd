@@ -42,14 +42,14 @@ components and as a starting values in MCMC.}
 
 \item{max}{Upper bound of the uniform and truncated normal prior.}
 
-\item{sd}{Standard deviation of the (underlying i.e. non-truncated) 
-Normal distribution.}
+\item{sd}{Positive value defining the standard deviation of the 
+(underlying i.e. non-truncated) Normal distribution.}
 
 \item{mean}{Mean of the Normal prior.}
 
-\item{shape}{Shape parameter of the Gamma prior.}
+\item{shape}{Positive shape parameter of the Gamma prior.}
 
-\item{rate}{Rate parameter of the Gamma prior.}
+\item{rate}{Positive rate parameter of the Gamma prior.}
 }
 \value{
 object of class \code{bssm_prior} or \code{bssm_prior_list} in case 
@@ -73,7 +73,15 @@ are just for consistent naming).
 }
 \examples{
 # create uniform prior on [-1, 1] for one parameter with initial value 0.2:
-uniform(0.2, -1, 1)
+uniform(0.2, -1.0, 1.0)
 # two normal priors at once i.e. for coefficients beta:
-normal(init = c(0.1, 2), mean = 0, sd = c(1, 2))
+normal(init = c(0.1, 2.5), mean = 0.1, sd = c(1.5, 2.8))
+# Gamma
+gamma(init = 0.1, shape = 2.5, rate = 1.1)
+# Same as
+gamma_prior(init = 0.1, shape = 2.5, rate = 1.1)
+# Half-normal
+halfnormal(init = 0.01, sd = 0.1)
+# Truncated normal
+tnormal(init = 5.2, mean = 5.0, sd = 3.0, min = 0.5, max = 9.5)
 }

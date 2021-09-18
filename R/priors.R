@@ -20,19 +20,27 @@
 #' components and as a starting values in MCMC. 
 #' @param min Lower bound of the uniform and truncated normal prior.
 #' @param max Upper bound of the uniform and truncated normal prior.
-#' @param sd Standard deviation of the (underlying i.e. non-truncated) 
-#' Normal distribution.
+#' @param sd Positive value defining the standard deviation of the 
+#' (underlying i.e. non-truncated) Normal distribution.
 #' @param mean Mean of the Normal prior.
-#' @param shape Shape parameter of the Gamma prior.
-#' @param rate Rate parameter of the Gamma prior.
+#' @param shape Positive shape parameter of the Gamma prior.
+#' @param rate Positive rate parameter of the Gamma prior.
 #' @return object of class \code{bssm_prior} or \code{bssm_prior_list} in case 
 #' of multiple priors (i.e. multiple regression coefficients).
 #' @export
 #' @examples
 #' # create uniform prior on [-1, 1] for one parameter with initial value 0.2:
-#' uniform(0.2, -1, 1)
+#' uniform(0.2, -1.0, 1.0)
 #' # two normal priors at once i.e. for coefficients beta:
-#' normal(init = c(0.1, 2), mean = 0, sd = c(1, 2))
+#' normal(init = c(0.1, 2.5), mean = 0.1, sd = c(1.5, 2.8))
+#' # Gamma
+#' gamma(init = 0.1, shape = 2.5, rate = 1.1)
+#' # Same as
+#' gamma_prior(init = 0.1, shape = 2.5, rate = 1.1)
+#' # Half-normal
+#' halfnormal(init = 0.01, sd = 0.1)
+#' # Truncated normal
+#' tnormal(init = 5.2, mean = 5.0, sd = 3.0, min = 0.5, max = 9.5)
 uniform_prior <- function(init, min, max) {
   if (any(!is.numeric(init), !is.numeric(min), !is.numeric(max))) {
     stop("Parameters for priors must be numeric.")

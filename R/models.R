@@ -813,7 +813,8 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' @param xreg Matrix containing covariates with number of rows matching the 
 #' length of \code{y}.
 #' @param period Length of the seasonal pattern. 
-#' Default is \code{frequency(y)}. Must be at least 3.
+#' Default is \code{frequency(y)}. Must be a positive integer greater than 2 
+#' and less than the length of the input time series.
 #' @param a1 Prior means for the initial states (level, slope, seasonals).
 #' Defaults to vector of zeros.
 #' @param P1 Prior covariance for the initial states (level, slope, seasonals).

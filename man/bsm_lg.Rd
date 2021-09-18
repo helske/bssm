@@ -47,7 +47,8 @@ Should be an object of class \code{bssm_prior} or \code{bssm_prior_list}
 length of \code{y}.}
 
 \item{period}{Length of the seasonal pattern. 
-Default is \code{frequency(y)}. Must be at least 3.}
+Default is \code{frequency(y)}. Must be a positive integer greater than 2 
+and less than the length of the input time series.}
 
 \item{a1}{Prior means for the initial states (level, slope, seasonals).
 Defaults to vector of zeros.}

@@ -29,9 +29,12 @@ logLik.gaussian <- function(object, ...) {
 #' (\code{"psi"}). Other choices are \code{"bsf"} bootstrap particle filter, 
 #' and \code{"spdk"}, which uses the importance sampling approach by 
 #' Shephard and Pitt (1997) and Durbin and Koopman (1997). 
-#' @param max_iter Maximum number of iterations for Gaussian approximation 
-#' algorithm.
-#' @param conv_tol Tolerance parameter for the approximation algorithm.
+#' @param max_iter Maximum number of iterations used in Gaussian approximation,
+#' as a positive integer. 
+#' Default is 100 (although typically only few iterations are needed).
+#' Used in \eqn{\psi}-APF.
+#' @param conv_tol Positive tolerance parameter used in Gaussian approximation. 
+#' Default is 1e-8. Used \eqn{\psi}-APF.
 #' @param seed Seed for the random number generator.
 #' @param ... Ignored.
 #' @method logLik nongaussian
@@ -93,9 +96,12 @@ logLik.nongaussian <- function(object, particles, method = "psi",
 #' psi-auxiliary filter (or approximating Gaussian model in the case of 
 #' \code{particles = 0}), and \code{"ekf"} which uses EKF-based particle 
 #' filter (or just EKF approximation in the case of \code{particles = 0}).
-#' @param max_iter Maximum number of iterations for the gaussian approximation 
-#' algorithm.
-#' @param conv_tol Tolerance parameter for the approximation algorithm.
+#' @param max_iter Maximum number of iterations used in Gaussian approximation,
+#' as a positive integer. 
+#' Default is 100 (although typically only few iterations are needed).
+#' Used in \eqn{\psi}-APF.
+#' @param conv_tol Positive tolerance parameter used in Gaussian approximation. 
+#' Default is 1e-8. Used \eqn{\psi}-APF.
 #' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter 
 #' is used with
 #' \code{iekf_iter} iterations in place of standard EKF. Defaults to zero.

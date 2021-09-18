@@ -2,8 +2,8 @@
 #'
 #' Function \code{bootstrap_filter} performs a bootstrap filtering with 
 #' stratification resampling.
-#' @param model of class \code{bsm_lg}, \code{bsm_ng} or \code{svm}.
-#' @param particles Number of particles.
+#' @param model A model object of class \code{bssm_model}.
+#' @param particles Number of particles as a positive integer.
 #' @param seed Seed for RNG.
 #' @param ... Ignored.
 #' @return List with samples (\code{alpha}) from the filtering distribution and 
@@ -146,7 +146,7 @@ bootstrap_filter.ssm_nlg <- function(model, particles,
 
 #' @method bootstrap_filter ssm_sde
 #' @rdname bootstrap_filter
-#' @param L Integer defining the discretization level for SDE models.
+#' @param L Positive integer defining the discretization level for SDE models.
 #' @export
 bootstrap_filter.ssm_sde <- function(model, particles, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {

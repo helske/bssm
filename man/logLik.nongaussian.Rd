@@ -26,10 +26,13 @@ approximate log-likelihood based on the Gaussian approximation is returned.}
 and \code{"spdk"}, which uses the importance sampling approach by 
 Shephard and Pitt (1997) and Durbin and Koopman (1997).}
 
-\item{max_iter}{Maximum number of iterations for Gaussian approximation 
-algorithm.}
+\item{max_iter}{Maximum number of iterations used in Gaussian approximation,
+as a positive integer. 
+Default is 100 (although typically only few iterations are needed).
+Used in \eqn{\psi}-APF.}
 
-\item{conv_tol}{Tolerance parameter for the approximation algorithm.}
+\item{conv_tol}{Positive tolerance parameter used in Gaussian approximation. 
+Default is 1e-8. Used \eqn{\psi}-APF.}
 
 \item{seed}{Seed for the random number generator.}
 

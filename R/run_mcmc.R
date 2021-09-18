@@ -227,8 +227,10 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' Note that parallel computing is only used in the post-correction phase of
 #'  IS-MCMC and when sampling the states in case of approximate models.
 #' @param seed Seed for the random number generator.
-#' @param max_iter Maximum number of iterations used in Gaussian approximation.
-#' @param conv_tol Tolerance parameter used in Gaussian approximation.
+#' @param max_iter Maximum number of iterations used in Gaussian approximation,
+#' as a positive integer. 
+#' Default is 100 (although typically only few iterations are needed).
+#' @param conv_tol Positive tolerance parameter used in Gaussian approximation.
 #' @param ... Ignored.
 #' @references 
 #' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 

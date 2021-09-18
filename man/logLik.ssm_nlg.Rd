@@ -28,10 +28,13 @@ psi-auxiliary filter (or approximating Gaussian model in the case of
 \code{particles = 0}), and \code{"ekf"} which uses EKF-based particle 
 filter (or just EKF approximation in the case of \code{particles = 0}).}
 
-\item{max_iter}{Maximum number of iterations for the gaussian approximation 
-algorithm.}
+\item{max_iter}{Maximum number of iterations used in Gaussian approximation,
+as a positive integer. 
+Default is 100 (although typically only few iterations are needed).
+Used in \eqn{\psi}-APF.}
 
-\item{conv_tol}{Tolerance parameter for the approximation algorithm.}
+\item{conv_tol}{Positive tolerance parameter used in Gaussian approximation. 
+Default is 1e-8. Used \eqn{\psi}-APF.}
 
 \item{iekf_iter}{If \code{iekf_iter > 0}, iterated extended Kalman filter 
 is used with
