@@ -151,8 +151,8 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
     stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
   
-  check_target(target_acceptance)
-  
+  check_prop(target_acceptance)
+  check_prop(gamma, "gamma")
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
   
   if (inherits(model, "bsm_lg")) {
@@ -368,7 +368,8 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
-  check_target(target_acceptance)
+  check_prop(target_acceptance)
+  check_prop(gamma, "gamma")
   
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
   mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), "approx"))
@@ -522,7 +523,9 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
-  check_target(target_acceptance)
+  
+  check_prop(target_acceptance)
+  check_prop(gamma, "gamma")
   
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
   mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), 
@@ -675,7 +678,9 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
-  check_target(target_acceptance)
+  
+  check_prop(target_acceptance)
+  check_prop(gamma, "gamma")
   
   output_type <- pmatch(output_type, c("full", "summary", "theta"))
   mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3)))
