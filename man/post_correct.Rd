@@ -34,7 +34,7 @@ MCMC iteration independently),
 particles used forweight computations is proportional to the length of the 
 jump chain block.}
 
-\item{seed}{Seed for the random number generator.}
+\item{seed}{Seed for the random number generator  (positive integer).}
 }
 \value{
 List with suggested number of particles \code{N} and matrix 

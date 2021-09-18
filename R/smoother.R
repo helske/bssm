@@ -7,7 +7,7 @@
 #' For non-Gaussian models, the smoothing is based on the approximate Gaussian 
 #' model.
 #'
-#' @param model Model model.
+#' @inheritParams gaussian_approx
 #' @param ... Ignored.
 #' @return Matrix containing the smoothed estimates of states, or a list
 #' with the smoothed states and the variances.
@@ -82,9 +82,7 @@ smoother.nongaussian <- function(model, ...) {
 #' variances. Function \code{ekf_fast_smoother} computes only smoothed 
 #' estimates of the states.
 #'
-#' @param model Model model
-#' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter is 
-#' used with \code{iekf_iter} iterations.
+#' @inheritParams ekf
 #' @return List containing the log-likelihood,
 #' smoothed state estimates \code{alphahat}, and the corresponding variances 
 #' \code{Vt} and \code{Ptt}.

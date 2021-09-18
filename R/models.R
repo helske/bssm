@@ -1445,26 +1445,31 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
 #' 
 #' @param y Observations as multivariate time series (or matrix) of length 
 #' \eqn{n}.
-#' @param Z,H,T,R  An external pointers for the C++ functions which
-#' define the corresponding model functions.
-#' @param Z_gn,T_gn An external pointers for the C++ functions which
-#' define the gradients of the corresponding model functions.
-#' @param a1 Prior mean for the initial state as a vector of length m.
-#' @param P1 Prior covariance matrix for the initial state as m x m matrix.
+#' @param Z,H,T,R  An external pointers (object of class \code{externalptr}) for the 
+#' C++ functions which define the corresponding model functions.
+#' @param Z_gn,T_gn An external pointers (object of class \code{externalptr}) for 
+#' the C++ functions which define the gradients of the corresponding model 
+#' functions.
+#' @param a1 Prior mean for the initial state as object of class 
+#' \code{externalptr}
+#' @param P1 Prior covariance matrix for the initial state as object of class 
+#' \code{externalptr}
 #' @param theta Parameter vector passed to all model functions.
 #' @param known_params Vector of known parameters passed to all model 
 #' functions.
 #' @param known_tv_params Matrix of known parameters passed to all model 
 #' functions.
-#' @param n_states Number of states in the model.
-#' @param n_etas Dimension of the noise term of the transition equation.
-#' @param log_prior_pdf An external pointer for the C++ function which
+#' @param n_states Number of states in the model (positive integer).
+#' @param n_etas Dimension of the noise term of the transition equation 
+#' (positive integer).
+#' @param log_prior_pdf An external pointer (object of class 
+#' \code{externalptr}) for the C++ function which
 #' computes the log-prior density given theta.
 #' @param time_varying Optional logical vector of length 4, denoting whether 
 #' the values of
 #' Z, H, T, and R vary with respect to time variable (given identical states).
 #' If used, this can speed up some computations.
-#' @param state_names Names for the states.
+#' @param state_names Vector containing names for the states.
 #' @return Object of class \code{ssm_nlg}.
 #' @export
 #' @examples

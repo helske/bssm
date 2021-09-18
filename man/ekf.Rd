@@ -7,10 +7,11 @@
 ekf(model, iekf_iter = 0)
 }
 \arguments{
-\item{model}{Model model}
+\item{model}{Model of class \code{ssm_nlg}.}
 
-\item{iekf_iter}{If \code{iekf_iter > 0}, iterated extended Kalman filter 
-is used with \code{iekf_iter} iterations.}
+\item{iekf_iter}{Non-negative integer. The default zero corresponds to 
+normal EKF, whereas \code{iekf_iter > 0} corresponds to iterated EKF 
+with \code{iekf_iter} iterations.}
 }
 \value{
 List containing the log-likelihood,

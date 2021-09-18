@@ -37,7 +37,7 @@ future, using posterior samples of (theta, alpha_T+1) i.e. the
 posterior samples of hyperparameters and latest states. 
 Otherwise it is assumed that \code{model} corresponds to the original model.}
 
-\item{seed}{Seed for RNG.}
+\item{seed}{Seed for RNG (positive integer).}
 
 \item{...}{Ignored.}
 }

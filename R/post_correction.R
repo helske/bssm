@@ -25,7 +25,7 @@ get_map <- function(x) {
 #' test. Default is \code{seq(10, 100, by = 10)}. 
 #' @param replications How many replications should be used for computing 
 #' the standard deviations? Default is 100.
-#' @param seed Seed for the random number generator.
+#' @param seed Seed for the random number generator  (positive integer).
 #' @return List with suggested number of particles \code{N} and matrix 
 #' containing estimated standard deviations of the log-weights and 
 #' corresponding number of particles.
@@ -81,6 +81,8 @@ suggest_N <- function(model, theta,
   seed = sample(.Machine$integer.max, size = 1)) {
   
   replications <- check_integer(replications, "replications")
+  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  
   if (!test_integerish(candidates, lower = 1, any.missing = FALSE, 
     min.len = 1)) {
     stop("Argument 'candidates' should be vector of positive integers. ")
@@ -145,7 +147,7 @@ suggest_N <- function(model, theta,
 #' \code{"is1"} for importance sampling type weighting where the number of 
 #' particles used forweight computations is proportional to the length of the 
 #' jump chain block.
-#' @param seed Seed for the random number generator.
+#' @param seed Seed for the random number generator  (positive integer).
 #' @return List with suggested number of particles \code{N} and matrix 
 #' containing estimated standard deviations of the log-weights and 
 #' corresponding number of particles.
@@ -234,6 +236,8 @@ post_correct <- function(model, mcmc_output, particles, threads = 1L,
   
   particles <- check_integer(particles, "particles")
   threads <- check_integer(threads, "threads")
+  
+  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
   
   if (!inherits(mcmc_output, "mcmc_output")) 
     stop("Object 'mcmc_output' is not valid output from 'run_mcmc'.")

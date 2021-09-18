@@ -27,7 +27,7 @@ test. Default is \code{seq(10, 100, by = 10)}.}
 \item{replications}{How many replications should be used for computing 
 the standard deviations? Default is 100.}
 
-\item{seed}{Seed for the random number generator.}
+\item{seed}{Seed for the random number generator  (positive integer).}
 }
 \value{
 List with suggested number of particles \code{N} and matrix 

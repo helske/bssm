@@ -2,26 +2,347 @@
 % Please edit documentation in R/run_mcmc.R
 \name{run_mcmc}
 \alias{run_mcmc}
+\alias{run_mcmc.gaussian}
+\alias{run_mcmc.nongaussian}
+\alias{run_mcmc.ssm_nlg}
+\alias{run_mcmc.ssm_sde}
 \title{Bayesian Inference of State Space Models}
 \usage{
-run_mcmc(model, iter, ...)
+run_mcmc(model, ...)
+
+\method{run_mcmc}{gaussian}(
+  model,
+  iter,
+  output_type = "full",
+  burnin = floor(iter/2),
+  thin = 1,
+  gamma = 2/3,
+  target_acceptance = 0.234,
+  S,
+  end_adaptive_phase = FALSE,
+  threads = 1,
+  seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
+
+\method{run_mcmc}{nongaussian}(
+  model,
+  iter,
+  particles,
+  output_type = "full",
+  mcmc_type = "is2",
+  sampling_method = "psi",
+  burnin = floor(iter/2),
+  thin = 1,
+  gamma = 2/3,
+  target_acceptance = 0.234,
+  S,
+  end_adaptive_phase = FALSE,
+  local_approx = TRUE,
+  threads = 1,
+  seed = sample(.Machine$integer.max, size = 1),
+  max_iter = 100,
+  conv_tol = 1e-08,
+  ...
+)
+
+\method{run_mcmc}{ssm_nlg}(
+  model,
+  iter,
+  particles,
+  output_type = "full",
+  mcmc_type = "is2",
+  sampling_method = "bsf",
+  burnin = floor(iter/2),
+  thin = 1,
+  gamma = 2/3,
+  target_acceptance = 0.234,
+  S,
+  end_adaptive_phase = FALSE,
+  threads = 1,
+  seed = sample(.Machine$integer.max, size = 1),
+  max_iter = 100,
+  conv_tol = 1e-08,
+  iekf_iter = 0,
+  ...
+)
+
+\method{run_mcmc}{ssm_sde}(
+  model,
+  iter,
+  particles,
+  output_type = "full",
+  mcmc_type = "is2",
+  L_c,
+  L_f,
+  burnin = floor(iter/2),
+  thin = 1,
+  gamma = 2/3,
+  target_acceptance = 0.234,
+  S,
+  end_adaptive_phase = FALSE,
+  threads = 1,
+  seed = sample(.Machine$integer.max, size = 1),
+  ...
+)
 }
 \arguments{
-\item{model}{State space model model of \code{bssm} package.}
+\item{model}{Model of class \code{bssm_model}.}
 
-\item{iter}{Number of MCMC iterations.}
+\item{...}{Ignored.}
 
-\item{...}{Parameters to specific methods. See 
-\code{\link{run_mcmc.gaussian}},
-\code{\link{run_mcmc.nongaussian}}, \code{\link{run_mcmc.ssm_nlg}}, 
-and \code{\link{run_mcmc.ssm_sde}} for details.}
+\item{iter}{Positive integer defining the total number of MCMC iterations.}
+
+\item{output_type}{Either \code{"full"} 
+(default, returns posterior samples from the posterior 
+\eqn{p(\alpha, \theta | y)}), \code{"theta"} (for marginal posterior of 
+theta), or \code{"summary"} (return the mean and variance estimates of the 
+states and posterior samples of theta). See details.}
+
+\item{burnin}{Positive integer defining the length of the burn-in period 
+which is disregarded from the results. Defaults to \code{iter / 2}. 
+Note that all MCMC algorithms of \code{bssm} use adaptive MCMC during the 
+burn-in period in order to find good proposal distribution.}
+
+\item{thin}{Positive integer defining the thinning rate. All MCMC algorithms 
+in \code{bssm} use the jump chain representation (see ref [2]), and the 
+thinning is applied to these blocks. Defaults to 1. 
+For IS-corrected methods, larger value can also be 
+statistically more effective. Note: With \code{output_type = "summary"}, 
+the thinning does not affect the computations of the summary statistics in 
+case of pseudo-marginal methods.}
+
+\item{gamma}{Tuning parameter for the adaptation of RAM algorithm. Must be
+between 0 and 1.}
+
+\item{target_acceptance}{Target acceptance rate for MCMC. Defaults to 0.234. 
+Must be between 0 and 1.}
+
+\item{S}{Matrix defining the initial value for the lower triangular matrix 
+of the RAM algorithm, so that the covariance matrix of the Gaussian proposal
+distribution is \eqn{SS'}. Note that for some parameters 
+(currently the standard deviation, dispersion, and autoregressive parameters 
+of the BSM and AR(1) models) the sampling is done in unconstrained parameter 
+space, i.e. internal_theta = log(theta) (and logit(rho) or AR coefficient).}
+
+\item{end_adaptive_phase}{Logical, if \code{TRUE}, S is held fixed after the
+burnin period. Default is \code{FALSE}.}
+
+\item{threads}{Number of threads for state simulation. Positive integer 
+(default is 1).
+Note that parallel computing is only used in the post-correction phase of
+IS-MCMC and when sampling the states in case of (approximate) Gaussian 
+models.}
+
+\item{seed}{Seed for the random number generator (positive integer).}
+
+\item{particles}{Number of state samples per MCMC iteration for models other 
+than linear-Gaussian models.
+Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.}
+
+\item{mcmc_type}{What type of MCMC algorithm should be used for models other 
+than linear-Gaussian models? Possible choices are
+\code{"pm"} for pseudo-marginal MCMC,
+\code{"da"} for delayed acceptance version of PMCMC , 
+\code{"approx"} for approximate inference based on the Gaussian 
+approximation of the model,
+\code{"ekf"} for approximate inference using extended Kalman filter 
+(for \code{ssm_nlg}), 
+or one of the three importance sampling type weighting schemes:
+\code{"is3"} for simple importance sampling (weight is computed for each 
+MCMC iteration independently),
+\code{"is2"} for jump chain importance sampling type weighting (default), or
+\code{"is1"} for importance sampling type weighting where the number of 
+particles used for
+weight computations is proportional to the length of the jump chain block.}
+
+\item{sampling_method}{Method for state sampling when for models other than 
+linear-Gaussian models. If \code{"psi"}, \eqn{\psi}-APF is used (default). 
+If \code{"spdk"}, non-sequential importance sampling
+based on Gaussian approximation is used. If \code{"bsf"}, bootstrap filter
+is used. If \code{"ekf"}, particle filter based on EKF-proposals are used 
+(only for \code{ssm_nlg} models).}
+
+\item{local_approx}{If \code{TRUE} (default), Gaussian approximation
+needed for some of the methods is performed at each iteration. 
+If \code{FALSE}, approximation is updated only once at the start of the 
+MCMC using the initial model.}
+
+\item{max_iter}{Maximum number of iterations used in Gaussian approximation,
+as a positive integer. 
+Default is 100 (although typically only few iterations are needed).}
+
+\item{conv_tol}{Positive tolerance parameter used in Gaussian approximation.}
+
+\item{iekf_iter}{Non-negative integer. The default zero corresponds to 
+normal EKF, whereas \code{iekf_iter > 0} corresponds to iterated EKF 
+with \code{iekf_iter} iterations. Used only for models of class 
+\code{ssm_nlg}.}
+
+\item{L_c, L_f}{For \code{ssm_sde} models, Positive integer values defining 
+the discretization levels for first and second stages (defined as 2^L). 
+For pseudo-marginal methods (\code{"pm"}), maximum of these is used.}
 }
 \description{
-Adaptive Markov chain Monte Carlo simulation of state space models using
-Robust Adaptive Metropolis algorithm by Vihola (2012). 
-See specific methods for various model types for details.
+Adaptive Markov chain Monte Carlo simulation for SSMs using
+Robust Adaptive Metropolis algorithm by Vihola (2012). Several different 
+MCMC sampling schemes are implemented, see parameter 
+arguments, package vignette, Vihola, Helske, Franks (2020) and Helske and 
+Vihola (2021) for details.
+}
+\details{
+For linear-Gaussian models, option \code{"summary"} does not simulate
+states directly but computes the posterior means and variances of states 
+using fast Kalman smoothing. This is slightly faster, 
+more memory efficient and more accurate than calculations based on 
+simulation smoother. In other cases, the means and 
+covariances are computed using the full output of particle filter 
+instead of subsampling one of these as in case of 
+\code{output_type = "full"}.
+}
+\examples{
+model <- ar1_lg(LakeHuron, rho = uniform(0.5,-1,1), 
+  sigma = halfnormal(1, 10), mu = normal(500, 500, 500), 
+  sd_y = halfnormal(1, 10))
+
+mcmc_results <- run_mcmc(model, iter = 2e4)
+summary(mcmc_results, return_se = TRUE)
+
+library("dplyr")
+sumr <- as.data.frame(mcmc_results, variable = "states") \%>\%
+  group_by(time) \%>\%
+  summarise(mean = mean(value), 
+    lwr = quantile(value, 0.025), 
+    upr = quantile(value, 0.975))
+library("ggplot2")
+sumr \%>\% ggplot(aes(time, mean)) + 
+  geom_ribbon(aes(ymin = lwr, ymax = upr),alpha=0.25) + 
+  geom_line() + theme_bw() +
+  geom_point(data = data.frame(mean = LakeHuron, time = time(LakeHuron)),
+    col = 2)
+set.seed(1)
+n <- 50 
+slope <- cumsum(c(0, rnorm(n - 1, sd = 0.001)))
+level <- cumsum(slope + c(0, rnorm(n - 1, sd = 0.2)))
+y <- rpois(n, exp(level))
+poisson_model <- bsm_ng(y, 
+  sd_level = halfnormal(0.01, 1), 
+  sd_slope = halfnormal(0.01, 0.1), 
+  P1 = diag(c(10, 0.1)), distribution = "poisson")
+  
+# Note small number of iterations for CRAN checks
+mcmc_out <- run_mcmc(poisson_model, iter = 1000, particles = 10, 
+  mcmc_type = "da")
+summary(mcmc_out, what = "theta", return_se = TRUE)
+
+set.seed(123)
+n <- 50
+sd_level <- 0.1
+drift <- 0.01
+beta <- -0.9
+phi <- 5
+
+level <- cumsum(c(5, drift + rnorm(n - 1, sd = sd_level)))
+x <- 3 + (1:n) * drift + sin(1:n + runif(n, -1, 1))
+y <- rnbinom(n, size = phi, mu = exp(beta * x + level))
+
+model <- bsm_ng(y, xreg = x,
+  beta = normal(0, 0, 10),
+  phi = halfnormal(1, 10),
+  sd_level = halfnormal(0.1, 1), 
+  sd_slope = halfnormal(0.01, 0.1),
+  a1 = c(0, 0), P1 = diag(c(10, 0.1)^2), 
+  distribution = "negative binomial")
+
+# run IS-MCMC
+# Note small number of iterations for CRAN checks
+fit <- run_mcmc(model, iter = 5000,
+  particles = 10, mcmc_type = "is2", seed = 1)
+
+# extract states   
+d_states <- as.data.frame(fit, variable = "states", time = 1:n)
+
+library("dplyr")
+library("ggplot2")
+
+ # compute summary statistics
+level_sumr <- d_states \%>\% 
+  filter(variable == "level") \%>\%
+  group_by(time) \%>\%
+  summarise(mean = Hmisc::wtd.mean(value, weight, normwt = TRUE), 
+    lwr = Hmisc::wtd.quantile(value, weight, 
+      0.025, normwt = TRUE), 
+    upr = Hmisc::wtd.quantile(value, weight, 
+      0.975, normwt = TRUE))
+
+# visualize
+level_sumr \%>\% ggplot(aes(x = time, y = mean)) + 
+  geom_line() +
+  geom_line(aes(y = lwr), linetype = "dashed", na.rm = TRUE) +
+  geom_line(aes(y = upr), linetype = "dashed", na.rm = TRUE) +
+  theme_bw() + 
+  theme(legend.title = element_blank()) + 
+  xlab("Time") + ylab("Level")
+
+# theta
+d_theta <- as.data.frame(fit, variable = "theta")
+ggplot(d_theta, aes(x = value)) + 
+ geom_density(aes(weight = weight), adjust = 2, fill = "#92f0a8") + 
+ facet_wrap(~ variable, scales = "free") + 
+ theme_bw()
+ 
+ 
+# Bivariate Poisson model:
+
+set.seed(1)
+x <- cumsum(c(3, rnorm(19, sd = 0.5)))
+y <- cbind(
+  rpois(20, exp(x)), 
+  rpois(20, exp(x)))
+
+prior_fn <- function(theta) {
+  # half-normal prior using transformation
+  dnorm(exp(theta), 0, 1, log = TRUE) + theta # plus jacobian term
+}
+
+update_fn <- function(theta) {
+  list(R = array(exp(theta), c(1, 1, 1)))
+}
+
+model <- ssm_mng(y = y, Z = matrix(1,2,1), T = 1, 
+  R = 0.1, P1 = 1, distribution = "poisson",
+  init_theta = log(0.1), 
+  prior_fn = prior_fn, update_fn = update_fn)
+  
+# Note small number of iterations for CRAN checks
+out <- run_mcmc(model, iter = 5000, mcmc_type = "approx")
+
+sumr <- as.data.frame(out, variable = "states") \%>\% 
+  group_by(time) \%>\% mutate(value = exp(value)) \%>\%
+  summarise(mean = mean(value), 
+    ymin = quantile(value, 0.05), ymax = quantile(value, 0.95))
+ggplot(sumr, aes(time, mean)) + 
+geom_ribbon(aes(ymin = ymin, ymax = ymax),alpha = 0.25) + 
+geom_line() + 
+geom_line(data = data.frame(mean = y[, 1], time = 1:20), 
+  colour = "tomato") + 
+geom_line(data = data.frame(mean = y[, 2], time = 1:20), 
+  colour = "tomato") +
+theme_bw()
+
 }
 \references{
-Matti Vihola (2012). Robust adaptive Metropolis algorithm with
+[1] Vihola M (2012). Robust adaptive Metropolis algorithm with
 coerced acceptance rate. Statistics and Computing, 22(5), p 997-1008.
+
+[2] Vihola, M, Helske, J, Franks, J (2020). Importance sampling type estimators based 
+on approximate marginal Markov chain Monte Carlo. 
+Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
+
+[3] Helske, J, Vihola, M (2019). bssm: Bayesian Inference of Non-linear and 
+Non-Gaussian State Space Models in R. Arxiv preprint 2101.08492.
+
+Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
+on approximate marginal Markov chain Monte Carlo. 
+Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 }

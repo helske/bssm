@@ -15,7 +15,8 @@
 #' is claimed to be converged when the mean squared difference of the modes of 
 #' is less than \code{conv_tol}.
 #' @param iekf_iter For non-linear models, non-negative number of iterations in 
-#' iterated EKF (defaults to 0).
+#' iterated EKF (defaults to 0, i.e. normal EKF). Used only for models of class 
+#' \code{ssm_nlg}.
 #' @param ... Ignored.
 #' @return Returns linear-Gaussian SSM of class \code{ssm_ulg} or 
 #' \code{ssm_mlg} which has the same conditional mode of p(alpha|y, theta) as 

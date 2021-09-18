@@ -22,7 +22,7 @@
 #' future, using posterior samples of (theta, alpha_T+1) i.e. the 
 #' posterior samples of hyperparameters and latest states. 
 #' Otherwise it is assumed that \code{model} corresponds to the original model.
-#' @param seed Seed for RNG.
+#' @param seed Seed for RNG (positive integer).
 #' @param ... Ignored.
 #' @return A \code{data.frame} consisting of samples from the predictive 
 #' posterior distribution.
@@ -122,6 +122,8 @@ predict.mcmc_output <- function(object, model, nsim, type = "response",
     stop("Argument 'model' should be of class 'bssm_model'. ")
   }
   nsim <- check_integer(nsim, "nsim")
+  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  
   if (!test_flag(future)) stop("Argument 'future' should be TRUE or FALSE. ")
   
   type <- match.arg(type, c("response", "mean", "state"))

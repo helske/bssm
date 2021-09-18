@@ -1,43 +1,22 @@
-#' Log-likelihood of a Gaussian State Space Model
+#' Extract Log-likelihood of a State Space Model of class \code{bssm_model}
 #'
-#' Computes the log-likelihood of a linear-Gaussian state space model of 
-#' \code{bssm} package.
+#' Computes the log-likelihood of a state space model defined by \code{bssm} 
+#' package.
 #' 
-#' @param object Model model.
-#' @param ... Ignored.
+#' @inheritParams particle_smoother
+#' @param particles Number of samples for particle filter. If 0, 
+#' approximate log-likelihood is returned either based on the Gaussian 
+#' approximation or EKF, depending on the \code{method} argument.
+#' @param method Sampling method. For Gaussian and non-Gaussian models with 
+#' linear dynamics,options are \code{"bsf"} (bootstrap particle filter, default 
+#' for non-linear models) 
+#' and \code{"psi"} (\eqn{\psi}-APF, the default for other models). 
+#' For-nonlinear models option \code{"ekf"} uses EKF/IEKF-based particle 
+#' filter (or just EKF/IEKF approximation in the case of \code{particles = 0}).
 #' @importFrom stats logLik
 #' @method logLik gaussian
-#' @rdname logLik
-#' @export
-#' @examples
-#' model <- ssm_ulg(y = c(1,4,3), Z = 1, H = 1, T = 1, R = 1)
-#' logLik(model)
-logLik.gaussian <- function(object, ...) {
-  gaussian_loglik(object, model_type(object))
-}
-
-#' Log-likelihood of a Non-Gaussian State Space Model
-#'
-#' Computes the log-likelihood of a non-Gaussian state space model of 
-#' \code{bssm} package.
-#' 
-#' @param object Model model.
-#' @param particles Number of samples for particle filter or 
-#' importance sampling. If 0, 
-#' approximate log-likelihood based on the Gaussian approximation is returned.
-#' @param method Sampling method, default is psi-auxiliary filter 
-#' (\code{"psi"}). Other choices are \code{"bsf"} bootstrap particle filter, 
-#' and \code{"spdk"}, which uses the importance sampling approach by 
-#' Shephard and Pitt (1997) and Durbin and Koopman (1997). 
-#' @param max_iter Maximum number of iterations used in Gaussian approximation,
-#' as a positive integer. 
-#' Default is 100 (although typically only few iterations are needed).
-#' Used in \eqn{\psi}-APF.
-#' @param conv_tol Positive tolerance parameter used in Gaussian approximation. 
-#' Default is 1e-8. Used \eqn{\psi}-APF.
-#' @param seed Seed for the random number generator.
-#' @param ... Ignored.
-#' @method logLik nongaussian
+#' @rdname logLik_bssm
+#' @seealso particle_smoother
 #' @export
 #' @references
 #' Durbin, J., & Koopman, S. (2002). A Simple and Efficient Simulation 
@@ -45,12 +24,42 @@ logLik.gaussian <- function(object, ...) {
 #' 
 #' Shephard, N., & Pitt, M. (1997). Likelihood Analysis of 
 #' Non-Gaussian Measurement Time Series. Biometrika, 84(3), 653-667.
-#' @examples 
+#' 
+#' Gordon, NJ, Salmond, DJ, Smith, AFM (1993). 
+#' Novel approach to nonlinear/non-Gaussian Bayesian state estimation. 
+#' IEE Proceedings-F, 140, 107-113.
+#' 
+#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators 
+#' based on approximate marginal Markov chain Monte Carlo. 
+#' Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
+#' 
+#' Van Der Merwe, R, Doucet, A, De Freitas, N,  Wan, EA (2001). 
+#' The unscented particle filter. 
+#' In Advances in neural information processing systems, p 584-590.
+#' 
+#' Jazwinski, A 1970. Stochastic Processes and Filtering Theory. 
+#' Academic Press.
+#' 
+#' Kitagawa, G (1996). Monte Carlo filter and smoother for non-Gaussian 
+#' nonlinear state space models. 
+#' Journal of Computational and Graphical Statistics, 5, 1-25.
+#' @examples  
+#' model <- ssm_ulg(y = c(1,4,3), Z = 1, H = 1, T = 1, R = 1)
+#' logLik(model)
+logLik.gaussian <- function(object, ...) {
+  gaussian_loglik(object, model_type(object))
+}
+
+#' @method logLik nongaussian
+#' @rdname logLik_bssm
+#' @export
+#' @examples
 #' model <- ssm_ung(y = c(1,4,3), Z = 1, T = 1, R = 0.5, P1 = 2,
 #'   distribution = "poisson")
 #'   
 #' model2 <- bsm_ng(y = c(1,4,3), sd_level = 0.5, P1 = 2,
 #'   distribution = "poisson")
+#'   
 #' logLik(model, particles = 0)
 #' logLik(model2, particles = 0)
 #' logLik(model, particles = 10, seed = 1)
@@ -82,32 +91,8 @@ logLik.nongaussian <- function(object, particles, method = "psi",
   
   nongaussian_loglik(object, particles, method, seed, model_type(object))
 }
-#' Log-likelihood of a Non-linear State Space Model
-#'
-#' Computes the log-likelihood of a state space model of class 
-#' \code{ssm_nlg} package.
-#' 
-#' @param object Model model.
-#' @param particles Number of samples for particle filter. If 0, 
-#' approximate log-likelihood is returned either based on the Gaussian 
-#' approximation or EKF, depending on the \code{method} argument.
-#' @param method Sampling method. Default is the bootstrap particle filter 
-#' (\code{"bsf"}). Other choices are \code{"psi"} which uses 
-#' psi-auxiliary filter (or approximating Gaussian model in the case of 
-#' \code{particles = 0}), and \code{"ekf"} which uses EKF-based particle 
-#' filter (or just EKF approximation in the case of \code{particles = 0}).
-#' @param max_iter Maximum number of iterations used in Gaussian approximation,
-#' as a positive integer. 
-#' Default is 100 (although typically only few iterations are needed).
-#' Used in \eqn{\psi}-APF.
-#' @param conv_tol Positive tolerance parameter used in Gaussian approximation. 
-#' Default is 1e-8. Used \eqn{\psi}-APF.
-#' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter 
-#' is used with
-#' \code{iekf_iter} iterations in place of standard EKF. Defaults to zero.
-#' @param seed Seed for the random number generator.
-#' @param ... Ignored.
 #' @method logLik ssm_nlg
+#' @rdname logLik_bssm
 #' @export
 logLik.ssm_nlg <- function(object, particles, method = "bsf",
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0,
@@ -127,6 +112,8 @@ logLik.ssm_nlg <- function(object, particles, method = "bsf",
     stop("'particles' must be positive for bootstrap particle filter.")
   method <- pmatch(method,  c("psi", "bsf", NA, "ekf"))
  
+  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  
   nonlinear_loglik(t(object$y), object$Z, object$H, object$T, 
     object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
     object$theta, object$log_prior_pdf, object$known_params, 
@@ -134,17 +121,9 @@ logLik.ssm_nlg <- function(object, particles, method = "bsf",
     as.integer(object$time_varying), particles, seed,
     max_iter, conv_tol, iekf_iter, method)
 }
-#' Log-likelihood of a State Space Model with SDE dynamics
-#'
-#' Computes the log-likelihood of a state space model of class 
-#' \code{ssm_sde} package.
-#' 
-#' @param object Model model.
-#' @param particles Number of samples for particle filter. 
 #' @param L Integer  defining the discretization level defined as (2^L). 
-#' @param seed Seed for the random number generator.
-#' @param ... Ignored.
 #' @method logLik ssm_sde
+#' @rdname logLik_bssm
 #' @export
 logLik.ssm_sde <- function(object, particles, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {
@@ -157,6 +136,7 @@ logLik.ssm_sde <- function(object, particles, L,
       particles <- nsim
     }
   }
+  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
   loglik_sde(object$y, object$x0, object$positive, 
     object$drift, object$diffusion, object$ddiffusion, 
     object$prior_pdf, object$obs_pdf, object$theta, 

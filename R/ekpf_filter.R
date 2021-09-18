@@ -3,9 +3,9 @@
 #' Function \code{ekpf_filter} performs a extended Kalman particle filtering 
 #' with stratification resampling, based on Van Der Merwe et al (2001).
 #'
-#' @param object of class \code{ssm_nlg}.
-#' @param particles Number of particles.
-#' @param seed Seed for RNG.
+#' @param object Model of class \code{ssm_nlg}.
+#' @param particles Number of particles as a positive integer.
+#' @param seed Seed for RNG  (positive integer).
 #' @param ... Ignored.
 #' @return A list containing samples, filtered estimates and the 
 #' corresponding covariances, weights, and an estimate of log-likelihood.
@@ -40,7 +40,7 @@ ekpf_filter <- function(object, particles, ...) {
 #'   log_prior_pdf = pntrs$log_prior_pdf,
 #'   n_states = 1, n_etas = 1, state_names = "state")
 #'
-#' out <- ekpf_filter(model_nlg, 100)
+#' out <- ekpf_filter(model_nlg, particles = 100)
 #' ts.plot(cbind(x, out$at[1:n], out$att[1:n]), col = 1:3)
 #'
 ekpf_filter.ssm_nlg <- function(object, particles, 
@@ -62,6 +62,8 @@ ekpf_filter.ssm_nlg <- function(object, particles,
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
+  
+  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
   
   out <- ekpf(t(object$y), object$Z, object$H, object$T, 
     object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 

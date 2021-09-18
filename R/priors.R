@@ -30,10 +30,10 @@
 #' @export
 #' @examples
 #' # create uniform prior on [-1, 1] for one parameter with initial value 0.2:
-#' uniform(0.2, -1.0, 1.0)
+#' uniform(init = 0.2, min = -1.0, max = 1.0)
 #' # two normal priors at once i.e. for coefficients beta:
 #' normal(init = c(0.1, 2.5), mean = 0.1, sd = c(1.5, 2.8))
-#' # Gamma
+#' # Gamma prior
 #' gamma(init = 0.1, shape = 2.5, rate = 1.1)
 #' # Same as
 #' gamma_prior(init = 0.1, shape = 2.5, rate = 1.1)
@@ -41,6 +41,21 @@
 #' halfnormal(init = 0.01, sd = 0.1)
 #' # Truncated normal
 #' tnormal(init = 5.2, mean = 5.0, sd = 3.0, min = 0.5, max = 9.5)
+#' 
+#' # Further examples for diagnostic purposes:
+#' uniform(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
+#' normal(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
+#' tnormal(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2), c(1.2, 2), c(3.3, 3.3))
+#' halfnormal(c(0, 0.2), c(1.0, 1.2))
+#' gamma(c(0.1, 0.2), c(1.2, 2), c(3.3, 3.3))
+#' 
+#' # longer versions:
+#' uniform_prior(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
+#' normal_prior(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
+#' tnormal_prior(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2), c(1.2, 2), c(3.3, 3.3))
+#' halfnormal_prior(c(0, 0.2), c(1.0, 1.2))
+#' gamma_prior(c(0.1, 0.2), c(1.2, 2), c(3.3, 3.3))
+#' 
 uniform_prior <- function(init, min, max) {
   if (any(!is.numeric(init), !is.numeric(min), !is.numeric(max))) {
     stop("Parameters for priors must be numeric.")

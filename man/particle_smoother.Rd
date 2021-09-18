@@ -59,23 +59,22 @@ For Gaussian and non-Gaussian models with linear dynamics,
 options are \code{"bsf"} (bootstrap particle filter, default for 
 non-linear models) 
 and \code{"psi"} (\eqn{\psi}-APF, the default for other models), and 
-for non-linear models options \code{"ekf"} (extended Kalman particle filter) 
+for non-linear models option \code{"ekf"} (extended Kalman particle filter) 
 is also available.}
 
-\item{seed}{Seed for RNG.}
+\item{seed}{Seed for RNG (non-negative integer).}
 
 \item{max_iter}{Maximum number of iterations used in Gaussian approximation,
 as a positive integer. 
-Default is 100 (although typically only few iterations are needed).
-Used in \eqn{\psi}-APF.}
+Default is 100 (although typically only few iterations are needed).}
 
 \item{conv_tol}{Positive tolerance parameter used in Gaussian approximation. 
-Default is 1e-8. Used \eqn{\psi}-APF.}
+Default is 1e-8.}
 
-\item{iekf_iter}{If zero (default), first approximation for non-linear 
-Gaussian models is obtained from extended Kalman filter. If 
-\code{iekf_iter > 0}, iterated extended Kalman filter is used with 
-\code{iekf_iter} iterations.}
+\item{iekf_iter}{Non-negative integer. If zero (default), first 
+approximation for non-linear Gaussian models is obtained from extended 
+Kalman filter. If \code{iekf_iter > 0}, iterated extended Kalman filter is
+used with \code{iekf_iter} iterations.}
 
 \item{L}{Positive integer defining the discretization level for SDE model.}
 }

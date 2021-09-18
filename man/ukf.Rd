@@ -7,7 +7,7 @@
 ukf(model, alpha = 0.001, beta = 2, kappa = 0)
 }
 \arguments{
-\item{model}{Model model}
+\item{model}{Model of class \code{ssm_nlg}.}
 
 \item{alpha}{Positive tuning parameter of the UKF. Default is 0.001. Smaller 
 the value, closer the sigma point are to the mean of the state.}

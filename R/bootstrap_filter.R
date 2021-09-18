@@ -4,7 +4,7 @@
 #' stratification resampling.
 #' @param model A model object of class \code{bssm_model}.
 #' @param particles Number of particles as a positive integer.
-#' @param seed Seed for RNG.
+#' @param seed Seed for RNG (non-negative integer).
 #' @param ... Ignored.
 #' @return List with samples (\code{alpha}) from the filtering distribution and 
 #' corresponding weights (\code{weights}), as well as filtered and predicted 
@@ -44,6 +44,7 @@ bootstrap_filter.gaussian <- function(model, particles,
     }
   }
   particles <- check_integer(particles, "particles")
+  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
   
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     length(model$a1) * particles
@@ -86,6 +87,7 @@ bootstrap_filter.nongaussian <- function(model, particles,
     }
   }
   particles <- check_integer(particles, "particles")
+  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     length(model$a1) * particles
   if (particles > 100 & nsamples > 1e12) {
@@ -129,6 +131,7 @@ bootstrap_filter.ssm_nlg <- function(model, particles,
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
+  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
   
   out <- bsf_nlg(t(model$y), model$Z, model$H, model$T,
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1,
@@ -170,6 +173,7 @@ bootstrap_filter.ssm_sde <- function(model, particles, L,
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
+  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
   
   out <- bsf_sde(model$y, model$x0, model$positive,
     model$drift, model$diffusion, model$ddiffusion,

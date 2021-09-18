@@ -6,11 +6,13 @@
 #' 
 #' 
 #' @inheritParams gaussian_approx
-#' @param nsim Number of samples.
+#' @param model Model of class \code{bsm_ng}, \code{ar1_ng} \code{svm}, 
+#' \code{ssm_ung}, or \code{ssm_mng}.
+#' @param nsim Number of samples (positive integer).
 #' @param use_antithetic Logical. If \code{TRUE} (default), use antithetic 
 #' variable for location in simulation smoothing. Ignored for \code{ssm_mng} 
 #' models.
-#' @param seed Seed for the random number generator.
+#' @param seed Seed for the random number generator (positive integer).
 #' @param ... Ignored.
 #' @export
 #' @rdname importance_sample
@@ -51,7 +53,7 @@ importance_sample.nongaussian <- function(model, nsim, use_antithetic = TRUE,
     warning(paste("Trying to sample ", nsamples, 
       "values, you might run out of memory."))
   }
-  
+  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
   model$distribution <- pmatch(model$distribution,
     c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
     duplicates.ok = TRUE) - 1

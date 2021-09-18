@@ -46,7 +46,7 @@ bootstrap_filter(model, particles, ...)
 
 \item{...}{Ignored.}
 
-\item{seed}{Seed for RNG.}
+\item{seed}{Seed for RNG (non-negative integer).}
 
 \item{L}{Positive integer defining the discretization level for SDE models.}
 }

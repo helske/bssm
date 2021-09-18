@@ -7,7 +7,8 @@
 #' For non-Gaussian models, the filtering is based on the approximate 
 #' Gaussian model.
 #'
-#' @param model Model Model object.
+#' @param model Model of class \code{gaussian}, \code{nongaussian} or 
+#' \code{ssm_nlg}.
 #' @param ... Ignored.
 #' @return List containing the log-likelihood 
 #' (approximate in non-Gaussian case), one-step-ahead predictions \code{at} 
@@ -52,9 +53,10 @@ kfilter.nongaussian <- function(model, ...) {
 #' and returns the filtered estimates and one-step-ahead predictions of the 
 #' states \eqn{\alpha_t} given the data up to time \eqn{t}.
 #'
-#' @param model Model model
-#' @param iekf_iter If \code{iekf_iter > 0}, iterated extended Kalman filter 
-#' is used with \code{iekf_iter} iterations.
+#' @param model Model of class \code{ssm_nlg}.
+#' @param iekf_iter Non-negative integer. The default zero corresponds to 
+#' normal EKF, whereas \code{iekf_iter > 0} corresponds to iterated EKF 
+#' with \code{iekf_iter} iterations.
 #' @return List containing the log-likelihood,
 #' one-step-ahead predictions \code{at} and filtered
 #' estimates \code{att} of states, and the corresponding variances \code{Pt} and
@@ -114,7 +116,7 @@ ekf <- function(model, iekf_iter = 0) {
 #' and returns the filtered estimates and one-step-ahead predictions of the 
 #' states \eqn{\alpha_t} given the data up to time \eqn{t}.
 #'
-#' @param model Model model
+#' @param model Model of class \code{ssm_nlg}.
 #' @param alpha Positive tuning parameter of the UKF. Default is 0.001. Smaller 
 #' the value, closer the sigma point are to the mean of the state. 
 #' @param beta Non-negative tuning parameter of the UKF. The default value is 

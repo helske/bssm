@@ -28,7 +28,8 @@ is less than \code{conv_tol}.}
 \item{...}{Ignored.}
 
 \item{iekf_iter}{For non-linear models, non-negative number of iterations in 
-iterated EKF (defaults to 0).}
+iterated EKF (defaults to 0, i.e. normal EKF). Used only for models of class 
+\code{ssm_nlg}.}
 }
 \value{
 Returns linear-Gaussian SSM of class \code{ssm_ulg} or 

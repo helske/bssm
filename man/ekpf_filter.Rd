@@ -15,13 +15,13 @@ ekpf_filter(object, particles, ...)
 )
 }
 \arguments{
-\item{object}{of class \code{ssm_nlg}.}
+\item{object}{Model of class \code{ssm_nlg}.}
 
-\item{particles}{Number of particles.}
+\item{particles}{Number of particles as a positive integer.}
 
 \item{...}{Ignored.}
 
-\item{seed}{Seed for RNG.}
+\item{seed}{Seed for RNG  (positive integer).}
 }
 \value{
 A list containing samples, filtered estimates and the 
@@ -51,7 +51,7 @@ model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1,
   log_prior_pdf = pntrs$log_prior_pdf,
   n_states = 1, n_etas = 1, state_names = "state")
 
-out <- ekpf_filter(model_nlg, 100)
+out <- ekpf_filter(model_nlg, particles = 100)
 ts.plot(cbind(x, out$at[1:n], out$att[1:n]), col = 1:3)
 
 }

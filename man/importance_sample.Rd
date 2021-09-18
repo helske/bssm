@@ -18,12 +18,10 @@ importance_sample(model, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
 )
 }
 \arguments{
-\item{model}{Model to be approximated. Should be of class 
-\code{bsm_ng}, \code{ar1_ng} \code{svm}, 
-\code{ssm_ung}, or \code{ssm_mng}, or \code{ssm_nlg}, i.e. non-gaussian or 
-non-linear \code{bssm_model}.}
+\item{model}{Model of class \code{bsm_ng}, \code{ar1_ng} \code{svm}, 
+\code{ssm_ung}, or \code{ssm_mng}.}
 
-\item{nsim}{Number of samples.}
+\item{nsim}{Number of samples (positive integer).}
 
 \item{use_antithetic}{Logical. If \code{TRUE} (default), use antithetic 
 variable for location in simulation smoothing. Ignored for \code{ssm_mng} 
@@ -36,7 +34,7 @@ Default is 100 (although typically only few iterations are needed).}
 is claimed to be converged when the mean squared difference of the modes of 
 is less than \code{conv_tol}.}
 
-\item{seed}{Seed for the random number generator.}
+\item{seed}{Seed for the random number generator (positive integer).}
 
 \item{...}{Ignored.}
 }

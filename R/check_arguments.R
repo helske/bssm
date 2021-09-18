@@ -175,12 +175,11 @@ check_prior <- function(x, name) {
   }
 }
 
-check_target <- function(target) {
-  if (length(target) > 1 || target >= 1 || target <= 0) {
-    stop("Argument 'target' must be on interval (0, 1).")
+check_prop <- function(x, name = "target") {
+  if (length(x) > 1 || x >= 1 || x <= 0) {
+    stop(paste0("Argument '", name, "' must be on interval (0, 1)."))
   }
 }
-
 
 check_D <- function(x, p, n) {
   if (missing(x) || is.null(x)) {

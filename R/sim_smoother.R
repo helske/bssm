@@ -7,12 +7,11 @@
 #' For non-Gaussian/non-linear models, the simulation is based on the 
 #' approximating Gaussian model.
 #'
-#' @param model Model object.
-#' @param nsim Positive integer defining the number of independent samples.
-#' @param use_antithetic Use an antithetic variable for location? 
-#' Default is \code{FALSE}. Currently not used for multivariate models.
-#' @param seed Seed for the random number generator.
-#' @param ... Ignored.
+#' @inheritParams importance_sample
+#' @param model Model of class \code{bsm_lg}, \code{ar1_lg}
+#' \code{ssm_ulg}, or \code{ssm_mlg}, or one of the non-gaussian models
+#' \code{bsm_ng}, \code{ar1_ng} \code{svm}, 
+#' \code{ssm_ung}, or \code{ssm_mng}.
 #' @return An array containing the generated samples.
 #' @export
 #' @rdname sim_smoother
@@ -24,16 +23,17 @@
 #' sim <- sim_smoother(model, nsim = 4, use_antithetic = TRUE, seed = 1)
 #' ts.plot(sim[, 1, ])
 #' cor(sim[, 1, ])
-sim_smoother <- function(model, nsim, seed, use_antithetic = FALSE, ...) {
+sim_smoother <- function(model, nsim, seed, use_antithetic = TRUE, ...) {
   UseMethod("sim_smoother", model)
 }
 #' @method sim_smoother gaussian
 #' @rdname sim_smoother
 #' @export
 sim_smoother.gaussian <- function(model, nsim = 1, 
-  seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
+  seed = sample(.Machine$integer.max, size = 1), use_antithetic = TRUE, ...) {
 
   nsim <- check_integer(nsim, "nsim")  
+  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max) 
   if (!test_flag(use_antithetic)) 
     stop("Argument 'use_antithetic' should be TRUE or FALSE. ")
   
@@ -46,9 +46,10 @@ sim_smoother.gaussian <- function(model, nsim = 1,
 #' @rdname sim_smoother
 #' @export
 sim_smoother.nongaussian <- function(model, nsim = 1,
-  seed = sample(.Machine$integer.max, size = 1), use_antithetic = FALSE, ...) {
+  seed = sample(.Machine$integer.max, size = 1), use_antithetic = TRUE, ...) {
   
   nsim <- check_integer(nsim, "nsim")
+  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
   if (!test_flag(use_antithetic)) 
     stop("Argument 'use_antithetic' should be TRUE or FALSE. ")
   

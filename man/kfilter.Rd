@@ -13,7 +13,8 @@ kfilter(model, ...)
 \method{kfilter}{nongaussian}(model, ...)
 }
 \arguments{
-\item{model}{Model Model object.}
+\item{model}{Model of class \code{gaussian}, \code{nongaussian} or 
+\code{ssm_nlg}.}
 
 \item{...}{Ignored.}
 }
