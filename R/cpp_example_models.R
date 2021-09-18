@@ -9,7 +9,7 @@
 #' of \code{return_code = TRUE}, returns the example code without compiling.
 #' @export
 #' @examples
-#' cpp_example_model("poisson_OU", return_code = TRUE)
+#' cpp_example_model("sde_poisson_OU", return_code = TRUE)
 #' 
 cpp_example_model <- function(example, return_code = FALSE) {
   
