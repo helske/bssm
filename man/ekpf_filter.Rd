@@ -32,7 +32,7 @@ Function \code{ekpf_filter} performs a extended Kalman particle filtering
 with stratification resampling, based on Van Der Merwe et al (2001).
 }
 \examples{
-
+\donttest{ # Takes a while
 set.seed(1)
 n <- 50
 x <- y <- numeric(n)
@@ -53,7 +53,7 @@ model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1,
 
 out <- ekpf_filter(model_nlg, particles = 100)
 ts.plot(cbind(x, out$at[1:n], out$att[1:n]), col = 1:3)
-
+}
 }
 \references{
 Van Der Merwe, R., Doucet, A., De Freitas, N., & Wan, E. A. 

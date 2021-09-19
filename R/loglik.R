@@ -4,6 +4,7 @@
 #' package.
 #' 
 #' @inheritParams particle_smoother
+#' @param object Model of class \code{bssm_model}.
 #' @param particles Number of samples for particle filter. If 0, 
 #' approximate log-likelihood is returned either based on the Gaussian 
 #' approximation or EKF, depending on the \code{method} argument.

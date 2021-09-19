@@ -54,6 +54,7 @@ which define the model structure. See vignettes for an example.
 }
 \examples{
 
+\donttest{ # Takes a while on CRAN
 library("sde")
 set.seed(1)
 # theta_0 = rho = 0.5
@@ -79,10 +80,11 @@ ts.plot(cbind(x, est$alphahat,
   est$alphahat + 2*sqrt(c(est$Vt))), 
   col = c(2, 1, 1, 1), lty = c(1, 1, 2, 2))
 
+
 # Takes time with finer mesh, parallelization with IS-MCMC helps a lot
 out <- run_mcmc(sde_model, L_c = 4, L_f = 8, 
   particles = 50, iter = 2e4,
   threads = 4L)
-
+}
 
 }

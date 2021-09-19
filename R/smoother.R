@@ -89,7 +89,7 @@ smoother.nongaussian <- function(model, ...) {
 #' @export
 #' @rdname ekf_smoother
 #' @examples
-#' 
+#' \donttest{ # Takes a while on CRAN
 #' set.seed(1)
 #' mu <- -0.2
 #' rho <- 0.7
@@ -115,7 +115,7 @@ smoother.nongaussian <- function(model, ...) {
 #' out_ekf <- ekf_smoother(model_nlg, iekf_iter = 0)
 #' out_iekf <- ekf_smoother(model_nlg, iekf_iter = 1)
 #' ts.plot(cbind(x, out_ekf$alphahat, out_iekf$alphahat), col = 1:3)
-#' 
+#' }
 ekf_smoother <- function(model, iekf_iter = 0) {
   
   iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)

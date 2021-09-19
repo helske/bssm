@@ -31,6 +31,7 @@ and returns the filtered estimates and one-step-ahead predictions of the
 states \eqn{\alpha_t} given the data up to time \eqn{t}.
 }
 \examples{
+\donttest{ # Takes a while on CRAN
 set.seed(1)
 mu <- -0.2
 rho <- 0.7
@@ -56,5 +57,5 @@ model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1,
 out_iekf <- ekf(model_nlg, iekf_iter = 5)
 out_ukf <- ukf(model_nlg, alpha = 0.01, beta = 2, kappa = 1)
 ts.plot(cbind(x, out_iekf$att, out_ukf$att), col = 1:3)
-
+}
 }

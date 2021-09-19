@@ -31,7 +31,7 @@ model <- bsm_lg(Nile,
   sd_level = tnormal(init = 50, mean = 50, sd = 100, min = 0),
   a1 = 1000, P1 = 500^2)
 
-fit1 <- run_mcmc(model, iter = 2e4)
+fit1 <- run_mcmc(model, iter = 2000)
 library("posterior")
 draws <- as_draws(fit1)
 head(draws, 4)
@@ -40,9 +40,9 @@ summary(fit1, return_se = TRUE)
 
 # More chains:
 model$theta[] <- c(50, 150) # change initial value
-fit2 <- run_mcmc(model, iter = 2e4)
+fit2 <- run_mcmc(model, iter = 2000)
 model$theta[] <- c(150, 50) # change initial value
-fit3 <- run_mcmc(model, iter = 2e4)
+fit3 <- run_mcmc(model, iter = 2000)
 
 draws <- bind_draws(as_draws(fit1),
   as_draws(fit2), as_draws(fit3), along = "chain")

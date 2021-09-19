@@ -29,7 +29,7 @@ variances. Function \code{ekf_fast_smoother} computes only smoothed
 estimates of the states.
 }
 \examples{
-
+\donttest{ # Takes a while on CRAN
 set.seed(1)
 mu <- -0.2
 rho <- 0.7
@@ -55,5 +55,5 @@ model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1,
 out_ekf <- ekf_smoother(model_nlg, iekf_iter = 0)
 out_iekf <- ekf_smoother(model_nlg, iekf_iter = 1)
 ts.plot(cbind(x, out_ekf$alphahat, out_iekf$alphahat), col = 1:3)
-
+}
 }

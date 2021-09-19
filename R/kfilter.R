@@ -65,7 +65,7 @@ kfilter.nongaussian <- function(model, ...) {
 #' @rdname ekf
 #' @export
 #' @examples
-#' 
+#' \donttest{ # Takes a while on CRAN
 #' set.seed(1)
 #' mu <- -0.2
 #' rho <- 0.7
@@ -91,6 +91,7 @@ kfilter.nongaussian <- function(model, ...) {
 #' out_ekf <- ekf(model_nlg, iekf_iter = 0)
 #' out_iekf <- ekf(model_nlg, iekf_iter = 5)
 #' ts.plot(cbind(x, out_ekf$att, out_iekf$att), col = 1:3)
+#' }
 ekf <- function(model, iekf_iter = 0) {
   
   iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
@@ -131,6 +132,7 @@ ekf <- function(model, iekf_iter = 0) {
 #' @rdname ukf
 #' @export
 #' @examples
+#' \donttest{ # Takes a while on CRAN
 #' set.seed(1)
 #' mu <- -0.2
 #' rho <- 0.7
@@ -156,7 +158,7 @@ ekf <- function(model, iekf_iter = 0) {
 #' out_iekf <- ekf(model_nlg, iekf_iter = 5)
 #' out_ukf <- ukf(model_nlg, alpha = 0.01, beta = 2, kappa = 1)
 #' ts.plot(cbind(x, out_iekf$att, out_ukf$att), col = 1:3)
-#' 
+#' }
 ukf <- function(model, alpha = 0.001, beta = 2, kappa = 0) {
   
   if (alpha <= 0) stop("Parameter 'alpha' should be positive. ")

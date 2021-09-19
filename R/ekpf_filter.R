@@ -21,7 +21,7 @@ ekpf_filter <- function(object, particles, ...) {
 #' @export
 #' @rdname ekpf_filter
 #' @examples
-#' 
+#' \donttest{ # Takes a while
 #' set.seed(1)
 #' n <- 50
 #' x <- y <- numeric(n)
@@ -42,7 +42,7 @@ ekpf_filter <- function(object, particles, ...) {
 #'
 #' out <- ekpf_filter(model_nlg, particles = 100)
 #' ts.plot(cbind(x, out$at[1:n], out$att[1:n]), col = 1:3)
-#'
+#'}
 ekpf_filter.ssm_nlg <- function(object, particles, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
   

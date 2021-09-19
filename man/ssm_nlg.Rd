@@ -90,7 +90,7 @@ the user, as you must provide the several small C++ snippets which define the
 model structure. See examples in the vignette.
 }
 \examples{
-
+\donttest{ # Takes a while on CRAN
 set.seed(1)
 n <- 50
 x <- y <- numeric(n)
@@ -111,5 +111,5 @@ model_nlg <- ssm_nlg(y = y, a1 = pntrs$a1, P1 = pntrs$P1,
 
 out <- ekf(model_nlg, iekf_iter = 100)
 ts.plot(cbind(x, out$at[1:n], out$att[1:n]), col = 1:3)
-
+}
 }

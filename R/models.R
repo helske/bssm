@@ -1473,7 +1473,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
 #' @return Object of class \code{ssm_nlg}.
 #' @export
 #' @examples
-#' 
+#' \donttest{ # Takes a while on CRAN
 #' set.seed(1)
 #' n <- 50
 #' x <- y <- numeric(n)
@@ -1494,7 +1494,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
 #'
 #' out <- ekf(model_nlg, iekf_iter = 100)
 #' ts.plot(cbind(x, out$at[1:n], out$att[1:n]), col = 1:3)
-#' 
+#' }
 ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
   known_params = NA, known_tv_params = matrix(NA), n_states, n_etas,
   log_prior_pdf, time_varying = rep(TRUE, 4), 
@@ -1550,6 +1550,7 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
 #' @export
 #' @examples
 #' 
+#' \donttest{ # Takes a while on CRAN
 #' library("sde")
 #' set.seed(1)
 #' # theta_0 = rho = 0.5
@@ -1575,11 +1576,12 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
 #'   est$alphahat + 2*sqrt(c(est$Vt))), 
 #'   col = c(2, 1, 1, 1), lty = c(1, 1, 2, 2))
 #' 
+#' 
 #' # Takes time with finer mesh, parallelization with IS-MCMC helps a lot
 #' out <- run_mcmc(sde_model, L_c = 4, L_f = 8, 
 #'   particles = 50, iter = 2e4,
 #'   threads = 4L)
-#' 
+#' }
 #'
 ssm_sde <- function(y, drift, diffusion, ddiffusion, obs_pdf,
   prior_pdf, theta, x0, positive) {
