@@ -22,9 +22,9 @@ While the intended use assumes this is from approximate MCMC, it is not
 actually checked, i.e., it is also possible to input previous 
 (asymptotically) exact output.}
 
-\item{particles}{Number of particles for \eqn{\psi}-APF.}
+\item{particles}{Number of particles for \eqn{\psi}-APF (positive integer).}
 
-\item{threads}{Number of parallel threads.}
+\item{threads}{Number of parallel threads (positive integer, default is 1).}
 
 \item{is_type}{Type of IS-correction. Possible choices are 
 \code{"is3"} for simple importance sampling (weight is computed for each 

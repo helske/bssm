@@ -21,16 +21,16 @@ get_map <- function(x) {
 #' estimate from the (approximate) MCMC run. Can also be an output from 
 #' \code{run_mcmc} which is then used to compute the MAP 
 #' estimate of theta.
-#' @param candidates Vector containing the candidate number of particles to 
-#' test. Default is \code{seq(10, 100, by = 10)}. 
-#' @param replications How many replications should be used for computing 
-#' the standard deviations? Default is 100.
+#' @param candidates Vector of positive integers containing the candidate 
+#' number of particles to test. Default is \code{seq(10, 100, by = 10)}. 
+#' @param replications Positive integer, how many replications should be used 
+#' for computing the standard deviations? Default is 100.
 #' @param seed Seed for the random number generator  (positive integer).
 #' @return List with suggested number of particles \code{N} and matrix 
 #' containing estimated standard deviations of the log-weights and 
 #' corresponding number of particles.
 #' @references 
-#'Doucet, A, Pitt, MK, Deligiannidis, G, Kohn, R (2015). 
+#' Doucet, A, Pitt, MK, Deligiannidis, G, Kohn, R (2015). 
 #' Efficient implementation of Markov chain Monte Carlo when using an 
 #' unbiased likelihood estimator, Biometrika, 102(2) p. 295-313,
 #' https://doi.org/10.1093/biomet/asu075
@@ -138,8 +138,8 @@ suggest_N <- function(model, theta,
 #' While the intended use assumes this is from approximate MCMC, it is not 
 #' actually checked, i.e., it is also possible to input previous 
 #' (asymptotically) exact output.
-#' @param particles Number of particles for \eqn{\psi}-APF. 
-#' @param threads Number of parallel threads.
+#' @param particles Number of particles for \eqn{\psi}-APF (positive integer). 
+#' @param threads Number of parallel threads (positive integer, default is 1).
 #' @param is_type Type of IS-correction. Possible choices are 
 #'\code{"is3"} for simple importance sampling (weight is computed for each 
 #'MCMC iteration independently),
