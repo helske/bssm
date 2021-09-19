@@ -2,6 +2,7 @@
 % Please edit documentation in R/priors.R
 \name{uniform_prior}
 \alias{uniform_prior}
+\alias{bssm_prior}
 \alias{bssm_prior_list}
 \alias{uniform}
 \alias{halfnormal_prior}
@@ -85,6 +86,7 @@ halfnormal(init = 0.01, sd = 0.1)
 # Truncated normal
 tnormal(init = 5.2, mean = 5.0, sd = 3.0, min = 0.5, max = 9.5)
 
+\dontshow{
 # Further examples for diagnostic purposes:
 uniform(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
 normal(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
@@ -98,5 +100,5 @@ normal_prior(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
 tnormal_prior(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2), c(1.2, 2), c(3.3, 3.3))
 halfnormal_prior(c(0, 0.2), c(1.0, 1.2))
 gamma_prior(c(0.1, 0.2), c(1.2, 2), c(3.3, 3.3))
-
+}
 }

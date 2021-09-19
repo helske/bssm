@@ -15,7 +15,7 @@
 #' are just for consistent naming).
 #' 
 #' @rdname bssm_prior
-#' @aliases bssm_prior_list
+#' @aliases bssm_prior bssm_prior_list
 #' @param init Initial value for the parameter, used in initializing the model 
 #' components and as a starting values in MCMC. 
 #' @param min Lower bound of the uniform and truncated normal prior.
@@ -42,6 +42,7 @@
 #' # Truncated normal
 #' tnormal(init = 5.2, mean = 5.0, sd = 3.0, min = 0.5, max = 9.5)
 #' 
+#' \dontshow{
 #' # Further examples for diagnostic purposes:
 #' uniform(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
 #' normal(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
@@ -55,7 +56,7 @@
 #' tnormal_prior(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2), c(1.2, 2), c(3.3, 3.3))
 #' halfnormal_prior(c(0, 0.2), c(1.0, 1.2))
 #' gamma_prior(c(0.1, 0.2), c(1.2, 2), c(3.3, 3.3))
-#' 
+#' }
 uniform_prior <- function(init, min, max) {
   if (any(!is.numeric(init), !is.numeric(min), !is.numeric(max))) {
     stop("Parameters for priors must be numeric.")
