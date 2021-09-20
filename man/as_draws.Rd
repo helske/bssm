@@ -16,12 +16,12 @@ as_draws.mcmc_output(x)
 A \code{draws_df} object.
 }
 \description{
-Converts MCMC output from \code{run_mcmc} call to a 
-\code{draws_df} format of the \code{posterior} package. This enables the use 
-of diagnostics and plotting methods of \code{posterior} and \code{bayesplot} 
-packages. Note though that if \code{run_mcmc} used IS-MCMC 
-method, the resulting \code{weight} column of the output is 
-ignored by the aforementioned packages, i.e. the results correspond to 
+Converts MCMC output from \code{run_mcmc} call to a
+\code{draws_df} format of the \code{posterior} package. This enables the use
+of diagnostics and plotting methods of \code{posterior} and \code{bayesplot}
+packages. Note though that if \code{run_mcmc} used IS-MCMC
+method, the resulting \code{weight} column of the output is
+ignored by the aforementioned packages, i.e. the results correspond to
 approximate MCMC.
 }
 \examples{

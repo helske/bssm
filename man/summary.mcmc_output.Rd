@@ -9,30 +9,30 @@
 \arguments{
 \item{object}{Output from \code{run_mcmc}}
 
-\item{return_se}{if \code{FALSE} (default), computation of standard 
+\item{return_se}{if \code{FALSE} (default), computation of standard
 errors and effective sample sizes is omitted.}
 
-\item{variable}{Are the summary statistics computed for either 
+\item{variable}{Are the summary statistics computed for either
 \code{"theta"} (default), \code{"states"}, or \code{"both"}?}
 
-\item{only_theta}{Deprecated. If \code{TRUE}, summaries are computed only 
+\item{only_theta}{Deprecated. If \code{TRUE}, summaries are computed only
 for hyperparameters theta.}
 
 \item{...}{Ignored.}
 }
 \description{
-This functions returns a list containing mean, standard deviations, 
-standard errors, and effective sample size estimates for parameters and 
+This functions returns a list containing mean, standard deviations,
+standard errors, and effective sample size estimates for parameters and
 states.
 }
 \details{
-For IS-MCMC two types of standard errors are reported. 
+For IS-MCMC two types of standard errors are reported.
 SE-IS can be regarded as the square root of independent IS variance,
-whereas SE corresponds to the square root of total asymptotic variance 
+whereas SE corresponds to the square root of total asymptotic variance
 (see Remark 3 of Vihola et al. (2020)).
 }
 \references{
-Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
-on approximate marginal Markov chain Monte Carlo. 
+Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based
+on approximate marginal Markov chain Monte Carlo.
 Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 }

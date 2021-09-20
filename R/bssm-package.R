@@ -13,10 +13,14 @@
 #' 
 #' * Model with continuous SDE dynamics. 
 #' 
-#' For formal definition of the currently supported models and methods, as 
-#' well as some theory behind the IS-MCMC and \eqn{\psi}{psi}-APF, 
-#' see Helske and Vihola (2021), Vihola, Helske, Franks (2020) and the package 
-#' vignettes.
+#' The \code{bssm} package includes several MCMC sampling and sequential Monte 
+#' Carlo methods for models outside classic linear-Gaussian framework. For 
+#' definitions of the currently supported models and methods, as 
+#' well as some theory behind the novel IS-MCMC and \eqn{\psi}{psi}-APF 
+#' algorithms, see Helske and Vihola (2021), Vihola, Helske, Franks (2020) and 
+#' the package vignettes. 
+#' 
+#' @srrstatsTODO {G1.4,G1.4a} Package uses roxygen2 for documentation.
 #' 
 #' @references 
 #' Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and 

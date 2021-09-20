@@ -31,6 +31,19 @@ State space models (SSM) are latent variable models which are commonly applied i
 
 The motivation behind the `bssm` package is in [@vihola-helske-franks] which suggests a new computationally efficient, parallelisable approach for Bayesian inference of state space models. The core idea is to use fast approximate Markov chain Monte Carlo (MCMC) targeting the approximate marginal posterior of the hyperparameters, which is then used in importance sampling type weighting phase which provides asymptotically exact samples from the joint posterior of hyperparameters and the hidden states. In addition to this the two-stage procedure, standard pseudo-marginal MCMC and so called delayed acceptance pseudo-marginal MCMC are also supported. For more details, see [@helske-vihola2021]. There is also separate vignette for nonlinear models as well as for discretized diffusion models.
 
+```{r srr-tags, eval = FALSE, echo = FALSE}                                    
+#' rOpenSci Statistical Software Standards addressed by the vignette
+#'
+#' @srrstats {G1.1} The \code{bssm} package is 
+#' first to implement the IS-MCMC method as well as psi-APF particle filter 
+#' both introduced in Vihola, Helske, Franks (2020). 
+#' To our knowledge, the package is also the first R package to 
+#' implement delayed acceptance pseudo-marginal MCMC for general state space 
+#' models. 
+#' Note that the IS-MCMC method is also available in \code{walker} package for 
+#' limited class of models (subset of the models supported by \code{bssm}).
+```                          
+
 ## State space models with linear-Gaussian dynamics
 
 Denote a sequence of observations $(y_1,\ldots,y_T)$ as $y_{1:T}$, and sequence of latent state variables $(\alpha_1,\ldots, \alpha_T)$ as $\alpha_{1:T}$. A general state space model consists of two parts: observation level densities $g_t(y_t | \alpha_t)$ and latent state transition densities $\mu_t(\alpha_{t+1} | \alpha_t)$. We first focus on the case where the state transitions are linear-Gaussian:

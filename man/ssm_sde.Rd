@@ -17,15 +17,15 @@ ssm_sde(
 )
 }
 \arguments{
-\item{y}{Observations as univariate time series (or vector) of length 
+\item{y}{Observations as univariate time series (or vector) of length
 \eqn{n}.}
 
-\item{drift, diffusion, ddiffusion}{An external pointers for the C++ functions 
+\item{drift, diffusion, ddiffusion}{An external pointers for the C++ functions
 which
 define the drift, diffusion and derivative of diffusion functions of SDE.}
 
 \item{obs_pdf}{An external pointer for the C++ function which
-computes the observational log-density given the the states and parameter 
+computes the observational log-density given the the states and parameter
 vector theta.}
 
 \item{prior_pdf}{An external pointer for the C++ function which
@@ -48,8 +48,8 @@ as well as the log-density of observation equation. We assume that the
 observations are measured at integer times (missing values are allowed).
 }
 \details{
-As in case of \code{ssm_nlg} models, these general models need a bit more 
-effort from the user, as you must provide the several small C++ snippets 
+As in case of \code{ssm_nlg} models, these general models need a bit more
+effort from the user, as you must provide the several small C++ snippets
 which define the model structure. See vignettes for an example.
 }
 \examples{

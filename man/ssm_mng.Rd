@@ -23,16 +23,16 @@ ssm_mng(
 )
 }
 \arguments{
-\item{y}{Observations as multivariate time series or matrix with dimensions 
+\item{y}{Observations as multivariate time series or matrix with dimensions
 n x p.}
 
-\item{Z}{System matrix Z of the observation equation as p x m matrix or 
+\item{Z}{System matrix Z of the observation equation as p x m matrix or
 p x m x n array.}
 
 \item{T}{System matrix T of the state equation. Either a m x m matrix or a
 m x m x n array.}
 
-\item{R}{Lower triangular matrix R the state equation. Either a m x k 
+\item{R}{Lower triangular matrix R the state equation. Either a m x k
 matrix or a
 m x k x n array.}
 
@@ -40,19 +40,19 @@ m x k x n array.}
 
 \item{P1}{Prior covariance matrix for the initial state as m x m matrix.}
 
-\item{distribution}{vector of distributions of the observed series. 
+\item{distribution}{vector of distributions of the observed series.
 Possible choices are
-\code{"poisson"}, \code{"binomial"}, \code{"negative binomial"}, 
+\code{"poisson"}, \code{"binomial"}, \code{"negative binomial"},
 \code{"gamma"}, and \code{"gaussian"}.}
 
 \item{phi}{Additional parameters relating to the non-Gaussian distributions.
-For negative binomial distribution this is the dispersion term, for 
-gamma distribution this is the shape parameter, for Gaussian this is 
+For negative binomial distribution this is the dispersion term, for
+gamma distribution this is the shape parameter, for Gaussian this is
 standard deviation, and for other distributions this is ignored.}
 
-\item{u}{Matrix of positive constants for non-Gaussian models 
-(of same dimensions as y). For Poisson,  gamma, and negative binomial 
-distribution, this corresponds to the offset term. For binomial, this is the 
+\item{u}{Matrix of positive constants for non-Gaussian models
+(of same dimensions as y). For Poisson,  gamma, and negative binomial
+distribution, this corresponds to the offset term. For binomial, this is the
 number of trials.}
 
 \item{init_theta}{Initial values for the unknown hyperparameters theta.}
@@ -63,28 +63,28 @@ number of trials.}
 
 \item{state_names}{Names for the states.}
 
-\item{update_fn}{Function which returns list of updated model 
-components given input vector theta. This function should take only one 
+\item{update_fn}{Function which returns list of updated model
+components given input vector theta. This function should take only one
 vector argument which is used to create list with elements named as
 \code{Z}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, \code{C}, and
 \code{phi}, where each element matches the dimensions of the original model.
-If any of these components is missing, it is assumed to be constant wrt. 
-theta. It's best to check the internal dimensions with 
-\code{str(model_object)} as the dimensions of input arguments can differ 
+If any of these components is missing, it is assumed to be constant wrt.
+theta. It's best to check the internal dimensions with
+\code{str(model_object)} as the dimensions of input arguments can differ
 from the final dimensions.}
 
-\item{prior_fn}{Function which returns log of prior density 
+\item{prior_fn}{Function which returns log of prior density
 given input vector theta.}
 }
 \value{
 Object of class \code{ssm_mng}.
 }
 \description{
-Construct an object of class \code{ssm_mng} by directly defining the 
+Construct an object of class \code{ssm_mng} by directly defining the
 corresponding terms of the model.
 }
 \details{
-The general multivariate non-Gaussian model is defined using the following 
+The general multivariate non-Gaussian model is defined using the following
 observational and state equations:
 
 \deqn{p^i(y^i_t | D_t + Z_t \alpha_t), (\textrm{observation equation})}
@@ -92,10 +92,10 @@ observational and state equations:
 (\textrm{transition equation})}
 
 where \eqn{\eta_t \sim N(0, I_k)} and
-\eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and 
-\eqn{p^i(y_t | .)} is either Poisson, binomial, gamma, Gaussian, or 
-negative binomial distribution for each observation series \eqn{i=1,...,p}. 
-Here k is the number of disturbance terms (which can be less than m, 
+\eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other, and
+\eqn{p^i(y_t | .)} is either Poisson, binomial, gamma, Gaussian, or
+negative binomial distribution for each observation series \eqn{i=1,...,p}.
+Here k is the number of disturbance terms (which can be less than m,
 the number of states).
 }
 \examples{

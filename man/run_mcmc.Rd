@@ -93,111 +93,111 @@ run_mcmc(model, ...)
 
 \item{iter}{Positive integer defining the total number of MCMC iterations.}
 
-\item{output_type}{Either \code{"full"} 
-(default, returns posterior samples from the posterior 
-\eqn{p(\alpha, \theta | y)}), \code{"theta"} (for marginal posterior of 
-theta), or \code{"summary"} (return the mean and variance estimates of the 
+\item{output_type}{Either \code{"full"}
+(default, returns posterior samples from the posterior
+\eqn{p(\alpha, \theta | y)}), \code{"theta"} (for marginal posterior of
+theta), or \code{"summary"} (return the mean and variance estimates of the
 states and posterior samples of theta). See details.}
 
-\item{burnin}{Positive integer defining the length of the burn-in period 
-which is disregarded from the results. Defaults to \code{iter / 2}. 
-Note that all MCMC algorithms of \code{bssm} use adaptive MCMC during the 
+\item{burnin}{Positive integer defining the length of the burn-in period
+which is disregarded from the results. Defaults to \code{iter / 2}.
+Note that all MCMC algorithms of \code{bssm} use adaptive MCMC during the
 burn-in period in order to find good proposal distribution.}
 
-\item{thin}{Positive integer defining the thinning rate. All MCMC algorithms 
-in \code{bssm} use the jump chain representation (see ref [2]), and the 
-thinning is applied to these blocks. Defaults to 1. 
-For IS-corrected methods, larger value can also be 
-statistically more effective. Note: With \code{output_type = "summary"}, 
-the thinning does not affect the computations of the summary statistics in 
+\item{thin}{Positive integer defining the thinning rate. All MCMC algorithms
+in \code{bssm} use the jump chain representation (see ref \link{2}), and the
+thinning is applied to these blocks. Defaults to 1.
+For IS-corrected methods, larger value can also be
+statistically more effective. Note: With \code{output_type = "summary"},
+the thinning does not affect the computations of the summary statistics in
 case of pseudo-marginal methods.}
 
 \item{gamma}{Tuning parameter for the adaptation of RAM algorithm. Must be
 between 0 and 1.}
 
-\item{target_acceptance}{Target acceptance rate for MCMC. Defaults to 0.234. 
+\item{target_acceptance}{Target acceptance rate for MCMC. Defaults to 0.234.
 Must be between 0 and 1.}
 
-\item{S}{Matrix defining the initial value for the lower triangular matrix 
+\item{S}{Matrix defining the initial value for the lower triangular matrix
 of the RAM algorithm, so that the covariance matrix of the Gaussian proposal
-distribution is \eqn{SS'}. Note that for some parameters 
-(currently the standard deviation, dispersion, and autoregressive parameters 
-of the BSM and AR(1) models) the sampling is done in unconstrained parameter 
+distribution is \eqn{SS'}. Note that for some parameters
+(currently the standard deviation, dispersion, and autoregressive parameters
+of the BSM and AR(1) models) the sampling is done in unconstrained parameter
 space, i.e. internal_theta = log(theta) (and logit(rho) or AR coefficient).}
 
 \item{end_adaptive_phase}{Logical, if \code{TRUE}, S is held fixed after the
 burnin period. Default is \code{FALSE}.}
 
-\item{threads}{Number of threads for state simulation. Positive integer 
+\item{threads}{Number of threads for state simulation. Positive integer
 (default is 1).
 Note that parallel computing is only used in the post-correction phase of
-IS-MCMC and when sampling the states in case of (approximate) Gaussian 
+IS-MCMC and when sampling the states in case of (approximate) Gaussian
 models.}
 
 \item{seed}{Seed for the random number generator (positive integer).}
 
-\item{particles}{Number of state samples per MCMC iteration for models other 
+\item{particles}{Number of state samples per MCMC iteration for models other
 than linear-Gaussian models.
 Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.}
 
-\item{mcmc_type}{What type of MCMC algorithm should be used for models other 
+\item{mcmc_type}{What type of MCMC algorithm should be used for models other
 than linear-Gaussian models? Possible choices are
 \code{"pm"} for pseudo-marginal MCMC,
-\code{"da"} for delayed acceptance version of PMCMC , 
-\code{"approx"} for approximate inference based on the Gaussian 
+\code{"da"} for delayed acceptance version of PMCMC ,
+\code{"approx"} for approximate inference based on the Gaussian
 approximation of the model,
-\code{"ekf"} for approximate inference using extended Kalman filter 
-(for \code{ssm_nlg}), 
+\code{"ekf"} for approximate inference using extended Kalman filter
+(for \code{ssm_nlg}),
 or one of the three importance sampling type weighting schemes:
-\code{"is3"} for simple importance sampling (weight is computed for each 
+\code{"is3"} for simple importance sampling (weight is computed for each
 MCMC iteration independently),
 \code{"is2"} for jump chain importance sampling type weighting (default), or
-\code{"is1"} for importance sampling type weighting where the number of 
+\code{"is1"} for importance sampling type weighting where the number of
 particles used for
 weight computations is proportional to the length of the jump chain block.}
 
-\item{sampling_method}{Method for state sampling when for models other than 
-linear-Gaussian models. If \code{"psi"}, \eqn{\psi}-APF is used (default). 
+\item{sampling_method}{Method for state sampling when for models other than
+linear-Gaussian models. If \code{"psi"}, \eqn{\psi}-APF is used (default).
 If \code{"spdk"}, non-sequential importance sampling
 based on Gaussian approximation is used. If \code{"bsf"}, bootstrap filter
-is used. If \code{"ekf"}, particle filter based on EKF-proposals are used 
+is used. If \code{"ekf"}, particle filter based on EKF-proposals are used
 (only for \code{ssm_nlg} models).}
 
 \item{local_approx}{If \code{TRUE} (default), Gaussian approximation
-needed for some of the methods is performed at each iteration. 
-If \code{FALSE}, approximation is updated only once at the start of the 
+needed for some of the methods is performed at each iteration.
+If \code{FALSE}, approximation is updated only once at the start of the
 MCMC using the initial model.}
 
 \item{max_iter}{Maximum number of iterations used in Gaussian approximation,
-as a positive integer. 
+as a positive integer.
 Default is 100 (although typically only few iterations are needed).}
 
 \item{conv_tol}{Positive tolerance parameter used in Gaussian approximation.}
 
-\item{iekf_iter}{Non-negative integer. The default zero corresponds to 
-normal EKF, whereas \code{iekf_iter > 0} corresponds to iterated EKF 
-with \code{iekf_iter} iterations. Used only for models of class 
+\item{iekf_iter}{Non-negative integer. The default zero corresponds to
+normal EKF, whereas \code{iekf_iter > 0} corresponds to iterated EKF
+with \code{iekf_iter} iterations. Used only for models of class
 \code{ssm_nlg}.}
 
-\item{L_c, L_f}{For \code{ssm_sde} models, Positive integer values defining 
-the discretization levels for first and second stages (defined as 2^L). 
+\item{L_c, L_f}{For \code{ssm_sde} models, Positive integer values defining
+the discretization levels for first and second stages (defined as 2^L).
 For pseudo-marginal methods (\code{"pm"}), maximum of these is used.}
 }
 \description{
 Adaptive Markov chain Monte Carlo simulation for SSMs using
-Robust Adaptive Metropolis algorithm by Vihola (2012). Several different 
-MCMC sampling schemes are implemented, see parameter 
-arguments, package vignette, Vihola, Helske, Franks (2020) and Helske and 
+Robust Adaptive Metropolis algorithm by Vihola (2012). Several different
+MCMC sampling schemes are implemented, see parameter
+arguments, package vignette, Vihola, Helske, Franks (2020) and Helske and
 Vihola (2021) for details.
 }
 \details{
 For linear-Gaussian models, option \code{"summary"} does not simulate
-states directly but computes the posterior means and variances of states 
-using fast Kalman smoothing. This is slightly faster, 
-more memory efficient and more accurate than calculations based on 
-simulation smoother. In other cases, the means and 
-covariances are computed using the full output of particle filter 
-instead of subsampling one of these as in case of 
+states directly but computes the posterior means and variances of states
+using fast Kalman smoothing. This is slightly faster,
+more memory efficient and more accurate than calculations based on
+simulation smoother. In other cases, the means and
+covariances are computed using the full output of particle filter
+instead of subsampling one of these as in case of
 \code{output_type = "full"}.
 }
 \examples{
@@ -332,17 +332,17 @@ theme_bw()
 
 }
 \references{
-[1] Vihola M (2012). Robust adaptive Metropolis algorithm with
+\link{1} Vihola M (2012). Robust adaptive Metropolis algorithm with
 coerced acceptance rate. Statistics and Computing, 22(5), p 997-1008.
 
-[2] Vihola, M, Helske, J, Franks, J (2020). Importance sampling type estimators based 
-on approximate marginal Markov chain Monte Carlo. 
+\link{2} Vihola, M, Helske, J, Franks, J (2020). Importance sampling type estimators based
+on approximate marginal Markov chain Monte Carlo.
 Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 
-[3] Helske, J, Vihola, M (2019). bssm: Bayesian Inference of Non-linear and 
+\link{3} Helske, J, Vihola, M (2019). bssm: Bayesian Inference of Non-linear and
 Non-Gaussian State Space Models in R. Arxiv preprint 2101.08492.
 
-Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
-on approximate marginal Markov chain Monte Carlo. 
+Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based
+on approximate marginal Markov chain Monte Carlo.
 Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 }

@@ -9,20 +9,20 @@ ekf(model, iekf_iter = 0)
 \arguments{
 \item{model}{Model of class \code{ssm_nlg}.}
 
-\item{iekf_iter}{Non-negative integer. The default zero corresponds to 
-normal EKF, whereas \code{iekf_iter > 0} corresponds to iterated EKF 
+\item{iekf_iter}{Non-negative integer. The default zero corresponds to
+normal EKF, whereas \code{iekf_iter > 0} corresponds to iterated EKF
 with \code{iekf_iter} iterations.}
 }
 \value{
 List containing the log-likelihood,
 one-step-ahead predictions \code{at} and filtered
 estimates \code{att} of states, and the corresponding variances \code{Pt} and
- \code{Ptt}.
+\code{Ptt}.
 }
 \description{
-Function \code{ekf} runs the (iterated) extended Kalman filter for the given 
-non-linear Gaussian model of class \code{ssm_nlg}, 
-and returns the filtered estimates and one-step-ahead predictions of the 
+Function \code{ekf} runs the (iterated) extended Kalman filter for the given
+non-linear Gaussian model of class \code{ssm_nlg},
+and returns the filtered estimates and one-step-ahead predictions of the
 states \eqn{\alpha_t} given the data up to time \eqn{t}.
 }
 \examples{

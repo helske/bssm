@@ -7,14 +7,14 @@
 cpp_example_model(example, return_code = FALSE)
 }
 \arguments{
-\item{example}{Name of the example model. 
+\item{example}{Name of the example model.
 Run \code{cpp_example_model("abc")} to get the names of possible models.}
 
-\item{return_code}{If TRUE, will not compile the model but only returns the 
+\item{return_code}{If TRUE, will not compile the model but only returns the
 corresponding code.}
 }
 \value{
-Returns pointers to the C++ snippets defining the model, or in case 
+Returns pointers to the C++ snippets defining the model, or in case
 of \code{return_code = TRUE}, returns the example code without compiling.
 }
 \description{

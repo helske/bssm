@@ -12,20 +12,20 @@ ekf_fast_smoother(model, iekf_iter = 0)
 \arguments{
 \item{model}{Model of class \code{ssm_nlg}.}
 
-\item{iekf_iter}{Non-negative integer. The default zero corresponds to 
-normal EKF, whereas \code{iekf_iter > 0} corresponds to iterated EKF 
+\item{iekf_iter}{Non-negative integer. The default zero corresponds to
+normal EKF, whereas \code{iekf_iter > 0} corresponds to iterated EKF
 with \code{iekf_iter} iterations.}
 }
 \value{
 List containing the log-likelihood,
-smoothed state estimates \code{alphahat}, and the corresponding variances 
+smoothed state estimates \code{alphahat}, and the corresponding variances
 \code{Vt} and \code{Ptt}.
 }
 \description{
-Function \code{ekf_smoother} runs the (iterated) extended Kalman smoother 
-for the given non-linear Gaussian model of class \code{ssm_nlg}, 
-and returns the smoothed estimates of the states and the corresponding 
-variances. Function \code{ekf_fast_smoother} computes only smoothed 
+Function \code{ekf_smoother} runs the (iterated) extended Kalman smoother
+for the given non-linear Gaussian model of class \code{ssm_nlg},
+and returns the smoothed estimates of the states and the corresponding
+variances. Function \code{ekf_fast_smoother} computes only smoothed
 estimates of the states.
 }
 \examples{

@@ -16,12 +16,12 @@ used to replace exact diffuse elements of the original model.}
 (such as prior and updating functions).}
 }
 \value{
-Object of class \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or 
+Object of class \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or
 \code{ssm_mng}.
 }
 \description{
-Converts \code{SSModel} object of \code{KFAS} package to general \code{bssm} 
-model of type \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or 
+Converts \code{SSModel} object of \code{KFAS} package to general \code{bssm}
+model of type \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or
 \code{ssm_mng}.
 }
 \examples{
