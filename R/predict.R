@@ -22,7 +22,9 @@
 #' future, using posterior samples of (theta, alpha_T+1) i.e. the 
 #' posterior samples of hyperparameters and latest states. 
 #' Otherwise it is assumed that \code{model} corresponds to the original model.
-#' @param seed Seed for RNG (positive integer).
+#' @param seed Seed for RNG (positive integer). Note that this affects only the 
+#' C++ side, and \code{predict} also uses R side RNG for subsampling, so for 
+#' replicable results you should call \code{set.seed} before \code{predict}.
 #' @param ... Ignored.
 #' @return A \code{data.frame} consisting of samples from the predictive 
 #' posterior distribution.

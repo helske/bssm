@@ -31,7 +31,22 @@ devtools::install_github("helske/bssm")
 Recent changes (For all changes, see NEWS file.)
 ==========================================================================
 
-bssm 1.1.6 (Release date: )
+bssm 1.1.7-1 (Release date: 2021-09-21)
+==============
+    * Fixed an error in automatic tests due to lack of fixed RNG seed.
+
+bssm 1.1.7 (Release date: 2021-09-20)
+==============
+   * Added a function cpp_example_model which can be used to extract and 
+     compile some non-linear and SDE models used in the examples and vignettes.
+   * Added as_draws method for run_mcmc output so samples can be analysed using 
+     the posterior package.
+   * Added more examples.
+   * Fixed a tolerance of one MCMC test to pass the test on OSX as well.
+   * Fixed a bug in iterated extended Kalman smoothing which resulted incorrect 
+     estimates.
+
+bssm 1.1.6 (Release date: 2021-09-06)
 ==============
    * Cleaned codes and added more comprehensive tests in line with pkgcheck 
      tests. This resulted in finding and fixing multiple bugs:
