@@ -1,6 +1,6 @@
 bssm 1.1.7-1 (Release date: 2021-09-21)
 ==============
-    * Fixed an error in automatic tests due to lack of fixed RNG seed.
+   * Fixed an error in automatic tests due to lack of fixed RNG seed.
 
 bssm 1.1.7 (Release date: 2021-09-20)
 ==============
