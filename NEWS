@@ -1,3 +1,9 @@
+bssm 1.1.8 (Release date: -)
+==============
+   * Added a fitted method for extraction of summary statistics of posterior 
+     predictive distribution p(y_t | y_1, ..., y_n) for t = 1, ..., n. 
+  
+   
 bssm 1.1.7 (Release date: 2021-09-15)
 ==============
    * Added a function cpp_example_model which can be used to extract and 

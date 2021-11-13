@@ -15,3 +15,4 @@
 ^\.github$
 ^codecov\.yml$
 ^codemeta\.json$
+^README\.Rmd$
