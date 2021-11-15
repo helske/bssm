@@ -149,7 +149,7 @@ particle_smoother.nongaussian <- function(model, particles,
   model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
   
-  method <- match.arg(method, c("bsf", "psi"))
+  method <- match.arg(tolower(method), c("bsf", "psi"))
 
   model$distribution <- pmatch(model$distribution,
     c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
@@ -199,7 +199,7 @@ particle_smoother.ssm_nlg <- function(model, particles,
   conv_tol <- check_positive_real(conv_tol, "conv_tol")
   iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
   
-  method <- match.arg(method, c("bsf", "psi", "ekf"))
+  method <- match.arg(tolower(method), c("bsf", "psi", "ekf"))
   
   out <- switch(method,
     psi = psi_smoother_nlg(t(model$y), model$Z, model$H, model$T, 

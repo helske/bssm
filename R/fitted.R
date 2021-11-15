@@ -17,10 +17,14 @@
 #'   sd_slope =  prior, sd_seasonal =  prior, period = 4)
 #' fit <- run_mcmc(model, iter = 2e4)
 #' res <- fitted(fit, model) 
+#' head(res)
 #' 
 fitted.mcmc_output <- function(object, model, 
   probs = c(0.025, 0.975), ...)  {
   
+  if (!inherits(model, "bbsm_model")) {
+    stop("Argument 'model' should be an object of class 'bssm_model'.")
+  }
   if (inherits(model, c("ssm_mng", "ssm_mlg", "ssm_nlg"))) {
     if (!identical(nrow(object$alpha) - 1L, nrow(model$y))) {
       stop("Number of observations of the model and MCMC output do not match.") 
@@ -31,6 +35,8 @@ fitted.mcmc_output <- function(object, model,
     }
   }
 
+  if (any(probs < 0 | probs > 1)) stop("'probs' outside [0, 1].")
+  
   n <- nrow(object$alpha) - 1L
   m <- ncol(object$alpha)
   

@@ -153,7 +153,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   
   check_prop(target_acceptance)
   check_prop(gamma, "gamma")
-  output_type <- pmatch(output_type, c("full", "summary", "theta"))
+  output_type <- pmatch(tolower(output_type), c("full", "summary", "theta"))
   
   if (inherits(model, "bsm_lg")) {
     names_ind <- !model$fixed & c(TRUE, TRUE, model$slope, model$seasonal)
@@ -371,15 +371,16 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   check_prop(target_acceptance)
   check_prop(gamma, "gamma")
   
-  output_type <- pmatch(output_type, c("full", "summary", "theta"))
-  mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), "approx"))
+  output_type <- pmatch(tolwer(output_type), c("full", "summary", "theta"))
+  mcmc_type <- match.arg(tolower(mcmc_type), 
+    c("pm", "da", paste0("is", 1:3), "approx"))
   if (mcmc_type == "approx") particles <- 0
   if (particles < 2 && mcmc_type != "approx") 
     stop(paste("Number of state samples less than 2, use 'mcmc_type' 'approx'",
       "instead.", sep = " "))
   
   sampling_method <- 
-    pmatch(match.arg(sampling_method, c("psi", "bsf", "spdk")), 
+    pmatch(match.arg(tolower(sampling_method), c("psi", "bsf", "spdk")), 
       c("psi", "bsf", "spdk"))
   
   dists <- 
@@ -527,12 +528,12 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   check_prop(target_acceptance)
   check_prop(gamma, "gamma")
   
-  output_type <- pmatch(output_type, c("full", "summary", "theta"))
-  mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3), 
+  output_type <- pmatch(tolower(output_type), c("full", "summary", "theta"))
+  mcmc_type <- match.arg(tolower(mcmc_type), c("pm", "da", paste0("is", 1:3), 
     "ekf", "approx"))
   if (mcmc_type %in% c("ekf", "approx")) particles <- 0
-  sampling_method <- pmatch(match.arg(sampling_method, c("psi", "bsf", "ekf")), 
-    c("psi", "bsf", NA, "ekf"))
+  sampling_method <- pmatch(match.arg(tolower(sampling_method), 
+    c("psi", "bsf", "ekf")), c("psi", "bsf", NA, "ekf"))
   
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(model$theta)), length(model$theta))
@@ -682,8 +683,8 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   check_prop(target_acceptance)
   check_prop(gamma, "gamma")
   
-  output_type <- pmatch(output_type, c("full", "summary", "theta"))
-  mcmc_type <- match.arg(mcmc_type, c("pm", "da", paste0("is", 1:3)))
+  output_type <- pmatch(tolower(output_type), c("full", "summary", "theta"))
+  mcmc_type <- match.arg(tolower(mcmc_type), c("pm", "da", paste0("is", 1:3)))
   
   if (missing(S)) {
     S <- diag(0.1 * pmax(0.1, abs(model$theta)), length(model$theta))

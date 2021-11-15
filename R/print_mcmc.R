@@ -145,7 +145,7 @@ print.mcmc_output <- function(x, ...) {
 #' @param variable Are the summary statistics computed for either 
 #' \code{"theta"} (default), \code{"states"}, or \code{"both"}?
 #' @param only_theta Deprecated. If \code{TRUE}, summaries are computed only 
-#' for hyperparameters theta.
+#' for hyperparameters theta, not latent states alpha.
 #' @param ... Ignored.
 #' @references 
 #' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
@@ -166,7 +166,7 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
     warning(paste("Argument 'only_theta' is deprecated. Use argument", 
     "'variable' instead. ", sep = " "))
   }
-  variable <- match.arg(variable, c("theta", "states", "both"))
+  variable <- match.arg(tolower(variable), c("theta", "states", "both"))
   
   if (variable %in% c("theta", "both")) {
     if (object$mcmc_type %in% paste0("is", 1:3)) {
@@ -296,7 +296,7 @@ expand_sample <- function(x, variable = "theta", times, states,
   if (!test_flag(by_states)) 
     stop("Argument 'by_states' should be TRUE or FALSE. ")
   
-  variable <- match.arg(variable, c("theta", "states"))
+  variable <- match.arg(tolower(variable), c("theta", "states"))
   if (x$mcmc_type %in% paste0("is", 1:3)) 
     warning(paste("Input is based on a IS-weighted MCMC, the results", 
     "correspond to the approximate posteriors.", sep = " "))

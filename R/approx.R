@@ -56,7 +56,7 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100,
     duplicates.ok = TRUE) - 1
   out <- gaussian_approx_model(model, model_type(model))
   
-  if (ncol(out$y) == 1) {
+  if (ncol(out$y) == 1L) {
     out$y <- ts(c(out$y), start = start(model$y), end = end(model$y), 
       frequency = frequency(model$y))
     D <- model$D

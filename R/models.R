@@ -265,7 +265,8 @@ ssm_ulg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #'  m times 1 or m times n matrix.
 #' @param D Intercept terms \eqn{D_t} for the observations equation, given as a
 #' scalar or vector of length n.
-#' @param init_theta Initial values for the unknown hyperparameters theta.
+#' @param init_theta Initial values for the unknown hyperparameters theta 
+#' (i.e. unknown variables excluding latent state variables).
 #' @param update_fn Function which returns list of updated model 
 #' components given input vector theta. This function should take only one 
 #' vector argument which is used to create list with elements named as

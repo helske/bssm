@@ -45,7 +45,7 @@ as_bssm <- function(model, kappa = 100, ...) {
   } else {
     R <- model$R * sqrt(c(model$Q))
   }
-  if (attr(model, "p") == 1) {
+  if (attr(model, "p") == 1L) {
     Z <- aperm(model$Z, c(2, 3, 1))
     dim(Z) <- dim(Z)[1:2]
   } else {
@@ -53,13 +53,13 @@ as_bssm <- function(model, kappa = 100, ...) {
   }
   
   if (any(model$distribution != "gaussian")) {
-    if (attr(model, "p") == 1) {
+    if (attr(model, "p") == 1L) {
       if (model$distribution == "negative binomial" && 
-          length(unique(model$u)) > 1) {
+          length(unique(model$u)) > 1L) {
         stop(paste("Time-varying dispersion parameter for negative binomial",
         "is not (yet) supported in 'bssm'.", sep = " "))
       } 
-      if (model$distribution == "gamma" && length(unique(model$u)) > 1) {
+      if (model$distribution == "gamma" && length(unique(model$u)) > 1L) {
         stop(paste("Time-varying shape parameter for gamma is not (yet)",
         "supported in 'bssm'.", sep = " "))
       }
@@ -129,7 +129,7 @@ as_bssm <- function(model, kappa = 100, ...) {
     }
     
   } else {
-    if (attr(model, "p") == 1) {
+    if (attr(model, "p") == 1L) {
       out <- ssm_ulg(y = model$y, Z = Z, H = sqrt(c(model$H)), T = model$T, 
         R = R, 
         a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)

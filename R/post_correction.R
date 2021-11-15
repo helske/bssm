@@ -241,7 +241,7 @@ post_correct <- function(model, mcmc_output, particles, threads = 1L,
   
   if (!inherits(mcmc_output, "mcmc_output")) 
     stop("Object 'mcmc_output' is not valid output from 'run_mcmc'.")
-  is_type <- pmatch(match.arg(is_type, paste0("is", 1:3)), paste0("is", 1:3))
+  is_type <- pmatch(match.arg(tolower(is_type), paste0("is", 1:3)), paste0("is", 1:3))
   
   a <- proc.time()
   if (inherits(model, "nongaussian")) {

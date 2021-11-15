@@ -42,7 +42,7 @@ as.data.frame.mcmc_output <- function(x,
   times, states,
   expand = !(x$mcmc_type %in% paste0("is", 1:3)), ...) {
   
-  variable <- match.arg(variable, c("theta", "states"))
+  variable <- match.arg(tolower(variable), c("theta", "states"))
   
   if (variable == "theta") {
     if (expand) {

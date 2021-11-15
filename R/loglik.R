@@ -69,8 +69,8 @@ logLik.nongaussian <- function(object, particles, method = "psi",
   max_iter = 100, conv_tol = 1e-8, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  object$max_iter <- max_iter
-  object$conv_tol <- conv_tol
+  object$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  object$conv_tol <- check_positive_real(conv_tol, "conv_tol")
   
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
@@ -81,7 +81,7 @@ logLik.nongaussian <- function(object, particles, method = "psi",
     }
   }
   
-  method <- match.arg(method, c("psi", "bsf", "spdk"))
+  method <- match.arg(tolower(method), c("psi", "bsf", "spdk"))
   method <- pmatch(method, c("psi", "bsf", "spdk"))
   if (method == 2 && particles == 0) 
     stop("'particles' must be positive for bootstrap filter.")
@@ -113,6 +113,9 @@ logLik.ssm_nlg <- function(object, particles, method = "bsf",
     stop("'particles' must be positive for bootstrap particle filter.")
   method <- pmatch(method,  c("psi", "bsf", NA, "ekf"))
  
+  max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  conv_tol <- check_positive_real(conv_tol, "conv_tol")
+  iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
   seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
   
   nonlinear_loglik(t(object$y), object$Z, object$H, object$T, 
@@ -128,6 +131,7 @@ logLik.ssm_nlg <- function(object, particles, method = "bsf",
 #' @export
 logLik.ssm_sde <- function(object, particles, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {
+  
   if (L <= 0) stop("Discretization level L must be larger than 0.")
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
@@ -138,6 +142,7 @@ logLik.ssm_sde <- function(object, particles, L,
     }
   }
   seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  
   loglik_sde(object$y, object$x0, object$positive, 
     object$drift, object$diffusion, object$ddiffusion, 
     object$prior_pdf, object$obs_pdf, object$theta, 

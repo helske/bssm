@@ -118,15 +118,15 @@
 predict.mcmc_output <- function(object, model, nsim, type = "response",  
   future = TRUE, seed = sample(.Machine$integer.max, size = 1), ...) {
   
-  if (!inherits(model, "bssm_model")) {
-    stop("Argument 'model' should be of class 'bssm_model'. ")
+  if (!inherits(model, "bbsm_model")) {
+    stop("Argument 'model' should be an object of class 'bssm_model'.")
   }
   nsim <- check_integer(nsim, "nsim")
   seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
   
   if (!test_flag(future)) stop("Argument 'future' should be TRUE or FALSE. ")
   
-  type <- match.arg(type, c("response", "mean", "state"))
+  type <- match.arg(tolower(type), c("response", "mean", "state"))
   
   if (object$output_type != 1) 
     stop("MCMC output must contain posterior samples of the states.")

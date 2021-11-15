@@ -14,21 +14,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r srr-tags, eval = FALSE, echo = FALSE}
-#' @srrstats {G1.0} Cites of the paper introducing to the package, as well as 
-#' published paper proposing the IS-MCMC method used in \code{bssm}.
-#' @srrstats {G1.1} The \code{bssm} package is 
-#' first to implement the IS-MCMC method as well as psi-APF particle filter 
-#' both introduced in Vihola, Helske, Franks (2020). 
-#' To our knowledge, the package is also the first R package to 
-#' implement delayed acceptance pseudo-marginal MCMC for general state space 
-#' models. 
-#' Note that the IS-MCMC method is also available in \code{walker} package for 
-#' limited class of models (subset of the models supported by \code{bssm}).
-#' @srrstatsTODO {G1.2} *Statistical Software should include a* Life Cycle Statement *describing current and anticipated future states of development.* 
-#' @srrstats {G1.3} Terminology is introduced in the vignettes as well as in the corresponding papers.
-#' @srrstatsTODO {G1.5} *Software should include all code necessary to reproduce results which form the basis of performance claims made in associated publications.* 
-#' @srrstatsTODO {G1.6} *Software should include code necessary to compare performance claims with alternative implementations in other R packages.* 
-
+#' @srrstatsTODO {G1.2} Contains project status badge.
 ```
 # bssm
 
