@@ -5,17 +5,17 @@
 \alias{ekpf_filter.ssm_nlg}
 \title{Extended Kalman Particle Filtering}
 \usage{
-ekpf_filter(object, particles, ...)
+ekpf_filter(model, particles, ...)
 
 \method{ekpf_filter}{ssm_nlg}(
-  object,
+  model,
   particles,
   seed = sample(.Machine$integer.max, size = 1),
   ...
 )
 }
 \arguments{
-\item{object}{Model of class \code{ssm_nlg}.}
+\item{model}{Model of class \code{ssm_nlg}.}
 
 \item{particles}{Number of particles as a positive integer.}
 

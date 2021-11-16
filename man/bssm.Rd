@@ -23,12 +23,12 @@ Carlo methods for models outside classic linear-Gaussian framework. For
 definitions of the currently supported models and methods, as
 well as some theory behind the novel IS-MCMC and \eqn{\psi}{psi}-APF
 algorithms, see Helske and Vihola (2021), Vihola, Helske, Franks (2020) and
-the package vignettes.
+the package vignettes and the R Journal paper.
 }
 \references{
 Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and
-Non-Gaussian State Space Models in R. ArXiv 2101.08492,
-<URL: https://arxiv.org/abs/2101.08492>.
+Non-Gaussian State Space Models in R. R Journal (to appear).
+https://arxiv.org/abs/2101.08492
 
 Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators
 based on approximate marginal Markov chain Monte Carlo.

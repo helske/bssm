@@ -336,12 +336,12 @@ theme_bw()
 coerced acceptance rate. Statistics and Computing, 22(5), p 997-1008.
 https://doi.org/10.1007/s11222-011-9269-5
 
-\link{2} Vihola, M, Helske, J, Franks, J (2020). Importance sampling type estimators based
-on approximate marginal Markov chain Monte Carlo.
+\link{2} Vihola, M, Helske, J, Franks, J (2020). Importance sampling type
+estimators based on approximate marginal Markov chain Monte Carlo.
 Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 
 \link{3} Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and
-Non-Gaussian State Space Models in R. Arxiv preprint 2101.08492.
+Non-Gaussian State Space Models in R. R Journal (to appear).
 https://arxiv.org/abs/2101.08492
 
 Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based
