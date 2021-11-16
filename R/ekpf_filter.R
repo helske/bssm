@@ -3,7 +3,7 @@
 #' Function \code{ekpf_filter} performs a extended Kalman particle filtering 
 #' with stratification resampling, based on Van Der Merwe et al (2001).
 #'
-#' @param object Model of class \code{ssm_nlg}.
+#' @param model Model of class \code{ssm_nlg}.
 #' @param particles Number of particles as a positive integer.
 #' @param seed Seed for RNG  (positive integer).
 #' @param ... Ignored.
@@ -14,8 +14,8 @@
 #' information processing systems (pp. 584-590).
 #' @export
 #' @rdname ekpf_filter
-ekpf_filter <- function(object, particles, ...) {
-  UseMethod("ekpf_filter", object)
+ekpf_filter <- function(model, particles, ...) {
+  UseMethod("ekpf_filter", model)
 }
 #' @method ekpf_filter ssm_nlg
 #' @export
@@ -43,8 +43,10 @@ ekpf_filter <- function(object, particles, ...) {
 #' out <- ekpf_filter(model_nlg, particles = 100)
 #' ts.plot(cbind(x, out$at[1:n], out$att[1:n]), col = 1:3)
 #'}
-ekpf_filter.ssm_nlg <- function(object, particles, 
+ekpf_filter.ssm_nlg <- function(model, particles, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  check_missingness(model)
   
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
@@ -56,8 +58,8 @@ ekpf_filter.ssm_nlg <- function(object, particles,
   }
   particles <- check_integer(particles, "particles")
   
-  nsamples <- ifelse(!is.null(nrow(object$y)), nrow(object$y), 
-    length(object$y)) * object$n_states * particles
+  nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), 
+    length(model$y)) * model$n_states * particles
   if (particles > 100 & nsamples > 1e12) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
@@ -65,19 +67,19 @@ ekpf_filter.ssm_nlg <- function(object, particles,
   
   seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
   
-  out <- ekpf(t(object$y), object$Z, object$H, object$T, 
-    object$R, object$Z_gn, object$T_gn, object$a1, object$P1, 
-    object$theta, object$log_prior_pdf, object$known_params, 
-    object$known_tv_params, object$n_states, object$n_etas, 
-    as.integer(object$time_varying), particles, 
+  out <- ekpf(t(model$y), model$Z, model$H, model$T, 
+    model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
+    model$theta, model$log_prior_pdf, model$known_params, 
+    model$known_tv_params, model$n_states, model$n_etas, 
+    as.integer(model$time_varying), particles, 
     seed)
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- 
-    rownames(out$alpha) <- object$state_names
-  out$at <- ts(out$at, start = start(object$y), 
-    frequency = frequency(object$y))
-  out$att <- ts(out$att, start = start(object$y), 
-    frequency = frequency(object$y))
+    rownames(out$alpha) <- model$state_names
+  out$at <- ts(out$at, start = start(model$y), 
+    frequency = frequency(model$y))
+  out$att <- ts(out$att, start = start(model$y), 
+    frequency = frequency(model$y))
   out$alpha <- aperm(out$alpha, c(2, 1, 3))
   out
 }
