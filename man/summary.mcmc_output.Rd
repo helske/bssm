@@ -16,7 +16,7 @@ errors and effective sample sizes is omitted.}
 \code{"theta"} (default), \code{"states"}, or \code{"both"}?}
 
 \item{only_theta}{Deprecated. If \code{TRUE}, summaries are computed only
-for hyperparameters theta.}
+for hyperparameters theta, not latent states alpha.}
 
 \item{...}{Ignored.}
 }

@@ -4,7 +4,9 @@
 #' distribution of the mean.
 #' 
 #' @export
-#' @importFrom stats fitted aggregate
+#' @importFrom stats fitted
+#' @importFrom magrittr %>%
+#' @importFrom dplyr group_by ungroup summarise as_tibble
 #' @importFrom diagis weighted_quantile weighted_var weighted_mean weighted_se
 #' @name fitted.mcmc_output
 #' @param object Results object of class \code{mcmc_output} from 
@@ -22,7 +24,7 @@
 fitted.mcmc_output <- function(object, model, 
   probs = c(0.025, 0.975), ...)  {
   
-  if (!inherits(model, "bbsm_model")) {
+  if (!inherits(model, "bssm_model")) {
     stop("Argument 'model' should be an object of class 'bssm_model'.")
   }
   if (inherits(model, c("ssm_mng", "ssm_mlg", "ssm_nlg"))) {
@@ -34,7 +36,7 @@ fitted.mcmc_output <- function(object, model,
       stop("Number of observations of the model and MCMC output do not match.") 
     }
   }
-
+  
   if (any(probs < 0 | probs > 1)) stop("'probs' outside [0, 1].")
   
   n <- nrow(object$alpha) - 1L
@@ -103,16 +105,14 @@ fitted.mcmc_output <- function(object, model,
   
   
   d <- data.frame(value = as.numeric(pred),
-    variable = variables,
-    time = rep(time(model$y), each = nrow(pred)))
-  out <- do.call(data.frame, 
-    aggregate(value ~ variable + time, data = d, 
-      FUN = function(x) c(
-        weighted_mean(x, w), 
-        sqrt(weighted_var(x, w)),
-        weighted_quantile(x, w, probs = probs),
-        sqrt(asymptotic_var(x, w)))))
-  names(out)[3:ncol(out)] <- c("Mean", "SD", paste0(probs * 100, "%"), "SE")
-  out
+    Variable = variables,
+    Time = rep(time(model$y), each = nrow(pred)))
+  
+  d %>% group_by(Variable, Time) %>%
+    summarise(
+      Mean = weighted_mean(value, w),
+      SD = sqrt(weighted_var(value, w)),
+      as_tibble(as.list(weighted_quantile(value, w, probs = probs))),
+      "SE(Mean)" = as.numeric(sqrt(asymptotic_var(value, w)))) %>% ungroup()
 }
 

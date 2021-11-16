@@ -12,6 +12,7 @@
   times,
   states,
   expand = !(x$mcmc_type \%in\% paste0("is", 1:3)),
+  use_times = TRUE,
   ...
 )
 }
@@ -35,6 +36,10 @@ what states to return? Default is all.}
 Defaults to \code{TRUE} for non-IS-MCMC, and \code{FALSE} for IS-MCMC.
 For \code{expand = FALSE} and always for IS-MCMC,
 the resulting data.frame contains variable weight (= counts * IS-weights).}
+
+\item{use_times}{If \code{TRUE} (default), transforms the values of the time
+variable to match the ts attribute of the input to define. If \code{FALSE},
+time is based on the indexing starting from 1.}
 
 \item{...}{Ignored.}
 }

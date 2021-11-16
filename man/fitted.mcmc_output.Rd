@@ -24,5 +24,6 @@ model <- bsm_lg(log10(UKgas), sd_y = prior, sd_level =  prior,
   sd_slope =  prior, sd_seasonal =  prior, period = 4)
 fit <- run_mcmc(model, iter = 2e4)
 res <- fitted(fit, model) 
+head(res)
 
 }

@@ -94,7 +94,7 @@
 #' @srrstatsTODO {G5.12} *Any conditions necessary to run extended tests such as platform requirements, memory, expected runtime, and artefacts produced that may need manual inspection, should be described in developer documentation such as a `CONTRIBUTING.md` or `tests/README.md` file.*
 
 
-#' # Standards not applicable
+#' # General standards not applicable
 #' 
 #' ## Factor types are not used nor supported:
 #' @srrstatsNA {G2.4d} *explicit conversion to factor via `as.factor()`*
@@ -117,14 +117,17 @@
 
 # Standards for Bayesian software
 
-#' ## addressed by the paper vignette and the corresponding R Journal paper
+#' ## addressed by the vignette, the corresponding R Journal paper, models.R and run_mcmc.R
 #' @srrstats {BS1.0} *Bayesian software which uses the term "hyperparameter" should explicitly clarify the meaning of that term in the context of that software.* 
 #' @srrstats {BS1.1} *Descriptions of how to enter data, both in textual form and via code examples. Both of these should consider the simplest cases of single objects representing independent and dependent data, and potentially more complicated cases of multiple independent data inputs.*
+#' @srrstats {BS1.2} *Description of how to specify prior distributions, both in textual form describing the general principles of specifying prior distributions, along with more applied descriptions and examples, within:*
+#' @srrstats {B31.2a} *The main package `README`, either as textual description or example code* [**B31.2b**]{#BS1_2b} *At least one package vignette, both as general and applied textual descriptions, and example code* [**B31.2c**]{#BS1_2c} *Function-level documentation, preferably with code included in examples* [**BS1.3**]{#BS1_3} *Description of all parameters which control the computational process (typically those determining aspects such as numbers and lengths of sampling processes, seeds used to start them, thinning parameters determining post-hoc sampling from simulated values, and convergence criteria). In particular:*
+#' @srrstats {BS1.3a} *Bayesian Software should document, both in text and examples, how to use the output of previous simulations as starting points of subsequent simulations.* [**BS1.3b**]{#BS1_3b} *Where applicable, Bayesian software should document, both in text and examples, how to use different sampling algorithms for a given model.* [**BS1.4**]{#BS1_4} *For Bayesian Software which implements or otherwise enables convergence checkers, documentation should explicitly describe and provide examples of use with and without convergence checkers.*
 
-#' @srrstatsTODO {BS1.2} *Description of how to specify prior distributions, both in textual form describing the general principles of specifying prior distributions, along with more applied descriptions and examples, within:*
-#' @srrstatsTODO {B31.2a} *The main package `README`, either as textual description or example code* [**B31.2b**]{#BS1_2b} *At least one package vignette, both as general and applied textual descriptions, and example code* [**B31.2c**]{#BS1_2c} *Function-level documentation, preferably with code included in examples* [**BS1.3**]{#BS1_3} *Description of all parameters which control the computational process (typically those determining aspects such as numbers and lengths of sampling processes, seeds used to start them, thinning parameters determining post-hoc sampling from simulated values, and convergence criteria). In particular:*
-#' @srrstatsTODO {BS1.3a} *Bayesian Software should document, both in text and examples, how to use the output of previous simulations as starting points of subsequent simulations.* [**BS1.3b**]{#BS1_3b} *Where applicable, Bayesian software should document, both in text and examples, how to use different sampling algorithms for a given model.* [**BS1.4**]{#BS1_4} *For Bayesian Software which implements or otherwise enables convergence checkers, documentation should explicitly describe and provide examples of use with and without convergence checkers.*
-#' @srrstatsTODO {BS1.5} *For Bayesian Software which implements or otherwise enables multiple convergence checkers, differences between these should be explicitly tested.* 
+#' # Bayesian standards not applicable
+#' 
+#' # the bssm package does not implement convergence checkers, but relie
+#' @srrstats {BS1.5} *For Bayesian Software which implements or otherwise enables multiple convergence checkers, differences between these should be explicitly tested.* 
 #' @srrstatsTODO {BS2.1} *Bayesian Software should implement pre-processing routines to ensure all input data is dimensionally commensurate, for example by ensuring commensurate lengths of vectors or numbers of rows of tabular inputs.*
 #' @srrstatsTODO {BS2.1a} *The effects of such routines should be tested.* 
 #' @srrstatsTODO {BS2.2} *Ensure that all appropriate validation and pre-processing of distributional parameters are implemented as distinct pre-processing steps prior to submitting to analytic routines, and especially prior to submitting to multiple parallel computational chains.*

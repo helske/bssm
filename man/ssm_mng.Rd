@@ -55,7 +55,8 @@ standard deviation, and for other distributions this is ignored.}
 distribution, this corresponds to the offset term. For binomial, this is the
 number of trials.}
 
-\item{init_theta}{Initial values for the unknown hyperparameters theta.}
+\item{init_theta}{Initial values for the unknown hyperparameters theta
+(i.e. unknown variables excluding latent state variables).}
 
 \item{D}{Intercept terms for observation equation, given as p x n matrix.}
 

@@ -40,7 +40,8 @@ a m x k matrix or a m x k x n array, or object which can be coerced to such.}
 
 \item{P1}{Prior covariance matrix for the initial state as m x m matrix.}
 
-\item{init_theta}{Initial values for the unknown hyperparameters theta.}
+\item{init_theta}{Initial values for the unknown hyperparameters theta
+(i.e. unknown variables excluding latent state variables).}
 
 \item{D}{Intercept terms \eqn{D_t} for the observations equation, given as a
 scalar or vector of length n.}

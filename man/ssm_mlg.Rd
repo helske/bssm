@@ -40,7 +40,8 @@ or a m x k x n array.}
 
 \item{P1}{Prior covariance matrix for the initial state as m x m matrix.}
 
-\item{init_theta}{Initial values for the unknown hyperparameters theta.}
+\item{init_theta}{Initial values for the unknown hyperparameters theta
+(i.e. unknown variables excluding latent state variables).}
 
 \item{D}{Intercept terms for observation equation, given as a p x n matrix.}
 

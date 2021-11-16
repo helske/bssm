@@ -2,15 +2,17 @@
 % Please edit documentation in R/as_draws.R
 \name{as_draws_df.mcmc_output}
 \alias{as_draws_df.mcmc_output}
-\alias{as_draws.mcmc_output}
 \title{Convert \code{run_mcmc} output to \code{draws_df} format}
 \usage{
-as_draws_df.mcmc_output(x)
-
-as_draws.mcmc_output(x)
+\method{as_draws_df}{mcmc_output}(x, times, ...)
 }
 \arguments{
-\item{x}{An object of class \code{mcmc_output}}
+\item{x}{An object of class \code{mcmc_output}.}
+
+\item{times}{Vector of indices defining which time points to return?
+Default is all.}
+
+\item{...}{Ignored.}
 }
 \value{
 A \code{draws_df} object.
@@ -19,10 +21,14 @@ A \code{draws_df} object.
 Converts MCMC output from \code{run_mcmc} call to a
 \code{draws_df} format of the \code{posterior} package. This enables the use
 of diagnostics and plotting methods of \code{posterior} and \code{bayesplot}
-packages. Note though that if \code{run_mcmc} used IS-MCMC
-method, the resulting \code{weight} column of the output is
-ignored by the aforementioned packages, i.e. the results correspond to
-approximate MCMC.
+packages.
+}
+\note{
+The jump chain representation is automatically expanded by
+\code{as_draws}, but if \code{run_mcmc} used IS-MCMC method, the output
+contains additional \code{weight} column corresponding to the IS-weights
+(without counts), which is ignored by \code{posterior} and \code{bayesplot},
+i.e. those results correspond to approximate MCMC.
 }
 \examples{
 
@@ -48,8 +54,8 @@ draws <- bind_draws(as_draws(fit1),
   as_draws(fit2), as_draws(fit3), along = "chain")
 # it is actually enough to transform first mcmc_output to draws object, 
 # rest are transformed automatically inside bind_draws
-rhat(draws$sd_y)
-ess_bulk(draws$sd_y)
-ess_tail(draws$sd_y)
+posterior::rhat(draws$sd_y)
+posterior::ess_bulk(draws$sd_y)
+posterior::summarise_draws(draws)
 
 }

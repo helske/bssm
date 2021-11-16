@@ -34,7 +34,7 @@ asymptotic_var <- function(x, w) {
 #'  
 #' @method print mcmc_output
 #' @importFrom diagis weighted_mean weighted_var weighted_se ess
-#' @importFrom coda mcmc spectrum0.ar
+#' @importFrom coda mcmc
 #' @importFrom stats var
 #' @param x Output from \code{\link{run_mcmc}}.
 #' @param ... Ignored.
@@ -75,7 +75,8 @@ print.mcmc_output <- function(x, ...) {
   } else {
     mean_theta <- colMeans(theta)
     sd_theta <- apply(theta, 2, sd)
-    se_theta <-  sqrt(spectrum0.ar(theta)$spec / nrow(theta))
+    se_theta <- sqrt(apply(theta, 2, function(x) iact(x) * var(x) / length(x)))
+    #se_theta <-  sqrt(spectrum0.ar(theta)$spec / nrow(theta))
     stats <- matrix(c(mean_theta, sd_theta, se_theta), ncol = 3, 
       dimnames = list(colnames(x$theta), c("Mean", "SD", "SE")))
   }
@@ -103,7 +104,8 @@ print.mcmc_output <- function(x, ...) {
       } else {
         mean_alpha <- colMeans(alpha)
         sd_alpha <- apply(alpha, 2, sd)
-        se_alpha <-  sqrt(spectrum0.ar(alpha)$spec / nrow(alpha))
+        se_alpha <-  sqrt(apply(alpha, 2, function(x) iact(x) * var(x) / length(x)))
+        #sqrt(spectrum0.ar(alpha)$spec / nrow(alpha))
         stats <- matrix(c(mean_alpha, sd_alpha, se_alpha), ncol = 3, 
           dimnames = list(colnames(x$alpha), c("Mean", "SD", "SE")))
       }
@@ -138,6 +140,7 @@ print.mcmc_output <- function(x, ...) {
 #' SE-IS can be regarded as the square root of independent IS variance,
 #' whereas SE corresponds to the square root of total asymptotic variance 
 #' (see Remark 3 of Vihola et al. (2020)).
+#' 
 #' 
 #' @param object Output from \code{run_mcmc}
 #' @param return_se if \code{FALSE} (default), computation of standard 
@@ -194,7 +197,8 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
       sd_theta <- apply(theta, 2, sd)
       
       if (return_se) {
-        se_theta <-  sqrt(spectrum0.ar(theta)$spec / nrow(theta))
+        #sqrt(spectrum0.ar(theta)$spec / nrow(theta))
+        se_theta <- sqrt(apply(theta, 2, function(x) iact(x) * var(x) / length(x)))
         ess_theta <- (sd_theta / se_theta)^2
         summary_theta <- matrix(c(mean_theta, sd_theta, se_theta, ess_theta), 
           ncol = 4, 
@@ -251,10 +255,15 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
         numeric(nrow(object$alpha)))
       
       if (return_se) {
+        # se_alpha <- vapply(alpha, function(x) 
+        #   apply(x, 2, function(z) 
+        #     sqrt(spectrum0.ar(z)$spec / length(z))), 
+        #   numeric(nrow(object$alpha)))
         se_alpha <- vapply(alpha, function(x) 
           apply(x, 2, function(z) 
-            sqrt(spectrum0.ar(z)$spec / length(z))), 
+            sqrt(apply(theta, 2, function(x) iact(z) * var(z) / length(z)))), 
           numeric(nrow(object$alpha)))
+        
         ess_alpha <- (sd_alpha / se_alpha)^2
         summary_alpha <- list(
           "Mean" = mean_alpha, "SD" = sd_alpha, 
@@ -269,60 +278,4 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
     "theta" = return(summary_theta),
     "states" = return(summary_alpha)
   )
-}
-
-#' Expand the Jump Chain representation
-#'
-#' The MCMC algorithms of \code{bssm} use a jump chain representation where we 
-#' store the accepted values and the number of times we stayed in the current 
-#' value. Although this saves bit memory and is especially convenient for 
-#' IS-corrected  MCMC, sometimes we want to have the usual sample paths. 
-#' Function \code{expand_sample} returns the expanded sample based on the 
-#' counts. Note that for IS-corrected output the expanded 
-#' sample corresponds to the approximate posterior.
-#' 
-#' @param x Output from \code{\link{run_mcmc}}.
-#' @param variable Expand parameters \code{"theta"} or states \code{"states"}.
-#' @param times Vector of indices. In case of states, 
-#' what time points to expand? Default is all.
-#' @param states Vector of indices. In case of states, 
-#' what states to expand? Default is all.
-#' @param by_states If \code{TRUE} (default), return list by states. 
-#' Otherwise by time.
-#' @export
-expand_sample <- function(x, variable = "theta", times, states, 
-  by_states = TRUE) {
-  
-  if (!test_flag(by_states)) 
-    stop("Argument 'by_states' should be TRUE or FALSE. ")
-  
-  variable <- match.arg(tolower(variable), c("theta", "states"))
-  if (x$mcmc_type %in% paste0("is", 1:3)) 
-    warning(paste("Input is based on a IS-weighted MCMC, the results", 
-    "correspond to the approximate posteriors.", sep = " "))
-  if (variable == "theta") {
-    out <- apply(x$theta, 2, rep, times = x$counts)
-  } else {
-    if (x$output_type == 1) {
-      if (missing(times)) times <- seq_len(nrow(x$alpha))
-      if (missing(states)) states <- seq_len(ncol(x$alpha))
-      
-      if (by_states) {
-        out <- lapply(states, function(i) {
-          z <- apply(x$alpha[times, i, , drop = FALSE], 1, rep, x$counts)
-          colnames(z) <- times
-          z
-        })
-        names(out) <- colnames(x$alpha)[states]
-      } else {
-        out <- lapply(times, function(i) {
-          z <- apply(x$alpha[i, states, , drop = FALSE], 2, rep, x$counts)
-          colnames(z) <- colnames(x$alpha)[states]
-          z
-        })
-        names(out) <- times
-      }
-    } else stop("MCMC output does not contain posterior samples of states.")
-  }
-  mcmc(out, start = x$burnin + 1, thin = x$thin)
 }

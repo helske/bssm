@@ -26,19 +26,25 @@ License: GPL (>= 2)
 Depends: R (>= 3.5.0)
 Suggests: 
     covr,
-    dplyr,
     ggplot2 (>= 2.0.0),
     Hmisc,
     KFAS (>= 1.2.1),
     knitr (>= 1.11),
     MASS,
-    posterior,
     rmarkdown (>= 0.8.1),
     ramcmc,
     sde,
     sitmo,
     testthat
-Imports: checkmate, coda (>= 0.18-1), diagis, Rcpp (>= 0.12.3)
+Imports: 
+    magrittr,
+    checkmate,
+    coda (>= 0.18-1),
+    diagis,
+    dplyr,
+    posterior,
+    Rcpp (>= 0.12.3),
+    tidyr
 LinkingTo: Rcpp, RcppArmadillo, ramcmc, sitmo
 SystemRequirements: C++11, pandoc (>= 1.12.3, needed for vignettes)
 VignetteBuilder: knitr

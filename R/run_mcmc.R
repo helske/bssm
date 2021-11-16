@@ -99,13 +99,15 @@
 #' @references 
 #' [1] Vihola M (2012). Robust adaptive Metropolis algorithm with
 #' coerced acceptance rate. Statistics and Computing, 22(5), p 997-1008.
+#' https://doi.org/10.1007/s11222-011-9269-5
 #' 
 #' [2] Vihola, M, Helske, J, Franks, J (2020). Importance sampling type estimators based 
 #' on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #' 
-#' [3] Helske, J, Vihola, M (2019). bssm: Bayesian Inference of Non-linear and 
+#' [3] Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and 
 #' Non-Gaussian State Space Models in R. Arxiv preprint 2101.08492.
+#' https://arxiv.org/abs/2101.08492
 #' 
 run_mcmc <- function(model, ...) {
   UseMethod("run_mcmc", model)
@@ -371,7 +373,7 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   check_prop(target_acceptance)
   check_prop(gamma, "gamma")
   
-  output_type <- pmatch(tolwer(output_type), c("full", "summary", "theta"))
+  output_type <- pmatch(tolower(output_type), c("full", "summary", "theta"))
   mcmc_type <- match.arg(tolower(mcmc_type), 
     c("pm", "da", paste0("is", 1:3), "approx"))
   if (mcmc_type == "approx") particles <- 0

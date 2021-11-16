@@ -11,7 +11,10 @@
 #' (without counts), which is ignored by \code{posterior} and \code{bayesplot}, 
 #' i.e. those results correspond to approximate MCMC.
 #' 
-#' @param x An object of class \code{mcmc_output}
+#' @param x An object of class \code{mcmc_output}.
+#' @param times Vector of indices defining which time points to return? 
+#' Default is all.
+#' @param ... Ignored.
 #' @return A \code{draws_df} object.
 #' @rdname as_draws
 #' @importFrom posterior as_draws as_draws_df
@@ -45,29 +48,30 @@
 #' posterior::ess_bulk(draws$sd_y)
 #' posterior::summarise_draws(draws)
 #'
-as_draws_df.mcmc_output <- function(x) {
+as_draws_df.mcmc_output <- function(x, times, ...) {
   
   
   d_theta <- as.data.frame(x, variable = "theta", expand = TRUE)
+  if (missing(times)) times <- seq_len(ncol(x$alpha))
   d_states <- as.data.frame(x, variable = "states", expand = TRUE, 
+    times = times,
     use_times = FALSE)
   
-  d <- merge(
+  d <- cbind(
     tidyr::pivot_wider(d_theta, 
       values_from = value, 
       names_from = variable),
     tidyr::pivot_wider(d_states, 
       values_from = value, 
       names_from = c(variable, time), 
-      names_glue = "{variable}[{time}]"))
+      names_glue = "{variable}[{time}]")[, -(1:2)])
   names(d)[1] <- ".iteration"
   
   if (x$mcmc_type %in% paste0("is", 1:3)) {
-    warning(paste("Input is based on a IS-MCMC, the output column '.weight'", 
-      "contains the IS-weights, but these are not used for example in the", 
+    warning(paste("Input is based on a IS-MCMC and the output column 'weight'", 
+      "contains the IS-weights. These are not used for example in the", 
       "diagnostic methods by 'posterior' package, i.e. these are based",
       "on approximate MCMC chains."))
-    names(d)[2] <- ".weight"
   } else {
     d$weight <- NULL
   }
@@ -75,4 +79,4 @@ as_draws_df.mcmc_output <- function(x) {
   as_draws(d)
 }
 #' @exportS3Method posterior::as_draws mcmc_output
-as_draws.mcmc_output <- function(x) as_draws_df.mcmc_output(x)
+as_draws.mcmc_output <- function(x, times, ...) as_draws_df.mcmc_output(x, times, ...)

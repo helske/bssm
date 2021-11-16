@@ -78,6 +78,7 @@ NULL
 #' @keywords datasets
 #' @references James Durbin, Siem Jan Koopman (2012). 
 #' Time Series Analysis by State Space Methods. Oxford University Press.
+#' https://doi.org/10.1093/acprof:oso/9780199641178.001.0001
 #' @examples
 #' data("exchange")
 #' model <- svm(exchange, rho = uniform(0.97,-0.999,0.999),

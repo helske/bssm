@@ -17,7 +17,7 @@
 }
 \arguments{
 \item{object}{Results object of class \code{mcmc_output} from
-\code{\link{run_mcmc}}}
+\code{\link{run_mcmc}}.}
 
 \item{model}{A \code{bssm_model} object.
 Should have same structure and class as the original model which was used in
