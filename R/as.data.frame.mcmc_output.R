@@ -16,6 +16,9 @@
 #' Defaults to \code{TRUE} for non-IS-MCMC, and \code{FALSE} for IS-MCMC. 
 #' For \code{expand = FALSE} and always for IS-MCMC, 
 #' the resulting data.frame contains variable weight (= counts * IS-weights).
+#' @param use_times If \code{TRUE} (default), transforms the values of the time 
+#' variable to match the ts attribute of the input to define. If \code{FALSE}, 
+#' time is based on the indexing starting from 1.
 #' @param ... Ignored.
 #' @export
 #' @examples
@@ -40,7 +43,8 @@ as.data.frame.mcmc_output <- function(x,
   row.names, optional,
   variable = c("theta", "states"),
   times, states,
-  expand = !(x$mcmc_type %in% paste0("is", 1:3)), ...) {
+  expand = !(x$mcmc_type %in% paste0("is", 1:3)), 
+  use_times = TRUE, ...) {
   
   variable <- match.arg(tolower(variable), c("theta", "states"))
   
@@ -77,9 +81,11 @@ as.data.frame.mcmc_output <- function(x,
       weights <- x$counts * 
         (if (x$mcmc_type %in% paste0("is", 1:3)) x$weights else 1)
     }
-    times <- time(ts(seq_len(nrow(x$alpha)), 
-      start = attr(x, "ts")$start, 
-      frequency = attr(x, "ts")$frequency))[times]
+    if (use_times) {
+      times <- time(ts(seq_len(nrow(x$alpha)), 
+        start = attr(x, "ts")$start, 
+        frequency = attr(x, "ts")$frequency))[times]
+    }
     d <- data.frame(iter = iters,
       value = as.numeric(values),
       variable = rep(colnames(x$alpha)[states], each = nrow(values)),

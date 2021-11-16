@@ -3,16 +3,20 @@
 #' Converts MCMC output from \code{run_mcmc} call to a 
 #' \code{draws_df} format of the \code{posterior} package. This enables the use 
 #' of diagnostics and plotting methods of \code{posterior} and \code{bayesplot} 
-#' packages. Note though that if \code{run_mcmc} used IS-MCMC 
-#' method, the resulting \code{weight} column of the output is 
-#' ignored by the aforementioned packages, i.e. the results correspond to 
-#' approximate MCMC.
+#' packages. 
+#' 
+#' @note The jump chain representation is automatically expanded by 
+#' \code{as_draws}, but if \code{run_mcmc} used IS-MCMC method, the output 
+#' contains additional \code{weight} column corresponding to the IS-weights 
+#' (without counts), which is ignored by \code{posterior} and \code{bayesplot}, 
+#' i.e. those results correspond to approximate MCMC.
 #' 
 #' @param x An object of class \code{mcmc_output}
 #' @return A \code{draws_df} object.
-#' @exportS3Method posterior::as_draws_df mcmc_output
-#' @export
 #' @rdname as_draws
+#' @importFrom posterior as_draws as_draws_df
+#' @importFrom tidyr pivot_wider
+#' @exportS3Method posterior::as_draws_df mcmc_output
 #' @examples 
 #' 
 #' model <- bsm_lg(Nile, 
@@ -37,37 +41,38 @@
 #'   as_draws(fit2), as_draws(fit3), along = "chain")
 #' # it is actually enough to transform first mcmc_output to draws object, 
 #' # rest are transformed automatically inside bind_draws
-#' rhat(draws$sd_y)
-#' ess_bulk(draws$sd_y)
-#' ess_tail(draws$sd_y)
-#' 
+#' posterior::rhat(draws$sd_y)
+#' posterior::ess_bulk(draws$sd_y)
+#' posterior::summarise_draws(draws)
+#'
 as_draws_df.mcmc_output <- function(x) {
   
-  d_theta <- as.data.frame(x, variable = "theta", expand = TRUE)
-  d_states <- as.data.frame(x, variable = "states", expand = TRUE)
   
-  d <- data.frame(.iteration = (x$iter - x$burnin + 1):x$iter)
+  d_theta <- as.data.frame(x, variable = "theta", expand = TRUE)
+  d_states <- as.data.frame(x, variable = "states", expand = TRUE, 
+    use_times = FALSE)
+  
+  d <- merge(
+    tidyr::pivot_wider(d_theta, 
+      values_from = value, 
+      names_from = variable),
+    tidyr::pivot_wider(d_states, 
+      values_from = value, 
+      names_from = c(variable, time), 
+      names_glue = "{variable}[{time}]"))
+  names(d)[1] <- ".iteration"
   
   if (x$mcmc_type %in% paste0("is", 1:3)) {
-    warning(paste("Input is based on a IS-MCMC, the output column 'weight'", 
+    warning(paste("Input is based on a IS-MCMC, the output column '.weight'", 
       "contains the IS-weights, but these are not used for example in the", 
       "diagnostic methods by 'posterior' package, i.e. these are based",
       "on approximate MCMC chains."))
-    d$weight <- d_theta$weight
+    names(d)[2] <- ".weight"
+  } else {
+    d$weight <- NULL
   }
   
-  for (variable in unique(d_theta$variable)) {
-    d[variable] <- d_theta$value[d_theta$variable == variable]
-  }
-  times <- unique(d_states$time)
-  for (variable in unique(d_states$variable)) {
-    for (i in times)
-      d[paste0(variable, "[", i, "]")] <- 
-        d_states$value[d_states$variable == variable & d_states$time == i]
-  }
-  posterior::as_draws(d)
+  as_draws(d)
 }
 #' @exportS3Method posterior::as_draws mcmc_output
-#' @export
-#' @rdname as_draws
 as_draws.mcmc_output <- function(x) as_draws_df.mcmc_output(x)
