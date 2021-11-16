@@ -118,6 +118,8 @@
 predict.mcmc_output <- function(object, model, nsim, type = "response",  
   future = TRUE, seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  check_missingness(model)
+  
   if (!inherits(model, "bbsm_model")) {
     stop("Argument 'model' should be an object of class 'bssm_model'.")
   }

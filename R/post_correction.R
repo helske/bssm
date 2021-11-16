@@ -1,4 +1,5 @@
-# Get MAP estimate of theta
+#' Get MAP estimate of theta
+#' @param x Object of class \code{mcmc_output}
 get_map <- function(x) {
   x$theta[which.max(x$posterior), ]
 }
@@ -79,6 +80,8 @@ get_map <- function(x) {
 suggest_N <- function(model, theta, 
   candidates = seq(10, 100, by = 10), replications = 100, 
   seed = sample(.Machine$integer.max, size = 1)) {
+  
+  check_missingness(model)
   
   replications <- check_integer(replications, "replications")
   seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
@@ -233,6 +236,8 @@ suggest_N <- function(model, theta,
 #' }
 post_correct <- function(model, mcmc_output, particles, threads = 1L, 
   is_type = "is2", seed = sample(.Machine$integer.max, size = 1)) {
+  
+  check_missingness(model)
   
   particles <- check_integer(particles, "particles")
   threads <- check_integer(threads, "threads")

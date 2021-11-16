@@ -1,3 +1,11 @@
+#' @srrstats {G2.7, G2.8, G2.9} Only matrix/mts/arrays as tabular data are 
+#' supported, not data.frame or similar objects.
+#' 
+#' @srrstats {G2.14, G2.14a, G2.14b, G2.14c} Missing observations are handled 
+#' automatically as per SSM theory, whereas missing values are not allowed 
+#' elsewhere.
+#' 
+
 ## placeholder functions for fixed models
 default_prior_fn <- function(theta) {
   0

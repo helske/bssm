@@ -48,6 +48,9 @@
 #' model <- ssm_ulg(y = c(1,4,3), Z = 1, H = 1, T = 1, R = 1)
 #' logLik(model)
 logLik.gaussian <- function(object, ...) {
+  
+     check_missingness(object)
+  
   gaussian_loglik(object, model_type(object))
 }
 
@@ -68,6 +71,8 @@ logLik.gaussian <- function(object, ...) {
 logLik.nongaussian <- function(object, particles, method = "psi", 
   max_iter = 100, conv_tol = 1e-8, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+     check_missingness(object)
   
   object$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
   object$conv_tol <- check_positive_real(conv_tol, "conv_tol")
@@ -98,6 +103,8 @@ logLik.nongaussian <- function(object, particles, method = "psi",
 logLik.ssm_nlg <- function(object, particles, method = "bsf",
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0,
   seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+     check_missingness(object)
   
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
@@ -131,6 +138,8 @@ logLik.ssm_nlg <- function(object, particles, method = "bsf",
 #' @export
 logLik.ssm_sde <- function(object, particles, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+     check_missingness(object)
   
   if (L <= 0) stop("Discretization level L must be larger than 0.")
   if (missing(particles)) {

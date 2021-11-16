@@ -9,7 +9,6 @@
 #'
 #' @srrstatsVerbose TRUE
 #' 
-#' 
 #' ### Standards for general statistical software ###
 #' 
 #' # General documentation, addressed by the paper vignette and the corresponding R Journal paper
@@ -25,7 +24,7 @@
 #' 
 #' # As tested by autotest
 #' @srrstats {G2.0} *Implement assertions on lengths of inputs, particularly through asserting that inputs expected to be single- or multi-valued are indeed so.*
-#' @srrstats {G2.0a} Provide explicit secondary documentation of any expectations on lengths of inputs
+#' @srrstats {G2.0a} *Provide explicit secondary documentation of any expectations on lengths of inputs.*
 #' @srrstats {G2.1} *Implement assertions on types of inputs (see the initial point on nomenclature above).*
 #' @srrstats {G2.1a} *Provide explicit secondary documentation of expectations on data types of all vector inputs.*
 #' @srrstats {G2.2} *Appropriately prohibit or restrict submission of multivariate input to parameters expected to be univariate.*
@@ -35,7 +34,6 @@
 #' @srrstats {G2.4a} *explicit conversion to `integer` via `as.integer()`*
 #' @srrstats {G2.4b} *explicit conversion to continuous via `as.numeric()`*
 #' @srrstats {G2.4c} *explicit conversion to character via `as.character()` (and not `paste` or `paste0`)*
-#'
 #' @srrstats {G2.6} *Software which accepts one-dimensional input should ensure values are appropriately pre-processed regardless of class structures.* 
 #' 
 #' ## match.arg and tolower are used where applicable.
@@ -48,17 +46,15 @@
 #' @srrstats {G2.8} *Software should provide appropriate conversion or dispatch routines as part of initial pre-processing to ensure that all other sub-functions of a package receive inputs of a single defined class or type.*
 #' @srrstats {G2.9} *Software should issue diagnostic messages for type conversion in which information is lost (such as conversion of variables from factor to character; standardisation of variable names; or removal of meta-data such as those associated with [`sf`-format](https://r-spatial.github.io/sf/) data) or added (such as insertion of variable or column names where none were provided).* 
 #'
-#' ## Missing observations are handled automatically as per SSM theory, whereas missing values are not allowed elsewhere
+#' ## Missing observations (y) are handled automatically as per SSM theory, whereas missing values are not allowed elsewhere. Inputing or ignoring them does not make sense in time series context.
 #' @srrstats {G2.14} *Where possible, all functions should provide options for users to specify how to handle missing (`NA`) data, with options minimally including:*
 #' @srrstats {G2.14a} *error on missing data*
 #' @srrstats {G2.14b} *ignore missing data with default warnings or messages issued*
 #' @srrstats {G2.14c} *replace missing data with appropriately imputed values*
+#' @srrstats {G2.15} *Functions should never assume non-missingness, and should never pass data with potential missing values to any base routines with default `na.rm = FALSE`-type parameters (such as [`mean()`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/mean.html), [`sd()`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/sd.html) or [`cor()`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/cor.html)).*
+#' @srrstats {G2.16} *All functions should also provide options to handle undefined values (e.g., `NaN`, `Inf` and `-Inf`), including potentially ignoring or removing such values.* 
 #' 
-#' # This is currently checked when building the model, should there be another check in say run_mcmc in case user manually alters the input model?
-#' @srrstatsTODO {G2.15} *Functions should never assume non-missingness, and should never pass data with potential missing values to any base routines with default `na.rm = FALSE`-type parameters (such as [`mean()`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/mean.html), [`sd()`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/sd.html) or [`cor()`](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/cor.html)).*
-#' @srrstatsTODO {G2.16} *All functions should also provide options to handle undefined values (e.g., `NaN`, `Inf` and `-Inf`), including potentially ignoring or removing such values.* 
-#' 
-#' @srrstatsTODO {G3.0} *Statistical software should never compare floating point numbers for equality. All numeric equality comparisons should either ensure that they are made between integers, or use appropriate tolerances for approximate equality.* 
+#' @srrstats {G3.0} *Statistical software should never compare floating point numbers for equality. All numeric equality comparisons should either ensure that they are made between integers, or use appropriate tolerances for approximate equality.* 
 #' 
 #' # Simulated datasets are used in several occasions
 #' @srrstats {G5.0} *Where applicable or practicable, tests should use standard data sets with known properties (for example, the [NIST Standard Reference Datasets](https://www.itl.nist.gov/div898/strd/), or data sets provided by other widely-used R packages).*

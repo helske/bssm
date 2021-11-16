@@ -25,8 +25,8 @@
 #' Koopman, SJ and Durbin J (2012). Time Series Analysis by State Space 
 #' Methods. Second edition. Oxford: Oxford University Press.
 #' 
-#' Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators based 
-#' on approximate marginal Markov chain Monte Carlo. 
+#' Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators 
+#' based on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @rdname gaussian_approx
@@ -47,6 +47,8 @@ gaussian_approx <- function(model, max_iter, conv_tol, ...) {
 #' @export
 gaussian_approx.nongaussian <- function(model, max_iter = 100, 
   conv_tol = 1e-8, ...) {
+  
+  check_missingness(model)
   
   model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
@@ -81,6 +83,8 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100,
 #' @export
 gaussian_approx.ssm_nlg <- function(model, max_iter = 100, 
   conv_tol = 1e-8, iekf_iter = 0, ...) {
+  
+  check_missingness(model)
   
   model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")

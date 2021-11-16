@@ -101,12 +101,12 @@
 #' coerced acceptance rate. Statistics and Computing, 22(5), p 997-1008.
 #' https://doi.org/10.1007/s11222-011-9269-5
 #' 
-#' [2] Vihola, M, Helske, J, Franks, J (2020). Importance sampling type estimators based 
-#' on approximate marginal Markov chain Monte Carlo. 
+#' [2] Vihola, M, Helske, J, Franks, J (2020). Importance sampling type 
+#' estimators based on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #' 
 #' [3] Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and 
-#' Non-Gaussian State Space Models in R. Arxiv preprint 2101.08492.
+#' Non-Gaussian State Space Models in R. R Journal (to appear).
 #' https://arxiv.org/abs/2101.08492
 #' 
 run_mcmc <- function(model, ...) {
@@ -139,6 +139,9 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   burnin = floor(iter / 2), thin = 1, gamma = 2 / 3,
   target_acceptance = 0.234, S, end_adaptive_phase = FALSE, threads = 1,
   seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  
+  check_missingness(model)
   
   if (!test_flag(end_adaptive_phase)) 
     stop("Argument 'end_adaptive_phase' should be TRUE or FALSE. ")
@@ -341,6 +344,9 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100, 
   conv_tol = 1e-8, ...) {
   
+  
+  check_missingness(model)
+  
   if (!test_flag(end_adaptive_phase)) 
     stop("Argument 'end_adaptive_phase' should be TRUE or FALSE. ")
   
@@ -498,6 +504,9 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
   conv_tol = 1e-8, iekf_iter = 0, ...) {
   
+  
+  check_missingness(model)
+  
   if (!test_flag(end_adaptive_phase)) 
     stop("Argument 'end_adaptive_phase' should be TRUE or FALSE. ")
   
@@ -652,6 +661,8 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   burnin = floor(iter/2), thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  check_missingness(model)
   
   if (any(c(model$drift, model$diffusion, model$ddiffusion, model$prior_pdf, 
     model$obs_pdf) %in% c("<pointer: (nil)>", "<pointer: 0x0>"))) {

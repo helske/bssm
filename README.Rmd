@@ -14,8 +14,23 @@ knitr::opts_chunk$set(
 ```
 
 ```{r srr-tags, eval = FALSE, echo = FALSE}
-#' @srrstatsTODO {G1.2} Contains project status badge.
+#' @srrstats {G1.2} Contains project status badge.
+#' @srrstats {G1.4,G1.4a} Package uses roxygen2 for documentation.
+#' @srrstats {G2.0, G2.0a, G2.1, G2.1a, G2.2, G2.4, G2.4a, G2.4b, G2.4c, G2.6} 
+#' Input types and shapes are tested and checked with autotest and converted 
+#' explicitly when necessary.
+#' 
+#' @srrstats {G2.3, G2.3a, G2.3b} match.arg and tolower are used where 
+#' applicable.
+#' 
+#' @srrstats {G2.14, G2.14a, G2.14b, G2.14c, G2.15, G2.16} Missing observations 
+#' (y) are handled automatically as per SSM theory, whereas missing values are 
+#' not allowed elsewhere. Inputing or ignoring them does not make sense in time 
+#' series context.
+#'
+#' @srrstats {G3.0} No floating point equality comparisons are made.
 ```
+
 # bssm
 
 <!-- badges: start -->
@@ -37,8 +52,8 @@ supported.
   
 For details, see 
   
-  * [the bssm paper on ArXiv](https://arxiv.org/abs/2101.08492), 
-  * [package vignettes at CRAN](https://cran.r-project.org/web/packages/bssm/index.html) 
+  * [The bssm paper on ArXiv](https://arxiv.org/abs/2101.08492) (to appear in R Journal), 
+  * [Package vignettes at CRAN](https://cran.r-project.org/web/packages/bssm/index.html) 
   * Paper on [Importance sampling type estimators based on approximate marginal Markov chain Monte Carlo](https://onlinelibrary.wiley.com/doi/abs/10.1111/sjos.12492)
   
 There are also couple posters and a talk related to IS-correction methodology and bssm package: 
@@ -48,36 +63,98 @@ There are also couple posters and a talk related to IS-correction methodology an
   * [UseR!2017: Bayesian non-Gaussian state space models in R](http://users.jyu.fi/~jovetale/posters/user2017.pdf)
 
 The `bssm` package was originally developed with the support of Academy of 
-Finland grants 284513, 312605, and 311877. Current development is focused on usability and improvidevelopemnt is 
+Finland grants 284513, 312605, and 311877. Current development is focused on 
+increased usability and stability.
 
 ## Installation
 
 You can install the released version of bssm from [CRAN](https://CRAN.R-project.org) with:
 
-```{r}
+```{r, eval=FALSE}
 install.packages("bssm")
 ```
 
 And the development version from [GitHub](https://github.com/) with:
 
-```{r}
+```{r, eval=FALSE}
 # install.packages("devtools")
 devtools::install_github("helske/bssm")
 ```
 Or from R-universe with 
   
-```{r}
+```{r, eval = FALSE}
 install.packages("bssm", repos = "https://helske.r-universe.dev")
 ```
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+Consider the daily air quality measurements in New Your from May to September 1973, available in the `datasets` package. Let's try to predict the missing ozone levels by simple linear-Gaussian local linear trend model with temperature and wind as explanatory variables:
 
 ```{r example}
-library(bssm)
-## basic example code
+library("bssm")
+library("dplyr")
+library("ggplot2")
+
+data("airquality", package = "datasets")
+
+# Covariates as matrix. For complex cases, check out as_bssm function
+xreg <- airquality %>% select(Wind, Temp) %>% as.matrix()
+
+model <- bsm_lg(airquality$Ozone,
+  xreg = xreg,  
+  beta = normal(rep(0, ncol(xreg)), 0, 1),
+  sd_y = gamma_prior(1, 2, 0.01),
+  sd_level = gamma_prior(1, 2, 0.01), 
+  sd_slope = gamma_prior(1, 2, 0.01))
+  
+fit <- run_mcmc(model, iter = 20000, burnin = 5000)
+fit
+
+
+obs <- data.frame(Time = 1:nrow(airquality),
+        Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))
+
+pred <- fitted(fit, model)
+pred %>%
+  ggplot(aes(x = Time, y = Mean)) + 
+  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
+    alpha = 0.5, fill = "steelblue") + 
+  geom_line() + 
+  geom_point(data = obs, 
+    aes(x = Time, y = Ozone), colour = "Tomato") +
+  theme_bw()
+
 ```
+
+Same model but now assuming observations are from Gamma distribution:
+```{r gamma-example}
+
+model2 <- bsm_ng(airquality$Ozone,
+    xreg = xreg,  
+    beta = normal(rep(0, ncol(xreg)), 0, 1),
+    distribution = "gamma",
+    phi = gamma_prior(1, 2, 0.01),
+    sd_level = gamma_prior(1, 2, 0.1), 
+    sd_slope = gamma_prior(1, 2, 0.1))
+
+fit2 <- run_mcmc(model2, iter = 20000, burnin = 5000, particles = 10)
+fit2
+```
+
+Comparison:
+```{r compare}
+pred2 <- fitted(fit2, model2)
+
+bind_rows(list(Gaussian = pred, Gamma = pred2), .id = "Model") %>%
+  ggplot(aes(x = Time, y = Mean)) + 
+  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`, fill = Model), 
+    alpha = 0.25) + 
+  geom_line(aes(colour = Model)) + 
+  geom_point(data = obs, 
+    aes(x = Time, y = Ozone)) +
+  theme_bw()
+```
+
 
 ## Recent changes (For all changes, see NEWS file.)
   

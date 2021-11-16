@@ -30,6 +30,8 @@ kfilter <- function(model, ...) {
 #' ts.plot(cbind(y, x, kfilter(model)$att), col = 1:3)
 kfilter.gaussian <- function(model, ...) {
   
+  check_missingness(model)
+  
   out <- gaussian_kfilter(model, model_type = model_type(model))
   colnames(out$at) <- colnames(out$att) <- colnames(out$Pt) <-
     colnames(out$Ptt) <- rownames(out$Pt) <- rownames(out$Ptt) <- 
@@ -93,6 +95,8 @@ kfilter.nongaussian <- function(model, ...) {
 #' ts.plot(cbind(x, out_ekf$att, out_iekf$att), col = 1:3)
 #' }
 ekf <- function(model, iekf_iter = 0) {
+  
+  check_missingness(model)
   
   iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
   
@@ -160,6 +164,8 @@ ekf <- function(model, iekf_iter = 0) {
 #' ts.plot(cbind(x, out_iekf$att, out_ukf$att), col = 1:3)
 #' }
 ukf <- function(model, alpha = 0.001, beta = 2, kappa = 0) {
+  
+  check_missingness(model)
   
   if (alpha <= 0) stop("Parameter 'alpha' should be positive. ")
   if (beta < 0) stop("Parameter 'beta' should be non-negative. ")

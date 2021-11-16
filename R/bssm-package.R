@@ -1,3 +1,4 @@
+#' 
 #' Bayesian Inference of State Space Models
 #'
 #' This package contains functions for efficient Bayesian inference of state 
@@ -18,14 +19,12 @@
 #' definitions of the currently supported models and methods, as 
 #' well as some theory behind the novel IS-MCMC and \eqn{\psi}{psi}-APF 
 #' algorithms, see Helske and Vihola (2021), Vihola, Helske, Franks (2020) and 
-#' the package vignettes. 
-#' 
-#' @srrstatsTODO {G1.4,G1.4a} Package uses roxygen2 for documentation.
+#' the package vignettes and the R Journal paper. 
 #' 
 #' @references 
 #' Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and 
-#' Non-Gaussian State Space Models in R. ArXiv 2101.08492, 
-#' <URL: https://arxiv.org/abs/2101.08492>.
+#' Non-Gaussian State Space Models in R. R Journal (to appear).
+#' https://arxiv.org/abs/2101.08492
 #' 
 #' Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators 
 #' based on approximate marginal Markov chain Monte Carlo. 
@@ -86,18 +85,54 @@ NULL
 #' 
 #' out <- particle_smoother(model, particles = 500)
 #' plot.ts(cbind(model$y, exp(out$alphahat))) 
-NULL
-#' Simulated Poisson time series data
+NULL 
+#' Simulated Poisson Time Series Data
 #'
-#' See example for code for reproducing the data.
+#' See example for code for reproducing the data. This was used in 
+#' Vihola, Helske, Franks (2020).
 #'
+#' @srrstats {G5.0, G5.1} used in Vihola, Helske, Franks (2020).
 #' @name poisson_series
 #' @docType data
-#' @format A vector of length 100
+#' @format A vector of length 100.
 #' @keywords datasets
+#' @references 
+#' Vihola, M, Helske, J, Franks, J (2020). Importance sampling type 
+#' estimators based on approximate marginal Markov chain Monte Carlo. 
+#' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
+#' 
 #' @examples 
 #' # The data was generated as follows:
 #' set.seed(321)
 #' slope <- cumsum(c(0, rnorm(99, sd = 0.01)))
 #' y <- rpois(100, exp(cumsum(slope + c(0, rnorm(99, sd = 0.1)))))
+NULL
+#' 
+# Simulated Negative Binomial Time Series Data
+#'
+#' See example for code for reproducing the data. This was used in 
+#' Helske and Vihola (2021).
+#'
+#' @srrstats {G5.0, G5.1} used in Helske and Vihola (2021).
+#' @name negbin_series
+#' @docType data
+#' @format A time series \code{mts} object with 200 time points and two series.
+#' @keywords datasets
+#' @references 
+#' [3] Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and 
+#' Non-Gaussian State Space Models in R. R Journal (to appear).
+#' https://arxiv.org/abs/2101.08492
+#' 
+#' @examples 
+#' # The data was generated as follows:
+#' set.seed(123)
+#' n <- 200
+#' sd_level <- 0.1
+#' drift <- 0.01
+#' beta <- -0.9
+#' phi <- 5
+#' 
+#' level <- cumsum(c(5, drift + rnorm(n - 1, sd = sd_level)))
+#' x <- 3 + (1:n) * drift + sin(1:n + runif(n, -1, 1))
+#' y <- rnbinom(n, size = phi, mu = exp(beta * x + level))
 NULL

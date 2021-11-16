@@ -1,33 +1,3 @@
-# Integrated Autocorrelation Time
-#
-# Here IACT is based on Sokal, 
-# Monte Carlo Methods in Statistical Mechanics: Foundations and New Algorithms
-# @param x A vector.
-iact <- function(x) {
-  n <- length(x)
-  x_ <- (x - mean(x)) / sd(x)
-  C <- max(5.0, log10(n))
-  tau <- 1
-  for (k in 1:(n - 1)) {
-    tau <- tau + 2.0 * (x_[1:(n-k)] %*% x_[(1+k):n]) / (n - k)
-    if (k > C * tau) break
-  }
-  max(0.0, tau)
-}
-# Asymptotic Variance of IS-type Estimators
-#
-# Estimates the asymptotic variance based on Corollary 1 
-# of Vihola et al. (2020) from weighted samples from IS-MCMC.
-#  
-# @param x Vector of samples.
-# @param w Vector of weights.
-asymptotic_var <- function(x, w) {
-  estimate_c <- mean(w)
-  estimate_mean <- weighted_mean(x, w)
-  z <- w * (x - estimate_mean)
-  iact(z) * var(z) / length(z) / estimate_c^2
-}
-
 #' Print Results from MCMC Run
 #'
 #' Prints some basic summaries from the MCMC run by  \code{\link{run_mcmc}}.

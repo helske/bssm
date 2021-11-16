@@ -31,7 +31,9 @@ sim_smoother <- function(model, nsim, seed, use_antithetic = TRUE, ...) {
 #' @export
 sim_smoother.gaussian <- function(model, nsim = 1, 
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = TRUE, ...) {
-
+  
+  check_missingness(model)
+  
   nsim <- check_integer(nsim, "nsim")  
   seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max) 
   if (!test_flag(use_antithetic)) 

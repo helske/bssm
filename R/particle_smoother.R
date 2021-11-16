@@ -79,6 +79,8 @@ particle_smoother <- function(model, particles, ...) {
 particle_smoother.gaussian <- function(model, particles,  method = "psi",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  check_missingness(model)
+  
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
@@ -134,6 +136,8 @@ particle_smoother.nongaussian <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1), 
   max_iter = 100, conv_tol = 1e-8, ...) {
   
+  check_missingness(model)
+  
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
@@ -182,6 +186,8 @@ particle_smoother.ssm_nlg <- function(model, particles,
   method = "bsf", 
   seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0, ...) {
+  
+  check_missingness(model)
   
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
@@ -242,6 +248,8 @@ particle_smoother.ssm_nlg <- function(model, particles,
 #' @export
 particle_smoother.ssm_sde <- function(model, particles, L, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  check_missingness(model)
   
   if (L < 1) stop("Discretization level L must be larger than 0.")
   

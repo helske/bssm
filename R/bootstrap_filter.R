@@ -35,6 +35,8 @@ bootstrap_filter <- function(model, particles, ...) {
 bootstrap_filter.gaussian <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  check_missingness(model)
+  
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
@@ -78,6 +80,8 @@ bootstrap_filter.gaussian <- function(model, particles,
 bootstrap_filter.nongaussian <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1), ...) {
 
+  check_missingness(model)
+  
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
@@ -114,7 +118,9 @@ bootstrap_filter.nongaussian <- function(model, particles,
 #' @export
 bootstrap_filter.ssm_nlg <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1), ...) {
-
+  
+  check_missingness(model)
+  
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
@@ -153,6 +159,8 @@ bootstrap_filter.ssm_nlg <- function(model, particles,
 #' @export
 bootstrap_filter.ssm_sde <- function(model, particles, L,
   seed = sample(.Machine$integer.max, size = 1), ...) {
+  
+  check_missingness(model)
   
   if (!test_count(L, positive=TRUE)) 
     stop("Discretization level L must be a positive integer.")
