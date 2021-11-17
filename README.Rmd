@@ -34,7 +34,17 @@ knitr::opts_chunk$set(
 #' algorithms work correctly as per Vihola, Helske, Franks (2020) 
 #' (all simulations were implemented with the bssm package) and Helske 
 #' and Vihola (2021). Full replication of the results would take days/weeks
-#' (but see also bsm_ng and testthat tests).
+#' (but see also bsm_ng, negbin_series and several testthat tests).
+#'
+#' @srrstats {G5.8, G5.8a, G5.8b, G5.8c, G5.8d} Tested with autotest and the 
+#' testthat tests.
+#' @srrstats {G5.9, G5.9a, G5.9b} Tested with autotest and the testthat tests.
+#'
+#' @srrstats {BS1.0, BS1.1, BS1.2, BS1.2a, BS1.2b} Addressed in the models.R, 
+#' run_mcmc.R, in vignettes and in the R Journal paper.
+#'
+#'
+#' @srrstats {BS2.1, BS2.1a} Tested by autotest and package examples/tests.
 ```
 
 # bssm
@@ -108,14 +118,15 @@ xreg <- airquality %>% select(Wind, Temp) %>% as.matrix()
 
 model <- bsm_lg(airquality$Ozone,
   xreg = xreg,  
-  beta = normal(rep(0, ncol(xreg)), 0, 1),
+  # Define priors, see ?bssm_prior
+  # Initial value followed by parameters of the prior distribution
+  beta = normal_prior(rep(0, ncol(xreg)), 0, 1),
   sd_y = gamma_prior(1, 2, 0.01),
   sd_level = gamma_prior(1, 2, 0.01), 
   sd_slope = gamma_prior(1, 2, 0.01))
   
 fit <- run_mcmc(model, iter = 20000, burnin = 5000)
 fit
-
 
 obs <- data.frame(Time = 1:nrow(airquality),
         Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))

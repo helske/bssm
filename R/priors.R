@@ -1,3 +1,5 @@
+#' @srrstats {BS2.2, BS2.3, BS2.4, BS2.6} Correct prior definitions.
+
 #' Prior objects for bssm models
 #'
 #' These simple objects of class \code{bssm_prior} are used to construct a 

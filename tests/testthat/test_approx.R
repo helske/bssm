@@ -1,8 +1,7 @@
-#' @srrstats {G.5.4, G5.4a, G5.4b, G5.4c} Tests that the approximation 
+#' @srrstats {G.5.4, G5.4a, G5.4b, G5.4c, G5.9b} Tests that the approximation 
 #' coincides with KFAS and in GLM case results coincide with the glm.
 
 context("Test Gaussian approximation")
-
 
 test_that("Gaussian approximation results of bssm and KFAS coincide", {
   library(KFAS)
@@ -29,6 +28,10 @@ test_that("Gaussian approximation results of bssm and KFAS coincide", {
   expect_equivalent(KFS(approx_KFAS)$alphahat, alphahat)
   expect_equivalent(logLik(approx_KFAS), logLik(approx_bssm))
   
+  model_bssm$initial_mode[] <- model_bssm$initial_mode + rnorm(10, sd = 0.1)
+  expect_equivalent(logLik(gaussian_approx(model_bssm)), 
+    logLik(approx_bssm), tol = 0.001)
+  
 })
 
 
@@ -48,6 +51,11 @@ test_that("Gaussian approximation works for SV model", {
   expect_equivalent(c(-0.0999179077423753, -0.101594935319188, 
     -0.0985572218431492, -0.103275329248674, -0.103028083292436), 
     fast_smoother(approx_bssm)[1:5])
+  
+  model_bssm2 <- model_bssm
+  model_bssm2$initial_mode[] <- model_bssm$initial_mode + rnorm(5, sd = 0.1)
+  expect_equivalent(logLik(gaussian_approx(model_bssm)), 
+    logLik(gaussian_approx(model_bssm2)), tol = 0.001)
 })
 
 test_that("results for poisson GLM are equal to glm function", {

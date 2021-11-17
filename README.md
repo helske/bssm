@@ -102,7 +102,9 @@ xreg <- airquality %>% select(Wind, Temp) %>% as.matrix()
 
 model <- bsm_lg(airquality$Ozone,
   xreg = xreg,  
-  beta = normal(rep(0, ncol(xreg)), 0, 1),
+  # Define priors, see ?bssm_prior
+  # Initial value followed by parameters of the prior distribution
+  beta = normal_prior(rep(0, ncol(xreg)), 0, 1),
   sd_y = gamma_prior(1, 2, 0.01),
   sd_level = gamma_prior(1, 2, 0.01), 
   sd_slope = gamma_prior(1, 2, 0.01))
@@ -115,43 +117,43 @@ fit
 #> 
 #> Iterations = 5001:20000
 #> Thinning interval = 1
-#> Length of the final jump chain = 3479
+#> Length of the final jump chain = 3622
 #> 
-#> Acceptance rate after the burn-in period:  0.232
+#> Acceptance rate after the burn-in period:  0.241
 #> 
 #> Summary for theta:
 #> 
-#>                Mean        SD          SE
-#> sd_y     20.9429622 1.9383343 0.068905655
-#> sd_level  6.2794066 2.7536555 0.100973147
-#> sd_slope  0.3345056 0.2623785 0.008440415
-#> Wind     -2.5564842 0.5471567 0.019052430
-#> Temp      1.0258170 0.1961969 0.007047035
+#>               Mean        SD         SE
+#> sd_y     21.033665 1.8865681 0.07191763
+#> sd_level  6.041851 2.7451950 0.12967048
+#> sd_slope  0.338372 0.2893476 0.01040584
+#> Wind     -2.561184 0.5606024 0.02134808
+#> Temp      1.042712 0.1983040 0.00610235
 #> 
 #> Effective sample sizes for theta:
 #> 
-#>               ESS
-#> sd_y     791.3118
-#> sd_level 743.7165
-#> sd_slope 966.3380
-#> Wind     824.7507
-#> Temp     775.1242
+#>                ESS
+#> sd_y      688.1358
+#> sd_level  448.1921
+#> sd_slope  773.1890
+#> Wind      689.5922
+#> Temp     1056.0116
 #> 
 #> Summary for alpha_154:
 #> 
-#>             Mean        SD         SE
-#> level -28.039885 19.409460 0.56324484
-#> slope  -0.366811  1.689306 0.03873495
+#>              Mean        SD        SE
+#> level -29.3403551 20.055312 0.5656459
+#> slope  -0.3705886  1.685349 0.0396166
 #> 
 #> Effective sample sizes for alpha_154:
 #> 
 #>            ESS
-#> level 1187.497
-#> slope 1902.002
+#> level 1257.099
+#> slope 1809.778
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>    0.89    0.02    0.91
+#>    0.89    0.03    0.90
 obs <- data.frame(Time = 1:nrow(airquality),
         Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))
 
@@ -188,43 +190,43 @@ fit2
 #> 
 #> Iterations = 5001:20000
 #> Thinning interval = 1
-#> Length of the final jump chain = 3834
+#> Length of the final jump chain = 3859
 #> 
-#> Acceptance rate after the burn-in period:  0.256
+#> Acceptance rate after the burn-in period:  0.257
 #> 
 #> Summary for theta:
 #> 
 #>                  Mean          SD           SE        SE-IS
-#> sd_level  0.063067042 0.038284435 0.0016425712 8.029996e-04
-#> sd_slope  0.004092602 0.003530829 0.0001813586 7.127555e-05
-#> phi       3.986113336 0.531933924 0.0164752602 1.103394e-02
-#> Wind     -0.056960598 0.015218618 0.0004459602 3.047884e-04
-#> Temp      0.052900914 0.008784547 0.0002490039 1.764499e-04
+#> sd_level  0.057953011 0.039698181 0.0033318587 8.550051e-04
+#> sd_slope  0.003985939 0.003219326 0.0001736902 6.579475e-05
+#> phi       3.993065302 0.526393116 0.0161096524 1.067217e-02
+#> Wind     -0.057504005 0.015354436 0.0004738455 3.067793e-04
+#> Temp      0.052668318 0.008672590 0.0002509057 1.765270e-04
 #> 
 #> Effective sample sizes for theta:
 #> 
 #>                ESS
-#> sd_level  543.2454
-#> sd_slope  379.0330
-#> phi      1042.4394
-#> Wind     1164.5504
-#> Temp     1244.5905
+#> sd_level  141.9607
+#> sd_slope  343.5415
+#> phi      1067.6971
+#> Wind     1050.0118
+#> Temp     1194.7490
 #> 
 #> Summary for alpha_154:
 #> 
-#>               Mean         SD           SE        SE-IS
-#> level -0.210918261 0.73523171 0.0208711444 0.0150506204
-#> slope -0.002735397 0.02261717 0.0004652766 0.0004946287
+#>               Mean        SD           SE        SE-IS
+#> level -0.193163677 0.7331771 0.0213018796 0.0152269256
+#> slope -0.003622763 0.0218063 0.0004642879 0.0004669465
 #> 
 #> Effective sample sizes for alpha_154:
 #> 
 #>            ESS
-#> level 1240.955
-#> slope 2362.948
+#> level 1184.628
+#> slope 2205.918
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   10.81    0.14   10.79
+#>   10.75    0.12   10.71
 ```
 
 Comparison:

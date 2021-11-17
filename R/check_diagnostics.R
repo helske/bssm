@@ -1,12 +1,14 @@
+#' @srrstats {BS1.5} Several options for ESS. See also asymptotic_var.R
+
 #' Quick Diagnostics Checks for \code{run_mcmc} Output
 #'
 #' Prints out the acceptance rate, smallest effective sample sizes (ESS) and 
-#' largest Rhat values for a quick first check that the sampling worked.
+#' largest Rhat values for a quick first check that the sampling worked. For 
+#' further checks, see e.g. \code{bayesplot} and \code{coda} packages.
 #' 
 #' For IS-MCMC, the Rhat, bulk-ESS, and tail-ESS returned by the posterior 
 #' package are based on the approximate posterior which should look reasonable,
 #' otherwise the IS-correction does not make much sense.
-#' 
 #' 
 #' @importFrom dplyr across
 #' @importFrom posterior summarise_draws default_convergence_measures

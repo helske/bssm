@@ -1,5 +1,7 @@
 context("Test basics")
 
+#' @srrstats {G5.4, G5.4b, G5.6, G5.6a, G5.6b, G5.7} Compare with KFAS.
+#' 
 test_that("results for Gaussian models are comparable to KFAS", {
   library("KFAS")
   model_KFAS <- SSModel(1:10 ~ SSMtrend(2, Q = list(0.01^2, 0)), H = 2)

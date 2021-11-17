@@ -1,3 +1,11 @@
+#' @srrstats {BS1.0, BS1.1, BS1.2, BS1.2a, BS1.2b}
+#' @srrstats {BS2.6}
+#' @srrstats {BS2.7, BS1.3a, BS2.8} Explained in docs.
+#' @srrrstats {BS2.9} The argument 'seed' is set to random value if not 
+#' specified by the user.
+#' @srrstatsTODO {BS2.12}
+#' 
+#' 
 #' Bayesian Inference of State Space Models
 #'
 #' Adaptive Markov chain Monte Carlo simulation for SSMs using
@@ -16,6 +24,16 @@
 #' covariances are computed using the full output of particle filter 
 #' instead of subsampling one of these as in case of 
 #' \code{output_type = "full"}.
+#' 
+#' Initial values for the sampling are taken from the model object 
+#' (\code{model$theta]). If you want to continue from previous run, you can 
+#' reconstruct your original model by plugging in the previously obtained 
+#' parameters to \code{model$theta}, providing the S matrix for the RAM 
+#' algorithm and setting \code{burnin = 0}. See example. Note however, that 
+#' this is not identical as running all the iterations once, due to the 
+#' RNG "discontinuity" and because even without burnin bssm does include 
+#' "theta_0" i.e. the initial theta in the final chain (even with 
+#' \code{burnin=0}).
 #' 
 #' @importFrom stats tsp
 #' @param model Model of class \code{bssm_model}.
@@ -135,6 +153,11 @@ run_mcmc <- function(model, ...) {
 #'   geom_line() + theme_bw() +
 #'   geom_point(data = data.frame(mean = LakeHuron, time = time(LakeHuron)),
 #'     col = 2)
+#'     
+#' # Continue from the previous run
+#' model$theta[] <- mcmc_results$theta[nrow(mcmc_results$theta), ]
+#' run_more <- run_mcmc(model, S = mcmc_results$S, iter = 1000, burnin = 0)
+#' 
 run_mcmc.gaussian <- function(model, iter, output_type = "full",
   burnin = floor(iter / 2), thin = 1, gamma = 2 / 3,
   target_acceptance = 0.234, S, end_adaptive_phase = FALSE, threads = 1,

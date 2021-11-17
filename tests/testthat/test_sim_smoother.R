@@ -1,4 +1,3 @@
-
 context("Test that simulation smoother work")
 
 
@@ -24,3 +23,5 @@ test_that("sim_smoother for non-gaussian model works as Kalman smoother", {
     expect_equal(smoother(model)$alphahat,
       as.ts(apply(sims, 1:2, mean)))
 })
+
+

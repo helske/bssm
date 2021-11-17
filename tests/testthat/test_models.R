@@ -1,6 +1,9 @@
+#' @srrstats {G5.8, G5.8a, G5.8b, G5.8c, G5.8d, BS2.1, BS2.1a}
+
 context("Test models")
 
 test_that("bad argument values for bsm throws an error", {
+  expect_error(bsm_lg(numeric(0), 1, 1))
   expect_error(bsm_lg("character vector"))
   expect_error(bsm_lg(matrix(0, 2, 2)))
   expect_error(bsm_lg(1))
@@ -26,6 +29,7 @@ test_that("proper arguments for bsm don't throw an error", {
 
 
 test_that("bad argument values for bsm_ng throws an error", {
+  expect_error(bsm_ng(numeric(0), 1, 1, distribution = "poisson"))
   expect_error(bsm_ng("character vector", distribution = "poisson"))
   expect_error(bsm_ng(1:10, distribution = "poisson"))
   expect_error(bsm_ng(diag(2), distribution = "poisson", 
@@ -51,6 +55,7 @@ test_that("bad argument values for bsm_ng throws an error", {
 
 test_that("proper arguments for ng_bsm don't throw an error", {
   expect_error(bsm_ng(1:10, 1, 1, distribution = "poisson"), NA)
+  expect_error(bsm_ng(1:10, 1, 1, distribution = "POISSon"), NA)
   expect_error(bsm_ng(1:10, uniform(0, 0, 1), 1, distribution = "poisson"), NA)
   expect_error(bsm_ng(1:10, 1, uniform(0, 0, 1), distribution = "poisson"), NA)
   expect_error(bsm_ng(1:10, 1, 1, 1, period = 3, distribution = "poisson"), NA)
