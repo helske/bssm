@@ -1,6 +1,35 @@
 context("Test MCMC")
 
 tol <- 1e-8
+#' @srrstats {G5.4, G5.4a, G5.4b, G5.4c, G5.5} Replicate Helske & Vihola (2021)
+test_that("MCMC results from bssm paper are still correct", {
+  skip_on_cran()
+  
+  data(negbin_series)
+  bssm_model <- bsm_ng(negbin_series,
+    xreg = x,
+    beta = normal(0, 0, 10),
+    phi = halfnormal(1, 10),
+    sd_level = halfnormal(0.1, 1),
+    sd_slope = halfnormal(0.01, 0.1),
+    a1 = c(0, 0), P1 = diag(c(10, 0.1)^2),
+    distribution = "negative binomial")
+  
+  # run the MCMC
+  fit_bssm <- run_mcmc(bssm_model, iter = 6e4, burnin = 1e4,
+    particles = 10, seed = 1)
+  expect_error(sumr_theta <- summary(fit_bssm)[, "Mean"], NA)
+  paper_theta <- c(0.092, 0.003, 5.392, -0.912)
+  expect_equivalent(sumr_theta, paper_theta, tol = 0.01)
+  
+  expect_error(sumr_alpha <- summary(fit_bssm, variable = "states")$Mean[200,], 
+    NA)
+  paper_alpha <- c(6.962,0.006)
+  expect_equivalent(sumr_alpha, paper_alpha, tol = 0.01)
+  
+})
+
+
 test_that("MCMC results for Gaussian model are correct", {
   set.seed(123)
   model_bssm <- bsm_lg(rnorm(10, 3), P1 = diag(2, 2), sd_slope = 0,
