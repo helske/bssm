@@ -13,7 +13,7 @@
 #' 
 cpp_example_model <- function(example, return_code = FALSE) {
   
-  example <- match.arg(tolower(example), c("nlg_linear_gaussian", "nlg_sin_exp", 
+  example <- match.arg(example, c("nlg_linear_gaussian", "nlg_sin_exp", 
     "nlg_growth", "nlg_ar_exp", "sde_poisson_OU"))
   
   code <- switch(example,
