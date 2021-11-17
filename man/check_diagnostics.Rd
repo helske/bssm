@@ -12,7 +12,8 @@ check_diagnostics(x)
 }
 \description{
 Prints out the acceptance rate, smallest effective sample sizes (ESS) and
-largest Rhat values for a quick first check that the sampling worked.
+largest Rhat values for a quick first check that the sampling worked. For
+further checks, see e.g. \code{bayesplot} and \code{coda} packages.
 }
 \details{
 For IS-MCMC, the Rhat, bulk-ESS, and tail-ESS returned by the posterior

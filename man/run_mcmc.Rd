@@ -191,14 +191,7 @@ arguments, package vignette, Vihola, Helske, Franks (2020) and Helske and
 Vihola (2021) for details.
 }
 \details{
-For linear-Gaussian models, option \code{"summary"} does not simulate
-states directly but computes the posterior means and variances of states
-using fast Kalman smoothing. This is slightly faster,
-more memory efficient and more accurate than calculations based on
-simulation smoother. In other cases, the means and
-covariances are computed using the full output of particle filter
-instead of subsampling one of these as in case of
-\code{output_type = "full"}.
+
 }
 \examples{
 model <- ar1_lg(LakeHuron, rho = uniform(0.5,-1,1), 
@@ -220,6 +213,11 @@ sumr \%>\% ggplot(aes(time, mean)) +
   geom_line() + theme_bw() +
   geom_point(data = data.frame(mean = LakeHuron, time = time(LakeHuron)),
     col = 2)
+    
+# Continue from the previous run
+model$theta[] <- mcmc_results$theta[nrow(mcmc_results$theta), ]
+run_more <- run_mcmc(model, S = mcmc_results$S, iter = 1000, burnin = 0)
+
 set.seed(1)
 n <- 50 
 slope <- cumsum(c(0, rnorm(n - 1, sd = 0.001)))

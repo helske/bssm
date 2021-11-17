@@ -1,5 +1,5 @@
 #' @srrstats {BS1.5}
-
+NULL
 #' Integrated Autocorrelation Time
 #'
 #' Estimates the integrated autocorrelation time based on Sokal (1997).

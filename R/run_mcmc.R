@@ -4,7 +4,7 @@
 #' @srrrstats {BS2.9} The argument 'seed' is set to random value if not 
 #' specified by the user.
 #' @srrstatsTODO {BS2.12}
-#' 
+NULL
 #' 
 #' Bayesian Inference of State Space Models
 #'

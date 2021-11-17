@@ -110,6 +110,7 @@ Consider the daily air quality measurements in New Your from May to September 19
 library("bssm")
 library("dplyr")
 library("ggplot2")
+set.seed(1)
 
 data("airquality", package = "datasets")
 
