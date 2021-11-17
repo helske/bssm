@@ -52,7 +52,7 @@ as_draws_df.mcmc_output <- function(x, times, ...) {
   
   
   d_theta <- as.data.frame(x, variable = "theta", expand = TRUE)
-  if (missing(times)) times <- seq_len(ncol(x$alpha))
+  if (missing(times)) times <- seq_len(nrow(x$alpha))
   d_states <- as.data.frame(x, variable = "states", expand = TRUE, 
     times = times,
     use_times = FALSE)
