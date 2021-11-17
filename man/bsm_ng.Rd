@@ -85,6 +85,21 @@ local trend component, a seasonal component, and regression component
 (or subset of these components).
 }
 \examples{
+# Same data as in Vihola, Helske, Franks (2020)
+data(poisson_series)
+s <- sd(log(pmax(0.1, poisson_series)))
+model <- bsm_ng(poisson_series, sd_level = uniform(0.115, 0, 2 * s),
+ sd_slope = uniform(0.004, 0, 2 * s), P1 = diag(0.1, 2), 
+ distribution = "poisson")
+
+\donttest{
+out <- run_mcmc(model, iter = 1e5, particles = 10)
+summary(out, variable = "theta", return_se = TRUE)
+# should be about 0.093 and 0.016
+summary(out, variable = "states", return_se = TRUE)$Mean[c(1,100),1]
+# should be about -0.075, 2.618
+}
+
 model <- bsm_ng(Seatbelts[, "VanKilled"], distribution = "poisson",
   sd_level = halfnormal(0.01, 1),
   sd_seasonal = halfnormal(0.01, 1),

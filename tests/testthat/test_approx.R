@@ -1,3 +1,6 @@
+#' @srrstats {G.5.4, G5.4a, G5.4b, G5.4c} Tests that the approximation 
+#' coincides with KFAS and in GLM case results coincide with the glm.
+
 context("Test Gaussian approximation")
 
 
@@ -10,10 +13,22 @@ test_that("Gaussian approximation results of bssm and KFAS coincide", {
     sd_slope = 1, distribution = "poisson"), NA)
   approx_KFAS <- approxSSM(model_KFAS)
   expect_error(approx_bssm <- gaussian_approx(model_bssm), NA)
-  all.equal(c(approx_bssm$H^2), c(approx_KFAS$H))
+  expect_equivalent(c(approx_bssm$H^2), c(approx_KFAS$H))
   expect_error(alphahat <- fast_smoother(approx_bssm), NA)
   expect_equivalent(KFS(approx_KFAS)$alphahat, alphahat)
   expect_equivalent(logLik(approx_KFAS), logLik(approx_bssm))
+  
+  model_KFAS <- SSModel(rbinom(10, 10, 0.5) ~ SSMtrend(2, Q = list(1, 1), 
+    P1 = diag(100, 2)), u = 10, distribution = "binomial")
+  expect_error(model_bssm <- bsm_ng(model_KFAS$y, sd_level = 1, 
+    sd_slope = 1, distribution = "binomial", u = 10), NA)
+  approx_KFAS <- approxSSM(model_KFAS)
+  expect_error(approx_bssm <- gaussian_approx(model_bssm), NA)
+  expect_equivalent(c(approx_bssm$H^2), c(approx_KFAS$H))
+  expect_error(alphahat <- fast_smoother(approx_bssm), NA)
+  expect_equivalent(KFS(approx_KFAS)$alphahat, alphahat)
+  expect_equivalent(logLik(approx_KFAS), logLik(approx_bssm))
+  
 })
 
 

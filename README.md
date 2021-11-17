@@ -115,43 +115,43 @@ fit
 #> 
 #> Iterations = 5001:20000
 #> Thinning interval = 1
-#> Length of the final jump chain = 3601
+#> Length of the final jump chain = 3479
 #> 
-#> Acceptance rate after the burn-in period:  0.24
+#> Acceptance rate after the burn-in period:  0.232
 #> 
 #> Summary for theta:
 #> 
 #>                Mean        SD          SE
-#> sd_y     20.9745103 1.9548950 0.065711076
-#> sd_level  6.1826612 2.6898276 0.110026275
-#> sd_slope  0.3227774 0.2496854 0.008370595
-#> Wind     -2.5224090 0.5692881 0.017491284
-#> Temp      1.0289642 0.1991063 0.006160738
+#> sd_y     20.9429622 1.9383343 0.068905655
+#> sd_level  6.2794066 2.7536555 0.100973147
+#> sd_slope  0.3345056 0.2623785 0.008440415
+#> Wind     -2.5564842 0.5471567 0.019052430
+#> Temp      1.0258170 0.1961969 0.007047035
 #> 
 #> Effective sample sizes for theta:
 #> 
-#>                ESS
-#> sd_y      885.0538
-#> sd_level  597.6626
-#> sd_slope  889.7614
-#> Wind     1059.3047
-#> Temp     1044.4906
+#>               ESS
+#> sd_y     791.3118
+#> sd_level 743.7165
+#> sd_slope 966.3380
+#> Wind     824.7507
+#> Temp     775.1242
 #> 
 #> Summary for alpha_154:
 #> 
-#>              Mean        SD         SE
-#> level -28.3237394 19.921774 0.55159040
-#> slope  -0.3782085  1.723463 0.04120739
+#>             Mean        SD         SE
+#> level -28.039885 19.409460 0.56324484
+#> slope  -0.366811  1.689306 0.03873495
 #> 
 #> Effective sample sizes for alpha_154:
 #> 
 #>            ESS
-#> level 1304.436
-#> slope 1749.257
+#> level 1187.497
+#> slope 1902.002
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>    0.92    0.00    0.90
+#>    0.89    0.02    0.91
 obs <- data.frame(Time = 1:nrow(airquality),
         Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))
 
@@ -188,43 +188,43 @@ fit2
 #> 
 #> Iterations = 5001:20000
 #> Thinning interval = 1
-#> Length of the final jump chain = 3902
+#> Length of the final jump chain = 3834
 #> 
-#> Acceptance rate after the burn-in period:  0.26
+#> Acceptance rate after the burn-in period:  0.256
 #> 
 #> Summary for theta:
 #> 
 #>                  Mean          SD           SE        SE-IS
-#> sd_level  0.060119156 0.036304969 0.0021676154 7.340294e-04
-#> sd_slope  0.004282931 0.003742675 0.0001661556 7.508864e-05
-#> phi       3.974702619 0.514745897 0.0174002858 1.019891e-02
-#> Wind     -0.057474480 0.015071259 0.0004125317 2.982147e-04
-#> Temp      0.052108192 0.008977271 0.0002718235 1.784298e-04
+#> sd_level  0.063067042 0.038284435 0.0016425712 8.029996e-04
+#> sd_slope  0.004092602 0.003530829 0.0001813586 7.127555e-05
+#> phi       3.986113336 0.531933924 0.0164752602 1.103394e-02
+#> Wind     -0.056960598 0.015218618 0.0004459602 3.047884e-04
+#> Temp      0.052900914 0.008784547 0.0002490039 1.764499e-04
 #> 
 #> Effective sample sizes for theta:
 #> 
 #>                ESS
-#> sd_level  280.5225
-#> sd_slope  507.3815
-#> phi       875.1309
-#> Wind     1334.7023
-#> Temp     1090.7239
+#> sd_level  543.2454
+#> sd_slope  379.0330
+#> phi      1042.4394
+#> Wind     1164.5504
+#> Temp     1244.5905
 #> 
 #> Summary for alpha_154:
 #> 
 #>               Mean         SD           SE        SE-IS
-#> level -0.154108984 0.74092804 0.0206049048 0.0148100409
-#> slope -0.003410796 0.02343375 0.0005549973 0.0004921424
+#> level -0.210918261 0.73523171 0.0208711444 0.0150506204
+#> slope -0.002735397 0.02261717 0.0004652766 0.0004946287
 #> 
 #> Effective sample sizes for alpha_154:
 #> 
 #>            ESS
-#> level 1293.037
-#> slope 1782.797
+#> level 1240.955
+#> slope 2362.948
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   10.74    0.07   10.75
+#>   10.81    0.14   10.79
 ```
 
 Comparison:

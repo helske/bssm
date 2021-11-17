@@ -16,3 +16,4 @@
 ^codecov\.yml$
 ^codemeta\.json$
 ^README\.Rmd$
+^benchmarks$

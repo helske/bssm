@@ -24,6 +24,25 @@ phi <- 5
 level <- cumsum(c(5, drift + rnorm(n - 1, sd = sd_level)))
 x <- 3 + (1:n) * drift + sin(1:n + runif(n, -1, 1))
 y <- rnbinom(n, size = phi, mu = exp(beta * x + level))
+
+
+# Construct model for bssm
+bssm_model <- bsm_ng(y, 
+  xreg = x,
+  beta = normal(0, 0, 10),
+  phi = halfnormal(1, 10),
+  sd_level = halfnormal(0.1, 1), 
+  sd_slope = halfnormal(0.01, 0.1),
+  a1 = c(0, 0), P1 = diag(c(10, 0.1)^2), 
+  distribution = "negative binomial")
+
+# run the MCMC, small number of iterations for CRAN
+fit_bssm <- run_mcmc(bssm_model, iter = 6000, burnin = 1000, 
+  particles = 10)
+fit_bssm
+
+plot.ts(ts(cbind(sd_level=draws$sd_level, draws$sd_slope), start = 1000), 
+  xlab = "Iteration", main = "Traceplots")
 }
 \references{
 \link{3} Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and
