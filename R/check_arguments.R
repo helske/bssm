@@ -383,17 +383,20 @@ check_positive_real <- function(x, name) {
 }
 
 check_missingness <- function(x) {
-  if (is.null(x$prior_parameters)) {
-    contains_na <- anyNA(x[-which(names(x) == "y")], 
-      recursive = TRUE)
-    if (contains_na) stop(paste(
-      "Missing values not allowed in the model object", 
-      "(except in component 'y')."))
-  } else {
-    contains_na <- anyNA(x[-which(names(x) %in% c("y", "prior_parameters"))], 
-      recursive = TRUE)
-    if (contains_na) stop(paste(
-      "Missing values not allowed in the model object", 
-      "(except in components 'y' and 'prior_parameters')."))
+  if (!inherits(x, c("ssm_nlg", "ssm_sde"))) {
+    if (is.null(x$prior_parameters)) {
+      contains_na <- 
+        anyNA(x[-which(names(x) %in% c("y", "update_fn", "prior_fn"))], 
+          recursive = TRUE)
+      if (contains_na) stop(paste(
+        "Missing values not allowed in the model object", 
+        "(except in component 'y')."))
+    } else {
+      contains_na <- anyNA(x[-which(names(x) %in% c("y", "prior_parameters"))], 
+        recursive = TRUE)
+      if (contains_na) stop(paste(
+        "Missing values not allowed in the model object", 
+        "(except in components 'y' and 'prior_parameters')."))
+    }
   }
 }

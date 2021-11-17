@@ -1,7 +1,7 @@
 #' @srrstats {G2.7, G2.8, G2.9} Only matrix/mts/arrays as tabular data are 
 #' supported, not data.frame or similar objects.
 #' 
-#' @srrstats {G2.14, G2.14a, G2.14b, G2.14c} Missing observations are handled 
+#' @srrstats {G2.14, G2.14a, G2.14b, G2.14c, BS3.0} Missing observations are handled 
 #' automatically as per SSM theory, whereas missing values are not allowed 
 #' elsewhere.
 #' @srrstats {BS1.0, BS1.1, BS1.2}
@@ -125,25 +125,27 @@ default_update_fn <- function(theta) {
 #' # (for large model it is more efficient to do this 
 #' # "manually" by constructing only necessary matrices,
 #' # i.e., in this case  a list with H and Q)
-#' 
-#' updatefn <- function(theta) {
+#'
+#' prior_fn <- function(theta) {
+#'   if(any(theta < 0)) -Inf else sum(dnorm(theta, 0, 0.1, log = TRUE))
+#' }
+#'  
+#' update_fn <- function(theta) {
 #'   
 #'   model_kfas <- SSModel(log(drivers) ~ SSMtrend(1, Q = theta[1]^2)+
 #'     SSMseasonal(period = 12, 
 #'       sea.type = "trigonometric", Q = theta[2]^2) +
 #'     log(PetrolPrice) + law, data = Seatbelts, H = theta[3]^2)
 #'   
-#'   as_bssm(model_kfas, kappa = 100)
+#'   # the bssm_model object is essentially list so this is fine
+#'   as_bssm(model_kfas, kappa = 100, init_theta = init_theta,
+#'     update_fn = update_fn, prior_fn = prior_fn) 
 #' }
 #' 
-#' prior <- function(theta) {
-#'   if(any(theta < 0)) -Inf else sum(dnorm(theta, 0, 0.1, log = TRUE))
-#' }
 #' init_theta <- rep(1e-2, 3)
-#' c("sd_level", "sd_seasonal", "sd_y")
-#' model_bssm <- as_bssm(model_kfas, kappa = 100, 
-#'   init_theta = init_theta, 
-#'   prior_fn = prior, update_fn = updatefn)
+#' names(init_theta) <- c("sd_level", "sd_seasonal", "sd_y")
+#' 
+#' model_bssm <- update_fn(init_theta)
 #' 
 #' \donttest{
 #' out <- run_mcmc(model_bssm, iter = 10000, burnin = 5000) 
