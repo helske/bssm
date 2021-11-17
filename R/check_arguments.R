@@ -383,10 +383,17 @@ check_positive_real <- function(x, name) {
 }
 
 check_missingness <- function(x) {
-  contains_na <- anyNA(model[-which(names(x) %in% c("y", "prior_parameters"))], 
-    recursive = TRUE)
-  if (contains_na) stop(paste(
-    "Missing values not allowed in the model object", 
-    "(except in components 'y' and 'prior_parameters')."))
-    
+  if (is.null(x$prior_parameters)) {
+    contains_na <- anyNA(x[-which(names(x) == "y")], 
+      recursive = TRUE)
+    if (contains_na) stop(paste(
+      "Missing values not allowed in the model object", 
+      "(except in component 'y')."))
+  } else {
+    contains_na <- anyNA(x[-which(names(x) %in% c("y", "prior_parameters"))], 
+      recursive = TRUE)
+    if (contains_na) stop(paste(
+      "Missing values not allowed in the model object", 
+      "(except in components 'y' and 'prior_parameters')."))
+  }
 }
