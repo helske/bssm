@@ -78,7 +78,8 @@ NULL
 #' @format A vector of length 945.
 #' @source \url{http://www.ssfpack.com/DKbook.html}.
 #' @keywords datasets
-#' @references James Durbin, Siem Jan Koopman (2012). 
+#' @references 
+#' [1] James Durbin, Siem Jan Koopman (2012). 
 #' Time Series Analysis by State Space Methods. Oxford University Press.
 #' https://doi.org/10.1093/acprof:oso/9780199641178.001.0001
 #' @examples
@@ -122,7 +123,7 @@ NULL
 #' @format A time series \code{mts} object with 200 time points and two series.
 #' @keywords datasets
 #' @references 
-#' [3] Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and 
+#' Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and 
 #' Non-Gaussian State Space Models in R. R Journal (to appear).
 #' https://arxiv.org/abs/2101.08492
 #' 

@@ -45,7 +45,7 @@ plot.ts(ts(cbind(sd_level=draws$sd_level, draws$sd_slope), start = 1000),
   xlab = "Iteration", main = "Traceplots")
 }
 \references{
-\link{3} Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and
+Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and
 Non-Gaussian State Space Models in R. R Journal (to appear).
 https://arxiv.org/abs/2101.08492
 }
