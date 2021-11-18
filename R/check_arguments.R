@@ -422,7 +422,7 @@ check_positive_real <- function(x, name) {
 #' @rdname check
 check_theta <- function(x) {
   
-  if (!is.numeric(x) || !test_atomic_vector(x, strict = TRUE)) {
+  if (!is.numeric(x) || !test_atomic_vector(x)) {
     stop("Argument 'theta' should be a numeric vector.")
   }
   if (is.null(names(x))) {
