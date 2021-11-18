@@ -28,8 +28,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r srr-tags, eval = FALSE, echo = FALSE}                                    
 #' rOpenSci Statistical Software Standards addressed by the vignette
 #'
-#' @srrstats {G1.0, G1.1, G1.3, G1.5, G1.6} Here and in the cited R Journal 
-#' paper. 
+#' @srrstats {G1.0, G1.1, G1.3, G1.5, G1.6, BS4.0, BS4.1} Here and in the cited 
+#' R Journal paper. 
 #' To our knowledge, the package is also the first R package to 
 #' implement delayed acceptance pseudo-marginal MCMC for general state space 
 #' models. 

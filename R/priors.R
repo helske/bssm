@@ -1,5 +1,3 @@
-#' @srrstats {BS2.2, BS2.3, BS2.4, BS2.6} Correct prior definitions.
-NULL
 #' Prior objects for bssm models
 #'
 #' These simple objects of class \code{bssm_prior} are used to construct a 
@@ -30,6 +28,7 @@ NULL
 #' @return object of class \code{bssm_prior} or \code{bssm_prior_list} in case 
 #' of multiple priors (i.e. multiple regression coefficients).
 #' @export
+#' @srrstats {BS2.2, BS2.3, BS2.4, BS2.6} Correct prior definitions.
 #' @examples
 #' # create uniform prior on [-1, 1] for one parameter with initial value 0.2:
 #' uniform(init = 0.2, min = -1.0, max = 1.0)

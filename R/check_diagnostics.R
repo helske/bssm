@@ -1,5 +1,3 @@
-#' @srrstats {BS1.5} Several options for ESS. See also asymptotic_var.R
-NULL
 #' Quick Diagnostics Checks for \code{run_mcmc} Output
 #'
 #' Prints out the acceptance rate, smallest effective sample sizes (ESS) and 
@@ -15,7 +13,8 @@ NULL
 #' @param x Results object of class \code{mcmc_output} from 
 #' \code{\link{run_mcmc}}.
 #' @export
-#'
+#' @srrstats {BS5.3, BS5.5} Several options for ESS. See also asymptotic_var.R 
+#' and summary functions
 #' @examples
 #' set.seed(1)
 #' n <- 30

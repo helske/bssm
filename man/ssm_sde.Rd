@@ -50,7 +50,8 @@ observations are measured at integer times (missing values are allowed).
 \details{
 As in case of \code{ssm_nlg} models, these general models need a bit more
 effort from the user, as you must provide the several small C++ snippets
-which define the model structure. See vignettes for an example.
+which define the model structure. See vignettes for an example and
+\code{cpp_example_model}.
 }
 \examples{
 

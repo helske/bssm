@@ -191,7 +191,27 @@ arguments, package vignette, Vihola, Helske, Franks (2020) and Helske and
 Vihola (2021) for details.
 }
 \details{
+For linear-Gaussian models, option \code{"summary"} does not simulate
+states directly but computes the posterior means and variances of states
+using fast Kalman smoothing. This is slightly faster,
+more memory efficient and more accurate than calculations based on
+simulation smoother. In other cases, the means and
+covariances are computed using the full output of particle filter
+instead of subsampling one of these as in case of
+\code{output_type = "full"}. The states are sampled up to the time point n+1
+where n is the length of the input time series i.e. the last values are
+one-step-ahead predictions. (for predicting further, see
+\code{?predict.mcmc_output}).
 
+Initial values for the sampling are taken from the model object
+(\code{model$theta}). If you want to continue from previous run, you can
+reconstruct your original model by plugging in the previously obtained
+parameters to \code{model$theta}, providing the S matrix for the RAM
+algorithm and setting \code{burnin = 0}. See example. Note however, that
+this is not identical as running all the iterations once, due to the
+RNG "discontinuity" and because even without burnin bssm does include
+"theta_0" i.e. the initial theta in the final chain (even with
+\code{burnin=0}).
 }
 \examples{
 model <- ar1_lg(LakeHuron, rho = uniform(0.5,-1,1), 

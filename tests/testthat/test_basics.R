@@ -1,7 +1,7 @@
 context("Test basics")
 
 #' @srrstats {G5.4, G5.4b, G5.6, G5.6a, G5.6b, G5.7} Compare with KFAS.
-#' 
+
 test_that("results for Gaussian models are comparable to KFAS", {
   library("KFAS")
   model_KFAS <- SSModel(1:10 ~ SSMtrend(2, Q = list(0.01^2, 0)), H = 2)
@@ -191,4 +191,12 @@ test_that("multivariate normal pdf works", {
   a[2, ] <- a[, 2] <- 0
   logp3 <- expect_error(bssm:::dmvnorm(1:3, -0.1 * (3:1), a, FALSE, TRUE), NA)
   expect_equivalent(logp3, -12.5587625856078, tolerance = 1e-6)
+})
+
+test_that("asymptotic_var fails with improper weights", {
+  x <- rnorm(10)
+  expect_error(asymptotic_var(x, 0))
+  expect_error(asymptotic_var(x, rep(0, length(x))))
+  expect_error(asymptotic_var(x, c(-1, runif(9))))
+  expect_error(asymptotic_var(x, c(Inf, runif(9))))
 })

@@ -1,5 +1,3 @@
-#' @srrstats {BS1.5}
-NULL
 #' Integrated Autocorrelation Time
 #'
 #' Estimates the integrated autocorrelation time based on Sokal (1997).
@@ -12,6 +10,7 @@ NULL
 #' NATO ASI Series (Series B: Physics), vol 361. Springer, Boston, MA. 
 #' https://doi.org/10.1007/978-1-4899-0319-8_6
 #' @export
+#' @srrstats {BS5.3, BS5.5}
 #' @examples
 #' set.seed(1)
 #' x <- numeric(1e4)
@@ -40,7 +39,8 @@ iact <- function(x) {
 #' \code{posterior} package, or the improved \code{ess_bulk} method of the same 
 #' package (these compute ESS instead of variances, but 
 #' MCSE^2 = var(x) / ESS = var(x) * IACT / length(x)). 
-#'  
+#' 
+#' @importFrom posterior ess_basic ess_bulk
 #' @param x Vector of samples.
 #' @param w Vector of weights. If missing, set to 1 (i.e. no weighting is 
 #' assumed).
@@ -61,6 +61,7 @@ iact <- function(x) {
 #' assessing convergence of MCMC. Bayesian analysis, 16(2):667-718. 
 #' https://doi.org/10.1214/20-BA1221
 #' @export
+#' @srrstats {BS5.3, BS5.5}
 #' @examples
 #' set.seed(1)
 #' x <- numeric(1e4)
@@ -77,6 +78,9 @@ asymptotic_var <- function(x, w, method = "sokal") {
   if (missing(w)) w <- rep(1, length(x))
   if(any(w < 0) | any(!is.finite(w)))
     stop("Nonfinite or negative weights in 'w'.")
+  if (!any(w > 0)) {
+    stop("No positive weights in 'w'.")
+  }
   estimate_c <- mean(w)
   estimate_mean <- weighted_mean(x, w)
   z <- w * (x - estimate_mean)

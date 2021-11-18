@@ -1,7 +1,41 @@
 context("Test MCMC")
 
-tol <- 1e-8
 #' @srrstats {G5.4, G5.4a, G5.4b, G5.4c, G5.5} Replicate Helske & Vihola (2021)
+#' @srrstats {BS7.0, BS7.1, BS7.7}
+#' @srrstats {BS7.3}
+
+tol <- 1e-8
+
+test_that("prior and posterior distributions coincide when no data is used", {
+  
+  skip_on_cran()
+  
+  set.seed(1)
+  n <- 30
+  x <- rnorm(n)
+  model <- ar1_ng(rep(NA, n), 
+    xreg = x,
+    distribution = "negative binomial",
+    rho = uniform_prior(0.9, 0, 1), 
+    sigma = gamma_prior(1, 2, 10),
+    mu = normal_prior(1, 0.2, 0.5), 
+    phi = gamma_prior(0.4, 2, 1), 
+    beta = normal_prior(0.5, 0, 1))
+  
+  prior_sumr <- rbind(
+    rho = c(0.5, sqrt(1/12)),
+    sigma = c(0.2, sqrt(2)/10),
+    mu = c(0.2, 0.5),
+    phi = c(2, sqrt(2)),
+    beta = c(0, 1))
+  
+  # approx is enough here, the weights are uniform when there is no data
+  fit <- run_mcmc(model, iter = 2e5,burnin = 1e4, mcmc_type = "approx")
+  expect_equivalent(prior_sumr, summary(fit), tol = 0.1)
+  
+})
+
+
 test_that("MCMC results from bssm paper are still correct", {
   skip_on_cran()
   
@@ -28,6 +62,45 @@ test_that("MCMC results from bssm paper are still correct", {
   expect_equivalent(sumr_alpha, paper_alpha, tol = 0.01)
   
 })
+
+test_that("scaling is linear", {
+  skip_on_cran()
+  
+  set.seed(1)
+  n <- 2^14
+  
+  mu <- 2
+  rho <- 0.7
+  sd_y <- 0.1
+  sigma <- 0.5
+  beta <- -1
+  x <- rnorm(n)
+  z <- y <- numeric(n)
+  z[1] <- rnorm(1, mu, sigma / sqrt(1 - rho^2))
+  y[1] <- rnorm(1, beta * x[1] + z[1], sd_y)
+  for(i in 2:n) {
+    z[i] <- rnorm(1, mu * (1 - rho) + rho * z[i - 1], sigma)
+    y[i] <- rnorm(1, beta * x[i] + z[i], sd_y)
+  }
+  # run the MCMC with various number observations
+  m <- seq(1000, 10000, by = 3000)
+  times <- numeric(length(m))
+  for(i in seq_along(m)) {
+    model <- ar1_lg(y[1:m[i]],
+      xreg = x[1:m[i]],
+      rho = uniform(0.5, -1, 1), 
+      sigma = halfnormal(1, 10), 
+      mu = normal(0, 0, 1), 
+      sd_y = halfnormal(1, 10), 
+      beta = normal(0, 0, 1))
+    
+    times[i] <- run_mcmc(model, iter = 2e4)$time[3]
+  }
+  # standard Kalman filter has complexity of O(n * m) where n is number of time 
+  # points and m is the number of states
+  expect_equivalent(min(times / m), max(times / m), tol = 0.1)
+})
+
 
 
 test_that("MCMC results for Gaussian model are correct", {

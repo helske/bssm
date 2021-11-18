@@ -1,11 +1,10 @@
 #' @srrstats {G2.7, G2.8, G2.9} Only matrix/mts/arrays as tabular data are 
 #' supported, not data.frame or similar objects.
-#' 
 #' @srrstats {G2.14, G2.14a, G2.14b, G2.14c, BS3.0} Missing observations are handled 
 #' automatically as per SSM theory, whereas missing values are not allowed 
 #' elsewhere.
 #' @srrstats {BS1.0, BS1.1, BS1.2}
-#' 
+NULL
 
 ## placeholder functions for fixed models
 default_prior_fn <- function(theta) {
@@ -1040,10 +1039,10 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   use_phi <- distribution %in% c("negative binomial", "gamma")
   if (use_phi) {
     if (is_prior(phi)) {
-      check_phi(phi$init, distribution)
+      check_phi(phi$init)
       phi_est <- TRUE
     } else {
-      check_phi(phi, distribution)
+      check_phi(phi)
     }
   } else {
     phi <- 1
@@ -1297,10 +1296,10 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u, beta,
   phi_est <- FALSE
   if (use_phi) {
     if (is_prior(phi)) {
-      check_phi(phi$init, distribution)
+      check_phi(phi$init)
       phi_est <- TRUE
     } else {
-      check_phi(phi, distribution)
+      check_phi(phi)
     }
   } else {
     phi <- 1
@@ -1468,7 +1467,7 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
 #'
 #' Compared to other models, these general models need a bit more effort from
 #' the user, as you must provide the several small C++ snippets which define the
-#' model structure. See examples in the vignette.
+#' model structure. See examples in the vignette and \code{cpp_example_model}.
 #' 
 #' @param y Observations as multivariate time series (or matrix) of length 
 #' \eqn{n}.
@@ -1536,6 +1535,9 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
   }
   n_states <- as.integer(n_states)
   n_etas <- as.integer(n_etas)
+  
+  theta <- check_theta(theta)
+  
   structure(list(y = as.ts(y), Z = Z, H = H, T = T,
     R = R, Z_gn = Z_gn, T_gn = T_gn, a1 = a1, P1 = P1, theta = theta,
     log_prior_pdf = log_prior_pdf, known_params = known_params,
@@ -1557,7 +1559,8 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
 #'
 #' As in case of \code{ssm_nlg} models, these general models need a bit more 
 #' effort from the user, as you must provide the several small C++ snippets 
-#' which define the model structure. See vignettes for an example.
+#' which define the model structure. See vignettes for an example and 
+#' \code{cpp_example_model}.
 #'
 #' @param y Observations as univariate time series (or vector) of length 
 #' \eqn{n}.
@@ -1614,7 +1617,7 @@ ssm_sde <- function(y, drift, diffusion, ddiffusion, obs_pdf,
   prior_pdf, theta, x0, positive) {
   
   y <- check_y(y)
-  
+  theta <- check_theta(theta)
   structure(list(y = as.ts(y), drift = drift,
     diffusion = diffusion,
     ddiffusion = ddiffusion, obs_pdf = obs_pdf,

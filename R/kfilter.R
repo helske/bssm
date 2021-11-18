@@ -13,7 +13,8 @@
 #' @return List containing the log-likelihood 
 #' (approximate in non-Gaussian case), one-step-ahead predictions \code{at} 
 #' and filtered estimates \code{att} of states, and the corresponding 
-#' variances \code{Pt} and \code{Ptt}.
+#' variances \code{Pt} and \code{Ptt} up to the time point n+1 where n is the 
+#' length of the input time series.
 #' @seealso \code{\link{bootstrap_filter}}
 #' @export
 #' @rdname kfilter

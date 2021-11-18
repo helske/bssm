@@ -30,7 +30,7 @@ knitr::opts_chunk$set(
 #'
 #' @srrstats {G3.0} No floating point equality comparisons are made.
 #'
-#' @srrstats {G.5.4, G5.4a, G5.4b, G5.4c, G5.5, G5.6, G5.6a, G5.6b, G5.7} The 
+#' @srrstats {G5.4, G5.4a, G5.4b, G5.4c, G5.5, G5.6, G5.6a, G5.6b, G5.7} The 
 #' algorithms work correctly as per Vihola, Helske, Franks (2020) 
 #' (all simulations were implemented with the bssm package) and Helske 
 #' and Vihola (2021). Full replication of the results would take days/weeks
@@ -42,7 +42,6 @@ knitr::opts_chunk$set(
 #'
 #' @srrstats {BS1.0, BS1.1, BS1.2, BS1.2a, BS1.2b} Addressed in the models.R, 
 #' run_mcmc.R, in vignettes and in the R Journal paper.
-#'
 #'
 #' @srrstats {BS2.1, BS2.1a} Tested by autotest and package examples/tests.
 ```

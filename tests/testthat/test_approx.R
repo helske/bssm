@@ -1,4 +1,4 @@
-#' @srrstats {G.5.4, G5.4a, G5.4b, G5.4c, G5.9b} Tests that the approximation 
+#' @srrstats {G5.4, G5.4a, G5.4b, G5.4c, G5.9b} Tests that the approximation 
 #' coincides with KFAS and in GLM case results coincide with the glm.
 
 context("Test Gaussian approximation")

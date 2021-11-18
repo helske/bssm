@@ -4,7 +4,6 @@
 #' Run \code{cpp_example_model("abc")} to get the names of possible models.
 #' @param return_code If TRUE, will not compile the model but only returns the 
 #' corresponding code.
-#'
 #' @return Returns pointers to the C++ snippets defining the model, or in case 
 #' of \code{return_code = TRUE}, returns the example code without compiling.
 #' @export
@@ -14,7 +13,7 @@
 cpp_example_model <- function(example, return_code = FALSE) {
   
   example <- match.arg(example, c("nlg_linear_gaussian", "nlg_sin_exp", 
-    "nlg_growth", "nlg_ar_exp", "sde_poisson_OU"))
+    "nlg_growth", "nlg_ar_exp", "sde_poisson_OU", "sde_gbm"))
   
   code <- switch(example,
     "sde_poisson_OU" = {
@@ -98,6 +97,85 @@ cpp_example_model <- function(example, return_code = FALSE) {
           Rcpp::Named("obs_density") = Rcpp::XPtr<obs_fnPtr>(new obs_fnPtr(&log_obs_density)));
       }
     ' 
+    },
+    "sde_gbm" = {
+      ' 
+      // A latent Geometric Brownian motion with Gaussian observations
+      // dx_t = mu * x_t * dt + sigma_x * x_t * dB_t, t>=0, 
+      // y_k ~ N(log(x_k), sigma_y^2), k = 1,...,n
+      // See Vihola, Helske, and Franks (2020)
+      
+      // x: state
+      // theta: vector of parameters
+      
+      // theta(0) = mu
+      // theta(1) = log(sigma_x)
+      // theta(2) = log(sigma_y)
+      
+      #include <RcppArmadillo.h>
+      // [[Rcpp::depends(RcppArmadillo)]]
+      // [[Rcpp::interfaces(r, cpp)]]
+      
+      // Drift function
+      // [[Rcpp::export]]
+      double drift(const double x, const arma::vec& theta) {
+        return theta(0) * x;
+      }
+      // diffusion function
+      // [[Rcpp::export]]
+      double diffusion(const double x, const arma::vec& theta) {
+        return std::max(0.0, exp(theta(1)) * x);
+      }
+      // Derivative of the diffusion function
+      // [[Rcpp::export]]
+      double ddiffusion(const double x, const arma::vec& theta) {
+        return exp(theta(1)) * (x > 0.0);
+      }
+      
+      // log-density of the prior
+      // Note that these differ from the ones in the paper
+      // [[Rcpp::export]]
+      double log_prior_pdf(const arma::vec& theta) {
+        // remember, dgamma is shape and scale in C side
+        double log_pdf = R::dnorm(theta(0), 0, 0.5, 1) +
+            R::dgamma(exp(theta(1)), 2, 1, 1) + theta(1);
+            R::dgamma(exp(theta(2)), 2, 1, 1) + theta(2);
+        return log_pdf;
+      }
+      
+      // log-density of observations
+      // given vector of sampled states alpha
+      // [[Rcpp::export]]
+      arma::vec log_obs_density(const double y, 
+        const arma::vec& alpha, const arma::vec& theta) {
+        
+        arma::vec log_pdf(alpha.n_elem);
+        for (unsigned int i = 0; i < alpha.n_elem; i++) {
+          log_pdf(i) = R::dnorm(y, log(alpha(i)), exp(theta(2)), 1);
+        }
+        return log_pdf;
+      }
+      
+      // [[Rcpp::export]]
+      Rcpp::List create_xptrs() {
+        // typedef for a pointer of drift/volatility function
+        typedef double (*fnPtr)(const double x, const arma::vec& theta);
+        // typedef for log_prior_pdf
+        typedef double (*prior_fnPtr)(const arma::vec& theta);
+        // typedef for log_obs_density
+        typedef arma::vec (*obs_fnPtr)(const double y, 
+          const arma::vec& alpha, const arma::vec& theta);
+        
+        return Rcpp::List::create(
+          Rcpp::Named("drift") = Rcpp::XPtr<fnPtr>(new fnPtr(&drift)),
+          Rcpp::Named("diffusion") = Rcpp::XPtr<fnPtr>(new fnPtr(&diffusion)),
+          Rcpp::Named("ddiffusion") = Rcpp::XPtr<fnPtr>(new fnPtr(&ddiffusion)),
+          Rcpp::Named("prior") = 
+            Rcpp::XPtr<prior_fnPtr>(new prior_fnPtr(&log_prior_pdf)),
+          Rcpp::Named("obs_density") = 
+            Rcpp::XPtr<obs_fnPtr>(new obs_fnPtr(&log_obs_density)));
+      }
+  '
     },
     "nlg_ar_exp" = {
       '

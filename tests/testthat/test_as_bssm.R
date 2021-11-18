@@ -47,3 +47,28 @@ test_that("Test conversion from SSModel to ssm_mng", {
   expect_error(conv_model_bssm <- as_bssm(model_KFAS, init_theta = c(0, 0)), NA)
   expect_equivalent(model_bssm, conv_model_bssm)
 })
+
+test_that("Test that time-varying parameters fail", {
+  library(KFAS)
+  model_KFAS <- SSModel(1:10 ~ 1, u = 1:10, distribution = "negative binomial")
+  expect_error(as_bssm(model_KFAS))
+  
+  model_KFAS <- SSModel(1:10 ~ 1, u = 1:10, distribution = "gamma")
+  expect_error(as_bssm(model_KFAS))
+  
+  model_KFAS <- SSModel(cbind(1:10, 1:10) ~ 1, u = matrix(1:20, 10, 2), 
+    distribution = "negative binomial")
+  expect_error(as_bssm(model_KFAS))
+  
+  model_KFAS <- SSModel(cbind(1:10, 1:10) ~ 1, u = matrix(1:20,10,2), 
+    distribution = "gamma")
+  expect_error(as_bssm(model_KFAS))
+  
+  model_KFAS <- SSModel(cbind(1:10, 1:10) ~ 1, u = cbind(1, 1:10), 
+    distribution = c("gamma", "gaussian"))
+  expect_error(as_bssm(model_KFAS))
+  
+  model_KFAS <- SSModel(cbind(1:10, 1:10) ~ 1, u = matrix(1:20,10,2), 
+    distribution = c("binomial", "poisson"))
+  expect_error(as_bssm(model_KFAS), NA)
+})

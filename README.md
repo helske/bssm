@@ -157,7 +157,7 @@ fit
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>    0.89    0.01    0.90
+#>    0.89    0.02    0.91
 obs <- data.frame(Time = 1:nrow(airquality),
   Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))
 
@@ -230,7 +230,7 @@ fit2
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   10.75    0.04   10.77
+#>   10.59    0.02   10.62
 ```
 
 Comparison:
@@ -363,7 +363,7 @@ fit
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   12.02    0.13   12.07
+#>   11.94    0.06   11.94
 ```
 
 Draw predictions:

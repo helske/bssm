@@ -41,7 +41,6 @@
 #' @importFrom coda mcmc
 #' @importFrom stats as.ts dnorm  end frequency is.ts logLik quantile start 
 #' time ts ts.union tsp tsp<- sd na.omit
-#' @importFrom checkmate test_count test_double test_flag test_integerish test_int
 #' @useDynLib bssm
 NULL
 #' Deaths by drowning in Finland in 1969-2019

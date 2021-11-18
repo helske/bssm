@@ -87,7 +87,7 @@ where \eqn{\epsilon_t \sim N(0, I_p)}, \eqn{\eta_t \sim N(0, I_m)} and
 
 Compared to other models, these general models need a bit more effort from
 the user, as you must provide the several small C++ snippets which define the
-model structure. See examples in the vignette.
+model structure. See examples in the vignette and \code{cpp_example_model}.
 }
 \examples{
 \donttest{ # Takes a while on CRAN

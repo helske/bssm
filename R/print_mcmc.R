@@ -8,6 +8,7 @@
 #' @importFrom stats var
 #' @param x Output from \code{\link{run_mcmc}}.
 #' @param ... Ignored.
+#' @srrstats {BS6.0}
 #' @export
 print.mcmc_output <- function(x, ...) {
   
@@ -125,6 +126,7 @@ print.mcmc_output <- function(x, ...) {
 #' on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
+#' @srrstats {BS6.4}
 summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta", 
   only_theta = FALSE, ...) {
   

@@ -48,9 +48,9 @@ posterior distribution.
 \description{
 Draw samples from the posterior predictive distribution for future
 time points given the posterior draws of hyperparameters \eqn{\theta} and
-latent state \eqn{alpha_{n+1}}. Function can also be used to draw samples
-from the posterior predictive distribution
-\eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
+latent state \eqn{alpha_{n+1}} returned by \code{run_mcmc}.
+Function can also be used to draw samples from the posterior predictive
+distribution \eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
 }
 \examples{
 library("graphics")
@@ -138,4 +138,7 @@ rbind(sumr_meanrep, sumr_yrep) \%>\%
     time = time(model$y)))    
 
 
+}
+\seealso{
+\code{fitted} for in-sample predictions.
 }

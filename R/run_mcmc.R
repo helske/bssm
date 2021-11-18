@@ -1,11 +1,3 @@
-#' @srrstats {BS1.0, BS1.1, BS1.2, BS1.2a, BS1.2b}
-#' @srrstats {BS2.6}
-#' @srrstats {BS2.7, BS1.3a, BS2.8} Explained in docs.
-#' @srrrstats {BS2.9} The argument 'seed' is set to random value if not 
-#' specified by the user.
-#' @srrstatsTODO {BS2.12}
-NULL
-#' 
 #' Bayesian Inference of State Space Models
 #'
 #' Adaptive Markov chain Monte Carlo simulation for SSMs using
@@ -23,10 +15,13 @@ NULL
 #' simulation smoother. In other cases, the means and 
 #' covariances are computed using the full output of particle filter 
 #' instead of subsampling one of these as in case of 
-#' \code{output_type = "full"}.
+#' \code{output_type = "full"}. The states are sampled up to the time point n+1 
+#' where n is the length of the input time series i.e. the last values are 
+#' one-step-ahead predictions. (for predicting further, see 
+#' \code{?predict.mcmc_output}).
 #' 
 #' Initial values for the sampling are taken from the model object 
-#' (\code{model$theta]). If you want to continue from previous run, you can 
+#' (\code{model$theta}). If you want to continue from previous run, you can 
 #' reconstruct your original model by plugging in the previously obtained 
 #' parameters to \code{model$theta}, providing the S matrix for the RAM 
 #' algorithm and setting \code{burnin = 0}. See example. Note however, that 
@@ -113,6 +108,14 @@ NULL
 #' For pseudo-marginal methods (\code{"pm"}), maximum of these is used.
 #' @param ... Ignored.
 #' @export
+#' @srrstats {BS1.0, BS1.1, BS1.2, BS1.2a, BS1.2b}
+#' @srrstats {BS2.6}
+#' @srrstats {BS2.7, BS1.3a, BS2.8} Explained in docs.
+#' @srrstats {BS2.9} The argument 'seed' is set to random value if not 
+#' specified by the user.
+#' @srrstats {BS5.0, BS5.1, BS5.2} Starting values are integrated into the 
+#' input model, whereas some metadata (like the class of input model and seed) 
+#' is returned by run_mcmc.
 #' @rdname run_mcmc
 #' @references 
 #' [1] Vihola M (2012). Robust adaptive Metropolis algorithm with

@@ -13,7 +13,7 @@ as_bssm(model, kappa = 100, ...)
 used to replace exact diffuse elements of the original model.}
 
 \item{...}{Additional arguments to model building functions of \code{bssm}
-(such as prior and updating functions).}
+(such as prior and updating functions, C, and D).}
 }
 \value{
 Object of class \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or

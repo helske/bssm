@@ -1,9 +1,7 @@
 
 context("Test that particle smoothers work")
 
-
 #' @srrstats {G5.9, G5.9a, G5.9b}
-
 
 test_that("Test that trivial noise does not affect particle_smoother", {
   

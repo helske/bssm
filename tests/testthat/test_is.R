@@ -1,9 +1,9 @@
 context("Test importance_sample")
 
-#' @srrstats {G5.6, G5.6a, G5.6b, G5.7, G5.9b} Replicate Durbin&Koopman (1997)
-#' 
 test_that("Test that bssm recovers the parameters of the Seatbelts model", {
   
+  #' @srrstats {G5.6, G5.6a, G5.6b, G5.7, G5.9b} Replicate Durbin&Koopman (1997)
+
   model <- bsm_ng(Seatbelts[, "VanKilled"], distribution = "poisson",
     sd_level = 1, sd_seasonal = 1, xreg = Seatbelts[, "law"],
     beta = normal(0, 0, 1))
