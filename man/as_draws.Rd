@@ -4,12 +4,15 @@
 \alias{as_draws_df.mcmc_output}
 \title{Convert \code{run_mcmc} output to \code{draws_df} format}
 \usage{
-\method{as_draws_df}{mcmc_output}(x, times, ...)
+\method{as_draws_df}{mcmc_output}(x, times, states, ...)
 }
 \arguments{
 \item{x}{An object of class \code{mcmc_output}.}
 
 \item{times}{Vector of indices defining which time points to return?
+Default is all.}
+
+\item{states}{Vector of indices defining which states to return.
 Default is all.}
 
 \item{...}{Ignored.}
@@ -41,7 +44,7 @@ fit1 <- run_mcmc(model, iter = 2000)
 library("posterior")
 draws <- as_draws(fit1)
 head(draws, 4)
-ess_bulk(draws$sd_y)
+estimate_ess(draws$sd_y)
 summary(fit1, return_se = TRUE)
 
 # More chains:
@@ -50,12 +53,11 @@ fit2 <- run_mcmc(model, iter = 2000)
 model$theta[] <- c(150, 50) # change initial value
 fit3 <- run_mcmc(model, iter = 2000)
 
-draws <- bind_draws(as_draws(fit1),
+draws <- posterior::bind_draws(as_draws(fit1),
   as_draws(fit2), as_draws(fit3), along = "chain")
 # it is actually enough to transform first mcmc_output to draws object, 
 # rest are transformed automatically inside bind_draws
 posterior::rhat(draws$sd_y)
-posterior::ess_bulk(draws$sd_y)
 posterior::summarise_draws(draws)
 
 }

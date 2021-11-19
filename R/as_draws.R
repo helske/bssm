@@ -14,6 +14,8 @@
 #' @param x An object of class \code{mcmc_output}.
 #' @param times Vector of indices defining which time points to return? 
 #' Default is all.
+#' @param states Vector of indices defining which states to return. 
+#' Default is all.
 #' @param ... Ignored.
 #' @return A \code{draws_df} object.
 #' @rdname as_draws
@@ -31,7 +33,7 @@
 #' library("posterior")
 #' draws <- as_draws(fit1)
 #' head(draws, 4)
-#' ess_bulk(draws$sd_y)
+#' estimate_ess(draws$sd_y)
 #' summary(fit1, return_se = TRUE)
 #' 
 #' # More chains:
@@ -40,22 +42,21 @@
 #' model$theta[] <- c(150, 50) # change initial value
 #' fit3 <- run_mcmc(model, iter = 2000)
 #' 
-#' draws <- bind_draws(as_draws(fit1),
+#' draws <- posterior::bind_draws(as_draws(fit1),
 #'   as_draws(fit2), as_draws(fit3), along = "chain")
 #' # it is actually enough to transform first mcmc_output to draws object, 
 #' # rest are transformed automatically inside bind_draws
 #' posterior::rhat(draws$sd_y)
-#' posterior::ess_bulk(draws$sd_y)
 #' posterior::summarise_draws(draws)
 #'
-as_draws_df.mcmc_output <- function(x, times, ...) {
+as_draws_df.mcmc_output <- function(x, times, states, ...) {
   
   
   d_theta <- as.data.frame(x, variable = "theta", expand = TRUE)
   if (missing(times)) times <- seq_len(nrow(x$alpha))
+  if (missing(states)) states <- seq_len(ncol(x$alpha))
   d_states <- as.data.frame(x, variable = "states", expand = TRUE, 
-    times = times,
-    use_times = FALSE)
+    times = times, states = states, use_times = FALSE)
   
   d <- cbind(
     tidyr::pivot_wider(d_theta, 

@@ -13,9 +13,7 @@ estimate_ess(x, w, method = "sokal")
 assumed).}
 
 \item{method}{Method for computing the ESS. Default is \code{"sokal"}, other
-options are \code{ess_basic} and \code{ess_bulk} which use the corresponding
-functions of the \code{posterior} package in computation of the asymptotic
-variance (see also \code{asymptotic_var}).}
+option are \code{"geyer"} (see also \code{asymptotic_var}).}
 }
 \description{
 Computes the effective sample size (ESS) based on weighted posterior
@@ -36,8 +34,7 @@ for(t in 2:n) x[t] <- phi * x[t-1] + rnorm(1)
 w <- rexp(n, 0.5 * exp(0.001 * x^2))
 # different methods:
 estimate_ess(x, w, method = "sokal")
-estimate_ess(x, w, method = "ess_basic")
-estimate_ess(x, w, method = "ess_bulk")
+estimate_ess(x, w, method = "geyer")
 
 }
 \references{
@@ -51,8 +48,6 @@ In: DeWitt-Morette C, Cartier P, Folacci A (eds) Functional Integration.
 NATO ASI Series (Series B: Physics), vol 361. Springer, Boston, MA.
 https://doi.org/10.1007/978-1-4899-0319-8_6
 
-Vehtari A, Gelman A, Simpson D, Carpenter B, Bürkner P-C. (2021).
-Rank-normalization, folding, and localization: An improved Rhat for
-assessing convergence of MCMC. Bayesian analysis, 16(2):667-718.
-https://doi.org/10.1214/20-BA1221
+Gelman, A, Carlin J B, Stern H S, Dunson, D B, Vehtari A, Rubin D B. (2013).
+Bayesian Data Analysis, Third Edition. Chapman and Hall/CRC.
 }

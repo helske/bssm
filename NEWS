@@ -2,6 +2,13 @@ bssm 1.1.8 (Release date: -)
 ==============
    * Added a fitted method for extraction of summary statistics of posterior 
      predictive distribution p(y_t | y_1, ..., y_n) for t = 1, ..., n. 
+   * Rewrote the summary method completely, which now returns data.frame. This 
+     also resulted in some changes in order of the function arguments.
+   * The asymptotic_var and iact functions are now exported to users, and they 
+     also contain alternative methods based on the posterior package.
+   * New function estimate_ess can be used to compute effective sample size 
+     from weighted MCMC.
+   * Large number of new tests, and improved documentation.
   
    
 bssm 1.1.7 (Release date: 2021-09-15)

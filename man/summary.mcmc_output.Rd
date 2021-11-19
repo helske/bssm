@@ -2,26 +2,47 @@
 % Please edit documentation in R/print_mcmc.R
 \name{summary.mcmc_output}
 \alias{summary.mcmc_output}
-\title{Summary of MCMC object}
+\title{Summary Statistics of Posterior Samples}
 \usage{
-\method{summary}{mcmc_output}(object, return_se = FALSE, variable = "theta", only_theta = FALSE, ...)
+\method{summary}{mcmc_output}(
+  object,
+  return_se = FALSE,
+  variable = "theta",
+  probs = c(0.025, 0.975),
+  times,
+  states,
+  method = "sokal",
+  ...
+)
 }
 \arguments{
 \item{object}{Output from \code{run_mcmc}}
 
 \item{return_se}{if \code{FALSE} (default), computation of standard
-errors and effective sample sizes is omitted.}
+errors and effective sample sizes is omitted (as they can take considerable
+time for models with large number of states and time points).}
 
 \item{variable}{Are the summary statistics computed for either
 \code{"theta"} (default), \code{"states"}, or \code{"both"}?}
 
-\item{only_theta}{Deprecated. If \code{TRUE}, summaries are computed only
-for hyperparameters theta, not latent states alpha.}
+\item{probs}{Numeric vector defining the quantiles of interest. Default is
+\code{c(0.025, 0.975)}.}
+
+\item{times}{Vector of indices. For states, for what time points the
+summaries should be computed? Default is all, ignored if
+\code{variable = "theta"}.}
+
+\item{states}{Vector of indices. For what states the summaries should be
+computed?. Default is all, ignored if
+\code{variable = "theta"}.}
+
+\item{method}{Method for computing integrated autocorrelation time. Default
+is \code{"sokal"}, other option is \code{"geyer"}.}
 
 \item{...}{Ignored.}
 }
 \description{
-This functions returns a list containing mean, standard deviations,
+This functions returns a data frame containing mean, standard deviations,
 standard errors, and effective sample size estimates for parameters and
 states.
 }

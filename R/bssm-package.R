@@ -71,7 +71,8 @@ NULL
 NULL
 #' Pound/Dollar daily exchange rates
 #'
-#' Dataset containing daily log-returns from 1/10/81-28/6/85 as in [1]
+#' Dataset containing daily log-returns from 1/10/81-28/6/85 as in Durbin and 
+#' Koopman (2012).
 #'
 #' @name exchange
 #' @docType data
@@ -79,7 +80,7 @@ NULL
 #' @source \url{http://www.ssfpack.com/DKbook.html}.
 #' @keywords datasets
 #' @references 
-#' [1] James Durbin, Siem Jan Koopman (2012). 
+#' James Durbin, Siem Jan Koopman (2012). 
 #' Time Series Analysis by State Space Methods. Oxford University Press.
 #' https://doi.org/10.1093/acprof:oso/9780199641178.001.0001
 #' @examples

@@ -12,6 +12,8 @@
 #' @param object Results object of class \code{mcmc_output} from 
 #' \code{\link{run_mcmc}} based on the input model.
 #' @param model A \code{bssm_model} object.
+#' @param probs Numeric vector defining the quantiles of interest. Default is 
+#' \code{c(0.025, 0.975)}.
 #' @param ... Ignored.
 #' @examples
 #' prior <- uniform(0.1 * sd(log10(UKgas)), 0, 1)

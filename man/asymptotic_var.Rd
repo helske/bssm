@@ -12,25 +12,16 @@ asymptotic_var(x, w, method = "sokal")
 \item{w}{Vector of weights. If missing, set to 1 (i.e. no weighting is
 assumed).}
 
-\item{method}{Method for computing the IACT. Default is \code{"sokal"},
-other options are \code{ess_basic} and \code{ess_bulk} which use the
-corresponding functions of the \code{posterior} package.}
+\item{method}{Method for computing IACT. Default is \code{"sokal"},
+other option \code{"geyer"}.}
 }
 \description{
 The asymptotic variance MCMCSE^2 is based on Corollary 1
 of Vihola et al. (2020) from weighted samples from IS-MCMC. The default
 method is based on the integrated autocorrelation time (IACT) by Sokal (1997)
 which seem to work well for reasonable problems, but it is also possible to
-use the Geyer's method as implemented in \code{ess_basic} of the
-\code{posterior} package, or the improved \code{ess_bulk} method of the same
-package. These effective sample sizes (ESS) can be converted to MCMCSE^2 as
-MCMCSE(x)^2 = (var(z) * iact(z) / c^2) / n where z = w*(x-)
-}
-\details{
-(var(z) * iact(z) / estimate_c^2) / length(z)
-
-var(x) / ESS = var(x) * IACT / n) where var(x) is the
-variance of x based on n i.i.d.samples.
+use the Geyer's method as implemented in \code{ess_mean} of the
+\code{posterior} package.
 }
 \examples{
 set.seed(1)
@@ -41,12 +32,11 @@ for(t in 2:n) x[t] <- phi * x[t-1] + rnorm(1)
 w <- rexp(n, 0.5 * exp(0.001 * x^2))
 # different methods:
 asymptotic_var(x, w, method = "sokal")
-asymptotic_var(x, w, method = "ess_basic")
-asymptotic_var(x, w, method = "ess_bulk")
+asymptotic_var(x, w, method = "geyer")
 
 }
 \references{
-Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators
+Vihola M, Helske J, Franks J. (2020). Importance sampling type estimators
 based on approximate marginal Markov chain Monte Carlo.
 Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 
@@ -55,6 +45,9 @@ and New Algorithms.
 In: DeWitt-Morette C, Cartier P, Folacci A (eds) Functional Integration.
 NATO ASI Series (Series B: Physics), vol 361. Springer, Boston, MA.
 https://doi.org/10.1007/978-1-4899-0319-8_6
+
+Gelman, A, Carlin J B, Stern H S, Dunson, D B, Vehtari A, Rubin D B. (2013).
+Bayesian Data Analysis, Third Edition. Chapman and Hall/CRC.
 
 Vehtari A, Gelman A, Simpson D, Carpenter B, Bürkner P-C. (2021).
 Rank-normalization, folding, and localization: An improved Rhat for

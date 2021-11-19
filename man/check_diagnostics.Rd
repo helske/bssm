@@ -16,9 +16,12 @@ largest Rhat values for a quick first check that the sampling worked. For
 further checks, see e.g. \code{bayesplot} and \code{coda} packages.
 }
 \details{
-For IS-MCMC, the Rhat, bulk-ESS, and tail-ESS returned by the posterior
-package are based on the approximate posterior which should look reasonable,
-otherwise the IS-correction does not make much sense.
+For methods other than IS-MCMC, the estimates are based on the improved
+diagnostics from the \code{posterior} package.For IS-MCMC, these Rhat,
+bulk-ESS, and tail-ESS estimates are based on the approximate posterior
+which should look reasonable, otherwise the IS-correction does not make much
+sense. For IS-MCMC, ESS estimates based on a weighted posterior are also
+computed.
 }
 \examples{
 set.seed(1)

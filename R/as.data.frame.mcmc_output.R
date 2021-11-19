@@ -1,9 +1,9 @@
-#' Convert MCMC chain to data.frame
+#' Convert MCMC Output to data.frame
 #'
-#' Converts the MCMC chain output of \code{\link{run_mcmc}} to data.frame.
+#' Converts the MCMC output of \code{\link{run_mcmc}} to \code{data.frame}.
 #'  
 #' @method as.data.frame mcmc_output
-#' @param x Output from \code{\link{run_mcmc}}.
+#' @param x Object of class \code{mcmc_output} from \code{\link{run_mcmc}}.
 #' @param row.names Ignored.
 #' @param optional Ignored.
 #' @param variable Return samples of \code{"theta"} (default) or 
@@ -13,7 +13,7 @@
 #' @param states Vector of indices. In case of states, 
 #' what states to return? Default is all.
 #' @param expand Should the jump-chain be expanded? 
-#' Defaults to \code{TRUE} for non-IS-MCMC, and \code{FALSE} for IS-MCMC. 
+#' Defaults to \code{TRUE}. 
 #' For \code{expand = FALSE} and always for IS-MCMC, 
 #' the resulting data.frame contains variable weight (= counts * IS-weights).
 #' @param use_times If \code{TRUE} (default), transforms the values of the time 
@@ -43,7 +43,7 @@ as.data.frame.mcmc_output <- function(x,
   row.names, optional,
   variable = c("theta", "states"),
   times, states,
-  expand = !(x$mcmc_type %in% paste0("is", 1:3)), 
+  expand = TRUE, 
   use_times = TRUE, ...) {
   
   variable <- match.arg(tolower(variable), c("theta", "states"))

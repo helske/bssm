@@ -12,6 +12,9 @@
 
 \item{model}{A \code{bssm_model} object.}
 
+\item{probs}{Numeric vector defining the quantiles of interest. Default is
+\code{c(0.025, 0.975)}.}
+
 \item{...}{Ignored.}
 }
 \description{

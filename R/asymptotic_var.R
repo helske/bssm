@@ -38,25 +38,17 @@ iact <- function(x) {
 #' of Vihola et al. (2020) from weighted samples from IS-MCMC. The default 
 #' method is based on the integrated autocorrelation time (IACT) by Sokal (1997) 
 #' which seem to work well for reasonable problems, but it is also possible to 
-#' use the Geyer's method as implemented in \code{ess_basic} of the 
-#' \code{posterior} package, or the improved \code{ess_bulk} method of the same 
-#' package. These effective sample sizes (ESS) can be converted to MCMCSE^2 as
-#' MCMCSE(x)^2 = (var(z) * iact(z) / c^2) / n where z = w*(x-)
+#' use the Geyer's method as implemented in \code{ess_mean} of the 
+#' \code{posterior} package. 
 #' 
-#' (var(z) * iact(z) / estimate_c^2) / length(z)
-#' 
-#' var(x) / ESS = var(x) * IACT / n) where var(x) is the 
-#' variance of x based on n i.i.d.samples. 
-#' 
-#' @importFrom posterior ess_basic ess_bulk
+#' @importFrom posterior ess_mean
 #' @param x Vector of samples.
 #' @param w Vector of weights. If missing, set to 1 (i.e. no weighting is 
 #' assumed).
-#' @param method Method for computing the IACT. Default is \code{"sokal"},
-#' other options are \code{ess_basic} and \code{ess_bulk} which use the 
-#' corresponding functions of the \code{posterior} package.
+#' @param method Method for computing IACT. Default is \code{"sokal"},
+#' other option \code{"geyer"}.
 #' @references
-#' Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators 
+#' Vihola M, Helske J, Franks J. (2020). Importance sampling type estimators 
 #' based on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #' 
@@ -65,6 +57,9 @@ iact <- function(x) {
 #' In: DeWitt-Morette C, Cartier P, Folacci A (eds) Functional Integration. 
 #' NATO ASI Series (Series B: Physics), vol 361. Springer, Boston, MA. 
 #' https://doi.org/10.1007/978-1-4899-0319-8_6
+#' 
+#' Gelman, A, Carlin J B, Stern H S, Dunson, D B, Vehtari A, Rubin D B. (2013). 
+#' Bayesian Data Analysis, Third Edition. Chapman and Hall/CRC.
 #' 
 #' Vehtari A, Gelman A, Simpson D, Carpenter B, Bürkner P-C. (2021). 
 #' Rank-normalization, folding, and localization: An improved Rhat for 
@@ -81,11 +76,10 @@ iact <- function(x) {
 #' w <- rexp(n, 0.5 * exp(0.001 * x^2))
 #' # different methods:
 #' asymptotic_var(x, w, method = "sokal")
-#' asymptotic_var(x, w, method = "ess_basic")
-#' asymptotic_var(x, w, method = "ess_bulk")
+#' asymptotic_var(x, w, method = "geyer")
 #' 
 asymptotic_var <- function(x, w, method = "sokal") {
-  method <- match.arg(method, c("sokal", "ess_basic", "ess_bulk"))
+  method <- match.arg(method, c("sokal", "geyer"))
   if (missing(w)) w <- rep(1, length(x))
   if(any(w < 0) | any(!is.finite(w)))
     stop("Nonfinite or negative weights in 'w'.")
@@ -98,8 +92,7 @@ asymptotic_var <- function(x, w, method = "sokal") {
   switch(method,
     sokal = (var(z) * iact(z) / estimate_c^2) / length(z),
     # ESS(z) = n / IACT(z)
-    ess_basic = var(z) / ess_basic(z) / estimate_c^2,
-    ess_bulk = var(z) / ess_bulk(z) / estimate_c^2)
+    ess_basic = var(z) / posterior::ess_mean(z) / estimate_c^2)
 }
 
 #' Effective Sample Size for IS-type Estimators
@@ -116,9 +109,7 @@ asymptotic_var <- function(x, w, method = "sokal") {
 #' @param w Vector of weights. If missing, set to 1 (i.e. no weighting is 
 #' assumed).
 #' @param method Method for computing the ESS. Default is \code{"sokal"}, other 
-#' options are \code{ess_basic} and \code{ess_bulk} which use the corresponding 
-#' functions of the \code{posterior} package in computation of the asymptotic 
-#' variance (see also \code{asymptotic_var}).
+#' option are \code{"geyer"} (see also \code{asymptotic_var}).
 #' @references
 #' Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators 
 #' based on approximate marginal Markov chain Monte Carlo. 
@@ -130,10 +121,8 @@ asymptotic_var <- function(x, w, method = "sokal") {
 #' NATO ASI Series (Series B: Physics), vol 361. Springer, Boston, MA. 
 #' https://doi.org/10.1007/978-1-4899-0319-8_6
 #' 
-#' Vehtari A, Gelman A, Simpson D, Carpenter B, Bürkner P-C. (2021). 
-#' Rank-normalization, folding, and localization: An improved Rhat for 
-#' assessing convergence of MCMC. Bayesian analysis, 16(2):667-718. 
-#' https://doi.org/10.1214/20-BA1221
+#' Gelman, A, Carlin J B, Stern H S, Dunson, D B, Vehtari A, Rubin D B. (2013). 
+#' Bayesian Data Analysis, Third Edition. Chapman and Hall/CRC.
 #' @export
 #' @srrstats {BS5.3, BS5.5}
 #' @examples
@@ -145,11 +134,10 @@ asymptotic_var <- function(x, w, method = "sokal") {
 #' w <- rexp(n, 0.5 * exp(0.001 * x^2))
 #' # different methods:
 #' estimate_ess(x, w, method = "sokal")
-#' estimate_ess(x, w, method = "ess_basic")
-#' estimate_ess(x, w, method = "ess_bulk")
+#' estimate_ess(x, w, method = "geyer")
 #' 
 estimate_ess <- function(x, w, method = "sokal") {
-  method <- match.arg(method, c("sokal", "ess_basic", "ess_bulk"))
+  method <- match.arg(method, c("sokal", "geyer"))
   if (missing(w)) w <- rep(1, length(x))
   if(any(w < 0) | any(!is.finite(w)))
     stop("Nonfinite or negative weights in 'w'.")

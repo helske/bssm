@@ -22,16 +22,16 @@ test_that("prior and posterior distributions coincide when no data is used", {
     phi = gamma_prior(0.4, 2, 1), 
     beta = normal_prior(0.5, 0, 1))
   
-  prior_sumr <- rbind(
+  prior_sumr <- as.data.frame(rbind(
     rho = c(0.5, sqrt(1/12)),
     sigma = c(0.2, sqrt(2)/10),
     mu = c(0.2, 0.5),
     phi = c(2, sqrt(2)),
-    beta = c(0, 1))
+    beta = c(0, 1)))
   
   # approx is enough here, the weights are uniform when there is no data
   fit <- run_mcmc(model, iter = 2e5,burnin = 1e4, mcmc_type = "approx")
-  expect_equivalent(prior_sumr, summary(fit), tol = 0.1)
+  expect_equivalent(prior_sumr, summary(fit)[, c(1, 3)], tol = 0.1)
   
 })
 
@@ -56,7 +56,8 @@ test_that("MCMC results from bssm paper are still correct", {
   paper_theta <- c(0.092, 0.003, 5.392, -0.912)
   expect_equivalent(sumr_theta, paper_theta, tol = 0.01)
   
-  expect_error(sumr_alpha <- summary(fit_bssm, variable = "states")$Mean[200,], 
+  expect_error(sumr_alpha <- summary(fit_bssm, 
+    variable = "states", times = 200)$Mean, 
     NA)
   paper_alpha <- c(6.962,0.006)
   expect_equivalent(sumr_alpha, paper_alpha, tol = 0.01)
@@ -113,7 +114,6 @@ test_that("run_mcmc throws error with improper arguments", {
 
   out <- run_mcmc(model_bssm, iter = 10, output_type = "theta")
   expect_error(summary(out, return_se = 2))
-  expect_error(summary(out, only_theta = 2))
   expect_error(summary(out, variable = "both"))
 })
   
@@ -280,11 +280,9 @@ test_that("MCMC results with psi-APF for Poisson model are correct", {
   expect_lt(max(mcmc_poisson$theta), Inf)
   expect_true(is.finite(sum(mcmc_poisson$alpha)))
   
-  expect_warning(summary(mcmc_poisson, only_theta = TRUE))
-  
   sumr <- expect_error(summary(mcmc_poisson, variable = "both"), NA)
   
-  expect_lt(sum(abs(sumr$theta - c(0.25892090511681, 0.186796779799571))), 0.5)
+  expect_lt(sum(abs(sumr[1, c(1, 3)] - c(0.25892090511681, 0.186796779799571))), 0.5)
   
   states <- expand_sample(mcmc_poisson, variable = "states")
   
@@ -297,8 +295,17 @@ test_that("MCMC results with psi-APF for Poisson model are correct", {
   expect_error(expand_sample(mcmc_poisson, variable = "states", 
     states = list(4)))
   
-  expect_equal(as.numeric(sumr$states$Mean[,1]), 
+  
+  expect_equal(sumr$Mean[seq(2, nrow(sumr), by = 2)], 
     as.numeric(colMeans(states$level)))
+  
+  expect_error(posterior::as_draws(mcmc_poisson), NA)
+  expect_error(d <- as.data.frame(mcmc_poisson, variable = "state"), NA)
+  x <- dplyr::pull(dplyr::summarise(
+    dplyr::group_by(
+      dplyr::filter(d, variable == "level"), time), 
+    mean = mean(value)), mean)
+  expect_equal(x, as.numeric(colMeans(states$level)))
   
   for(type in c("pm", "da", "is1", "is3", "is3", "approx")) {
     z <- 2*type%in%c("is1", "is3", "is3", "approx")
@@ -345,7 +352,7 @@ test_that("MCMC using SPDK for Gamma model works", {
   expect_lt(max(mcmc_gamma$theta), Inf)
   expect_true(is.finite(sum(mcmc_gamma$alpha)))
   
-  expect_lt(sum(abs(summary(mcmc_gamma)[,"Mean"] - 
+  expect_lt(sum(abs(summary(mcmc_gamma)$Mean - 
       c(0.542149368711246, 12.353642743311))), 2)
   
 })
@@ -397,7 +404,7 @@ test_that("MCMC results for SV model using IS-correction are correct", {
     mcmc_type = "is2", seed = 1, sampling_mcmc_type = "bsf"), NA)
   
   expect_warning(expand_sample(mcmc_sv))
-  sumr <- expect_error(summary(mcmc_sv, variable = "both"), NA)
+  expect_error(summary(mcmc_sv, variable = "both"), NA)
   expect_gt(mcmc_sv$acceptance_rate, 0)
   expect_true(is.finite(sum(mcmc_sv$theta)))
   expect_true(is.finite(sum(mcmc_sv$alpha)))

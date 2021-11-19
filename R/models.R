@@ -846,7 +846,8 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' out <- run_mcmc(model, iter = 1e5, particles = 10)
 #' summary(out, variable = "theta", return_se = TRUE)
 #' # should be about 0.093 and 0.016
-#' summary(out, variable = "states", return_se = TRUE)$Mean[c(1,100),1]
+#' summary(out, variable = "states", return_se = TRUE, 
+#'  states = 1, times = c(1, 100))$Mean
 #' # should be about -0.075, 2.618
 #' }
 #' 

@@ -4,9 +4,12 @@
 #' largest Rhat values for a quick first check that the sampling worked. For 
 #' further checks, see e.g. \code{bayesplot} and \code{coda} packages.
 #' 
-#' For IS-MCMC, the Rhat, bulk-ESS, and tail-ESS returned by the posterior 
-#' package are based on the approximate posterior which should look reasonable,
-#' otherwise the IS-correction does not make much sense.
+#' For methods other than IS-MCMC, the estimates are based on the improved 
+#' diagnostics from the \code{posterior} package.For IS-MCMC, these Rhat, 
+#' bulk-ESS, and tail-ESS estimates are based on the approximate posterior 
+#' which should look reasonable, otherwise the IS-correction does not make much 
+#' sense. For IS-MCMC, ESS estimates based on a weighted posterior are also 
+#' computed.
 #' 
 #' @importFrom dplyr across
 #' @importFrom posterior summarise_draws default_convergence_measures
@@ -73,7 +76,7 @@ check_diagnostics <- function(x) {
       "and ESS measures below.\n", sep="")
   }
   
-  sumr <- summarise_draws(draws, default_convergence_measures())
+  sumr <- posterior::summarise_draws(draws, posterior::default_convergence_measures())
   min_ess <- which.min(sumr$ess_bulk)
   cat("\nSmallest bulk-ESS: ", round(sumr$ess_bulk[min_ess]), " (", 
     sumr$variable[min_ess], ")", sep = "")

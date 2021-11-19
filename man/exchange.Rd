@@ -11,7 +11,8 @@ A vector of length 945.
 \url{http://www.ssfpack.com/DKbook.html}.
 }
 \description{
-Dataset containing daily log-returns from 1/10/81-28/6/85 as in \link{1}
+Dataset containing daily log-returns from 1/10/81-28/6/85 as in Durbin and
+Koopman (2012).
 }
 \examples{
 data("exchange")
@@ -22,7 +23,7 @@ out <- particle_smoother(model, particles = 500)
 plot.ts(cbind(model$y, exp(out$alphahat))) 
 }
 \references{
-\link{1} James Durbin, Siem Jan Koopman (2012).
+James Durbin, Siem Jan Koopman (2012).
 Time Series Analysis by State Space Methods. Oxford University Press.
 https://doi.org/10.1093/acprof:oso/9780199641178.001.0001
 }
