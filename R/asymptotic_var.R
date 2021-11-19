@@ -1,6 +1,8 @@
 #' Integrated Autocorrelation Time
 #'
-#' Estimates the integrated autocorrelation time based on Sokal (1997).
+#' Estimates the integrated autocorrelation time (IACT) based on Sokal (1997).
+#' Note that the estimator is not particularly good for very short series x 
+#' (say < 100), but that is not very practical for MCMC applications anyway.
 #'
 #' @param x A vector.
 #' @references
@@ -13,38 +15,46 @@
 #' @srrstats {BS5.3, BS5.5}
 #' @examples
 #' set.seed(1)
-#' x <- numeric(1e4)
+#' n <- 1e4
+#' x <- numeric(n)
 #' phi <- 0.8
-#' for(t in 2:1e4) x[t] <- phi * x[t-1] + rnorm(1)
-#' # ESS:
+#' for(t in 2:n) x[t] <- phi * x[t-1] + rnorm(1)
+#' # ESS estimate:
 #' length(x) / iact(x)
 iact <- function(x) {
   n <- length(x)
   x_ <- (x - mean(x)) / sd(x)
-  C <- max(5.0, log10(n))
+  C <- max(5, log10(n))
   tau <- 1
   for (k in 1:(n - 1)) {
-    tau <- tau + 2.0 * (x_[1:(n-k)] %*% x_[(1+k):n]) / (n - k)
+    tau <- tau + 2.0 * (x_[1:(n - k)] %*% x_[(1 + k):n]) / (n - k)
     if (k > C * tau) break
   }
-  max(0.0, tau)
+  max(0, tau)
 }
 #' Asymptotic Variance of IS-type Estimators
 #'
-#' Estimates the asymptotic variance based on Corollary 1 
+#' The asymptotic variance MCMCSE^2 is based on Corollary 1 
 #' of Vihola et al. (2020) from weighted samples from IS-MCMC. The default 
 #' method is based on the integrated autocorrelation time (IACT) by Sokal (1997) 
 #' which seem to work well for reasonable problems, but it is also possible to 
 #' use the Geyer's method as implemented in \code{ess_basic} of the 
 #' \code{posterior} package, or the improved \code{ess_bulk} method of the same 
-#' package (these compute ESS instead of variances, but 
-#' MCSE^2 = var(x) / ESS = var(x) * IACT / length(x)). 
+#' package. These effective sample sizes (ESS) can be converted to MCMCSE^2 as
+#' MCMCSE(x)^2 = (var(z) * iact(z) / c^2) / n where z = w*(x-)
+#' 
+#' (var(z) * iact(z) / estimate_c^2) / length(z)
+#' 
+#' var(x) / ESS = var(x) * IACT / n) where var(x) is the 
+#' variance of x based on n i.i.d.samples. 
 #' 
 #' @importFrom posterior ess_basic ess_bulk
 #' @param x Vector of samples.
 #' @param w Vector of weights. If missing, set to 1 (i.e. no weighting is 
 #' assumed).
-#' @param method Method for computing the IACT. Default is \code{"sokal"}
+#' @param method Method for computing the IACT. Default is \code{"sokal"},
+#' other options are \code{ess_basic} and \code{ess_bulk} which use the 
+#' corresponding functions of the \code{posterior} package.
 #' @references
 #' Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators 
 #' based on approximate marginal Markov chain Monte Carlo. 
@@ -64,10 +74,11 @@ iact <- function(x) {
 #' @srrstats {BS5.3, BS5.5}
 #' @examples
 #' set.seed(1)
-#' x <- numeric(1e4)
+#' n <- 1e4 
+#' x <- numeric(n)
 #' phi <- 0.7
-#' for(t in 2:1e4) x[t] <- phi * x[t-1] + rnorm(1)
-#' w <- rexp(1e4, 0.5 * exp(0.001 * x^2))
+#' for(t in 2:n) x[t] <- phi * x[t-1] + rnorm(1)
+#' w <- rexp(n, 0.5 * exp(0.001 * x^2))
 #' # different methods:
 #' asymptotic_var(x, w, method = "sokal")
 #' asymptotic_var(x, w, method = "ess_basic")
@@ -85,7 +96,65 @@ asymptotic_var <- function(x, w, method = "sokal") {
   estimate_mean <- weighted_mean(x, w)
   z <- w * (x - estimate_mean)
   switch(method,
-    sokal = var(z) * iact(z) / length(z) / estimate_c^2,
+    sokal = (var(z) * iact(z) / estimate_c^2) / length(z),
+    # ESS(z) = n / IACT(z)
     ess_basic = var(z) / ess_basic(z) / estimate_c^2,
     ess_bulk = var(z) / ess_bulk(z) / estimate_c^2)
+}
+
+#' Effective Sample Size for IS-type Estimators
+#'
+#' Computes the effective sample size (ESS) based on weighted posterior 
+#' samples.
+#' 
+#' The asymptotic variance MCMCSE^2 is based on Corollary 1 of 
+#' Vihola et al. (2020) which is used to compute an estimate for the ESS
+#' using the identity ESS(x) = var(x) / MCMCSE^2 where var(x) is the 
+#' posterior variance of x assuming independent samples. 
+#' 
+#' @param x Vector of samples.
+#' @param w Vector of weights. If missing, set to 1 (i.e. no weighting is 
+#' assumed).
+#' @param method Method for computing the ESS. Default is \code{"sokal"}, other 
+#' options are \code{ess_basic} and \code{ess_bulk} which use the corresponding 
+#' functions of the \code{posterior} package in computation of the asymptotic 
+#' variance (see also \code{asymptotic_var}).
+#' @references
+#' Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators 
+#' based on approximate marginal Markov chain Monte Carlo. 
+#' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
+#' 
+#' Sokal A. (1997). Monte Carlo Methods in Statistical Mechanics: Foundations 
+#' and New Algorithms. 
+#' In: DeWitt-Morette C, Cartier P, Folacci A (eds) Functional Integration. 
+#' NATO ASI Series (Series B: Physics), vol 361. Springer, Boston, MA. 
+#' https://doi.org/10.1007/978-1-4899-0319-8_6
+#' 
+#' Vehtari A, Gelman A, Simpson D, Carpenter B, Bürkner P-C. (2021). 
+#' Rank-normalization, folding, and localization: An improved Rhat for 
+#' assessing convergence of MCMC. Bayesian analysis, 16(2):667-718. 
+#' https://doi.org/10.1214/20-BA1221
+#' @export
+#' @srrstats {BS5.3, BS5.5}
+#' @examples
+#' set.seed(1)
+#' n <- 1e4 
+#' x <- numeric(n)
+#' phi <- 0.7
+#' for(t in 2:n) x[t] <- phi * x[t-1] + rnorm(1)
+#' w <- rexp(n, 0.5 * exp(0.001 * x^2))
+#' # different methods:
+#' estimate_ess(x, w, method = "sokal")
+#' estimate_ess(x, w, method = "ess_basic")
+#' estimate_ess(x, w, method = "ess_bulk")
+#' 
+estimate_ess <- function(x, w, method = "sokal") {
+  method <- match.arg(method, c("sokal", "ess_basic", "ess_bulk"))
+  if (missing(w)) w <- rep(1, length(x))
+  if(any(w < 0) | any(!is.finite(w)))
+    stop("Nonfinite or negative weights in 'w'.")
+  if (!any(w > 0)) {
+    stop("No positive weights in 'w'.")
+  }
+  weighted_var(x, w) / asymptotic_var(x, w, method = method)
 }

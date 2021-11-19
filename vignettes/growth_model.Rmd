@@ -10,7 +10,7 @@ vignette: |
   %\VignetteIndexEntry{Non-linear models with bssm}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  %\VignetteDepends{ggplot2, dplyr, Hmisc}
+  %\VignetteDepends{ggplot2, dplyr}
 ---
 
 ```{r, echo = FALSE}

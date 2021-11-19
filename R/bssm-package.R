@@ -95,7 +95,7 @@ NULL
 #' See example for code for reproducing the data. This was used in 
 #' Vihola, Helske, Franks (2020).
 #'
-#' @srrstats {G5.0, G5.1} used in Vihola, Helske, Franks (2020).
+#' @srrstats {G5.0, G5.1, G5.4} used in Vihola, Helske, Franks (2020).
 #' @name poisson_series
 #' @docType data
 #' @format A vector of length 100.
@@ -117,7 +117,7 @@ NULL
 #' See example for code for reproducing the data. This was used in 
 #' Helske and Vihola (2021).
 #'
-#' @srrstats {G5.0, G5.1} used in Helske and Vihola (2021).
+#' @srrstats {G5.0, G5.1, G5.4} used in Helske and Vihola (2021).
 #' @name negbin_series
 #' @docType data
 #' @format A time series \code{mts} object with 200 time points and two series.

@@ -10,14 +10,17 @@ iact(x)
 \item{x}{A vector.}
 }
 \description{
-Estimates the integrated autocorrelation time based on Sokal (1997).
+Estimates the integrated autocorrelation time (IACT) based on Sokal (1997).
+Note that the estimator is not particularly good for very short series x
+(say < 100), but that is not very practical for MCMC applications anyway.
 }
 \examples{
 set.seed(1)
-x <- numeric(1e4)
+n <- 1e4
+x <- numeric(n)
 phi <- 0.8
-for(t in 2:1e4) x[t] <- phi * x[t-1] + rnorm(1)
-# ESS:
+for(t in 2:n) x[t] <- phi * x[t-1] + rnorm(1)
+# ESS estimate:
 length(x) / iact(x)
 }
 \references{

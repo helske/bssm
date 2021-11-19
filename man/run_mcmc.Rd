@@ -287,11 +287,11 @@ library("ggplot2")
 level_sumr <- d_states \%>\% 
   filter(variable == "level") \%>\%
   group_by(time) \%>\%
-  summarise(mean = Hmisc::wtd.mean(value, weight, normwt = TRUE), 
-    lwr = Hmisc::wtd.quantile(value, weight, 
-      0.025, normwt = TRUE), 
-    upr = Hmisc::wtd.quantile(value, weight, 
-      0.975, normwt = TRUE))
+  summarise(mean = diagis::weighted_mean(value, weight), 
+    lwr = diagis::weighted_quantile(value, weight, 
+      0.025), 
+    upr = diagis::weighted_quantile(value, weight, 
+      0.975))
 
 # visualize
 level_sumr \%>\% ggplot(aes(x = time, y = mean)) + 

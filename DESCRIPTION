@@ -27,7 +27,6 @@ Depends: R (>= 3.5.0)
 Suggests: 
     covr,
     ggplot2 (>= 2.0.0),
-    Hmisc,
     KFAS (>= 1.2.1),
     knitr (>= 1.11),
     MASS,

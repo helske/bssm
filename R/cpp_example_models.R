@@ -7,6 +7,8 @@
 #' @return Returns pointers to the C++ snippets defining the model, or in case 
 #' of \code{return_code = TRUE}, returns the example code without compiling.
 #' @export
+#' @srrstats {G5.4} sde_gbm model used in Vihola, Helske, Franks, (2020). See 
+#' also tests/testthat/test_sde.R.
 #' @examples
 #' cpp_example_model("sde_poisson_OU", return_code = TRUE)
 #' 
@@ -109,8 +111,8 @@ cpp_example_model <- function(example, return_code = FALSE) {
       // theta: vector of parameters
       
       // theta(0) = mu
-      // theta(1) = log(sigma_x)
-      // theta(2) = log(sigma_y)
+      // theta(1) = sigma_x
+      // theta(2) = sigma_y
       
       #include <RcppArmadillo.h>
       // [[Rcpp::depends(RcppArmadillo)]]
@@ -124,22 +126,28 @@ cpp_example_model <- function(example, return_code = FALSE) {
       // diffusion function
       // [[Rcpp::export]]
       double diffusion(const double x, const arma::vec& theta) {
-        return std::max(0.0, exp(theta(1)) * x);
+        return std::max(0.0, theta(1) * x);
       }
       // Derivative of the diffusion function
       // [[Rcpp::export]]
       double ddiffusion(const double x, const arma::vec& theta) {
-        return exp(theta(1)) * (x > 0.0);
+        return theta(1) * (x > 0.0);
       }
       
       // log-density of the prior
-      // Note that these differ from the ones in the paper
       // [[Rcpp::export]]
       double log_prior_pdf(const arma::vec& theta) {
-        // remember, dgamma is shape and scale in C side
-        double log_pdf = R::dnorm(theta(0), 0, 0.5, 1) +
-            R::dgamma(exp(theta(1)), 2, 1, 1) + theta(1);
-            R::dgamma(exp(theta(2)), 2, 1, 1) + theta(2);
+      
+        double log_pdf = 0.0;
+      
+        if(theta(0) < 0 || theta(1) < 0 || theta(2) < 0.5) {
+          log_pdf = -std::numeric_limits<double>::infinity();
+        }
+        else {
+          log_pdf = R::dnorm(theta(0), 0, 0.1, 1) +
+            R::dnorm(theta(1), 0, 0.5, 1) +
+            R::dnorm(theta(2), 1.5, 0.5, 1);
+        }
         return log_pdf;
       }
       
@@ -151,7 +159,7 @@ cpp_example_model <- function(example, return_code = FALSE) {
         
         arma::vec log_pdf(alpha.n_elem);
         for (unsigned int i = 0; i < alpha.n_elem; i++) {
-          log_pdf(i) = R::dnorm(y, log(alpha(i)), exp(theta(2)), 1);
+          log_pdf(i) = R::dnorm(y, log(alpha(i)), theta(2), 1);
         }
         return log_pdf;
       }

@@ -12,24 +12,33 @@ asymptotic_var(x, w, method = "sokal")
 \item{w}{Vector of weights. If missing, set to 1 (i.e. no weighting is
 assumed).}
 
-\item{method}{Method for computing the IACT. Default is \code{"sokal"}}
+\item{method}{Method for computing the IACT. Default is \code{"sokal"},
+other options are \code{ess_basic} and \code{ess_bulk} which use the
+corresponding functions of the \code{posterior} package.}
 }
 \description{
-Estimates the asymptotic variance based on Corollary 1
+The asymptotic variance MCMCSE^2 is based on Corollary 1
 of Vihola et al. (2020) from weighted samples from IS-MCMC. The default
 method is based on the integrated autocorrelation time (IACT) by Sokal (1997)
 which seem to work well for reasonable problems, but it is also possible to
 use the Geyer's method as implemented in \code{ess_basic} of the
 \code{posterior} package, or the improved \code{ess_bulk} method of the same
-package (these compute ESS instead of variances, but
-MCSE^2 = var(x) / ESS = var(x) * IACT / length(x)).
+package. These effective sample sizes (ESS) can be converted to MCMCSE^2 as
+MCMCSE(x)^2 = (var(z) * iact(z) / c^2) / n where z = w*(x-)
+}
+\details{
+(var(z) * iact(z) / estimate_c^2) / length(z)
+
+var(x) / ESS = var(x) * IACT / n) where var(x) is the
+variance of x based on n i.i.d.samples.
 }
 \examples{
 set.seed(1)
-x <- numeric(1e4)
+n <- 1e4 
+x <- numeric(n)
 phi <- 0.7
-for(t in 2:1e4) x[t] <- phi * x[t-1] + rnorm(1)
-w <- rexp(1e4, 0.5 * exp(0.001 * x^2))
+for(t in 2:n) x[t] <- phi * x[t-1] + rnorm(1)
+w <- rexp(n, 0.5 * exp(0.001 * x^2))
 # different methods:
 asymptotic_var(x, w, method = "sokal")
 asymptotic_var(x, w, method = "ess_basic")
