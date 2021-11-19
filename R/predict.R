@@ -121,7 +121,7 @@ predict.mcmc_output <- function(object, model, nsim, type = "response",
   
   check_missingness(model)
   
-  if (!inherits(model, "bbsm_model")) {
+  if (!inherits(model, "bssm_model")) {
     stop("Argument 'model' should be an object of class 'bssm_model'.")
   }
   nsim <- check_intmax(nsim, "nsim", max = 10 * object$iter)

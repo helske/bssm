@@ -32,7 +32,7 @@ test_that("MCMC for SDE works", {
   expect_equivalent(diagis::weighted_mean(out$theta, out$weights * out$counts), 
     paper[1:3], tol = 0.1)
   expect_equivalent(diagis::weighted_mean(t(out$alpha[c(1,50),1,]), 
-    out$weights * out$counts), paper[4:5], tol = 0.01)
+    out$weights * out$counts), paper[4:5], tol = 0.1)
   
   expect_error(out <- run_mcmc(model, iter = 2e4, burnin = 5000,
     particles = 50, mcmc_type = "is2", 

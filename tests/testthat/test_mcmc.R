@@ -40,8 +40,8 @@ test_that("MCMC results from bssm paper are still correct", {
   skip_on_cran()
   
   data(negbin_series)
-  bssm_model <- bsm_ng(negbin_series,
-    xreg = x,
+  bssm_model <- bsm_ng(negbin_series[, 1],
+    xreg = negbin_series[, 2],
     beta = normal(0, 0, 10),
     phi = halfnormal(1, 10),
     sd_level = halfnormal(0.1, 1),
@@ -109,11 +109,8 @@ test_that("run_mcmc throws error with improper arguments", {
     sd_level = uniform(1, 0, 10))
   
   expect_error(mcmc_bsm <- run_mcmc(model_bssm, iter = 50, 
-    end_adaptive_phase = 4), NA)
-  expect_error(mcmc_bsm <- run_mcmc(model_bssm, iter = 50, 
-    local_approx = 4), NA)
-  expect_error(mcmc_bsm <- run_mcmc(model_bssm, iter = 50, 
-    particls = 1), NA)
+    end_adaptive_phase = 4))
+
   out <- run_mcmc(model_bssm, iter = 10, output_type = "theta")
   expect_error(summary(out, return_se = 2))
   expect_error(summary(out, only_theta = 2))
@@ -242,6 +239,11 @@ test_that("MCMC for ssm_mng work", {
     init_theta = c(0.5, 2), 
     distribution = c("gamma", "binomial"),
     update_fn = update_fn, prior_fn = prior_fn), NA)
+  
+  expect_error(run_mcmc(model, iter = 50, 
+    local_approx = 4))
+  expect_error(run_mcmc(model, iter = 50, 
+    particles = 1))
   
   for(type in c("pm", "da", "is1", "is3", "is3", "approx")) {
     for(method in c("psi", "bsf", "spdk")) {
