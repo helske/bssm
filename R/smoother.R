@@ -124,7 +124,7 @@ ekf_smoother <- function(model, iekf_iter = 0) {
   
   check_missingness(model)
   
-  iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
+  iekf_iter <- check_intmax(iekf_iter, "iekf_iter", positive = FALSE)
   
   out <- ekf_smoother_nlg(t(model$y), model$Z, model$H, model$T, 
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
@@ -145,7 +145,7 @@ ekf_fast_smoother <- function(model, iekf_iter = 0) {
   
   check_missingness(model)
   
-  iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
+  iekf_iter <- check_intmax(iekf_iter, "iekf_iter", positive = FALSE)
   
   out <- ekf_fast_smoother_nlg(t(model$y), model$Z, model$H, model$T, 
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 

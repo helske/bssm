@@ -7,7 +7,11 @@ test_that("results for Gaussian models are comparable to KFAS", {
   model_KFAS <- SSModel(1:10 ~ SSMtrend(2, Q = list(0.01^2, 0)), H = 2)
   model_KFAS$P1inf[] <- 0
   diag(model_KFAS$P1) <- 1e2
-  
+
+  expect_error(bsm_lg(1:10, P1 = diag(1e2, 2), sd_slope = 0,
+    sd_level = 0.01))
+  expect_error(bsm_lg(1:10, P1 = diag(1e2, 2), sd_slope = 0,
+    sd_y = 0.01))
   model_bssm <- bsm_lg(1:10, P1 = diag(1e2, 2), sd_slope = 0,
     sd_level = 0.01, sd_y = sqrt(2))
   

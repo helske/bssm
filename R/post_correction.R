@@ -83,8 +83,8 @@ suggest_N <- function(model, theta,
   
   check_missingness(model)
   
-  replications <- check_integer(replications, "replications")
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  replications <- check_intmax(replications, "replications")
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   
   if (!test_integerish(candidates, lower = 1, any.missing = FALSE, 
     min.len = 1)) {
@@ -239,10 +239,10 @@ post_correct <- function(model, mcmc_output, particles, threads = 1L,
   
   check_missingness(model)
   
-  particles <- check_integer(particles, "particles")
-  threads <- check_integer(threads, "threads")
+  particles <- check_intmax(particles, "particles")
+  threads <- check_intmax(threads, "threads")
   
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   
   if (!inherits(mcmc_output, "mcmc_output")) 
     stop("Object 'mcmc_output' is not valid output from 'run_mcmc'.")

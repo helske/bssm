@@ -34,7 +34,24 @@ test_that("MCMC for SDE works", {
   expect_equivalent(diagis::weighted_mean(t(out$alpha[c(1,50),1,]), 
     out$weights * out$counts), paper[4:5], tol = 0.01)
   
+  expect_error(out <- run_mcmc(model, iter = 2e4, burnin = 5000,
+    particles = 50, mcmc_type = "is2", 
+    L_c = 2, L_f = 6, threads = -1))
+  
+  expect_error(out <- run_mcmc(model, iter = 2e4, burnin = 5000,
+    particles = 50, mcmc_type = "is2", 
+    L_c = 2, L_f = -1))
+  
+  expect_error(out <- run_mcmc(model, iter = 2e4, burnin = 5000,
+    particles = 50, mcmc_type = "is2", 
+    L_c = 2, L_f = 1))
+  
+  expect_error(out <- run_mcmc(model, iter = 2e4, burnin = 5000,
+    particles = 50, mcmc_type = "pm", L_c = 0))
+  
   expect_error(bootstrap_filter(model, 1000, L = -2))
+  expect_error(particle_smoother(model, 1000, L = 0))
+  expect_error(ll <- logLik(model, 10000, L = -3))
   expect_error(ll <- logLik(model, 10000, L = 3), NA)
   expect_equal(ll, -17, tol = 1)
   expect_error(out_bsf <- bootstrap_filter(model, 1000, L = 3), NA)

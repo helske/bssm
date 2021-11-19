@@ -401,7 +401,7 @@ check_H <- function(x, p, n, multivariate = FALSE) {
 }
 
 #' @rdname check
-check_integer <- function(x, name = "particles", positive = TRUE, max = 1e7) {
+check_intmax <- function(x, name = "particles", positive = TRUE, max = 1e7) {
   if (!test_count(x, positive)) {
     stop(paste0("Argument '", name, "' should be a ",
       ifelse(positive, "positive", "non-negative"), " integer. "))

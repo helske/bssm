@@ -102,7 +102,24 @@ test_that("scaling is linear", {
 })
 
 
-
+test_that("run_mcmc throws error with improper arguments", {
+  set.seed(123)
+  model_bssm <- bsm_lg(rnorm(10, 3), P1 = diag(2, 2), sd_slope = 0,
+    sd_y = uniform(1, 0, 10), 
+    sd_level = uniform(1, 0, 10))
+  
+  expect_error(mcmc_bsm <- run_mcmc(model_bssm, iter = 50, 
+    end_adaptive_phase = 4), NA)
+  expect_error(mcmc_bsm <- run_mcmc(model_bssm, iter = 50, 
+    local_approx = 4), NA)
+  expect_error(mcmc_bsm <- run_mcmc(model_bssm, iter = 50, 
+    particls = 1), NA)
+  out <- run_mcmc(model_bssm, iter = 10, output_type = "theta")
+  expect_error(summary(out, return_se = 2))
+  expect_error(summary(out, only_theta = 2))
+  expect_error(summary(out, variable = "both"))
+})
+  
 test_that("MCMC results for Gaussian model are correct", {
   set.seed(123)
   model_bssm <- bsm_lg(rnorm(10, 3), P1 = diag(2, 2), sd_slope = 0,
@@ -175,6 +192,9 @@ test_that("MCMC results for Gaussian model are correct", {
   expect_gte(min(out$theta), 0)
   expect_lt(max(out$theta), Inf)
   expect_true(is.finite(sum(out$alpha)))
+  
+  model2 <- ssm_ulg(y, Z, H, T, R, a1, P1)
+  expect_error(run_mcmc(model2, iter = 50))
   
   expect_equal(
     run_mcmc(model, iter = 100, seed = 1)[-14], 
@@ -266,6 +286,15 @@ test_that("MCMC results with psi-APF for Poisson model are correct", {
   
   states <- expand_sample(mcmc_poisson, variable = "states")
   
+  expect_error(expand_sample(mcmc_poisson, variable = "blaablaa"))
+  expect_error(expand_sample(mcmc_poisson, variable = "states", by_states = 2))
+  expect_error(expand_sample(mcmc_poisson, variable = "states", times = 0))
+  expect_error(expand_sample(mcmc_poisson, variable = "states", times = 1:100))
+  expect_error(expand_sample(mcmc_poisson, variable = "states", states = 0))
+  expect_error(expand_sample(mcmc_poisson, variable = "states", states = "a"))
+  expect_error(expand_sample(mcmc_poisson, variable = "states", 
+    states = list(4)))
+  
   expect_equal(as.numeric(sumr$states$Mean[,1]), 
     as.numeric(colMeans(states$level)))
   
@@ -288,6 +317,8 @@ test_that("MCMC results with psi-APF for Poisson model are correct", {
         output_type = "theta", particles = 5)[-13 - z])
   }
   
+  expect_error(expand_sample(run_mcmc(model_bssm, iter = 100, seed = 1, 
+    output_type = "theta", mcmc_type = "approx"), variable = "states"))
 })
 
 
@@ -319,8 +350,14 @@ test_that("MCMC using SPDK for Gamma model works", {
 
 test_that("MCMC results for SV model using IS-correction are correct", {
   set.seed(123)
+  
+  expect_error(svm(rnorm(10), rho = uniform(0.95, -0.999, 0.999), 
+    sd_ar = halfnormal(1, 5), mu = 4, sigma = halfnormal(1, 2)))
+  
   expect_error(model_bssm <- svm(rnorm(10), rho = uniform(0.95, -0.999, 0.999), 
     sd_ar = halfnormal(1, 5), sigma = halfnormal(1, 2)), NA)
+  expect_error(logLik(model_bssm, particles = 0, method = "bsf"))
+  
   
   expect_equal(run_mcmc(model_bssm, iter = 100, particles = 10,
     mcmc_type = "is1", seed = 1)[-16], 

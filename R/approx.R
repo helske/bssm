@@ -50,7 +50,7 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100,
   
   check_missingness(model)
   
-  model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  model$max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
   
   model$distribution <- pmatch(model$distribution,
@@ -86,9 +86,9 @@ gaussian_approx.ssm_nlg <- function(model, max_iter = 100,
   
   check_missingness(model)
   
-  model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  model$max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
-  model$iekf_iter <- check_integer(iekf_iter, "iekf_iter")
+  model$iekf_iter <- check_intmax(iekf_iter, "iekf_iter")
   
   out <- gaussian_approx_model_nlg(t(model$y), model$Z, model$H, model$T, 
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 

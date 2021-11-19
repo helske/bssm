@@ -22,7 +22,7 @@
 \alias{check_a1}
 \alias{check_P1}
 \alias{check_H}
-\alias{check_integer}
+\alias{check_intmax}
 \alias{check_positive_real}
 \alias{check_theta}
 \alias{check_missingness}
@@ -70,7 +70,7 @@ check_P1(x, m)
 
 check_H(x, p, n, multivariate = FALSE)
 
-check_integer(x, name = "particles", positive = TRUE, max = 1e+07)
+check_intmax(x, name = "particles", positive = TRUE, max = 1e+07)
 
 check_positive_real(x, name)
 

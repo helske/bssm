@@ -45,9 +45,9 @@ importance_sample.nongaussian <- function(model, nsim, use_antithetic = TRUE,
   
   check_missingness(model)
   
-  model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  model$max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
-  nsim <- check_integer(nsim, "nsim")
+  nsim <- check_intmax(nsim, "nsim")
   
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     length(model$a1) * nsim
@@ -55,7 +55,7 @@ importance_sample.nongaussian <- function(model, nsim, use_antithetic = TRUE,
     warning(paste("Trying to sample ", nsamples, 
       "values, you might run out of memory."))
   }
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   model$distribution <- pmatch(model$distribution,
     c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
     duplicates.ok = TRUE) - 1

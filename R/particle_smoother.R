@@ -92,7 +92,7 @@ particle_smoother.gaussian <- function(model, particles,  method = "psi",
     }
   }
   
-  particles <- check_integer(particles, "particles")
+  particles <- check_intmax(particles, "particles")
   
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     length(model$a1) * particles
@@ -100,7 +100,7 @@ particle_smoother.gaussian <- function(model, particles,  method = "psi",
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   
   if (method == "psi") {
     out <- list()
@@ -148,16 +148,16 @@ particle_smoother.nongaussian <- function(model, particles,
       particles <- nsim
     }
   }
-  particles <- check_integer(particles, "particles")
+  particles <- check_intmax(particles, "particles")
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     length(model$a1) * particles
   if (particles > 100 & nsamples > 1e12) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   
-  model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  model$max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
   
   method <- match.arg(tolower(method), c("bsf", "psi"))
@@ -199,7 +199,7 @@ particle_smoother.ssm_nlg <- function(model, particles,
       particles <- nsim
     }
   }
-  particles <- check_integer(particles, "particles")
+  particles <- check_intmax(particles, "particles")
   
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     model$n_states * particles
@@ -207,10 +207,10 @@ particle_smoother.ssm_nlg <- function(model, particles,
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
-  max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
+  max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   conv_tol <- check_positive_real(conv_tol, "conv_tol")
-  iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
+  iekf_iter <- check_intmax(iekf_iter, "iekf_iter", positive = FALSE)
   
   method <- match.arg(tolower(method), c("bsf", "psi", "ekf"))
   
@@ -263,13 +263,13 @@ particle_smoother.ssm_sde <- function(model, particles, L,
       particles <- nsim
     }
   }
-  particles <- check_integer(particles, "particles")
+  particles <- check_intmax(particles, "particles")
   nsamples <- length(model$y) * particles
   if (particles > 100 & nsamples > 1e12) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   out <-  bsf_smoother_sde(model$y, model$x0, model$positive, 
     model$drift, model$diffusion, model$ddiffusion, 
     model$prior_pdf, model$obs_pdf, model$theta, 

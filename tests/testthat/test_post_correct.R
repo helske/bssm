@@ -33,6 +33,18 @@ test_that("Test post correction for AR1 model", {
    
    expect_identical(estN$N, 5)
    
+   
+   expect_error(post_correct(data.frame(1), out_approx, particles = estN$N,
+      threads = 2))
+   expect_error(post_correct(model, out_approx, particles = estN$N,
+      threads = 2, particles = 1e12))
+   expect_error(post_correct(model, out_approx, particles = estN$N,
+      threads = 2, particles = 10, theta = diag(2)))
+   expect_error(post_correct(model, out_approx, particles = estN$N,
+      threads = 2, particles = 10, theta = rep(1:6)))
+   expect_error(post_correct(model, 1:5, particles = estN$N,
+      threads = 2))
+   
    # Can't really test for correctness with limited time
    expect_error(out_is2 <- post_correct(model, out_approx, particles = estN$N,
      threads = 2), NA)
@@ -41,6 +53,8 @@ test_that("Test post correction for AR1 model", {
    expect_lt(sum(out_is2$Vt), Inf)
    expect_lt(max(out_is2$weights), Inf)
    expect_gt(max(out_is2$weights), 0)
+
+   
 })
 
 test_that("Test post correction for non-linear model", {

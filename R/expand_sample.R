@@ -54,15 +54,16 @@ expand_sample <- function(x, variable = "theta", times, states,
       if (missing(times)) {
         times <- seq_len(nrow(x$alpha))
       } else {
-        if (!check_integer(times) || any(times < 1) || any(times > nrow(x$alpha)))
+        if (!test_integerish(times, lower = 1, upper = nrow(x$alpha), 
+          any.missing = FALSE, unique = TRUE))
           stop(paste0("Argument 'times' should contain indices between 1 and ",
           nrow(x$alpha),"."))
       }
       if (missing(states)) {
         states <- seq_len(ncol(x$alpha))
       } else {
-        if (!check_integer(states) || any(states < 1) || 
-            any(states > ncol(x$alpha)))
+        if (!test_integerish(states, lower = 1, upper = ncol(x$alpha), 
+          any.missing = FALSE, unique = TRUE))
           stop(paste0("Argument 'states' should contain indices between 1 and ",
             ncol(x$alpha),"."))
       }

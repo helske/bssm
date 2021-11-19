@@ -56,7 +56,7 @@ ekpf_filter.ssm_nlg <- function(model, particles,
       particles <- nsim
     }
   }
-  particles <- check_integer(particles, "particles")
+  particles <- check_intmax(particles, "particles")
   
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), 
     length(model$y)) * model$n_states * particles
@@ -65,7 +65,7 @@ ekpf_filter.ssm_nlg <- function(model, particles,
       "particles, you might run out of memory."))
   }
   
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   
   out <- ekpf(t(model$y), model$Z, model$H, model$T, 
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 

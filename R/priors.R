@@ -155,9 +155,14 @@ tnormal_prior <- function(init, mean, sd, min = -Inf, max = Inf) {
   if (any(!is.numeric(init), !is.numeric(mean), !is.numeric(sd))) {
     stop("Parameters for priors must be numeric.")
   }
+  if (init < min | init > max) {
+    stop(paste("Initial value for parameter with truncated Normal is not", 
+      "between the lower and upper bounds.", sep = " "))
+  }
+  
   if (any(sd < 0)) {
-    stop(paste("Standard deviation parameter for Normal distribution must be",
-    "positive.", sep = " "))
+    stop(paste("Standard deviation parameter for truncated Normal distribution",
+    "must be positive.", sep = " "))
   }
   
   n <- max(length(init), length(mean), length(sd))
@@ -185,10 +190,10 @@ gamma_prior <- function(init, shape, rate) {
   if (any(!is.numeric(init), !is.numeric(shape), !is.numeric(rate))) {
     stop("Parameters for priors must be numeric.")
   }
-  if (any(shape < 0)) {
+  if (!all(shape > 0)) {
     stop("Shape parameter for Gamma distribution must be positive.")
   }
-  if (any(rate < 0)) {
+  if (!all(rate > 0)) {
     stop("Rate parameter for Gamma distribution must be positive.")
   }
   n <- max(length(init), length(shape), length(rate))

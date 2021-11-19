@@ -9,6 +9,10 @@ test_that("Test that sim_smoother for LGSSM works as Kalman smoother", {
     use_antithetic = TRUE), NA)
   expect_equal(smoother(model_bsm)$alphahat,
     as.ts(apply(sims, 1:2, mean)))
+  expect_error(sims <- sim_smoother(model_bsm, nsim = 10, 
+    use_antithetic = "blaa"))
+  expect_error(sims <- sim_smoother(model_bsm, nsim = 10, 
+    use_antithetic = 1))
 })
 
 
