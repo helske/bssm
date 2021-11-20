@@ -1,6 +1,8 @@
 context("Test rest of warnings and errors")
 
-#' @srrstats {G5.2, G5.2a, G5.2b} Test that rest of the warnings are triggered.
+#' @srrstats {G5.2, G5.2a, G5.2b} Test the rest of the warnings that are not 
+#' already triggered otherwise.
+#' 
 test_that("priors give errors with wrong arguments", {
   expect_error(normal("a", 0, 1))
   expect_error(uniform(1, 2, 0))

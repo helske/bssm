@@ -32,7 +32,7 @@
 #' on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
-#' @srrstats {BS6.4}
+#' @srrstats {BS5.3, BS5.5, BS6.4}
 summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta", 
   probs = c(0.025, 0.975), times, states, method = "sokal", ...) {
   
@@ -100,7 +100,7 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
 #' @importFrom stats var
 #' @param x Object of class \code{mcmc_output} from \code{\link{run_mcmc}}.
 #' @param ... Ignored.
-#' @srrstats {BS6.0}
+#' @srrstats {BS5.3, BS5.5, BS6.0}
 #' @export
 print.mcmc_output <- function(x, ...) {
   

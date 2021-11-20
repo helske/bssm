@@ -155,13 +155,13 @@ suggest_N <- function(model, theta,
 #' containing estimated standard deviations of the log-weights and 
 #' corresponding number of particles.
 #' @references 
-#' A. Doucet, M. K. Pitt, G. Deligiannidis, R. Kohn (2018). 
+#' Doucet A, Pitt M K, Deligiannidis G, Kohn R (2018). 
 #' Efficient implementation of Markov chain Monte Carlo when using an unbiased 
 #' likelihood estimator. Biometrika, 102, 2, 295-313, 
 #' https://doi.org/10.1093/biomet/asu075
 #' 
-#' Vihola, M, Helske, J, Franks, J (2020). Importance sampling type estimators based 
-#' on approximate marginal Markov chain Monte Carlo. 
+#' Vihola M, Helske J, Franks J (2020). Importance sampling type estimators 
+#' based on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @examples 
@@ -246,7 +246,8 @@ post_correct <- function(model, mcmc_output, particles, threads = 1L,
   
   if (!inherits(mcmc_output, "mcmc_output")) 
     stop("Object 'mcmc_output' is not valid output from 'run_mcmc'.")
-  is_type <- pmatch(match.arg(tolower(is_type), paste0("is", 1:3)), paste0("is", 1:3))
+  is_type <- pmatch(match.arg(tolower(is_type), paste0("is", 1:3)), 
+    paste0("is", 1:3))
   
   a <- proc.time()
   if (inherits(model, "nongaussian")) {

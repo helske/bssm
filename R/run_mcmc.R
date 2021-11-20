@@ -106,16 +106,23 @@
 #' @param L_c,L_f For \code{ssm_sde} models, Positive integer values defining 
 #' the discretization levels for first and second stages (defined as 2^L). 
 #' For pseudo-marginal methods (\code{"pm"}), maximum of these is used.
+#'  @param verbose If \code{TRUE} (default), prints a progress bar to the 
+#' console. Set to \code{FALSE} if number of iterations is less than 50.
 #' @param ... Ignored.
 #' @export
+#' @srrstats {G2.3, G2.3a, G2.3b} match.arg and tolower used where applicable.
 #' @srrstats {BS1.0, BS1.1, BS1.2, BS1.2a, BS1.2b}
 #' @srrstats {BS2.6}
+#' @srrstats {BS2.7} Illustrated in the examples.
 #' @srrstats {BS2.7, BS1.3, BS1.3a, BS1.3b, BS2.8} Explained in docs.
 #' @srrstats {BS2.9} The argument 'seed' is set to random value if not 
 #' specified by the user.
 #' @srrstats {BS5.0, BS5.1, BS5.2} Starting values are integrated into the 
 #' input model, whereas some metadata (like the class of input model and seed) 
 #' is returned by run_mcmc.
+#' @srrstats {BS2.12, BS2.13} There is a progress bar which can be switched off with 
+#' \code{verbose = FALSE}.
+#' @srrstats {BS2.14} No warnings are issues during MCMC.
 #' @rdname run_mcmc
 #' @references 
 #' Vihola M (2012). Robust adaptive Metropolis algorithm with
@@ -164,7 +171,7 @@ run_mcmc <- function(model, ...) {
 run_mcmc.gaussian <- function(model, iter, output_type = "full",
   burnin = floor(iter / 2), thin = 1, gamma = 2 / 3,
   target_acceptance = 0.234, S, end_adaptive_phase = FALSE, threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), ...) {
+  seed = sample(.Machine$integer.max, size = 1), verbose = TRUE, ...) {
   
   
   check_missingness(model)
@@ -177,6 +184,9 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   thin <- check_intmax(thin, "thin", max = 100)
   iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e12)
   burnin <- check_intmax(burnin, "burnin", max = 1e12)
+  if (!test_flag(verbose)) 
+    stop("Argument 'verbose' should be TRUE or FALSE. ")
+  if (iter < 50) verbose <- FALSE
   
   if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
@@ -202,7 +212,8 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
     S <- diag(0.1 * pmax(0.1, abs(model$theta)), length(model$theta))
   }
   if(output_type == "full") {
-    nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+    nsamples <- 
+      ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
       length(model$a1) * (iter - burnin) / thin * target_acceptance
     if (nsamples > 1e12) {
       warning(paste("Number of state samples to be stored is approximately", 
@@ -211,7 +222,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   }
   out <- gaussian_mcmc(model, output_type,
     iter, burnin, thin, gamma, target_acceptance, S, seed,
-    end_adaptive_phase, threads, model_type(model))
+    end_adaptive_phase, threads, model_type(model), verbose)
   
   if (output_type == 1) {
     colnames(out$alpha) <- names(model$a1)
@@ -368,8 +379,7 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   thin = 1, gamma = 2 / 3, target_acceptance = 0.234, S, 
   end_adaptive_phase = FALSE, local_approx  = TRUE, threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100, 
-  conv_tol = 1e-8, ...) {
-  
+  conv_tol = 1e-8, verbose = TRUE, ...) {
   
   check_missingness(model)
   
@@ -389,12 +399,18 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   } else {
     particles <- check_intmax(particles, "particles")
   }
+  
   threads <- check_intmax(threads, "threads")
   model$max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
   thin <- check_intmax(thin, "thin", max = 100)
   iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e12)
   burnin <- check_intmax(burnin, "burnin", max = 1e12)
+  
+  if (!test_flag(verbose)) 
+    stop("Argument 'verbose' should be TRUE or FALSE. ")
+  if (iter < 50) verbose <- FALSE
+  
   if (!test_flag(local_approx))  {
     stop("Argument 'local_approx' should be TRUE or FALSE. ")
   } else model$local_approx <- local_approx
@@ -423,7 +439,8 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
     pmatch(model$distribution, dists, duplicates.ok = TRUE) - 1
   
   if(output_type == "full") {
-    nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+    nsamples <- 
+      ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
       length(model$a1) * (iter - burnin) / thin * target_acceptance
     if (nsamples > 1e12) {
       warning(paste("Number of state samples to be stored is approximately", 
@@ -455,20 +472,18 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
     S <- diag(0.1 * pmax(0.1, abs(model$theta)), length(model$theta))
   }
   
-  
-  
   switch(mcmc_type,
     "da" = {
       out <- nongaussian_da_mcmc(model, 
         output_type, particles, iter, burnin, thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, threads,
-        sampling_method, model_type(model))
+        sampling_method, model_type(model), verbose)
     },
     "pm" = {
       out <- nongaussian_pm_mcmc(model, output_type,
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, threads, 
-        sampling_method, model_type(model))
+        sampling_method, model_type(model), verbose)
     },
     "is1" =,
     "is2" =,
@@ -477,13 +492,14 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, threads, 
         sampling_method,
-        pmatch(mcmc_type, paste0("is", 1:3)), model_type(model), FALSE)
+        pmatch(mcmc_type, paste0("is", 1:3)), model_type(model), FALSE,
+        verbose)
     },
     "approx" = {
       out <- nongaussian_is_mcmc(model, output_type,
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         seed, end_adaptive_phase, threads, 
-        sampling_method, 2, model_type(model), TRUE)
+        sampling_method, 2, model_type(model), TRUE, verbose)
     })
   if (output_type == 1) {
     colnames(out$alpha) <- names(model$a1)
@@ -528,8 +544,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   burnin = floor(iter / 2), thin = 1,
   gamma = 2 / 3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
-  conv_tol = 1e-8, iekf_iter = 0, ...) {
-  
+  conv_tol = 1e-8, iekf_iter = 0, verbose = TRUE, ...) {
   
   check_missingness(model)
   
@@ -558,6 +573,10 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   burnin <- check_intmax(burnin, "burnin", max = 1e12)
   iekf_iter <- check_intmax(iekf_iter, "iekf_iter", positive = FALSE)
   
+  if (!test_flag(verbose)) 
+    stop("Argument 'verbose' should be TRUE or FALSE. ")
+  if (iter < 50) verbose <- FALSE
+  
   if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
@@ -581,13 +600,15 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
       "'approx' or 'ekf' instead.", sep = " "))
   
   if(output_type == "full") {
-    nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+    nsamples <- 
+      ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
       model$n_states * (iter - burnin) / thin * target_acceptance
     if (nsamples > 1e12) {
       warning(paste("Number of state samples to be stored is approximately", 
         nsamples, "you might run out of memory."))
     }
   }
+  
   out <- switch(mcmc_type,
     "da" = {
       nonlinear_da_mcmc(t(model$y), model$Z, model$H, model$T,
@@ -597,7 +618,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
         model$n_states, model$n_etas, seed,
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, max_iter, conv_tol,
-        sampling_method, iekf_iter, output_type)
+        sampling_method, iekf_iter, output_type, verbose)
     },
     "pm" = {
       nonlinear_pm_mcmc(t(model$y), model$Z, model$H, model$T,
@@ -607,7 +628,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
         model$n_states, model$n_etas, seed,
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, max_iter, conv_tol,
-        sampling_method, iekf_iter, output_type)
+        sampling_method, iekf_iter, output_type, verbose)
     },
     "is1" =,
     "is2" =,
@@ -631,7 +652,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
         model$known_tv_params, as.integer(model$time_varying),
         model$n_states, model$n_etas, seed,
         iter, burnin, thin, gamma, target_acceptance, S,
-        end_adaptive_phase,  threads, iekf_iter, output_type)
+        end_adaptive_phase,  threads, iekf_iter, output_type, verbose)
     },
     "approx" = {
       nonlinear_is_mcmc(t(model$y), model$Z, model$H, model$T,
@@ -642,7 +663,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, 2,
         sampling_method, max_iter, conv_tol, 
-        iekf_iter, output_type, TRUE)
+        iekf_iter, output_type, TRUE, verbose)
     }
   )
   if (output_type == 1) {
@@ -686,7 +707,8 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   mcmc_type = "is2", L_c, L_f,
   burnin = floor(iter/2), thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
-  threads = 1, seed = sample(.Machine$integer.max, size = 1), ...) {
+  threads = 1, seed = sample(.Machine$integer.max, size = 1), verbose = TRUE, 
+  ...) {
   
   check_missingness(model)
   
@@ -714,7 +736,11 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   thin <- check_intmax(thin, "thin", max = 100)
   iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e12)
   burnin <- check_intmax(burnin, "burnin", max = 1e12)
-
+  
+  if (!test_flag(verbose)) 
+    stop("Argument 'verbose' should be TRUE or FALSE. ")
+  if (iter < 50) verbose <- FALSE
+  
   if (length(model$theta) == 0) 
     stop("No unknown parameters ('model$theta' has length of zero).")
   a <- proc.time()
@@ -745,6 +771,7 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
         nsamples, "you might run out of memory."))
     }
   }
+  
   out <- switch(mcmc_type,
     "da" = {
       out <- sde_da_mcmc(model$y, model$x0, model$positive,
@@ -752,7 +779,7 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
         model$prior_pdf, model$obs_pdf, model$theta,
         particles, L_c, L_f, seed,
         iter, burnin, thin, gamma, target_acceptance, S,
-        end_adaptive_phase, output_type)
+        end_adaptive_phase, output_type, verbose)
     },
     "pm" = {
       
@@ -761,7 +788,7 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
         model$prior_pdf, model$obs_pdf, model$theta,
         particles, L, seed,
         iter, burnin, thin, gamma, target_acceptance, S,
-        end_adaptive_phase, output_type)
+        end_adaptive_phase, output_type, verbose)
     },
     "is1" =, 
     "is2" =, 
@@ -772,7 +799,7 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
         particles, L_c, L_f, seed,
         iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, pmatch(mcmc_type, paste0("is", 1:3)), 
-        threads, output_type)
+        threads, output_type, verbose)
     })
   
   colnames(out$alpha) <- model$state_names

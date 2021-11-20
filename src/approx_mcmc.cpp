@@ -22,9 +22,9 @@ approx_mcmc::approx_mcmc(const unsigned int iter,
   const unsigned int burnin, const unsigned int thin, const unsigned int n,
   const unsigned int m, const unsigned int k, const double target_acceptance, 
   const double gamma, const arma::mat& S, const unsigned int output_type, 
-  const bool store_modes) :
+  const bool store_modes, const bool verbose) :
   mcmc(iter, burnin, thin, n, m,
-    target_acceptance, gamma, S, output_type),
+    target_acceptance, gamma, S, output_type, verbose),
     weight_storage(arma::vec(n_samples, arma::fill::zeros)),
     mode_storage(arma::cube(k, n, n_samples * store_modes)),
     approx_loglik_storage(arma::vec(n_samples)),
@@ -141,11 +141,16 @@ void approx_mcmc::amcmc(T model, const unsigned int method, const bool end_ram,
   unsigned int n_values = 0;
   double acceptance_prob = 0.0;
   
+  // don't update progress at each iteration
+  unsigned int mod = std::max(1U, iter / 50);
+  unsigned int ticks = 1;
+  if (verbose) {
+    Rcpp::Rcout<<"Starting MCMC. Progress:\n";
+    Rcpp::Rcout<<"0%   10   20   30   40   50   60   70   80   90   100%\n";
+    Rcpp::Rcout<<"|";
+  }
+  
   for (unsigned int i = 1; i <= iter; i++) {
-    
-    if (i % 16 == 0) {
-      Rcpp::checkUserInterrupt();
-    }
     
     // sample from standard normal distribution
     arma::vec u(n_par);
@@ -196,9 +201,19 @@ void approx_mcmc::amcmc(T model, const unsigned int method, const bool end_ram,
       }
     }
     
-    
     if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
+    }
+    if (i % mod == 0) {
+      Rcpp::checkUserInterrupt();
+      if (verbose) {
+        if (ticks % 5 == 0) {
+          Rcpp::Rcout<<"|";
+        } else {
+          Rcpp::Rcout<<"-";
+        }
+        ticks++;
+      } 
     }
   }
   
@@ -234,10 +249,16 @@ void approx_mcmc::amcmc(ssm_sde model, const unsigned int nsim, const bool end_r
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec theta = model.theta;
   
+  // don't update progress at each iteration
+  unsigned int mod = std::max(1U, iter / 50);
+  unsigned int ticks = 1;
+  if (verbose) {
+    Rcpp::Rcout<<"Starting MCMC. Progress:\n";
+    Rcpp::Rcout<<"0%   10   20   30   40   50   60   70   80   90   100%\n";
+    Rcpp::Rcout<<"|";
+  }
+  
   for (unsigned int i = 1; i <= iter; i++) {
-    if (i % 4 == 0) {
-      Rcpp::checkUserInterrupt();
-    }
     
     // sample from standard normal distribution
     arma::vec u(n_par);
@@ -291,6 +312,17 @@ void approx_mcmc::amcmc(ssm_sde model, const unsigned int nsim, const bool end_r
     if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
     }
+    if (i % mod == 0) {
+      Rcpp::checkUserInterrupt();
+      if (verbose) {
+        if (ticks % 5 == 0) {
+          Rcpp::Rcout<<"|";
+        } else {
+          Rcpp::Rcout<<"-";
+        }
+        ticks++;
+      } 
+    }
   }
   
   trim_storage();
@@ -318,6 +350,9 @@ template <class T>
 void approx_mcmc::is_correction_psi(T model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads, 
   const Rcpp::Function update_fn) {
+  if (verbose) {
+    Rcpp::Rcout<<"\nStarting IS-correction phase with "<<n_threads<<" thread(s).\n";
+  }
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   double sum_w = 0.0;
@@ -410,6 +445,10 @@ void approx_mcmc::is_correction_bsf(T model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads, 
   const Rcpp::Function update_fn) {
   
+  if (verbose) {
+    Rcpp::Rcout<<"\nStarting IS-correction phase with "<<n_threads<<" thread(s).\n";
+  }
+  
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   double sum_w = 0.0;
   
@@ -480,6 +519,10 @@ template<>
 void approx_mcmc::is_correction_bsf(ssm_sde model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads, 
   const Rcpp::Function update_fn) {
+  
+  if (verbose) {
+    Rcpp::Rcout<<"\nStarting IS-correction phase with "<<n_threads<<" thread(s).\n";
+  }
   
   arma::cube Valpha(1, 1, model.n + 1, arma::fill::zeros);
   double sum_w = 0.0;
@@ -561,6 +604,10 @@ void approx_mcmc::is_correction_spdk(T model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads, 
   const Rcpp::Function update_fn) {
   
+  if (verbose) {
+    Rcpp::Rcout<<"\nStarting IS-correction phase with "<<n_threads<<" thread(s).\n";
+  }
+  
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   double sum_w = 0.0;
   
@@ -635,6 +682,10 @@ template<>
 void approx_mcmc::is_correction_psi(ssm_ung model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads, 
   const Rcpp::Function update_fn) {
+  
+  if (verbose) {
+    Rcpp::Rcout<<"\nStarting IS-correction phase with "<<n_threads<<" thread(s).\n";
+  }
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   double sum_w = 0.0;
@@ -753,6 +804,10 @@ void approx_mcmc::is_correction_bsf(ssm_ung model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads, 
   const Rcpp::Function update_fn) {
   
+  if (verbose) {
+    Rcpp::Rcout<<"\nStarting IS-correction phase with "<<n_threads<<" thread(s).\n";
+  }
+  
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   double sum_w = 0.0;
   
@@ -866,6 +921,10 @@ void approx_mcmc::is_correction_spdk(ssm_ung model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads, 
   const Rcpp::Function update_fn) {
   
+  if (verbose) {
+    Rcpp::Rcout<<"\nStarting IS-correction phase with "<<n_threads<<" thread(s).\n";
+  }
+  
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   double sum_w = 0.0;
   
@@ -976,6 +1035,10 @@ template<>
 void approx_mcmc::is_correction_psi(ssm_mng model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads, 
   const Rcpp::Function update_fn) {
+  
+  if (verbose) {
+    Rcpp::Rcout<<"\nStarting IS-correction phase with "<<n_threads<<" thread(s).\n";
+  }
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   double sum_w = 0.0;
@@ -1094,6 +1157,10 @@ void approx_mcmc::is_correction_bsf(ssm_mng model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads, 
   const Rcpp::Function update_fn) {
   
+  if (verbose) {
+    Rcpp::Rcout<<"\nStarting IS-correction phase with "<<n_threads<<" thread(s).\n";
+  }
+  
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   double sum_w = 0.0;
   
@@ -1205,6 +1272,10 @@ template<>
 void approx_mcmc::is_correction_spdk(ssm_mng model, const unsigned int nsim,
   const unsigned int is_type, const unsigned int n_threads, 
   const Rcpp::Function update_fn) {
+  
+  if (verbose) {
+    Rcpp::Rcout<<"\nStarting IS-correction phase with "<<n_threads<<" thread(s).\n";
+  }
   
   arma::cube Valpha(model.m, model.m, model.n + 1, arma::fill::zeros);
   double sum_w = 0.0;
@@ -1462,10 +1533,16 @@ void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
   bool new_value = true;
   unsigned int n_values = 0;
   
+  // don't update progress at each iteration
+  unsigned int mod = std::max(1U, iter / 50);
+  unsigned int ticks = 1;
+  if (verbose) {
+    Rcpp::Rcout<<"Starting MCMC. Progress:\n";
+    Rcpp::Rcout<<"0%   10   20   30   40   50   60   70   80   90   100%\n";
+    Rcpp::Rcout<<"|";
+  }
+  
   for (unsigned int i = 1; i <= iter; i++) {
-    if (i % 16 == 0) {
-      Rcpp::checkUserInterrupt();
-    }
     
     // sample from standard normal distribution
     arma::vec u(n_par);
@@ -1520,6 +1597,17 @@ void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
     
     if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
+    }
+    if (i % mod == 0) {
+      Rcpp::checkUserInterrupt();
+      if (verbose) {
+        if (ticks % 5 == 0) {
+          Rcpp::Rcout<<"|";
+        } else {
+          Rcpp::Rcout<<"-";
+        }
+        ticks++;
+      } 
     }
   }
   

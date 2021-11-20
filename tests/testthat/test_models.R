@@ -93,8 +93,8 @@ test_that("multivariate non-gaussian model", {
     list(R = array(diag(exp(theta)), c(2, 2, 1)))
   }
   
-  expect_error(mng_model <- ssm_mng(y = data.frame(1:4,1:4), Z = diag(2), T = diag(2), 
-    R = 0.1 * diag(2), P1 = diag(2), distribution = "poisson",
+  expect_error(mng_model <- ssm_mng(y = data.frame(1:4,1:4), Z = diag(2),
+    T = diag(2), R = 0.1 * diag(2), P1 = diag(2), distribution = "poisson",
     init_theta = log(c(0.1, 0.1)), prior_fn = pfun, update_fn = ufun))
   
   expect_error(mng_model <- ssm_mng(y = y - 10, Z = diag(2), T = diag(2), 

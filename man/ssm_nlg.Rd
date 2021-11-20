@@ -28,11 +28,11 @@ ssm_nlg(
 \item{y}{Observations as multivariate time series (or matrix) of length
 \eqn{n}.}
 
-\item{Z, H, T, R}{An external pointers (object of class \code{externalptr}) for the
-C++ functions which define the corresponding model functions.}
+\item{Z, H, T, R}{An external pointers (object of class \code{externalptr})
+for the C++ functions which define the corresponding model functions.}
 
-\item{Z_gn, T_gn}{An external pointers (object of class \code{externalptr}) for
-the C++ functions which define the gradients of the corresponding model
+\item{Z_gn, T_gn}{An external pointers (object of class \code{externalptr})
+for the C++ functions which define the gradients of the corresponding model
 functions.}
 
 \item{a1}{Prior mean for the initial state as object of class

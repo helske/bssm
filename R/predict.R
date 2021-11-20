@@ -243,11 +243,13 @@ predict.mcmc_output <- function(object, model, nsim, type = "response",
     
     if (inherits(model, c("ssm_mng", "ssm_mlg", "ssm_nlg"))) {
       if (!identical(nrow(object$alpha) - 1L, nrow(model$y))) {
-        stop("Number of observations of the model and MCMC output do not match.") 
+        stop(paste0("Number of observations in the model and MCMC output do ", 
+        "not match."))
       }
     } else {
       if (!identical(nrow(object$alpha) - 1L, length(model$y))) {
-        stop("Number of observations of the model and MCMC output do not match.") 
+        stop(paste0("Number of observations in the model and MCMC output do ", 
+          "not match."))
       }
     }
     w <- object$counts * 

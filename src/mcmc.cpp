@@ -39,7 +39,7 @@ mcmc::mcmc(
   const double target_acceptance, 
   const double gamma, 
   const arma::mat& S,
-  const unsigned int output_type) :
+  const unsigned int output_type, const bool verbose) :
   iter(iter), burnin(burnin), thin(thin),
   n_samples(std::floor(double(iter - burnin) / double(thin))),
   n_par(S.n_rows),
@@ -47,10 +47,11 @@ mcmc::mcmc(
   posterior_storage(arma::vec(n_samples, arma::fill::zeros)),
   theta_storage(arma::mat(n_par, n_samples, arma::fill::zeros)),
   count_storage(arma::uvec(n_samples, arma::fill::zeros)),
-  alpha_storage(arma::cube((output_type == 1) * n + 1, m, (output_type == 1) * n_samples, arma::fill::zeros)), 
-  alphahat(arma::mat(m, (output_type == 2) * n + 1, arma::fill::zeros)), 
-  Vt(arma::cube(m, m, (output_type == 2) * n + 1, arma::fill::zeros)), S(S),
-  acceptance_rate(0.0), output_type(output_type){
+  alpha_storage(arma::cube((output_type == 1) * n + 1, m, (output_type == 1) * 
+    n_samples, arma::fill::zeros)), 
+    alphahat(arma::mat(m, (output_type == 2) * n + 1, arma::fill::zeros)), 
+    Vt(arma::cube(m, m, (output_type == 2) * n + 1, arma::fill::zeros)), S(S),
+    acceptance_rate(0.0), output_type(output_type), verbose(verbose) {
 }
 
 
@@ -116,8 +117,8 @@ for (unsigned int i = 0; i < n_stored; i++) {
 template<>
 void mcmc::state_posterior(ssm_mlg model, const unsigned int n_threads,
   const Rcpp::Function update_fn) {
-
-   
+  
+  
 #ifdef _OPENMP
   parset_mlg pars(model, theta_storage, update_fn);
 #pragma omp parallel num_threads(n_threads) default(shared) firstprivate(model)
@@ -210,11 +211,17 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram,
   bool new_value = true;
   unsigned int n_values = 0;
   
+  
+  // don't update progress at each iteration
+  unsigned int mod = std::max(1U, iter / 50);
+  unsigned int ticks = 1;
+  if (verbose) {
+    Rcpp::Rcout<<"Starting MCMC. Progress:\n";
+    Rcpp::Rcout<<"0%   10   20   30   40   50   60   70   80   90   100%\n";
+    Rcpp::Rcout<<"|";
+  }
+  
   for (unsigned int i = 1; i <= iter; i++) {
-    
-    if (i % 16 == 0) {
-      Rcpp::checkUserInterrupt();
-    }
     
     // sample from standard normal distribution
     arma::vec u(n_par);
@@ -269,8 +276,19 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram,
     if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
     }
-    
+    if (i % mod == 0) {
+      Rcpp::checkUserInterrupt();
+      if (verbose) {
+        if (ticks % 5 == 0) {
+          Rcpp::Rcout<<"|";
+        } else {
+          Rcpp::Rcout<<"-";
+        }
+        ticks++;
+      }
+    } 
   }
+  
   if(n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC run. Check your model.");
   trim_storage();
   acceptance_rate /= (iter - burnin);
@@ -360,11 +378,17 @@ void mcmc::pm_mcmc(
   unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
+  
+  // don't update progress at each iteration
+  unsigned int mod = std::max(1U, iter / 50);
+  unsigned int ticks = 1;
+  if (verbose) {
+    Rcpp::Rcout<<"Starting MCMC. Progress:\n";
+    Rcpp::Rcout<<"0%   10   20   30   40   50   60   70   80   90   100%\n";
+    Rcpp::Rcout<<"|";
+  }
+  
   for (unsigned int i = 1; i <= iter; i++) {
-    
-    if (i % 16 == 0) {
-      Rcpp::checkUserInterrupt();
-    }
     
     // sample from standard normal distribution
     arma::vec u(n_par);
@@ -441,6 +465,17 @@ void mcmc::pm_mcmc(
     
     if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
+    }
+    if (i % mod == 0) {
+      Rcpp::checkUserInterrupt();
+      if (verbose) {
+        if (ticks % 5 == 0) {
+          Rcpp::Rcout<<"|";
+        } else {
+          Rcpp::Rcout<<"-";
+        }
+        ticks++;
+      } 
     }
   }
   if (output_type == 2) {
@@ -534,11 +569,17 @@ void mcmc::da_mcmc(T model,
   unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
+  
+  // don't update progress at each iteration
+  unsigned int mod = std::max(1U, iter / 50);
+  unsigned int ticks = 1;
+  if (verbose) {
+    Rcpp::Rcout<<"Starting MCMC. Progress:\n";
+    Rcpp::Rcout<<"0%   10   20   30   40   50   60   70   80   90   100%\n";
+    Rcpp::Rcout<<"|";
+  }
+  
   for (unsigned int i = 1; i <= iter; i++) {
-    
-    if (i % 16 == 0) {
-      Rcpp::checkUserInterrupt();
-    }
     
     // sample from standard normal distribution
     arma::vec u(n_par);
@@ -618,6 +659,17 @@ void mcmc::da_mcmc(T model,
     if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
     }
+    if (i % mod == 0) {
+      Rcpp::checkUserInterrupt();
+      if (verbose) {
+        if (ticks % 5 == 0) {
+          Rcpp::Rcout<<"|";
+        } else {
+          Rcpp::Rcout<<"-";
+        }
+        ticks++;
+      } 
+    }
   }
   if (output_type == 2) {
     Vt += Valphahat / (iter - burnin); // Var[E(alpha)] + E[Var(alpha)]
@@ -669,11 +721,17 @@ void mcmc::pm_mcmc(
   unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
+  
+  // don't update progress at each iteration
+  unsigned int mod = std::max(1U, iter / 50);
+  unsigned int ticks = 1;
+  if (verbose) {
+    Rcpp::Rcout<<"Starting MCMC. Progress:\n";
+    Rcpp::Rcout<<"0%   10   20   30   40   50   60   70   80   90   100%\n";
+    Rcpp::Rcout<<"|";
+  }
+  
   for (unsigned int i = 1; i <= iter; i++) {
-    
-    if (i % 16 == 0) {
-      Rcpp::checkUserInterrupt();
-    }
     
     // sample from standard normal distribution
     arma::vec u(n_par);
@@ -749,6 +807,17 @@ void mcmc::pm_mcmc(
     if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
     }
+    if (i % mod == 0) {
+      Rcpp::checkUserInterrupt();
+      if (verbose) {
+        if (ticks % 5 == 0) {
+          Rcpp::Rcout<<"|";
+        } else {
+          Rcpp::Rcout<<"-";
+        }
+        ticks++;
+      } 
+    }
   }
   if (output_type == 2) {
     Vt += Valphahat / (iter - burnin); // Var[E(alpha)] + E[Var(alpha)]
@@ -781,7 +850,7 @@ void mcmc::da_mcmc(ssm_sde model,
   
   double ll_c = model.bsf_filter(nsim, model.L_c, alpha, weights, indices);
   double ll_f = model.bsf_filter(nsim, model.L_f, alpha, weights, indices);
-
+  
   if (!std::isfinite(ll_f))
     Rcpp::stop("Initial log-likelihood is not finite.");
   
@@ -801,11 +870,17 @@ void mcmc::da_mcmc(ssm_sde model,
   unsigned int n_values = 0;
   std::normal_distribution<> normal(0.0, 1.0);
   std::uniform_real_distribution<> unif(0.0, 1.0);
+  
+  // don't update progress at each iteration
+  unsigned int mod = std::max(1U, iter / 50);
+  unsigned int ticks = 1;
+  if (verbose) {
+    Rcpp::Rcout<<"Starting MCMC. Progress:\n";
+    Rcpp::Rcout<<"0%   10   20   30   40   50   60   70   80   90   100%\n";
+    Rcpp::Rcout<<"|";
+  }
+  
   for (unsigned int i = 1; i <= iter; i++) {
-    
-    if (i % 16 == 0) {
-      Rcpp::checkUserInterrupt();
-    }
     
     // sample from standard normal distribution
     arma::vec u(n_par);
@@ -884,6 +959,17 @@ void mcmc::da_mcmc(ssm_sde model,
     
     if (!end_ram || i <= burnin) {
       ramcmc::adapt_S(S, u, acceptance_prob, target_acceptance, i, gamma);
+    }  
+    if (i % mod == 0) {
+      Rcpp::checkUserInterrupt();
+      if (verbose) {
+        if (ticks % 5 == 0) {
+          Rcpp::Rcout<<"|";
+        } else {
+          Rcpp::Rcout<<"-";
+        }
+        ticks++;
+      } 
     }
   }
   if (output_type == 2) {

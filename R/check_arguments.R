@@ -76,6 +76,8 @@ check_period <- function(x, n) {
   }
   x
 }
+#' @srrstats {BS2.5} Checks that observations are compatible with their 
+#' distributions are made.
 #' @rdname check
 check_distribution <- function(x, distribution) {
   for (i in seq_len(ncol(x))) {
@@ -103,7 +105,8 @@ check_sd <- function(x, type, add_prefix = TRUE) {
     param <- type
   }
   if (length(x) != 1) {
-    stop(paste0("Argument ", param, " must be of length one (scalar or bssm_prior)."))
+    stop(paste0("Argument ", param, 
+      " must be of length one (scalar or bssm_prior)."))
   }
   if (!is.numeric(x)) {
     stop(paste0("Argument ", param, " must be numeric."))
@@ -426,7 +429,7 @@ check_theta <- function(x) {
     stop("Argument 'theta' should be a numeric vector.")
   }
   if (is.null(names(x))) {
-    names(x) <- paste("theta_", 1:length(x))
+    names(x) <- paste("theta_", seq_len(length(x)))
   }
   x
 }

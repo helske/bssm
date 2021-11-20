@@ -31,7 +31,7 @@ public:
   mcmc(const unsigned int iter, const unsigned int burnin, 
     const unsigned int thin, const unsigned int n, const unsigned int m,
     const double target_acceptance, const double gamma, const arma::mat& S, 
-    const unsigned int output_type = 1);
+    const unsigned int output_type = 1, const bool verbose = true);
 
   // sample states given theta
   template <class T>
@@ -75,6 +75,7 @@ public:
   arma::mat S;
   double acceptance_rate;
   unsigned int output_type;
+  bool verbose;
 };
 
 

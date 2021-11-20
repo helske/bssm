@@ -119,7 +119,7 @@ Rcpp::List sde_pm_mcmc(const arma::vec& y, const double x0,
   const unsigned int seed, const unsigned int iter,
   const unsigned int burnin, const unsigned int thin,
   const double gamma, const double target_acceptance, const arma::mat S,
-  const bool end_ram, const unsigned int type) {
+  const bool end_ram, const unsigned int type, const bool verbose) {
 
   Rcpp::XPtr<fnPtr> xpfun_drift(drift_pntr);
   Rcpp::XPtr<fnPtr> xpfun_diffusion(diffusion_pntr);
@@ -132,7 +132,7 @@ Rcpp::List sde_pm_mcmc(const arma::vec& y, const double x0,
      L, L, seed);
 
   mcmc mcmc_run(iter, burnin,
-    thin, model.n, 1, target_acceptance, gamma, S, type);
+    thin, model.n, 1, target_acceptance, gamma, S, type, verbose);
 
   mcmc_run.pm_mcmc(model, nsim, end_ram);
 
@@ -173,7 +173,7 @@ Rcpp::List sde_da_mcmc(const arma::vec& y, const double x0,
   const unsigned int iter,
   const unsigned int burnin, const unsigned int thin,
   const double gamma, const double target_acceptance, const arma::mat S,
-  const bool end_ram, const unsigned int type) {
+  const bool end_ram, const unsigned int type, const bool verbose) {
 
   Rcpp::XPtr<fnPtr> xpfun_drift(drift_pntr);
   Rcpp::XPtr<fnPtr> xpfun_diffusion(diffusion_pntr);
@@ -186,7 +186,7 @@ Rcpp::List sde_da_mcmc(const arma::vec& y, const double x0,
      L_f, L_c, seed);
 
   mcmc mcmc_run(iter, burnin,
-    thin, model.n, 1, target_acceptance, gamma, S, type);
+    thin, model.n, 1, target_acceptance, gamma, S, type, verbose);
 
   mcmc_run.da_mcmc(model, nsim, end_ram);
 
@@ -227,7 +227,7 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
   const unsigned int burnin, const unsigned int thin,
   const double gamma, const double target_acceptance, const arma::mat S,
   const bool end_ram, const unsigned int is_type, const unsigned int n_threads,
-  const unsigned int type) {
+  const unsigned int type, const bool verbose) {
 
   Rcpp::XPtr<fnPtr> xpfun_drift(drift_pntr);
   Rcpp::XPtr<fnPtr> xpfun_diffusion(diffusion_pntr);
@@ -240,7 +240,7 @@ Rcpp::List sde_is_mcmc(const arma::vec& y, const double x0,
     L_f, L_c, seed);
 
   approx_mcmc mcmc_run(iter, burnin, thin, model.n, 1, 1,
-    target_acceptance, gamma, S, type, false);
+    target_acceptance, gamma, S, type, false, verbose);
 
   mcmc_run.amcmc(model, nsim, end_ram);
 

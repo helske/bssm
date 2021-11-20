@@ -1,6 +1,6 @@
 context("Test SDE")
-#' @srrstats {G5.0, G5.1, G5.4, G5.4a, G5.4b, G5.4c} GBM model and data as in 
-#' Vihola, Helske, Franks (2020)
+#' @srrstats {G5.0, G5.1, G5.4, G5.4a, G5.4b, G5.4c, BS7.2} GBM model and data 
+#' as in Vihola, Helske, Franks (2020)
 test_that("MCMC for SDE works", {
   skip_on_cran()
   

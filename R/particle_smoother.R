@@ -48,7 +48,6 @@
 #' Van Der Merwe, R, Doucet, A, De Freitas, N,  Wan, EA (2001). 
 #' The unscented particle filter. 
 #' In Advances in neural information processing systems, p 584-590.
-#' https://proceedings.neurips.cc/paper/2000/file/f5c3dd7514bf620a1b85450d2ae374b1-Paper.pdf
 #' 
 #' Jazwinski, A 1970. Stochastic Processes and Filtering Theory. 
 #' Academic Press.

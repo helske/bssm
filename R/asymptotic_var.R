@@ -36,9 +36,9 @@ iact <- function(x) {
 #'
 #' The asymptotic variance MCMCSE^2 is based on Corollary 1 
 #' of Vihola et al. (2020) from weighted samples from IS-MCMC. The default 
-#' method is based on the integrated autocorrelation time (IACT) by Sokal (1997) 
-#' which seem to work well for reasonable problems, but it is also possible to 
-#' use the Geyer's method as implemented in \code{ess_mean} of the 
+#' method is based on the integrated autocorrelation time (IACT) by Sokal 
+#' (1997) which seem to work well for reasonable problems, but it is also 
+#' possible to use the Geyer's method as implemented in \code{ess_mean} of the 
 #' \code{posterior} package. 
 #' 
 #' @importFrom posterior ess_mean

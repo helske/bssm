@@ -80,4 +80,6 @@ as_draws_df.mcmc_output <- function(x, times, states, ...) {
   as_draws(d)
 }
 #' @exportS3Method posterior::as_draws mcmc_output
-as_draws.mcmc_output <- function(x, times, ...) as_draws_df.mcmc_output(x, times, ...)
+as_draws.mcmc_output <- function(x, times, ...) {
+  as_draws_df.mcmc_output(x, times, ...)
+}

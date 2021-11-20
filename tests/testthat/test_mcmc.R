@@ -1,8 +1,7 @@
 context("Test MCMC")
 
-#' @srrstats {G5.4, G5.4a, G5.4b, G5.4c, G5.5} Replicate Helske & Vihola (2021)
-#' @srrstats {BS7.0, BS7.1, BS7.7}
-#' @srrstats {BS7.3}
+#' @srrstats {G5.4, G5.4a, G5.4b, G5.4c, G5.5, BS7.0, BS7.1, BS7.2, BS7.7} 
+#' Replicate Helske & Vihola (2021).
 
 tol <- 1e-8
 
@@ -64,7 +63,8 @@ test_that("MCMC results from bssm paper are still correct", {
   
 })
 
-test_that("scaling is linear", {
+#' @srrstats {BS7.3}
+test_that("scaling is linear with respect to the length of the time series", {
   skip_on_cran()
   
   set.seed(1)
@@ -110,13 +110,33 @@ test_that("run_mcmc throws error with improper arguments", {
     sd_level = uniform(1, 0, 10))
   
   expect_error(mcmc_bsm <- run_mcmc(model_bssm, iter = 50, 
-    end_adaptive_phase = 4))
+    end_adaptive_phase = 4),
+    "Argument 'end_adaptive_phase' should be TRUE or FALSE.")
 
   out <- run_mcmc(model_bssm, iter = 10, output_type = "theta")
-  expect_error(summary(out, return_se = 2))
-  expect_error(summary(out, variable = "both"))
-})
+  expect_error(summary(out, return_se = 2), 
+    "Argument 'return_se' should be TRUE or FALSE.")
+  expect_error(summary(out, variable = "both"),
+    "Cannot return summary of states as the MCMC type was not 'full'.")
   
+  model_bssm$theta[] <- Inf
+  expect_error(run_mcmc(model, iter = 1e4, particles = 10), 
+    "Initial prior probability is not finite.")
+})
+
+#' @srrstats {BS2.13}
+test_that("MCMC messages can be suppressed", {
+  
+  model_bssm <- bsm_lg(rnorm(10, 3), P1 = diag(2, 2), sd_slope = 0,
+    sd_y = uniform(1, 0, 10), 
+    sd_level = uniform(1, 0, 10))
+  
+  expect_equal(capture_output(run_mcmc(run_mcmc(model_bssm, iter = 100, 
+    verbose = FALSE))), "")
+  expect_equal(capture_output(run_mcmc(run_mcmc(model_bssm, iter = 10, 
+    verbose = FALSE))), "")
+})
+
 test_that("MCMC results for Gaussian model are correct", {
   set.seed(123)
   model_bssm <- bsm_lg(rnorm(10, 3), P1 = diag(2, 2), sd_slope = 0,
@@ -124,7 +144,7 @@ test_that("MCMC results for Gaussian model are correct", {
     sd_level = uniform(1, 0, 10))
   
   expect_error(mcmc_bsm <- run_mcmc(model_bssm, iter = 50, seed = 1), NA)
-  
+
   expect_equal(
     run_mcmc(model_bssm, iter = 100, seed = 1)[-14], 
     run_mcmc(model_bssm, iter = 100, seed = 1)[-14])
@@ -282,7 +302,8 @@ test_that("MCMC results with psi-APF for Poisson model are correct", {
   
   sumr <- expect_error(summary(mcmc_poisson, variable = "both"), NA)
   
-  expect_lt(sum(abs(sumr[1, c(1, 3)] - c(0.25892090511681, 0.186796779799571))), 0.5)
+  expect_lt(sum(abs(sumr[1, c(1, 3)] - 
+      c(0.25892090511681, 0.186796779799571))), 0.5)
   
   states <- expand_sample(mcmc_poisson, variable = "states")
   

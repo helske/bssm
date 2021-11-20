@@ -22,6 +22,7 @@ run_mcmc(model, ...)
   end_adaptive_phase = FALSE,
   threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
+  verbose = TRUE,
   ...
 )
 
@@ -43,6 +44,7 @@ run_mcmc(model, ...)
   seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100,
   conv_tol = 1e-08,
+  verbose = TRUE,
   ...
 )
 
@@ -64,6 +66,7 @@ run_mcmc(model, ...)
   max_iter = 100,
   conv_tol = 1e-08,
   iekf_iter = 0,
+  verbose = TRUE,
   ...
 )
 
@@ -83,6 +86,7 @@ run_mcmc(model, ...)
   end_adaptive_phase = FALSE,
   threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
+  verbose = TRUE,
   ...
 )
 }
@@ -181,7 +185,9 @@ with \code{iekf_iter} iterations. Used only for models of class
 
 \item{L_c, L_f}{For \code{ssm_sde} models, Positive integer values defining
 the discretization levels for first and second stages (defined as 2^L).
-For pseudo-marginal methods (\code{"pm"}), maximum of these is used.}
+For pseudo-marginal methods (\code{"pm"}), maximum of these is used.
+@param verbose If \code{TRUE} (default), prints a progress bar to the
+console. Set to \code{FALSE} if number of iterations is less than 50.}
 }
 \description{
 Adaptive Markov chain Monte Carlo simulation for SSMs using

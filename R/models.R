@@ -1,8 +1,9 @@
+#' @srrstats {G2.3, G2.3a, G2.3b} match.arg and tolower used where applicable.
 #' @srrstats {G2.7, G2.8, G2.9} Only matrix/mts/arrays as tabular data are 
 #' supported, not data.frame or similar objects.
-#' @srrstats {G2.14, G2.14a, G2.14b, G2.14c, BS3.0} Missing observations are handled 
-#' automatically as per SSM theory, whereas missing values are not allowed 
-#' elsewhere.
+#' @srrstats {G2.14, G2.14a, G2.14b, G2.14c, BS3.0} Missing observations are 
+#' handled automatically as per SSM theory, whereas missing values are not 
+#' allowed elsewhere.
 #' @srrstats {BS1.0, BS1.1, BS1.2}
 NULL
 
@@ -1472,10 +1473,10 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
 #' 
 #' @param y Observations as multivariate time series (or matrix) of length 
 #' \eqn{n}.
-#' @param Z,H,T,R  An external pointers (object of class \code{externalptr}) for the 
-#' C++ functions which define the corresponding model functions.
-#' @param Z_gn,T_gn An external pointers (object of class \code{externalptr}) for 
-#' the C++ functions which define the gradients of the corresponding model 
+#' @param Z,H,T,R  An external pointers (object of class \code{externalptr}) 
+#' for the C++ functions which define the corresponding model functions.
+#' @param Z_gn,T_gn An external pointers (object of class \code{externalptr}) 
+#' for the C++ functions which define the gradients of the corresponding model 
 #' functions.
 #' @param a1 Prior mean for the initial state as object of class 
 #' \code{externalptr}
