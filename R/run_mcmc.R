@@ -643,7 +643,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
         particles, iter, burnin, thin, gamma, target_acceptance, S,
         end_adaptive_phase, threads, pmatch(mcmc_type, paste0("is", 1:3)),
         sampling_method, max_iter, conv_tol, iekf_iter, 
-        output_type, FALSE)
+        output_type, FALSE, verbose)
     },
     "ekf" = {
       nonlinear_ekf_mcmc(t(model$y), model$Z, model$H, model$T,
