@@ -32,7 +32,7 @@ NULL
 #' @srrstatsNA {BS2.10} Not applicable as only single-chain runs are supported 
 #' (but several such runs can be combined with posterior package).
 #' @srrstatsNA {BS2.11} Starting values are not accepted in this form.
-#' @srrstatsNA {BS1.4, BS1.5, BS4.3, BS4.4, BS4.5, BS4.6, BS4.7, BS5.4] No 
+#' @srrstatsNA {BS1.4, BS1.5, BS4.3, BS4.4, BS4.5, BS4.6, BS4.7, BS5.4} No 
 #' support for automatic stopping at converge (converge checkers).
 #' @srrstatsNA {BS2.15} Errors are normal R errors so they can be caught? But 
 #' not sure what is meant here. 
