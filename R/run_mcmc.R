@@ -110,7 +110,7 @@
 #' @export
 #' @srrstats {BS1.0, BS1.1, BS1.2, BS1.2a, BS1.2b}
 #' @srrstats {BS2.6}
-#' @srrstats {BS2.7, BS1.3a, BS2.8} Explained in docs.
+#' @srrstats {BS2.7, BS1.3, BS1.3a, BS1.3b, BS2.8} Explained in docs.
 #' @srrstats {BS2.9} The argument 'seed' is set to random value if not 
 #' specified by the user.
 #' @srrstats {BS5.0, BS5.1, BS5.2} Starting values are integrated into the 

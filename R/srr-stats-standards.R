@@ -93,8 +93,12 @@
 #' @srrstats {BS1.0} *Bayesian software which uses the term "hyperparameter" should explicitly clarify the meaning of that term in the context of that software.* 
 #' @srrstats {BS1.1} *Descriptions of how to enter data, both in textual form and via code examples. Both of these should consider the simplest cases of single objects representing independent and dependent data, and potentially more complicated cases of multiple independent data inputs.*
 #' @srrstats {BS1.2} *Description of how to specify prior distributions, both in textual form describing the general principles of specifying prior distributions, along with more applied descriptions and examples, within:*
-#' @srrstats {BS1.2a} *The main package `README`, either as textual description or example code* [**BS31.2b**]{#BS1_2b} *At least one package vignette, both as general and applied textual descriptions, and example code* [**BS1.2c**]{#BS1_2c} *Function-level documentation, preferably with code included in examples* [**BS1.3**]{#BS1_3} *Description of all parameters which control the computational process (typically those determining aspects such as numbers and lengths of sampling processes, seeds used to start them, thinning parameters determining post-hoc sampling from simulated values, and convergence criteria). In particular:*
-#' @srrstats {BS1.3a} *Bayesian Software should document, both in text and examples, how to use the output of previous simulations as starting points of subsequent simulations.* [**BS1.3b**]{#BS1_3b} *Where applicable, Bayesian software should document, both in text and examples, how to use different sampling algorithms for a given model.* [**BS1.4**]{#BS1_4} *For Bayesian Software which implements or otherwise enables convergence checkers, documentation should explicitly describe and provide examples of use with and without convergence checkers.*
+#' @srrstats {BS1.2a} *The main package `README`, either as textual description or example code* 
+#' @srrstats {BS1.2b} *At least one package vignette, both as general and applied textual descriptions, and example code* 
+#' @srrstats {BS1.2c} *Function-level documentation, preferably with code included in examples* 
+#' @srrstats {BS1.3} *Description of all parameters which control the computational process (typically those determining aspects such as numbers and lengths of sampling processes, seeds used to start them, thinning parameters determining post-hoc sampling from simulated values, and convergence criteria). In particular:*
+#' @srrstats {BS1.3a} *Bayesian Software should document, both in text and examples, how to use the output of previous simulations as starting points of subsequent simulations.* 
+#' @srrstats {BS1.3b} *Where applicable, Bayesian software should document, both in text and examples, how to use different sampling algorithms for a given model.* 
 #' @srrstats {BS2.8} *Enable results of previous runs to be used as starting points for subsequent runs.* 
 #' @srrstats {BS4.0} *Packages should document sampling algorithms (generally via literary citation, or reference to other software)*
 #' @srrstats {BS4.1} *Packages should provide explicit comparisons with external samplers which demonstrate intended advantage of implementation (generally via tests, vignettes, or both).* 
@@ -182,6 +186,7 @@ NULL
 #' @srrstatsNA {BS2.11} *Software which accepts starting values as a vector should provide the parameter with a plural name: for example, "starting_values" and not "starting_value".* 
 #'
 #' No automatic stopping at converge (converge checkers) is supported
+#' @srrstatsNA {BS1.4] *For Bayesian Software which implements or otherwise enables convergence checkers, documentation should explicitly describe and provide examples of use with and without convergence checkers.*
 #' @srrstatsNA {BS1.5} *For Bayesian Software which implements or otherwise enables multiple convergence checkers, differences between these should be explicitly tested.* 
 #' @srrstatsNA {BS4.3} *Implement or otherwise offer at least one type of convergence checker, and provide a documented reference for that implementation.*
 #' @srrstatsNA {BS4.4} *Enable computations to be stopped on convergence (although not necessarily by default).*

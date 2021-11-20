@@ -40,8 +40,8 @@ knitr::opts_chunk$set(
 #' testthat tests.
 #' @srrstats {G5.9, G5.9a, G5.9b} Tested with autotest and the testthat tests.
 #'
-#' @srrstats {BS1.0, BS1.1, BS1.2, BS1.2a, BS1.2b} Addressed in the models.R, 
-#' run_mcmc.R, in vignettes and in the R Journal paper.
+#' @srrstats {BS1.0, BS1.1, BS1.2, BS1.2a, BS1.2b, BS1.3b} Addressed in the 
+#' models.R, run_mcmc.R, in vignettes and in the R Journal paper.
 #'
 #' @srrstats {BS2.1, BS2.1a} Tested by autotest and package examples/tests.
 ```
