@@ -22,7 +22,7 @@ run_mcmc(model, ...)
   end_adaptive_phase = FALSE,
   threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
-  verbose = TRUE,
+  verbose,
   ...
 )
 
@@ -44,7 +44,7 @@ run_mcmc(model, ...)
   seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100,
   conv_tol = 1e-08,
-  verbose = TRUE,
+  verbose,
   ...
 )
 
@@ -66,7 +66,7 @@ run_mcmc(model, ...)
   max_iter = 100,
   conv_tol = 1e-08,
   iekf_iter = 0,
-  verbose = TRUE,
+  verbose,
   ...
 )
 
@@ -86,7 +86,7 @@ run_mcmc(model, ...)
   end_adaptive_phase = FALSE,
   threads = 1,
   seed = sample(.Machine$integer.max, size = 1),
-  verbose = TRUE,
+  verbose,
   ...
 )
 }
@@ -140,6 +140,10 @@ models.}
 
 \item{seed}{Seed for the random number generator (positive integer).}
 
+\item{verbose}{If \code{TRUE}, prints a progress bar to the console. If
+missing, defined by \code{rlang::is_interactive}.
+Set to \code{FALSE} if number of iterations is less than 50.}
+
 \item{particles}{Number of state samples per MCMC iteration for models other
 than linear-Gaussian models.
 Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.}
@@ -185,9 +189,7 @@ with \code{iekf_iter} iterations. Used only for models of class
 
 \item{L_c, L_f}{For \code{ssm_sde} models, Positive integer values defining
 the discretization levels for first and second stages (defined as 2^L).
-For pseudo-marginal methods (\code{"pm"}), maximum of these is used.
-@param verbose If \code{TRUE} (default), prints a progress bar to the
-console. Set to \code{FALSE} if number of iterations is less than 50.}
+For pseudo-marginal methods (\code{"pm"}), maximum of these is used.}
 }
 \description{
 Adaptive Markov chain Monte Carlo simulation for SSMs using

@@ -31,6 +31,7 @@
 #' \code{burnin=0}).
 #' 
 #' @importFrom stats tsp
+#' @importFrom rlang is_interactive
 #' @param model Model of class \code{bssm_model}.
 #' @param iter Positive integer defining the total number of MCMC iterations.
 #' @param output_type Either \code{"full"} 
@@ -106,8 +107,9 @@
 #' @param L_c,L_f For \code{ssm_sde} models, Positive integer values defining 
 #' the discretization levels for first and second stages (defined as 2^L). 
 #' For pseudo-marginal methods (\code{"pm"}), maximum of these is used.
-#'  @param verbose If \code{TRUE} (default), prints a progress bar to the 
-#' console. Set to \code{FALSE} if number of iterations is less than 50.
+#' @param verbose If \code{TRUE}, prints a progress bar to the console. If 
+#' missing, defined by \code{rlang::is_interactive}.
+#' Set to \code{FALSE} if number of iterations is less than 50. 
 #' @param ... Ignored.
 #' @export
 #' @srrstats {G2.3, G2.3a, G2.3b} match.arg and tolower used where applicable.
@@ -171,8 +173,8 @@ run_mcmc <- function(model, ...) {
 run_mcmc.gaussian <- function(model, iter, output_type = "full",
   burnin = floor(iter / 2), thin = 1, gamma = 2 / 3,
   target_acceptance = 0.234, S, end_adaptive_phase = FALSE, threads = 1,
-  seed = sample(.Machine$integer.max, size = 1), verbose = TRUE, ...) {
-  
+  seed = sample(.Machine$integer.max, size = 1), 
+  verbose, ...) {
   
   check_missingness(model)
   
@@ -184,8 +186,13 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   thin <- check_intmax(thin, "thin", max = 100)
   iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e12)
   burnin <- check_intmax(burnin, "burnin", max = 1e12)
+  
+  if (missing(verbose)) {
+    verbose <- is_interactive()
+  } else {
   if (!test_flag(verbose)) 
     stop("Argument 'verbose' should be TRUE or FALSE. ")
+  }
   if (iter < 50) verbose <- FALSE
   
   if (length(model$theta) == 0) 
@@ -379,7 +386,7 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   thin = 1, gamma = 2 / 3, target_acceptance = 0.234, S, 
   end_adaptive_phase = FALSE, local_approx  = TRUE, threads = 1,
   seed = sample(.Machine$integer.max, size = 1), max_iter = 100, 
-  conv_tol = 1e-8, verbose = TRUE, ...) {
+  conv_tol = 1e-8, verbose, ...) {
   
   check_missingness(model)
   
@@ -407,8 +414,12 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e12)
   burnin <- check_intmax(burnin, "burnin", max = 1e12)
   
-  if (!test_flag(verbose)) 
-    stop("Argument 'verbose' should be TRUE or FALSE. ")
+  if (missing(verbose)) {
+    verbose <- is_interactive()
+  } else {
+    if (!test_flag(verbose)) 
+      stop("Argument 'verbose' should be TRUE or FALSE. ")
+  }
   if (iter < 50) verbose <- FALSE
   
   if (!test_flag(local_approx))  {
@@ -544,7 +555,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   burnin = floor(iter / 2), thin = 1,
   gamma = 2 / 3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
   threads = 1, seed = sample(.Machine$integer.max, size = 1), max_iter = 100,
-  conv_tol = 1e-8, iekf_iter = 0, verbose = TRUE, ...) {
+  conv_tol = 1e-8, iekf_iter = 0, verbose, ...) {
   
   check_missingness(model)
   
@@ -573,8 +584,12 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   burnin <- check_intmax(burnin, "burnin", max = 1e12)
   iekf_iter <- check_intmax(iekf_iter, "iekf_iter", positive = FALSE)
   
-  if (!test_flag(verbose)) 
-    stop("Argument 'verbose' should be TRUE or FALSE. ")
+  if (missing(verbose)) {
+    verbose <- is_interactive()
+  } else {
+    if (!test_flag(verbose)) 
+      stop("Argument 'verbose' should be TRUE or FALSE. ")
+  }
   if (iter < 50) verbose <- FALSE
   
   if (length(model$theta) == 0) 
@@ -707,7 +722,7 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   mcmc_type = "is2", L_c, L_f,
   burnin = floor(iter/2), thin = 1,
   gamma = 2/3, target_acceptance = 0.234, S, end_adaptive_phase = FALSE,
-  threads = 1, seed = sample(.Machine$integer.max, size = 1), verbose = TRUE, 
+  threads = 1, seed = sample(.Machine$integer.max, size = 1), verbose, 
   ...) {
   
   check_missingness(model)
@@ -737,8 +752,12 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e12)
   burnin <- check_intmax(burnin, "burnin", max = 1e12)
   
-  if (!test_flag(verbose)) 
-    stop("Argument 'verbose' should be TRUE or FALSE. ")
+  if (missing(verbose)) {
+    verbose <- is_interactive()
+  } else {
+    if (!test_flag(verbose)) 
+      stop("Argument 'verbose' should be TRUE or FALSE. ")
+  }
   if (iter < 50) verbose <- FALSE
   
   if (length(model$theta) == 0) 

@@ -1,4 +1,4 @@
-#' Convert \code{run_mcmc} output to \code{draws_df} format
+#' Convert \code{run_mcmc} Output to \code{draws_df} Format
 #'
 #' Converts MCMC output from \code{run_mcmc} call to a 
 #' \code{draws_df} format of the \code{posterior} package. This enables the use 
@@ -18,10 +18,13 @@
 #' Default is all.
 #' @param ... Ignored.
 #' @return A \code{draws_df} object.
-#' @rdname as_draws
 #' @importFrom posterior as_draws as_draws_df
 #' @importFrom tidyr pivot_wider
-#' @exportS3Method posterior::as_draws_df mcmc_output
+#' @aliases as_draws as_draws_df 
+#' @export
+#' @export as_draws_df
+#' @rdname as_draws-mcmc_output
+#' @method as_draws_df mcmc_output
 #' @examples 
 #' 
 #' model <- bsm_lg(Nile, 
@@ -30,7 +33,6 @@
 #'   a1 = 1000, P1 = 500^2)
 #' 
 #' fit1 <- run_mcmc(model, iter = 2000)
-#' library("posterior")
 #' draws <- as_draws(fit1)
 #' head(draws, 4)
 #' estimate_ess(draws$sd_y)
@@ -38,33 +40,47 @@
 #' 
 #' # More chains:
 #' model$theta[] <- c(50, 150) # change initial value
-#' fit2 <- run_mcmc(model, iter = 2000)
+#' fit2 <- run_mcmc(model, iter = 2000, verbose = FALSE)
 #' model$theta[] <- c(150, 50) # change initial value
-#' fit3 <- run_mcmc(model, iter = 2000)
+#' fit3 <- run_mcmc(model, iter = 2000, verbose = FALSE)
 #' 
-#' draws <- posterior::bind_draws(as_draws(fit1),
-#'   as_draws(fit2), as_draws(fit3), along = "chain")
 #' # it is actually enough to transform first mcmc_output to draws object, 
 #' # rest are transformed automatically inside bind_draws
+#' draws <- posterior::bind_draws(as_draws(fit1),
+#'   as_draws(fit2), as_draws(fit3), along = "chain")
+#' 
 #' posterior::rhat(draws$sd_y)
-#' posterior::summarise_draws(draws)
-#'
+#' 
 as_draws_df.mcmc_output <- function(x, times, states, ...) {
   
-  
   d_theta <- as.data.frame(x, variable = "theta", expand = TRUE)
-  if (missing(times)) times <- seq_len(nrow(x$alpha))
-  if (missing(states)) states <- seq_len(ncol(x$alpha))
+  
+  if (missing(times)) {
+    times <- seq_len(nrow(x$alpha))
+  } else {
+    if (!test_integerish(times, lower = 1, upper = nrow(x$alpha), 
+      any.missing = FALSE, unique = TRUE))
+      stop(paste0("Argument 'times' should contain indices between 1 and ",
+        nrow(x$alpha),"."))
+  }
+  if (missing(states)) {
+    states <- seq_len(ncol(x$alpha))
+  } else {
+    if (!test_integerish(states, lower = 1, upper = ncol(x$alpha), 
+      any.missing = FALSE, unique = TRUE))
+      stop(paste0("Argument 'states' should contain indices between 1 and ",
+        ncol(x$alpha),"."))
+  }
   d_states <- as.data.frame(x, variable = "states", expand = TRUE, 
     times = times, states = states, use_times = FALSE)
   
   d <- cbind(
     tidyr::pivot_wider(d_theta, 
-      values_from = value, 
-      names_from = variable),
+      values_from = .data$value, 
+      names_from = .data$variable),
     tidyr::pivot_wider(d_states, 
-      values_from = value, 
-      names_from = c(variable, time), 
+      values_from = .data$value, 
+      names_from = c(.data$variable, .data$time), 
       names_glue = "{variable}[{time}]")[, -(1:2)])
   names(d)[1] <- ".iteration"
   
@@ -78,8 +94,11 @@ as_draws_df.mcmc_output <- function(x, times, states, ...) {
   }
   
   as_draws(d)
-}
-#' @exportS3Method posterior::as_draws mcmc_output
-as_draws.mcmc_output <- function(x, times, ...) {
+} 
+#' @export
+#' @export as_draws
+#' @rdname as_draws-mcmc_output
+#' @method as_draws mcmc_output
+as_draws.mcmc_output <- function(x, times, states, ...) {
   as_draws_df.mcmc_output(x, times, ...)
 }

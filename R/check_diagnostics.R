@@ -76,8 +76,7 @@ check_diagnostics <- function(x) {
       "and ESS measures below.\n", sep="")
   }
   
-  sumr <- posterior::summarise_draws(draws, 
-    posterior::default_convergence_measures())
+  sumr <- summarise_draws(draws, default_convergence_measures())
   min_ess <- which.min(sumr$ess_bulk)
   cat("\nSmallest bulk-ESS: ", round(sumr$ess_bulk[min_ess]), " (", 
     sumr$variable[min_ess], ")", sep = "")

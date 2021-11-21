@@ -38,7 +38,6 @@
 #' @name bssm
 #' @aliases bssm
 #' @importFrom Rcpp evalCpp
-#' @importFrom coda mcmc
 #' @importFrom stats as.ts dnorm  end frequency is.ts logLik quantile start 
 #' time ts ts.union tsp tsp<- sd na.omit
 #' @useDynLib bssm
@@ -153,10 +152,7 @@ NULL
 #'   distribution = "negative binomial")
 #' 
 #' # run the MCMC, small number of iterations for CRAN
-#' fit_bssm <- run_mcmc(bssm_model, iter = 6000, burnin = 1000, 
+#' fit_bssm <- run_mcmc(bssm_model, iter = 2000, burnin = 1000, 
 #'   particles = 10)
 #' fit_bssm
-#' 
-#' plot.ts(ts(cbind(sd_level=draws$sd_level, draws$sd_slope), start = 1000), 
-#'   xlab = "Iteration", main = "Traceplots")
 NULL

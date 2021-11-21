@@ -3,6 +3,7 @@
 #' @importFrom checkmate test_atomic_vector test_count test_double test_flag 
 #' test_integerish test_int
 #' 
+#' @param x Variable to be checked.
 #' @param name Name of the argument used in printing error messages.
 #' @param positive Logical, check for positiveness of \code{x}.
 #' @param max Maximum value of \code{x}.

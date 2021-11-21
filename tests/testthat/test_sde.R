@@ -29,9 +29,9 @@ test_that("MCMC for SDE works", {
     L_c = 2, L_f = 6, threads = 2), NA)
   
   paper <- c(0.053, 0.253, 1.058, 1.254, 2.960)
-  expect_equivalent(diagis::weighted_mean(out$theta, out$weights * out$counts), 
+  expect_equivalent(weighted_mean(out$theta, out$weights * out$counts), 
     paper[1:3], tol = 0.1)
-  expect_equivalent(diagis::weighted_mean(t(out$alpha[c(1,50),1,]), 
+  expect_equivalent(weighted_mean(t(out$alpha[c(1,50),1,]), 
     out$weights * out$counts), paper[4:5], tol = 0.1)
   
   expect_error(out <- run_mcmc(model, iter = 2e4, burnin = 5000,

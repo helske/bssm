@@ -30,12 +30,16 @@ value. Although this saves bit memory and is especially convenient for
 IS-corrected  MCMC, sometimes we want to have the usual sample paths
 (for example for drawing traceplots).
 Function \code{expand_sample} returns the expanded sample based on the
-counts. Note that for IS-corrected output the expanded
-sample corresponds to the approximate posterior i.e.,
+counts (in form of \code{coda::mcmc} object. Note that for
+the IS-MCMC the expanded sample corresponds to the approximate posterior i.e.,
 the weights are ignored.
 }
+\details{
+This functions is mostly for backwards compatibility, methods
+\code{as.data.frame} and \code{as_draws} produce likely more convenient
+output.
+}
 \examples{
-
 set.seed(1)
 n <- 50
 x <- cumsum(rnorm(n))
@@ -46,8 +50,9 @@ fit <- run_mcmc(model, iter = 1e4)
 # Traceplots for theta
 plot.ts(expand_sample(fit, variable = "theta"))
 # Traceplot for x_5
-plot.ts(expand_sample(fit, variable = "states", times = 5, states = 1))
+plot.ts(expand_sample(fit, variable = "states", times = 5, 
+  states = 1)$level)
 }
 \seealso{
-\code{as_draws}.
+\code{as.data.frame.mcmc_output} and \code{as_draws.mcmc_output}.
 }

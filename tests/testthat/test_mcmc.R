@@ -120,7 +120,7 @@ test_that("run_mcmc throws error with improper arguments", {
     "Cannot return summary of states as the MCMC type was not 'full'.")
   
   model_bssm$theta[] <- Inf
-  expect_error(run_mcmc(model, iter = 1e4, particles = 10), 
+  expect_error(run_mcmc(model_bssm, iter = 1e4, particles = 10), 
     "Initial prior probability is not finite.")
 })
 
@@ -131,10 +131,10 @@ test_that("MCMC messages can be suppressed", {
     sd_y = uniform(1, 0, 10), 
     sd_level = uniform(1, 0, 10))
   
-  expect_equal(capture_output(run_mcmc(run_mcmc(model_bssm, iter = 100, 
-    verbose = FALSE))), "")
-  expect_equal(capture_output(run_mcmc(run_mcmc(model_bssm, iter = 10, 
-    verbose = FALSE))), "")
+  expect_equal(capture_output(run_mcmc(model_bssm, iter = 100, 
+    verbose = FALSE)), "")
+  expect_equal(capture_output(run_mcmc(model_bssm, iter = 10, 
+    verbose = FALSE)), "")
 })
 
 test_that("MCMC results for Gaussian model are correct", {

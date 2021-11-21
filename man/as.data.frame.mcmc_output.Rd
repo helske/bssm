@@ -61,7 +61,12 @@ head(as.data.frame(out, variable = "state"))
 head(as.data.frame(out, variable = "theta", expand = FALSE))
 
 # IS-weighted version:
-out_is <- run_mcmc(model, iter = 2000, particles = 10, mcmc_type  = "is2")
+out_is <- run_mcmc(model, iter = 2000, particles = 10, 
+  mcmc_type  = "is2")
 head(as.data.frame(out_is, variable = "theta"))
 
+}
+\seealso{
+\code{as_draws} which converts the output for
+\code{as_draws} object.
 }

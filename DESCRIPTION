@@ -43,6 +43,7 @@ Imports:
     dplyr,
     posterior,
     Rcpp (>= 0.12.3),
+    rlang,
     tidyr
 LinkingTo: ramcmc, Rcpp, RcppArmadillo, sitmo
 SystemRequirements: C++11, pandoc (>= 1.12.3, needed for vignettes)

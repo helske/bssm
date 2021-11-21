@@ -90,14 +90,14 @@ tnormal(init = 5.2, mean = 5.0, sd = 3.0, min = 0.5, max = 9.5)
 # Further examples for diagnostic purposes:
 uniform(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
 normal(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
-tnormal(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2), c(1.2, 2), c(3.3, 3.3))
+tnormal(c(2, 2.2), c(-1.0, 0.001), c(1.0, 1.2), c(1.2, 2), 3.3)
 halfnormal(c(0, 0.2), c(1.0, 1.2))
 gamma(c(0.1, 0.2), c(1.2, 2), c(3.3, 3.3))
 
 # longer versions:
 uniform_prior(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
 normal_prior(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
-tnormal_prior(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2), c(1.2, 2), c(3.3, 3.3))
+tnormal_prior(c(2, 2.2), c(-1.0, 0.001), c(1.0, 1.2), c(1.2, 2), 3.3)
 halfnormal_prior(c(0, 0.2), c(1.0, 1.2))
 gamma_prior(c(0.1, 0.2), c(1.2, 2), c(3.3, 3.3))
 }

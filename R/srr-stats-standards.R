@@ -39,9 +39,6 @@ NULL
 #' @srrstatsNA {BS3.1, BS3.2} Not really relevant for SSMs, or at least 
 #' difficult to check this kind of thing in general.
 #' @srrstatsNA {BS6.1, BS6.2, BS6.3, BS6.5} Just suggests and illustrates using 
-#' ggplot or bayesplot packages, with several examples.#' 
-#' @srrstatsNA {BS7.4} The computation of posterior predicted/fitted value can
-#' be somewhat time consuming so it is not done automatically (there is a 
-#' fitted/predict functions for that)
+#' ggplot or bayesplot packages, with several examples. 
 #' @noRd
 NULL

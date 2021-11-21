@@ -4,7 +4,7 @@
 context("Test Gaussian approximation")
 
 test_that("Gaussian approximation results of bssm and KFAS coincide", {
-  library(KFAS)
+  suppressWarnings(library(KFAS))
   set.seed(123)
   model_KFAS <- SSModel(rpois(10, exp(2)) ~ SSMtrend(2, Q = list(1, 1), 
     P1 = diag(100, 2)), distribution = "poisson")

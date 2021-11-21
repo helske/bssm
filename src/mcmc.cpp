@@ -288,8 +288,9 @@ void mcmc::mcmc_gaussian(T model, const bool end_ram,
       }
     } 
   }
+  if (verbose) Rcpp::Rcout<<"\n";
+  if(n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC. Check your model.");
   
-  if(n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC run. Check your model.");
   trim_storage();
   acceptance_rate /= (iter - burnin);
   
@@ -478,11 +479,13 @@ void mcmc::pm_mcmc(
       } 
     }
   }
+  if (verbose) Rcpp::Rcout<<"\n";
+  if(n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC. Check your model.");
+  
   if (output_type == 2) {
     Vt += Valphahat / (iter - burnin); // Var[E(alpha)] + E[Var(alpha)]
   }
   
-  if(n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC run. Check your model.");
   trim_storage();
   acceptance_rate /= (iter - burnin);
 }
@@ -671,6 +674,9 @@ void mcmc::da_mcmc(T model,
       } 
     }
   }
+  if (verbose) Rcpp::Rcout<<"\n";
+  if(n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC. Check your model.");
+  
   if (output_type == 2) {
     Vt += Valphahat / (iter - burnin); // Var[E(alpha)] + E[Var(alpha)]
   }
@@ -819,11 +825,13 @@ void mcmc::pm_mcmc(
       } 
     }
   }
+  if (verbose) Rcpp::Rcout<<"\n";
+  if(n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC. Check your model.");
+  
   if (output_type == 2) {
     Vt += Valphahat / (iter - burnin); // Var[E(alpha)] + E[Var(alpha)]
   }
   
-  if(n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC run. Check your model.");
   trim_storage();
   acceptance_rate /= (iter - burnin);
 }
@@ -972,11 +980,13 @@ void mcmc::da_mcmc(ssm_sde model,
       } 
     }
   }
+  if (verbose) Rcpp::Rcout<<"\n";
+  if(n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC. Check your model.");
+  
   if (output_type == 2) {
     Vt += Valphahat / (iter - burnin); // Var[E(alpha)] + E[Var(alpha)]
   }
   
-  if(n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC run. Check your model.");
   trim_storage();
   acceptance_rate /= (iter - burnin);
 }

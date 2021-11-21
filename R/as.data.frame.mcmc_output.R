@@ -20,6 +20,8 @@
 #' variable to match the ts attribute of the input to define. If \code{FALSE}, 
 #' time is based on the indexing starting from 1.
 #' @param ... Ignored.
+#' @seealso \code{as_draws} which converts the output for 
+#' \code{as_draws} object.
 #' @export
 #' @examples
 #' data("poisson_series")
@@ -36,7 +38,8 @@
 #' head(as.data.frame(out, variable = "theta", expand = FALSE))
 #' 
 #' # IS-weighted version:
-#' out_is <- run_mcmc(model, iter = 2000, particles = 10, mcmc_type  = "is2")
+#' out_is <- run_mcmc(model, iter = 2000, particles = 10, 
+#'   mcmc_type  = "is2")
 #' head(as.data.frame(out_is, variable = "theta"))
 #' 
 as.data.frame.mcmc_output <- function(x, 

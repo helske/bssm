@@ -7,12 +7,15 @@
 #' IS-corrected  MCMC, sometimes we want to have the usual sample paths 
 #' (for example for drawing traceplots). 
 #' Function \code{expand_sample} returns the expanded sample based on the 
-#' counts. Note that for IS-corrected output the expanded 
-#' sample corresponds to the approximate posterior i.e., 
+#' counts (in form of \code{coda::mcmc} object. Note that for 
+#' the IS-MCMC the expanded sample corresponds to the approximate posterior i.e., 
 #' the weights are ignored.
 #' 
-#' @seealso \code{as_draws}.
+#' This functions is mostly for backwards compatibility, methods 
+#' \code{as.data.frame} and \code{as_draws} produce likely more convenient 
+#' output.
 #' 
+#' @importFrom coda mcmc
 #' @param x Output from \code{\link{run_mcmc}}.
 #' @param variable Expand parameters \code{"theta"} or states \code{"states"}.
 #' @param times Vector of indices. In case of states, 
@@ -22,9 +25,9 @@
 #' @param by_states If \code{TRUE} (default), return list by states. 
 #' Otherwise by time.
 #' @return An object of class \code{"mcmc"} of the \code{coda} package.
+#' @seealso \code{as.data.frame.mcmc_output} and \code{as_draws.mcmc_output}.
 #' @export
 #' @examples
-#' 
 #' set.seed(1)
 #' n <- 50
 #' x <- cumsum(rnorm(n))
@@ -35,7 +38,8 @@
 #' # Traceplots for theta
 #' plot.ts(expand_sample(fit, variable = "theta"))
 #' # Traceplot for x_5
-#' plot.ts(expand_sample(fit, variable = "states", times = 5, states = 1))
+#' plot.ts(expand_sample(fit, variable = "states", times = 5, 
+#'   states = 1)$level)
 expand_sample <- function(x, variable = "theta", times, states, 
   by_states = TRUE) {
   

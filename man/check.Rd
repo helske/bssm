@@ -79,6 +79,8 @@ check_theta(x)
 check_missingness(x)
 }
 \arguments{
+\item{x}{Variable to be checked.}
+
 \item{multivariate}{Logical, should \code{p} be larger than 1?}
 
 \item{distribution}{Distribution(s) of the responses.}

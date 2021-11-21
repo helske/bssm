@@ -2,9 +2,14 @@
 % Please edit documentation in R/as_draws.R
 \name{as_draws_df.mcmc_output}
 \alias{as_draws_df.mcmc_output}
-\title{Convert \code{run_mcmc} output to \code{draws_df} format}
+\alias{as_draws}
+\alias{as_draws_df}
+\alias{as_draws.mcmc_output}
+\title{Convert \code{run_mcmc} Output to \code{draws_df} Format}
 \usage{
 \method{as_draws_df}{mcmc_output}(x, times, states, ...)
+
+\method{as_draws}{mcmc_output}(x, times, states, ...)
 }
 \arguments{
 \item{x}{An object of class \code{mcmc_output}.}
@@ -41,7 +46,6 @@ model <- bsm_lg(Nile,
   a1 = 1000, P1 = 500^2)
 
 fit1 <- run_mcmc(model, iter = 2000)
-library("posterior")
 draws <- as_draws(fit1)
 head(draws, 4)
 estimate_ess(draws$sd_y)
@@ -49,15 +53,15 @@ summary(fit1, return_se = TRUE)
 
 # More chains:
 model$theta[] <- c(50, 150) # change initial value
-fit2 <- run_mcmc(model, iter = 2000)
+fit2 <- run_mcmc(model, iter = 2000, verbose = FALSE)
 model$theta[] <- c(150, 50) # change initial value
-fit3 <- run_mcmc(model, iter = 2000)
+fit3 <- run_mcmc(model, iter = 2000, verbose = FALSE)
 
-draws <- posterior::bind_draws(as_draws(fit1),
-  as_draws(fit2), as_draws(fit3), along = "chain")
 # it is actually enough to transform first mcmc_output to draws object, 
 # rest are transformed automatically inside bind_draws
+draws <- posterior::bind_draws(as_draws(fit1),
+  as_draws(fit2), as_draws(fit3), along = "chain")
+
 posterior::rhat(draws$sd_y)
-posterior::summarise_draws(draws)
 
 }

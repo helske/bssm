@@ -37,12 +37,9 @@ bssm_model <- bsm_ng(y,
   distribution = "negative binomial")
 
 # run the MCMC, small number of iterations for CRAN
-fit_bssm <- run_mcmc(bssm_model, iter = 6000, burnin = 1000, 
+fit_bssm <- run_mcmc(bssm_model, iter = 2000, burnin = 1000, 
   particles = 10)
 fit_bssm
-
-plot.ts(ts(cbind(sd_level=draws$sd_level, draws$sd_slope), start = 1000), 
-  xlab = "Iteration", main = "Traceplots")
 }
 \references{
 Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and

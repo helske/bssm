@@ -92,7 +92,7 @@ asymptotic_var <- function(x, w, method = "sokal") {
   switch(method,
     sokal = (var(z) * iact(z) / estimate_c^2) / length(z),
     # ESS(z) = n / IACT(z)
-    ess_basic = var(z) / posterior::ess_mean(z) / estimate_c^2)
+    ess_basic = var(z) / ess_mean(z) / estimate_c^2)
 }
 
 #' Effective Sample Size for IS-type Estimators

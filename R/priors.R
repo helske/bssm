@@ -50,14 +50,14 @@
 #' # Further examples for diagnostic purposes:
 #' uniform(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
 #' normal(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
-#' tnormal(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2), c(1.2, 2), c(3.3, 3.3))
+#' tnormal(c(2, 2.2), c(-1.0, 0.001), c(1.0, 1.2), c(1.2, 2), 3.3)
 #' halfnormal(c(0, 0.2), c(1.0, 1.2))
 #' gamma(c(0.1, 0.2), c(1.2, 2), c(3.3, 3.3))
 #' 
 #' # longer versions:
 #' uniform_prior(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
 #' normal_prior(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
-#' tnormal_prior(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2), c(1.2, 2), c(3.3, 3.3))
+#' tnormal_prior(c(2, 2.2), c(-1.0, 0.001), c(1.0, 1.2), c(1.2, 2), 3.3)
 #' halfnormal_prior(c(0, 0.2), c(1.0, 1.2))
 #' gamma_prior(c(0.1, 0.2), c(1.2, 2), c(3.3, 3.3))
 #' }
@@ -158,7 +158,7 @@ tnormal_prior <- function(init, mean, sd, min = -Inf, max = Inf) {
   if (any(!is.numeric(init), !is.numeric(mean), !is.numeric(sd))) {
     stop("Parameters for priors must be numeric.")
   }
-  if (init < min | init > max) {
+  if (any(init < min) | any(init > max)) {
     stop(paste("Initial value for parameter with truncated Normal is not", 
       "between the lower and upper bounds.", sep = " "))
   }

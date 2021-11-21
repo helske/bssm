@@ -216,6 +216,8 @@ void approx_mcmc::amcmc(T model, const unsigned int method, const bool end_ram,
       } 
     }
   }
+  if (verbose) Rcpp::Rcout<<"\n";
+  if (n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC. Check your model.");
   
   trim_storage();
   acceptance_rate /= (iter - burnin);
@@ -324,6 +326,8 @@ void approx_mcmc::amcmc(ssm_sde model, const unsigned int nsim, const bool end_r
       } 
     }
   }
+  if (verbose) Rcpp::Rcout<<"\n";
+  if (n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC. Check your model.");
   
   trim_storage();
   acceptance_rate /= (iter - burnin);
@@ -1610,6 +1614,8 @@ void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
       } 
     }
   }
+  if (verbose) Rcpp::Rcout<<"\n";
+  if (n_stored == 0) Rcpp::stop("No proposals were accepted in MCMC. Check your model.");
   
   trim_storage();
   acceptance_rate /= (iter - burnin);

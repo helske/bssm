@@ -9,7 +9,7 @@
 #' whereas SE corresponds to the square root of total asymptotic variance 
 #' (see Remark 3 of Vihola et al. (2020)).
 #' 
-#' 
+#' @importFrom rlang .data
 #' @param object Output from \code{run_mcmc}
 #' @param variable Are the summary statistics computed for either 
 #' \code{"theta"} (default), \code{"states"}, or \code{"both"}?
@@ -46,21 +46,35 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
   if (variable %in% c("theta", "both")) {
     d <- tidyr::pivot_wider(
       as.data.frame(object, variable = "theta", expand = TRUE),
-      values_from = value, names_from = variable)
+      values_from = .data$value, names_from = .data$variable)
   }
   
   if (variable %in% c("states", "both")) {
     if (object$output_type != 1) 
       stop("Cannot return summary of states as the MCMC type was not 'full'. ")
     
-    if (missing(times)) times <- seq_len(nrow(object$alpha))
-    if (missing(states)) states <- seq_len(ncol(object$alpha))
+    if (missing(times)) {
+      times <- seq_len(nrow(object$alpha))
+    } else {
+      if (!test_integerish(times, lower = 1, upper = nrow(object$alpha), 
+        any.missing = FALSE, unique = TRUE))
+        stop(paste0("Argument 'times' should contain indices between 1 and ",
+          nrow(object$alpha),"."))
+    }
+    if (missing(states)) {
+      states <- seq_len(ncol(object$alpha))
+    } else {
+      if (!test_integerish(states, lower = 1, upper = ncol(object$alpha), 
+        any.missing = FALSE, unique = TRUE))
+        stop(paste0("Argument 'states' should contain indices between 1 and ",
+          ncol(object$alpha),"."))
+    }
     
     d_states <- tidyr::pivot_wider(
       as.data.frame(object, variable = "states", expand = TRUE, 
         times = times, states = states, use_times = FALSE),
-      values_from = value, 
-      names_from = c(variable, time), 
+      values_from = .data$value, 
+      names_from = c(.data$variable, .data$time), 
       names_glue = "{variable}[{time}]")
     if (variable == "both") {
       d <- cbind(d, d_states[, -(1:2)])
@@ -72,11 +86,11 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
     summary_f_is <- function(x, w) {
       c(Mean = weighted_mean(x, w), 
         SE = sqrt(asymptotic_var(x, w, method)),
-        SD = sqrt(diagis::weighted_var(x, w)), 
-        diagis::weighted_quantile(x, w, probs), 
+        SD = sqrt(weighted_var(x, w)), 
+        weighted_quantile(x, w, probs), 
         ESS = round(estimate_ess(x, w, method)),
-        SE_IS = diagis::weighted_se(x, w),
-        ESS_IS = round(diagis::ess(w, identity, x)))
+        SE_IS = weighted_se(x, w),
+        ESS_IS = round(ess(w, identity, x)))
     }
     as.data.frame(t(apply(d[, -(1:2)], 2, summary_f_is, w = d$weight)))
   } else {
@@ -89,14 +103,12 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
   }
 }
 
-
 #' Print Results from MCMC Run
 #'
 #' Prints some basic summaries from the MCMC run by \code{\link{run_mcmc}}.
 #'  
 #' @method print mcmc_output
 #' @importFrom diagis weighted_mean weighted_var weighted_se ess
-#' @importFrom coda mcmc
 #' @importFrom stats var
 #' @param x Object of class \code{mcmc_output} from \code{\link{run_mcmc}}.
 #' @param ... Ignored.
