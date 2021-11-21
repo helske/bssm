@@ -14,6 +14,7 @@ test_that("Gaussian predictions work", {
   mcmc_results <- run_mcmc(model, iter = 1000)
   future_model <- model
   future_model$y <- rep(NA, 3)
+  set.seed(1)
   pred <- predict(mcmc_results, future_model, type = "mean", 
     nsim = 100)
   
@@ -21,8 +22,10 @@ test_that("Gaussian predictions work", {
   expect_lt(mean(pred$value[pred$time == 3]), 0.5)
   
   # Posterior predictions for past observations:
+  set.seed(1)
   expect_error(yrep <- predict(mcmc_results, model, type = "response", 
     future = FALSE, nsim = 100), NA)
+  set.seed(1)
   expect_error(meanrep <- predict(mcmc_results, model, type = "mean", 
     future = FALSE, nsim = 100), NA)
   
@@ -58,19 +61,23 @@ test_that("Gaussian predictions work", {
   mcmc_results2$theta[, 2:3] <- log(mcmc_results2$theta[, 2:3])
   future_model2 <- model2
   future_model2$y <- matrix(NA, 3, 1)
+  set.seed(1)
   expect_error(pred2 <- predict(mcmc_results2, future_model2, type = "mean", 
     nsim = 100), NA)
   expect_equal(pred, pred2)
   # Posterior predictions for past observations:
+  set.seed(1)
   expect_error(yrep2 <- predict(mcmc_results2, model2, type = "response", 
     future = FALSE, nsim = 100), NA)
-    expect_error(meanrep2 <- predict(mcmc_results2, model2, type = "mean", 
+  set.seed(1)
+  expect_error(meanrep2 <- predict(mcmc_results2, model2, type = "mean", 
     future = FALSE, nsim = 100), NA)
   expect_equal(yrep, yrep2)
   expect_equal(meanrep, meanrep2)
   
   expect_error(predict(mcmc_results2, model, type = "response", 
     future = FALSE, nsim = 100))
+
   expect_error(predict(mcmc_results2, model2, type = "response", 
     future = FALSE, nsim = 0))
   expect_error(predict(mcmc_results2, model2, type = "response", 
@@ -97,6 +104,7 @@ test_that("Non-gaussian predictions work", {
   expect_error(mcmc_results <- run_mcmc(model, iter = 1000, particles = 5), NA)
   future_model <- model
   future_model$y <- rep(NA, 3)
+  set.seed(1)
   expect_error(pred <- predict(mcmc_results, future_model, type = "mean", 
     nsim = 100), NA)
   
@@ -104,12 +112,14 @@ test_that("Non-gaussian predictions work", {
   expect_lt(mean(pred$value[pred$time == 3]), 1.5)
   
   # Posterior predictions for past observations:
+  set.seed(1)
   expect_error(yrep <- predict(mcmc_results, model, type = "response", 
     future = FALSE, nsim = 100), NA)
+  set.seed(1)
   expect_error(meanrep <- predict(mcmc_results, model, type = "mean", 
     future = FALSE, nsim = 100), NA)
   
-  expect_equal(mean(yrep$value - meanrep$value), 0, tol = 0.1)
+  expect_equal(mean(yrep$value - meanrep$value), 0, tol = 0.5)
   
   update_fn <- function(x) {
     T <- array(x[1])
@@ -140,12 +150,15 @@ test_that("Non-gaussian predictions work", {
   
   future_model2 <- model2
   future_model2$y <- rep(NA, 3)
+  set.seed(1)
   expect_error(pred2 <- predict(mcmc_results2, future_model2, type = "mean", 
     nsim = 100), NA)
   expect_equal(pred, pred2)
   # Posterior predictions for past observations:
+  set.seed(1)
   expect_error(yrep2 <- predict(mcmc_results2, model2, type = "response", 
     future = FALSE, nsim = 100), NA)
+  set.seed(1)
   expect_error(meanrep2 <- predict(mcmc_results2, model2, type = "mean", 
     future = FALSE, nsim = 100), NA)
   expect_equal(yrep, yrep2)
@@ -185,12 +198,14 @@ test_that("Predictions for nlg_ssm work", {
   expect_lt(mean(pred$value[pred$time == 3]), 1.5)
   
   # Posterior predictions for past observations:
+  set.seed(1)
   expect_error(yrep <- predict(mcmc_results, model, type = "response", 
     future = FALSE, nsim = 100), NA)
+  set.seed(1)
   expect_error(meanrep <- predict(mcmc_results, model, type = "mean", 
     future = FALSE, nsim = 100), NA)
   
-  expect_equal(mean(yrep$value - meanrep$value), 0, tol = 0.1)
+  expect_equal(mean(yrep$value - meanrep$value), 0, tol = 0.5)
 })
 
 
@@ -233,11 +248,13 @@ test_that("Predictions for mng_ssm work", {
   expect_lt(max(pred$value), 1000)
   
   # Posterior predictions for past observations:
+  set.seed(1)
   expect_error(yrep <- predict(mcmc_results, model, type = "response", 
     future = FALSE, nsim = 100), NA)
+  set.seed(1)
   expect_error(meanrep <- predict(mcmc_results, model, type = "mean", 
     future = FALSE, nsim = 100), NA)
   
-  expect_equal(mean(yrep$value - meanrep$value), 0, tol = 0.1)
+  expect_equal(mean(yrep$value - meanrep$value), 0, tol = 0.5)
 })
 
