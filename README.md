@@ -1,3 +1,4 @@
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # bssm
@@ -45,7 +46,7 @@ methodology and bssm package:
 
 The `bssm` package was originally developed with the support of Academy
 of Finland grants 284513, 312605, and 311877. Current development is
-focused on increased usability and stability.
+focused on increased usability. For recent changes, see NEWS file.
 
 ## Installation
 
@@ -141,7 +142,7 @@ fit
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>    0.88    0.02    0.89
+#>    0.89    0.04    0.92
 
 obs <- data.frame(Time = 1:nrow(airquality),
   Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))
@@ -209,7 +210,7 @@ fit2
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   10.54    0.05   10.54
+#>   11.22    0.07   11.27
 ```
 
 Comparison:
@@ -237,27 +238,20 @@ approach. For simplicity, the slope terms of the previous models are now
 omitted, and we focus on the Gaussian case. Let *μ*<sub>*t*</sub> be the
 true solar radiation at time *t*. Now for ozone *O*<sub>*t*</sub> we
 assume following model:
-$$
-\\begin{aligned}
-O\_t &= D\_t + \\alpha\_t + \\beta\_S \\mu\_t + \\sigma\_\\epsilon \\epsilon\_t,\\\\
-\\alpha\_{t+1} &= \\alpha\_t + \\sigma\_\\eta\\eta\_t,\\\\
-\\alpha\_1 &\\sim N(0, 100^2\\textrm{I}),
-\\end{aligned}
-$$
-where *D*<sub>*t*</sub> = *β**X*<sub>*t*</sub> contains regression terms
-related to wind and temperature, *α*<sub>*t*</sub> is the time varying
-intercept term, and *β*<sub>*S*</sub> is the effect of solar radiation
-*μ*<sub>*t*</sub>.
+
+*O*<sub>*t*</sub> = *D*<sub>*t*</sub> + *α*<sub>*t*</sub> + *β*<sub>*S*</sub>*μ*<sub>*t*</sub> + *σ*<sub>*ϵ*</sub>*ϵ*<sub>*t*</sub>  
+*α*<sub>*t* + 1</sub> = *α*<sub>*t*</sub> + *σ*<sub>*η*</sub>*η*<sub>*t*</sub>  
+*α*<sub>1</sub> ∼ *N*(0, 100<sup>2</sup>I),  
+wheere *D*<sub>*t*</sub> = *β**X*<sub>*t*</sub> contains regression
+terms related to wind and temperature, *α*<sub>*t*</sub> is the time
+varying intercept term, and *β*<sub>*S*</sub> is the effect of solar
+radiation *μ*<sub>*t*</sub>.
 
 Now for the observed solar radiation *S*<sub>*t*</sub> we assume
 
-$$
-\\begin{aligned}
-S\_t &= \\mu\_t\\\\
-\\mu\_{t+1} &= \\mu\_t + \\sigma\_\\xi\\xi\_t,\\\\
-\\mu\_1 &\\sim N(0, 100^2),
-\\end{aligned}
-$$
+*S*<sub>*t*</sub> = *μ*<sub>*t*</sub>  
+*μ*<sub>*t* + 1</sub> = *μ*<sub>*t*</sub> + *σ*<sub>*ξ*</sub>*ξ*<sub>*t*</sub>,  
+*μ*<sub>1</sub> ∼ *N*(0, 100<sup>2</sup>),  
 i.e. we assume as simple random walk for the *μ* which we observe
 without error or not at all (there is no error term in the observation
 equation *S*<sub>*t*</sub> = *μ*<sub>*t*</sub>).
@@ -326,7 +320,7 @@ fit
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   11.97    0.11   12.04
+#>   12.08    0.13   12.14
 ```
 
 Draw predictions:
@@ -366,125 +360,4 @@ pred %>% filter(Variable == "Ozone") %>%
 
 <img src="man/figures/README-bivariate-fig-2.png" width="100%" />
 
-## Recent changes (For all changes, see NEWS file.)
-
-#### bssm 1.1.6 (Release date: 2021-09-06)
-
--   Cleaned codes and added more comprehensive tests in line with
-    pkgcheck tests. This resulted in finding and fixing multiple bugs:
--   Fixed a bug in EKF-based particle filter which returned filtered
-    estimates also in place of one-step ahead predictions.
--   Fixed a bug which caused an error in suggest\_N for nlg\_ssm.
--   Fixed a bug which caused incorrect sampling of smoothing
-    distribution for ar1\_lg model when predicting past or when using
-    simulation smoother.
--   Fixed a bug which caused an error when predicting past values in
-    multivariate time series case.
--   Fixed sampling of negative binomial distribution in predict method,
-    which used std::negative\_binomial which converts non-integer phi to
-    integer. Sampling now uses Gamma-Poisson mixture for simulation.
-
-#### bssm 1.1.4 (Release date: 2021-04-13)
-
--   Better documentation for SV model, and changed ordering of arguments
-    to emphasise the recommended parameterization.
--   Fixed predict method for SV model.
-
-#### bssm 1.1.3-2 (Release date: 2021-02-24)
-
--   Fixed missing parenthesis causing compilation fail in case of no
-    OpenMP support.
--   Added pandoc version &gt;= 1.12.3 to system requirements.
-
-#### bssm 1.1.3-1 (Release date: 2021-02-22)
-
--   Fixed PM-MCMC and DA-MCMC for SDE models and added an example to
-    `ssm_sde`.
--   Added vignette for SDE models.
--   Updated citation information and streamlined the main vignette.
-
-#### bssm 1.1.2 (Release date: 2021-02-08)
-
--   Some bug fixes, see NEWS for details.
-
-#### bssm 1.1.0 (Release date: 2021-01-19)
-
--   Added function `suggest_N` which can be used to choose suitable
-    number of particles for IS-MCMC.
--   Added function `post_correct` which can be used to update previous
-    approximate MCMC with IS-weights.
--   Gamma priors are now supported in easy-to-use models such as
-    `bsm_lg`.
--   The adaptation of the proposal distribution now continues also after
-    the burn-in by default.
--   Changed default MCMC type to typically most efficient and robust
-    IS2.
--   Renamed `nsim` argument to `particles` in most of the R functions
-    (`nsim` also works with a warning).
--   Fixed a bug with bsm models with covariates, where all standard
-    deviation parameters were fixed. This resulted error within MCMC
-    algorithms.
--   Fixed a dimension drop bug in the predict method which caused error
-    for univariate models.
--   Fixed few typos in vignette (thanks Kyle Hussman) and added more
-    examples.
-
-#### bssm 1.0.1-1 (Release date: 2020-11-12)
-
--   Added an argument `future` for predict method which allows
-    predictions for current time points by supplying the original model
-    (e.g., for posterior predictive checks). At the same time the
-    argument name `future_model` was changed to `model`.
--   Fixed a bug in summary.mcmc\_run which resulted error when trying to
-    obtain summary for states only.
--   Added a check for Kalman filter for a degenerate case where all
-    observational level and state level variances are zero.
--   Renamed argument `n_threads` to `threads` for consistency with
-    `iter` and `burnin` arguments.
--   Improved documentation, added examples.
--   Added a vignette regarding psi-APF for non-linear models.
-
-#### bssm 1.0.0 (Release date: 2020-06-09)
-
-Major update
-
--   Major changes for model definitions, now model updating and priors
-    can be defined via R functions (non-linear and SDE models still rely
-    on C++ snippets).
--   Added support for multivariate non-Gaussian models.
--   Added support for gamma distributions.
--   Added the function as.data.frame for mcmc output which converts the
-    MCMC samples to data.frame format for easier post-processing.
--   Added truncated normal prior.
--   Many argument names and model building functions have been changed
-    for clarity and consistency.
--   Major overhaul of C++ internals which can bring minor efficiency
-    gains and smaller installation size.
--   Allow zero as initial value for positive-constrained parameters of
-    bsm models.
--   Small changes to summary method which can now return also only
-    summaries of the states.
--   Fixed a bug in initializing run\_mcmc for negative binomial model.
--   Fixed a bug in phi-APF for non-linear models.
--   Reimplemented predict method which now always produces data frame of
-    samples.
-
-#### bssm 0.1.11 (Release date: 2020-02-25)
-
--   Switched (back) to approximate posterior in RAM for PM-SPDK and
-    PM-PSI, as it seems to work better with noisy likelihood estimates.
--   Print and summary methods for MCMC output are now coherent in their
-    output.
-
-#### bssm 0.1.10 (Release date: 2020-02-04)
-
--   Fixed missing weight update for IS-SPDK without OPENMP flag.
--   Removed unused usage argument … from expand\_sample.
-
-#### bssm 0.1.9 (Release date: 2020-01-27)
-
--   Fixed state sampling for PM-MCMC with SPDK.
--   Added ts attribute for svm model.
--   Corrected asymptotic variance for summary methods.
-
-For older versions, see NEWS file.
+See more examples in the paper, vignettes, and in the docs.

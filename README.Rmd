@@ -184,24 +184,17 @@ bind_rows(list(Gaussian = pred, Gamma = pred2), .id = "Model") %>%
 
 
 Now let's assume that we also want to use the solar radiation variable as predictor for ozone. As it contains few missing values, we cannot use it directly. As the number of missing time points is very small, simple imputation would likely be acceptable, but let's consider more another approach. For simplicity, the slope terms of the previous models are now omitted, and we focus on the Gaussian case. Let $\mu_t$ be the true solar radiation at time $t$. Now for ozone $O_t$ we assume following model:
-$$
-\begin{aligned}
-O_t &= D_t + \alpha_t + \beta_S \mu_t + \sigma_\epsilon \epsilon_t,\\
-\alpha_{t+1} &= \alpha_t + \sigma_\eta\eta_t,\\
-\alpha_1 &\sim N(0, 100^2\textrm{I}),
-\end{aligned}
-$$
-where $D_t = \beta X_t$ contains regression terms related to wind and temperature, $\alpha_t$ is the time varying intercept term, and $\beta_S$ is the effect of solar radiation $\mu_t$.
+
+$O_t = D_t + \alpha_t + \beta_S \mu_t + \sigma_\epsilon \epsilon_t$\
+$\alpha_{t+1} = \alpha_t + \sigma_\eta\eta_t$\
+$\alpha_1 \sim N(0, 100^2\textrm{I})$,\
+wheere $D_t = \beta X_t$ contains regression terms related to wind and temperature, $\alpha_t$ is the time varying intercept term, and $\beta_S$ is the effect of solar radiation $\mu_t$.
 
 Now for the observed solar radiation $S_t$ we assume 
 
-$$
-\begin{aligned}
-S_t &= \mu_t\\
-\mu_{t+1} &= \mu_t + \sigma_\xi\xi_t,\\
-\mu_1 &\sim N(0, 100^2),
-\end{aligned}
-$$
+$S_t = \mu_t$\
+$\mu_{t+1} = \mu_t + \sigma_\xi\xi_t,$\
+$\mu_1 \sim N(0, 100^2)$,\
 i.e. we assume as simple random walk for the $\mu$ which we observe without error or not at all (there is no error term in the observation equation $S_t=\mu_t$).
 
 We combine these two models as a bivariate Gaussian model with `ssm_mlg`:
@@ -271,3 +264,4 @@ pred %>% filter(Variable == "Ozone") %>%
   theme_bw()
 ```
 
+See more examples in the paper, vignettes, and in the docs.
