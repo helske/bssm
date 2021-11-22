@@ -7,10 +7,10 @@
 \method{print}{mcmc_output}(x, ...)
 }
 \arguments{
-\item{x}{Output from \code{\link{run_mcmc}}.}
+\item{x}{Object of class \code{mcmc_output} from \code{\link{run_mcmc}}.}
 
 \item{...}{Ignored.}
 }
 \description{
-Prints some basic summaries from the MCMC run by  \code{\link{run_mcmc}}.
+Prints some basic summaries from the MCMC run by \code{\link{run_mcmc}}.
 }

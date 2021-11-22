@@ -33,6 +33,18 @@ test_that("Test post correction for AR1 model", {
    
    expect_identical(estN$N, 5)
    
+   
+   expect_error(post_correct(data.frame(1), out_approx, particles = estN$N,
+      threads = 2))
+   expect_error(post_correct(model, out_approx, particles = estN$N,
+      threads = 2, particles = 1e12))
+   expect_error(post_correct(model, out_approx, particles = estN$N,
+      threads = 2, particles = 10, theta = diag(2)))
+   expect_error(post_correct(model, out_approx, particles = estN$N,
+      threads = 2, particles = 10, theta = rep(1:6)))
+   expect_error(post_correct(model, 1:5, particles = estN$N,
+      threads = 2))
+   
    # Can't really test for correctness with limited time
    expect_error(out_is2 <- post_correct(model, out_approx, particles = estN$N,
      threads = 2), NA)
@@ -41,6 +53,8 @@ test_that("Test post correction for AR1 model", {
    expect_lt(sum(out_is2$Vt), Inf)
    expect_lt(max(out_is2$weights), Inf)
    expect_gt(max(out_is2$weights), 0)
+
+   
 })
 
 test_that("Test post correction for non-linear model", {
@@ -62,7 +76,8 @@ test_that("Test post correction for non-linear model", {
    p <- numeric(n)
    p[1] <- p1
    for(i in 2:n)
-      p[i] <- rnorm(1, K * p[i-1] * exp(r[i-1] * dT) / (K + p[i-1] * (exp(r[i-1] * dT) - 1)), R_2)
+      p[i] <- rnorm(1, K * p[i-1] * exp(r[i-1] * dT) / 
+            (K + p[i-1] * (exp(r[i-1] * dT) - 1)), R_2)
    # observations
    y <- p + rnorm(n, 0, H)
    y[2:15] <- NA
@@ -70,7 +85,7 @@ test_that("Test post correction for non-linear model", {
    
    initial_theta <- c(log_H = 0, log_R1 = log(0.05), log_R2 = 0)
    
-   # dT, K, a1 and the prior variances of first and second state (logit r and and p)
+   # dT, K, a1 and the prior variances of 1st and 2nd state (logit r and and p)
    known_params <- c(dT = dT, K = K, a11 = -1, a12 = 50, P11 = 1, P12 = 100)
    
    expect_error(model <- ssm_nlg(y = y, a1=pntrs$a1, P1 = pntrs$P1, 

@@ -15,36 +15,36 @@ suggest_N(
 \arguments{
 \item{model}{Model of class \code{nongaussian} or \code{ssm_nlg}.}
 
-\item{theta}{A vector of theta corresponding to the model, at which point 
-the standard deviation of the log-likelihood is computed. Typically MAP 
-estimate from the (approximate) MCMC run. Can also be an output from 
-\code{run_mcmc} which is then used to compute the MAP 
+\item{theta}{A vector of theta corresponding to the model, at which point
+the standard deviation of the log-likelihood is computed. Typically MAP
+estimate from the (approximate) MCMC run. Can also be an output from
+\code{run_mcmc} which is then used to compute the MAP
 estimate of theta.}
 
-\item{candidates}{Vector of positive integers containing the candidate 
+\item{candidates}{Vector of positive integers containing the candidate
 number of particles to test. Default is \code{seq(10, 100, by = 10)}.}
 
-\item{replications}{Positive integer, how many replications should be used 
+\item{replications}{Positive integer, how many replications should be used
 for computing the standard deviations? Default is 100.}
 
 \item{seed}{Seed for the random number generator  (positive integer).}
 }
 \value{
-List with suggested number of particles \code{N} and matrix 
-containing estimated standard deviations of the log-weights and 
+List with suggested number of particles \code{N} and matrix
+containing estimated standard deviations of the log-weights and
 corresponding number of particles.
 }
 \description{
-Function \code{estimate_N} estimates suitable number particles needed for 
+Function \code{estimate_N} estimates suitable number particles needed for
 accurate post-correction of approximate MCMC.
 }
 \details{
-Function \code{suggest_N} estimates the standard deviation of the 
-logarithm of the post-correction weights at approximate MAP of theta, 
-using various particle sizes and suggest smallest number of particles 
-which still leads standard deviation less than 1. Similar approach was 
+Function \code{suggest_N} estimates the standard deviation of the
+logarithm of the post-correction weights at approximate MAP of theta,
+using various particle sizes and suggest smallest number of particles
+which still leads standard deviation less than 1. Similar approach was
 suggested in the context of pseudo-marginal MCMC by Doucet et al. (2015),
- but see also Section 10.3 in Vihola et al (2020).
+but see also Section 10.3 in Vihola et al (2020).
 }
 \examples{
 
@@ -85,12 +85,12 @@ estN$N
 
 }
 \references{
-Doucet, A, Pitt, MK, Deligiannidis, G, Kohn, R (2015). 
-Efficient implementation of Markov chain Monte Carlo when using an 
+Doucet, A, Pitt, MK, Deligiannidis, G, Kohn, R (2015).
+Efficient implementation of Markov chain Monte Carlo when using an
 unbiased likelihood estimator, Biometrika, 102(2) p. 295-313,
 https://doi.org/10.1093/biomet/asu075
 
-Vihola, M, Helske, J, Franks, J (2020). Importance sampling type estimators 
-based on approximate marginal Markov chain Monte Carlo. 
+Vihola, M, Helske, J, Franks, J (2020). Importance sampling type estimators
+based on approximate marginal Markov chain Monte Carlo.
 Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 }

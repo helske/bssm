@@ -1,3 +1,12 @@
+#' @srrstats {G2.3, G2.3a, G2.3b} match.arg and tolower used where applicable.
+#' @srrstats {G2.7, G2.8, G2.9} Only matrix/mts/arrays as tabular data are 
+#' supported, not data.frame or similar objects.
+#' @srrstats {G2.14, G2.14a, G2.14b, G2.14c, BS3.0} Missing observations are 
+#' handled automatically as per SSM theory, whereas missing values are not 
+#' allowed elsewhere.
+#' @srrstats {BS1.0, BS1.1, BS1.2}
+NULL
+
 ## placeholder functions for fixed models
 default_prior_fn <- function(theta) {
   0
@@ -116,25 +125,27 @@ default_update_fn <- function(theta) {
 #' # (for large model it is more efficient to do this 
 #' # "manually" by constructing only necessary matrices,
 #' # i.e., in this case  a list with H and Q)
-#' 
-#' updatefn <- function(theta) {
+#'
+#' prior_fn <- function(theta) {
+#'   if(any(theta < 0)) -Inf else sum(dnorm(theta, 0, 0.1, log = TRUE))
+#' }
+#'  
+#' update_fn <- function(theta) {
 #'   
 #'   model_kfas <- SSModel(log(drivers) ~ SSMtrend(1, Q = theta[1]^2)+
 #'     SSMseasonal(period = 12, 
 #'       sea.type = "trigonometric", Q = theta[2]^2) +
 #'     log(PetrolPrice) + law, data = Seatbelts, H = theta[3]^2)
 #'   
-#'   as_bssm(model_kfas, kappa = 100)
+#'   # the bssm_model object is essentially list so this is fine
+#'   as_bssm(model_kfas, kappa = 100, init_theta = init_theta,
+#'     update_fn = update_fn, prior_fn = prior_fn) 
 #' }
 #' 
-#' prior <- function(theta) {
-#'   if(any(theta < 0)) -Inf else sum(dnorm(theta, 0, 0.1, log = TRUE))
-#' }
 #' init_theta <- rep(1e-2, 3)
-#' c("sd_level", "sd_seasonal", "sd_y")
-#' model_bssm <- as_bssm(model_kfas, kappa = 100, 
-#'   init_theta = init_theta, 
-#'   prior_fn = prior, update_fn = updatefn)
+#' names(init_theta) <- c("sd_level", "sd_seasonal", "sd_y")
+#' 
+#' model_bssm <- update_fn(init_theta)
 #' 
 #' \donttest{
 #' out <- run_mcmc(model_bssm, iter = 10000, burnin = 5000) 
@@ -265,7 +276,8 @@ ssm_ulg <- function(y, Z, H, T, R, a1 = NULL, P1 = NULL,
 #'  m times 1 or m times n matrix.
 #' @param D Intercept terms \eqn{D_t} for the observations equation, given as a
 #' scalar or vector of length n.
-#' @param init_theta Initial values for the unknown hyperparameters theta.
+#' @param init_theta Initial values for the unknown hyperparameters theta 
+#' (i.e. unknown variables excluding latent state variables).
 #' @param update_fn Function which returns list of updated model 
 #' components given input vector theta. This function should take only one 
 #' vector argument which is used to create list with elements named as
@@ -824,6 +836,22 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' @return Object of class \code{bsm_ng}.
 #' @export
 #' @examples
+#' # Same data as in Vihola, Helske, Franks (2020)
+#' data(poisson_series)
+#' s <- sd(log(pmax(0.1, poisson_series)))
+#' model <- bsm_ng(poisson_series, sd_level = uniform(0.115, 0, 2 * s),
+#'  sd_slope = uniform(0.004, 0, 2 * s), P1 = diag(0.1, 2), 
+#'  distribution = "poisson")
+#' 
+#' \donttest{
+#' out <- run_mcmc(model, iter = 1e5, particles = 10)
+#' summary(out, variable = "theta", return_se = TRUE)
+#' # should be about 0.093 and 0.016
+#' summary(out, variable = "states", return_se = TRUE, 
+#'  states = 1, times = c(1, 100))$Mean
+#' # should be about -0.075, 2.618
+#' }
+#' 
 #' model <- bsm_ng(Seatbelts[, "VanKilled"], distribution = "poisson",
 #'   sd_level = halfnormal(0.01, 1),
 #'   sd_seasonal = halfnormal(0.01, 1),
@@ -1013,10 +1041,10 @@ bsm_ng <- function(y, sd_level, sd_slope, sd_seasonal, sd_noise,
   use_phi <- distribution %in% c("negative binomial", "gamma")
   if (use_phi) {
     if (is_prior(phi)) {
-      check_phi(phi$init, distribution)
+      check_phi(phi$init)
       phi_est <- TRUE
     } else {
-      check_phi(phi, distribution)
+      check_phi(phi)
     }
   } else {
     phi <- 1
@@ -1270,10 +1298,10 @@ ar1_ng <- function(y, rho, sigma, mu, distribution, phi, u, beta,
   phi_est <- FALSE
   if (use_phi) {
     if (is_prior(phi)) {
-      check_phi(phi$init, distribution)
+      check_phi(phi$init)
       phi_est <- TRUE
     } else {
-      check_phi(phi, distribution)
+      check_phi(phi)
     }
   } else {
     phi <- 1
@@ -1441,14 +1469,14 @@ ar1_lg <- function(y, rho, sigma, mu, sd_y, beta, xreg = NULL) {
 #'
 #' Compared to other models, these general models need a bit more effort from
 #' the user, as you must provide the several small C++ snippets which define the
-#' model structure. See examples in the vignette.
+#' model structure. See examples in the vignette and \code{cpp_example_model}.
 #' 
 #' @param y Observations as multivariate time series (or matrix) of length 
 #' \eqn{n}.
-#' @param Z,H,T,R  An external pointers (object of class \code{externalptr}) for the 
-#' C++ functions which define the corresponding model functions.
-#' @param Z_gn,T_gn An external pointers (object of class \code{externalptr}) for 
-#' the C++ functions which define the gradients of the corresponding model 
+#' @param Z,H,T,R  An external pointers (object of class \code{externalptr}) 
+#' for the C++ functions which define the corresponding model functions.
+#' @param Z_gn,T_gn An external pointers (object of class \code{externalptr}) 
+#' for the C++ functions which define the gradients of the corresponding model 
 #' functions.
 #' @param a1 Prior mean for the initial state as object of class 
 #' \code{externalptr}
@@ -1509,6 +1537,9 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
   }
   n_states <- as.integer(n_states)
   n_etas <- as.integer(n_etas)
+  
+  theta <- check_theta(theta)
+  
   structure(list(y = as.ts(y), Z = Z, H = H, T = T,
     R = R, Z_gn = Z_gn, T_gn = T_gn, a1 = a1, P1 = P1, theta = theta,
     log_prior_pdf = log_prior_pdf, known_params = known_params,
@@ -1530,7 +1561,8 @@ ssm_nlg <- function(y, Z, H, T, R, Z_gn, T_gn, a1, P1, theta,
 #'
 #' As in case of \code{ssm_nlg} models, these general models need a bit more 
 #' effort from the user, as you must provide the several small C++ snippets 
-#' which define the model structure. See vignettes for an example.
+#' which define the model structure. See vignettes for an example and 
+#' \code{cpp_example_model}.
 #'
 #' @param y Observations as univariate time series (or vector) of length 
 #' \eqn{n}.
@@ -1587,7 +1619,7 @@ ssm_sde <- function(y, drift, diffusion, ddiffusion, obs_pdf,
   prior_pdf, theta, x0, positive) {
   
   y <- check_y(y)
-  
+  theta <- check_theta(theta)
   structure(list(y = as.ts(y), drift = drift,
     diffusion = diffusion,
     ddiffusion = ddiffusion, obs_pdf = obs_pdf,

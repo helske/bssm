@@ -2,7 +2,7 @@ Package: bssm
 Type: Package
 Title: Bayesian Inference of Non-Linear and Non-Gaussian State Space
         Models
-Version: 1.1.7-1
+Version: 2.0.0
 Authors@R: 
     c(person(given = "Jouni",
            family = "Helske",
@@ -26,25 +26,33 @@ License: GPL (>= 2)
 Depends: R (>= 3.5.0)
 Suggests: 
     covr,
-    dplyr,
     ggplot2 (>= 2.0.0),
-    Hmisc,
     KFAS (>= 1.2.1),
     knitr (>= 1.11),
     MASS,
-    posterior,
     rmarkdown (>= 0.8.1),
     ramcmc,
     sde,
     sitmo,
     testthat
-Imports: checkmate, coda (>= 0.18-1), diagis, Rcpp (>= 0.12.3)
-LinkingTo: Rcpp, RcppArmadillo, ramcmc, sitmo
+Imports: 
+    magrittr,
+    checkmate,
+    coda (>= 0.18-1),
+    diagis,
+    dplyr,
+    posterior,
+    Rcpp (>= 0.12.3),
+    rlang,
+    tidyr
+LinkingTo: ramcmc, Rcpp, RcppArmadillo, sitmo
 SystemRequirements: C++11, pandoc (>= 1.12.3, needed for vignettes)
-RoxygenNote: 7.1.2
 VignetteBuilder: knitr
 BugReports: https://github.com/helske/bssm/issues
 URL: https://github.com/helske/bssm
 ByteCompile: true
 Encoding: UTF-8
 NeedsCompilation: yes
+RoxygenNote: 7.1.2
+Roxygen: list(markdown = TRUE, 
+  roclets = c("namespace", "rd", "srr::srr_stats_roclet"))

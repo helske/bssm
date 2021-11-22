@@ -78,5 +78,8 @@ test_that("EKF and IEKF work", {
     ekf_smoother(model_nlg, iekf_iter = 2)$alphahat)
   
   expect_error(ukf(model_nlg), NA)
+  expect_error(ukf(model_nlg, alpha = -1))
+  expect_error(ukf(model_nlg, beta = -1))
+  expect_error(ukf(model_nlg, kappa = -1))
   expect_error(bootstrap_filter(model_nlg, 10), NA)
 })

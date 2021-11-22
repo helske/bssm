@@ -5,17 +5,17 @@
 \alias{ekpf_filter.ssm_nlg}
 \title{Extended Kalman Particle Filtering}
 \usage{
-ekpf_filter(object, particles, ...)
+ekpf_filter(model, particles, ...)
 
 \method{ekpf_filter}{ssm_nlg}(
-  object,
+  model,
   particles,
   seed = sample(.Machine$integer.max, size = 1),
   ...
 )
 }
 \arguments{
-\item{object}{Model of class \code{ssm_nlg}.}
+\item{model}{Model of class \code{ssm_nlg}.}
 
 \item{particles}{Number of particles as a positive integer.}
 
@@ -24,11 +24,11 @@ ekpf_filter(object, particles, ...)
 \item{seed}{Seed for RNG  (positive integer).}
 }
 \value{
-A list containing samples, filtered estimates and the 
+A list containing samples, filtered estimates and the
 corresponding covariances, weights, and an estimate of log-likelihood.
 }
 \description{
-Function \code{ekpf_filter} performs a extended Kalman particle filtering 
+Function \code{ekpf_filter} performs a extended Kalman particle filtering
 with stratification resampling, based on Van Der Merwe et al (2001).
 }
 \examples{
@@ -56,7 +56,7 @@ ts.plot(cbind(x, out$at[1:n], out$att[1:n]), col = 1:3)
 }
 }
 \references{
-Van Der Merwe, R., Doucet, A., De Freitas, N., & Wan, E. A. 
-(2001). The unscented particle filter. In Advances in neural 
+Van Der Merwe, R., Doucet, A., De Freitas, N., & Wan, E. A.
+(2001). The unscented particle filter. In Advances in neural
 information processing systems (pp. 584-590).
 }

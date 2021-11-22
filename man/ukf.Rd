@@ -9,25 +9,25 @@ ukf(model, alpha = 0.001, beta = 2, kappa = 0)
 \arguments{
 \item{model}{Model of class \code{ssm_nlg}.}
 
-\item{alpha}{Positive tuning parameter of the UKF. Default is 0.001. Smaller 
+\item{alpha}{Positive tuning parameter of the UKF. Default is 0.001. Smaller
 the value, closer the sigma point are to the mean of the state.}
 
-\item{beta}{Non-negative tuning parameter of the UKF. The default value is 
+\item{beta}{Non-negative tuning parameter of the UKF. The default value is
 2, which is optimal for Gaussian states.}
 
-\item{kappa}{Non-negative tuning parameter of the UKF, which also affects 
+\item{kappa}{Non-negative tuning parameter of the UKF, which also affects
 the spread of sigma points. Default value is 0.}
 }
 \value{
 List containing the log-likelihood,
 one-step-ahead predictions \code{at} and filtered
 estimates \code{att} of states, and the corresponding variances \code{Pt} and
- \code{Ptt}.
+\code{Ptt}.
 }
 \description{
-Function \code{ukf} runs the unscented Kalman filter for the given 
-non-linear Gaussian model of class \code{ssm_nlg}, 
-and returns the filtered estimates and one-step-ahead predictions of the 
+Function \code{ukf} runs the unscented Kalman filter for the given
+non-linear Gaussian model of class \code{ssm_nlg},
+and returns the filtered estimates and one-step-ahead predictions of the
 states \eqn{\alpha_t} given the data up to time \eqn{t}.
 }
 \examples{

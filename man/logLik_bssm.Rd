@@ -43,35 +43,35 @@
 
 \item{...}{Ignored.}
 
-\item{particles}{Number of samples for particle filter. If 0, 
-approximate log-likelihood is returned either based on the Gaussian 
+\item{particles}{Number of samples for particle filter. If 0,
+approximate log-likelihood is returned either based on the Gaussian
 approximation or EKF, depending on the \code{method} argument.}
 
-\item{method}{Sampling method. For Gaussian and non-Gaussian models with 
-linear dynamics,options are \code{"bsf"} (bootstrap particle filter, default 
-for non-linear models) 
-and \code{"psi"} (\eqn{\psi}-APF, the default for other models). 
-For-nonlinear models option \code{"ekf"} uses EKF/IEKF-based particle 
+\item{method}{Sampling method. For Gaussian and non-Gaussian models with
+linear dynamics,options are \code{"bsf"} (bootstrap particle filter, default
+for non-linear models)
+and \code{"psi"} (\eqn{\psi}-APF, the default for other models).
+For-nonlinear models option \code{"ekf"} uses EKF/IEKF-based particle
 filter (or just EKF/IEKF approximation in the case of \code{particles = 0}).}
 
 \item{max_iter}{Maximum number of iterations used in Gaussian approximation,
-as a positive integer. 
+as a positive integer.
 Default is 100 (although typically only few iterations are needed).}
 
-\item{conv_tol}{Positive tolerance parameter used in Gaussian approximation. 
+\item{conv_tol}{Positive tolerance parameter used in Gaussian approximation.
 Default is 1e-8.}
 
 \item{seed}{Seed for RNG (non-negative integer).}
 
-\item{iekf_iter}{Non-negative integer. If zero (default), first 
-approximation for non-linear Gaussian models is obtained from extended 
+\item{iekf_iter}{Non-negative integer. If zero (default), first
+approximation for non-linear Gaussian models is obtained from extended
 Kalman filter. If \code{iekf_iter > 0}, iterated extended Kalman filter is
 used with \code{iekf_iter} iterations.}
 
 \item{L}{Integer  defining the discretization level defined as (2^L).}
 }
 \description{
-Computes the log-likelihood of a state space model defined by \code{bssm} 
+Computes the log-likelihood of a state space model defined by \code{bssm}
 package.
 }
 \examples{
@@ -90,29 +90,29 @@ logLik(model, particles = 10, seed = 1)
 logLik(model2, particles = 10, seed = 1)
 }
 \references{
-Durbin, J., & Koopman, S. (2002). A Simple and Efficient Simulation 
-Smoother for State Space Time Series Analysis. Biometrika, 89(3), 603-615. 
+Durbin, J., & Koopman, S. (2002). A Simple and Efficient Simulation
+Smoother for State Space Time Series Analysis. Biometrika, 89(3), 603-615.
 
-Shephard, N., & Pitt, M. (1997). Likelihood Analysis of 
+Shephard, N., & Pitt, M. (1997). Likelihood Analysis of
 Non-Gaussian Measurement Time Series. Biometrika, 84(3), 653-667.
 
-Gordon, NJ, Salmond, DJ, Smith, AFM (1993). 
-Novel approach to nonlinear/non-Gaussian Bayesian state estimation. 
+Gordon, NJ, Salmond, DJ, Smith, AFM (1993).
+Novel approach to nonlinear/non-Gaussian Bayesian state estimation.
 IEE Proceedings-F, 140, 107-113.
 
-Vihola, M, Helske, J, Franks, J. Importance sampling type estimators 
-based on approximate marginal Markov chain Monte Carlo. 
+Vihola, M, Helske, J, Franks, J. Importance sampling type estimators
+based on approximate marginal Markov chain Monte Carlo.
 Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 
-Van Der Merwe, R, Doucet, A, De Freitas, N,  Wan, EA (2001). 
-The unscented particle filter. 
+Van Der Merwe, R, Doucet, A, De Freitas, N,  Wan, EA (2001).
+The unscented particle filter.
 In Advances in neural information processing systems, p 584-590.
 
-Jazwinski, A 1970. Stochastic Processes and Filtering Theory. 
+Jazwinski, A 1970. Stochastic Processes and Filtering Theory.
 Academic Press.
 
-Kitagawa, G (1996). Monte Carlo filter and smoother for non-Gaussian 
-nonlinear state space models. 
+Kitagawa, G (1996). Monte Carlo filter and smoother for non-Gaussian
+nonlinear state space models.
 Journal of Computational and Graphical Statistics, 5, 1-25.
 }
 \seealso{

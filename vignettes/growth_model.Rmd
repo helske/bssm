@@ -10,7 +10,7 @@ vignette: |
   %\VignetteIndexEntry{Non-linear models with bssm}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  %\VignetteDepends{ggplot2, dplyr, Hmisc}
+  %\VignetteDepends{ggplot2, dplyr}
 ---
 
 ```{r, echo = FALSE}
@@ -38,7 +38,7 @@ y_t = Z(t, \alpha_t, \theta) + H(t, \alpha_t, \theta)\epsilon_t,\\
 $$
 with $t=1,\ldots, n$, $\epsilon_t \sim N(0,\textrm{I}_p)$, and $\eta \sim N(0,\textrm{I}_k)$. Here vector $\theta$ contains the unknown model parameters. 
 
-As some of the model matrices may depend on the current state $\alpha_t$, constructing for example $T(t,\alpha_t,\theta)$ by calling user-defined `R` function is not feasible, as this should be done repeatedly within the particle filter which would negate the benefits of the whole `C++` implementation of the particle filter and Markov chain Monte Carlo. Therefore the functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions.
+As some of the model matrices may depend on the current state $\alpha_t$, constructing for example $T(t,\alpha_t,\theta)$ by calling user-defined `R` function is not feasible, as this should be done repeatedly within the particle filter which would negate the benefits of the whole `C++` implementation of the particle filter and Markov chain Monte Carlo. Therefore the functions $T(\cdot)$, $H(\cdot)$, $T(\cdot)$, $R(\cdot)$,$a_1(\cdot)$, $P_1(\cdot)$, as well as functions defining the Jacobians of $Z(\cdot)$ and $T(\cdot)$ and the prior distribution for $\theta$ must be defined by user as a external pointers to `C++` functions. For the log-density of theta, we can call R's own C-level density functions, for example `R::dnorm`` (see the template for an example).
 
 As an example, a logistic growth model of form
 $$
@@ -77,7 +77,7 @@ y <- p + rnorm(n, 0, H)
 
 ## Model in bssm
 
-The functions determining the model functions are given in file `model_functions.cpp`. For example, function `T_fn` defines the state transition function $T(\cdot)$:
+The functions determining the model need to be written in C++. Some example models which can be used as a template are given by the function `cpp_example_model` which returns pointers usable as an input to `nlg_ssm`. For this growth model, we could call `cpp_example_model("nlg_growth")`. In general, you need to define the functions matching the model components, log-density of the prior and few other functions. For example, in case of our model, the function `T_fn` defines the state transition function $T(\cdot)$:
 
 ```{Rcpp, eval = FALSE}
 // [[Rcpp::export]]
@@ -105,7 +105,7 @@ Rcpp::sourceCpp("ssm_nlg_template.cpp")
 pntrs <- create_xptrs()
 ```
 
-This takes a few seconds. let's define our initial guess for $\theta$, the logarithms of the standard deviations of observational and process level noise, and define the prior distribution for $\alpha_1(we use log-scale in sampling for efficiency reasons, but define priors for the standard deviations, see the template file)$:
+This takes a few seconds. let's define our initial guess for $\theta$, the logarithms of the standard deviations of observational and process level noise, and define the prior distribution for $\alpha_1$ (we use log-scale in sampling for efficiency reasons, but define priors for the standard deviations, see the template file at the appendix):
 
 ```{r theta}
 initial_theta <- c(log_H = 0, log_R1 = log(0.05), log_R2 = 0)
@@ -159,7 +159,7 @@ summary(mcmc_ekf, return_se = TRUE)
 Using the `as.data.frame` method we can convert the state samples to a data frame for further processing with the `dplyr` package [@dplyr]:
 ```{r summaries}
 library("dplyr")
-library("Hmisc")
+library("diagis")
 d1 <- as.data.frame(mcmc_is, variable = "states")
 d2 <- as.data.frame(mcmc_ekf, variable = "states")
 d1$method <- "is2-psi"
@@ -169,20 +169,20 @@ r_summary <- rbind(d1, d2) %>%
   filter(variable == "logit_r") %>%
   group_by(time, method) %>%
   summarise(
-    mean = wtd.mean(plogis(value), weight, normwt = TRUE), 
-    lwr = wtd.quantile(plogis(value), weight, 0.025, normwt = TRUE), 
-    upr = wtd.quantile(plogis(value), weight, 0.975, normwt = TRUE))
+    mean = weighted_mean(plogis(value), weight), 
+    lwr = weighted_quantile(plogis(value), weight, 0.025), 
+    upr = weighted_quantile(plogis(value), weight, 0.975))
 
 p_summary <- rbind(d1, d2) %>% 
   filter(variable == "p") %>%
   group_by(time, method) %>%
   summarise(  
-    mean = wtd.mean(value, weight, normwt = TRUE), 
-    lwr = wtd.quantile(value, weight, 0.025, normwt = TRUE), 
-    upr = wtd.quantile(value, weight, 0.975, normwt = TRUE))
+    mean = weighted_mean(value, weight), 
+    lwr = weighted_quantile(value, weight, 0.025), 
+    upr = weighted_quantile(value, weight, 0.975))
 ```
 
-Above we used the weighted versions of mean and quantile functions provided by the `Hmisc` [@hmisc] package as our IS-MCMC algorithm produces weighted samples of the posterior. Alternatively, we could have used argument `output_type = "summary"`, in which case the `run_mcmc` returns posterior means and covariances of the states instead of samples (these are computed using the full output of particle filter so these estimates are more accurate). 
+Above we used the weighted versions of mean and quantile functions provided by the `diagis`[@diagis] package as our IS-MCMC algorithm produces weighted samples of the posterior. Alternatively, we could have used argument `output_type = "summary"`, in which case the `run_mcmc` returns posterior means and covariances of the states instead of samples (these are computed using the full output of particle filter so these estimates are more accurate). 
 
 Using `ggplot2` [@ggplot2] we can compare our two estimation methods:
 ```{r figures}
@@ -213,7 +213,7 @@ mcmc_ekf$time
 
 ## Appendix
 
-This is the full `ssm_nlg_template.cpp` file:
+This is the full `ssm_nlg_template.cpp` file (identical with `nlg_growth` accessible with `cpp_example_model`):
 
 ```{Rcpp ssm_nlg_template, code=readLines('ssm_nlg_template.cpp'), eval = FALSE, echo = TRUE}
 ```

@@ -13,33 +13,33 @@ gaussian_approx(model, max_iter, conv_tol, ...)
 \method{gaussian_approx}{ssm_nlg}(model, max_iter = 100, conv_tol = 1e-08, iekf_iter = 0, ...)
 }
 \arguments{
-\item{model}{Model to be approximated. Should be of class 
-\code{bsm_ng}, \code{ar1_ng} \code{svm}, 
-\code{ssm_ung}, or \code{ssm_mng}, or \code{ssm_nlg}, i.e. non-gaussian or 
+\item{model}{Model to be approximated. Should be of class
+\code{bsm_ng}, \code{ar1_ng} \code{svm},
+\code{ssm_ung}, or \code{ssm_mng}, or \code{ssm_nlg}, i.e. non-gaussian or
 non-linear \code{bssm_model}.}
 
-\item{max_iter}{Maximum number of iterations as a positive integer. 
+\item{max_iter}{Maximum number of iterations as a positive integer.
 Default is 100 (although typically only few iterations are needed).}
 
-\item{conv_tol}{Positive tolerance parameter. Default is 1e-8. Approximation 
-is claimed to be converged when the mean squared difference of the modes of 
+\item{conv_tol}{Positive tolerance parameter. Default is 1e-8. Approximation
+is claimed to be converged when the mean squared difference of the modes of
 is less than \code{conv_tol}.}
 
 \item{...}{Ignored.}
 
-\item{iekf_iter}{For non-linear models, non-negative number of iterations in 
-iterated EKF (defaults to 0, i.e. normal EKF). Used only for models of class 
+\item{iekf_iter}{For non-linear models, non-negative number of iterations in
+iterated EKF (defaults to 0, i.e. normal EKF). Used only for models of class
 \code{ssm_nlg}.}
 }
 \value{
-Returns linear-Gaussian SSM of class \code{ssm_ulg} or 
-\code{ssm_mlg} which has the same conditional mode of p(alpha|y, theta) as 
-  the original model.
+Returns linear-Gaussian SSM of class \code{ssm_ulg} or
+\code{ssm_mlg} which has the same conditional mode of p(alpha|y, theta) as
+the original model.
 }
 \description{
-Returns the approximating Gaussian model which has the same conditional 
-mode of p(alpha|y, theta) as the original model. 
-This function is rarely needed itself, and is mainly available for 
+Returns the approximating Gaussian model which has the same conditional
+mode of p(alpha|y, theta) as the original model.
+This function is rarely needed itself, and is mainly available for
 testing and debugging purposes.
 }
 \examples{
@@ -53,10 +53,10 @@ for(i in 1:7)
    
 }
 \references{
-Koopman, SJ and Durbin J (2012). Time Series Analysis by State Space 
+Koopman, SJ and Durbin J (2012). Time Series Analysis by State Space
 Methods. Second edition. Oxford: Oxford University Press.
 
-Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators based 
-on approximate marginal Markov chain Monte Carlo. 
+Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators
+based on approximate marginal Markov chain Monte Carlo.
 Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 }

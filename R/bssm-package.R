@@ -1,7 +1,8 @@
+#' 
 #' Bayesian Inference of State Space Models
 #'
 #' This package contains functions for efficient Bayesian inference of state 
-#' space models, where model is assumed to be either
+#' space models (SSMs), where model is assumed to be either
 #' 
 #' * Exponential family state space models, where the state equation is linear 
 #'   Gaussian, and the conditional observation density is either Gaussian, 
@@ -13,15 +14,21 @@
 #' 
 #' * Model with continuous SDE dynamics. 
 #' 
-#' For formal definition of the currently supported models and methods, as 
-#' well as some theory behind the IS-MCMC and \eqn{\psi}{psi}-APF, 
-#' see Helske and Vihola (2021), Vihola, Helske, Franks (2020) and the package 
-#' vignettes.
+#' Missing values in response series are allowed as per SSM theory and can be 
+#' automatically predicted, but there can be no missing values in the system 
+#' matrices of the model.
+#' 
+#' The \code{bssm} package includes several MCMC sampling and sequential Monte 
+#' Carlo methods for models outside classic linear-Gaussian framework. For 
+#' definitions of the currently supported models and methods, usage of the 
+#' package as well as some theory behind the novel IS-MCMC and 
+#' \eqn{\psi}{psi}-APF algorithms, see Helske and Vihola (2021), Vihola, 
+#' Helske, Franks (2020), and the package vignettes. 
 #' 
 #' @references 
 #' Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and 
-#' Non-Gaussian State Space Models in R. ArXiv 2101.08492, 
-#' <URL: https://arxiv.org/abs/2101.08492>.
+#' Non-Gaussian State Space Models in R. R Journal (to appear).
+#' https://arxiv.org/abs/2101.08492
 #' 
 #' Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators 
 #' based on approximate marginal Markov chain Monte Carlo. 
@@ -31,10 +38,8 @@
 #' @name bssm
 #' @aliases bssm
 #' @importFrom Rcpp evalCpp
-#' @importFrom coda mcmc
 #' @importFrom stats as.ts dnorm  end frequency is.ts logLik quantile start 
 #' time ts ts.union tsp tsp<- sd na.omit
-#' @importFrom checkmate test_count test_double test_flag test_integerish test_int
 #' @useDynLib bssm
 NULL
 #' Deaths by drowning in Finland in 1969-2019
@@ -65,15 +70,18 @@ NULL
 NULL
 #' Pound/Dollar daily exchange rates
 #'
-#' Dataset containing daily log-returns from 1/10/81-28/6/85 as in [1]
+#' Dataset containing daily log-returns from 1/10/81-28/6/85 as in Durbin and 
+#' Koopman (2012).
 #'
 #' @name exchange
 #' @docType data
 #' @format A vector of length 945.
 #' @source \url{http://www.ssfpack.com/DKbook.html}.
 #' @keywords datasets
-#' @references James Durbin, Siem Jan Koopman (2012). 
+#' @references 
+#' James Durbin, Siem Jan Koopman (2012). 
 #' Time Series Analysis by State Space Methods. Oxford University Press.
+#' https://doi.org/10.1093/acprof:oso/9780199641178.001.0001
 #' @examples
 #' data("exchange")
 #' model <- svm(exchange, rho = uniform(0.97,-0.999,0.999),
@@ -81,18 +89,70 @@ NULL
 #' 
 #' out <- particle_smoother(model, particles = 500)
 #' plot.ts(cbind(model$y, exp(out$alphahat))) 
-NULL
-#' Simulated Poisson time series data
+NULL 
+#' Simulated Poisson Time Series Data
 #'
-#' See example for code for reproducing the data.
+#' See example for code for reproducing the data. This was used in 
+#' Vihola, Helske, Franks (2020).
 #'
+#' @srrstats {G5.0, G5.1, G5.4} used in Vihola, Helske, Franks (2020).
 #' @name poisson_series
 #' @docType data
-#' @format A vector of length 100
+#' @format A vector of length 100.
 #' @keywords datasets
+#' @references 
+#' Vihola, M, Helske, J, Franks, J (2020). Importance sampling type 
+#' estimators based on approximate marginal Markov chain Monte Carlo. 
+#' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
+#' 
 #' @examples 
 #' # The data was generated as follows:
 #' set.seed(321)
 #' slope <- cumsum(c(0, rnorm(99, sd = 0.01)))
 #' y <- rpois(100, exp(cumsum(slope + c(0, rnorm(99, sd = 0.1)))))
+NULL
+#' 
+# Simulated Negative Binomial Time Series Data
+#'
+#' See example for code for reproducing the data. This was used in 
+#' Helske and Vihola (2021).
+#'
+#' @srrstats {G5.0, G5.1, G5.4, BS7.2} used in Helske and Vihola (2021).
+#' @name negbin_series
+#' @docType data
+#' @format A time series \code{mts} object with 200 time points and two series.
+#' @keywords datasets
+#' @references 
+#' Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and 
+#' Non-Gaussian State Space Models in R. R Journal (to appear).
+#' https://arxiv.org/abs/2101.08492
+#' 
+#' @examples 
+#' # The data was generated as follows:
+#' set.seed(123)
+#' n <- 200
+#' sd_level <- 0.1
+#' drift <- 0.01
+#' beta <- -0.9
+#' phi <- 5
+#' 
+#' level <- cumsum(c(5, drift + rnorm(n - 1, sd = sd_level)))
+#' x <- 3 + (1:n) * drift + sin(1:n + runif(n, -1, 1))
+#' y <- rnbinom(n, size = phi, mu = exp(beta * x + level))
+#' 
+#' 
+#' # Construct model for bssm
+#' bssm_model <- bsm_ng(y, 
+#'   xreg = x,
+#'   beta = normal(0, 0, 10),
+#'   phi = halfnormal(1, 10),
+#'   sd_level = halfnormal(0.1, 1), 
+#'   sd_slope = halfnormal(0.01, 0.1),
+#'   a1 = c(0, 0), P1 = diag(c(10, 0.1)^2), 
+#'   distribution = "negative binomial")
+#' 
+#' # run the MCMC, small number of iterations for CRAN
+#' fit_bssm <- run_mcmc(bssm_model, iter = 2000, burnin = 1000, 
+#'   particles = 10)
+#' fit_bssm
 NULL

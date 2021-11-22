@@ -13,16 +13,19 @@ as_bssm(model, kappa = 100, ...)
 used to replace exact diffuse elements of the original model.}
 
 \item{...}{Additional arguments to model building functions of \code{bssm}
-(such as prior and updating functions).}
+(such as prior and updating functions, C, and D).}
 }
 \value{
-Object of class \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or 
+Object of class \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or
 \code{ssm_mng}.
 }
 \description{
-Converts \code{SSModel} object of \code{KFAS} package to general \code{bssm} 
-model of type \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or 
-\code{ssm_mng}.
+Converts \code{SSModel} object of \code{KFAS} package to general \code{bssm}
+model of type \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or
+\code{ssm_mng}. As \code{KFAS} supports formula syntax for defining
+e.g. regression and cyclic components it maybe sometimes easier to define
+the model with \code{KFAS::SSModel} and then convert for the bssm style with
+\code{as_bssm}.
 }
 \examples{
 library("KFAS")

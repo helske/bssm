@@ -25,46 +25,46 @@ bsm_ng(
 \item{y}{Vector or a \code{ts} object of observations.}
 
 \item{sd_level}{Standard deviation of the noise of level equation.
-Should be an object of class \code{bssm_prior} or scalar 
+Should be an object of class \code{bssm_prior} or scalar
 value defining a known value such as 0.}
 
 \item{sd_slope}{Standard deviation of the noise of slope equation.
-Should be an object of class \code{bssm_prior}, scalar 
-value defining a known value such as 0, or missing, in which case the slope 
+Should be an object of class \code{bssm_prior}, scalar
+value defining a known value such as 0, or missing, in which case the slope
 term is omitted from the model.}
 
 \item{sd_seasonal}{Standard deviation of the noise of seasonal equation.
-Should be an object of class \code{bssm_prior}, scalar 
-value defining a known value such as 0, or missing, in which case the 
+Should be an object of class \code{bssm_prior}, scalar
+value defining a known value such as 0, or missing, in which case the
 seasonal term is omitted from the model.}
 
-\item{sd_noise}{Prior for the standard deviation of the additional noise 
-term to be added to linear predictor, defined as an object of class 
+\item{sd_noise}{Prior for the standard deviation of the additional noise
+term to be added to linear predictor, defined as an object of class
 \code{bssm_prior}. If missing, no additional noise term is used.}
 
-\item{distribution}{Distribution of the observed time series. Possible 
-choices are \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and 
+\item{distribution}{Distribution of the observed time series. Possible
+choices are \code{"poisson"}, \code{"binomial"}, \code{"gamma"}, and
 \code{"negative binomial"}.}
 
 \item{phi}{Additional parameter relating to the non-Gaussian distribution.
-For negative binomial distribution this is the dispersion term, for gamma 
-distribution this is the shape parameter, and for other distributions this 
-is ignored. Should an object of class \code{bssm_prior} or 
+For negative binomial distribution this is the dispersion term, for gamma
+distribution this is the shape parameter, and for other distributions this
+is ignored. Should an object of class \code{bssm_prior} or
 a positive scalar.}
 
-\item{u}{Vector of positive constants for non-Gaussian models. For Poisson, 
-gamma, and negative binomial distribution, this corresponds to the offset 
+\item{u}{Vector of positive constants for non-Gaussian models. For Poisson,
+gamma, and negative binomial distribution, this corresponds to the offset
 term. For binomial, this is the number of trials.}
 
-\item{beta}{Prior for the regression coefficients. 
-Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
+\item{beta}{Prior for the regression coefficients.
+Should be an object of class \code{bssm_prior} or \code{bssm_prior_list}
 (in case of multiple coefficients) or missing in case of no covariates.}
 
-\item{xreg}{Matrix containing covariates with number of rows matching the 
+\item{xreg}{Matrix containing covariates with number of rows matching the
 length of \code{y}.}
 
-\item{period}{Length of the seasonal pattern. 
-Default is \code{frequency(y)}. Must be a positive integer greater than 2 
+\item{period}{Length of the seasonal pattern.
+Default is \code{frequency(y)}. Must be a positive integer greater than 2
 and less than the length of the input time series.}
 
 \item{a1}{Prior means for the initial states (level, slope, seasonals).
@@ -73,7 +73,7 @@ Defaults to vector of zeros.}
 \item{P1}{Prior covariance for the initial states (level, slope, seasonals).
 Default is diagonal matrix with 1000 on the diagonal.}
 
-\item{C}{Intercept terms for state equation, given as a m x n or m x 1 
+\item{C}{Intercept terms for state equation, given as a m x n or m x 1
 matrix.}
 }
 \value{
@@ -85,6 +85,22 @@ local trend component, a seasonal component, and regression component
 (or subset of these components).
 }
 \examples{
+# Same data as in Vihola, Helske, Franks (2020)
+data(poisson_series)
+s <- sd(log(pmax(0.1, poisson_series)))
+model <- bsm_ng(poisson_series, sd_level = uniform(0.115, 0, 2 * s),
+ sd_slope = uniform(0.004, 0, 2 * s), P1 = diag(0.1, 2), 
+ distribution = "poisson")
+
+\donttest{
+out <- run_mcmc(model, iter = 1e5, particles = 10)
+summary(out, variable = "theta", return_se = TRUE)
+# should be about 0.093 and 0.016
+summary(out, variable = "states", return_se = TRUE, 
+ states = 1, times = c(1, 100))$Mean
+# should be about -0.075, 2.618
+}
+
 model <- bsm_ng(Seatbelts[, "VanKilled"], distribution = "poisson",
   sd_level = halfnormal(0.01, 1),
   sd_seasonal = halfnormal(0.01, 1),

@@ -74,7 +74,21 @@ test_that("Gaussian predictions work", {
     future = FALSE, nsim = 100), NA)
   expect_equal(yrep, yrep2)
   expect_equal(meanrep, meanrep2)
+  
   expect_error(predict(mcmc_results2, model, type = "response", 
+    future = FALSE, nsim = 100))
+
+  expect_error(predict(mcmc_results2, model2, type = "response", 
+    future = FALSE, nsim = 0))
+  expect_error(predict(mcmc_results2, model2, type = "response", 
+    future = 5, nsim = 100)) 
+  expect_error(predict(mcmc_results2, model = 465, type = "response", 
+      future = FALSE, nsim = 100))
+  mcmc_results3 <- run_mcmc(model2, iter = 1000, output_type = "theta")
+  expect_error(predict(mcmc_results3, model2, type = "response", 
+    future = FALSE, nsim = 100))
+  class(model) <- "aa"
+  expect_error(predict(mcmc_results3, model2, type = "response", 
     future = FALSE, nsim = 100))
 })
 

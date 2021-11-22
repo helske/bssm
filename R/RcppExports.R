@@ -65,36 +65,36 @@ nonlinear_loglik <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf
     .Call('_bssm_nonlinear_loglik', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, nsim, seed, max_iter, conv_tol, iekf_iter, method)
 }
 
-gaussian_mcmc <- function(model_, output_type, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type) {
-    .Call('_bssm_gaussian_mcmc', PACKAGE = 'bssm', model_, output_type, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type)
+gaussian_mcmc <- function(model_, output_type, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, verbose) {
+    .Call('_bssm_gaussian_mcmc', PACKAGE = 'bssm', model_, output_type, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, model_type, verbose)
 }
 
-nongaussian_pm_mcmc <- function(model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, model_type) {
-    .Call('_bssm_nongaussian_pm_mcmc', PACKAGE = 'bssm', model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, model_type)
+nongaussian_pm_mcmc <- function(model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, model_type, verbose) {
+    .Call('_bssm_nongaussian_pm_mcmc', PACKAGE = 'bssm', model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, model_type, verbose)
 }
 
-nongaussian_da_mcmc <- function(model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, model_type) {
-    .Call('_bssm_nongaussian_da_mcmc', PACKAGE = 'bssm', model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, model_type)
+nongaussian_da_mcmc <- function(model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, model_type, verbose) {
+    .Call('_bssm_nongaussian_da_mcmc', PACKAGE = 'bssm', model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, model_type, verbose)
 }
 
-nongaussian_is_mcmc <- function(model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, is_type, model_type, approx) {
-    .Call('_bssm_nongaussian_is_mcmc', PACKAGE = 'bssm', model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, is_type, model_type, approx)
+nongaussian_is_mcmc <- function(model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, is_type, model_type, approx, verbose) {
+    .Call('_bssm_nongaussian_is_mcmc', PACKAGE = 'bssm', model_, output_type, nsim, iter, burnin, thin, gamma, target_acceptance, S, seed, end_ram, n_threads, sampling_method, is_type, model_type, approx, verbose)
 }
 
-nonlinear_pm_mcmc <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, max_iter, conv_tol, sampling_method, iekf_iter, output_type) {
-    .Call('_bssm_nonlinear_pm_mcmc', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, max_iter, conv_tol, sampling_method, iekf_iter, output_type)
+nonlinear_pm_mcmc <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, max_iter, conv_tol, sampling_method, iekf_iter, output_type, verbose) {
+    .Call('_bssm_nonlinear_pm_mcmc', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, max_iter, conv_tol, sampling_method, iekf_iter, output_type, verbose)
 }
 
-nonlinear_da_mcmc <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, max_iter, conv_tol, sampling_method, iekf_iter, output_type) {
-    .Call('_bssm_nonlinear_da_mcmc', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, max_iter, conv_tol, sampling_method, iekf_iter, output_type)
+nonlinear_da_mcmc <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, max_iter, conv_tol, sampling_method, iekf_iter, output_type, verbose) {
+    .Call('_bssm_nonlinear_da_mcmc', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, max_iter, conv_tol, sampling_method, iekf_iter, output_type, verbose)
 }
 
-nonlinear_ekf_mcmc <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, iekf_iter, output_type) {
-    .Call('_bssm_nonlinear_ekf_mcmc', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, iekf_iter, output_type)
+nonlinear_ekf_mcmc <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, iekf_iter, output_type, verbose) {
+    .Call('_bssm_nonlinear_ekf_mcmc', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, iekf_iter, output_type, verbose)
 }
 
-nonlinear_is_mcmc <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, is_type, sampling_method, max_iter, conv_tol, iekf_iter, output_type, approx) {
-    .Call('_bssm_nonlinear_is_mcmc', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, is_type, sampling_method, max_iter, conv_tol, iekf_iter, output_type, approx)
+nonlinear_is_mcmc <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, is_type, sampling_method, max_iter, conv_tol, iekf_iter, output_type, approx, verbose) {
+    .Call('_bssm_nonlinear_is_mcmc', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, time_varying, n_states, n_etas, seed, nsim, iter, burnin, thin, gamma, target_acceptance, S, end_ram, n_threads, is_type, sampling_method, max_iter, conv_tol, iekf_iter, output_type, approx, verbose)
 }
 
 R_milstein <- function(x0, L, t, theta, drift_pntr, diffusion_pntr, ddiffusion_pntr, positive, seed) {
@@ -165,16 +165,16 @@ bsf_smoother_sde <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffu
     .Call('_bssm_bsf_smoother_sde', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L, seed)
 }
 
-sde_pm_mcmc <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, type) {
-    .Call('_bssm_sde_pm_mcmc', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, type)
+sde_pm_mcmc <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, type, verbose) {
+    .Call('_bssm_sde_pm_mcmc', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, type, verbose)
 }
 
-sde_da_mcmc <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L_c, L_f, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, type) {
-    .Call('_bssm_sde_da_mcmc', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L_c, L_f, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, type)
+sde_da_mcmc <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L_c, L_f, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, type, verbose) {
+    .Call('_bssm_sde_da_mcmc', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L_c, L_f, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, type, verbose)
 }
 
-sde_is_mcmc <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L_c, L_f, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, is_type, n_threads, type) {
-    .Call('_bssm_sde_is_mcmc', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L_c, L_f, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, is_type, n_threads, type)
+sde_is_mcmc <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L_c, L_f, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, is_type, n_threads, type, verbose) {
+    .Call('_bssm_sde_is_mcmc', PACKAGE = 'bssm', y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, theta, nsim, L_c, L_f, seed, iter, burnin, thin, gamma, target_acceptance, S, end_ram, is_type, n_threads, type, verbose)
 }
 
 sde_state_sampler_bsf_is2 <- function(y, x0, positive, drift_pntr, diffusion_pntr, ddiffusion_pntr, log_prior_pdf_pntr, log_obs_density_pntr, nsim, L_f, seed, approx_loglik_storage, theta) {

@@ -21,26 +21,27 @@ ssm_mlg(
 )
 }
 \arguments{
-\item{y}{Observations as multivariate time series or matrix with 
+\item{y}{Observations as multivariate time series or matrix with
 dimensions n x p.}
 
-\item{Z}{System matrix Z of the observation equation as p x m matrix or 
+\item{Z}{System matrix Z of the observation equation as p x m matrix or
 p x m x n array.}
 
-\item{H}{Lower triangular matrix H of the observation. Either a scalar or 
+\item{H}{Lower triangular matrix H of the observation. Either a scalar or
 a vector of length n.}
 
 \item{T}{System matrix T of the state equation. Either a m x m matrix or a
 m x m x n array.}
 
-\item{R}{Lower triangular matrix R the state equation. Either a m x k matrix 
+\item{R}{Lower triangular matrix R the state equation. Either a m x k matrix
 or a m x k x n array.}
 
 \item{a1}{Prior mean for the initial state as a vector of length m.}
 
 \item{P1}{Prior covariance matrix for the initial state as m x m matrix.}
 
-\item{init_theta}{Initial values for the unknown hyperparameters theta.}
+\item{init_theta}{Initial values for the unknown hyperparameters theta
+(i.e. unknown variables excluding latent state variables).}
 
 \item{D}{Intercept terms for observation equation, given as a p x n matrix.}
 
@@ -48,28 +49,28 @@ or a m x k x n array.}
 
 \item{state_names}{Names for the states.}
 
-\item{update_fn}{Function which returns list of updated model 
-components given input vector theta. This function should take only one 
+\item{update_fn}{Function which returns list of updated model
+components given input vector theta. This function should take only one
 vector argument which is used to create list with elements named as
 \code{Z}, \code{H}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, and
-\code{C}, where each element matches the dimensions of the original model 
-It's best to check the internal dimensions with \code{str(model_object)} as 
+\code{C}, where each element matches the dimensions of the original model
+It's best to check the internal dimensions with \code{str(model_object)} as
 the dimensions of input arguments can differ from the final dimensions.
-If any of these components is missing, it is assumed to be constant wrt. 
+If any of these components is missing, it is assumed to be constant wrt.
 theta.}
 
-\item{prior_fn}{Function which returns log of prior density 
+\item{prior_fn}{Function which returns log of prior density
 given input vector theta.}
 }
 \value{
 Object of class \code{ssm_mlg}.
 }
 \description{
-Construct an object of class \code{ssm_mlg} by directly defining the 
+Construct an object of class \code{ssm_mlg} by directly defining the
 corresponding terms of the model.
 }
 \details{
-The general multivariate linear-Gaussian model is defined using the 
+The general multivariate linear-Gaussian model is defined using the
 following observational and state equations:
 
 \deqn{y_t = D_t + Z_t \alpha_t + H_t \epsilon_t, 
@@ -78,19 +79,19 @@ following observational and state equations:
 (\textrm{transition equation})}
 
 where \eqn{\epsilon_t \sim N(0, I_p)}, \eqn{\eta_t \sim N(0, I_k)} and
-\eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other. 
-Here p is the number of time series and k is the number of disturbance terms 
+\eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
+Here p is the number of time series and k is the number of disturbance terms
 (which can be less than m, the number of states).
 
-The \code{update_fn} function should take only one 
+The \code{update_fn} function should take only one
 vector argument which is used to create list with elements named as
-\code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, 
+\code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D},
 and \code{C},
 where each element matches the dimensions of the original model.
-If any of these components is missing, it is assumed to be 
+If any of these components is missing, it is assumed to be
 constant wrt. theta.
-Note that while you can input say R as m x k matrix for \code{ssm_mlg}, 
-\code{update_fn} should return R as m x k x 1 in this case. 
+Note that while you can input say R as m x k matrix for \code{ssm_mlg},
+\code{update_fn} should return R as m x k x 1 in this case.
 It might be useful to first construct the model without updating function
 }
 \examples{

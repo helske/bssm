@@ -26,28 +26,28 @@ bsm_lg(
 Should be an object of class \code{bssm_prior} or scalar.}
 
 \item{sd_level}{Standard deviation of the noise of level equation.
-Should be an object of class \code{bssm_prior} or scalar 
+Should be an object of class \code{bssm_prior} or scalar
 value defining a known value such as 0.}
 
 \item{sd_slope}{Standard deviation of the noise of slope equation.
-Should be an object of class \code{bssm_prior}, scalar 
-value defining a known value such as 0, or missing, in which case the slope 
+Should be an object of class \code{bssm_prior}, scalar
+value defining a known value such as 0, or missing, in which case the slope
 term is omitted from the model.}
 
 \item{sd_seasonal}{Standard deviation of the noise of seasonal equation.
-Should be an object of class \code{bssm_prior}, scalar 
-value defining a known value such as 0, or missing, in which case the 
+Should be an object of class \code{bssm_prior}, scalar
+value defining a known value such as 0, or missing, in which case the
 seasonal term is omitted from the model.}
 
-\item{beta}{Prior for the regression coefficients. 
-Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
+\item{beta}{Prior for the regression coefficients.
+Should be an object of class \code{bssm_prior} or \code{bssm_prior_list}
 (in case of multiple coefficients) or missing in case of no covariates.}
 
-\item{xreg}{Matrix containing covariates with number of rows matching the 
+\item{xreg}{Matrix containing covariates with number of rows matching the
 length of \code{y}.}
 
-\item{period}{Length of the seasonal pattern. 
-Default is \code{frequency(y)}. Must be a positive integer greater than 2 
+\item{period}{Length of the seasonal pattern.
+Default is \code{frequency(y)}. Must be a positive integer greater than 2
 and less than the length of the input time series.}
 
 \item{a1}{Prior means for the initial states (level, slope, seasonals).
@@ -57,14 +57,14 @@ Defaults to vector of zeros.}
 Default is diagonal matrix with 1000 on the diagonal.}
 
 \item{D, C}{Intercept terms for observation and
-state equations, given as a length n vector and m times n matrix 
+state equations, given as a length n vector and m times n matrix
 respectively (or scalar and m times 1 matrix).}
 }
 \value{
 Object of class \code{bsm_lg}.
 }
 \description{
-Constructs a basic structural model with local level or local trend 
+Constructs a basic structural model with local level or local trend
 component and seasonal component.
 }
 \examples{

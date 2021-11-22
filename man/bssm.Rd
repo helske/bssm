@@ -5,31 +5,36 @@
 \alias{bssm}
 \title{Bayesian Inference of State Space Models}
 \description{
-This package contains functions for efficient Bayesian inference of state 
-space models, where model is assumed to be either
+This package contains functions for efficient Bayesian inference of state
+space models (SSMs), where model is assumed to be either
 }
 \details{
-* Exponential family state space models, where the state equation is linear 
-  Gaussian, and the conditional observation density is either Gaussian, 
-  Poisson, binomial, negative binomial or Gamma density. 
-  
-* Basic stochastic volatility model.
+\itemize{
+\item Exponential family state space models, where the state equation is linear
+Gaussian, and the conditional observation density is either Gaussian,
+Poisson, binomial, negative binomial or Gamma density.
+\item Basic stochastic volatility model.
+\item General non-linear model with Gaussian noise terms.
+\item Model with continuous SDE dynamics.
+}
 
-* General non-linear model with Gaussian noise terms.
+Missing values in response series are allowed as per SSM theory and can be
+automatically predicted, but there can be no missing values in the system
+matrices of the model.
 
-* Model with continuous SDE dynamics. 
-
-For formal definition of the currently supported models and methods, as 
-well as some theory behind the IS-MCMC and \eqn{\psi}{psi}-APF, 
-see Helske and Vihola (2021), Vihola, Helske, Franks (2020) and the package 
-vignettes.
+The \code{bssm} package includes several MCMC sampling and sequential Monte
+Carlo methods for models outside classic linear-Gaussian framework. For
+definitions of the currently supported models and methods, usage of the
+package as well as some theory behind the novel IS-MCMC and
+\eqn{\psi}{psi}-APF algorithms, see Helske and Vihola (2021), Vihola,
+Helske, Franks (2020), and the package vignettes.
 }
 \references{
-Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and 
-Non-Gaussian State Space Models in R. ArXiv 2101.08492, 
-<URL: https://arxiv.org/abs/2101.08492>.
+Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and
+Non-Gaussian State Space Models in R. R Journal (to appear).
+https://arxiv.org/abs/2101.08492
 
-Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators 
-based on approximate marginal Markov chain Monte Carlo. 
+Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators
+based on approximate marginal Markov chain Monte Carlo.
 Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 }

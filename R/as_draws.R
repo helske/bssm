@@ -1,18 +1,30 @@
-#' Convert \code{run_mcmc} output to \code{draws_df} format
+#' Convert \code{run_mcmc} Output to \code{draws_df} Format
 #'
 #' Converts MCMC output from \code{run_mcmc} call to a 
 #' \code{draws_df} format of the \code{posterior} package. This enables the use 
 #' of diagnostics and plotting methods of \code{posterior} and \code{bayesplot} 
-#' packages. Note though that if \code{run_mcmc} used IS-MCMC 
-#' method, the resulting \code{weight} column of the output is 
-#' ignored by the aforementioned packages, i.e. the results correspond to 
-#' approximate MCMC.
+#' packages. 
 #' 
-#' @param x An object of class \code{mcmc_output}
+#' @note The jump chain representation is automatically expanded by 
+#' \code{as_draws}, but if \code{run_mcmc} used IS-MCMC method, the output 
+#' contains additional \code{weight} column corresponding to the IS-weights 
+#' (without counts), which is ignored by \code{posterior} and \code{bayesplot}, 
+#' i.e. those results correspond to approximate MCMC.
+#' 
+#' @param x An object of class \code{mcmc_output}.
+#' @param times Vector of indices defining which time points to return? 
+#' Default is all.
+#' @param states Vector of indices defining which states to return. 
+#' Default is all.
+#' @param ... Ignored.
 #' @return A \code{draws_df} object.
-#' @exportS3Method posterior::as_draws_df mcmc_output
+#' @importFrom posterior as_draws as_draws_df
+#' @importFrom tidyr pivot_wider
+#' @aliases as_draws as_draws_df 
 #' @export
-#' @rdname as_draws
+#' @export as_draws_df
+#' @rdname as_draws-mcmc_output
+#' @method as_draws_df mcmc_output
 #' @examples 
 #' 
 #' model <- bsm_lg(Nile, 
@@ -21,53 +33,72 @@
 #'   a1 = 1000, P1 = 500^2)
 #' 
 #' fit1 <- run_mcmc(model, iter = 2000)
-#' library("posterior")
 #' draws <- as_draws(fit1)
 #' head(draws, 4)
-#' ess_bulk(draws$sd_y)
+#' estimate_ess(draws$sd_y)
 #' summary(fit1, return_se = TRUE)
 #' 
 #' # More chains:
 #' model$theta[] <- c(50, 150) # change initial value
-#' fit2 <- run_mcmc(model, iter = 2000)
+#' fit2 <- run_mcmc(model, iter = 2000, verbose = FALSE)
 #' model$theta[] <- c(150, 50) # change initial value
-#' fit3 <- run_mcmc(model, iter = 2000)
+#' fit3 <- run_mcmc(model, iter = 2000, verbose = FALSE)
 #' 
-#' draws <- bind_draws(as_draws(fit1),
-#'   as_draws(fit2), as_draws(fit3), along = "chain")
 #' # it is actually enough to transform first mcmc_output to draws object, 
 #' # rest are transformed automatically inside bind_draws
-#' rhat(draws$sd_y)
-#' ess_bulk(draws$sd_y)
-#' ess_tail(draws$sd_y)
+#' draws <- posterior::bind_draws(as_draws(fit1),
+#'   as_draws(fit2), as_draws(fit3), along = "chain")
 #' 
-as_draws_df.mcmc_output <- function(x) {
+#' posterior::rhat(draws$sd_y)
+#' 
+as_draws_df.mcmc_output <- function(x, times, states, ...) {
   
   d_theta <- as.data.frame(x, variable = "theta", expand = TRUE)
-  d_states <- as.data.frame(x, variable = "states", expand = TRUE)
   
-  d <- data.frame(.iteration = (x$iter - x$burnin + 1):x$iter)
+  if (missing(times)) {
+    times <- seq_len(nrow(x$alpha))
+  } else {
+    if (!test_integerish(times, lower = 1, upper = nrow(x$alpha), 
+      any.missing = FALSE, unique = TRUE))
+      stop(paste0("Argument 'times' should contain indices between 1 and ",
+        nrow(x$alpha),"."))
+  }
+  if (missing(states)) {
+    states <- seq_len(ncol(x$alpha))
+  } else {
+    if (!test_integerish(states, lower = 1, upper = ncol(x$alpha), 
+      any.missing = FALSE, unique = TRUE))
+      stop(paste0("Argument 'states' should contain indices between 1 and ",
+        ncol(x$alpha),"."))
+  }
+  d_states <- as.data.frame(x, variable = "states", expand = TRUE, 
+    times = times, states = states, use_times = FALSE)
+  
+  d <- cbind(
+    tidyr::pivot_wider(d_theta, 
+      values_from = .data$value, 
+      names_from = .data$variable),
+    tidyr::pivot_wider(d_states, 
+      values_from = .data$value, 
+      names_from = c(.data$variable, .data$time), 
+      names_glue = "{variable}[{time}]")[, -(1:2)])
+  names(d)[1] <- ".iteration"
   
   if (x$mcmc_type %in% paste0("is", 1:3)) {
-    warning(paste("Input is based on a IS-MCMC, the output column 'weight'", 
-      "contains the IS-weights, but these are not used for example in the", 
+    warning(paste("Input is based on a IS-MCMC and the output column 'weight'", 
+      "contains the IS-weights. These are not used for example in the", 
       "diagnostic methods by 'posterior' package, i.e. these are based",
       "on approximate MCMC chains."))
-    d$weight <- d_theta$weight
+  } else {
+    d$weight <- NULL
   }
   
-  for (variable in unique(d_theta$variable)) {
-    d[variable] <- d_theta$value[d_theta$variable == variable]
-  }
-  times <- unique(d_states$time)
-  for (variable in unique(d_states$variable)) {
-    for (i in times)
-      d[paste0(variable, "[", i, "]")] <- 
-        d_states$value[d_states$variable == variable & d_states$time == i]
-  }
-  posterior::as_draws(d)
-}
-#' @exportS3Method posterior::as_draws mcmc_output
+  as_draws(d)
+} 
 #' @export
-#' @rdname as_draws
-as_draws.mcmc_output <- function(x) as_draws_df.mcmc_output(x)
+#' @export as_draws
+#' @rdname as_draws-mcmc_output
+#' @method as_draws mcmc_output
+as_draws.mcmc_output <- function(x, times, states, ...) {
+  as_draws_df.mcmc_output(x, times, ...)
+}

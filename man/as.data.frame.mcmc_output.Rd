@@ -2,7 +2,7 @@
 % Please edit documentation in R/as.data.frame.mcmc_output.R
 \name{as.data.frame.mcmc_output}
 \alias{as.data.frame.mcmc_output}
-\title{Convert MCMC chain to data.frame}
+\title{Convert MCMC Output to data.frame}
 \usage{
 \method{as.data.frame}{mcmc_output}(
   x,
@@ -11,35 +11,40 @@
   variable = c("theta", "states"),
   times,
   states,
-  expand = !(x$mcmc_type \%in\% paste0("is", 1:3)),
+  expand = TRUE,
+  use_times = TRUE,
   ...
 )
 }
 \arguments{
-\item{x}{Output from \code{\link{run_mcmc}}.}
+\item{x}{Object of class \code{mcmc_output} from \code{\link{run_mcmc}}.}
 
 \item{row.names}{Ignored.}
 
 \item{optional}{Ignored.}
 
-\item{variable}{Return samples of \code{"theta"} (default) or 
+\item{variable}{Return samples of \code{"theta"} (default) or
 \code{"states"}?}
 
-\item{times}{Vector of indices. In case of states, 
+\item{times}{Vector of indices. In case of states,
 what time points to return? Default is all.}
 
-\item{states}{Vector of indices. In case of states, 
+\item{states}{Vector of indices. In case of states,
 what states to return? Default is all.}
 
-\item{expand}{Should the jump-chain be expanded? 
-Defaults to \code{TRUE} for non-IS-MCMC, and \code{FALSE} for IS-MCMC. 
-For \code{expand = FALSE} and always for IS-MCMC, 
+\item{expand}{Should the jump-chain be expanded?
+Defaults to \code{TRUE}.
+For \code{expand = FALSE} and always for IS-MCMC,
 the resulting data.frame contains variable weight (= counts * IS-weights).}
+
+\item{use_times}{If \code{TRUE} (default), transforms the values of the time
+variable to match the ts attribute of the input to define. If \code{FALSE},
+time is based on the indexing starting from 1.}
 
 \item{...}{Ignored.}
 }
 \description{
-Converts the MCMC chain output of \code{\link{run_mcmc}} to data.frame.
+Converts the MCMC output of \code{\link{run_mcmc}} to \code{data.frame}.
 }
 \examples{
 data("poisson_series")
@@ -56,7 +61,12 @@ head(as.data.frame(out, variable = "state"))
 head(as.data.frame(out, variable = "theta", expand = FALSE))
 
 # IS-weighted version:
-out_is <- run_mcmc(model, iter = 2000, particles = 10, mcmc_type  = "is2")
+out_is <- run_mcmc(model, iter = 2000, particles = 10, 
+  mcmc_type  = "is2")
 head(as.data.frame(out_is, variable = "theta"))
 
+}
+\seealso{
+\code{as_draws} which converts the output for
+\code{as_draws} object.
 }

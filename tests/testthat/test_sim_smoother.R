@@ -1,4 +1,3 @@
-
 context("Test that simulation smoother work")
 
 
@@ -10,6 +9,10 @@ test_that("Test that sim_smoother for LGSSM works as Kalman smoother", {
     use_antithetic = TRUE), NA)
   expect_equal(smoother(model_bsm)$alphahat,
     as.ts(apply(sims, 1:2, mean)))
+  expect_error(sims <- sim_smoother(model_bsm, nsim = 10, 
+    use_antithetic = "blaa"))
+  expect_error(sims <- sim_smoother(model_bsm, nsim = 10, 
+    use_antithetic = 1))
 })
 
 
@@ -24,3 +27,5 @@ test_that("sim_smoother for non-gaussian model works as Kalman smoother", {
     expect_equal(smoother(model)$alphahat,
       as.ts(apply(sims, 1:2, mean)))
 })
+
+

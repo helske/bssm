@@ -16,37 +16,37 @@ post_correct(
 \arguments{
 \item{model}{Model of class \code{nongaussian} or \code{ssm_nlg}.}
 
-\item{mcmc_output}{An output from \code{run_mcmc} used to compute the MAP 
-estimate of theta. 
-While the intended use assumes this is from approximate MCMC, it is not 
-actually checked, i.e., it is also possible to input previous 
+\item{mcmc_output}{An output from \code{run_mcmc} used to compute the MAP
+estimate of theta.
+While the intended use assumes this is from approximate MCMC, it is not
+actually checked, i.e., it is also possible to input previous
 (asymptotically) exact output.}
 
 \item{particles}{Number of particles for \eqn{\psi}-APF (positive integer).}
 
 \item{threads}{Number of parallel threads (positive integer, default is 1).}
 
-\item{is_type}{Type of IS-correction. Possible choices are 
-\code{"is3"} for simple importance sampling (weight is computed for each 
+\item{is_type}{Type of IS-correction. Possible choices are
+\code{"is3"} for simple importance sampling (weight is computed for each
 MCMC iteration independently),
 \code{"is2"} for jump chain importance sampling type weighting (default), or
-\code{"is1"} for importance sampling type weighting where the number of 
-particles used forweight computations is proportional to the length of the 
+\code{"is1"} for importance sampling type weighting where the number of
+particles used forweight computations is proportional to the length of the
 jump chain block.}
 
 \item{seed}{Seed for the random number generator  (positive integer).}
 }
 \value{
-List with suggested number of particles \code{N} and matrix 
-containing estimated standard deviations of the log-weights and 
+List with suggested number of particles \code{N} and matrix
+containing estimated standard deviations of the log-weights and
 corresponding number of particles.
 }
 \description{
-Function \code{post_correct} updates previously obtained approximate MCMC 
-output with post-correction weights leading to asymptotically exact 
+Function \code{post_correct} updates previously obtained approximate MCMC
+output with post-correction weights leading to asymptotically exact
 weighted posterior, and returns updated MCMC output where components
- \code{weights}, \code{posterior}, \code{alpha}, \code{alphahat}, and
- \code{Vt} are updated (depending on the original output type).
+\code{weights}, \code{posterior}, \code{alpha}, \code{alphahat}, and
+\code{Vt} are updated (depending on the original output type).
 }
 \examples{
 \donttest{
@@ -120,12 +120,12 @@ ggplot(aes(time, mean, colour = method)) +
 }
 }
 \references{
-A. Doucet, M. K. Pitt, G. Deligiannidis, R. Kohn (2018). 
-Efficient implementation of Markov chain Monte Carlo when using an unbiased 
-likelihood estimator. Biometrika, 102, 2, 295-313, 
+Doucet A, Pitt M K, Deligiannidis G, Kohn R (2018).
+Efficient implementation of Markov chain Monte Carlo when using an unbiased
+likelihood estimator. Biometrika, 102, 2, 295-313,
 https://doi.org/10.1093/biomet/asu075
 
-Vihola, M, Helske, J, Franks, J (2020). Importance sampling type estimators based 
-on approximate marginal Markov chain Monte Carlo. 
+Vihola M, Helske J, Franks J (2020). Importance sampling type estimators
+based on approximate marginal Markov chain Monte Carlo.
 Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 }

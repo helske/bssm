@@ -1,3 +1,21 @@
+bssm 2.0.0 (Release date: -)
+==============
+   * Added a progress bar for run_mcmc.
+   * Added a fitted method for extraction of summary statistics of posterior 
+     predictive distribution p(y_t | y_1, ..., y_n) for t = 1, ..., n. 
+   * Rewrote the summary method completely, which now returns data.frame. This 
+     also resulted in some changes in order of the function arguments.
+   * The asymptotic_var and iact functions are now exported to users, and they 
+     also contain alternative methods based on the posterior package.
+   * New function estimate_ess can be used to compute effective sample size 
+     from weighted MCMC.
+   * Added compatibility with the posterior package by defining as_draws 
+     method for converting run_mcmc output to draws_df object.
+   * New function check_diagnostics for quick glance of ESS and Rhat values.
+   * Large number of new tests, and improved documentation with added examples.
+   * Large number of internal tweaks so that the package complies with 
+     goodpractices package and Ropensci statistical software standards.
+  
 bssm 1.1.7-1 (Release date: 2021-09-21)
 ==============
     * Fixed an error in automatic tests due to lack of fixed RNG seed.
