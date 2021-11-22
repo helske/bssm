@@ -22,6 +22,10 @@
 #' # ESS estimate:
 #' length(x) / iact(x)
 iact <- function(x) {
+  
+  if (!test_numeric(x))
+    stop("Argument 'x' should be a numeric vector. ")
+  
   IACT((x - mean(x)) / sd(x))
 }
 
@@ -59,6 +63,7 @@ iact <- function(x) {
 #' assessing convergence of MCMC. Bayesian analysis, 16(2):667-718. 
 #' https://doi.org/10.1214/20-BA1221
 #' @export
+#' @importFrom checkmate test_numeric
 #' @srrstats {BS5.3, BS5.5}
 #' @examples
 #' set.seed(1)
@@ -72,12 +77,21 @@ iact <- function(x) {
 #' asymptotic_var(x, w, method = "geyer")
 #' 
 asymptotic_var <- function(x, w, method = "sokal") {
+  
   method <- match.arg(method, c("sokal", "geyer"))
-  if (missing(w)) w <- rep(1, length(x))
-  if(any(w < 0) | any(!is.finite(w)))
-    stop("Nonfinite or negative weights in 'w'.")
-  if (!any(w > 0)) {
-    stop("No positive weights in 'w'.")
+  if (!test_numeric(x))
+    stop("Argument 'x' should be a numeric vector. ")
+  
+  if (missing(w)) {
+    w <- rep(1, length(x))
+  } else {
+    if (!test_numeric(w))
+      stop("Argument 'w' should be a numeric vector. ")
+    if(any(w < 0) | any(!is.finite(w)))
+      stop("Nonfinite or negative weights in 'w'.")
+    if (!any(w > 0)) {
+      stop("No positive weights in 'w'.")
+    }
   }
   estimate_c <- mean(w)
   estimate_mean <- weighted_mean(x, w)
@@ -130,12 +144,22 @@ asymptotic_var <- function(x, w, method = "sokal") {
 #' estimate_ess(x, w, method = "geyer")
 #' 
 estimate_ess <- function(x, w, method = "sokal") {
+  
   method <- match.arg(method, c("sokal", "geyer"))
-  if (missing(w)) w <- rep(1, length(x))
-  if(any(w < 0) | any(!is.finite(w)))
-    stop("Nonfinite or negative weights in 'w'.")
-  if (!any(w > 0)) {
-    stop("No positive weights in 'w'.")
+  
+  if (!test_numeric(x))
+    stop("Argument 'x' should be a numeric vector. ")
+  
+  if (missing(w)) {
+    w <- rep(1, length(x))
+  } else {
+    if (!test_numeric(w))
+      stop("Argument 'w' should be a numeric vector. ")
+    if(any(w < 0) | any(!is.finite(w)))
+      stop("Nonfinite or negative weights in 'w'.")
+    if (!any(w > 0)) {
+      stop("No positive weights in 'w'.")
+    }
   }
   weighted_var(x, w) / asymptotic_var(x, w, method = method)
 }

@@ -22,9 +22,14 @@ knitr::opts_chunk$set(
 #' 
 #' @srrstats {G2.3, G2.3a, G2.3b} match.arg and tolower are used where 
 #' applicable.
-#' @srrstats {G1.0, G1.1, G1.3, G1.4, G1.4a, G1.5, G1.6} General 
+#' @srrstats {G1.0, G1.3, G1.4, G1.4a, G1.5, G1.6} General 
 #' documentation, addressed by the vignettes and the corresponding R 
 #' Journal paper.
+#' @srrstats {G1.1} This is the first R package to implement delayed acceptance 
+#' pseudo-marginal MCMC for general state space models, and the first to 
+#' implement the IS-MCMC by Vihola, Helske, and Franks (2020). The IS-MCMC 
+#' method is also available in code{walker} package for a limited class of 
+#' models (a subset of the models supported by \code{bssm}).
 #' @srrstats {G2.4, G2.4a, G2.4b, G2.4c, G2.6} Explicit conversions are used 
 #' where necessary.
 #' 
@@ -40,10 +45,6 @@ knitr::opts_chunk$set(
 #' Franks (2020) (all simulations were implemented with the bssm package) and 
 #' Helske and Vihola (2021). Full replication of the results would take 
 #' days/weeks (but see also bsm_ng, negbin_series and several testthat tests).
-#' This is the first R package to implement delayed acceptance pseudo-marginal 
-#' MCMC for general state space models. 
-#' Note that the IS-MCMC method is also available in \code{walker} package for 
-#' limited class of models (subset of the models supported by \code{bssm}).
 #'
 #' @srrstats {G5.8, G5.8a, G5.8b, G5.8c, G5.8d} Tested with autotest and the 
 #' testthat tests.
