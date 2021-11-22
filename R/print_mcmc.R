@@ -38,6 +38,10 @@
 #' Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @srrstats {BS5.3, BS5.5, BS6.4}
+#' @examples
+#' data("negbin_model")
+#' summary(negbin_model, return_se = TRUE, method = "geyer")
+#' summary(negbin_model, times = c(1, 200), prob = c(0.05, 0.5, 0.95))
 summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta", 
   probs = c(0.025, 0.975), times, states, use_times = TRUE, method = "sokal", 
   ...) {
@@ -131,6 +135,9 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
 #' @param ... Ignored.
 #' @srrstats {BS5.3, BS5.5, BS6.0}
 #' @export
+#' @examples
+#' data("negbin_model")
+#' print(negbin_model)
 print.mcmc_output <- function(x, ...) {
   
   cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"), 

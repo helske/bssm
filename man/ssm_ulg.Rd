@@ -197,7 +197,8 @@ out
 # Above the regression coefficients are modelled as 
 # time-invariant latent states. 
 # Here is an alternative way where we use variable D so that the
-# coefficients are part of parameter vector theta:
+# coefficients are part of parameter vector theta. Note however that the 
+# first option often preferable in order to keep the dimension of theta low.
 
 updatefn2 <- function(theta) {
   # note no PetrolPrice or law variables here

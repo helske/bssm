@@ -45,6 +45,10 @@ ekpf_smoother <- function(y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, k
     .Call('_bssm_ekpf_smoother', PACKAGE = 'bssm', y, Z, H, T, R, Zg, Tg, a1, P1, theta, log_prior_pdf, known_params, known_tv_params, n_states, n_etas, time_varying, nsim, seed)
 }
 
+IACT <- function(x) {
+    .Call('_bssm_IACT', PACKAGE = 'bssm', x)
+}
+
 importance_sample_ng <- function(model_, nsim, use_antithetic, seed, model_type) {
     .Call('_bssm_importance_sample_ng', PACKAGE = 'bssm', model_, nsim, use_antithetic, seed, model_type)
 }

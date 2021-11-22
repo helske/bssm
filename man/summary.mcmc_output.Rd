@@ -61,6 +61,11 @@ SE-IS can be regarded as the square root of independent IS variance,
 whereas SE corresponds to the square root of total asymptotic variance
 (see Remark 3 of Vihola et al. (2020)).
 }
+\examples{
+data("negbin_model")
+summary(negbin_model, return_se = TRUE, method = "geyer")
+summary(negbin_model, times = c(1, 200), prob = c(0.05, 0.5, 0.95))
+}
 \references{
 Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based
 on approximate marginal Markov chain Monte Carlo.

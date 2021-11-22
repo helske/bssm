@@ -22,16 +22,9 @@
 #' # ESS estimate:
 #' length(x) / iact(x)
 iact <- function(x) {
-  n <- length(x)
-  x_ <- (x - mean(x)) / sd(x)
-  C <- max(5, log10(n))
-  tau <- 1
-  for (k in 1:(n - 1)) {
-    tau <- tau + 2.0 * (x_[1:(n - k)] %*% x_[(1 + k):n]) / (n - k)
-    if (k > C * tau) break
-  }
-  max(0, tau)
+  IACT((x - mean(x)) / sd(x))
 }
+
 #' Asymptotic Variance of IS-type Estimators
 #'
 #' The asymptotic variance MCMCSE^2 is based on Corollary 1 
@@ -92,7 +85,7 @@ asymptotic_var <- function(x, w, method = "sokal") {
   switch(method,
     sokal = (var(z) * iact(z) / estimate_c^2) / length(z),
     # ESS(z) = n / IACT(z)
-    ess_basic = var(z) / ess_mean(z) / estimate_c^2)
+    geyer = var(z) / ess_mean(z) / estimate_c^2)
 }
 
 #' Effective Sample Size for IS-type Estimators

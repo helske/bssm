@@ -31,8 +31,8 @@ IS-corrected  MCMC, sometimes we want to have the usual sample paths
 (for example for drawing traceplots).
 Function \code{expand_sample} returns the expanded sample based on the
 counts (in form of \code{coda::mcmc} object. Note that for
-the IS-MCMC the expanded sample corresponds to the approximate posterior i.e.,
-the weights are ignored.
+the IS-MCMC the expanded sample corresponds to the approximate posterior,
+i.e., the weights are ignored.
 }
 \details{
 This functions is mostly for backwards compatibility, methods

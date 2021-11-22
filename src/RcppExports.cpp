@@ -275,6 +275,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// IACT
+double IACT(const arma::vec x);
+RcppExport SEXP _bssm_IACT(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(IACT(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // importance_sample_ng
 Rcpp::List importance_sample_ng(const Rcpp::List model_, unsigned int nsim, bool use_antithetic, const unsigned int seed, const int model_type);
 RcppExport SEXP _bssm_importance_sample_ng(SEXP model_SEXP, SEXP nsimSEXP, SEXP use_antitheticSEXP, SEXP seedSEXP, SEXP model_typeSEXP) {
@@ -1285,6 +1296,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bssm_ekf_fast_smoother_nlg", (DL_FUNC) &_bssm_ekf_fast_smoother_nlg, 17},
     {"_bssm_ekpf", (DL_FUNC) &_bssm_ekpf, 18},
     {"_bssm_ekpf_smoother", (DL_FUNC) &_bssm_ekpf_smoother, 18},
+    {"_bssm_IACT", (DL_FUNC) &_bssm_IACT, 1},
     {"_bssm_importance_sample_ng", (DL_FUNC) &_bssm_importance_sample_ng, 5},
     {"_bssm_gaussian_kfilter", (DL_FUNC) &_bssm_gaussian_kfilter, 2},
     {"_bssm_gaussian_loglik", (DL_FUNC) &_bssm_gaussian_loglik, 2},

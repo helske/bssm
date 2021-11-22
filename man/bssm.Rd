@@ -29,6 +29,15 @@ package as well as some theory behind the novel IS-MCMC and
 \eqn{\psi}{psi}-APF algorithms, see Helske and Vihola (2021), Vihola,
 Helske, Franks (2020), and the package vignettes.
 }
+\examples{
+model <- bsm_lg(Nile, 
+  sd_y = tnormal(init = 100, mean = 100, sd = 100, min = 0),
+  sd_level = tnormal(init = 50, mean = 50, sd = 100, min = 0),
+  a1 = 1000, P1 = 500^2)
+
+fit <- run_mcmc(model, iter = 2000)
+fit
+}
 \references{
 Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and
 Non-Gaussian State Space Models in R. R Journal (to appear).

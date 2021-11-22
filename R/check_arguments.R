@@ -18,7 +18,7 @@
 #' @param y The response time series.
 #' @param type Name to be added to the sd parameter name.
 #' @param add_prefix Logical, add \code{type} to parameter name.
-#' @rdname check
+#' @noRd
 check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
   if (any(!is.na(x))) {
     if (multivariate) {
@@ -63,7 +63,7 @@ check_y <- function(x, multivariate = FALSE, distribution = "gaussian") {
   }
   x
 }
-#' @rdname check
+
 check_period <- function(x, n) {
   if (!test_int(x)) {
     stop("Argument 'period' should be a single integer. ")
@@ -79,7 +79,6 @@ check_period <- function(x, n) {
 }
 #' @srrstats {BS2.5} Checks that observations are compatible with their 
 #' distributions are made.
-#' @rdname check
 check_distribution <- function(x, distribution) {
   for (i in seq_len(ncol(x))) {
     if (distribution[i] != "gaussian" && any(na.omit(x[, i]) < 0)) {
@@ -97,7 +96,7 @@ check_distribution <- function(x, distribution) {
 }
 
 
-#' @rdname check
+
 check_sd <- function(x, type, add_prefix = TRUE) {
   
   if (add_prefix) {
@@ -120,7 +119,7 @@ check_sd <- function(x, type, add_prefix = TRUE) {
   }
   
 }
-#' @rdname check
+
 check_xreg <- function(x, n) {
   
   if (!(nrow(x) %in% c(0, n))) {
@@ -132,7 +131,7 @@ check_xreg <- function(x, n) {
   
 }
 
-#' @rdname check
+
 check_beta <- function(x, k) {
   if(!is.numeric(x)) stop("'beta' must be numeric. ")
   if (length(x) != k) {
@@ -144,7 +143,7 @@ check_beta <- function(x, k) {
   }
   
 }
-#' @rdname check
+
 check_mu <- function(x) {
   
   if (length(x) != 1) {
@@ -155,7 +154,7 @@ check_mu <- function(x) {
   }
   
 }
-#' @rdname check
+
 check_rho <- function(x) {
   
   if (length(x) != 1) {
@@ -167,13 +166,13 @@ check_rho <- function(x) {
   
 }
 
-#' @rdname check
+
 check_phi <- function(x) {
   if (x < 0) {
     stop("Parameter 'phi' must be non-negative.")
   }
 }
-#' @rdname check
+
 check_u <- function(x, y, multivariate = FALSE) {
   if (any(x < 0)) {
     stop("All values of 'u' must be non-negative.")
@@ -200,19 +199,19 @@ check_u <- function(x, y, multivariate = FALSE) {
   }
   x
 }
-#' @rdname check
+
 check_prior <- function(x, name) {
   if (!is_prior(x) && !is_prior_list(x)) {
     stop(paste(name, "must be of class 'bssm_prior' or 'bssm_prior_list'."))
   }
 }
-#' @rdname check
+
 check_prop <- function(x, name = "target") {
   if (length(x) > 1 || x >= 1 || x <= 0) {
     stop(paste0("Argument '", name, "' must be on interval (0, 1)."))
   }
 }
-#' @rdname check
+
 check_D <- function(x, p, n) {
   if (missing(x) || is.null(x)) {
     x <- if (p == 1) 0 else matrix(0, p, 1)
@@ -233,7 +232,7 @@ check_D <- function(x, p, n) {
   }
   x
 }
-#' @rdname check
+
 check_C <- function(x, m, n) {
   if (missing(x) || is.null(x)) {
     x <- matrix(0, m, 1)
@@ -250,7 +249,7 @@ check_C <- function(x, m, n) {
   
   
   
-#' @rdname check
+
 create_regression <- function(beta, xreg, n) {
   if (missing(xreg) || is.null(xreg)) {
     list(xreg = matrix(0, 0, 0), coefs = numeric(0), beta = NULL)
@@ -287,7 +286,7 @@ create_regression <- function(beta, xreg, n) {
     list(xreg = xreg, coefs = coefs, beta = beta)
   }
 }
-#' @rdname check
+
 check_Z <- function(x, p, n, multivariate = FALSE) {
   if(!is.numeric(x)) stop("'Z' must be numeric. ")
   if (!multivariate) {
@@ -318,7 +317,7 @@ check_Z <- function(x, p, n, multivariate = FALSE) {
   }
   x
 }
-#' @rdname check
+
 check_T <- function(x, m, n) {
   if(!is.numeric(x)) stop("'T' must be numeric. ")
   if (length(x) == 1 && m == 1) {
@@ -333,7 +332,7 @@ check_T <- function(x, m, n) {
   }
   x
 }
-#' @rdname check
+
 check_R <- function(x, m, n) {
   if (length(x) == m) {
     dim(x) <- c(m, 1, 1)
@@ -350,7 +349,7 @@ check_R <- function(x, m, n) {
   }
   x
 }
-#' @rdname check
+
 check_a1 <- function(x, m) {
   if (missing(x) || is.null(x)) {
     x <- numeric(m)
@@ -366,7 +365,7 @@ check_a1 <- function(x, m) {
   x
 }
 
-#' @rdname check
+
 check_P1 <- function(x, m) {
   if (missing(x) || is.null(x)) {
     x <- matrix(0, m, m)
@@ -383,7 +382,7 @@ check_P1 <- function(x, m) {
   x
 }
 
-#' @rdname check
+
 check_H <- function(x, p, n, multivariate = FALSE) {
   
   if(!is.numeric(x)) stop("'H' must be numeric. ")
@@ -404,7 +403,7 @@ check_H <- function(x, p, n, multivariate = FALSE) {
   x
 }
 
-#' @rdname check
+
 check_intmax <- function(x, name = "particles", positive = TRUE, max = 1e7) {
   if (!test_count(x, positive)) {
     stop(paste0("Argument '", name, "' should be a ",
@@ -416,14 +415,14 @@ check_intmax <- function(x, name = "particles", positive = TRUE, max = 1e7) {
   }
   as.integer(x)
 }
-#' @rdname check
+
 check_positive_real <- function(x, name) {
   if (!test_double(x, lower=0, finite = TRUE, any.missing = FALSE, len = 1)) {
     stop(paste0("Argument '", name, "' should be positive real value."))
   }
   x
 }
-#' @rdname check
+
 check_theta <- function(x) {
   
   if (!is.numeric(x) || !test_atomic_vector(x)) {
@@ -434,7 +433,7 @@ check_theta <- function(x) {
   }
   x
 }
-#' @rdname check
+
 check_missingness <- function(x) {
   if (!inherits(x, c("ssm_nlg", "ssm_sde"))) {
     if (is.null(x$prior_parameters)) {

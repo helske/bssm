@@ -4,6 +4,7 @@
 #' vector \code{posterior},
 #' @return Vector containing theta corresponding to maximum log-posterior value 
 #' of the posterior sample.
+#' @noRd
 get_map <- function(x) {
   x$theta[which.max(x$posterior), ]
 }

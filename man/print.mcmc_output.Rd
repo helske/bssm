@@ -14,3 +14,7 @@
 \description{
 Prints some basic summaries from the MCMC run by \code{\link{run_mcmc}}.
 }
+\examples{
+data("negbin_model")
+print(negbin_model)
+}
