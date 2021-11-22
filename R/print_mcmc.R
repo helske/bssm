@@ -85,7 +85,7 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
     sumr_theta <- 
       as.data.frame(object, variable = "theta", expand = TRUE) %>%
       group_by(variable) %>% 
-      summarize(as_tibble(as.list(summary_f(value, weight))))
+      summarise(as_tibble(as.list(summary_f(value, weight))))
     if (variable == "theta") return(sumr_theta)
   }
   
@@ -114,7 +114,7 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
       as.data.frame(object, variable = "states", expand = TRUE, 
         times = times, states = states, use_times = use_times) %>%
       group_by(variable, time) %>% 
-      summarize(as_tibble(as.list(summary_f(value, weight))))
+      summarise(as_tibble(as.list(summary_f(value, weight))))
     if (variable == "states") return(sumr_states)
   }
   list(theta = sumr_theta, states = sumr_states)
