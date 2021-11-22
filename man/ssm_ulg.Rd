@@ -139,12 +139,17 @@ model <- ssm_ulg(y, Z, H, T, R, a1, P1,
   # using default values, but being explicit for testing purposes
   C = matrix(0, 3, 1), D = numeric(1))
 
-out <- run_mcmc(model, iter = 10000)
+out <- run_mcmc(model, iter = 5000)
 out
-sumr <- summary(out, variable = "state")
-ts.plot(sumr$Mean, col = 1:3)
-lines(b1, col= 2, lty = 2)
-lines(b2, col= 3, lty = 2)
+sumr <- summary(out, variable = "state", times = 1:n)
+sumr$true <- c(b1, b2, rep(1, n))
+library(ggplot2)
+ggplot(sumr, aes(x = time, y = Mean)) +
+geom_ribbon(aes(ymin = `2.5\%`, ymax = `97.5\%`), alpha = 0.5) +
+geom_line() + 
+geom_line(aes(y = true), colour = "red") + 
+facet_wrap(~ variable, scales = "free") +
+theme_bw()
 
 # Perhaps easiest way to construct a general SSM for bssm is to use the 
 # model building functionality of KFAS:

@@ -11,6 +11,7 @@
   probs = c(0.025, 0.975),
   times,
   states,
+  use_times = TRUE,
   method = "sokal",
   ...
 )
@@ -36,10 +37,18 @@ summaries should be computed? Default is all, ignored if
 computed?. Default is all, ignored if
 \code{variable = "theta"}.}
 
+\item{use_times}{If \code{TRUE} (default), transforms the values of the time
+variable to match the ts attribute of the input to define. If \code{FALSE},
+time is based on the indexing starting from 1.}
+
 \item{method}{Method for computing integrated autocorrelation time. Default
 is \code{"sokal"}, other option is \code{"geyer"}.}
 
 \item{...}{Ignored.}
+}
+\value{
+If \code{variable} is \code{"theta"} or \code{"states"}, a
+\code{data.frame} object. If \code{"both"}, a list of two data frames.
 }
 \description{
 This functions returns a data frame containing mean, standard deviations,

@@ -11,7 +11,6 @@
 #' sense. For IS-MCMC, ESS estimates based on a weighted posterior are also 
 #' computed.
 #' 
-#' @importFrom dplyr across
 #' @importFrom posterior summarise_draws default_convergence_measures
 #' @param x Results object of class \code{mcmc_output} from 
 #' \code{\link{run_mcmc}}.
@@ -40,8 +39,8 @@
 #'   phi = gamma_prior(2, 2, 1), distribution = "negative binomial",
 #'   xreg = x, beta = normal_prior(0.5, 0, 1), u = u)
 #'   
-#' out <- run_mcmc(model, iter = 1e4, particles = 10)
-#' 
+#' out <- run_mcmc(model, iter = 1000, particles = 10)
+#' check_diagnostics(out)
 check_diagnostics <- function(x) {
   
   cat("\nAcceptance rate after the burn-in period: ", 
@@ -51,7 +50,9 @@ check_diagnostics <- function(x) {
   cat(paste(ifelse(x$time[3] < 10, round(x$time[3], 2), round(x$time[3])), 
     "seconds.\n"))
   
-  
+  if (any(is.na(x$theta)) || any(is.na(x$alpha))) {
+    warning("NA value found in samples.")
+  }
   draws <- suppressWarnings(as_draws(x))
   
   is_run <- x$mcmc_type %in% paste0("is", 1:3)

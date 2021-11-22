@@ -26,7 +26,12 @@
 #' \code{variable = "theta"}.
 #' @param method Method for computing integrated autocorrelation time. Default 
 #' is \code{"sokal"}, other option is \code{"geyer"}.
+#' @param use_times If \code{TRUE} (default), transforms the values of the time 
+#' variable to match the ts attribute of the input to define. If \code{FALSE}, 
+#' time is based on the indexing starting from 1.
 #' @param ... Ignored.
+#' @return If \code{variable} is \code{"theta"} or \code{"states"}, a 
+#' \code{data.frame} object. If \code{"both"}, a list of two data frames.
 #' @references 
 #' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
 #' on approximate marginal Markov chain Monte Carlo. 
@@ -34,19 +39,54 @@
 #' @export
 #' @srrstats {BS5.3, BS5.5, BS6.4}
 summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta", 
-  probs = c(0.025, 0.975), times, states, method = "sokal", ...) {
+  probs = c(0.025, 0.975), times, states, use_times = TRUE, method = "sokal", 
+  ...) {
   
   if (!test_flag(return_se)) 
     stop("Argument 'return_se' should be TRUE or FALSE. ")
- 
+  
   method <- match.arg(method, c("sokal", "geyer"))
   
   variable <- match.arg(tolower(variable), c("theta", "states", "both"))
   
+  if (return_se) {
+    if (object$mcmc_type %in% paste0("is", 1:3)) {
+      summary_f <- function(x, w) {
+        c(Mean = weighted_mean(x, w), 
+          SE = sqrt(asymptotic_var(x, w, method)),
+          SD = sqrt(weighted_var(x, w)), 
+          weighted_quantile(x, w, probs), 
+          ESS = round(estimate_ess(x, w, method)),
+          SE_IS = weighted_se(x, w),
+          ESS_IS = round(ess(w, identity, x)))
+      }
+    } else {
+      summary_f <- function(x, w) {
+        c(Mean = mean(x), SE = sqrt(asymptotic_var(x, method = method)),
+          SD = sd(x), quantile(x, probs), 
+          ESS = round(estimate_ess(x, method = method)))
+      }
+    }
+  } else {
+    if (object$mcmc_type %in% paste0("is", 1:3)) {
+      summary_f <- function(x, w) {
+        c(Mean = weighted_mean(x, w), 
+          SD = sqrt(weighted_var(x, w)), 
+          weighted_quantile(x, w, probs))
+      }
+    } else {
+      summary_f <- function(x, w) {
+        c(Mean = mean(x),
+          SD = sd(x), quantile(x, probs))
+      }
+    }
+  }
   if (variable %in% c("theta", "both")) {
-    d <- tidyr::pivot_wider(
-      as.data.frame(object, variable = "theta", expand = TRUE),
-      values_from = .data$value, names_from = .data$variable)
+    sumr_theta <- 
+      as.data.frame(object, variable = "theta", expand = TRUE) %>%
+      group_by(variable) %>% 
+      summarize(as_tibble(as.list(summary_f(value, weight))))
+    if (variable == "theta") return(sumr_theta)
   }
   
   if (variable %in% c("states", "both")) {
@@ -70,37 +110,14 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
           ncol(object$alpha),"."))
     }
     
-    d_states <- tidyr::pivot_wider(
+    sumr_states <- 
       as.data.frame(object, variable = "states", expand = TRUE, 
-        times = times, states = states, use_times = FALSE),
-      values_from = .data$value, 
-      names_from = c(.data$variable, .data$time), 
-      names_glue = "{variable}[{time}]")
-    if (variable == "both") {
-      d <- cbind(d, d_states[, -(1:2)])
-    } else d <- d_states
+        times = times, states = states, use_times = use_times) %>%
+      group_by(variable, time) %>% 
+      summarize(as_tibble(as.list(summary_f(value, weight))))
+    if (variable == "states") return(sumr_states)
   }
-  
-  
-  if (object$mcmc_type %in% paste0("is", 1:3)) {
-    summary_f_is <- function(x, w) {
-      c(Mean = weighted_mean(x, w), 
-        SE = sqrt(asymptotic_var(x, w, method)),
-        SD = sqrt(weighted_var(x, w)), 
-        weighted_quantile(x, w, probs), 
-        ESS = round(estimate_ess(x, w, method)),
-        SE_IS = weighted_se(x, w),
-        ESS_IS = round(ess(w, identity, x)))
-    }
-    as.data.frame(t(apply(d[, -(1:2)], 2, summary_f_is, w = d$weight)))
-  } else {
-    summary_f <- function(x) {
-      c(Mean = mean(x), SE = sqrt(asymptotic_var(x, method = method)),
-        SD = sd(x), quantile(x, probs), 
-        ESS = round(estimate_ess(x, method = method)))
-    }
-    as.data.frame(t(apply(d[, -(1:2)], 2, summary_f)))
-  }
+  list(theta = sumr_theta, states = sumr_states)
 }
 
 #' Print Results from MCMC Run
@@ -131,7 +148,7 @@ print.mcmc_output <- function(x, ...) {
   if (x$output_type != 3) {
     n <- nrow(x$alpha)
     cat(paste0("\nSummary for alpha_", n), ":\n\n", sep = "")
-   
+    
     if (is.null(x$alphahat)) {
       stats <- summary(x, variable = "states", times = n)
       print(stats)

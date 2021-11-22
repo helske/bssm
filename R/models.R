@@ -101,12 +101,17 @@ default_update_fn <- function(theta) {
 #'   # using default values, but being explicit for testing purposes
 #'   C = matrix(0, 3, 1), D = numeric(1))
 #' 
-#' out <- run_mcmc(model, iter = 10000)
+#' out <- run_mcmc(model, iter = 5000)
 #' out
-#' sumr <- summary(out, variable = "state")
-#' ts.plot(sumr$Mean, col = 1:3)
-#' lines(b1, col= 2, lty = 2)
-#' lines(b2, col= 3, lty = 2)
+#' sumr <- summary(out, variable = "state", times = 1:n)
+#' sumr$true <- c(b1, b2, rep(1, n))
+#' library(ggplot2)
+#' ggplot(sumr, aes(x = time, y = Mean)) +
+#' geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), alpha = 0.5) +
+#' geom_line() + 
+#' geom_line(aes(y = true), colour = "red") + 
+#' facet_wrap(~ variable, scales = "free") +
+#' theme_bw()
 #' 
 #' # Perhaps easiest way to construct a general SSM for bssm is to use the 
 #' # model building functionality of KFAS:
@@ -608,7 +613,10 @@ ssm_mng <- function(y, Z, T, R, a1 = NULL, P1 = NULL, distribution,
 #' model <- bsm_lg(log10(UKgas), sd_y = prior, sd_level =  prior,
 #'   sd_slope =  prior, sd_seasonal =  prior, period = 4)
 #'
+#' # Note small number of iterations for CRAN checks
 #' mcmc_out <- run_mcmc(model, iter = 5000)
+#' summary(mcmc_out, return_se = TRUE)
+#' # Use the summary method from coda:
 #' summary(expand_sample(mcmc_out, "theta"))$stat
 #' mcmc_out$theta[which.max(mcmc_out$posterior), ]
 #' sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
@@ -848,7 +856,7 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #' summary(out, variable = "theta", return_se = TRUE)
 #' # should be about 0.093 and 0.016
 #' summary(out, variable = "states", return_se = TRUE, 
-#'  states = 1, times = c(1, 100))$Mean
+#'  states = 1, times = c(1, 100))
 #' # should be about -0.075, 2.618
 #' }
 #' 

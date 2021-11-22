@@ -45,6 +45,6 @@ model <- ar1_ng(y, rho = uniform_prior(0.9, 0, 1),
   phi = gamma_prior(2, 2, 1), distribution = "negative binomial",
   xreg = x, beta = normal_prior(0.5, 0, 1), u = u)
   
-out <- run_mcmc(model, iter = 1e4, particles = 10)
-
+out <- run_mcmc(model, iter = 1000, particles = 10)
+check_diagnostics(out)
 }

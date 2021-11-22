@@ -153,17 +153,12 @@ run_mcmc <- function(model, ...) {
 #' mcmc_results <- run_mcmc(model, iter = 2e4)
 #' summary(mcmc_results, return_se = TRUE)
 #' 
-#' library("dplyr")
-#' sumr <- as.data.frame(mcmc_results, variable = "states") %>%
-#'   group_by(time) %>%
-#'   summarise(mean = mean(value), 
-#'     lwr = quantile(value, 0.025), 
-#'     upr = quantile(value, 0.975))
+#' sumr <- summary(mcmc_results, variable = "states")
 #' library("ggplot2")
-#' sumr %>% ggplot(aes(time, mean)) + 
-#'   geom_ribbon(aes(ymin = lwr, ymax = upr),alpha=0.25) + 
+#' sumr %>% ggplot(aes(time, Mean)) + 
+#'   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), alpha = 0.25) + 
 #'   geom_line() + theme_bw() +
-#'   geom_point(data = data.frame(mean = LakeHuron, time = time(LakeHuron)),
+#'   geom_point(data = data.frame(Mean = LakeHuron, time = time(LakeHuron)),
 #'     col = 2)
 #'     
 #' # Continue from the previous run
@@ -307,7 +302,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #' 
 #' # run IS-MCMC
 #' # Note small number of iterations for CRAN checks
-#' fit <- run_mcmc(model, iter = 5000,
+#' fit <- run_mcmc(model, iter = 4000,
 #'   particles = 10, mcmc_type = "is2", seed = 1)
 #'
 #' # extract states   
@@ -366,7 +361,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
 #'   prior_fn = prior_fn, update_fn = update_fn)
 #'   
 #' # Note small number of iterations for CRAN checks
-#' out <- run_mcmc(model, iter = 5000, mcmc_type = "approx")
+#' out <- run_mcmc(model, iter = 4000, mcmc_type = "approx")
 #' 
 #' sumr <- as.data.frame(out, variable = "states") %>% 
 #'   group_by(time) %>% mutate(value = exp(value)) %>%

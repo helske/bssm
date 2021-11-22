@@ -74,7 +74,10 @@ prior <- uniform(0.1 * sd(log10(UKgas)), 0, 1)
 model <- bsm_lg(log10(UKgas), sd_y = prior, sd_level =  prior,
   sd_slope =  prior, sd_seasonal =  prior, period = 4)
 
+# Note small number of iterations for CRAN checks
 mcmc_out <- run_mcmc(model, iter = 5000)
+summary(mcmc_out, return_se = TRUE)
+# Use the summary method from coda:
 summary(expand_sample(mcmc_out, "theta"))$stat
 mcmc_out$theta[which.max(mcmc_out$posterior), ]
 sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]

@@ -97,7 +97,7 @@ out <- run_mcmc(model, iter = 1e5, particles = 10)
 summary(out, variable = "theta", return_se = TRUE)
 # should be about 0.093 and 0.016
 summary(out, variable = "states", return_se = TRUE, 
- states = 1, times = c(1, 100))$Mean
+ states = 1, times = c(1, 100))
 # should be about -0.075, 2.618
 }
 

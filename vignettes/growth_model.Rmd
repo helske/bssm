@@ -156,7 +156,7 @@ summary(mcmc_is, return_se = TRUE)
 summary(mcmc_ekf, return_se = TRUE)
 ```
 
-Using the `as.data.frame` method we can convert the state samples to a data frame for further processing with the `dplyr` package [@dplyr]:
+Using the `as.data.frame` method we can convert the state samples to a data frame for further processing with the `dplyr` package [@dplyr] (we could do this automatically with `summary` method as well):
 ```{r summaries}
 library("dplyr")
 library("diagis")
