@@ -120,16 +120,17 @@ NULL
 #' y <- rpois(100, exp(cumsum(slope + c(0, rnorm(99, sd = 0.1)))))
 NULL
 #' 
-# Simulated Negative Binomial Time Series Data
+#' Simulated Negative Binomial Time Series Data
 #'
 #' See example for code for reproducing the data. This was used in 
 #' Helske and Vihola (2021).
 #'
-#' @srrstats {G5.0, G5.1, G5.4, BS7.2} used in Helske and Vihola (2021).
+  #' @srrstats {G5.1} used in Helske and Vihola (2021).
 #' @name negbin_series
 #' @docType data
 #' @format A time series \code{mts} object with 200 time points and two series.
 #' @keywords datasets
+#' @seealso \code{negbin_model}
 #' @references 
 #' Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and 
 #' Non-Gaussian State Space Models in R. R Journal (to appear).
@@ -148,10 +149,29 @@ NULL
 #' x <- 3 + (1:n) * drift + sin(1:n + runif(n, -1, 1))
 #' y <- rnbinom(n, size = phi, mu = exp(beta * x + level))
 #' 
+NULL
+#' Estimated Negative Binomial Model of Helske and Vihola (2021)
+#'
+#' This model was used in Helske and Vihola (2021), but with larger number of 
+#' iterations. Here only 2000 iterations were used in order to reduce the size 
+#' of the model object in CRAN.
+#'
+#' @srrstats {G5.0, G5.1, G5.4, BS7.2} used in Helske and Vihola (2021).
+#' @name negbin_model
+#' @docType data
+#' @format A object of class \code{mcmc_output}.
+#' @keywords datasets
+#' @references 
+#' Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and 
+#' Non-Gaussian State Space Models in R. R Journal (to appear).
+#' https://arxiv.org/abs/2101.08492
 #' 
+#' @examples 
+#' # reproducing the model:
+#' data("negbin_series")
 #' # Construct model for bssm
-#' bssm_model <- bsm_ng(y, 
-#'   xreg = x,
+#' bssm_model <- bsm_ng(negbin_series[, "y"], 
+#'   xreg = negbin_series[, "x"],
 #'   beta = normal(0, 0, 10),
 #'   phi = halfnormal(1, 10),
 #'   sd_level = halfnormal(0.1, 1), 
@@ -159,8 +179,9 @@ NULL
 #'   a1 = c(0, 0), P1 = diag(c(10, 0.1)^2), 
 #'   distribution = "negative binomial")
 #' 
-#' # run the MCMC, small number of iterations for CRAN
-#' fit_bssm <- run_mcmc(bssm_model, iter = 2000, burnin = 1000, 
-#'   particles = 10)
+#' \dontest{
+#' # In the paper we used 60000 iterations with first 10000 as burnin
+#' fit_bssm <- run_mcmc(bssm_model, iter = 2000, particles = 10, seed = 1)
 #' fit_bssm
+#' }
 NULL
