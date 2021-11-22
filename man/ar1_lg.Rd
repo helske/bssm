@@ -9,30 +9,30 @@ ar1_lg(y, rho, sigma, mu, sd_y, beta, xreg = NULL)
 \arguments{
 \item{y}{Vector or a \code{ts} object of observations.}
 
-\item{rho}{Prior for autoregressive coefficient. 
+\item{rho}{Prior for autoregressive coefficient.
 Should be an object of class \code{bssm_prior}.}
 
-\item{sigma}{Prior for the standard deviation of noise of the AR-process. 
+\item{sigma}{Prior for the standard deviation of noise of the AR-process.
 Should be an object of class \code{bssm_prior}}
 
-\item{mu}{A fixed value or a prior for the stationary mean of the latent 
-AR(1) process. Should be an object of class \code{bssm_prior} or scalar 
+\item{mu}{A fixed value or a prior for the stationary mean of the latent
+AR(1) process. Should be an object of class \code{bssm_prior} or scalar
 value defining a fixed mean such as 0.}
 
 \item{sd_y}{A prior for the standard deviation of observation equation.}
 
-\item{beta}{Prior for the regression coefficients. 
-Should be an object of class \code{bssm_prior} or \code{bssm_prior_list} 
+\item{beta}{Prior for the regression coefficients.
+Should be an object of class \code{bssm_prior} or \code{bssm_prior_list}
 (in case of multiple coefficients) or missing in case of no covariates.}
 
-\item{xreg}{Matrix containing covariates with number of rows matching the 
+\item{xreg}{Matrix containing covariates with number of rows matching the
 length of \code{y}.}
 }
 \value{
 Object of class \code{ar1_lg}.
 }
 \description{
-Constructs a simple Gaussian model where the state dynamics 
+Constructs a simple Gaussian model where the state dynamics
 follow an AR(1) process.
 }
 \examples{

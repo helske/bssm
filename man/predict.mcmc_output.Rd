@@ -16,25 +16,25 @@
 )
 }
 \arguments{
-\item{object}{Results object of class \code{mcmc_output} from 
-\code{\link{run_mcmc}}}
+\item{object}{Results object of class \code{mcmc_output} from
+\code{\link{run_mcmc}}.}
 
-\item{model}{A \code{bssm_model} object.. 
-Should have same structure and class as the original model which was used in 
-\code{run_mcmc}, in order to plug the posterior samples of the model 
-parameters to the right places. 
-It is also possible to input the original model for obtaining predictions 
-for past time points. In this case, set argument 
+\item{model}{A \code{bssm_model} object.
+Should have same structure and class as the original model which was used in
+\code{run_mcmc}, in order to plug the posterior samples of the model
+parameters to the right places.
+It is also possible to input the original model for obtaining predictions
+for past time points. In this case, set argument
 \code{future} to \code{FALSE}.}
 
 \item{nsim}{Positive integer defining number of samples to draw.}
 
-\item{type}{Type of predictions. Possible choices are 
+\item{type}{Type of predictions. Possible choices are
 \code{"mean"} \code{"response"}, or  \code{"state"} level.}
 
-\item{future}{Default is \code{TRUE}, in which case predictions are for the 
-future, using posterior samples of (theta, alpha_T+1) i.e. the 
-posterior samples of hyperparameters and latest states. 
+\item{future}{Default is \code{TRUE}, in which case predictions are for the
+future, using posterior samples of (theta, alpha_T+1) i.e. the
+posterior samples of hyperparameters and latest states.
 Otherwise it is assumed that \code{model} corresponds to the original model.}
 
 \item{seed}{Seed for RNG (positive integer). Note that this affects only the 
@@ -44,15 +44,15 @@ replicable results you should call \code{set.seed} before \code{predict}.}
 \item{...}{Ignored.}
 }
 \value{
-A \code{data.frame} consisting of samples from the predictive 
+A \code{data.frame} consisting of samples from the predictive
 posterior distribution.
 }
 \description{
-Draw samples from the posterior predictive distribution for future 
-time points given the posterior draws of hyperparameters \eqn{\theta} and 
-latent state \eqn{alpha_{n+1}}. Function can also be used to draw samples 
-from the posterior predictive distribution
- \eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
+Draw samples from the posterior predictive distribution for future
+time points given the posterior draws of hyperparameters \eqn{\theta} and
+latent state \eqn{alpha_{n+1}} returned by \code{run_mcmc}.
+Function can also be used to draw samples from the posterior predictive
+distribution \eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
 }
 \examples{
 library("graphics")
@@ -140,4 +140,7 @@ rbind(sumr_meanrep, sumr_yrep) \%>\%
     time = time(model$y)))    
 
 
+}
+\seealso{
+\code{fitted} for in-sample predictions.
 }

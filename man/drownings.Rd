@@ -8,14 +8,14 @@
 A time series object containing 51 observations.
 }
 \source{
-Statistics Finland 
+Statistics Finland
 \url{https://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
 }
 \description{
 Dataset containing number of deaths by drowning in Finland in 1969-2019,
 corresponding population sizes (in hundreds of thousands), and
-yearly average summer temperatures (June to August), based on simple 
-unweighted average of three weather stations: Helsinki (Southern Finland), 
+yearly average summer temperatures (June to August), based on simple
+unweighted average of three weather stations: Helsinki (Southern Finland),
 Jyvaskyla (Central Finland), and Sodankyla (Northern Finland).
 }
 \examples{

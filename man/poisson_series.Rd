@@ -3,17 +3,23 @@
 \docType{data}
 \name{poisson_series}
 \alias{poisson_series}
-\title{Simulated Poisson time series data}
+\title{Simulated Poisson Time Series Data}
 \format{
-A vector of length 100
+A vector of length 100.
 }
 \description{
-See example for code for reproducing the data.
+See example for code for reproducing the data. This was used in
+Vihola, Helske, Franks (2020).
 }
 \examples{
 # The data was generated as follows:
 set.seed(321)
 slope <- cumsum(c(0, rnorm(99, sd = 0.01)))
 y <- rpois(100, exp(cumsum(slope + c(0, rnorm(99, sd = 0.1)))))
+}
+\references{
+Vihola, M, Helske, J, Franks, J (2020). Importance sampling type
+estimators based on approximate marginal Markov chain Monte Carlo.
+Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 }
 \keyword{datasets}

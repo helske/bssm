@@ -15,7 +15,7 @@ Rcpp::List gaussian_mcmc(const Rcpp::List model_,
   const unsigned int output_type, const unsigned int iter, const unsigned int burnin,
   const unsigned int thin, const double gamma, const double target_acceptance,
   const arma::mat S, const unsigned int seed, const bool end_ram,
-  const unsigned int n_threads, const int model_type) {
+  const unsigned int n_threads, const int model_type, const bool verbose) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -29,7 +29,7 @@ Rcpp::List gaussian_mcmc(const Rcpp::List model_,
     n = y.n_rows;
   }
   mcmc mcmc_run(iter, burnin, thin, n, m,
-    target_acceptance, gamma, S, output_type);
+    target_acceptance, gamma, S, output_type, verbose);
   
   switch (model_type) {
   case 0: {
@@ -171,7 +171,8 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List model_,
   const unsigned int burnin, const unsigned int thin,
   const double gamma, const double target_acceptance, const arma::mat S,
   const unsigned int seed, const bool end_ram, const unsigned int n_threads,
-  const unsigned int sampling_method, const unsigned int model_type) {
+  const unsigned int sampling_method, const unsigned int model_type, 
+  const bool verbose) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -186,7 +187,7 @@ Rcpp::List nongaussian_pm_mcmc(const Rcpp::List model_,
   }
   
   mcmc mcmc_run(iter, burnin, thin, n, m,
-    target_acceptance, gamma, S, output_type);
+    target_acceptance, gamma, S, output_type, verbose);
   
   switch (model_type) {
   case 0: {
@@ -251,7 +252,8 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List model_,
   const unsigned int burnin, const unsigned int thin, const double gamma,
   const double target_acceptance, const arma::mat S, const unsigned int seed,
   const bool end_ram, const unsigned int n_threads,
-  const unsigned int sampling_method, const int model_type) {
+  const unsigned int sampling_method, const int model_type, 
+  const bool verbose) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -264,7 +266,8 @@ Rcpp::List nongaussian_da_mcmc(const Rcpp::List model_,
     arma::mat y = Rcpp::as<arma::mat>(model_["y"]);
     n = y.n_rows;
   }
-  mcmc mcmc_run(iter, burnin, thin, n, m, target_acceptance, gamma, S, output_type);
+  mcmc mcmc_run(iter, burnin, thin, n, m, target_acceptance, gamma, S, 
+    output_type, verbose);
   
   switch (model_type) {
   case 0: {
@@ -332,7 +335,7 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
   const double target_acceptance, const arma::mat S, const unsigned int seed,
   const bool end_ram, const unsigned int n_threads,
   const unsigned int sampling_method, const unsigned int is_type,
-  const int model_type, const bool approx) {
+  const int model_type, const bool approx, const bool verbose) {
   
   arma::vec a1 = Rcpp::as<arma::vec>(model_["a1"]);
   unsigned int m = a1.n_elem;
@@ -348,7 +351,7 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
     p = y.n_cols;
   }
   approx_mcmc mcmc_run(iter, burnin, thin, n, m, p,
-    target_acceptance, gamma, S, output_type, true);
+    target_acceptance, gamma, S, output_type, true, verbose);
   
   if (nsim <= 1) {
     mcmc_run.alpha_storage.zeros();
@@ -374,7 +377,6 @@ Rcpp::List nongaussian_is_mcmc(const Rcpp::List model_,
       if(is_type == 3) {
         mcmc_run.expand();
       }
-      
       switch (sampling_method) {
       case 1:
         mcmc_run.is_correction_psi(model, nsim, is_type, n_threads, model_["update_fn"]);
@@ -557,7 +559,7 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   const bool end_ram, const unsigned int n_threads,
   const unsigned int max_iter, const double conv_tol,
   const unsigned int sampling_method, const unsigned int iekf_iter,
-  const unsigned int output_type) {
+  const unsigned int output_type, const bool verbose) {
   
   
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
@@ -575,7 +577,7 @@ Rcpp::List nonlinear_pm_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, seed);
   
   mcmc mcmc_run(iter, burnin, thin, model.n,
-    model.m, target_acceptance, gamma, S, output_type);
+    model.m, target_acceptance, gamma, S, output_type, verbose);
   mcmc_run.pm_mcmc(model, sampling_method, nsim, end_ram);
   
   switch (output_type) {
@@ -617,7 +619,7 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   const bool end_ram, const unsigned int n_threads,
   const unsigned int max_iter, const double conv_tol,
   const unsigned int sampling_method, const unsigned int iekf_iter,
-  const unsigned int output_type) {
+  const unsigned int output_type, const bool verbose) {
   
   
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
@@ -635,7 +637,7 @@ Rcpp::List nonlinear_da_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, seed);
   
   mcmc mcmc_run(iter, burnin, thin, model.n,
-    model.m, target_acceptance, gamma, S, output_type);
+    model.m, target_acceptance, gamma, S, output_type, verbose);
   mcmc_run.da_mcmc(model, sampling_method, nsim, end_ram);
   
   switch (output_type) {
@@ -676,7 +678,8 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   const unsigned int burnin, const unsigned int thin,
   const double gamma, const double target_acceptance, const arma::mat S,
   const bool end_ram, const unsigned int n_threads,
-  const unsigned int iekf_iter, const unsigned int output_type) {
+  const unsigned int iekf_iter, const unsigned int output_type, 
+  const bool verbose) {
   
   
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
@@ -694,7 +697,7 @@ Rcpp::List nonlinear_ekf_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, seed);
   
   approx_mcmc mcmc_run(iter, burnin, thin, model.n,
-    model.m, model.m, target_acceptance, gamma, S, output_type, false);
+    model.m, model.m, target_acceptance, gamma, S, output_type, false, verbose);
   
   mcmc_run.ekf_mcmc(model, end_ram);
   
@@ -742,7 +745,7 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   const unsigned int sampling_method, const unsigned int max_iter,
   const double conv_tol, const unsigned int iekf_iter,
   const unsigned int output_type,
-  const bool approx) {
+  const bool approx, const bool verbose) {
   
   Rcpp::XPtr<nvec_fnPtr> xpfun_Z(Z);
   Rcpp::XPtr<nmat_fnPtr> xpfun_H(H);
@@ -759,7 +762,7 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, seed, iekf_iter, max_iter, conv_tol);
 
   approx_mcmc mcmc_run(iter, burnin, thin, model.n,
-    model.m, model.m, target_acceptance, gamma, S, output_type);
+    model.m, model.m, target_acceptance, gamma, S, output_type, true, verbose);
 
   mcmc_run.amcmc(model, sampling_method, end_ram);
   if(approx) {

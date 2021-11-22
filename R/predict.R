@@ -2,13 +2,14 @@
 #' 
 #' Draw samples from the posterior predictive distribution for future 
 #' time points given the posterior draws of hyperparameters \eqn{\theta} and 
-#' latent state \eqn{alpha_{n+1}}. Function can also be used to draw samples 
-#' from the posterior predictive distribution
-#'  \eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
-#'
+#' latent state \eqn{alpha_{n+1}} returned by \code{run_mcmc}. 
+#' Function can also be used to draw samples from the posterior predictive 
+#' distribution \eqn{p(\tilde y_1, \ldots, \tilde y_n | y_1,\ldots, y_n)}.
+#' 
+#' @seealso \code{fitted} for in-sample predictions.
 #' @param object Results object of class \code{mcmc_output} from 
-#' \code{\link{run_mcmc}}
-#' @param model A \code{bssm_model} object.. 
+#' \code{\link{run_mcmc}}.
+#' @param model A \code{bssm_model} object.
 #' Should have same structure and class as the original model which was used in 
 #' \code{run_mcmc}, in order to plug the posterior samples of the model 
 #' parameters to the right places. 
@@ -120,15 +121,17 @@
 predict.mcmc_output <- function(object, model, nsim, type = "response",  
   future = TRUE, seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  check_missingness(model)
+  
   if (!inherits(model, "bssm_model")) {
-    stop("Argument 'model' should be of class 'bssm_model'. ")
+    stop("Argument 'model' should be an object of class 'bssm_model'.")
   }
-  nsim <- check_integer(nsim, "nsim")
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  nsim <- check_intmax(nsim, "nsim", max = 10 * object$iter)
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   
   if (!test_flag(future)) stop("Argument 'future' should be TRUE or FALSE. ")
   
-  type <- match.arg(type, c("response", "mean", "state"))
+  type <- match.arg(tolower(type), c("response", "mean", "state"))
   
   if (object$output_type != 1) 
     stop("MCMC output must contain posterior samples of the states.")
@@ -242,11 +245,13 @@ predict.mcmc_output <- function(object, model, nsim, type = "response",
     
     if (inherits(model, c("ssm_mng", "ssm_mlg", "ssm_nlg"))) {
       if (!identical(nrow(object$alpha) - 1L, nrow(model$y))) {
-        stop("Number of observations of the model and MCMC output do not match.") 
+        stop(paste0("Number of observations in the model and MCMC output do ", 
+        "not match."))
       }
     } else {
       if (!identical(nrow(object$alpha) - 1L, length(model$y))) {
-        stop("Number of observations of the model and MCMC output do not match.") 
+        stop(paste0("Number of observations in the model and MCMC output do ", 
+          "not match."))
       }
     }
     w <- object$counts * 

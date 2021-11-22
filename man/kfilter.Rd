@@ -13,24 +13,25 @@ kfilter(model, ...)
 \method{kfilter}{nongaussian}(model, ...)
 }
 \arguments{
-\item{model}{Model of class \code{gaussian}, \code{nongaussian} or 
+\item{model}{Model of class \code{gaussian}, \code{nongaussian} or
 \code{ssm_nlg}.}
 
 \item{...}{Ignored.}
 }
 \value{
-List containing the log-likelihood 
-(approximate in non-Gaussian case), one-step-ahead predictions \code{at} 
-and filtered estimates \code{att} of states, and the corresponding 
-variances \code{Pt} and \code{Ptt}.
+List containing the log-likelihood
+(approximate in non-Gaussian case), one-step-ahead predictions \code{at}
+and filtered estimates \code{att} of states, and the corresponding
+variances \code{Pt} and \code{Ptt} up to the time point n+1 where n is the
+length of the input time series.
 }
 \description{
-Function \code{kfilter} runs the Kalman filter for the given model, 
-and returns the filtered estimates and one-step-ahead predictions of the 
+Function \code{kfilter} runs the Kalman filter for the given model,
+and returns the filtered estimates and one-step-ahead predictions of the
 states \eqn{\alpha_t} given the data up to time \eqn{t}.
 }
 \details{
-For non-Gaussian models, the filtering is based on the approximate 
+For non-Gaussian models, the filtering is based on the approximate
 Gaussian model.
 }
 \examples{

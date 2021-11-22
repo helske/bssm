@@ -23,24 +23,25 @@ ssm_ulg(
 \arguments{
 \item{y}{Observations as time series (or vector) of length \eqn{n}.}
 
-\item{Z}{System matrix Z of the observation equation. Either a 
+\item{Z}{System matrix Z of the observation equation. Either a
 vector of length m,
 a m x n matrix, or object which can be coerced to such.}
 
-\item{H}{Vector of standard deviations. Either a scalar or a vector of 
+\item{H}{Vector of standard deviations. Either a scalar or a vector of
 length n.}
 
 \item{T}{System matrix T of the state equation. Either a m x m matrix or a
 m x m x n array, or object which can be coerced to such.}
 
-\item{R}{Lower triangular matrix R the state equation. Either 
+\item{R}{Lower triangular matrix R the state equation. Either
 a m x k matrix or a m x k x n array, or object which can be coerced to such.}
 
 \item{a1}{Prior mean for the initial state as a vector of length m.}
 
 \item{P1}{Prior covariance matrix for the initial state as m x m matrix.}
 
-\item{init_theta}{Initial values for the unknown hyperparameters theta.}
+\item{init_theta}{Initial values for the unknown hyperparameters theta
+(i.e. unknown variables excluding latent state variables).}
 
 \item{D}{Intercept terms \eqn{D_t} for the observations equation, given as a
 scalar or vector of length n.}
@@ -50,28 +51,28 @@ m times 1 or m times n matrix.}
 
 \item{state_names}{Names for the states.}
 
-\item{update_fn}{Function which returns list of updated model 
-components given input vector theta. This function should take only one 
+\item{update_fn}{Function which returns list of updated model
+components given input vector theta. This function should take only one
 vector argument which is used to create list with elements named as
 \code{Z}, \code{H}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, and
-\code{C}, where each element matches the dimensions of the original model 
-It's best to check the internal dimensions with \code{str(model_object)} as 
+\code{C}, where each element matches the dimensions of the original model
+It's best to check the internal dimensions with \code{str(model_object)} as
 the dimensions of input arguments can differ from the final dimensions.
-If any of these components is missing, it is assumed to be constant wrt. 
+If any of these components is missing, it is assumed to be constant wrt.
 theta.}
 
-\item{prior_fn}{Function which returns log of prior density 
+\item{prior_fn}{Function which returns log of prior density
 given input vector theta.}
 }
 \value{
 Object of class \code{ssm_ulg}.
 }
 \description{
-Construct an object of class \code{ssm_ulg} by directly defining the 
+Construct an object of class \code{ssm_ulg} by directly defining the
 corresponding terms of the model.
 }
 \details{
-The general univariate linear-Gaussian model is defined using the following 
+The general univariate linear-Gaussian model is defined using the following
 observational and state equations:
 
 \deqn{y_t = D_t + Z_t \alpha_t + H_t \epsilon_t, 
@@ -81,20 +82,20 @@ observational and state equations:
 
 where \eqn{\epsilon_t \sim N(0, 1)}, \eqn{\eta_t \sim N(0, I_k)} and
 \eqn{\alpha_1 \sim N(a_1, P_1)} independently of each other.
-Here k is the number of disturbance terms which can be less than m, the 
+Here k is the number of disturbance terms which can be less than m, the
 number of states.
 
-The \code{update_fn} function should take only one 
+The \code{update_fn} function should take only one
 vector argument which is used to create list with elements named as
-\code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, 
+\code{Z}, \code{H} \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D},
 and \code{C},
 where each element matches the dimensions of the original model.
-If any of these components is missing, it is assumed to be constant wrt. 
+If any of these components is missing, it is assumed to be constant wrt.
 theta.
-Note that while you can input say R as m x k matrix for \code{ssm_ulg}, 
-\code{update_fn} should return R as m x k x 1 in this case. 
-It might be useful to first construct the model without updating function 
-and then check the expected structure of the model components from the 
+Note that while you can input say R as m x k matrix for \code{ssm_ulg},
+\code{update_fn} should return R as m x k x 1 in this case.
+It might be useful to first construct the model without updating function
+and then check the expected structure of the model components from the
 output.
 }
 \examples{
@@ -163,24 +164,26 @@ model_bssm <- as_bssm(model_kfas, kappa = 100)
 # "manually" by constructing only necessary matrices,
 # i.e., in this case  a list with H and Q)
 
-updatefn <- function(theta) {
+prior_fn <- function(theta) {
+  if(any(theta < 0)) -Inf else sum(dnorm(theta, 0, 0.1, log = TRUE))
+}
+ 
+update_fn <- function(theta) {
   
   model_kfas <- SSModel(log(drivers) ~ SSMtrend(1, Q = theta[1]^2)+
     SSMseasonal(period = 12, 
       sea.type = "trigonometric", Q = theta[2]^2) +
     log(PetrolPrice) + law, data = Seatbelts, H = theta[3]^2)
   
-  as_bssm(model_kfas, kappa = 100)
+  # the bssm_model object is essentially list so this is fine
+  as_bssm(model_kfas, kappa = 100, init_theta = init_theta,
+    update_fn = update_fn, prior_fn = prior_fn) 
 }
 
-prior <- function(theta) {
-  if(any(theta < 0)) -Inf else sum(dnorm(theta, 0, 0.1, log = TRUE))
-}
 init_theta <- rep(1e-2, 3)
-c("sd_level", "sd_seasonal", "sd_y")
-model_bssm <- as_bssm(model_kfas, kappa = 100, 
-  init_theta = init_theta, 
-  prior_fn = prior, update_fn = updatefn)
+names(init_theta) <- c("sd_level", "sd_seasonal", "sd_y")
+
+model_bssm <- update_fn(init_theta)
 
 \donttest{
 out <- run_mcmc(model_bssm, iter = 10000, burnin = 5000) 

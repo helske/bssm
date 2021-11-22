@@ -31,9 +31,11 @@ sim_smoother <- function(model, nsim, seed, use_antithetic = TRUE, ...) {
 #' @export
 sim_smoother.gaussian <- function(model, nsim = 1, 
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = TRUE, ...) {
-
-  nsim <- check_integer(nsim, "nsim")  
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max) 
+  
+  check_missingness(model)
+  
+  nsim <- check_intmax(nsim, "nsim")  
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max) 
   if (!test_flag(use_antithetic)) 
     stop("Argument 'use_antithetic' should be TRUE or FALSE. ")
   
@@ -48,8 +50,8 @@ sim_smoother.gaussian <- function(model, nsim = 1,
 sim_smoother.nongaussian <- function(model, nsim = 1,
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = TRUE, ...) {
   
-  nsim <- check_integer(nsim, "nsim")
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  nsim <- check_intmax(nsim, "nsim")
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   if (!test_flag(use_antithetic)) 
     stop("Argument 'use_antithetic' should be TRUE or FALSE. ")
   

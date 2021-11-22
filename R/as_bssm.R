@@ -2,13 +2,16 @@
 #'
 #' Converts \code{SSModel} object of \code{KFAS} package to general \code{bssm} 
 #' model of type \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or 
-#' \code{ssm_mng}.
+#' \code{ssm_mng}. As \code{KFAS} supports formula syntax for defining 
+#' e.g. regression and cyclic components it maybe sometimes easier to define 
+#' the model with \code{KFAS::SSModel} and then convert for the bssm style with 
+#' \code{as_bssm}. 
 #' 
 #' @param model Object of class \code{SSModel}.
 #' @param kappa For \code{SSModel} object, a prior variance for initial state
 #' used to replace exact diffuse elements of the original model.
 #' @param ... Additional arguments to model building functions of \code{bssm}
-#' (such as prior and updating functions).
+#' (such as prior and updating functions, C, and D).
 #' @return Object of class \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or 
 #' \code{ssm_mng}.
 #' @export
@@ -38,14 +41,14 @@ as_bssm <- function(model, kappa = 100, ...) {
   if (dim(model$R)[2] > 1) {
     for (i in 1:dim(R)[3]) {
       L <- KFAS::ldl(model$Q[, , (i - 1) * tvq + 1])
-      D <- sqrt(diag(diag(L)))
+      d <- sqrt(diag(diag(L)))
       diag(L) <- 1
-      R[, , i] <- model$R[, , (i - 1) * tvr + 1] %*% L %*% D
+      R[, , i] <- model$R[, , (i - 1) * tvr + 1] %*% L %*% d
     }
   } else {
     R <- model$R * sqrt(c(model$Q))
   }
-  if (attr(model, "p") == 1) {
+  if (attr(model, "p") == 1L) {
     Z <- aperm(model$Z, c(2, 3, 1))
     dim(Z) <- dim(Z)[1:2]
   } else {
@@ -53,13 +56,13 @@ as_bssm <- function(model, kappa = 100, ...) {
   }
   
   if (any(model$distribution != "gaussian")) {
-    if (attr(model, "p") == 1) {
+    if (attr(model, "p") == 1L) {
       if (model$distribution == "negative binomial" && 
-          length(unique(model$u)) > 1) {
+          length(unique(model$u)) > 1L) {
         stop(paste("Time-varying dispersion parameter for negative binomial",
         "is not (yet) supported in 'bssm'.", sep = " "))
       } 
-      if (model$distribution == "gamma" && length(unique(model$u)) > 1) {
+      if (model$distribution == "gamma" && length(unique(model$u)) > 1L) {
         stop(paste("Time-varying shape parameter for gamma is not (yet)",
         "supported in 'bssm'.", sep = " "))
       }
@@ -129,7 +132,7 @@ as_bssm <- function(model, kappa = 100, ...) {
     }
     
   } else {
-    if (attr(model, "p") == 1) {
+    if (attr(model, "p") == 1L) {
       out <- ssm_ulg(y = model$y, Z = Z, H = sqrt(c(model$H)), T = model$T, 
         R = R, 
         a1 = c(model$a1), P1 = model$P1, state_names = rownames(model$a1), ...)
@@ -137,9 +140,9 @@ as_bssm <- function(model, kappa = 100, ...) {
       H <- model$H
       for (i in 1:dim(H)[3]) {
         L <- KFAS::ldl(model$H[, , i])
-        D <- sqrt(diag(diag(L)))
+        d <- sqrt(diag(diag(L)))
         diag(L) <- 1
-        H[, , i] <- L %*% D
+        H[, , i] <- L %*% d
       }
       
       out <- ssm_mlg(y = model$y, Z = Z, H = H, T = model$T, R = R, 

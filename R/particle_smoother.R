@@ -1,10 +1,12 @@
 #' Particle Smoothing
 #'
 #' Function \code{particle_smoother} performs particle smoothing 
-#' based on either bootstrap particle filter [1], \eqn{\psi}-auxiliary 
-#' particle filter (\eqn{\psi}-APF) [2], 
-#' or extended Kalman particle filter [3] (or its iterated version [4]). 
-#' The smoothing phase is based on the filter-smoother algorithm by [5].
+#' based on either bootstrap particle filter (Gordon et al. 1993), 
+#' \eqn{\psi}-auxiliary particle filter (\eqn{\psi}-APF) (Vihola et al. 2020), 
+#' extended Kalman particle filter (Van Der Merwe et al. 2001), 
+#' or its version based on iterated EKF (Jazwinski, 1970). 
+#' The smoothing phase is based on the filter-smoother algorithm by 
+#' Kitagawa (1996).
 #' 
 #' See one of the vignettes for \eqn{\psi}-APF in case of nonlinear models.
 #'
@@ -33,24 +35,28 @@
 #'  of the states and 
 #'  estimated log-likelihood (\code{logLik}).
 #' @references 
-#' [1] Gordon, NJ, Salmond, DJ, Smith, AFM (1993). 
+#' Gordon, NJ, Salmond, DJ, Smith, AFM (1993). 
 #' Novel approach to nonlinear/non-Gaussian Bayesian state estimation. 
 #' IEE Proceedings-F, 140, 107-113.
+#' https://doi.org/10.1049/ip-f-2.1993.0015 
 #' 
-#' [2] Vihola, M, Helske, J, Franks, J. Importance sampling type estimators 
+#' Vihola, M, Helske, J, Franks, J. Importance sampling type estimators 
 #' based on approximate marginal Markov chain Monte Carlo. 
-#' Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
+#' Scand J Statist. 2020; 1-38. 
+#' https://doi.org/10.1111/sjos.12492
 #' 
-#' [3] Van Der Merwe, R, Doucet, A, De Freitas, N,  Wan, EA (2001). 
+#' Van Der Merwe, R, Doucet, A, De Freitas, N,  Wan, EA (2001). 
 #' The unscented particle filter. 
 #' In Advances in neural information processing systems, p 584-590.
 #' 
-#' [4] Jazwinski, A 1970. Stochastic Processes and Filtering Theory. 
+#' Jazwinski, A 1970. Stochastic Processes and Filtering Theory. 
 #' Academic Press.
 #' 
-#' [5] Kitagawa, G (1996). Monte Carlo filter and smoother for non-Gaussian 
+#' Kitagawa, G (1996). Monte Carlo filter and smoother for non-Gaussian 
 #' nonlinear state space models. 
 #' Journal of Computational and Graphical Statistics, 5, 1-25.
+#' https://doi.org/10.2307/1390750
+#' 
 #' @export
 #' @rdname particle_smoother
 particle_smoother <- function(model, particles, ...) {
@@ -74,6 +80,8 @@ particle_smoother <- function(model, particles, ...) {
 particle_smoother.gaussian <- function(model, particles,  method = "psi",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  check_missingness(model)
+  
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
@@ -83,7 +91,7 @@ particle_smoother.gaussian <- function(model, particles,  method = "psi",
     }
   }
   
-  particles <- check_integer(particles, "particles")
+  particles <- check_intmax(particles, "particles")
   
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     length(model$a1) * particles
@@ -91,7 +99,7 @@ particle_smoother.gaussian <- function(model, particles,  method = "psi",
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   
   if (method == "psi") {
     out <- list()
@@ -129,6 +137,8 @@ particle_smoother.nongaussian <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1), 
   max_iter = 100, conv_tol = 1e-8, ...) {
   
+  check_missingness(model)
+  
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
@@ -137,19 +147,19 @@ particle_smoother.nongaussian <- function(model, particles,
       particles <- nsim
     }
   }
-  particles <- check_integer(particles, "particles")
+  particles <- check_intmax(particles, "particles")
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     length(model$a1) * particles
   if (particles > 100 & nsamples > 1e12) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   
-  model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  model$max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
   
-  method <- match.arg(method, c("bsf", "psi"))
+  method <- match.arg(tolower(method), c("bsf", "psi"))
 
   model$distribution <- pmatch(model$distribution,
     c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
@@ -178,6 +188,8 @@ particle_smoother.ssm_nlg <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1),
   max_iter = 100, conv_tol = 1e-8, iekf_iter = 0, ...) {
   
+  check_missingness(model)
+  
   if (missing(particles)) {
     nsim <- eval(match.call(expand.dots = TRUE)$nsim)
     if (!is.null(nsim)) {
@@ -186,7 +198,7 @@ particle_smoother.ssm_nlg <- function(model, particles,
       particles <- nsim
     }
   }
-  particles <- check_integer(particles, "particles")
+  particles <- check_intmax(particles, "particles")
   
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     model$n_states * particles
@@ -194,12 +206,12 @@ particle_smoother.ssm_nlg <- function(model, particles,
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
-  max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
+  max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   conv_tol <- check_positive_real(conv_tol, "conv_tol")
-  iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
+  iekf_iter <- check_intmax(iekf_iter, "iekf_iter", positive = FALSE)
   
-  method <- match.arg(method, c("bsf", "psi", "ekf"))
+  method <- match.arg(tolower(method), c("bsf", "psi", "ekf"))
   
   out <- switch(method,
     psi = psi_smoother_nlg(t(model$y), model$Z, model$H, model$T, 
@@ -238,6 +250,8 @@ particle_smoother.ssm_nlg <- function(model, particles,
 particle_smoother.ssm_sde <- function(model, particles, L, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
+  check_missingness(model)
+  
   if (L < 1) stop("Discretization level L must be larger than 0.")
   
   if (missing(particles)) {
@@ -248,13 +262,13 @@ particle_smoother.ssm_sde <- function(model, particles, L,
       particles <- nsim
     }
   }
-  particles <- check_integer(particles, "particles")
+  particles <- check_intmax(particles, "particles")
   nsamples <- length(model$y) * particles
   if (particles > 100 & nsamples > 1e12) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   out <-  bsf_smoother_sde(model$y, model$x0, model$positive, 
     model$drift, model$diffusion, model$ddiffusion, 
     model$prior_pdf, model$obs_pdf, model$theta, 

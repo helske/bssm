@@ -1,6 +1,26 @@
 
 context("Test that particle smoothers work")
 
+#' @srrstats {G5.9, G5.9a, G5.9b}
+
+test_that("Test that trivial noise does not affect particle_smoother", {
+  
+  expect_error(model_bsm <- bsm_lg(rep(1, 5), sd_level = 0.05, sd_slope = 0.01, 
+    sd_y = 0.01, a1 = c(1, 0), P1 = diag(0.01, 2)), NA)
+  model_bsm2 <- model_bsm
+  model_bsm2$y <- model_bsm2$y + .Machine$double.eps 
+  expect_equal(
+    particle_smoother(model_bsm, 1e5, seed = 1)$alphahat,
+    particle_smoother(model_bsm2, 1e5, seed = 1)$alphahat)
+})
+test_that("Test that different seeds give comparable results", {
+  
+  expect_error(model_bsm <- bsm_lg(rep(1, 5), sd_level = 0.05, sd_slope = 0.01, 
+    sd_y = 0.01, a1 = c(1, 0), P1 = diag(0.01, 2)), NA)
+  expect_equal(
+    particle_smoother(model_bsm, 1e5)$alphahat,
+    particle_smoother(model_bsm, 1e5)$alphahat, tolerance = 0.001)
+})
 
 test_that("Test that particle_smoother for LGSSM works as Kalman smoother", {
   

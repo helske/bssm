@@ -2,37 +2,58 @@
 % Please edit documentation in R/print_mcmc.R
 \name{summary.mcmc_output}
 \alias{summary.mcmc_output}
-\title{Summary of MCMC object}
+\title{Summary Statistics of Posterior Samples}
 \usage{
-\method{summary}{mcmc_output}(object, return_se = FALSE, variable = "theta", only_theta = FALSE, ...)
+\method{summary}{mcmc_output}(
+  object,
+  return_se = FALSE,
+  variable = "theta",
+  probs = c(0.025, 0.975),
+  times,
+  states,
+  method = "sokal",
+  ...
+)
 }
 \arguments{
 \item{object}{Output from \code{run_mcmc}}
 
-\item{return_se}{if \code{FALSE} (default), computation of standard 
-errors and effective sample sizes is omitted.}
+\item{return_se}{if \code{FALSE} (default), computation of standard
+errors and effective sample sizes is omitted (as they can take considerable
+time for models with large number of states and time points).}
 
-\item{variable}{Are the summary statistics computed for either 
+\item{variable}{Are the summary statistics computed for either
 \code{"theta"} (default), \code{"states"}, or \code{"both"}?}
 
-\item{only_theta}{Deprecated. If \code{TRUE}, summaries are computed only 
-for hyperparameters theta.}
+\item{probs}{Numeric vector defining the quantiles of interest. Default is
+\code{c(0.025, 0.975)}.}
+
+\item{times}{Vector of indices. For states, for what time points the
+summaries should be computed? Default is all, ignored if
+\code{variable = "theta"}.}
+
+\item{states}{Vector of indices. For what states the summaries should be
+computed?. Default is all, ignored if
+\code{variable = "theta"}.}
+
+\item{method}{Method for computing integrated autocorrelation time. Default
+is \code{"sokal"}, other option is \code{"geyer"}.}
 
 \item{...}{Ignored.}
 }
 \description{
-This functions returns a list containing mean, standard deviations, 
-standard errors, and effective sample size estimates for parameters and 
+This functions returns a data frame containing mean, standard deviations,
+standard errors, and effective sample size estimates for parameters and
 states.
 }
 \details{
-For IS-MCMC two types of standard errors are reported. 
+For IS-MCMC two types of standard errors are reported.
 SE-IS can be regarded as the square root of independent IS variance,
-whereas SE corresponds to the square root of total asymptotic variance 
+whereas SE corresponds to the square root of total asymptotic variance
 (see Remark 3 of Vihola et al. (2020)).
 }
 \references{
-Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based 
-on approximate marginal Markov chain Monte Carlo. 
+Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based
+on approximate marginal Markov chain Monte Carlo.
 Scand J Statist. 2020; 1-38. https://doi.org/10.1111/sjos.12492
 }

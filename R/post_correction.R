@@ -1,4 +1,5 @@
-# Get MAP estimate of theta
+#' Get MAP estimate of theta
+#' @param x Object of class \code{mcmc_output}
 get_map <- function(x) {
   x$theta[which.max(x$posterior), ]
 }
@@ -80,8 +81,10 @@ suggest_N <- function(model, theta,
   candidates = seq(10, 100, by = 10), replications = 100, 
   seed = sample(.Machine$integer.max, size = 1)) {
   
-  replications <- check_integer(replications, "replications")
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  check_missingness(model)
+  
+  replications <- check_intmax(replications, "replications")
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   
   if (!test_integerish(candidates, lower = 1, any.missing = FALSE, 
     min.len = 1)) {
@@ -152,13 +155,13 @@ suggest_N <- function(model, theta,
 #' containing estimated standard deviations of the log-weights and 
 #' corresponding number of particles.
 #' @references 
-#' A. Doucet, M. K. Pitt, G. Deligiannidis, R. Kohn (2018). 
+#' Doucet A, Pitt M K, Deligiannidis G, Kohn R (2018). 
 #' Efficient implementation of Markov chain Monte Carlo when using an unbiased 
 #' likelihood estimator. Biometrika, 102, 2, 295-313, 
 #' https://doi.org/10.1093/biomet/asu075
 #' 
-#' Vihola, M, Helske, J, Franks, J (2020). Importance sampling type estimators based 
-#' on approximate marginal Markov chain Monte Carlo. 
+#' Vihola M, Helske J, Franks J (2020). Importance sampling type estimators 
+#' based on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @examples 
@@ -234,14 +237,17 @@ suggest_N <- function(model, theta,
 post_correct <- function(model, mcmc_output, particles, threads = 1L, 
   is_type = "is2", seed = sample(.Machine$integer.max, size = 1)) {
   
-  particles <- check_integer(particles, "particles")
-  threads <- check_integer(threads, "threads")
+  check_missingness(model)
   
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  particles <- check_intmax(particles, "particles")
+  threads <- check_intmax(threads, "threads")
+  
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   
   if (!inherits(mcmc_output, "mcmc_output")) 
     stop("Object 'mcmc_output' is not valid output from 'run_mcmc'.")
-  is_type <- pmatch(match.arg(is_type, paste0("is", 1:3)), paste0("is", 1:3))
+  is_type <- pmatch(match.arg(tolower(is_type), paste0("is", 1:3)), 
+    paste0("is", 1:3))
   
   a <- proc.time()
   if (inherits(model, "nongaussian")) {

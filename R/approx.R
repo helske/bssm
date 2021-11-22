@@ -25,8 +25,8 @@
 #' Koopman, SJ and Durbin J (2012). Time Series Analysis by State Space 
 #' Methods. Second edition. Oxford: Oxford University Press.
 #' 
-#' Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators based 
-#' on approximate marginal Markov chain Monte Carlo. 
+#' Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators 
+#' based on approximate marginal Markov chain Monte Carlo. 
 #' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #' @export
 #' @rdname gaussian_approx
@@ -48,7 +48,9 @@ gaussian_approx <- function(model, max_iter, conv_tol, ...) {
 gaussian_approx.nongaussian <- function(model, max_iter = 100, 
   conv_tol = 1e-8, ...) {
   
-  model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  check_missingness(model)
+  
+  model$max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
   
   model$distribution <- pmatch(model$distribution,
@@ -56,7 +58,7 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100,
     duplicates.ok = TRUE) - 1
   out <- gaussian_approx_model(model, model_type(model))
   
-  if (ncol(out$y) == 1) {
+  if (ncol(out$y) == 1L) {
     out$y <- ts(c(out$y), start = start(model$y), end = end(model$y), 
       frequency = frequency(model$y))
     D <- model$D
@@ -82,9 +84,11 @@ gaussian_approx.nongaussian <- function(model, max_iter = 100,
 gaussian_approx.ssm_nlg <- function(model, max_iter = 100, 
   conv_tol = 1e-8, iekf_iter = 0, ...) {
   
-  model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  check_missingness(model)
+  
+  model$max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
-  model$iekf_iter <- check_integer(iekf_iter, "iekf_iter")
+  model$iekf_iter <- check_intmax(iekf_iter, "iekf_iter")
   
   out <- gaussian_approx_model_nlg(t(model$y), model$Z, model$H, model$T, 
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 

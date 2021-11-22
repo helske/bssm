@@ -27,6 +27,8 @@ fast_smoother <- function(model, ...) {
 #' ts.plot(cbind(Nile, fast_smoother(model)), col = 1:2)
 fast_smoother.gaussian <- function(model, ...) {
   
+  check_missingness(model)
+  
   out <- gaussian_fast_smoother(model, model_type(model))
   colnames(out) <- names(model$a1)
   ts(out[-nrow(out), , drop = FALSE], start = start(model$y), 
@@ -56,6 +58,8 @@ smoother <- function(model, ...) {
 #' ts.plot(cbind(Nile, out$alphahat), col = 1:2)
 #' ts.plot(sqrt(out$Vt[1, 1, ]))
 smoother.gaussian <- function(model, ...) {
+  
+  check_missingness(model)
   
   out <-  gaussian_smoother(model, model_type(model))
   colnames(out$alphahat) <- colnames(out$Vt) <- rownames(out$Vt) <- 
@@ -118,7 +122,9 @@ smoother.nongaussian <- function(model, ...) {
 #' }
 ekf_smoother <- function(model, iekf_iter = 0) {
   
-  iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
+  check_missingness(model)
+  
+  iekf_iter <- check_intmax(iekf_iter, "iekf_iter", positive = FALSE)
   
   out <- ekf_smoother_nlg(t(model$y), model$Z, model$H, model$T, 
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 
@@ -137,8 +143,9 @@ ekf_smoother <- function(model, iekf_iter = 0) {
 #' @export
 ekf_fast_smoother <- function(model, iekf_iter = 0) {
   
+  check_missingness(model)
   
-  iekf_iter <- check_integer(iekf_iter, "iekf_iter", positive = FALSE)
+  iekf_iter <- check_intmax(iekf_iter, "iekf_iter", positive = FALSE)
   
   out <- ekf_fast_smoother_nlg(t(model$y), model$Z, model$H, model$T, 
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 

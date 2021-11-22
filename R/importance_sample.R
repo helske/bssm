@@ -26,8 +26,8 @@
 #' 
 #' est <- matrix(NA, 3, nrow(sexratio))
 #' for(i in 1:ncol(est)) {
-#'   est[, i] <- Hmisc::wtd.quantile(exp(imp$alpha[i, 1, ]), imp$weights, 
-#'     prob = c(0.05,0.5,0.95), normwt=TRUE)
+#'   est[, i] <- diagis::weighted_quantile(exp(imp$alpha[i, 1, ]), imp$weights, 
+#'     prob = c(0.05,0.5,0.95))
 #' }
 #' 
 #' ts.plot(t(est),lty = c(2,1,2))
@@ -42,10 +42,12 @@ importance_sample <- function(model, nsim, use_antithetic,
 importance_sample.nongaussian <- function(model, nsim, use_antithetic = TRUE, 
   max_iter = 100, conv_tol = 1e-8, 
   seed = sample(.Machine$integer.max, size = 1), ...) {
-
-  model$max_iter <- check_integer(max_iter, "max_iter", positive = FALSE)
+  
+  check_missingness(model)
+  
+  model$max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
-  nsim <- check_integer(nsim, "nsim")
+  nsim <- check_intmax(nsim, "nsim")
   
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     length(model$a1) * nsim
@@ -53,7 +55,7 @@ importance_sample.nongaussian <- function(model, nsim, use_antithetic = TRUE,
     warning(paste("Trying to sample ", nsamples, 
       "values, you might run out of memory."))
   }
-  seed <- check_integer(seed, "seed", FALSE, max = .Machine$integer.max)
+  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   model$distribution <- pmatch(model$distribution,
     c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
     duplicates.ok = TRUE) - 1

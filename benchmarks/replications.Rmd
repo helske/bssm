@@ -1,0 +1,86 @@
+---
+title: "Replications"
+author: "Jouni Helske"
+date: "11/17/2021"
+output: html_document
+---
+
+```{r srr-tags, eval = FALSE, echo = FALSE}
+#' @srrstats {G5.4, G5.4a, G5.4b, G5.4c, G5.5, G5.6, G5.6a, G5.6b, G5.7} The 
+#' algorithms work correctly as per Vihola, Helske, Franks (2020) 
+#' (all simulations were implemented with the bssm package) and Helske 
+#' and Vihola (2021).
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Reproducing some of the results of IS-MCMC paper
+
+Full simulation experiments of Vihola, Helske and Franks (2020) takes some time, 
+here we only run a single replication to test that the methods work as expected. 
+To generate Table 1 in the paper, the code below should be run say 1000 times, 
+from which IREs could be computed.
+
+```{r, cache = TRUE}
+library("bssm")
+data(poisson_series)
+s <- sd(log(pmax(0.1, poisson_series)))
+model <- bsm_ng(poisson_series, sd_level = uniform(0.115, 0, 2 * s),
+  sd_slope = uniform(0.004, 0, 2 * s), P1 = diag(0.1, 2), distribution = "poisson")
+
+
+d <- data.frame(mean = NA, se = NA,
+  variable = c("sd_level", "sd_slope", "u_1", "u_100"),
+  mcmc_type = rep(c("approx", "da", "is1", "is2", "pm"),
+    times = 4*c(2, 6, 6, 6, 6)),
+  sampling_method = c(rep("psi", 8),
+    rep(rep(c("bsf", "spdk", "psi"), each = 2 * 4), 4)),
+  local_approx = rep(c(TRUE, FALSE), each = 4),
+  time = NA,
+  acceptance_rate = NA)
+
+iter <- 1e4 # Use less iterations than in the paper for faster experiment
+for(i in seq(1, nrow(d), by = 4)) {
+  
+  cat("Testing method '", d$mcmc_type[i], "' with sampling by '", 
+    d$sampling_method[i], "' and local_approx '", d$local_approx[i], "'\n", 
+    sep = "")
+  
+  res <- run_mcmc(model, iter = iter,
+    sampling_method = d$sampling_method[i],
+    particles = switch(d$sampling_method[i],
+      bsf = 200,
+      spdk = 10,
+      psi = 10),
+    mcmc_type = d$mcmc_type[i],
+    local_approx = d$local_approx[i],
+    end_adaptive_phase = TRUE)
+  
+  w <- res$counts * 
+    if (res$mcmc_type %in% paste0("is", 1:2)) res$weights else 1
+  
+  d[((i - 1) + 1):((i - 1) + 4), "mean"] <- c(
+    diagis::weighted_mean(res$theta, w),
+    diagis::weighted_mean(res$alpha[1, 1, ], w),
+    diagis::weighted_mean(res$alpha[100, 1, ], w))
+  
+  d[((i - 1) + 1):((i - 1) + 4), "se"] <- c(
+    sqrt(asymptotic_var(res$theta[, 1], w)),
+    sqrt(asymptotic_var(res$theta[, 2], w)),
+    sqrt(asymptotic_var(res$alpha[1, 1, ], w)),
+    sqrt(asymptotic_var(res$alpha[100, 1, ], w)))
+  
+  d$time[((i - 1) + 1):((i - 1) + 4)] <- res$time["elapsed"]
+  d$acceptance_rate[((i - 1) + 1):((i - 1) + 4)] <- res$acceptance_rate
+}
+```
+Results:
+```{r}
+library(dplyr)
+d %>% 
+    arrange(local_approx, variable, mcmc_type, sampling_method)
+```
+
