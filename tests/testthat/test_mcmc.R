@@ -302,7 +302,7 @@ test_that("MCMC results with psi-APF for Poisson model are correct", {
   
   sumr <- expect_error(summary(mcmc_poisson, variable = "both"), NA)
   
-  expect_lt(sum(abs(sumr[1, c(1, 3)] - 
+  expect_lt(sum(abs(sumr$theta[1, 2:3] - 
       c(0.25892090511681, 0.186796779799571))), 0.5)
   
   states <- expand_sample(mcmc_poisson, variable = "states")
@@ -317,10 +317,10 @@ test_that("MCMC results with psi-APF for Poisson model are correct", {
     states = list(4)))
   
   
-  expect_equal(sumr$Mean[seq(2, nrow(sumr), by = 2)], 
+  expect_equal(sumr$states$Mean[sumr$states$variable == "level"], 
     as.numeric(colMeans(states$level)))
   
-  expect_error(posterior::as_draws(mcmc_poisson), NA)
+  expect_error(as_draws(mcmc_poisson), NA)
   expect_error(d <- as.data.frame(mcmc_poisson, variable = "state"), NA)
   x <- dplyr::pull(dplyr::summarise(
     dplyr::group_by(
@@ -374,7 +374,7 @@ test_that("MCMC using SPDK for Gamma model works", {
   expect_true(is.finite(sum(mcmc_gamma$alpha)))
   
   expect_lt(sum(abs(summary(mcmc_gamma)$Mean - 
-      c(0.542149368711246, 12.353642743311))), 2)
+      c(12.353642743311, 0.542149368711246))), 2)
   
 })
 

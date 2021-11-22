@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 #' @srrstats {G2.3, G2.3a, G2.3b} match.arg and tolower are used where 
 #' applicable.
 #' @srrstats {G1.0, G1.1, G1.3, G1.4, G1.4a, G1.5, G1.6} General 
-#' documentation, addressed by the paper vignette and the corresponding R 
+#' documentation, addressed by the vignettes and the corresponding R 
 #' Journal paper.
 #' @srrstats {G2.4, G2.4a, G2.4b, G2.4c, G2.6} Explicit conversions are used 
 #' where necessary.
@@ -35,11 +35,15 @@ knitr::opts_chunk$set(
 #'
 #' @srrstats {G3.0} No floating point equality comparisons are made.
 #'
-#' @srrstats {G5.4, G5.4a, G5.4b, G5.4c, G5.5, G5.6, G5.6a, G5.6b, G5.7} The 
-#' algorithms work correctly as per Vihola, Helske, Franks (2020) 
-#' (all simulations were implemented with the bssm package) and Helske 
-#' and Vihola (2021). Full replication of the results would take days/weeks
-#' (but see also bsm_ng, negbin_series and several testthat tests).
+#' @srrstats {G5.4, G5.4a, G5.4b, G5.4c, G5.5, G5.6, G5.6a, G5.6b, G5.7} and
+#' @srrstats {BS4.0, BS4.1} The algorithms work as defined per Vihola, Helske, 
+#' Franks (2020) (all simulations were implemented with the bssm package) and 
+#' Helske and Vihola (2021). Full replication of the results would take 
+#' days/weeks (but see also bsm_ng, negbin_series and several testthat tests).
+#' This is the first R package to implement delayed acceptance pseudo-marginal 
+#' MCMC for general state space models. 
+#' Note that the IS-MCMC method is also available in \code{walker} package for 
+#' limited class of models (subset of the models supported by \code{bssm}).
 #'
 #' @srrstats {G5.8, G5.8a, G5.8b, G5.8c, G5.8d} Tested with autotest and the 
 #' testthat tests.
@@ -53,7 +57,6 @@ knitr::opts_chunk$set(
 #' @srrstats {BS7.4, BS7.4a} The scales do not matter (in terms of runtime) 
 #' in random walk Metropolis nor in particle filters, as long as numerical 
 #' issues are not encountered
-
 ```
 
 # bssm
@@ -128,7 +131,7 @@ xreg <- airquality %>% select(Wind, Temp) %>% as.matrix()
 
 model <- bsm_lg(airquality$Ozone,
   xreg = xreg,  
-  # Define priors, see ?bssm_prior
+  # Define priors for hyperparameters (i.e. not the states), see ?bssm_prior
   # Initial value followed by parameters of the prior distribution
   beta = normal_prior(rep(0, ncol(xreg)), 0, 1),
   sd_y = gamma_prior(1, 2, 0.01),

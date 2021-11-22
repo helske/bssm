@@ -106,7 +106,7 @@ xreg <- airquality %>% select(Wind, Temp) %>% as.matrix()
 
 model <- bsm_lg(airquality$Ozone,
   xreg = xreg,  
-  # Define priors, see ?bssm_prior
+  # Define priors for hyperparameters (i.e. not the states), see ?bssm_prior
   # Initial value followed by parameters of the prior distribution
   beta = normal_prior(rep(0, ncol(xreg)), 0, 1),
   sd_y = gamma_prior(1, 2, 0.01),
@@ -142,7 +142,7 @@ fit
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>    0.94    0.00    0.94
+#>    1.02    0.02    1.02
 
 obs <- data.frame(Time = 1:nrow(airquality),
   Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))
@@ -210,7 +210,7 @@ fit2
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   10.82    0.08   10.83
+#>   14.47    0.19   14.45
 ```
 
 Comparison:
@@ -320,7 +320,7 @@ fit
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   12.05    0.20   12.08
+#>   16.63    0.20   16.65
 ```
 
 Draw predictions:

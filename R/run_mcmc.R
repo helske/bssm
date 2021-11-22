@@ -124,6 +124,7 @@
 #' is returned by run_mcmc.
 #' @srrstats {BS2.12, BS2.13} There is a progress bar which can be switched off 
 #' with \code{verbose = FALSE}.
+#' @srrstats {BS1.2c} Examples on defining priors.
 #' @srrstats {BS2.14} No warnings are issues during MCMC.
 #' @rdname run_mcmc
 #' @references 

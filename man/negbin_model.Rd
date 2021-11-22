@@ -25,7 +25,7 @@ bssm_model <- bsm_ng(negbin_series[, "y"],
   a1 = c(0, 0), P1 = diag(c(10, 0.1)^2), 
   distribution = "negative binomial")
 
-\dontest{
+\donttest{
 # In the paper we used 60000 iterations with first 10000 as burnin
 fit_bssm <- run_mcmc(bssm_model, iter = 2000, particles = 10, seed = 1)
 fit_bssm

@@ -25,23 +25,9 @@ if (!requireNamespace("rmarkdown") ||
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r srr-tags, eval = FALSE, echo = FALSE}                                    
-#' rOpenSci Statistical Software Standards addressed by the vignette
-#'
-#' @srrstats {G1.0, G1.1, G1.3, G1.5, G1.6, BS4.0, BS4.1} Here and in other 
-#' vignettes, in the R Journal paper and Vihola, Helske, Franks (2020). 
-#' To our knowledge, the package is also the first R package to 
-#' implement delayed acceptance pseudo-marginal MCMC for general state space 
-#' models. 
-#' Note that the IS-MCMC method is also available in \code{walker} package for 
-#' limited class of models (subset of the models supported by \code{bssm}).
-```   
-
-
 This is a short vignette illustrating the `bssm` package. For more detailed exposition, please see the corresponding R Journal paper:
 
-Jouni Helske and Matti Vihola (2021). "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R". Accepted to R Journal. [ArXiv preprint](
-https://arxiv.org/abs/2101.08492).
+Jouni Helske and Matti Vihola (2021). "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R". Accepted to R Journal. [ArXiv preprint](https://arxiv.org/abs/2101.08492).
 
 
 # Introduction

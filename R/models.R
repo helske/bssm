@@ -4,7 +4,7 @@
 #' @srrstats {G2.14, G2.14a, G2.14b, G2.14c, BS3.0} Missing observations are 
 #' handled automatically as per SSM theory, whereas missing values are not 
 #' allowed elsewhere.
-#' @srrstats {BS1.0, BS1.1, BS1.2}
+#' @srrstats {BS1.0, BS1.1, BS1.2, BS1.2c} Examples and definitions of priors.
 NULL
 
 ## placeholder functions for fixed models
