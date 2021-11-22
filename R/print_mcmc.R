@@ -143,15 +143,16 @@ print.mcmc_output <- function(x, ...) {
     paste(round(x$acceptance_rate, 3), "\n", sep = ""))
   
   cat("\nSummary for theta:\n\n")
-  stats <- summary(x, variable = "theta")
-  print(stats)
+  stats <- as.data.frame(summary(x, variable = "theta", return_se = TRUE))
+  print(stats, row.names = FALSE)
   if (x$output_type != 3) {
     n <- nrow(x$alpha)
     cat(paste0("\nSummary for alpha_", n), ":\n\n", sep = "")
     
     if (is.null(x$alphahat)) {
-      stats <- summary(x, variable = "states", times = n)
-      print(stats)
+      stats <- as.data.frame(summary(x, variable = "states", times = n, 
+        return_se = TRUE))
+      print(stats, row.names = FALSE)
     } else {
       if (ncol(x$alphahat) == 1) {
         print(cbind("Mean" = x$alphahat[n, ], "SD" = sqrt(x$Vt[, , n])))

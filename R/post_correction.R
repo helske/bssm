@@ -1,5 +1,9 @@
 #' Get MAP estimate of theta
-#' @param x Object of class \code{mcmc_output}
+#' @param x Object of class \code{mcmc_output} or any other list style object 
+#' which has matrix theta (where each row corresponds to one iteration) and 
+#' vector \code{posterior},
+#' @return Vector containing theta corresponding to maximum log-posterior value 
+#' of the posterior sample.
 get_map <- function(x) {
   x$theta[which.max(x$posterior), ]
 }

@@ -297,7 +297,7 @@ cpp_example_model <- function(example, return_code = FALSE) {
       
       // [[Rcpp::export]]
       Rcpp::List create_xptrs() {
-        // typedef for a pointer of nonlinear function of model equation returning vec
+        // typedef for a pointer of nonlinear function returning vec
         typedef arma::vec (*vec_fnPtr)(const unsigned int t, 
           const arma::vec& alpha, const arma::vec& theta, 
           const arma::vec& known_params, const arma::mat& known_tv_params);

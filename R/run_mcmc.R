@@ -122,8 +122,8 @@
 #' @srrstats {BS5.0, BS5.1, BS5.2} Starting values are integrated into the 
 #' input model, whereas some metadata (like the class of input model and seed) 
 #' is returned by run_mcmc.
-#' @srrstats {BS2.12, BS2.13} There is a progress bar which can be switched off with 
-#' \code{verbose = FALSE}.
+#' @srrstats {BS2.12, BS2.13} There is a progress bar which can be switched off 
+#' with \code{verbose = FALSE}.
 #' @srrstats {BS2.14} No warnings are issues during MCMC.
 #' @rdname run_mcmc
 #' @references 

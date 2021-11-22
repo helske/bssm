@@ -41,6 +41,14 @@
 #' @importFrom stats as.ts dnorm  end frequency is.ts logLik quantile start 
 #' time ts ts.union tsp tsp<- sd na.omit
 #' @useDynLib bssm
+#' @examples
+#' model <- bsm_lg(Nile, 
+#'   sd_y = tnormal(init = 100, mean = 100, sd = 100, min = 0),
+#'   sd_level = tnormal(init = 50, mean = 50, sd = 100, min = 0),
+#'   a1 = 1000, P1 = 500^2)
+#' 
+#' fit <- run_mcmc(model, iter = 2000)
+#' fit
 NULL
 #' Deaths by drowning in Finland in 1969-2019
 #'
