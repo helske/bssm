@@ -4,7 +4,7 @@
 #' Note that the estimator is not particularly good for very short series x 
 #' (say < 100), but that is not very practical for MCMC applications anyway.
 #'
-#' @param x A vector.
+#' @param x A numeric vector.
 #' @references
 #' Sokal A. (1997) Monte Carlo Methods in Statistical Mechanics: Foundations 
 #' and New Algorithms. 
@@ -39,9 +39,9 @@ iact <- function(x) {
 #' \code{posterior} package. 
 #' 
 #' @importFrom posterior ess_mean
-#' @param x Vector of samples.
-#' @param w Vector of weights. If missing, set to 1 (i.e. no weighting is 
-#' assumed).
+#' @param x A numeric vector of samples.
+#' @param w A numeric vector of weights. If missing, set to 1 (i.e. no 
+#' weighting is assumed).
 #' @param method Method for computing IACT. Default is \code{"sokal"},
 #' other option \code{"geyer"}.
 #' @references
@@ -75,6 +75,11 @@ iact <- function(x) {
 #' # different methods:
 #' asymptotic_var(x, w, method = "sokal")
 #' asymptotic_var(x, w, method = "geyer")
+#' 
+#' data("negbin_model")
+#' # can be obtained directly with summary method
+#' d <- suppressWarnings(as_draws(negbin_model))
+#' sqrt(asymptotic_var(d$sd_level, d$weight))
 #' 
 asymptotic_var <- function(x, w, method = "sokal") {
   
@@ -112,9 +117,9 @@ asymptotic_var <- function(x, w, method = "sokal") {
 #' using the identity ESS(x) = var(x) / MCMCSE^2 where var(x) is the 
 #' posterior variance of x assuming independent samples. 
 #' 
-#' @param x Vector of samples.
-#' @param w Vector of weights. If missing, set to 1 (i.e. no weighting is 
-#' assumed).
+#' @param x A numeric vector of samples.
+#' @param w A numeric vector of weights. If missing, set to 1 (i.e. no 
+#' weighting is assumed).
 #' @param method Method for computing the ESS. Default is \code{"sokal"}, other 
 #' option are \code{"geyer"} (see also \code{asymptotic_var}).
 #' @references

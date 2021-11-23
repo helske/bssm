@@ -7,7 +7,7 @@
 iact(x)
 }
 \arguments{
-\item{x}{A vector.}
+\item{x}{A numeric vector.}
 }
 \description{
 Estimates the integrated autocorrelation time (IACT) based on Sokal (1997).

@@ -7,10 +7,10 @@
 asymptotic_var(x, w, method = "sokal")
 }
 \arguments{
-\item{x}{Vector of samples.}
+\item{x}{A numeric vector of samples.}
 
-\item{w}{Vector of weights. If missing, set to 1 (i.e. no weighting is
-assumed).}
+\item{w}{A numeric vector of weights. If missing, set to 1 (i.e. no
+weighting is assumed).}
 
 \item{method}{Method for computing IACT. Default is \code{"sokal"},
 other option \code{"geyer"}.}
@@ -33,6 +33,11 @@ w <- rexp(n, 0.5 * exp(0.001 * x^2))
 # different methods:
 asymptotic_var(x, w, method = "sokal")
 asymptotic_var(x, w, method = "geyer")
+
+data("negbin_model")
+# can be obtained directly with summary method
+d <- suppressWarnings(as_draws(negbin_model))
+sqrt(asymptotic_var(d$sd_level, d$weight))
 
 }
 \references{

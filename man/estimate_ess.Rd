@@ -7,10 +7,10 @@
 estimate_ess(x, w, method = "sokal")
 }
 \arguments{
-\item{x}{Vector of samples.}
+\item{x}{A numeric vector of samples.}
 
-\item{w}{Vector of weights. If missing, set to 1 (i.e. no weighting is
-assumed).}
+\item{w}{A numeric vector of weights. If missing, set to 1 (i.e. no
+weighting is assumed).}
 
 \item{method}{Method for computing the ESS. Default is \code{"sokal"}, other
 option are \code{"geyer"} (see also \code{asymptotic_var}).}
