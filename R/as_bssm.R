@@ -12,7 +12,7 @@
 #' used to replace exact diffuse elements of the original model.
 #' @param ... Additional arguments to model building functions of \code{bssm}
 #' (such as prior and updating functions, C, and D).
-#' @return Object of class \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or 
+#' @return An object of class \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or 
 #' \code{ssm_mng}.
 #' @export
 #' @examples

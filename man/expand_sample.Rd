@@ -11,10 +11,10 @@ expand_sample(x, variable = "theta", times, states, by_states = TRUE)
 
 \item{variable}{Expand parameters \code{"theta"} or states \code{"states"}.}
 
-\item{times}{Vector of indices. In case of states,
+\item{times}{A vector of indices. In case of states,
 what time points to expand? Default is all.}
 
-\item{states}{Vector of indices. In case of states,
+\item{states}{A vector of indices. In case of states,
 what states to expand? Default is all.}
 
 \item{by_states}{If \code{TRUE} (default), return list by states.

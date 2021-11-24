@@ -26,19 +26,24 @@
 sim_smoother <- function(model, nsim, seed, use_antithetic = TRUE, ...) {
   UseMethod("sim_smoother", model)
 }
-#' @method sim_smoother gaussian
+#' @method sim_smoother lineargaussian
 #' @rdname sim_smoother
 #' @export
-sim_smoother.gaussian <- function(model, nsim = 1, 
+sim_smoother.lineargaussian <- function(model, nsim = 1, 
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = TRUE, ...) {
   
   check_missingness(model)
-  
+ 
   nsim <- check_intmax(nsim, "nsim")  
   seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max) 
   if (!test_flag(use_antithetic)) 
     stop("Argument 'use_antithetic' should be TRUE or FALSE. ")
-  
+  nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
+    length(model$a1) * nsim
+  if (nsim > 100 & nsamples > 1e10) {
+    warning(paste("Trying to sample ", nsamples, 
+      "particles, you might run out of memory."))
+  }
   out <- gaussian_sim_smoother(model, nsim, use_antithetic, seed, 
     model_type(model))
   rownames(out) <- names(model$a1)
@@ -49,11 +54,6 @@ sim_smoother.gaussian <- function(model, nsim = 1,
 #' @export
 sim_smoother.nongaussian <- function(model, nsim = 1,
   seed = sample(.Machine$integer.max, size = 1), use_antithetic = TRUE, ...) {
-  
-  nsim <- check_intmax(nsim, "nsim")
-  seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
-  if (!test_flag(use_antithetic)) 
-    stop("Argument 'use_antithetic' should be TRUE or FALSE. ")
   
   sim_smoother(gaussian_approx(model), nsim = nsim, 
     use_antithetic = use_antithetic, seed = seed)

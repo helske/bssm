@@ -15,8 +15,9 @@
 #' For-nonlinear models option \code{"ekf"} uses EKF/IEKF-based particle 
 #' filter (or just EKF/IEKF approximation in the case of \code{particles = 0}).
 #' @importFrom stats logLik
-#' @method logLik gaussian
+#' @method logLik lineargaussian
 #' @rdname logLik_bssm
+#' @return A numeric value.
 #' @seealso particle_smoother
 #' @export
 #' @references
@@ -47,7 +48,7 @@
 #' @examples  
 #' model <- ssm_ulg(y = c(1,4,3), Z = 1, H = 1, T = 1, R = 1)
 #' logLik(model)
-logLik.gaussian <- function(object, ...) {
+logLik.lineargaussian <- function(object, ...) {
   
      check_missingness(object)
   

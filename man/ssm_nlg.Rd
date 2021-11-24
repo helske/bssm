@@ -43,10 +43,10 @@ functions.}
 
 \item{theta}{Parameter vector passed to all model functions.}
 
-\item{known_params}{Vector of known parameters passed to all model
+\item{known_params}{A vector of known parameters passed to all model
 functions.}
 
-\item{known_tv_params}{Matrix of known parameters passed to all model
+\item{known_tv_params}{A matrix of known parameters passed to all model
 functions.}
 
 \item{n_states}{Number of states in the model (positive integer).}
@@ -63,10 +63,10 @@ the values of
 Z, H, T, and R vary with respect to time variable (given identical states).
 If used, this can speed up some computations.}
 
-\item{state_names}{Vector containing names for the states.}
+\item{state_names}{A character vector containing names for the states.}
 }
 \value{
-Object of class \code{ssm_nlg}.
+An object of class \code{ssm_nlg}.
 }
 \description{
 Constructs an object of class \code{ssm_nlg} by defining the corresponding

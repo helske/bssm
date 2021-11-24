@@ -2,18 +2,18 @@
 % Please edit documentation in R/kfilter.R
 \name{kfilter}
 \alias{kfilter}
-\alias{kfilter.gaussian}
+\alias{kfilter.lineargaussian}
 \alias{kfilter.nongaussian}
 \title{Kalman Filtering}
 \usage{
 kfilter(model, ...)
 
-\method{kfilter}{gaussian}(model, ...)
+\method{kfilter}{lineargaussian}(model, ...)
 
 \method{kfilter}{nongaussian}(model, ...)
 }
 \arguments{
-\item{model}{Model of class \code{gaussian}, \code{nongaussian} or
+\item{model}{Model of class \code{lineargaussian}, \code{nongaussian} or
 \code{ssm_nlg}.}
 
 \item{...}{Ignored.}

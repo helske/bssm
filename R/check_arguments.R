@@ -7,13 +7,13 @@
 #' @param name Name of the argument used in printing error messages.
 #' @param positive Logical, check for positiveness of \code{x}.
 #' @param max Maximum value of \code{x}.
-#' @param p Integer, number of time series.
-#' @param n Integer, number of time points.
-#' @param m Integer, dimensionality of the state vector.
-#' @param k Integer, number of predictors.
+#' @param p An integer, number of time series.
+#' @param n An integer, number of time points.
+#' @param m An integer, dimensionality of the state vector.
+#' @param k An integer, number of predictors.
 #' @param multivariate Logical, should \code{p} be larger than 1?
-#' @param beta Vector of regression coefficients.
-#' @param xreg Matrix or vector of predictors.
+#' @param beta A vector of regression coefficients.
+#' @param xreg A matrix or vector of predictors.
 #' @param distribution Distribution(s) of the responses.
 #' @param y The response time series.
 #' @param type Name to be added to the sd parameter name.
@@ -75,7 +75,7 @@ check_period <- function(x, n) {
       stop("Period should be less than the number of time points.")
     }
   }
-  x
+  as.integer(x)
 }
 #' @srrstats {BS2.5} Checks that observations are compatible with their 
 #' distributions are made.
@@ -404,14 +404,15 @@ check_H <- function(x, p, n, multivariate = FALSE) {
 }
 
 
-check_intmax <- function(x, name = "particles", positive = TRUE, max = 1e7) {
-  if (!test_count(x, positive)) {
+check_intmax <- function(x, name = "particles", positive = TRUE, max = 1e5) {
+  # autotest complains without additional positivity test
+  if (!test_count(x, positive) | (positive & x <= 0)) {
     stop(paste0("Argument '", name, "' should be a ",
       ifelse(positive, "positive", "non-negative"), " integer. "))
   }
   if (x > max) {
-    stop(paste0("I don't believe you want '", name, "' > ", max,
-      ". If you really do, file an issue at Github."))
+    stop(paste0("You probably do not want '", name, "' > ", max,
+      ". If you really do, please file an issue at Github. "))
   }
   as.integer(x)
 }

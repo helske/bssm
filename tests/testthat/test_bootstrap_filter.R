@@ -18,7 +18,7 @@ test_that("Test that bsm_lg gives identical results with ssm_ulg", {
 
 
 tol <- 1e-8
-test_that("Test that gaussian bsf still works", {
+test_that("Test that linear-gaussian bsf still works", {
   
   expect_error(model_ssm_ulg <- ssm_ulg(y = 1:10, Z = matrix(c(1, 0), 2, 1),
     H = 2, T = array(c(1, 0, 1, 1), c(2, 2, 1)), 

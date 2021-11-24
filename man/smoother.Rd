@@ -2,18 +2,18 @@
 % Please edit documentation in R/smoother.R
 \name{fast_smoother}
 \alias{fast_smoother}
-\alias{fast_smoother.gaussian}
+\alias{fast_smoother.lineargaussian}
 \alias{smoother}
-\alias{smoother.gaussian}
+\alias{smoother.lineargaussian}
 \title{Kalman Smoothing}
 \usage{
 fast_smoother(model, ...)
 
-\method{fast_smoother}{gaussian}(model, ...)
+\method{fast_smoother}{lineargaussian}(model, ...)
 
 smoother(model, ...)
 
-\method{smoother}{gaussian}(model, ...)
+\method{smoother}{lineargaussian}(model, ...)
 }
 \arguments{
 \item{model}{Model to be approximated. Should be of class

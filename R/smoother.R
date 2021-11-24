@@ -16,7 +16,7 @@
 fast_smoother <- function(model, ...) {
   UseMethod("fast_smoother", model)
 }
-#' @method fast_smoother gaussian
+#' @method fast_smoother lineargaussian
 #' @rdname smoother
 #' @export
 #' @examples
@@ -25,7 +25,7 @@ fast_smoother <- function(model, ...) {
 #'   sd_y = tnormal(50, 50, 25, min = 0),
 #'   a1 = 1000, P1 = 200)
 #' ts.plot(cbind(Nile, fast_smoother(model)), col = 1:2)
-fast_smoother.gaussian <- function(model, ...) {
+fast_smoother.lineargaussian <- function(model, ...) {
   
   check_missingness(model)
   
@@ -45,7 +45,7 @@ fast_smoother.nongaussian <- function(model, ...) {
 smoother <- function(model, ...) {
   UseMethod("smoother", model)
 }
-#' @method smoother gaussian
+#' @method smoother lineargaussian
 #' @rdname smoother
 #' @export
 #' @examples
@@ -57,7 +57,7 @@ smoother <- function(model, ...) {
 #' out <- smoother(model)
 #' ts.plot(cbind(Nile, out$alphahat), col = 1:2)
 #' ts.plot(sqrt(out$Vt[1, 1, ]))
-smoother.gaussian <- function(model, ...) {
+smoother.lineargaussian <- function(model, ...) {
   
   check_missingness(model)
   

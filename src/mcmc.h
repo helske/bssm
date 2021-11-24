@@ -42,7 +42,7 @@ public:
   void state_summary(T model, 
     const Rcpp::Function update_fn = default_update_fn);
   
-  // gaussian mcmc
+  // linear-gaussian mcmc
   template<class T>
   void mcmc_gaussian(T model, const bool end_ram, 
     const Rcpp::Function update_fn = default_update_fn, 

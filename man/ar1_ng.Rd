@@ -7,12 +7,12 @@
 ar1_ng(y, rho, sigma, mu, distribution, phi, u, beta, xreg = NULL)
 }
 \arguments{
-\item{y}{Vector or a \code{ts} object of observations.}
+\item{y}{A vector or a \code{ts} object of observations.}
 
-\item{rho}{Prior for autoregressive coefficient.
+\item{rho}{A prior for autoregressive coefficient.
 Should be an object of class \code{bssm_prior}.}
 
-\item{sigma}{Prior for the standard deviation of noise of the AR-process.
+\item{sigma}{A prior for the standard deviation of noise of the AR-process.
 Should be an object of class \code{bssm_prior}}
 
 \item{mu}{A fixed value or a prior for the stationary mean of the latent
@@ -29,19 +29,20 @@ distribution this is the shape parameter, and for other distributions this
 is ignored. Should an object of class \code{bssm_prior} or
 a positive scalar.}
 
-\item{u}{Vector of positive constants for non-Gaussian models. For Poisson,
+\item{u}{A vector of positive constants for non-Gaussian models. For Poisson,
 gamma, and negative binomial distribution, this corresponds to the offset
 term. For binomial, this is the number of trials.}
 
-\item{beta}{Prior for the regression coefficients.
+\item{beta}{A prior for the regression coefficients.
 Should be an object of class \code{bssm_prior} or \code{bssm_prior_list}
 (in case of multiple coefficients) or missing in case of no covariates.}
 
-\item{xreg}{Matrix containing covariates with number of rows matching the
-length of \code{y}.}
+\item{xreg}{A matrix containing covariates with number of rows matching the
+length of \code{y}. Can also be \code{ts}, \code{mts} or similar object
+convertible to matrix.}
 }
 \value{
-Object of class \code{ar1_ng}.
+An object of class \code{ar1_ng}.
 }
 \description{
 Constructs a simple non-Gaussian model where the state dynamics follow an

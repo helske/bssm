@@ -88,7 +88,7 @@ gaussian_approx.ssm_nlg <- function(model, max_iter = 100,
   
   model$max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
-  model$iekf_iter <- check_intmax(iekf_iter, "iekf_iter")
+  model$iekf_iter <- check_intmax(iekf_iter, "iekf_iter", positive = FALSE)
   
   out <- gaussian_approx_model_nlg(t(model$y), model$Z, model$H, model$T, 
     model$R, model$Z_gn, model$T_gn, model$a1, model$P1, 

@@ -8,9 +8,9 @@
 #' @param optional Ignored.
 #' @param variable Return samples of \code{"theta"} (default) or 
 #' \code{"states"}?
-#' @param times Vector of indices. In case of states, 
+#' @param times A vector of indices. In case of states, 
 #' what time points to return? Default is all.
-#' @param states Vector of indices. In case of states, 
+#' @param states A vector of indices. In case of states, 
 #' what states to return? Default is all.
 #' @param expand Should the jump-chain be expanded? 
 #' Defaults to \code{TRUE}. 

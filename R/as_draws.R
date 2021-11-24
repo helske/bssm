@@ -12,9 +12,9 @@
 #' i.e. those results correspond to approximate MCMC.
 #' 
 #' @param x An object of class \code{mcmc_output}.
-#' @param times Vector of indices defining which time points to return? 
+#' @param times A vector of indices defining which time points to return? 
 #' Default is all.
-#' @param states Vector of indices defining which states to return. 
+#' @param states A vector of indices defining which states to return. 
 #' Default is all.
 #' @param ... Ignored.
 #' @return A \code{draws_df} object.

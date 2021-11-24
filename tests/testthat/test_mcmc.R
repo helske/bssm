@@ -30,8 +30,9 @@ test_that("prior and posterior distributions coincide when no data is used", {
   
   # approx is enough here, the weights are uniform when there is no data
   fit <- run_mcmc(model, iter = 2e5,burnin = 1e4, mcmc_type = "approx")
-  expect_equivalent(prior_sumr, summary(fit)[, c(1, 3)], tol = 0.1)
-  
+  expect_equivalent(prior_sumr, 
+    dplyr::arrange(summary(fit)[, c(2, 3)], order(rownames(prior_sumr))), 
+    tol = 0.1)
 })
 
 
@@ -52,13 +53,13 @@ test_that("MCMC results from bssm paper are still correct", {
   fit_bssm <- run_mcmc(bssm_model, iter = 6e4, burnin = 1e4,
     particles = 10, seed = 1)
   expect_error(sumr_theta <- summary(fit_bssm)[, "Mean"], NA)
-  paper_theta <- c(0.092, 0.003, 5.392, -0.912)
+  paper_theta <- c(-0.912, 5.392, 0.092, 0.003)
   expect_equivalent(sumr_theta, paper_theta, tol = 0.01)
   
   expect_error(sumr_alpha <- summary(fit_bssm, 
     variable = "states", times = 200)$Mean, 
     NA)
-  paper_alpha <- c(6.962,0.006)
+  paper_alpha <- c(6.962, 0.006)
   expect_equivalent(sumr_alpha, paper_alpha, tol = 0.01)
   
 })

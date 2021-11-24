@@ -2,8 +2,8 @@
 #' @param x Object of class \code{mcmc_output} or any other list style object 
 #' which has matrix theta (where each row corresponds to one iteration) and 
 #' vector \code{posterior},
-#' @return Vector containing theta corresponding to maximum log-posterior value 
-#' of the posterior sample.
+#' @return A vector containing theta corresponding to maximum log-posterior 
+#' value of the posterior sample.
 #' @noRd
 get_map <- function(x) {
   x$theta[which.max(x$posterior), ]
@@ -27,7 +27,7 @@ get_map <- function(x) {
 #' estimate from the (approximate) MCMC run. Can also be an output from 
 #' \code{run_mcmc} which is then used to compute the MAP 
 #' estimate of theta.
-#' @param candidates Vector of positive integers containing the candidate 
+#' @param candidates A vector of positive integers containing the candidate 
 #' number of particles to test. Default is \code{seq(10, 100, by = 10)}. 
 #' @param replications Positive integer, how many replications should be used 
 #' for computing the standard deviations? Default is 100.
@@ -88,15 +88,15 @@ suggest_N <- function(model, theta,
   
   check_missingness(model)
   
-  replications <- check_intmax(replications, "replications")
+  replications <- check_intmax(replications, "replications", max = 1000)
   seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   
   if (!test_integerish(candidates, lower = 1, any.missing = FALSE, 
     min.len = 1)) {
     stop("Argument 'candidates' should be vector of positive integers. ")
   } 
-  if (max(candidates) > 1e7) 
-    stop(paste("I don't believe you want to use over 1e7 particles",
+  if (max(candidates) > 1e5) 
+    stop(paste("I don't believe you want to use over 1e5 particles",
       "If you really do, please file an issue at Github.", sep = " "))
   
   if (missing(theta) | (!is.vector(theta) & !inherits(theta, "mcmc_output"))) {

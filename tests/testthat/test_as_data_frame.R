@@ -43,6 +43,6 @@ test_that("expanded and not expanded data frame work equally for states", {
   expect_error(sumr <- summary(mcmc_bsm, variable = "both", return_se = TRUE), 
     NA)
   expect_equal(mean(d$value[d$variable == "sd_y"]), 
-    sumr["sd_y", "Mean"])
+    sumr$theta[2, 2])
   
 })

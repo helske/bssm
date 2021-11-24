@@ -16,12 +16,12 @@
 #' @param return_se if \code{FALSE} (default), computation of standard 
 #' errors and effective sample sizes is omitted (as they can take considerable 
 #' time for models with large number of states and time points).
-#' @param probs Numeric vector defining the quantiles of interest. Default is 
+#' @param probs A numeric vector defining the quantiles of interest. Default is 
 #' \code{c(0.025, 0.975)}.
-#' @param times Vector of indices. For states, for what time points the 
+#' @param times A vector of indices. For states, for what time points the 
 #' summaries should be computed? Default is all, ignored if 
 #' \code{variable = "theta"}.
-#' @param states Vector of indices. For what states the summaries should be 
+#' @param states A vector of indices. For what states the summaries should be 
 #' computed?. Default is all, ignored if 
 #' \code{variable = "theta"}.
 #' @param method Method for computing integrated autocorrelation time. Default 
@@ -89,7 +89,8 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
     sumr_theta <- 
       as.data.frame(object, variable = "theta", expand = TRUE) %>%
       group_by(.data$variable) %>% 
-      summarise(as_tibble(as.list(summary_f(.data$value, .data$weight))))
+      summarise(as_tibble(as.list(summary_f(.data$value, .data$weight)))) %>% 
+      as.data.frame()
     if (variable == "theta") return(sumr_theta)
   }
   
@@ -118,7 +119,8 @@ summary.mcmc_output <- function(object, return_se = FALSE, variable = "theta",
       as.data.frame(object, variable = "states", expand = TRUE, 
         times = times, states = states, use_times = use_times) %>%
       group_by(.data$variable, .data$time) %>% 
-      summarise(as_tibble(as.list(summary_f(.data$value, .data$weight))))
+      summarise(as_tibble(as.list(summary_f(.data$value, .data$weight)))) %>% 
+      as.data.frame()
     if (variable == "states") return(sumr_states)
   }
   list(theta = sumr_theta, states = sumr_states)

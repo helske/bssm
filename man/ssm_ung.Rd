@@ -49,7 +49,7 @@ distribution this is the shape parameter, and for other distributions this
 is ignored. Should an object of class \code{bssm_prior} or
 a positive scalar.}
 
-\item{u}{Vector of positive constants for non-Gaussian models. For Poisson,
+\item{u}{A vector of positive constants for non-Gaussian models. For Poisson,
 gamma, and negative binomial distribution, this corresponds to the offset
 term. For binomial, this is the number of trials.}
 
@@ -62,9 +62,9 @@ scalar or vector of length n.}
 \item{C}{Intercept terms \eqn{C_t} for the state equation, given as a
 m times 1 or m times n matrix.}
 
-\item{state_names}{Names for the states.}
+\item{state_names}{A character vector defining the names of the states.}
 
-\item{update_fn}{Function which returns list of updated model
+\item{update_fn}{A function which returns list of updated model
 components given input vector theta. This function should take only one
 vector argument which is used to create list with elements named as
 \code{Z}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, \code{C}, and
@@ -74,11 +74,11 @@ theta. It's best to check the internal dimensions with
 \code{str(model_object)} as the dimensions of input arguments can differ
 from the final dimensions.}
 
-\item{prior_fn}{Function which returns log of prior density
+\item{prior_fn}{A function which returns log of prior density
 given input vector theta.}
 }
 \value{
-Object of class \code{ssm_ung}.
+An object of class \code{ssm_ung}.
 }
 \description{
 Construct an object of class \code{ssm_ung} by directly defining the

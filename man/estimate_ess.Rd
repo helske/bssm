@@ -15,6 +15,9 @@ weighting is assumed).}
 \item{method}{Method for computing the ESS. Default is \code{"sokal"}, other
 option are \code{"geyer"} (see also \code{asymptotic_var}).}
 }
+\value{
+A single numeric value of effective sample size estimate.
+}
 \description{
 Computes the effective sample size (ESS) based on weighted posterior
 samples.

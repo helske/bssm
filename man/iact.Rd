@@ -9,6 +9,9 @@ iact(x)
 \arguments{
 \item{x}{A numeric vector.}
 }
+\value{
+A single numeric value of IACT estimate.
+}
 \description{
 Estimates the integrated autocorrelation time (IACT) based on Sokal (1997).
 Note that the estimator is not particularly good for very short series x
@@ -16,12 +19,11 @@ Note that the estimator is not particularly good for very short series x
 }
 \examples{
 set.seed(1)
-n <- 1e4
+n <- 1000
 x <- numeric(n)
 phi <- 0.8
 for(t in 2:n) x[t] <- phi * x[t-1] + rnorm(1)
-# ESS estimate:
-length(x) / iact(x)
+iact(x)
 }
 \references{
 Sokal A. (1997) Monte Carlo Methods in Statistical Mechanics: Foundations

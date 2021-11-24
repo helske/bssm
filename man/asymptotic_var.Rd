@@ -15,6 +15,9 @@ weighting is assumed).}
 \item{method}{Method for computing IACT. Default is \code{"sokal"},
 other option \code{"geyer"}.}
 }
+\value{
+A single numeric value of asymptotic variance estimate.
+}
 \description{
 The asymptotic variance MCMCSE^2 is based on Corollary 1
 of Vihola et al. (2020) from weighted samples from IS-MCMC. The default

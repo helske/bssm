@@ -63,7 +63,7 @@ particle_smoother <- function(model, particles, ...) {
   UseMethod("particle_smoother", model)
 }
 
-#' @method particle_smoother gaussian
+#' @method particle_smoother lineargaussian
 #' @export
 #' @rdname particle_smoother
 #' @examples 
@@ -77,7 +77,7 @@ particle_smoother <- function(model, particles, ...) {
 #'   use_antithetic = TRUE))
 #' ts.plot(out$alphahat, rowMeans(out2), col = 1:2)
 #' 
-particle_smoother.gaussian <- function(model, particles,  method = "psi",
+particle_smoother.lineargaussian <- function(model, particles,  method = "psi",
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   check_missingness(model)
@@ -95,7 +95,7 @@ particle_smoother.gaussian <- function(model, particles,  method = "psi",
   
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     length(model$a1) * particles
-  if (particles > 100 & nsamples > 1e12) {
+  if (particles > 100 & nsamples > 1e10) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
@@ -150,7 +150,7 @@ particle_smoother.nongaussian <- function(model, particles,
   particles <- check_intmax(particles, "particles")
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     length(model$a1) * particles
-  if (particles > 100 & nsamples > 1e12) {
+  if (particles > 100 & nsamples > 1e10) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
@@ -202,7 +202,7 @@ particle_smoother.ssm_nlg <- function(model, particles,
   
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     model$n_states * particles
-  if (particles > 100 & nsamples > 1e12) {
+  if (particles > 100 & nsamples > 1e10) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
@@ -264,7 +264,7 @@ particle_smoother.ssm_sde <- function(model, particles, L,
   }
   particles <- check_intmax(particles, "particles")
   nsamples <- length(model$y) * particles
-  if (particles > 100 & nsamples > 1e12) {
+  if (particles > 100 & nsamples > 1e10) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }

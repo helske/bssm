@@ -1,5 +1,5 @@
 model_type <- function(model) {
-  if (inherits(model, "gaussian")) {
+  if (inherits(model, "lineargaussian")) {
     switch(class(model)[1],
       "ssm_mlg" = 0L,
       "ssm_ulg" = 1L,

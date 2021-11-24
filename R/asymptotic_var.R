@@ -5,6 +5,7 @@
 #' (say < 100), but that is not very practical for MCMC applications anyway.
 #'
 #' @param x A numeric vector.
+#' @return A single numeric value of IACT estimate.
 #' @references
 #' Sokal A. (1997) Monte Carlo Methods in Statistical Mechanics: Foundations 
 #' and New Algorithms. 
@@ -15,12 +16,11 @@
 #' @srrstats {BS5.3, BS5.5}
 #' @examples
 #' set.seed(1)
-#' n <- 1e4
+#' n <- 1000
 #' x <- numeric(n)
 #' phi <- 0.8
 #' for(t in 2:n) x[t] <- phi * x[t-1] + rnorm(1)
-#' # ESS estimate:
-#' length(x) / iact(x)
+#' iact(x)
 iact <- function(x) {
   
   if (!test_numeric(x))
@@ -39,11 +39,13 @@ iact <- function(x) {
 #' \code{posterior} package. 
 #' 
 #' @importFrom posterior ess_mean
+#' @importFrom checkmate test_numeric
 #' @param x A numeric vector of samples.
 #' @param w A numeric vector of weights. If missing, set to 1 (i.e. no 
 #' weighting is assumed).
 #' @param method Method for computing IACT. Default is \code{"sokal"},
 #' other option \code{"geyer"}.
+#' @return A single numeric value of asymptotic variance estimate.
 #' @references
 #' Vihola M, Helske J, Franks J. (2020). Importance sampling type estimators 
 #' based on approximate marginal Markov chain Monte Carlo. 
@@ -63,7 +65,6 @@ iact <- function(x) {
 #' assessing convergence of MCMC. Bayesian analysis, 16(2):667-718. 
 #' https://doi.org/10.1214/20-BA1221
 #' @export
-#' @importFrom checkmate test_numeric
 #' @srrstats {BS5.3, BS5.5}
 #' @examples
 #' set.seed(1)
@@ -83,10 +84,9 @@ iact <- function(x) {
 #' 
 asymptotic_var <- function(x, w, method = "sokal") {
   
-  method <- match.arg(method, c("sokal", "geyer"))
-  if (!test_numeric(x))
+  method <- match.arg(tolower(method), c("sokal", "geyer"))
+  if (!test_numeric(x) & !is.null(class(x)))
     stop("Argument 'x' should be a numeric vector. ")
-  
   if (missing(w)) {
     w <- rep(1, length(x))
   } else {
@@ -137,6 +137,7 @@ asymptotic_var <- function(x, w, method = "sokal") {
 #' Bayesian Data Analysis, Third Edition. Chapman and Hall/CRC.
 #' @export
 #' @srrstats {BS5.3, BS5.5}
+#' @return A single numeric value of effective sample size estimate.
 #' @examples
 #' set.seed(1)
 #' n <- 1e4 
@@ -150,7 +151,7 @@ asymptotic_var <- function(x, w, method = "sokal") {
 #' 
 estimate_ess <- function(x, w, method = "sokal") {
   
-  method <- match.arg(method, c("sokal", "geyer"))
+  method <- match.arg(tolower(method), c("sokal", "geyer"))
   
   if (!test_numeric(x))
     stop("Argument 'x' should be a numeric vector. ")

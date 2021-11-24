@@ -39,7 +39,7 @@ computes the prior log-density given the parameter vector theta.}
 forced by \code{abs} in Milstein scheme.}
 }
 \value{
-Object of class \code{ssm_sde}.
+An object of class \code{ssm_sde}.
 }
 \description{
 Constructs an object of class \code{ssm_sde} by defining the functions for

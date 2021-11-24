@@ -7,18 +7,18 @@
 svm(y, mu, rho, sd_ar, sigma)
 }
 \arguments{
-\item{y}{Vector or a \code{\link{ts}} object of observations.}
+\item{y}{A numeric vector or a \code{\link{ts}} object of observations.}
 
-\item{mu}{Prior for mu parameter of transition equation.
+\item{mu}{A prior for mu parameter of transition equation.
 Should be an object of class \code{bssm_prior}.}
 
-\item{rho}{prior for autoregressive coefficient.
+\item{rho}{A prior for autoregressive coefficient.
 Should be an object of class \code{bssm_prior}.}
 
-\item{sd_ar}{Prior for the standard deviation of noise of the AR-process.
+\item{sd_ar}{A prior for the standard deviation of noise of the AR-process.
 Should be an object of class \code{bssm_prior}.}
 
-\item{sigma}{Prior for sigma parameter of observation equation, internally
+\item{sigma}{A prior for sigma parameter of observation equation, internally
 denoted as phi. Should be an object of class \code{bssm_prior}.
 Ignored if \code{mu} is provided. Note that typically
 parametrization using mu is preferred due to better numerical properties and
@@ -28,7 +28,7 @@ parameterization as sigma is not a parameter of the resulting approximate
 model.}
 }
 \value{
-Object of class \code{svm}.
+An object of class \code{svm}.
 }
 \description{
 Constructs a simple stochastic volatility model with Gaussian errors and
@@ -37,12 +37,12 @@ first order autoregressive signal. See the main vignette for details.
 \examples{
 
 data("exchange")
-exchange <- exchange[1:100] # faster CRAN check
-model <- svm(exchange, rho = uniform(0.98, -0.999, 0.999),
+y <- exchange[1:100] # for faster CRAN check
+model <- svm(y, rho = uniform(0.98, -0.999, 0.999),
  sd_ar = halfnormal(0.15, 5), sigma = halfnormal(0.6, 2))
 
 obj <- function(pars) {
-   -logLik(svm(exchange, 
+   -logLik(svm(y, 
      rho = uniform(pars[1], -0.999, 0.999),
      sd_ar = halfnormal(pars[2], 5),
      sigma = halfnormal(pars[3], 2)), particles = 0)
@@ -51,17 +51,17 @@ opt <- optim(c(0.98, 0.15, 0.6), obj,
   lower = c(-0.999, 1e-4, 1e-4),
   upper = c(0.999, 10, 10), method = "L-BFGS-B")
 pars <- opt$par
-model <- svm(exchange, 
+model <- svm(y, 
   rho = uniform(pars[1],-0.999,0.999),
   sd_ar = halfnormal(pars[2], 5),
   sigma = halfnormal(pars[3], 2))
 
 # alternative parameterization  
-model2 <- svm(exchange, rho = uniform(0.98,-0.999, 0.999),
+model2 <- svm(y, rho = uniform(0.98,-0.999, 0.999),
  sd_ar = halfnormal(0.15, 5), mu = normal(0, 0, 1))
 
 obj2 <- function(pars) {
-   -logLik(svm(exchange, 
+   -logLik(svm(y, 
      rho = uniform(pars[1], -0.999, 0.999),
      sd_ar = halfnormal(pars[2], 5),
      mu = normal(pars[3], 0, 1)), particles = 0)
@@ -69,7 +69,7 @@ obj2 <- function(pars) {
 opt2 <- optim(c(0.98, 0.15, 0), obj2, lower = c(-0.999, 1e-4, -Inf),
   upper = c(0.999, 10, Inf), method = "L-BFGS-B")
 pars2 <- opt2$par
-model2 <- svm(exchange, 
+model2 <- svm(y, 
   rho = uniform(pars2[1],-0.999,0.999),
   sd_ar = halfnormal(pars2[2], 5),
   mu = normal(pars2[3], 0, 1))

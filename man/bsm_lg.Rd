@@ -12,7 +12,7 @@ bsm_lg(
   sd_seasonal,
   beta,
   xreg = NULL,
-  period = frequency(y),
+  period,
   a1 = NULL,
   P1 = NULL,
   D = NULL,
@@ -20,10 +20,11 @@ bsm_lg(
 )
 }
 \arguments{
-\item{y}{Vector or a \code{ts} object of observations.}
+\item{y}{A vector or a \code{ts} object of observations.}
 
 \item{sd_y}{Standard deviation of the noise of observation equation.
-Should be an object of class \code{bssm_prior} or scalar.}
+Should be an object of class \code{bssm_prior} or scalar
+value defining a known value such as 0.}
 
 \item{sd_level}{Standard deviation of the noise of level equation.
 Should be an object of class \code{bssm_prior} or scalar
@@ -39,29 +40,33 @@ Should be an object of class \code{bssm_prior}, scalar
 value defining a known value such as 0, or missing, in which case the
 seasonal term is omitted from the model.}
 
-\item{beta}{Prior for the regression coefficients.
+\item{beta}{A prior for the regression coefficients.
 Should be an object of class \code{bssm_prior} or \code{bssm_prior_list}
 (in case of multiple coefficients) or missing in case of no covariates.}
 
-\item{xreg}{Matrix containing covariates with number of rows matching the
-length of \code{y}.}
+\item{xreg}{A matrix containing covariates with number of rows matching the
+length of \code{y}. Can also be \code{ts}, \code{mts} or similar object
+convertible to matrix.}
 
 \item{period}{Length of the seasonal pattern.
-Default is \code{frequency(y)}. Must be a positive integer greater than 2
-and less than the length of the input time series.}
+Must be a positive value greater than 2 and less than the length of the
+input time series. Default is \code{frequency(y)},
+which can also return non-integer value (in which case error is given).}
 
 \item{a1}{Prior means for the initial states (level, slope, seasonals).
 Defaults to vector of zeros.}
 
-\item{P1}{Prior covariance for the initial states (level, slope, seasonals).
+\item{P1}{Prior covariance matrix for the initial states (level, slope, seasonals).
 Default is diagonal matrix with 1000 on the diagonal.}
 
-\item{D, C}{Intercept terms for observation and
-state equations, given as a length n vector and m times n matrix
-respectively (or scalar and m times 1 matrix).}
+\item{D}{Intercept terms for observation equation, given as a length n
+numeric vector or a scalar in case of time-invariant intercept.}
+
+\item{C}{Intercept terms for state equation, given as a m times n matrix
+or m times 1 matrix in case of time-invariant intercept.}
 }
 \value{
-Object of class \code{bsm_lg}.
+An object of class \code{bsm_lg}.
 }
 \description{
 Constructs a basic structural model with local level or local trend
@@ -69,21 +74,8 @@ component and seasonal component.
 }
 \examples{
 
-prior <- uniform(0.1 * sd(log10(UKgas)), 0, 1)
-# period here is redundant as frequency(UKgas) = 4
-model <- bsm_lg(log10(UKgas), sd_y = prior, sd_level =  prior,
-  sd_slope =  prior, sd_seasonal =  prior, period = 4)
-
-# Note small number of iterations for CRAN checks
-mcmc_out <- run_mcmc(model, iter = 5000)
-summary(mcmc_out, return_se = TRUE)
-# Use the summary method from coda:
-summary(expand_sample(mcmc_out, "theta"))$stat
-mcmc_out$theta[which.max(mcmc_out$posterior), ]
-sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
-
 set.seed(1)
-n <- 10
+n <- 50
 x <- rnorm(n)
 level <- numeric(n)
 level[1] <- rnorm(1)
@@ -94,5 +86,18 @@ model <- bsm_lg(y, sd_y = halfnormal(1, 5), sd_level = 0.1, a1 = level[1],
   D = 2.1, C = matrix(-0.2, 1, 1))
   
 ts.plot(cbind(fast_smoother(model), level), col = 1:2)
+
+prior <- uniform(0.1 * sd(log10(UKgas)), 0, 1)
+# period here is redundant as frequency(UKgas) = 4
+model_UKgas <- bsm_lg(log10(UKgas), sd_y = prior, sd_level =  prior,
+  sd_slope =  prior, sd_seasonal =  prior, period = 4)
+
+# Note small number of iterations for CRAN checks
+mcmc_out <- run_mcmc(model_UKgas, iter = 5000)
+summary(mcmc_out, return_se = TRUE)
+# Use the summary method from coda:
+summary(expand_sample(mcmc_out, "theta"))$stat
+mcmc_out$theta[which.max(mcmc_out$posterior), ]
+sqrt((fit <- StructTS(log10(UKgas), type = "BSM"))$coef)[c(4, 1:3)]
 
 }

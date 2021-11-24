@@ -14,11 +14,11 @@
 #' 
 cpp_example_model <- function(example, return_code = FALSE) {
   
-  example <- match.arg(example, c("nlg_linear_gaussian", "nlg_sin_exp", 
-    "nlg_growth", "nlg_ar_exp", "sde_poisson_OU", "sde_gbm"))
+  example <- match.arg(tolower(example), c("nlg_linear_gaussian", "nlg_sin_exp", 
+    "nlg_growth", "nlg_ar_exp", "sde_poisson_ou", "sde_gbm"))
   
   code <- switch(example,
-    "sde_poisson_OU" = {
+    "sde_poisson_ou" = {
       '
       // A latent Ornstein-Uhlenbeck process with Poisson observations
       // dalpha_t = rho (nu - alpha_t) dt + sigma dB_t, t>=0

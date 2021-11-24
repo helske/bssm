@@ -21,7 +21,7 @@ estimate from the (approximate) MCMC run. Can also be an output from
 \code{run_mcmc} which is then used to compute the MAP
 estimate of theta.}
 
-\item{candidates}{Vector of positive integers containing the candidate
+\item{candidates}{A vector of positive integers containing the candidate
 number of particles to test. Default is \code{seq(10, 100, by = 10)}.}
 
 \item{replications}{Positive integer, how many replications should be used

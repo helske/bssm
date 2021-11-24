@@ -40,7 +40,7 @@ m x k x n array.}
 
 \item{P1}{Prior covariance matrix for the initial state as m x m matrix.}
 
-\item{distribution}{vector of distributions of the observed series.
+\item{distribution}{A vector of distributions of the observed series.
 Possible choices are
 \code{"poisson"}, \code{"binomial"}, \code{"negative binomial"},
 \code{"gamma"}, and \code{"gaussian"}.}
@@ -50,10 +50,10 @@ For negative binomial distribution this is the dispersion term, for
 gamma distribution this is the shape parameter, for Gaussian this is
 standard deviation, and for other distributions this is ignored.}
 
-\item{u}{Matrix of positive constants for non-Gaussian models
+\item{u}{A matrix of positive constants for non-Gaussian models
 (of same dimensions as y). For Poisson,  gamma, and negative binomial
 distribution, this corresponds to the offset term. For binomial, this is the
-number of trials.}
+number of trials (and as such should be integer(ish)).}
 
 \item{init_theta}{Initial values for the unknown hyperparameters theta
 (i.e. unknown variables excluding latent state variables).}
@@ -62,9 +62,9 @@ number of trials.}
 
 \item{C}{Intercept terms for state equation, given as m x n matrix.}
 
-\item{state_names}{Names for the states.}
+\item{state_names}{A character vector defining the names of the states.}
 
-\item{update_fn}{Function which returns list of updated model
+\item{update_fn}{A function which returns list of updated model
 components given input vector theta. This function should take only one
 vector argument which is used to create list with elements named as
 \code{Z}, \code{T}, \code{R}, \code{a1}, \code{P1}, \code{D}, \code{C}, and
@@ -74,11 +74,11 @@ theta. It's best to check the internal dimensions with
 \code{str(model_object)} as the dimensions of input arguments can differ
 from the final dimensions.}
 
-\item{prior_fn}{Function which returns log of prior density
+\item{prior_fn}{A function which returns log of prior density
 given input vector theta.}
 }
 \value{
-Object of class \code{ssm_mng}.
+An object of class \code{ssm_mng}.
 }
 \description{
 Construct an object of class \code{ssm_mng} by directly defining the
@@ -135,5 +135,5 @@ model <- ssm_mng(y, Z, T, R, a1, P1, phi = c(2, 1),
 # smoothing based on approximating gaussian model
 ts.plot(cbind(y, fast_smoother(model)), 
   col = 1:3, lty = c(1, 1, 2))
-    
+
 }

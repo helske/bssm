@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_mcmc.R
 \name{run_mcmc}
 \alias{run_mcmc}
-\alias{run_mcmc.gaussian}
+\alias{run_mcmc.lineargaussian}
 \alias{run_mcmc.nongaussian}
 \alias{run_mcmc.ssm_nlg}
 \alias{run_mcmc.ssm_sde}
@@ -10,7 +10,7 @@
 \usage{
 run_mcmc(model, ...)
 
-\method{run_mcmc}{gaussian}(
+\method{run_mcmc}{lineargaussian}(
   model,
   iter,
   output_type = "full",
@@ -95,7 +95,7 @@ run_mcmc(model, ...)
 
 \item{...}{Ignored.}
 
-\item{iter}{Positive integer defining the total number of MCMC iterations.}
+\item{iter}{A positive integer defining the total number of MCMC iterations.}
 
 \item{output_type}{Either \code{"full"}
 (default, returns posterior samples from the posterior
@@ -103,12 +103,12 @@ run_mcmc(model, ...)
 theta), or \code{"summary"} (return the mean and variance estimates of the
 states and posterior samples of theta). See details.}
 
-\item{burnin}{Positive integer defining the length of the burn-in period
+\item{burnin}{A positive integer defining the length of the burn-in period
 which is disregarded from the results. Defaults to \code{iter / 2}.
 Note that all MCMC algorithms of \code{bssm} use adaptive MCMC during the
 burn-in period in order to find good proposal distribution.}
 
-\item{thin}{Positive integer defining the thinning rate. All MCMC algorithms
+\item{thin}{A positive integer defining the thinning rate. All MCMC algorithms
 in \code{bssm} use the jump chain representation (see refs), and the
 thinning is applied to these blocks. Defaults to 1.
 For IS-corrected methods, larger value can also be
@@ -144,8 +144,8 @@ models.}
 missing, defined by \code{rlang::is_interactive}.
 Set to \code{FALSE} if number of iterations is less than 50.}
 
-\item{particles}{Number of state samples per MCMC iteration for models other
-than linear-Gaussian models.
+\item{particles}{A positive integer defining the number of state samples per
+MCMC iteration for models other than linear-Gaussian models.
 Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.}
 
 \item{mcmc_type}{What type of MCMC algorithm should be used for models other
@@ -191,6 +191,9 @@ with \code{iekf_iter} iterations. Used only for models of class
 the discretization levels for first and second stages (defined as 2^L).
 For pseudo-marginal methods (\code{"pm"}), maximum of these is used.}
 }
+\value{
+An object of class \code{mcmc_output}.
+}
 \description{
 Adaptive Markov chain Monte Carlo simulation for SSMs using
 Robust Adaptive Metropolis algorithm by Vihola (2012). Several different
@@ -231,7 +234,7 @@ summary(mcmc_results, return_se = TRUE)
 
 sumr <- summary(mcmc_results, variable = "states")
 library("ggplot2")
-sumr \%>\% ggplot(aes(time, Mean)) + 
+ggplot(sumr, aes(time, Mean)) + 
   geom_ribbon(aes(ymin = `2.5\%`, ymax = `97.5\%`), alpha = 0.25) + 
   geom_line() + theme_bw() +
   geom_point(data = data.frame(Mean = LakeHuron, time = time(LakeHuron)),

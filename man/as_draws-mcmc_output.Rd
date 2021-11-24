@@ -14,10 +14,10 @@
 \arguments{
 \item{x}{An object of class \code{mcmc_output}.}
 
-\item{times}{Vector of indices defining which time points to return?
+\item{times}{A vector of indices defining which time points to return?
 Default is all.}
 
-\item{states}{Vector of indices defining which states to return.
+\item{states}{A vector of indices defining which states to return.
 Default is all.}
 
 \item{...}{Ignored.}

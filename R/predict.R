@@ -27,7 +27,7 @@
 #' C++ side, and \code{predict} also uses R side RNG for subsampling, so for 
 #' replicable results you should call \code{set.seed} before \code{predict}.
 #' @param ... Ignored.
-#' @return A \code{data.frame} consisting of samples from the predictive 
+#' @return A data.frame consisting of samples from the predictive 
 #' posterior distribution.
 #' @method predict mcmc_output
 #' @aliases predict predict.mcmc_output
@@ -45,7 +45,7 @@
 #'   start = tsp(model$y)[2] + 2 * deltat(model$y), 
 #'   frequency = frequency(model$y))
 #' # use "state" for illustrative purposes, we could use type = "mean" directly
-#' pred <- predict(mcmc_results, future_model, type = "state", 
+#' pred <- predict(mcmc_results, future_model = future_model, type = "state", 
 #'   nsim = 1000)
 #' 
 #' library("dplyr")
@@ -88,9 +88,9 @@
 #'     time = time(JohnsonJohnson)))
 #' 
 #' # Posterior predictions for past observations:
-#' yrep <- predict(mcmc_results, model, type = "response", 
+#' yrep <- predict(mcmc_results, future_model = model, type = "response", 
 #'   future = FALSE, nsim = 1000)
-#' meanrep <- predict(mcmc_results, model, type = "mean", 
+#' meanrep <- predict(mcmc_results, future_model = model, type = "mean", 
 #'   future = FALSE, nsim = 1000)
 #'   
 #' sumr_yrep <- yrep %>% 
@@ -108,7 +108,8 @@
 #'   mutate(interval = "Mean")
 #'     
 #' rbind(sumr_meanrep, sumr_yrep) %>% 
-#'   mutate(interval = factor(interval, levels = c("Observations", "Mean"))) %>%
+#'   mutate(interval = 
+#'     factor(interval, levels = c("Observations", "Mean"))) %>%
 #'   ggplot(aes(x = time, y = earnings)) + 
 #'   geom_ribbon(aes(ymin = lwr, ymax = upr, fill = interval), 
 #'    alpha = 0.75) +

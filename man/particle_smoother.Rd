@@ -2,7 +2,7 @@
 % Please edit documentation in R/particle_smoother.R
 \name{particle_smoother}
 \alias{particle_smoother}
-\alias{particle_smoother.gaussian}
+\alias{particle_smoother.lineargaussian}
 \alias{particle_smoother.nongaussian}
 \alias{particle_smoother.ssm_nlg}
 \alias{particle_smoother.ssm_sde}
@@ -10,7 +10,7 @@
 \usage{
 particle_smoother(model, particles, ...)
 
-\method{particle_smoother}{gaussian}(
+\method{particle_smoother}{lineargaussian}(
   model,
   particles,
   method = "psi",

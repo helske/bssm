@@ -26,10 +26,10 @@
 \item{variable}{Return samples of \code{"theta"} (default) or
 \code{"states"}?}
 
-\item{times}{Vector of indices. In case of states,
+\item{times}{A vector of indices. In case of states,
 what time points to return? Default is all.}
 
-\item{states}{Vector of indices. In case of states,
+\item{states}{A vector of indices. In case of states,
 what states to return? Default is all.}
 
 \item{expand}{Should the jump-chain be expanded?

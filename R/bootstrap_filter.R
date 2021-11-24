@@ -19,7 +19,7 @@
 bootstrap_filter <- function(model, particles, ...) {
   UseMethod("bootstrap_filter", model)
 }
-#' @method bootstrap_filter gaussian
+#' @method bootstrap_filter lineargaussian
 #' @rdname bootstrap_filter
 #' @export
 #' @examples 
@@ -32,7 +32,7 @@ bootstrap_filter <- function(model, particles, ...) {
 #' ts.plot(cbind(y, x, out$att), col = 1:3)
 #' ts.plot(cbind(kfilter(model)$att, out$att), col = 1:3)
 #' 
-bootstrap_filter.gaussian <- function(model, particles,
+bootstrap_filter.lineargaussian <- function(model, particles,
   seed = sample(.Machine$integer.max, size = 1), ...) {
   
   check_missingness(model)
@@ -50,7 +50,7 @@ bootstrap_filter.gaussian <- function(model, particles,
   
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     length(model$a1) * particles
-  if (particles > 100 & nsamples > 1e12) {
+  if (particles > 100 & nsamples > 1e10) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
@@ -94,7 +94,7 @@ bootstrap_filter.nongaussian <- function(model, particles,
   seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     length(model$a1) * particles
-  if (particles > 100 & nsamples > 1e12) {
+  if (particles > 100 & nsamples > 1e10) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
@@ -133,7 +133,7 @@ bootstrap_filter.ssm_nlg <- function(model, particles,
   
   nsamples <- ifelse(!is.null(nrow(model$y)), nrow(model$y), length(model$y)) * 
     model$n_states * particles
-  if (particles > 100 & nsamples > 1e12) {
+  if (particles > 100 & nsamples > 1e10) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }
@@ -177,7 +177,7 @@ bootstrap_filter.ssm_sde <- function(model, particles, L,
   particles <- check_intmax(particles, "particles")
   
   nsamples <- length(model$y) * particles
-  if (particles > 100 & nsamples > 1e12) {
+  if (particles > 100 & nsamples > 1e10) {
     warning(paste("Trying to sample ", nsamples, 
       "particles, you might run out of memory."))
   }

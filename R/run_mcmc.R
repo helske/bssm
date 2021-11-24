@@ -33,17 +33,17 @@
 #' @importFrom stats tsp
 #' @importFrom rlang is_interactive
 #' @param model Model of class \code{bssm_model}.
-#' @param iter Positive integer defining the total number of MCMC iterations.
+#' @param iter A positive integer defining the total number of MCMC iterations.
 #' @param output_type Either \code{"full"} 
 #' (default, returns posterior samples from the posterior 
 #' \eqn{p(\alpha, \theta | y)}), \code{"theta"} (for marginal posterior of 
 #' theta), or \code{"summary"} (return the mean and variance estimates of the 
 #' states and posterior samples of theta). See details.
-#' @param burnin Positive integer defining the length of the burn-in period 
+#' @param burnin A positive integer defining the length of the burn-in period 
 #' which is disregarded from the results. Defaults to \code{iter / 2}. 
 #' Note that all MCMC algorithms of \code{bssm} use adaptive MCMC during the 
 #' burn-in period in order to find good proposal distribution.
-#' @param thin Positive integer defining the thinning rate. All MCMC algorithms 
+#' @param thin A positive integer defining the thinning rate. All MCMC algorithms 
 #' in \code{bssm} use the jump chain representation (see refs), and the 
 #' thinning is applied to these blocks. Defaults to 1. 
 #' For IS-corrected methods, larger value can also be 
@@ -76,8 +76,8 @@
 #' as a positive integer. 
 #' Default is 100 (although typically only few iterations are needed).
 #' @param conv_tol Positive tolerance parameter used in Gaussian approximation.
-#' @param particles Number of state samples per MCMC iteration for models other 
-#' than linear-Gaussian models.
+#' @param particles A positive integer defining the number of state samples per 
+#' MCMC iteration for models other than linear-Gaussian models.
 #' Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.
 #' @param mcmc_type What type of MCMC algorithm should be used for models other 
 #' than linear-Gaussian models? Possible choices are
@@ -111,6 +111,7 @@
 #' missing, defined by \code{rlang::is_interactive}.
 #' Set to \code{FALSE} if number of iterations is less than 50. 
 #' @param ... Ignored.
+#' @return An object of class \code{mcmc_output}.
 #' @export
 #' @srrstats {G2.3, G2.3a, G2.3b} match.arg and tolower used where applicable.
 #' @srrstats {BS1.0, BS1.1, BS1.2, BS1.2a, BS1.2b}
@@ -143,7 +144,7 @@
 run_mcmc <- function(model, ...) {
   UseMethod("run_mcmc", model)
 }
-#' @method run_mcmc gaussian
+#' @method run_mcmc lineargaussian
 #' @rdname run_mcmc
 #' @export
 #' @examples 
@@ -156,7 +157,7 @@ run_mcmc <- function(model, ...) {
 #' 
 #' sumr <- summary(mcmc_results, variable = "states")
 #' library("ggplot2")
-#' sumr %>% ggplot(aes(time, Mean)) + 
+#' ggplot(sumr, aes(time, Mean)) + 
 #'   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), alpha = 0.25) + 
 #'   geom_line() + theme_bw() +
 #'   geom_point(data = data.frame(Mean = LakeHuron, time = time(LakeHuron)),
@@ -166,7 +167,7 @@ run_mcmc <- function(model, ...) {
 #' model$theta[] <- mcmc_results$theta[nrow(mcmc_results$theta), ]
 #' run_more <- run_mcmc(model, S = mcmc_results$S, iter = 1000, burnin = 0)
 #' 
-run_mcmc.gaussian <- function(model, iter, output_type = "full",
+run_mcmc.lineargaussian <- function(model, iter, output_type = "full",
   burnin = floor(iter / 2), thin = 1, gamma = 2 / 3,
   target_acceptance = 0.234, S, end_adaptive_phase = FALSE, threads = 1,
   seed = sample(.Machine$integer.max, size = 1), 
@@ -182,6 +183,7 @@ run_mcmc.gaussian <- function(model, iter, output_type = "full",
   thin <- check_intmax(thin, "thin", max = 100)
   iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e12)
   burnin <- check_intmax(burnin, "burnin", max = 1e12)
+  if(burnin > iter) stop("Argument 'burnin' should be smaller than 'iter'.")
   
   if (missing(verbose)) {
     verbose <- is_interactive()
@@ -407,8 +409,9 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   model$max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
   thin <- check_intmax(thin, "thin", max = 100)
-  iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e12)
-  burnin <- check_intmax(burnin, "burnin", max = 1e12)
+  iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e10)
+  burnin <- check_intmax(burnin, "burnin", max = 1e10)
+  if(burnin > iter) stop("Argument 'burnin' should be smaller than 'iter'.")
   
   if (missing(verbose)) {
     verbose <- is_interactive()
@@ -579,6 +582,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e12)
   burnin <- check_intmax(burnin, "burnin", max = 1e12)
   iekf_iter <- check_intmax(iekf_iter, "iekf_iter", positive = FALSE)
+  if(burnin > iter) stop("Argument 'burnin' should be smaller than 'iter'.")
   
   if (missing(verbose)) {
     verbose <- is_interactive()
@@ -747,6 +751,7 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   thin <- check_intmax(thin, "thin", max = 100)
   iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e12)
   burnin <- check_intmax(burnin, "burnin", max = 1e12)
+  if(burnin > iter) stop("Argument 'burnin' should be smaller than 'iter'.")
   
   if (missing(verbose)) {
     verbose <- is_interactive()

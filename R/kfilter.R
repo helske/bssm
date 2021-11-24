@@ -7,7 +7,7 @@
 #' For non-Gaussian models, the filtering is based on the approximate 
 #' Gaussian model.
 #'
-#' @param model Model of class \code{gaussian}, \code{nongaussian} or 
+#' @param model Model of class \code{lineargaussian}, \code{nongaussian} or 
 #' \code{ssm_nlg}.
 #' @param ... Ignored.
 #' @return List containing the log-likelihood 
@@ -21,7 +21,7 @@
 kfilter <- function(model, ...) {
   UseMethod("kfilter", model)
 }
-#' @method kfilter gaussian
+#' @method kfilter lineargaussian
 #' @rdname kfilter
 #' @export
 #' @examples
@@ -29,7 +29,7 @@ kfilter <- function(model, ...) {
 #' y <- x + rnorm(20, sd = 0.1)
 #' model <- bsm_lg(y, sd_level = 1, sd_y = 0.1)
 #' ts.plot(cbind(y, x, kfilter(model)$att), col = 1:3)
-kfilter.gaussian <- function(model, ...) {
+kfilter.lineargaussian <- function(model, ...) {
   
   check_missingness(model)
   

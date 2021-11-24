@@ -16,7 +16,7 @@ used to replace exact diffuse elements of the original model.}
 (such as prior and updating functions, C, and D).}
 }
 \value{
-Object of class \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or
+An object of class \code{ssm_ulg}, \code{ssm_mlg}, \code{ssm_ung} or
 \code{ssm_mng}.
 }
 \description{

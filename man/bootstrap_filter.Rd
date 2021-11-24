@@ -2,7 +2,7 @@
 % Please edit documentation in R/bootstrap_filter.R
 \name{bootstrap_filter}
 \alias{bootstrap_filter}
-\alias{bootstrap_filter.gaussian}
+\alias{bootstrap_filter.lineargaussian}
 \alias{bootstrap_filter.nongaussian}
 \alias{bootstrap_filter.ssm_nlg}
 \alias{bootstrap_filter.ssm_sde}
@@ -10,7 +10,7 @@
 \usage{
 bootstrap_filter(model, particles, ...)
 
-\method{bootstrap_filter}{gaussian}(
+\method{bootstrap_filter}{lineargaussian}(
   model,
   particles,
   seed = sample(.Machine$integer.max, size = 1),

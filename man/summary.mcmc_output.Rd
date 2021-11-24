@@ -26,14 +26,14 @@ time for models with large number of states and time points).}
 \item{variable}{Are the summary statistics computed for either
 \code{"theta"} (default), \code{"states"}, or \code{"both"}?}
 
-\item{probs}{Numeric vector defining the quantiles of interest. Default is
+\item{probs}{A numeric vector defining the quantiles of interest. Default is
 \code{c(0.025, 0.975)}.}
 
-\item{times}{Vector of indices. For states, for what time points the
+\item{times}{A vector of indices. For states, for what time points the
 summaries should be computed? Default is all, ignored if
 \code{variable = "theta"}.}
 
-\item{states}{Vector of indices. For what states the summaries should be
+\item{states}{A vector of indices. For what states the summaries should be
 computed?. Default is all, ignored if
 \code{variable = "theta"}.}
 

@@ -4,7 +4,6 @@
 #' corresponding (scaled) importance weights. 
 #' Probably mostly useful for comparing KFAS and bssm packages.
 #' 
-#' 
 #' @inheritParams gaussian_approx
 #' @param model Model of class \code{bsm_ng}, \code{ar1_ng} \code{svm}, 
 #' \code{ssm_ung}, or \code{ssm_mng}.
@@ -56,6 +55,8 @@ importance_sample.nongaussian <- function(model, nsim, use_antithetic = TRUE,
       "values, you might run out of memory."))
   }
   seed <- check_intmax(seed, "seed", FALSE, max = .Machine$integer.max)
+  if (!test_flag(use_antithetic)) 
+    stop("Argument 'use_antithetic' should be TRUE or FALSE. ")
   model$distribution <- pmatch(model$distribution,
     c("svm", "poisson", "binomial", "negative binomial", "gamma", "gaussian"), 
     duplicates.ok = TRUE) - 1

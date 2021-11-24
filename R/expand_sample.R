@@ -18,9 +18,9 @@
 #' @importFrom coda mcmc
 #' @param x Output from \code{\link{run_mcmc}}.
 #' @param variable Expand parameters \code{"theta"} or states \code{"states"}.
-#' @param times Vector of indices. In case of states, 
+#' @param times A vector of indices. In case of states, 
 #' what time points to expand? Default is all.
-#' @param states Vector of indices. In case of states, 
+#' @param states A vector of indices. In case of states, 
 #' what states to expand? Default is all.
 #' @param by_states If \code{TRUE} (default), return list by states. 
 #' Otherwise by time.

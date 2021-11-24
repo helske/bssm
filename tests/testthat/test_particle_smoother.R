@@ -125,7 +125,7 @@ test_that("Particle smoother for svm returns finite values", {
 })
 
 tol <- 1e-8
-test_that("Test that gaussian bsf smoother still works", {
+test_that("Test that linear-gaussian bsf smoother still works", {
   
   expect_error(model_ssm_ulg <- ssm_ulg(y = 1:10, Z = matrix(c(1, 0), 2, 1),
     H = 2, T = array(c(1, 0, 1, 1), c(2, 2, 1)), 

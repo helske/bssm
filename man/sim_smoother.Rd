@@ -2,13 +2,13 @@
 % Please edit documentation in R/sim_smoother.R
 \name{sim_smoother}
 \alias{sim_smoother}
-\alias{sim_smoother.gaussian}
+\alias{sim_smoother.lineargaussian}
 \alias{sim_smoother.nongaussian}
 \title{Simulation Smoothing}
 \usage{
 sim_smoother(model, nsim, seed, use_antithetic = TRUE, ...)
 
-\method{sim_smoother}{gaussian}(
+\method{sim_smoother}{lineargaussian}(
   model,
   nsim = 1,
   seed = sample(.Machine$integer.max, size = 1),
