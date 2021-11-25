@@ -47,9 +47,9 @@
 #' which is disregarded from the results. Defaults to \code{iter / 2}. 
 #' Note that all MCMC algorithms of \code{bssm} use adaptive MCMC during the 
 #' burn-in period in order to find good proposal distribution.
-#' @param thin A positive integer defining the thinning rate. All MCMC algorithms 
-#' in \code{bssm} use the jump chain representation (see refs), and the 
-#' thinning is applied to these blocks. Defaults to 1. 
+#' @param thin A positive integer defining the thinning rate. All the MCMC 
+#' algorithms in \code{bssm} use the jump chain representation (see refs), 
+#' and the thinning is applied to these blocks. Defaults to 1. 
 #' For IS-corrected methods, larger value can also be 
 #' statistically more effective. Note: With \code{output_type = "summary"}, 
 #' the thinning does not affect the computations of the summary statistics in 

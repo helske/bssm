@@ -52,9 +52,9 @@ distribution this is the shape parameter, and for other distributions this
 is ignored. Should an object of class \code{bssm_prior} or
 a positive scalar.}
 
-\item{u}{A vector of positive constants for non-Gaussian models. For Poisson,
-gamma, and negative binomial distribution, this corresponds to the offset
-term. For binomial, this is the number of trials.}
+\item{u}{A vector of positive constants for non-Gaussian models. For
+Poisson, gamma, and negative binomial distribution, this corresponds to the
+offset term. For binomial, this is the number of trials.}
 
 \item{beta}{A prior for the regression coefficients.
 Should be an object of class \code{bssm_prior} or \code{bssm_prior_list}
@@ -72,8 +72,8 @@ which can also return non-integer value (in which case error is given).}
 \item{a1}{Prior means for the initial states (level, slope, seasonals).
 Defaults to vector of zeros.}
 
-\item{P1}{Prior covariance matrix for the initial states (level, slope, seasonals).
-Default is diagonal matrix with 1000 on the diagonal.}
+\item{P1}{Prior covariance matrix for the initial states (level, slope,
+seasonals).Default is diagonal matrix with 100 on the diagonal.}
 
 \item{C}{Intercept terms for state equation, given as a m x n or m x 1
 matrix.}

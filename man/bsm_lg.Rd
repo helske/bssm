@@ -56,8 +56,8 @@ which can also return non-integer value (in which case error is given).}
 \item{a1}{Prior means for the initial states (level, slope, seasonals).
 Defaults to vector of zeros.}
 
-\item{P1}{Prior covariance matrix for the initial states (level, slope, seasonals).
-Default is diagonal matrix with 1000 on the diagonal.}
+\item{P1}{Prior covariance matrix for the initial states (level, slope,
+seasonals).Default is diagonal matrix with 100 on the diagonal.}
 
 \item{D}{Intercept terms for observation equation, given as a length n
 numeric vector or a scalar in case of time-invariant intercept.}

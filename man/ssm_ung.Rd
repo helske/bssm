@@ -49,9 +49,9 @@ distribution this is the shape parameter, and for other distributions this
 is ignored. Should an object of class \code{bssm_prior} or
 a positive scalar.}
 
-\item{u}{A vector of positive constants for non-Gaussian models. For Poisson,
-gamma, and negative binomial distribution, this corresponds to the offset
-term. For binomial, this is the number of trials.}
+\item{u}{A vector of positive constants for non-Gaussian models. For
+Poisson, gamma, and negative binomial distribution, this corresponds to the
+offset term. For binomial, this is the number of trials.}
 
 \item{init_theta}{Initial values for the unknown hyperparameters theta
 (i.e. unknown variables excluding latent state variables).}
