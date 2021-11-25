@@ -1,4 +1,4 @@
-bssm 2.0.0 (Release date: -)
+bssm 2.0.0 (Release date: 2021-11-26)
 ==============
    * Added a progress bar for run_mcmc.
    * Added a fitted method for extraction of summary statistics of posterior 

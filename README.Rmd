@@ -25,11 +25,14 @@ knitr::opts_chunk$set(
 #' @srrstats {G1.0, G1.3, G1.4, G1.4a, G1.5, G1.6} General 
 #' documentation, addressed by the vignettes and the corresponding R 
 #' Journal paper.
-#' @srrstats {G1.1} This is the first R package to implement delayed acceptance 
-#' pseudo-marginal MCMC for general state space models, and the first to 
-#' implement the IS-MCMC by Vihola, Helske, and Franks (2020). The IS-MCMC 
-#' method is also available in code{walker} package for a limited class of 
-#' models (a subset of the models supported by \code{bssm}).
+#' @srrstats {G1.1} This is the first software to implement the IS-MCMC by 
+#' Vihola, Helske, and Franks (2020) and first R package to implement delayed 
+#' acceptance pseudo-marginal MCMC for state space models. The IS-MCMC method 
+#' is also available in [walker](github.com/helske/walker) package for a 
+#' limited class of time-varying GLMss (a small subset of the models 
+#' supported by this package). Some of the functionality for exponential family 
+#' state space models is also available in [KFAS](github.com/helske/KFAS), and 
+#' those models can be converted easily to bssm format for Bayesian analysis.
 #' @srrstats {G2.4, G2.4a, G2.4b, G2.4c, G2.6} Explicit conversions are used 
 #' where necessary.
 #' 
