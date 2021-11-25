@@ -54,7 +54,7 @@ particle_smoother(model, particles, ...)
 depend on the model, the data, and the chosen algorithm. While larger values
 provide more accurate estimates, the run time also increases with respect to
 the number of particles, so it is generally a good idea to test the filter
-first with a smaller number of particles, say 10 or 100.}
+first with a small number of particles, e.g., less than 100.}
 
 \item{...}{Ignored.}
 

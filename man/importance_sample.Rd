@@ -25,7 +25,7 @@ importance_sample(model, nsim, use_antithetic, max_iter, conv_tol, seed, ...)
 depend on the model and the data, and while larger values provide more
 accurate estimates, the run time also increases with respect to to the
 number of samples, so it is generally a good idea to test the filter first
-with smaller number of particles, say 100.}
+with a small number of samples, e.g., less than 100.}
 
 \item{use_antithetic}{Logical. If \code{TRUE} (default), use antithetic
 variable for location in simulation smoothing. Ignored for \code{ssm_mng}

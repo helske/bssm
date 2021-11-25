@@ -8,7 +8,7 @@
 #' depend on the model and the data, and while larger values provide more 
 #' accurate estimates, the run time also increases with respect to the 
 #' number of particles, so it is generally a good idea to test the filter first 
-#' with smaller number of particles, say 100.
+#' with a small number of particles, e.g., less than 100.
 #' @param seed Seed for the C++ RNG (positive integer).
 #' @param ... Ignored.
 #' @return List with samples (\code{alpha}) from the filtering distribution and 

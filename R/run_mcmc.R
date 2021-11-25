@@ -37,7 +37,7 @@
 #' Suitable value depends on the model, data, and the choice of specific 
 #' algorithms (\code{mcmc_type} and \code{sampling_method}). As increasing 
 #' \code{iter} also increases run time, it is is generally good idea to first 
-#' test the performance with a smaller values such as 10000.
+#' test the performance with a small values, e.g., less than 10000.
 #' @param output_type Either \code{"full"} 
 #' (default, returns posterior samples from the posterior 
 #' \eqn{p(\alpha, \theta | y)}), \code{"theta"} (for marginal posterior of 
@@ -87,7 +87,7 @@
 #' \code{sampling_method}. While large values provide more 
 #' accurate estimates, the run time also increases with respect to to the 
 #' number of particles, so it is generally a good idea to test the run time 
-#' first with smaller number of particles, say 10 or 100.
+#' firstwith a small number of particles, e.g., less than 100.
 #' @param mcmc_type What type of MCMC algorithm should be used for models other 
 #' than linear-Gaussian models? Possible choices are
 #' \code{"pm"} for pseudo-marginal MCMC,

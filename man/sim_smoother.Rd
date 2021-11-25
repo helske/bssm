@@ -34,7 +34,7 @@ sim_smoother(model, nsim, seed, use_antithetic = TRUE, ...)
 depend on the model and the data, and while larger values provide more
 accurate estimates, the run time also increases with respect to to the
 number of samples, so it is generally a good idea to test the filter first
-with smaller number of particles, say 100.}
+with a small number of samples, e.g., less than 100.}
 
 \item{seed}{Seed for the C++ RNG (positive integer).}
 
