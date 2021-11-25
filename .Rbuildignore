@@ -10,6 +10,7 @@
 ^\.github$
 ^codecov\.yml$
 ^codemeta\.json$
-^README\.Rmd$
+^README\.Rmd
+^README_cache$
 ^benchmarks$
 ^autotest_results\.R$
