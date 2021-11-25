@@ -190,8 +190,8 @@ run_mcmc.lineargaussian <- function(model, iter, output_type = "full",
   
   threads <- check_intmax(threads, "threads")
   thin <- check_intmax(thin, "thin", max = 100)
-  iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e12)
-  burnin <- check_intmax(burnin, "burnin", max = 1e12)
+  iter <- check_intmax(iter, "iter", max = 1e12)
+  burnin <- check_intmax(burnin, "burnin", positive = FALSE, max = 1e12)
   if(burnin > iter) stop("Argument 'burnin' should be smaller than 'iter'.")
   
   if (missing(verbose)) {
@@ -419,8 +419,8 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   model$max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   model$conv_tol <- check_positive_real(conv_tol, "conv_tol")
   thin <- check_intmax(thin, "thin", max = 100)
-  iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e10)
-  burnin <- check_intmax(burnin, "burnin", max = 1e10)
+  iter <- check_intmax(iter, "iter", max = 1e12)
+  burnin <- check_intmax(burnin, "burnin", positive = FALSE, max = 1e12)
   if(burnin > iter) stop("Argument 'burnin' should be smaller than 'iter'.")
   
   if (missing(verbose)) {
@@ -590,8 +590,8 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   max_iter <- check_intmax(max_iter, "max_iter", positive = FALSE)
   conv_tol <- check_positive_real(conv_tol, "conv_tol")
   thin <- check_intmax(thin, "thin", max = 100)
-  iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e12)
-  burnin <- check_intmax(burnin, "burnin", max = 1e12)
+  iter <- check_intmax(iter, "iter", max = 1e12)
+  burnin <- check_intmax(burnin, "burnin", positive = FALSE, max = 1e12)
   iekf_iter <- check_intmax(iekf_iter, "iekf_iter", positive = FALSE)
   if(burnin > iter) stop("Argument 'burnin' should be smaller than 'iter'.")
   
@@ -761,8 +761,8 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   particles <- check_intmax(particles, "particles")
   threads <- check_intmax(threads, "threads")
   thin <- check_intmax(thin, "thin", max = 100)
-  iter <- check_intmax(iter, "iter", positive = FALSE, max = 1e12)
-  burnin <- check_intmax(burnin, "burnin", max = 1e12)
+  iter <- check_intmax(iter, "iter", max = 1e12)
+  burnin <- check_intmax(burnin, "burnin", positive = FALSE, max = 1e12)
   if(burnin > iter) stop("Argument 'burnin' should be smaller than 'iter'.")
   
   if (missing(verbose)) {
