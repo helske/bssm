@@ -10,10 +10,10 @@ state and is being actively
 developed](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![R-CMD-check](https://github.com/helske/bssm/workflows/R-CMD-check/badge.svg)](https://github.com/helske/bssm/actions)
 [![Codecov test
-coverage](https://codecov.io/gh/helske/bssm/branch/master/graph/badge.svg)](https://codecov.io/gh/helske/bssm?branch=master)
+coverage](https://codecov.io/gh/helske/bssm/branch/master/graph/badge.svg)](https://app.codecov.io/gh/helske/bssm?branch=master)
 [![CRAN
-version](http://www.r-pkg.org/badges/version/bssm)](http://cran.r-project.org/package=bssm)
-[![downloads](http://cranlogs.r-pkg.org/badges/bssm)](http://cranlogs.r-pkg.org/badges/bssm)
+version](http://www.r-pkg.org/badges/version/bssm)](https://CRAN.R-project.org/package=bssm)
+[![downloads](https://cranlogs.r-pkg.org/badges/bssm)](https://cranlogs.r-pkg.org/badges/bssm)
 
 <!-- badges: end -->
 
@@ -28,8 +28,7 @@ For details, see
 
 -   [The bssm paper on ArXiv](https://arxiv.org/abs/2101.08492) (to
     appear in R Journal),
--   [Package vignettes at
-    CRAN](https://cran.r-project.org/web/packages/bssm/index.html)
+-   [Package vignettes at CRAN](https://CRAN.R-project.org/package=bssm)
 -   Paper on [Importance sampling type estimators based on approximate
     marginal Markov chain Monte
     Carlo](https://onlinelibrary.wiley.com/doi/abs/10.1111/sjos.12492)
@@ -151,7 +150,7 @@ fit
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>    0.87    0.00    0.88
+#>    1.14    0.00    1.12
 
 obs <- data.frame(Time = 1:nrow(airquality),
   Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))
@@ -219,7 +218,7 @@ fit2
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   10.60    0.05   10.63
+#>   15.02    0.20   14.95
 ```
 
 Comparison:
@@ -329,7 +328,7 @@ fit
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   11.94    0.11   12.01
+#>   15.70    0.18   15.75
 ```
 
 Draw predictions:
