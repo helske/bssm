@@ -48,6 +48,15 @@ The `bssm` package was originally developed with the support of Academy
 of Finland grants 284513, 312605, and 311877. Current development is
 focused on increased usability. For recent changes, see NEWS file.
 
+### Citing the package
+
+If you use the `bssm` package in publications, please cite the
+corresponding R Journal paper:
+
+Jouni Helske and Matti Vihola (2021). “bssm: Bayesian Inference of
+Non-linear and Non-Gaussian State Space Models in R.” *R Journal*. To
+appear. ArXiv preprint <https://arxiv.org/abs/2101.08492>.
+
 ## Installation
 
 You can install the released version of bssm from
@@ -117,7 +126,7 @@ fit <- run_mcmc(model, iter = 20000, burnin = 5000)
 fit
 #> 
 #> Call:
-#> run_mcmc.gaussian(model = model, iter = 20000, burnin = 5000)
+#> run_mcmc.lineargaussian(model = model, iter = 20000, burnin = 5000)
 #> 
 #> Iterations = 5001:20000
 #> Thinning interval = 1
@@ -142,7 +151,7 @@ fit
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>    1.02    0.02    1.02
+#>    0.97    0.00    0.97
 
 obs <- data.frame(Time = 1:nrow(airquality),
   Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))
@@ -210,7 +219,7 @@ fit2
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   14.47    0.19   14.45
+#>   11.28    0.11   11.27
 ```
 
 Comparison:
@@ -294,7 +303,7 @@ fit <- run_mcmc(model, iter = 60000, burnin = 10000)
 fit
 #> 
 #> Call:
-#> run_mcmc.gaussian(model = model, iter = 60000, burnin = 10000)
+#> run_mcmc.lineargaussian(model = model, iter = 60000, burnin = 10000)
 #> 
 #> Iterations = 10001:60000
 #> Thinning interval = 1
@@ -320,7 +329,7 @@ fit
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   16.63    0.20   16.65
+#>   12.25    0.10   12.32
 ```
 
 Draw predictions:

@@ -95,6 +95,12 @@ The `bssm` package was originally developed with the support of Academy of
 Finland grants 284513, 312605, and 311877. Current development is focused on 
 increased usability. For recent changes, see NEWS file.
 
+### Citing the package 
+
+If you use the `bssm` package in publications, please cite the corresponding R Journal paper:
+
+Jouni Helske and Matti Vihola (2021). "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R." _R Journal_. To appear. ArXiv preprint https://arxiv.org/abs/2101.08492.
+
 ## Installation
 
 You can install the released version of bssm from [CRAN](https://CRAN.R-project.org) with:
