@@ -17,11 +17,15 @@ ekpf_filter(model, particles, ...)
 \arguments{
 \item{model}{Model of class \code{ssm_nlg}.}
 
-\item{particles}{Number of particles as a positive integer.}
+\item{particles}{Number of particles as a positive integer. Suitable values
+depend on the model and the data, and while larger values provide more
+accurate estimates, the run time also increases with respect to the
+number of particles, so it is generally a good idea to test the filter first
+with smaller number of particles, say 100.}
 
 \item{...}{Ignored.}
 
-\item{seed}{Seed for RNG  (positive integer).}
+\item{seed}{Seed for the C++ RNG (positive integer).}
 }
 \value{
 A list containing samples, filtered estimates and the

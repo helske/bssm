@@ -7,11 +7,15 @@
 #' @inheritParams gaussian_approx
 #' @param model Model of class \code{bsm_ng}, \code{ar1_ng} \code{svm}, 
 #' \code{ssm_ung}, or \code{ssm_mng}.
-#' @param nsim Number of samples (positive integer).
+#' @param nsim Number of samples (positive integer). Suitable values 
+#' depend on the model and the data, and while larger values provide more 
+#' accurate estimates, the run time also increases with respect to to the 
+#' number of samples, so it is generally a good idea to test the filter first 
+#' with smaller number of particles, say 100.
 #' @param use_antithetic Logical. If \code{TRUE} (default), use antithetic 
 #' variable for location in simulation smoothing. Ignored for \code{ssm_mng} 
 #' models.
-#' @param seed Seed for the random number generator (positive integer).
+#' @param seed Seed for the C++ RNG (positive integer).
 #' @param ... Ignored.
 #' @export
 #' @rdname importance_sample

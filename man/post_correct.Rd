@@ -22,7 +22,9 @@ While the intended use assumes this is from approximate MCMC, it is not
 actually checked, i.e., it is also possible to input previous
 (asymptotically) exact output.}
 
-\item{particles}{Number of particles for \eqn{\psi}-APF (positive integer).}
+\item{particles}{Number of particles for \eqn{\psi}-APF (positive integer).
+Suitable values depend on the model and the data, but often relatively
+small value less than say 50 is enough. See also \code{suggest_N}}
 
 \item{threads}{Number of parallel threads (positive integer, default is 1).}
 
@@ -34,12 +36,12 @@ MCMC iteration independently),
 particles used forweight computations is proportional to the length of the
 jump chain block.}
 
-\item{seed}{Seed for the random number generator  (positive integer).}
+\item{seed}{Seed for the C++ RNG (positive integer).}
 }
 \value{
-List with suggested number of particles \code{N} and matrix
-containing estimated standard deviations of the log-weights and
-corresponding number of particles.
+The original object of class \code{mcmc_output} with updated
+weights, log-posterior values and state samples or summaries (depending on
+the \code{mcmc_output$mcmc_type}).
 }
 \description{
 Function \code{post_correct} updates previously obtained approximate MCMC

@@ -3,9 +3,8 @@
 #' Function \code{ekpf_filter} performs a extended Kalman particle filtering 
 #' with stratification resampling, based on Van Der Merwe et al (2001).
 #'
+#' @inheritParams bootstrap_filter
 #' @param model Model of class \code{ssm_nlg}.
-#' @param particles Number of particles as a positive integer.
-#' @param seed Seed for RNG  (positive integer).
 #' @param ... Ignored.
 #' @return A list containing samples, filtered estimates and the 
 #' corresponding covariances, weights, and an estimate of log-likelihood.

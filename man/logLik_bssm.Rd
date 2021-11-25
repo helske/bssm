@@ -43,16 +43,17 @@
 
 \item{...}{Ignored.}
 
-\item{particles}{Number of samples for particle filter. If 0,
-approximate log-likelihood is returned either based on the Gaussian
-approximation or EKF, depending on the \code{method} argument.}
+\item{particles}{Number of samples for particle filter
+(non-negative integer). If 0, approximate log-likelihood is returned either
+based on the Gaussian approximation or EKF, depending on the \code{method}
+argument.}
 
 \item{method}{Sampling method. For Gaussian and non-Gaussian models with
 linear dynamics,options are \code{"bsf"} (bootstrap particle filter, default
-for non-linear models)
-and \code{"psi"} (\eqn{\psi}-APF, the default for other models).
-For-nonlinear models option \code{"ekf"} uses EKF/IEKF-based particle
-filter (or just EKF/IEKF approximation in the case of \code{particles = 0}).}
+for non-linear models) and \code{"psi"} (\eqn{\psi}-APF, the default for
+other models). For-nonlinear models option \code{"ekf"}
+uses EKF/IEKF-based particle filter (or just EKF/IEKF approximation in the
+case of \code{particles = 0}).}
 
 \item{max_iter}{Maximum number of iterations used in Gaussian approximation,
 as a positive integer.
@@ -61,7 +62,7 @@ Default is 100 (although typically only few iterations are needed).}
 \item{conv_tol}{Positive tolerance parameter used in Gaussian approximation.
 Default is 1e-8.}
 
-\item{seed}{Seed for RNG (non-negative integer).}
+\item{seed}{Seed for the C++ RNG (positive integer).}
 
 \item{iekf_iter}{Non-negative integer. If zero (default), first
 approximation for non-linear Gaussian models is obtained from extended

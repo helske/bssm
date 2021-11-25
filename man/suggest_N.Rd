@@ -27,7 +27,7 @@ number of particles to test. Default is \code{seq(10, 100, by = 10)}.}
 \item{replications}{Positive integer, how many replications should be used
 for computing the standard deviations? Default is 100.}
 
-\item{seed}{Seed for the random number generator  (positive integer).}
+\item{seed}{Seed for the C++ RNG  (positive integer).}
 }
 \value{
 List with suggested number of particles \code{N} and matrix

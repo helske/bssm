@@ -95,7 +95,11 @@ run_mcmc(model, ...)
 
 \item{...}{Ignored.}
 
-\item{iter}{A positive integer defining the total number of MCMC iterations.}
+\item{iter}{A positive integer defining the total number of MCMC iterations.
+Suitable value depends on the model, data, and the choice of specific
+algorithms (\code{mcmc_type} and \code{sampling_method}). As increasing
+\code{iter} also increases run time, it is is generally good idea to first
+test the performance with a smaller values such as 10000.}
 
 \item{output_type}{Either \code{"full"}
 (default, returns posterior samples from the posterior
@@ -138,7 +142,7 @@ Note that parallel computing is only used in the post-correction phase of
 IS-MCMC and when sampling the states in case of (approximate) Gaussian
 models.}
 
-\item{seed}{Seed for the random number generator (positive integer).}
+\item{seed}{Seed for the C++ RNG (positive integer).}
 
 \item{verbose}{If \code{TRUE}, prints a progress bar to the console. If
 missing, defined by \code{rlang::is_interactive}.
@@ -146,7 +150,12 @@ Set to \code{FALSE} if number of iterations is less than 50.}
 
 \item{particles}{A positive integer defining the number of state samples per
 MCMC iteration for models other than linear-Gaussian models.
-Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.}
+Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}. Suitable
+values depend on the model, the data, \code{mcmc_type} and
+\code{sampling_method}. While larger values provide more
+accurate estimates, the run time also increases with respect to to the
+number of particles, so it is generally a good idea to test the run time
+first with smaller number of particles, say 10-100.}
 
 \item{mcmc_type}{What type of MCMC algorithm should be used for models other
 than linear-Gaussian models? Possible choices are

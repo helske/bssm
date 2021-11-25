@@ -2,9 +2,14 @@
 #'
 #' Function \code{bootstrap_filter} performs a bootstrap filtering with 
 #' stratification resampling.
+#' 
 #' @param model A model object of class \code{bssm_model}.
-#' @param particles Number of particles as a positive integer.
-#' @param seed Seed for RNG (non-negative integer).
+#' @param particles Number of particles as a positive integer. Suitable values 
+#' depend on the model and the data, and while larger values provide more 
+#' accurate estimates, the run time also increases with respect to the 
+#' number of particles, so it is generally a good idea to test the filter first 
+#' with smaller number of particles, say 100.
+#' @param seed Seed for the C++ RNG (positive integer).
 #' @param ... Ignored.
 #' @return List with samples (\code{alpha}) from the filtering distribution and 
 #' corresponding weights (\code{weights}), as well as filtered and predicted 

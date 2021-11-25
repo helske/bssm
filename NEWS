@@ -5,6 +5,10 @@ bssm 2.0.0 (Release date: -)
      predictive distribution p(y_t | y_1, ..., y_n) for t = 1, ..., n. 
    * Rewrote the summary method completely, which now returns data.frame. This 
      also resulted in some changes in order of the function arguments.
+   * The output of predict method is now a data frame with column weight 
+     corresponding to the IS-weights in case of IS-MCMC. Previously resampling 
+     was done internally, but now this is left for the user if needed 
+     (i.e. for drawing state trajectories).
    * The asymptotic_var and iact functions are now exported to users, and they 
      also contain alternative methods based on the posterior package.
    * New function estimate_ess can be used to compute effective sample size 

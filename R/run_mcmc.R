@@ -33,7 +33,11 @@
 #' @importFrom stats tsp
 #' @importFrom rlang is_interactive
 #' @param model Model of class \code{bssm_model}.
-#' @param iter A positive integer defining the total number of MCMC iterations.
+#' @param iter A positive integer defining the total number of MCMC iterations. 
+#' Suitable value depends on the model, data, and the choice of specific 
+#' algorithms (\code{mcmc_type} and \code{sampling_method}). As increasing 
+#' \code{iter} also increases run time, it is is generally good idea to first 
+#' test the performance with a smaller values such as 10000.
 #' @param output_type Either \code{"full"} 
 #' (default, returns posterior samples from the posterior 
 #' \eqn{p(\alpha, \theta | y)}), \code{"theta"} (for marginal posterior of 
@@ -67,7 +71,7 @@
 #' Note that parallel computing is only used in the post-correction phase of
 #' IS-MCMC and when sampling the states in case of (approximate) Gaussian 
 #' models.
-#' @param seed Seed for the random number generator (positive integer).
+#' @param seed Seed for the C++ RNG (positive integer).
 #' @param local_approx If \code{TRUE} (default), Gaussian approximation
 #' needed for some of the methods is performed at each iteration. 
 #' If \code{FALSE}, approximation is updated only once at the start of the 
@@ -78,7 +82,12 @@
 #' @param conv_tol Positive tolerance parameter used in Gaussian approximation.
 #' @param particles A positive integer defining the number of state samples per 
 #' MCMC iteration for models other than linear-Gaussian models.
-#' Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}.
+#' Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}. Suitable 
+#' values depend on the model, the data, \code{mcmc_type} and 
+#' \code{sampling_method}. While larger values provide more 
+#' accurate estimates, the run time also increases with respect to to the 
+#' number of particles, so it is generally a good idea to test the run time 
+#' first with smaller number of particles, say 10-100.
 #' @param mcmc_type What type of MCMC algorithm should be used for models other 
 #' than linear-Gaussian models? Possible choices are
 #' \code{"pm"} for pseudo-marginal MCMC,
@@ -257,6 +266,7 @@ run_mcmc.lineargaussian <- function(model, iter, output_type = "full",
   out$thin <- thin
   out$mcmc_type <- "gaussian_mcmc"
   out$output_type <- output_type
+  dim(out$counts) <- NULL
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- class(model)[1]
@@ -538,6 +548,7 @@ run_mcmc.nongaussian <- function(model, iter, particles, output_type = "full",
   out$output_type <- output_type
   out$call <- match.call()
   out$seed <- seed
+  dim(out$counts) <- NULL
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- class(model)[1]
@@ -703,6 +714,7 @@ run_mcmc.ssm_nlg <-  function(model, iter, particles, output_type = "full",
   out$output_type <- output_type
   out$call <- match.call()
   out$seed <- seed
+  dim(out$counts) <- NULL
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "ssm_nlg"
@@ -834,6 +846,7 @@ run_mcmc.ssm_sde <-  function(model, iter, particles, output_type = "full",
   out$output_type <- output_type
   out$call <- match.call()
   out$seed <- seed
+  dim(out$counts) <- NULL
   out$time <- proc.time() - a
   class(out) <- "mcmc_output"
   attr(out, "model_type") <- "ssm_sde"

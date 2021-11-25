@@ -30,9 +30,13 @@ sim_smoother(model, nsim, seed, use_antithetic = TRUE, ...)
 \code{bsm_ng}, \code{ar1_ng} \code{svm},
 \code{ssm_ung}, or \code{ssm_mng}.}
 
-\item{nsim}{Number of samples (positive integer).}
+\item{nsim}{Number of samples (positive integer). Suitable values
+depend on the model and the data, and while larger values provide more
+accurate estimates, the run time also increases with respect to to the
+number of samples, so it is generally a good idea to test the filter first
+with smaller number of particles, say 100.}
 
-\item{seed}{Seed for the random number generator (positive integer).}
+\item{seed}{Seed for the C++ RNG (positive integer).}
 
 \item{use_antithetic}{Logical. If \code{TRUE} (default), use antithetic
 variable for location in simulation smoothing. Ignored for \code{ssm_mng}

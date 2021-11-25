@@ -19,6 +19,11 @@
 #' and \code{"psi"} (\eqn{\psi}-APF, the default for other models), and 
 #' for non-linear models option \code{"ekf"} (extended Kalman particle filter) 
 #' is also available.
+#' @param particles Number of particles as a positive integer. Suitable values 
+#' depend on the model, the data, and the chosen algorithm. While larger values 
+#' provide more accurate estimates, the run time also increases with respect to 
+#' the number of particles, so it is generally a good idea to test the filter 
+#' first with a smaller number of particles, say 10 or 100.
 #' @param max_iter Maximum number of iterations used in Gaussian approximation,
 #' as a positive integer. 
 #' Default is 100 (although typically only few iterations are needed).

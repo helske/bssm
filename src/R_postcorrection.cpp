@@ -172,7 +172,7 @@ Rcpp::List postcorrection_nongaussian(const Rcpp::List model_,
   }
 
   approx_mcmc mcmc_run(counts.n_elem, 0, 1, n, m, p,
-    0.234, 1, arma::mat(theta.n_rows, theta.n_rows), output_type, true);
+    0.234, 1, arma::mat(theta.n_rows, theta.n_rows), output_type, false);
   
   mcmc_run.n_stored = counts.n_elem;
   // mcmc_run.trim_storage();
@@ -277,7 +277,7 @@ Rcpp::List postcorrection_nonlinear(const arma::mat& y, SEXP Z, SEXP H,
     n_states, n_etas, time_varying, seed);
   
   approx_mcmc mcmc_run(counts.n_elem, 0, 1, model.n, model.m, model.m,
-    0.234, 1, arma::mat(theta.n_rows, theta.n_rows), output_type, true);
+    0.234, 1, arma::mat(theta.n_rows, theta.n_rows), output_type, false);
   mcmc_run.n_stored = counts.n_elem;
   // mcmc_run.trim_storage();
   mcmc_run.count_storage = counts;

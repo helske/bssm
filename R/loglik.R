@@ -5,15 +5,16 @@
 #' 
 #' @inheritParams particle_smoother
 #' @param object Model of class \code{bssm_model}.
-#' @param particles Number of samples for particle filter. If 0, 
-#' approximate log-likelihood is returned either based on the Gaussian 
-#' approximation or EKF, depending on the \code{method} argument.
+#' @param particles Number of samples for particle filter 
+#' (non-negative integer). If 0, approximate log-likelihood is returned either 
+#' based on the Gaussian approximation or EKF, depending on the \code{method} 
+#' argument.
 #' @param method Sampling method. For Gaussian and non-Gaussian models with 
 #' linear dynamics,options are \code{"bsf"} (bootstrap particle filter, default 
-#' for non-linear models) 
-#' and \code{"psi"} (\eqn{\psi}-APF, the default for other models). 
-#' For-nonlinear models option \code{"ekf"} uses EKF/IEKF-based particle 
-#' filter (or just EKF/IEKF approximation in the case of \code{particles = 0}).
+#' for non-linear models) and \code{"psi"} (\eqn{\psi}-APF, the default for 
+#' other models). For-nonlinear models option \code{"ekf"} 
+#' uses EKF/IEKF-based particle filter (or just EKF/IEKF approximation in the 
+#' case of \code{particles = 0}).
 #' @importFrom stats logLik
 #' @method logLik lineargaussian
 #' @rdname logLik_bssm

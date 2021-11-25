@@ -27,7 +27,9 @@ It is also possible to input the original model for obtaining predictions
 for past time points. In this case, set argument
 \code{future} to \code{FALSE}.}
 
-\item{nsim}{Positive integer defining number of samples to draw.}
+\item{nsim}{Positive integer defining number of samples to draw. Should be
+less than or equal to \code{sum(object$counts)} i.e. the number of samples
+in the MCMC output. Default is to use all the samples.}
 
 \item{type}{Type of predictions. Possible choices are
 \code{"mean"} \code{"response"}, or  \code{"state"} level.}
@@ -37,9 +39,10 @@ future, using posterior samples of (theta, alpha_T+1) i.e. the
 posterior samples of hyperparameters and latest states.
 Otherwise it is assumed that \code{model} corresponds to the original model.}
 
-\item{seed}{Seed for RNG (positive integer). Note that this affects only the
-C++ side, and \code{predict} also uses R side RNG for subsampling, so for
-replicable results you should call \code{set.seed} before \code{predict}.}
+\item{seed}{Seed for the C++ RNG (positive integer). Note that this affects
+only the C++ side, and \code{predict} also uses R side RNG for subsampling,
+so for replicable results you should call \code{set.seed} before
+\code{predict}.}
 
 \item{...}{Ignored.}
 }

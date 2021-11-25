@@ -31,7 +31,7 @@ get_map <- function(x) {
 #' number of particles to test. Default is \code{seq(10, 100, by = 10)}. 
 #' @param replications Positive integer, how many replications should be used 
 #' for computing the standard deviations? Default is 100.
-#' @param seed Seed for the random number generator  (positive integer).
+#' @param seed Seed for the C++ RNG  (positive integer).
 #' @return List with suggested number of particles \code{N} and matrix 
 #' containing estimated standard deviations of the log-weights and 
 #' corresponding number of particles.
@@ -147,6 +147,8 @@ suggest_N <- function(model, theta,
 #' actually checked, i.e., it is also possible to input previous 
 #' (asymptotically) exact output.
 #' @param particles Number of particles for \eqn{\psi}-APF (positive integer). 
+#' Suitable values depend on the model and the data, but often relatively 
+#' small value less than say 50 is enough. See also \code{suggest_N}
 #' @param threads Number of parallel threads (positive integer, default is 1).
 #' @param is_type Type of IS-correction. Possible choices are 
 #'\code{"is3"} for simple importance sampling (weight is computed for each 
@@ -155,10 +157,11 @@ suggest_N <- function(model, theta,
 #' \code{"is1"} for importance sampling type weighting where the number of 
 #' particles used forweight computations is proportional to the length of the 
 #' jump chain block.
-#' @param seed Seed for the random number generator  (positive integer).
-#' @return List with suggested number of particles \code{N} and matrix 
-#' containing estimated standard deviations of the log-weights and 
-#' corresponding number of particles.
+#' @param seed Seed for the C++ RNG (positive integer).
+#' @return The original object of class \code{mcmc_output} with updated 
+#' weights, log-posterior values and state samples or summaries (depending on 
+#' the \code{mcmc_output$mcmc_type}).
+#' 
 #' @references 
 #' Doucet A, Pitt M K, Deligiannidis G, Kohn R (2018). 
 #' Efficient implementation of Markov chain Monte Carlo when using an unbiased 
