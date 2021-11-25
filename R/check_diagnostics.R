@@ -87,4 +87,5 @@ check_diagnostics <- function(x) {
   max_rhat <- which.max(sumr$rhat)
   cat("\nLargest Rhat: ", round(sumr$rhat[max_rhat], 3), " (", 
     sumr$variable[max_rhat], ")", sep = "")
+  invsible(x)
 }

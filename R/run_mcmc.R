@@ -84,10 +84,10 @@
 #' MCMC iteration for models other than linear-Gaussian models.
 #' Ignored if \code{mcmc_type} is \code{"approx"} or \code{"ekf"}. Suitable 
 #' values depend on the model, the data, \code{mcmc_type} and 
-#' \code{sampling_method}. While larger values provide more 
+#' \code{sampling_method}. While large values provide more 
 #' accurate estimates, the run time also increases with respect to to the 
 #' number of particles, so it is generally a good idea to test the run time 
-#' first with smaller number of particles, say 10-100.
+#' first with smaller number of particles, say 10 or 100.
 #' @param mcmc_type What type of MCMC algorithm should be used for models other 
 #' than linear-Gaussian models? Possible choices are
 #' \code{"pm"} for pseudo-marginal MCMC,

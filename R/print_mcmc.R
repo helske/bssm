@@ -44,4 +44,5 @@ print.mcmc_output <- function(x, ...) {
   } else cat("\nNo posterior samples for states available.\n")
   cat("\nRun time:\n")
   print(x$time)
+  invisible(x)
 }
