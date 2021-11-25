@@ -70,7 +70,7 @@ future_model$y <- ts(rep(NA, 25),
   start = tsp(model$y)[2] + 2 * deltat(model$y), 
   frequency = frequency(model$y))
 # use "state" for illustrative purposes, we could use type = "mean" directly
-pred <- predict(mcmc_results, future_model = future_model, type = "state", 
+pred <- predict(mcmc_results, model = future_model, type = "state", 
   nsim = 1000)
 
 library("dplyr")
@@ -113,9 +113,9 @@ rbind(sumr_fit, sumr_pred) \%>\%
     time = time(JohnsonJohnson)))
 
 # Posterior predictions for past observations:
-yrep <- predict(mcmc_results, future_model = model, type = "response", 
+yrep <- predict(mcmc_results, model = model, type = "response", 
   future = FALSE, nsim = 1000)
-meanrep <- predict(mcmc_results, future_model = model, type = "mean", 
+meanrep <- predict(mcmc_results, model = model, type = "mean", 
   future = FALSE, nsim = 1000)
   
 sumr_yrep <- yrep \%>\% 
