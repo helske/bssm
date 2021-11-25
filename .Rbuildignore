@@ -1,13 +1,8 @@
 ^\.git$
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^README\.md$
 ^\.gitignore$
-^\.travis\.yml$
-^TODO$
 ^\.Rhistory$
-^bssm.pdf$
-^growth_model.pdf$
 ^vignettes/psi_pf_experiments/.*result.*\.rds$
 ^vignettes/psi_pf_experiments/.*truth.*\.rds$
 ^vignettes/psi_pf_experiments/.*\.sh$
@@ -17,3 +12,4 @@
 ^codemeta\.json$
 ^README\.Rmd$
 ^benchmarks$
+^autotest_results.R$
