@@ -1,6 +1,6 @@
 context("Test MCMC")
 
-#' @srrstats {G5.4, G5.4a, G5.4b, G5.4c, G5.5, BS7.0, BS7.1, BS7.2, BS7.7} 
+#' @srrstats {G5.4, G5.4a, G5.4b, G5.4c, G5.5, BS7.0, BS7.1, BS7.2} 
 #' Replicate Helske & Vihola (2021).
 
 tol <- 1e-8
