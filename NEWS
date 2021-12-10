@@ -1,3 +1,7 @@
+bssm 2.0.x (Release date: -)
+==============
+   * Fixed weights to one in case of non-linear model with mcmc_type="approx".
+
 bssm 2.0.0 (Release date: 2021-11-26)
 ==============
    * Added a progress bar for run_mcmc.

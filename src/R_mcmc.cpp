@@ -764,7 +764,14 @@ Rcpp::List nonlinear_is_mcmc(const arma::mat& y, SEXP Z, SEXP H,
   approx_mcmc mcmc_run(iter, burnin, thin, model.n,
     model.m, model.m, target_acceptance, gamma, S, output_type, true, verbose);
 
+  if (nsim <= 1) {
+    mcmc_run.alpha_storage.zeros();
+    mcmc_run.weight_storage.ones();
+    mcmc_run.posterior_storage.zeros();
+  }
+  
   mcmc_run.amcmc(model, sampling_method, end_ram);
+
   if(approx) {
     if(output_type == 1) {
       mcmc_run.approx_state_posterior(model, n_threads);
