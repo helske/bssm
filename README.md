@@ -26,8 +26,7 @@ models and discretely observed latent diffusion processes are supported.
 
 For details, see
 
--   [The bssm paper on ArXiv](https://arxiv.org/abs/2101.08492) (to
-    appear in R Journal),
+-   [The bssm paper on R Journal](https://journal.r-project.org/archive/2021/RJ-2021-103/index.html),
 -   [Package vignettes at CRAN](https://CRAN.R-project.org/package=bssm)
 -   Paper on [Importance sampling type estimators based on approximate
     marginal Markov chain Monte
@@ -44,7 +43,7 @@ methodology and bssm package:
     R](http://users.jyu.fi/~jovetale/posters/user2017.pdf)
 
 The `bssm` package was originally developed with the support of Academy
-of Finland grants 284513, 312605, and 311877. Current development is
+of Finland grants 284513, 312605, 311877, and 331817. Current development is
 focused on increased usability. For recent changes, see NEWS file.
 
 ### Citing the package
@@ -53,8 +52,7 @@ If you use the `bssm` package in publications, please cite the
 corresponding R Journal paper:
 
 Jouni Helske and Matti Vihola (2021). “bssm: Bayesian Inference of
-Non-linear and Non-Gaussian State Space Models in R.” *R Journal*. To
-appear. ArXiv preprint <https://arxiv.org/abs/2101.08492>.
+Non-linear and Non-Gaussian State Space Models in R.” *R Journal*. https://journal.r-project.org/archive/2021/RJ-2021-103/index.html>.
 
 ## Installation
 
