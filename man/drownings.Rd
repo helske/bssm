@@ -21,11 +21,11 @@ Jyvaskyla (Central Finland), and Sodankyla (Northern Finland).
 \examples{
 data("drownings")
 model <- bsm_ng(drownings[, "deaths"], u = drownings[, "population"],
-  xreg = drownings[, "summer_temp"], distribution = "poisson", 
+  xreg = drownings[, "summer_temp"], distribution = "poisson",
   beta = normal(0, 0, 1),
   sd_level = gamma_prior(0.1,2, 10), sd_slope = gamma_prior(0, 2, 10))
-  
-fit <- run_mcmc(model, iter = 5000, 
+
+fit <- run_mcmc(model, iter = 5000,
   output_type = "summary", mcmc_type = "approx")
 fit
 ts.plot(model$y/model$u, exp(fit$alphahat[, 1]), col = 1:2)

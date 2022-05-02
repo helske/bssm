@@ -30,7 +30,7 @@ package as well as some theory behind the novel IS-MCMC and
 Helske, Franks (2020), and the package vignettes.
 }
 \examples{
-model <- bsm_lg(Nile, 
+model <- bsm_lg(Nile,
   sd_y = tnormal(init = 100, mean = 100, sd = 100, min = 0),
   sd_level = tnormal(init = 50, mean = 50, sd = 100, min = 0),
   a1 = 1000, P1 = 500^2)
@@ -40,8 +40,8 @@ fit
 }
 \references{
 Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and
-Non-Gaussian State Space Models in R. R Journal (to appear).
-https://arxiv.org/abs/2101.08492
+Non-Gaussian State Space Models in R. The R Journal (2021) 13:2, 578-589.
+https://doi.org/10.32614/RJ-2021-103
 
 Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators
 based on approximate marginal Markov chain Monte Carlo.

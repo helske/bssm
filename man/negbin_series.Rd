@@ -26,9 +26,9 @@ y <- rnbinom(n, size = phi, mu = exp(beta * x + level))
 
 }
 \references{
-Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and
-Non-Gaussian State Space Models in R. R Journal (to appear).
-https://arxiv.org/abs/2101.08492
+Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and
+Non-Gaussian State Space Models in R. The R Journal (2021) 13:2, 578-589.
+https://doi.org/10.32614/RJ-2021-103
 }
 \seealso{
 \code{negbin_model}

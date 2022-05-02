@@ -16,13 +16,13 @@ of the model object in CRAN.
 # reproducing the model:
 data("negbin_series")
 # Construct model for bssm
-bssm_model <- bsm_ng(negbin_series[, "y"], 
+bssm_model <- bsm_ng(negbin_series[, "y"],
   xreg = negbin_series[, "x"],
   beta = normal(0, 0, 10),
   phi = halfnormal(1, 10),
-  sd_level = halfnormal(0.1, 1), 
+  sd_level = halfnormal(0.1, 1),
   sd_slope = halfnormal(0.01, 0.1),
-  a1 = c(0, 0), P1 = diag(c(10, 0.1)^2), 
+  a1 = c(0, 0), P1 = diag(c(10, 0.1)^2),
   distribution = "negative binomial")
 
 \donttest{
@@ -32,8 +32,8 @@ fit_bssm
 }
 }
 \references{
-Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and
-Non-Gaussian State Space Models in R. R Journal (to appear).
-https://arxiv.org/abs/2101.08492
+Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and
+Non-Gaussian State Space Models in R. The R Journal (2021) 13:2, 578-589.
+https://doi.org/10.32614/RJ-2021-103
 }
 \keyword{datasets}

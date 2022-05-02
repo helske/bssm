@@ -234,8 +234,8 @@ RNG "discontinuity" and because even without burnin bssm does include
 \code{burnin=0}).
 }
 \examples{
-model <- ar1_lg(LakeHuron, rho = uniform(0.5,-1,1), 
-  sigma = halfnormal(1, 10), mu = normal(500, 500, 500), 
+model <- ar1_lg(LakeHuron, rho = uniform(0.5,-1,1),
+  sigma = halfnormal(1, 10), mu = normal(500, 500, 500),
   sd_y = halfnormal(1, 10))
 
 mcmc_results <- run_mcmc(model, iter = 2e4)
@@ -243,28 +243,28 @@ summary(mcmc_results, return_se = TRUE)
 
 sumr <- summary(mcmc_results, variable = "states")
 library("ggplot2")
-ggplot(sumr, aes(time, Mean)) + 
-  geom_ribbon(aes(ymin = `2.5\%`, ymax = `97.5\%`), alpha = 0.25) + 
+ggplot(sumr, aes(time, Mean)) +
+  geom_ribbon(aes(ymin = `2.5\%`, ymax = `97.5\%`), alpha = 0.25) +
   geom_line() + theme_bw() +
   geom_point(data = data.frame(Mean = LakeHuron, time = time(LakeHuron)),
     col = 2)
-    
+
 # Continue from the previous run
 model$theta[] <- mcmc_results$theta[nrow(mcmc_results$theta), ]
 run_more <- run_mcmc(model, S = mcmc_results$S, iter = 1000, burnin = 0)
 
 set.seed(1)
-n <- 50 
+n <- 50
 slope <- cumsum(c(0, rnorm(n - 1, sd = 0.001)))
 level <- cumsum(slope + c(0, rnorm(n - 1, sd = 0.2)))
 y <- rpois(n, exp(level))
-poisson_model <- bsm_ng(y, 
-  sd_level = halfnormal(0.01, 1), 
-  sd_slope = halfnormal(0.01, 0.1), 
+poisson_model <- bsm_ng(y,
+  sd_level = halfnormal(0.01, 1),
+  sd_slope = halfnormal(0.01, 0.1),
   P1 = diag(c(10, 0.1)), distribution = "poisson")
-  
+
 # Note small number of iterations for CRAN checks
-mcmc_out <- run_mcmc(poisson_model, iter = 1000, particles = 10, 
+mcmc_out <- run_mcmc(poisson_model, iter = 1000, particles = 10,
   mcmc_type = "da")
 summary(mcmc_out, what = "theta", return_se = TRUE)
 
@@ -282,9 +282,9 @@ y <- rnbinom(n, size = phi, mu = exp(beta * x + level))
 model <- bsm_ng(y, xreg = x,
   beta = normal(0, 0, 10),
   phi = halfnormal(1, 10),
-  sd_level = halfnormal(0.1, 1), 
+  sd_level = halfnormal(0.1, 1),
   sd_slope = halfnormal(0.01, 0.1),
-  a1 = c(0, 0), P1 = diag(c(10, 0.1)^2), 
+  a1 = c(0, 0), P1 = diag(c(10, 0.1)^2),
   distribution = "negative binomial")
 
 # run IS-MCMC
@@ -292,45 +292,45 @@ model <- bsm_ng(y, xreg = x,
 fit <- run_mcmc(model, iter = 4000,
   particles = 10, mcmc_type = "is2", seed = 1)
 
-# extract states   
+# extract states
 d_states <- as.data.frame(fit, variable = "states", time = 1:n)
 
 library("dplyr")
 library("ggplot2")
 
  # compute summary statistics
-level_sumr <- d_states \%>\% 
+level_sumr <- d_states \%>\%
   filter(variable == "level") \%>\%
   group_by(time) \%>\%
-  summarise(mean = diagis::weighted_mean(value, weight), 
-    lwr = diagis::weighted_quantile(value, weight, 
-      0.025), 
-    upr = diagis::weighted_quantile(value, weight, 
+  summarise(mean = diagis::weighted_mean(value, weight),
+    lwr = diagis::weighted_quantile(value, weight,
+      0.025),
+    upr = diagis::weighted_quantile(value, weight,
       0.975))
 
 # visualize
-level_sumr \%>\% ggplot(aes(x = time, y = mean)) + 
+level_sumr \%>\% ggplot(aes(x = time, y = mean)) +
   geom_line() +
   geom_line(aes(y = lwr), linetype = "dashed", na.rm = TRUE) +
   geom_line(aes(y = upr), linetype = "dashed", na.rm = TRUE) +
-  theme_bw() + 
-  theme(legend.title = element_blank()) + 
+  theme_bw() +
+  theme(legend.title = element_blank()) +
   xlab("Time") + ylab("Level")
 
 # theta
 d_theta <- as.data.frame(fit, variable = "theta")
-ggplot(d_theta, aes(x = value)) + 
- geom_density(aes(weight = weight), adjust = 2, fill = "#92f0a8") + 
- facet_wrap(~ variable, scales = "free") + 
+ggplot(d_theta, aes(x = value)) +
+ geom_density(aes(weight = weight), adjust = 2, fill = "#92f0a8") +
+ facet_wrap(~ variable, scales = "free") +
  theme_bw()
- 
- 
+
+
 # Bivariate Poisson model:
 
 set.seed(1)
 x <- cumsum(c(3, rnorm(19, sd = 0.5)))
 y <- cbind(
-  rpois(20, exp(x)), 
+  rpois(20, exp(x)),
   rpois(20, exp(x)))
 
 prior_fn <- function(theta) {
@@ -342,24 +342,24 @@ update_fn <- function(theta) {
   list(R = array(exp(theta), c(1, 1, 1)))
 }
 
-model <- ssm_mng(y = y, Z = matrix(1,2,1), T = 1, 
+model <- ssm_mng(y = y, Z = matrix(1,2,1), T = 1,
   R = 0.1, P1 = 1, distribution = "poisson",
-  init_theta = log(0.1), 
+  init_theta = log(0.1),
   prior_fn = prior_fn, update_fn = update_fn)
-  
+
 # Note small number of iterations for CRAN checks
 out <- run_mcmc(model, iter = 4000, mcmc_type = "approx")
 
-sumr <- as.data.frame(out, variable = "states") \%>\% 
+sumr <- as.data.frame(out, variable = "states") \%>\%
   group_by(time) \%>\% mutate(value = exp(value)) \%>\%
-  summarise(mean = mean(value), 
+  summarise(mean = mean(value),
     ymin = quantile(value, 0.05), ymax = quantile(value, 0.95))
-ggplot(sumr, aes(time, mean)) + 
-geom_ribbon(aes(ymin = ymin, ymax = ymax),alpha = 0.25) + 
-geom_line() + 
-geom_line(data = data.frame(mean = y[, 1], time = 1:20), 
-  colour = "tomato") + 
-geom_line(data = data.frame(mean = y[, 2], time = 1:20), 
+ggplot(sumr, aes(time, mean)) +
+geom_ribbon(aes(ymin = ymin, ymax = ymax),alpha = 0.25) +
+geom_line() +
+geom_line(data = data.frame(mean = y[, 1], time = 1:20),
+  colour = "tomato") +
+geom_line(data = data.frame(mean = y[, 2], time = 1:20),
   colour = "tomato") +
 theme_bw()
 
@@ -373,9 +373,9 @@ Vihola, M, Helske, J, Franks, J (2020). Importance sampling type
 estimators based on approximate marginal Markov chain Monte Carlo.
 Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 
-Helske, J, Vihola, M (2021). bssm: Bayesian Inference of Non-linear and
-Non-Gaussian State Space Models in R. R Journal (to appear).
-https://arxiv.org/abs/2101.08492
+Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and
+Non-Gaussian State Space Models in R. The R Journal (2021) 13:2, 578-589.
+https://doi.org/10.32614/RJ-2021-103
 
 Vihola, M, Helske, J, Franks, J. Importance sampling type estimators based
 on approximate marginal Markov chain Monte Carlo.

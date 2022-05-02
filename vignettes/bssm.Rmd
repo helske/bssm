@@ -27,7 +27,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This is a short vignette illustrating the `bssm` package. For more detailed exposition, please see the corresponding R Journal paper:
 
-Jouni Helske and Matti Vihola (2021). "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R". Accepted to R Journal. [ArXiv preprint](https://arxiv.org/abs/2101.08492).
+Jouni Helske and Matti Vihola (2021). "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in R". The R Journal (2021) 13:2, pages 578-589. [Link to the paper](https://journal.r-project.org/archive/2021/RJ-2021-103/index.html).
 
 
 # Introduction
