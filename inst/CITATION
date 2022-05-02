@@ -2,12 +2,15 @@ c(
   bibentry(
      bibtype = "Article",
      key = "helske-vihola2021",
-     title= "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in {R}", 
-     author="Jouni Helske and Matti Vihola",
-     year="2021",
+     title = "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in {R}",
+     author =" Jouni Helske and Matti Vihola",
+     year= "2021",
+     doi = "10.32614/RJ-2021-103",
      journal = "R Journal",
-     note = "To appear",
-     url = "https://arxiv.org/abs/2101.08492"
+     url = "https://doi.org/10.32614/RJ-2021-103",
+     pages = "578--589",
+     volume = "13",
+     number = "2"
   ),
   bibentry(
     bibtype = "Article",

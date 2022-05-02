@@ -2,7 +2,7 @@ Package: bssm
 Type: Package
 Title: Bayesian Inference of Non-Linear and Non-Gaussian State Space
         Models
-Version: 2.0.0.1
+Version: 2.0.1
 Authors@R: 
     c(person(given = "Jouni",
            family = "Helske",
@@ -14,14 +14,15 @@ Authors@R:
            role = "aut",
            comment = c(ORCID = "0000-0002-8041-7222")))
 Description: Efficient methods for Bayesian inference of state space models 
-    via particle Markov chain Monte Carlo (MCMC) and MCMC based on parallel 
+    via Markov chain Monte Carlo (MCMC) based on parallel 
     importance sampling type weighted estimators 
-    (Vihola, Helske, and Franks, 2020, <doi:10.1111/sjos.12492>). 
+    (Vihola, Helske, and Franks, 2020, <doi:10.1111/sjos.12492>), 
+    particle MCMC, and its delayed acceptance version. 
     Gaussian, Poisson, binomial, negative binomial, and Gamma
     observation densities and basic stochastic volatility models 
-    with linear-Gaussian state dynamics, 
-    as well as general non-linear Gaussian models and discretised 
-    diffusion models are supported.
+    with linear-Gaussian state dynamics, as well as general non-linear Gaussian 
+    models and discretised diffusion models are supported. 
+    See Helske and Vihola (2021, <doi:10.32614/RJ-2021-103>) for details.
 License: GPL (>= 2)
 Depends: R (>= 3.5.0)
 Suggests: 

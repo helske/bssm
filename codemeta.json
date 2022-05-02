@@ -1,22 +1,19 @@
 {
-  "@context": [
-    "https://doi.org/10.5063/schema/codemeta-2.0",
-    "http://schema.org"
-  ],
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
   "@type": "SoftwareSourceCode",
   "identifier": "bssm",
-  "description": "Efficient methods for Bayesian inference of state space models \n    via particle Markov chain Monte Carlo (MCMC) and MCMC based on parallel \n    importance sampling type weighted estimators \n    (Vihola, Helske, and Franks, 2020, <doi:10.1111/sjos.12492>). \n    Gaussian, Poisson, binomial, negative binomial, and Gamma\n    observation densities and basic stochastic volatility models \n    with linear-Gaussian state dynamics, \n    as well as general non-linear Gaussian models and discretised \n    diffusion models are supported.",
+  "description": "Efficient methods for Bayesian inference of state space models via Markov chain Monte Carlo (MCMC) based on parallel importance sampling type weighted estimators (Vihola, Helske, and Franks, 2020, <doi:10.1111/sjos.12492>), particle MCMC, and its delayed acceptance version. Gaussian, Poisson, binomial, negative binomial, and Gamma observation densities and basic stochastic volatility models with linear-Gaussian state dynamics, as well as general non-linear Gaussian models and discretised diffusion models are supported. See Helske and Vihola (2021, <doi:10.32614/RJ-2021-103>) for details.",
   "name": "bssm: Bayesian Inference of Non-Linear and Non-Gaussian State Space\n        Models",
   "codeRepository": "https://github.com/helske/bssm",
   "issueTracker": "https://github.com/helske/bssm/issues",
   "license": "https://spdx.org/licenses/GPL-2.0",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
     "url": "https://r-project.org"
   },
-  "runtimePlatform": "R Under development (unstable) (2021-04-12 r80161)",
+  "runtimePlatform": "R version 4.1.2 (2021-11-01)",
   "provider": {
     "@id": "https://cran.r-project.org",
     "@type": "Organization",
@@ -38,9 +35,6 @@
       "@id": "https://orcid.org/0000-0002-8041-7222"
     }
   ],
-  "contributor": {},
-  "copyrightHolder": {},
-  "funder": {},
   "maintainer": [
     {
       "@type": "Person",
@@ -176,14 +170,14 @@
       "sameAs": "https://CRAN.R-project.org/package=testthat"
     }
   ],
-  "softwareRequirements": [
-    {
+  "softwareRequirements": {
+    "1": {
       "@type": "SoftwareApplication",
       "identifier": "R",
       "name": "R",
       "version": ">= 3.5.0"
     },
-    {
+    "2": {
       "@type": "SoftwareApplication",
       "identifier": "magrittr",
       "name": "magrittr",
@@ -195,7 +189,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=magrittr"
     },
-    {
+    "3": {
       "@type": "SoftwareApplication",
       "identifier": "checkmate",
       "name": "checkmate",
@@ -207,7 +201,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=checkmate"
     },
-    {
+    "4": {
       "@type": "SoftwareApplication",
       "identifier": "coda",
       "name": "coda",
@@ -220,7 +214,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=coda"
     },
-    {
+    "5": {
       "@type": "SoftwareApplication",
       "identifier": "diagis",
       "name": "diagis",
@@ -232,7 +226,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=diagis"
     },
-    {
+    "6": {
       "@type": "SoftwareApplication",
       "identifier": "dplyr",
       "name": "dplyr",
@@ -244,7 +238,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=dplyr"
     },
-    {
+    "7": {
       "@type": "SoftwareApplication",
       "identifier": "posterior",
       "name": "posterior",
@@ -256,7 +250,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=posterior"
     },
-    {
+    "8": {
       "@type": "SoftwareApplication",
       "identifier": "Rcpp",
       "name": "Rcpp",
@@ -269,7 +263,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=Rcpp"
     },
-    {
+    "9": {
       "@type": "SoftwareApplication",
       "identifier": "rlang",
       "name": "rlang",
@@ -281,7 +275,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=rlang"
     },
-    {
+    "10": {
       "@type": "SoftwareApplication",
       "identifier": "tidyr",
       "name": "tidyr",
@@ -293,28 +287,9 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=tidyr"
     },
-    {
-      "@type": "SoftwareApplication",
-      "identifier": "https://sysreqs.r-hub.io/get/pandoc"
-    },
-    {
-      "@type": "SoftwareApplication",
-      "identifier": "https://sysreqs.r-hub.io/get/cxx11"
-    }
-  ],
-  "releaseNotes": "https://github.com/helske/bssm/blob/master/NEWS",
-  "readme": "https://github.com/helske/bssm/blob/master/README.md",
-  "fileSize": "1180.262KB",
-  "contIntegration": ["https://github.com/helske/bssm/actions", "https://codecov.io/gh/helske/bssm?branch=master"],
-  "keywords": [
-    "bayesian-inference",
-    "markov-chain-monte-carlo",
-    "particle-filter",
-    "time-series",
-    "state-space",
-    "r",
-    "cpp"
-  ],
+    "SystemRequirements": "C++11, pandoc (>= 1.12.3, needed for vignettes)"
+  },
+  "fileSize": "2345.1KB",
   "citation": [
     {
       "@type": "ScholarlyArticle",
@@ -332,13 +307,18 @@
         }
       ],
       "name": "bssm: Bayesian Inference of Non-linear and Non-Gaussian State Space Models in {R}",
-      "url": "https://arxiv.org/abs/2101.08492",
-      "description": "To appear",
+      "identifier": "10.32614/RJ-2021-103",
+      "url": "https://doi.org/10.32614/RJ-2021-103",
+      "pagination": "578--589",
+      "@id": "https://doi.org/10.32614/RJ-2021-103",
+      "sameAs": "https://doi.org/10.32614/RJ-2021-103",
       "isPartOf": {
         "@type": "PublicationIssue",
+        "issueNumber": "2",
         "datePublished": "2021",
         "isPartOf": {
           "@type": ["PublicationVolume", "Periodical"],
+          "volumeNumber": "13",
           "name": "R Journal"
         }
       }
@@ -378,5 +358,10 @@
       }
     }
   ],
-  "developmentStatus": "https://www.repostatus.org/#active"
+  "releaseNotes": "https://github.com/helske/bssm/blob/master/NEWS",
+  "readme": "https://github.com/helske/bssm/blob/master/README.md",
+  "contIntegration": ["https://github.com/helske/bssm/actions", "https://app.codecov.io/gh/helske/bssm?branch=master"],
+  "developmentStatus": "https://www.repostatus.org/#active",
+  "keywords": ["bayesian-inference", "markov-chain-monte-carlo", "particle-filter", "time-series", "state-space", "r", "cpp"],
+  "relatedLink": "https://CRAN.R-project.org/package=bssm"
 }
