@@ -8,6 +8,8 @@
 [![Project Status: Active - The project has reached a stable, usable
 state and is being actively
 developed](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![Status at rOpenSci Software Peer
+Review](https://badges.ropensci.org/489_status.svg)](https://github.com/ropensci/software-review/issues/489)
 [![R-CMD-check](https://github.com/helske/bssm/workflows/R-CMD-check/badge.svg)](https://github.com/helske/bssm/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/helske/bssm/branch/master/graph/badge.svg)](https://app.codecov.io/gh/helske/bssm?branch=master)
@@ -26,7 +28,8 @@ models and discretely observed latent diffusion processes are supported.
 
 For details, see
 
--   [The bssm paper on R Journal](https://journal.r-project.org/archive/2021/RJ-2021-103/index.html),
+-   [The bssm paper on The R
+    Journal](https://journal.r-project.org/archive/2021/RJ-2021-103/index.html),
 -   [Package vignettes at CRAN](https://CRAN.R-project.org/package=bssm)
 -   Paper on [Importance sampling type estimators based on approximate
     marginal Markov chain Monte
@@ -43,8 +46,9 @@ methodology and bssm package:
     R](http://users.jyu.fi/~jovetale/posters/user2017.pdf)
 
 The `bssm` package was originally developed with the support of Academy
-of Finland grants 284513, 312605, 311877, and 331817. Current development is
-focused on increased usability. For recent changes, see NEWS file.
+of Finland grants 284513, 312605, 311877, and 331817. Current
+development is focused on increased usability. For recent changes, see
+NEWS file.
 
 ### Citing the package
 
@@ -52,7 +56,9 @@ If you use the `bssm` package in publications, please cite the
 corresponding R Journal paper:
 
 Jouni Helske and Matti Vihola (2021). “bssm: Bayesian Inference of
-Non-linear and Non-Gaussian State Space Models in R.” *R Journal*. https://journal.r-project.org/archive/2021/RJ-2021-103/index.html>.
+Non-linear and Non-Gaussian State Space Models in R.” The R Journal
+(2021) 13:2, pages 578-589.
+<https://journal.r-project.org/archive/2021/RJ-2021-103/index.html>
 
 ## Installation
 
@@ -88,12 +94,14 @@ allowed);
 
 ``` r
 library("bssm")
+#> Warning: package 'bssm' was built under R version 4.1.3
 #> 
 #> Attaching package: 'bssm'
 #> The following object is masked from 'package:base':
 #> 
 #>     gamma
 library("dplyr")
+#> Warning: package 'dplyr' was built under R version 4.1.3
 #> 
 #> Attaching package: 'dplyr'
 #> The following objects are masked from 'package:stats':
@@ -103,6 +111,7 @@ library("dplyr")
 #> 
 #>     intersect, setdiff, setequal, union
 library("ggplot2")
+#> Warning: package 'ggplot2' was built under R version 4.1.3
 set.seed(1)
 
 data("airquality", package = "datasets")
@@ -148,7 +157,7 @@ fit
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>    1.14    0.00    1.12
+#>    1.00    0.03    1.03
 
 obs <- data.frame(Time = 1:nrow(airquality),
   Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))
@@ -216,7 +225,7 @@ fit2
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   15.02    0.20   14.95
+#>   11.20    0.11   11.25
 ```
 
 Comparison:
@@ -241,26 +250,38 @@ as predictor for ozone. As it contains few missing values, we cannot use
 it directly. As the number of missing time points is very small, simple
 imputation would likely be acceptable, but let’s consider more another
 approach. For simplicity, the slope terms of the previous models are now
-omitted, and we focus on the Gaussian case. Let *μ*<sub>*t*</sub> be the
-true solar radiation at time *t*. Now for ozone *O*<sub>*t*</sub> we
-assume following model:
+omitted, and we focus on the Gaussian case. Let
+![\\mu_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Cmu_t "\mu_t")
+be the true solar radiation at time
+![t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;t "t").
+Now for ozone
+![O_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;O_t "O_t")
+we assume following model:
 
-*O*<sub>*t*</sub> = *D*<sub>*t*</sub> + *α*<sub>*t*</sub> + *β*<sub>*S*</sub>*μ*<sub>*t*</sub> + *σ*<sub>*ϵ*</sub>*ϵ*<sub>*t*</sub>  
-*α*<sub>*t* + 1</sub> = *α*<sub>*t*</sub> + *σ*<sub>*η*</sub>*η*<sub>*t*</sub>  
-*α*<sub>1</sub> ∼ *N*(0, 100<sup>2</sup>I),  
-wheere *D*<sub>*t*</sub> = *β**X*<sub>*t*</sub> contains regression
-terms related to wind and temperature, *α*<sub>*t*</sub> is the time
-varying intercept term, and *β*<sub>*S*</sub> is the effect of solar
-radiation *μ*<sub>*t*</sub>.
+![O_t = D_t + \\alpha_t + \\beta_S \\mu_t + \\sigma\_\\epsilon \\epsilon_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;O_t%20%3D%20D_t%20%2B%20%5Calpha_t%20%2B%20%5Cbeta_S%20%5Cmu_t%20%2B%20%5Csigma_%5Cepsilon%20%5Cepsilon_t "O_t = D_t + \alpha_t + \beta_S \mu_t + \sigma_\epsilon \epsilon_t")  
+![\\alpha\_{t+1} = \\alpha_t + \\sigma\_\\eta\\eta_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Calpha_%7Bt%2B1%7D%20%3D%20%5Calpha_t%20%2B%20%5Csigma_%5Ceta%5Ceta_t "\alpha_{t+1} = \alpha_t + \sigma_\eta\eta_t")  
+![\\alpha_1 \\sim N(0, 100^2\\textrm{I})](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Calpha_1%20%5Csim%20N%280%2C%20100%5E2%5Ctextrm%7BI%7D%29 "\alpha_1 \sim N(0, 100^2\textrm{I})"),  
+wheere
+![D_t = \\beta X_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;D_t%20%3D%20%5Cbeta%20X_t "D_t = \beta X_t")
+contains regression terms related to wind and temperature,
+![\\alpha_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Calpha_t "\alpha_t")
+is the time varying intercept term, and
+![\\beta_S](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Cbeta_S "\beta_S")
+is the effect of solar radiation
+![\\mu_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Cmu_t "\mu_t").
 
-Now for the observed solar radiation *S*<sub>*t*</sub> we assume
+Now for the observed solar radiation
+![S_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;S_t "S_t")
+we assume
 
-*S*<sub>*t*</sub> = *μ*<sub>*t*</sub>  
-*μ*<sub>*t* + 1</sub> = *μ*<sub>*t*</sub> + *σ*<sub>*ξ*</sub>*ξ*<sub>*t*</sub>,  
-*μ*<sub>1</sub> ∼ *N*(0, 100<sup>2</sup>),  
-i.e. we assume as simple random walk for the *μ* which we observe
-without error or not at all (there is no error term in the observation
-equation *S*<sub>*t*</sub> = *μ*<sub>*t*</sub>).
+![S_t = \\mu_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;S_t%20%3D%20%5Cmu_t "S_t = \mu_t")  
+![\\mu\_{t+1} = \\mu_t + \\sigma\_\\xi\\xi_t,](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Cmu_%7Bt%2B1%7D%20%3D%20%5Cmu_t%20%2B%20%5Csigma_%5Cxi%5Cxi_t%2C "\mu_{t+1} = \mu_t + \sigma_\xi\xi_t,")  
+![\\mu_1 \\sim N(0, 100^2)](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Cmu_1%20%5Csim%20N%280%2C%20100%5E2%29 "\mu_1 \sim N(0, 100^2)"),  
+i.e. we assume as simple random walk for the
+![\\mu](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Cmu "\mu")
+which we observe without error or not at all (there is no error term in
+the observation equation
+![S_t=\\mu_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;S_t%3D%5Cmu_t "S_t=\mu_t")).
 
 We combine these two models as a bivariate Gaussian model with
 `ssm_mlg`:
@@ -322,11 +343,11 @@ fit
 #> 
 #>  variable time      Mean        SE        SD       2.5%     97.5%  ESS
 #>     alpha  154 -16.44435 0.3659912  14.99708 -46.321645  13.01863 1679
-#>        mu  154 223.60490 1.3409568 116.49063  -6.206302 453.18554 7546
+#>        mu  154 223.60490 1.3409568 116.49063  -6.206301 453.18554 7546
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   15.70    0.18   15.75
+#>   12.26    0.12   12.30
 ```
 
 Draw predictions:

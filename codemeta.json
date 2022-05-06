@@ -7,7 +7,7 @@
   "codeRepository": "https://github.com/helske/bssm",
   "issueTracker": "https://github.com/helske/bssm/issues",
   "license": "https://spdx.org/licenses/GPL-2.0",
-  "version": "2.0.1",
+  "version": "2.0.1.1",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -289,7 +289,7 @@
     },
     "SystemRequirements": "C++11, pandoc (>= 1.12.3, needed for vignettes)"
   },
-  "fileSize": "2345.1KB",
+  "fileSize": "11958.877KB",
   "citation": [
     {
       "@type": "ScholarlyArticle",
@@ -358,10 +358,15 @@
       }
     }
   ],
-  "releaseNotes": "https://github.com/helske/bssm/blob/master/NEWS",
+  "releaseNotes": "https://github.com/helske/bssm/blob/master/NEWS.md",
   "readme": "https://github.com/helske/bssm/blob/master/README.md",
   "contIntegration": ["https://github.com/helske/bssm/actions", "https://app.codecov.io/gh/helske/bssm?branch=master"],
   "developmentStatus": "https://www.repostatus.org/#active",
+  "review": {
+    "@type": "Review",
+    "url": "https://github.com/ropensci/software-review/issues/489",
+    "provider": "https://ropensci.org"
+  },
   "keywords": ["bayesian-inference", "markov-chain-monte-carlo", "particle-filter", "time-series", "state-space", "r", "cpp"],
   "relatedLink": "https://CRAN.R-project.org/package=bssm"
 }
