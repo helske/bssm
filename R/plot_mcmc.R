@@ -14,8 +14,8 @@
 #' @method plot mcmc_output
 #' @importFrom bayesplot mcmc_combo
 #' @param x Object of class \code{mcmc_output} from \code{\link{run_mcmc}}.
-#' @param ... Further arguments to \code{\link{bayesplot::mcmc_combo}}.
-#' @return The output object from \code{\link{bayesplot::mcmc_combo}}.
+#' @param ... Further arguments to [bayesplot::mcmc_combo].
+#' @return The output object from [bayesplot::mcmc_combo].
 #' @seealso \code{\link{check_diagnostics}} for a quick diagnostics statistics
 #' of the model.
 #' @export
