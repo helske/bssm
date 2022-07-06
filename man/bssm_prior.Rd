@@ -58,21 +58,46 @@ of multiple priors (i.e. multiple regression coefficients).
 }
 \description{
 These simple objects of class \code{bssm_prior} are used to construct a
-prior distributions for the some of the model objects of \code{bssm}
-package. Currently supported priors are uniform
-(\code{uniform()}), half-normal (\code{halfnormal()}),
-normal (\code{normal()}), gamma (\code{gamma}), and
-truncated normal distribution  (\code{tnormal()}). All parameters are
-vectorized so for regression coefficient vector beta you can define prior
-for example as \code{normal(0, 0, c(10, 20))}.
+prior distributions for the hyperparameters theta for some of the model
+objects of \code{bssm} package. Note that these priors do not include the
+constant terms as they do not affect the sampling.
 }
 \details{
+Currently supported priors are
+\itemize{
+\item uniform prior (\code{uniform()}) with a probability density function (pdf)
+defined as \eqn{\frac{1}{max - min}} for \eqn{min < theta < max}.
+\item normal (\code{normal()}), a normal distribution parameterized via mean and
+standard deviation, i.e. N(mean, sd^2).
+\item truncated normal distribution  (\code{tnormal()}), a normal distribution
+with known truncation points (from below and/or above). Ignoring the
+scaling factors, this corresponds to the pdf of N(mean, sd^2) when
+\eqn{min < theta < max} and zero otherwise.
+\item half-normal (\code{halfnormal()}) with a pdf matching the pdf of the
+truncated normal distribution with min=0 and max=inf.
+\item gamma (\code{gamma}), a gamma distribution with shape and rate
+parameterization.
+}
+
+All parameters are vectorized so for regression coefficient vector beta you
+can define prior for example as \code{normal(0, 0, c(10, 20))}.
+
+For the general exponential models, i.e. models built with the \code{ssm_ulg},
+\code{ssm_ung}, \code{ssm_mlg}, and \code{ssm_mng}, you can define arbitrary priors by
+defining the \code{prior_fn} function, which takes the one argument, \code{theta},
+corresponding to the hyperparameter vector of the model,
+and returns a log-density of the (joint) prior (see the R Journal paper and
+e.g. \code{ssm_ulg} for examples).  Similarly, the priors for the non-linear
+models (\code{ssm_nlg}) and SDE models (\code{ssm_sde}) are constructed
+via C++ snippets (see the vignettes for details).
+
 The longer name versions of the prior functions with \code{_prior} ending
 are identical with shorter versions and they are available only to
 avoid clash with R's primitive function \code{gamma} (other long prior names
 are just for consistent naming).
 }
 \examples{
+
 # create uniform prior on [-1, 1] for one parameter with initial value 0.2:
 uniform(init = 0.2, min = -1.0, max = 1.0)
 # two normal priors at once i.e. for coefficients beta:
@@ -92,13 +117,13 @@ uniform(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
 normal(c(0, 0.2), c(-1.0, 0.001), c(1.0, 1.2))
 tnormal(c(2, 2.2), c(-1.0, 0.001), c(1.0, 1.2), c(1.2, 2), 3.3)
 halfnormal(c(0, 0.2), c(1.0, 1.2))
-# not run because autotest bug 
+# not run because autotest bug
 # gamma(c(0.1, 0.2), c(1.2, 2), c(3.3, 3.3))
 
 # longer versions:
 uniform_prior(init = c(0, 0.2), min = c(-1.0, 0.001), max = c(1.0, 1.2))
 normal_prior(init = c(0, 0.2), mean = c(-1.0, 0.001), sd = c(1.0, 1.2))
-tnormal_prior(init = c(2, 2.2), mean = c(-1.0, 0.001), sd = c(1.0, 1.2), 
+tnormal_prior(init = c(2, 2.2), mean = c(-1.0, 0.001), sd = c(1.0, 1.2),
   min = c(1.2, 2), max = 3.3)
 halfnormal_prior(init = c(0, 0.2), sd = c(1.0, 1.2))
 gamma_prior(init = c(0.1, 0.2), shape = c(1.2, 2), rate = c(3.3, 3.3))
