@@ -52,10 +52,12 @@
 #' The output of the `run_mcmc` can be analysed by extracting the posterior
 #' samples of the latent states and hyperparameters using `as.data.frame`,
 #' `as_draws`, `expand_sample`, and `summary` methods, as well as `fitted` and
-#' `predict` methods. Functionality of the `ggplot2`, `bayesplot`, can be used
-#' to visualize the posterior draws or their summary statistics, and further
-#' diagnostics checks can be performed with the help of the `posterior` for
-#' example.
+#' `predict` methods. Some MCMC diagnostics checks are available via
+#' `check_diagnostics` function, some of which are also provided via the print
+#' method of the `run_mcmc` output. Functionality of the `ggplot2` and
+#' `bayesplot`, can be used to visualize the posterior draws or their summary
+#' statistics, and further diagnostics checks can be performed with the help of
+#' the `posterior` and `coda` packages.
 #'
 #' @references
 #' Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and
@@ -75,6 +77,10 @@
 #' Bürkner P, Gabry J, Kay M, Vehtari A (2022). “posterior: Tools for Working
 #' with Posterior Distributions.” R package version 1.2.1,
 #' https://mc-stan.org/posterior.
+#'
+#' Martyn Plummer, Nicky Best, Kate Cowles and Karen Vines (2006). CODA:
+#' Convergence Diagnosis and Output Analysis for MCMC, R News, vol 6, 7-11.
+#'
 #' @docType package
 #' @name bssm
 #' @aliases bssm
@@ -97,8 +103,14 @@
 #' # comply with the CRAN's check requirements)
 #' fit <- run_mcmc(model, iter = 2000)
 #'
+#' # Some diagnostics checks:
+#' check_diagnostics(fit)
+#'
 #' # print some summary information:
 #' fit
+#'
+#' # traceplots:
+#' plot(fit)
 #'
 #' # extract the summary statistics for state variable
 #' sumr <- summary(fit,variable = "states")
@@ -109,6 +121,7 @@
 #'     geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`),alpha = 0.25) +
 #'     geom_line() +
 #'     theme_bw()
+#'
 NULL
 #' Deaths by drowning in Finland in 1969-2019
 #'

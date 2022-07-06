@@ -15,10 +15,10 @@
 \item{x}{An object of class \code{mcmc_output}.}
 
 \item{times}{A vector of indices defining which time points to return?
-Default is all.}
+Default is all. If 0, no samples for the states are extracted.}
 
 \item{states}{A vector of indices defining which states to return.
-Default is all.}
+Default is all. If 0, no samples for the states are extracted.}
 
 \item{...}{Ignored.}
 }
@@ -40,7 +40,7 @@ i.e. those results correspond to approximate MCMC.
 }
 \examples{
 
-model <- bsm_lg(Nile, 
+model <- bsm_lg(Nile,
   sd_y = tnormal(init = 100, mean = 100, sd = 100, min = 0),
   sd_level = tnormal(init = 50, mean = 50, sd = 100, min = 0),
   a1 = 1000, P1 = 500^2)
@@ -57,7 +57,7 @@ fit2 <- run_mcmc(model, iter = 2000, verbose = FALSE)
 model$theta[] <- c(150, 50) # change initial value
 fit3 <- run_mcmc(model, iter = 2000, verbose = FALSE)
 
-# it is actually enough to transform first mcmc_output to draws object, 
+# it is actually enough to transform first mcmc_output to draws object,
 # rest are transformed automatically inside bind_draws
 draws <- posterior::bind_draws(as_draws(fit1),
   as_draws(fit2), as_draws(fit3), along = "chain")

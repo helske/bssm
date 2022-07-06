@@ -1,9 +1,12 @@
-bssm 2.0.1.2 (2022-)
+bssm 2.0.1.3 (2022-)
 =====================================
    * Switched to markdown NEWS with a plan to be more clear about the future
      changes in the package.
    * Added more details to the `?bssm` help page.
    * Added more details to the `?bssm_prior` help page.
+   * Added option to extract only hyperparameters in `as_draws` method. Also
+     fixed a but in `as_draws` which caused the it to ignore `states` argument.
+   * Added a default plot method for the `run_mcmc` output.
 
 bssm 2.0.1 (Release date: 2022-05-02)
 ==============
