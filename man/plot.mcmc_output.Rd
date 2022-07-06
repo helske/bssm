@@ -12,7 +12,7 @@
 \item{...}{Further arguments to \code{\link{bayesplot::mcmc_combo}}.}
 }
 \value{
-The output object from \code{bayesplot::mcmc_combo}.
+The output object from \code{\link{bayesplot::mcmc_combo}}.
 }
 \description{
 Plots the trace and density plots of the hyperparameters theta from the MCMC
