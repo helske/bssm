@@ -24,23 +24,69 @@ Missing values in response series are allowed as per SSM theory and can be
 automatically predicted, but there can be no missing values in the system
 matrices of the model.
 
-The \code{bssm} package includes several MCMC sampling and sequential Monte
+The package contains multiple functions for building the model:
+\itemize{
+\item \code{bsm_lg} for basic univariate structural time series model (BSM),
+\code{ar1} for univariate noisy AR(1) process, and \code{ssm_ulg} and \code{ssm_mlg} for
+arbitrary linear gaussian model with univariate/multivariate
+observations.
+\item The non-Gaussian versions (where observations are non-Gaussian) of the
+above models can be constructed using the functions \code{bsm_ng}, \code{ar1_ng},
+\code{ssm_ung} and \code{ssm_mng}.
+\item An univariate stochastic volatility model can be defined using a function
+\code{svm}.
+\item For non-linear models, user must define the model using C++ snippets and
+the the function \code{ssm_nlg}. See details in the \code{growth_model} vignette.
+\item Diffusion models can be defined with the function \code{ssm_sde}, again using
+the C++ snippets. See \code{sde_model} vignette for details.
+}
+
+See the corresponding functions for some examples and details.
+
+After building the model, the model can be estimated via \code{run_mcmc}
+function. The documentation of this function gives some examples. The
+\code{bssm} package includes several MCMC sampling and sequential Monte
 Carlo methods for models outside classic linear-Gaussian framework. For
 definitions of the currently supported models and methods, usage of the
 package as well as some theory behind the novel IS-MCMC and
 \eqn{\psi}{psi}-APF algorithms, see Helske and Vihola (2021), Vihola,
 Helske, Franks (2020), and the package vignettes.
+
+The output of the \code{run_mcmc} can be analysed by extracting the posterior
+samples of the latent states and hyperparameters using \code{as.data.frame},
+\code{as_draws}, \code{expand_sample}, and \code{summary} methods, as well as \code{fitted} and
+\code{predict} methods. Functionality of the \code{ggplot2}, \code{bayesplot}, can be used
+to visualize the posterior draws or their summary statistics, and further
+diagnostics checks can be performed with the help of the \code{posterior} for
+example.
 }
 \examples{
-# Fit a local level model (latent random walk + observational level noise)
-# to the Nile dataset using the bsm_lg function:
+# Create a local level model (latent random walk + noise) to the Nile
+# dataset using the bsm_lg function:
 model <- bsm_lg(Nile,
   sd_y = tnormal(init = 100, mean = 100, sd = 100, min = 0),
   sd_level = tnormal(init = 50, mean = 50, sd = 100, min = 0),
   a1 = 1000, P1 = 500^2)
 
+# the priors for the unknown paramters sd_y and sd_level were defined
+# as trunctated normal distributions, see ?bssm_prior for details
+
+# Run the MCMC for 2000 iterations (notice the small number of iterations to
+# comply with the CRAN's check requirements)
 fit <- run_mcmc(model, iter = 2000)
+
+# print some summary information:
 fit
+
+# extract the summary statistics for state variable
+sumr <- summary(fit,variable = "states")
+
+# visualize
+library("ggplot2")
+ggplot(sumr, aes(time, Mean)) +
+    geom_ribbon(aes(ymin = `2.5\%`, ymax = `97.5\%`),alpha = 0.25) +
+    geom_line() +
+    theme_bw()
 }
 \references{
 Helske J, Vihola M (2021). bssm: Bayesian Inference of Non-linear and
@@ -50,4 +96,14 @@ https://doi.org/10.32614/RJ-2021-103
 Vihola, M, Helske, J, Franks, J. (2020). Importance sampling type estimators
 based on approximate marginal Markov chain Monte Carlo.
 Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
+
+H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag
+New York, 2016.
+
+Gabry J, Mahr T (2022). “bayesplot: Plotting for Bayesian Models.” R package
+version 1.9.0, https://mc-stan.org/bayesplot.
+
+Bürkner P, Gabry J, Kay M, Vehtari A (2022). “posterior: Tools for Working
+with Posterior Distributions.” R package version 1.2.1,
+https://mc-stan.org/posterior.
 }
