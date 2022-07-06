@@ -6,11 +6,13 @@
 \title{Bayesian Inference of State Space Models}
 \description{
 This package contains functions for efficient Bayesian inference of state
-space models (SSMs), where model is assumed to be either
+space models (SSMs). For details, see the package vignette and the R Journal
+paper.
 }
 \details{
+The model is assumed to be either
 \itemize{
-\item Exponential family state space models, where the state equation is linear
+\item Exponential family state space model, where the state equation is linear
 Gaussian, and the conditional observation density is either Gaussian,
 Poisson, binomial, negative binomial or Gamma density.
 \item Basic stochastic volatility model.
@@ -30,6 +32,8 @@ package as well as some theory behind the novel IS-MCMC and
 Helske, Franks (2020), and the package vignettes.
 }
 \examples{
+# Fit a local level model (latent random walk + observational level noise)
+# to the Nile dataset using the bsm_lg function:
 model <- bsm_lg(Nile,
   sd_y = tnormal(init = 100, mean = 100, sd = 100, min = 0),
   sd_level = tnormal(init = 50, mean = 50, sd = 100, min = 0),

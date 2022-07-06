@@ -1,7 +1,7 @@
-bssm 2.0.x (2022-)
+bssm 2.0.1.2 (2022-)
 =====================================
-* Switched to markdown NEWS with a plan to be more clear about the future 
-  changes in the package.
+   * Switched to markdown NEWS with a plan to be more clear about the future
+     changes in the package.
 
 bssm 2.0.1 (Release date: 2022-05-02)
 ==============
