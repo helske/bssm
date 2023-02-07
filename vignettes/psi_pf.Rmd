@@ -146,7 +146,8 @@ growth_model_experiment <- function(n_cores, nsim, particles) {
   p <- numeric(n)
   p[1] <- p1
   for(i in 2:n)
-    p[i] <- rnorm(1, K * p[i-1] * exp(r[i-1] * dT) / (K + p[i-1] * (exp(r[i-1] * dT) - 1)), 1)
+    p[i] <- rnorm(1, K * p[i-1] * exp(r[i-1] * dT) / 
+        (K + p[i-1] * (exp(r[i-1] * dT) - 1)), 1)
   # observations
   y <- p + rnorm(n, 0, 1)
   
@@ -158,7 +159,8 @@ growth_model_experiment <- function(n_cores, nsim, particles) {
   cl<-makeCluster(n_cores)
   registerDoParallel(cl)
   
-  results <- foreach (j = 1:n_cores, .combine = "rbind", .packages = "bssm") %dopar% {
+  results <- foreach (j = 1:n_cores, .combine = "rbind", 
+    .packages = "bssm") %dopar% {
     
     Rcpp::sourceCpp("growth_model_functions.cpp")
     pntrs <- create_xptrs()
@@ -171,17 +173,20 @@ growth_model_experiment <- function(n_cores, nsim, particles) {
     
     bsf <- ekpf <- psi <- matrix(NA, 10, nsim / n_cores)
     
-    for(i in 1:ncol(bsf)) {
+    for(i in seq_len(ncol(bsf))) {
       
-      time <- system.time(out <- particle_smoother(model, particles = particles, method = "bsf"))[3]
+      time <- system.time(out <- particle_smoother(model, 
+        particles = particles, method = "bsf"))[3]
       bsf[, i] <- c(out$logLik, out$alphahat[1, ], diag(out$Vt[, , 1]),
         out$alphahat[n, ], diag(out$Vt[, , n]), time)
       
-      time <- system.time(out <- particle_smoother(model, particles = particles, method = "psi"))[3]
+      time <- system.time(out <- particle_smoother(model, 
+        particles = particles, method = "psi"))[3]
       psi[, i] <- c(out$logLik, out$alphahat[1, ], diag(out$Vt[, , 1]),
         out$alphahat[n, ], diag(out$Vt[, , n]), time)
       
-      time <- system.time(out <- particle_smoother(model, particles = particles, method = "ekf"))[3]
+      time <- system.time(out <- particle_smoother(model, 
+        particles = particles, method = "ekf"))[3]
       ekpf[, i] <- c(out$logLik, out$alphahat[1, ], diag(out$Vt[, , 1]),
         out$alphahat[n, ], diag(out$Vt[, , n]), time)
     }
@@ -222,7 +227,8 @@ r <- plogis(cumsum(c(-1.5, rnorm(n - 1, sd = 0.05))))
 p <- numeric(n)
 p[1] <- p1
 for(i in 2:n)
-  p[i] <- rnorm(1, K * p[i-1] * exp(r[i-1] * dT) / (K + p[i-1] * (exp(r[i-1] * dT) - 1)), 1)
+  p[i] <- rnorm(1, K * p[i-1] * exp(r[i-1] * dT) / 
+      (K + p[i-1] * (exp(r[i-1] * dT) - 1)), 1)
 # observations
 y <- p + rnorm(n, 0, 1)
 
@@ -269,7 +275,7 @@ sumr <- results %>% group_by(method, N) %>%
   summarise(mean = mean(logLik), SD = sd(logLik), 
     IRE = IRE(logLik, time), time = mean(time))
 table1 <- sumr %>% arrange(N) %>% knitr::kable(digit = 4,
-             caption = "Results for the log-likelihood estimates of the growth model. ")
+  caption = "Results for the log-likelihood estimates of the growth model. ")
 saveRDS(table1, file = "psi_pf_experiments/table1.rds")
 ```
 ```{r tabl21, echo = FALSE}
@@ -316,7 +322,8 @@ ar_exp_model_experiment <- function(n_cores, nsim, particles, theta) {
   cl<-makeCluster(n_cores)
   registerDoParallel(cl)
   
-  results <- foreach (j = 1:n_cores, .combine = "rbind", .packages = "bssm") %dopar% {
+  results <- foreach (j = 1:n_cores, .combine = "rbind", 
+    .packages = "bssm") %dopar% {
     
     Rcpp::sourceCpp("ar_exp_model_functions.cpp")
     pntrs <- create_xptrs()
@@ -331,16 +338,19 @@ ar_exp_model_experiment <- function(n_cores, nsim, particles, theta) {
     bsf <- ekpf <- psi <- matrix(NA, 6, nsim / n_cores)
     
   
-    for(i in 1:ncol(bsf)) {
-      time <- system.time(out <- particle_smoother(model, particles = particles, method = "bsf"))[3]
+    for(i in seq_len(ncol(bsf))) {
+      time <- system.time(out <- particle_smoother(model, 
+        particles = particles, method = "bsf"))[3]
       bsf[, i] <- c(out$logLik, out$alphahat[1, ], out$Vt[, , 1],
         out$alphahat[n, ], out$Vt[, , n], time)
       
-      time <- system.time(out <- particle_smoother(model, particles = particles, method = "psi"))[3]
+      time <- system.time(out <- particle_smoother(model, 
+        particles = particles, method = "psi"))[3]
       psi[, i] <- c(out$logLik, out$alphahat[1, ], out$Vt[, , 1],
         out$alphahat[n, ], out$Vt[, , n], time)
       
-      time <- system.time(out <- particle_smoother(model, particles = particles, method = "ekf"))[3]
+      time <- system.time(out <- particle_smoother(model, 
+        particles = particles, method = "ekf"))[3]
       ekpf[, i] <- c(out$logLik, out$alphahat[1, ], out$Vt[, , 1],
         out$alphahat[n, ], out$Vt[, , n], time)
     }
@@ -409,7 +419,7 @@ sumr <- results %>% group_by(method, N) %>%
   summarise(mean = mean(logLik), SD = sd(logLik), 
     IRE = IRE(logLik, time), time = mean(time))
 table3 <- sumr %>% arrange(N) %>% knitr::kable(digit = 4,
-             caption = "Results for the log-likelihood estimates of the AR model. ")
+ caption = "Results for the log-likelihood estimates of the AR model. ")
 saveRDS(table3, file = "psi_pf_experiments/table3.rds")
 ```
 ```{r table3, echo = FALSE}

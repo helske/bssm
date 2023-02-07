@@ -110,7 +110,7 @@ This takes a few seconds. let's define our initial guess for $\theta$, the logar
 ```{r theta}
 initial_theta <- c(log_H = 0, log_R1 = log(0.05), log_R2 = 0)
 
-# dT, K, a1 and the prior variances of first and second state (logit r and and p)
+# dT, K, a1 and the prior variances of 1st and 2nd state (logit r and and p)
 known_params <- c(dT = dT, K = K, a11 = -1, a12 = 50, P11 = 1, P12 = 100)
 ```
 
@@ -136,8 +136,10 @@ Let's first run Extended Kalman filter and smoother using our initial guess for 
 ```{r ekf}
 out_filter <- ekf(model)
 out_smoother <- ekf_smoother(model)
-ts.plot(cbind(y, out_filter$att[, 2], out_smoother$alphahat[, 2]), col = 1:3)
-ts.plot(plogis(cbind(out_filter$att[, 1], out_smoother$alphahat[, 1])), col = 1:2)
+ts.plot(cbind(y, out_filter$att[, 2], 
+  out_smoother$alphahat[, 2]), col = 1:3)
+ts.plot(plogis(cbind(out_filter$att[, 1], 
+  out_smoother$alphahat[, 1])), col = 1:2)
 ```
 
 ## Markov chain Monte Carlo
