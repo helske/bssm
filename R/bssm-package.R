@@ -83,7 +83,7 @@
 #'
 #' @docType package
 #' @name bssm
-#' @aliases bssm
+#' @aliases bssm bssm-package
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats as.ts dnorm  end frequency is.ts logLik quantile start
 #' time ts ts.union tsp tsp<- sd na.omit
