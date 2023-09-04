@@ -135,7 +135,7 @@ NULL
 #' @docType data
 #' @format A time series object containing 51 observations.
 #' @source Statistics Finland
-#' \url{https://pxnet2.stat.fi/PXWeb/pxweb/en/StatFin/}.
+#' \url{https://stat.fi/tup/tilastotietokannat/index_en.html}.
 #' @keywords datasets
 #' @examples
 #' data("drownings")
