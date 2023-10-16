@@ -167,17 +167,17 @@ d2 <- as.data.frame(mcmc_ekf, variable = "states")
 d1$method <- "is2-psi"
 d2$method <- "approx ekf"
 
-r_summary <- rbind(d1, d2) %>% 
-  filter(variable == "logit_r") %>%
-  group_by(time, method) %>%
+r_summary <- rbind(d1, d2) |> 
+  filter(variable == "logit_r") |>
+  group_by(time, method) |>
   summarise(
     mean = weighted_mean(plogis(value), weight), 
     lwr = weighted_quantile(plogis(value), weight, 0.025), 
     upr = weighted_quantile(plogis(value), weight, 0.975))
 
-p_summary <- rbind(d1, d2) %>% 
-  filter(variable == "p") %>%
-  group_by(time, method) %>%
+p_summary <- rbind(d1, d2) |> 
+  filter(variable == "p") |>
+  group_by(time, method) |>
   summarise(  
     mean = weighted_mean(value, weight), 
     lwr = weighted_quantile(value, weight, 0.025), 

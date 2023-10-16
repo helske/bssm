@@ -5,7 +5,6 @@
 #' 
 #' @export
 #' @importFrom stats fitted
-#' @importFrom magrittr %>%
 #' @importFrom dplyr group_by ungroup summarise as_tibble
 #' @importFrom diagis weighted_quantile weighted_var weighted_mean weighted_se
 #' @name fitted.mcmc_output
@@ -110,13 +109,13 @@ fitted.mcmc_output <- function(object, model,
     Variable = variables,
     Time = rep(time(model$y), each = nrow(pred)))
   
-  d %>% dplyr::group_by(.data$Variable, .data$Time) %>%
+  d  |>  dplyr::group_by(.data$Variable, .data$Time) |>
     dplyr::summarise(
       Mean = weighted_mean(.data$value, w),
       SD = sqrt(weighted_var(.data$value, w)),
       dplyr::as_tibble(as.list(weighted_quantile(.data$value, w, 
         probs = probs))),
-      "SE(Mean)" = as.numeric(sqrt(asymptotic_var(.data$value, w)))) %>% 
+      "SE(Mean)" = as.numeric(sqrt(asymptotic_var(.data$value, w)))) |> 
     dplyr::ungroup()
 }
 

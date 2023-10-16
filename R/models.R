@@ -898,8 +898,8 @@ bsm_lg <- function(y, sd_y, sd_level, sd_slope, sd_seasonal,
 #'
 #' # Traceplot using as.data.frame method for MCMC output
 #' library("dplyr")
-#' as.data.frame(mcmc_out) %>% 
-#'   filter(variable == "sd_level") %>% 
+#' as.data.frame(mcmc_out) |> 
+#'   filter(variable == "sd_level") |> 
 #'   ggplot(aes(y = value, x = iter)) + geom_line()
 #'   
 #' }

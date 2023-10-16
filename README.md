@@ -28,22 +28,22 @@ models and discretely observed latent diffusion processes are supported.
 
 For details, see
 
--   [The bssm paper on The R
-    Journal](https://journal.r-project.org/archive/2021/RJ-2021-103/index.html),
--   [Package vignettes at CRAN](https://CRAN.R-project.org/package=bssm)
--   Paper on [Importance sampling type estimators based on approximate
-    marginal Markov chain Monte
-    Carlo](https://onlinelibrary.wiley.com/doi/abs/10.1111/sjos.12492)
+- [The bssm paper on The R
+  Journal](https://journal.r-project.org/archive/2021/RJ-2021-103/index.html),
+- [Package vignettes at CRAN](https://CRAN.R-project.org/package=bssm)
+- Paper on [Importance sampling type estimators based on approximate
+  marginal Markov chain Monte
+  Carlo](https://onlinelibrary.wiley.com/doi/abs/10.1111/sjos.12492)
 
 There are also couple posters and a talk related to IS-correction
 methodology and bssm package:
 
--   [UseR!2021 talk
-    slides](https://jounihelske.netlify.app/talk/user2021/)  
--   [SMC 2017 workshop: Accelerating MCMC with an
-    approximation](http://users.jyu.fi/~jovetale/posters/SMC2017)
--   [UseR!2017: Bayesian non-Gaussian state space models in
-    R](http://users.jyu.fi/~jovetale/posters/user2017.pdf)
+- [UseR!2021 talk
+  slides](https://jounihelske.netlify.app/talk/user2021/)  
+- [SMC 2017 workshop: Accelerating MCMC with an
+  approximation](http://users.jyu.fi/~jovetale/posters/SMC2017)
+- [UseR!2017: Bayesian non-Gaussian state space models in
+  R](http://users.jyu.fi/~jovetale/posters/user2017.pdf)
 
 The `bssm` package was originally developed with the support of Academy
 of Finland grants 284513, 312605, 311877, and 331817. Current
@@ -94,14 +94,13 @@ allowed);
 
 ``` r
 library("bssm")
-#> Warning: package 'bssm' was built under R version 4.1.3
+#> Warning: package 'bssm' was built under R version 4.3.1
 #> 
 #> Attaching package: 'bssm'
 #> The following object is masked from 'package:base':
 #> 
 #>     gamma
 library("dplyr")
-#> Warning: package 'dplyr' was built under R version 4.1.3
 #> 
 #> Attaching package: 'dplyr'
 #> The following objects are masked from 'package:stats':
@@ -111,13 +110,13 @@ library("dplyr")
 #> 
 #>     intersect, setdiff, setequal, union
 library("ggplot2")
-#> Warning: package 'ggplot2' was built under R version 4.1.3
+#> Warning: package 'ggplot2' was built under R version 4.3.1
 set.seed(1)
 
 data("airquality", package = "datasets")
 
 # Covariates as matrix. For complex cases, check out as_bssm function
-xreg <- airquality %>% select(Wind, Temp) %>% as.matrix()
+xreg <- airquality |> select(Wind, Temp) |> as.matrix()
 
 model <- bsm_lg(airquality$Ozone,
   xreg = xreg,  
@@ -143,11 +142,11 @@ fit
 #> Summary for theta:
 #> 
 #>  variable       Mean          SE        SD        2.5%     97.5% ESS
+#>      Temp  1.0265846 0.007497538 0.2064343  0.60226671  1.400436 758
+#>      Wind -2.5183269 0.020978488 0.5764833 -3.68987992 -1.327578 755
 #>  sd_level  6.3731836 0.113153715 2.8013937  1.52958636 12.403961 613
 #>  sd_slope  0.3388712 0.010355574 0.2833955  0.04210885  1.070284 749
 #>      sd_y 20.8618647 0.068145131 1.9369381 17.08728231 24.722309 808
-#>      Temp  1.0265846 0.007497538 0.2064343  0.60226671  1.400436 758
-#>      Wind -2.5183269 0.020978488 0.5764833 -3.68987992 -1.327578 755
 #> 
 #> Summary for alpha_154:
 #> 
@@ -157,13 +156,13 @@ fit
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>    1.00    0.03    1.03
+#>    0.57    0.02    0.63
 
 obs <- data.frame(Time = 1:nrow(airquality),
-  Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))
+  Ozone = airquality$Ozone) |> filter(!is.na(Ozone))
 
 pred <- fitted(fit, model)
-pred %>%
+pred |>
   ggplot(aes(x = Time, y = Mean)) + 
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
     alpha = 0.5, fill = "steelblue") + 
@@ -178,6 +177,7 @@ pred %>%
 Same model but now assuming observations are from Gamma distribution:
 
 ``` r
+
 model2 <- bsm_ng(airquality$Ozone,
   xreg = xreg,  
   beta = normal(rep(0, ncol(xreg)), 0, 1),
@@ -202,17 +202,17 @@ fit2
 #> Summary for theta:
 #> 
 #>  variable         Mean           SE          SD          2.5%       97.5%  ESS
+#>      Temp  0.052808820 0.0002404538 0.008701489  0.0353736458  0.06992423 1310
+#>      Wind -0.057351094 0.0004338213 0.015411504 -0.0873384757 -0.02700112 1262
 #>       phi  4.006977632 0.0159088062 0.536273508  3.0263444882  5.15527365 1136
 #>  sd_level  0.057158663 0.0020138200 0.035366227  0.0083794202  0.14651419  308
 #>  sd_slope  0.003894013 0.0001752319 0.003654978  0.0004250207  0.01374575  435
-#>      Temp  0.052808820 0.0002404538 0.008701489  0.0353736458  0.06992423 1310
-#>      Wind -0.057351094 0.0004338213 0.015411504 -0.0873384757 -0.02700112 1262
 #>         SE_IS ESS_IS
+#>  7.128104e-05  14485
+#>  1.263047e-04  13905
 #>  4.411840e-03  14611
 #>  2.927386e-04  10591
 #>  3.031489e-05   7766
-#>  7.128104e-05  14485
-#>  1.263047e-04  13905
 #> 
 #> Summary for alpha_154:
 #> 
@@ -225,7 +225,7 @@ fit2
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   11.20    0.11   11.25
+#>    7.50    0.01    7.71
 ```
 
 Comparison:
@@ -233,7 +233,7 @@ Comparison:
 ``` r
 pred2 <- fitted(fit2, model2)
 
-bind_rows(list(Gaussian = pred, Gamma = pred2), .id = "Model") %>%
+bind_rows(list(Gaussian = pred, Gamma = pred2), .id = "Model") |>
   ggplot(aes(x = Time, y = Mean)) + 
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`, fill = Model), 
     alpha = 0.25) + 
@@ -250,45 +250,32 @@ as predictor for ozone. As it contains few missing values, we cannot use
 it directly. As the number of missing time points is very small, simple
 imputation would likely be acceptable, but let’s consider more another
 approach. For simplicity, the slope terms of the previous models are now
-omitted, and we focus on the Gaussian case. Let
-![\\mu_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Cmu_t "\mu_t")
-be the true solar radiation at time
-![t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;t "t").
-Now for ozone
-![O_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;O_t "O_t")
-we assume following model:
+omitted, and we focus on the Gaussian case. Let $\mu_t$ be the true
+solar radiation at time $t$. Now for ozone $O_t$ we assume following
+model:
 
-![O_t = D_t + \\alpha_t + \\beta_S \\mu_t + \\sigma\_\\epsilon \\epsilon_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;O_t%20%3D%20D_t%20%2B%20%5Calpha_t%20%2B%20%5Cbeta_S%20%5Cmu_t%20%2B%20%5Csigma_%5Cepsilon%20%5Cepsilon_t "O_t = D_t + \alpha_t + \beta_S \mu_t + \sigma_\epsilon \epsilon_t")  
-![\\alpha\_{t+1} = \\alpha_t + \\sigma\_\\eta\\eta_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Calpha_%7Bt%2B1%7D%20%3D%20%5Calpha_t%20%2B%20%5Csigma_%5Ceta%5Ceta_t "\alpha_{t+1} = \alpha_t + \sigma_\eta\eta_t")  
-![\\alpha_1 \\sim N(0, 100^2\\textrm{I})](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Calpha_1%20%5Csim%20N%280%2C%20100%5E2%5Ctextrm%7BI%7D%29 "\alpha_1 \sim N(0, 100^2\textrm{I})"),  
-wheere
-![D_t = \\beta X_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;D_t%20%3D%20%5Cbeta%20X_t "D_t = \beta X_t")
-contains regression terms related to wind and temperature,
-![\\alpha_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Calpha_t "\alpha_t")
-is the time varying intercept term, and
-![\\beta_S](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Cbeta_S "\beta_S")
-is the effect of solar radiation
-![\\mu_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Cmu_t "\mu_t").
+$O_t = D_t + \alpha_t + \beta_S \mu_t + \sigma_\epsilon \epsilon_t$  
+$\alpha_{t+1} = \alpha_t + \sigma_\eta\eta_t$  
+$\alpha_1 \sim N(0, 100^2\textrm{I})$,  
+wheere $D_t = \beta X_t$ contains regression terms related to wind and
+temperature, $\alpha_t$ is the time varying intercept term, and
+$\beta_S$ is the effect of solar radiation $\mu_t$.
 
-Now for the observed solar radiation
-![S_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;S_t "S_t")
-we assume
+Now for the observed solar radiation $S_t$ we assume
 
-![S_t = \\mu_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;S_t%20%3D%20%5Cmu_t "S_t = \mu_t")  
-![\\mu\_{t+1} = \\mu_t + \\sigma\_\\xi\\xi_t,](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Cmu_%7Bt%2B1%7D%20%3D%20%5Cmu_t%20%2B%20%5Csigma_%5Cxi%5Cxi_t%2C "\mu_{t+1} = \mu_t + \sigma_\xi\xi_t,")  
-![\\mu_1 \\sim N(0, 100^2)](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Cmu_1%20%5Csim%20N%280%2C%20100%5E2%29 "\mu_1 \sim N(0, 100^2)"),  
-i.e. we assume as simple random walk for the
-![\\mu](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Cmu "\mu")
-which we observe without error or not at all (there is no error term in
-the observation equation
-![S_t=\\mu_t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;S_t%3D%5Cmu_t "S_t=\mu_t")).
+$S_t = \mu_t$  
+$\mu_{t+1} = \mu_t + \sigma_\xi\xi_t,$  
+$\mu_1 \sim N(0, 100^2)$,  
+i.e. we assume as simple random walk for the $\mu$ which we observe
+without error or not at all (there is no error term in the observation
+equation $S_t=\mu_t$).
 
 We combine these two models as a bivariate Gaussian model with
 `ssm_mlg`:
 
 ``` r
 # predictors (not including solar radiation) for ozone
-xreg <- airquality %>% select(Wind, Temp) %>% as.matrix()
+xreg <- airquality |> select(Wind, Temp) |> as.matrix()
 
 # Function which outputs new model components given the parameter vector theta
 update_fn <- function(theta) {
@@ -336,7 +323,7 @@ fit
 #>   theta_2  0.98712126 0.0051506907 0.18819758  0.5917823  1.3475147 1335
 #>   theta_3  0.06324657 0.0004672314 0.02417334  0.0141425  0.1100184 2677
 #>   theta_4  0.82577262 0.0165661049 0.67134723 -0.6840637  1.9160168 1642
-#>   theta_5  4.75567622 0.0010887250 0.05858454  4.6446809  4.8704036 2895
+#>   theta_5  4.75567621 0.0010887250 0.05858454  4.6446809  4.8704036 2895
 #>   theta_6  3.05462451 0.0014803971 0.07640392  2.9032635  3.2028023 2664
 #> 
 #> Summary for alpha_154:
@@ -347,7 +334,7 @@ fit
 #> 
 #> Run time:
 #>    user  system elapsed 
-#>   12.26    0.12   12.30
+#>    7.41    0.11    7.83
 ```
 
 Draw predictions:
@@ -356,9 +343,9 @@ Draw predictions:
 pred <- fitted(fit, model)
 
 obs <- data.frame(Time = 1:nrow(airquality),
-  Solar = airquality$Solar.R) %>% filter(!is.na(Solar))
+  Solar = airquality$Solar.R) |> filter(!is.na(Solar))
 
-pred %>% filter(Variable == "Solar") %>%
+pred |> filter(Variable == "Solar") |>
   ggplot(aes(x = Time, y = Mean)) + 
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
     alpha = 0.5, fill = "steelblue") + 
@@ -372,10 +359,11 @@ pred %>% filter(Variable == "Solar") %>%
 
 ``` r
 
-obs <- data.frame(Time = 1:nrow(airquality),
-  Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))
 
-pred %>% filter(Variable == "Ozone") %>%
+obs <- data.frame(Time = 1:nrow(airquality),
+  Ozone = airquality$Ozone) |> filter(!is.na(Ozone))
+
+pred |> filter(Variable == "Ozone") |>
   ggplot(aes(x = Time, y = Mean)) + 
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
     alpha = 0.5, fill = "steelblue") + 

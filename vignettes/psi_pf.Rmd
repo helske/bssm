@@ -271,10 +271,10 @@ IRE <- function(x, time) {
     mean((x - truth)^2) * mean(time)
 }
 truth <- reference["logLik"]
-sumr <- results %>% group_by(method, N) %>%
+sumr <- results|> group_by(method, N)|>
   summarise(mean = mean(logLik), SD = sd(logLik), 
     IRE = IRE(logLik, time), time = mean(time))
-table1 <- sumr %>% arrange(N) %>% knitr::kable(digit = 4,
+table1 <- sumr|> arrange(N)|> knitr::kable(digit = 4,
   caption = "Results for the log-likelihood estimates of the growth model. ")
 saveRDS(table1, file = "psi_pf_experiments/table1.rds")
 ```
@@ -285,11 +285,11 @@ readRDS("psi_pf_experiments/table1.rds")
 Similar table for the smoothed estimate of $p_1$ show again the superiority of the $\psi$-PF, with no clear differences between BSF and EKPF.
 ```{r alpha, echo = FALSE, eval = FALSE}
 truth <- reference["alpha_11"]
-sumr <- results %>% group_by(method, N) %>% 
+sumr <- results|> group_by(method, N)|> 
   summarise(mean = mean(alpha_11), SD = sd(alpha_11), 
   IRE = IRE(alpha_11, time), time = mean(time))
 
-table2 <- sumr %>% arrange(N) %>% knitr::kable(digit = 4,
+table2 <- sumr|> arrange(N)|> knitr::kable(digit = 4,
              caption = "Results for the p_1 estimates of the growth model. ")
 saveRDS(table2, file = "psi_pf_experiments/table2.rds")
 ```
@@ -415,10 +415,10 @@ Table 4 shows the means and standard deviations of the log-likelihood estimates 
 ```{r loglik_ar, echo = FALSE, eval = FALSE}
 reference <- readRDS("psi_pf_experiments/ar_truth.rds")
 truth <- reference["logLik"]
-sumr <- results %>% group_by(method, N) %>%
+sumr <- results|> group_by(method, N)|>
   summarise(mean = mean(logLik), SD = sd(logLik), 
     IRE = IRE(logLik, time), time = mean(time))
-table3 <- sumr %>% arrange(N) %>% knitr::kable(digit = 4,
+table3 <- sumr|> arrange(N)|> knitr::kable(digit = 4,
  caption = "Results for the log-likelihood estimates of the AR model. ")
 saveRDS(table3, file = "psi_pf_experiments/table3.rds")
 ```
@@ -430,10 +430,10 @@ Although with fixed number of particles the $\psi$-APF produces smaller standard
 
 ```{r state1_ar, echo = FALSE, eval = FALSE}
 truth <- reference["alpha_1"]
-sumr <- results %>% group_by(method, N) %>%
+sumr <- results|> group_by(method, N)|>
   summarise(mean = mean(alpha_1), SD = sd(alpha_1), 
     IRE = IRE(alpha_1, time))
-table4 <- sumr %>% arrange(N) %>% knitr::kable(digit = 4,
+table4 <- sumr|> arrange(N)|> knitr::kable(digit = 4,
              caption = "Results for the alpha_1 estimates of the AR model. ")
 saveRDS(table4, file = "psi_pf_experiments/table4.rds")
 ```

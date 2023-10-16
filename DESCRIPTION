@@ -24,7 +24,7 @@ Description: Efficient methods for Bayesian inference of state space models
     models and discretised diffusion models are supported. 
     See Helske and Vihola (2021, <doi:10.32614/RJ-2021-103>) for details.
 License: GPL (>= 2)
-Depends: R (>= 3.5.0)
+Depends: R (>= 4.1.0)
 Suggests: 
     covr,
     ggplot2 (>= 2.0.0),
@@ -37,7 +37,6 @@ Suggests:
     sitmo,
     testthat
 Imports: 
-    magrittr,
     bayesplot,
     checkmate,
     coda (>= 0.18-1),

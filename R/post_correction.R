@@ -210,34 +210,34 @@ suggest_N <- function(model, theta,
 #' # latent state
 #' library("dplyr")
 #' library("ggplot2")
-#' state_approx <- as.data.frame(out_approx, variable = "states") %>% 
-#'   group_by(time) %>%
+#' state_approx <- as.data.frame(out_approx, variable = "states") |> 
+#'   group_by(time) |>
 #'   summarise(mean = mean(value))
 #'   
-#' state_exact <- as.data.frame(out_is2, variable = "states") %>% 
-#'   group_by(time) %>%
+#' state_exact <- as.data.frame(out_is2, variable = "states") |> 
+#'   group_by(time) |>
 #'   summarise(mean = weighted.mean(value, weight))
 #' 
 #' dplyr::bind_rows(approx = state_approx, 
-#'   exact = state_exact, .id = "method") %>%
-#'   filter(time > 200) %>%
+#'   exact = state_exact, .id = "method") |>
+#'   filter(time > 200) |>
 #' ggplot(aes(time, mean, colour = method)) + 
 #'   geom_line() + 
 #'   theme_bw()
 #'
 #' # posterior means
 #' p_approx <- predict(out_approx, model, type = "mean", 
-#'   nsim = 1000, future = FALSE) %>% 
-#'   group_by(time) %>%
+#'   nsim = 1000, future = FALSE) |> 
+#'   group_by(time) |>
 #'   summarise(mean = mean(value))
 #' p_exact <- predict(out_is2, model, type = "mean", 
-#'   nsim = 1000, future = FALSE) %>% 
-#'   group_by(time) %>%
+#'   nsim = 1000, future = FALSE) |> 
+#'   group_by(time) |>
 #'   summarise(mean = mean(value))
 #' 
 #' dplyr::bind_rows(approx = p_approx, 
-#'   exact = p_exact, .id = "method") %>%
-#'   filter(time > 200) %>%
+#'   exact = p_exact, .id = "method") |>
+#'   filter(time > 200) |>
 #' ggplot(aes(time, mean, colour = method)) + 
 #'   geom_line() + 
 #'   theme_bw() 

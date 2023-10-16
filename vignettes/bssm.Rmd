@@ -179,9 +179,9 @@ ggplot(d, aes(x = value)) +
 ```{r trend, dev.args=list(pointsize = 10), fig.cap="Smoothed trend component with 95% intervals."}
 suppressMessages(library("dplyr"))
 d <- as.data.frame(mcmc_bsm, variable = "states")
-level_fit <- d %>% 
-  filter(variable == "level") %>%
-  group_by(time) %>%
+level_fit <- d |> 
+  filter(variable == "level") |>
+  group_by(time) |>
   summarise(consumption = mean(value), 
     lwr = quantile(value, 0.025), 
     upr = quantile(value, 0.975))

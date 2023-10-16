@@ -86,8 +86,8 @@ suppressMessages(library("diagis"))
 
 d <- as.data.frame(out, variable = "states")
 
-state_fit <- d %>% 
-  group_by(time) %>%
+state_fit <- d |> 
+  group_by(time) |>
   summarise(state = weighted_mean(value, weight), 
     lwr = weighted_quantile(value, weight, 0.025), 
     upr = weighted_quantile(value, weight, 0.975))

@@ -52,35 +52,35 @@
 #'   nsim = 1000)
 #' 
 #' library("dplyr")
-#' sumr_fit <- as.data.frame(mcmc_results, variable = "states") %>%
-#'   group_by(time, iter) %>% 
+#' sumr_fit <- as.data.frame(mcmc_results, variable = "states") |>
+#'   group_by(time, iter) |> 
 #'   mutate(signal = 
 #'       value[variable == "level"] + 
-#'       value[variable == "seasonal_1"]) %>%
-#'   group_by(time) %>%
+#'       value[variable == "seasonal_1"]) |>
+#'   group_by(time) |>
 #'   summarise(mean = mean(signal), 
 #'     lwr = quantile(signal, 0.025), 
 #'     upr = quantile(signal, 0.975))
 #' 
-#' sumr_pred <- pred %>% 
-#'   group_by(time, sample) %>%
+#' sumr_pred <- pred |> 
+#'   group_by(time, sample) |>
 #'   mutate(signal = 
 #'       value[variable == "level"] + 
-#'       value[variable == "seasonal_1"]) %>%
-#'   group_by(time) %>%
+#'       value[variable == "seasonal_1"]) |>
+#'   group_by(time) |>
 #'   summarise(mean = mean(signal),
 #'     lwr = quantile(signal, 0.025), 
 #'     upr = quantile(signal, 0.975)) 
 #'     
 #' # If we used type = "mean", we could do
-#' # sumr_pred <- pred %>% 
-#' #   group_by(time) %>%
+#' # sumr_pred <- pred |> 
+#' #   group_by(time) |>
 #' #   summarise(mean = mean(value),
 #' #     lwr = quantile(value, 0.025), 
 #' #     upr = quantile(value, 0.975)) 
 #'     
 #' library("ggplot2")
-#' rbind(sumr_fit, sumr_pred) %>% 
+#' rbind(sumr_fit, sumr_pred) |> 
 #'   ggplot(aes(x = time, y = mean)) + 
 #'   geom_ribbon(aes(ymin = lwr, ymax = upr), 
 #'    fill = "#92f0a8", alpha = 0.25) +
@@ -96,23 +96,23 @@
 #' meanrep <- predict(mcmc_results, model = model, type = "mean", 
 #'   future = FALSE, nsim = 1000)
 #'   
-#' sumr_yrep <- yrep %>% 
-#'   group_by(time) %>%
+#' sumr_yrep <- yrep |> 
+#'   group_by(time) |>
 #'   summarise(earnings = mean(value),
 #'     lwr = quantile(value, 0.025), 
-#'     upr = quantile(value, 0.975)) %>%
+#'     upr = quantile(value, 0.975)) |>
 #'   mutate(interval = "Observations")
 #'
-#' sumr_meanrep <- meanrep %>% 
-#'   group_by(time) %>%
+#' sumr_meanrep <- meanrep |> 
+#'   group_by(time) |>
 #'   summarise(earnings = mean(value),
 #'     lwr = quantile(value, 0.025), 
-#'     upr = quantile(value, 0.975)) %>%
+#'     upr = quantile(value, 0.975)) |>
 #'   mutate(interval = "Mean")
 #'     
-#' rbind(sumr_meanrep, sumr_yrep) %>% 
+#' rbind(sumr_meanrep, sumr_yrep) |> 
 #'   mutate(interval = 
-#'     factor(interval, levels = c("Observations", "Mean"))) %>%
+#'     factor(interval, levels = c("Observations", "Mean"))) |>
 #'   ggplot(aes(x = time, y = earnings)) + 
 #'   geom_ribbon(aes(ymin = lwr, ymax = upr, fill = interval), 
 #'    alpha = 0.75) +

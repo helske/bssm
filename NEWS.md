@@ -9,6 +9,8 @@ bssm 2.0.2 (Release date: 2023-09-04)
    * Added a default plot method for the `run_mcmc` output.
    * Fixed the aliases of the main help page to accomodate changes in roxygen2.
    * Removed explicit C++ version requirement as required by new CRAN policies.
+   * Removed `magrittr` dependency and switched to native pipe, leading to 
+     requirement for R 4.1.0+.
 
 bssm 2.0.1 (Release date: 2022-05-02)
 ==============

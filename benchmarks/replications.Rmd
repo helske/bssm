@@ -80,7 +80,7 @@ for(i in seq(1, nrow(d), by = 4)) {
 Results:
 ```{r}
 library(dplyr)
-d %>% 
+d |> 
     arrange(local_approx, variable, mcmc_type, sampling_method)
 ```
 

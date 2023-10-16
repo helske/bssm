@@ -299,9 +299,9 @@ library("dplyr")
 library("ggplot2")
 
  # compute summary statistics
-level_sumr <- d_states \%>\%
-  filter(variable == "level") \%>\%
-  group_by(time) \%>\%
+level_sumr <- d_states |>
+  filter(variable == "level") |>
+  group_by(time) |>
   summarise(mean = diagis::weighted_mean(value, weight),
     lwr = diagis::weighted_quantile(value, weight,
       0.025),
@@ -309,7 +309,7 @@ level_sumr <- d_states \%>\%
       0.975))
 
 # visualize
-level_sumr \%>\% ggplot(aes(x = time, y = mean)) +
+level_sumr |> ggplot(aes(x = time, y = mean)) +
   geom_line() +
   geom_line(aes(y = lwr), linetype = "dashed", na.rm = TRUE) +
   geom_line(aes(y = upr), linetype = "dashed", na.rm = TRUE) +
@@ -350,8 +350,8 @@ model <- ssm_mng(y = y, Z = matrix(1,2,1), T = 1,
 # Note small number of iterations for CRAN checks
 out <- run_mcmc(model, iter = 4000, mcmc_type = "approx")
 
-sumr <- as.data.frame(out, variable = "states") \%>\%
-  group_by(time) \%>\% mutate(value = exp(value)) \%>\%
+sumr <- as.data.frame(out, variable = "states") |>
+  group_by(time) |> mutate(value = exp(value)) |>
   summarise(mean = mean(value),
     ymin = quantile(value, 0.05), ymax = quantile(value, 0.95))
 ggplot(sumr, aes(time, mean)) +

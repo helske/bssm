@@ -137,7 +137,7 @@ set.seed(1)
 data("airquality", package = "datasets")
 
 # Covariates as matrix. For complex cases, check out as_bssm function
-xreg <- airquality %>% select(Wind, Temp) %>% as.matrix()
+xreg <- airquality |> select(Wind, Temp) |> as.matrix()
 
 model <- bsm_lg(airquality$Ozone,
   xreg = xreg,  
@@ -152,10 +152,10 @@ fit <- run_mcmc(model, iter = 20000, burnin = 5000)
 fit
 
 obs <- data.frame(Time = 1:nrow(airquality),
-  Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))
+  Ozone = airquality$Ozone) |> filter(!is.na(Ozone))
 
 pred <- fitted(fit, model)
-pred %>%
+pred |>
   ggplot(aes(x = Time, y = Mean)) + 
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
     alpha = 0.5, fill = "steelblue") + 
@@ -185,7 +185,7 @@ Comparison:
 ```{r compare}
 pred2 <- fitted(fit2, model2)
 
-bind_rows(list(Gaussian = pred, Gamma = pred2), .id = "Model") %>%
+bind_rows(list(Gaussian = pred, Gamma = pred2), .id = "Model") |>
   ggplot(aes(x = Time, y = Mean)) + 
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`, fill = Model), 
     alpha = 0.25) + 
@@ -214,7 +214,7 @@ We combine these two models as a bivariate Gaussian model with `ssm_mlg`:
 
 ```{r missing-values}
 # predictors (not including solar radiation) for ozone
-xreg <- airquality %>% select(Wind, Temp) %>% as.matrix()
+xreg <- airquality |> select(Wind, Temp) |> as.matrix()
 
 # Function which outputs new model components given the parameter vector theta
 update_fn <- function(theta) {
@@ -252,9 +252,9 @@ Draw predictions:
 pred <- fitted(fit, model)
 
 obs <- data.frame(Time = 1:nrow(airquality),
-  Solar = airquality$Solar.R) %>% filter(!is.na(Solar))
+  Solar = airquality$Solar.R) |> filter(!is.na(Solar))
 
-pred %>% filter(Variable == "Solar") %>%
+pred |> filter(Variable == "Solar") |>
   ggplot(aes(x = Time, y = Mean)) + 
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
     alpha = 0.5, fill = "steelblue") + 
@@ -265,9 +265,9 @@ pred %>% filter(Variable == "Solar") %>%
 
 
 obs <- data.frame(Time = 1:nrow(airquality),
-  Ozone = airquality$Ozone) %>% filter(!is.na(Ozone))
+  Ozone = airquality$Ozone) |> filter(!is.na(Ozone))
 
-pred %>% filter(Variable == "Ozone") %>%
+pred |> filter(Variable == "Ozone") |>
   ggplot(aes(x = Time, y = Mean)) + 
   geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), 
     alpha = 0.5, fill = "steelblue") + 
