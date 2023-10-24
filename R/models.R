@@ -61,6 +61,7 @@ default_update_fn <- function(theta) {
 #' @return An object of class \code{ssm_ulg}.
 #' @export
 #' @examples 
+#' Sys.setenv("OMP_THREAD_LIMIT" = 2) # For CRAN
 #' 
 #' # Regression model with time-varying coefficients
 #' set.seed(1)

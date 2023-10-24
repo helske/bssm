@@ -21,6 +21,7 @@ ekpf_filter <- function(model, particles, ...) {
 #' @rdname ekpf_filter
 #' @examples
 #' \donttest{ # Takes a while
+#' Sys.setenv("OMP_THREAD_LIMIT" = 2) # For CRAN
 #' set.seed(1)
 #' n <- 50
 #' x <- y <- numeric(n)

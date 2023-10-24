@@ -174,6 +174,7 @@ suggest_N <- function(model, theta,
 #' @export
 #' @examples 
 #' \donttest{
+#' Sys.setenv("OMP_THREAD_LIMIT" = 2) # For CRAN
 #' set.seed(1)
 #' n <- 300
 #' x1 <- sin((2 * pi / 12) * 1:n)

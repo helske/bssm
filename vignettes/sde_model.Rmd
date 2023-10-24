@@ -14,6 +14,7 @@ vignette: |
 ---
 
 ```{r, echo = FALSE}
+Sys.setenv("OMP_THREAD_LIMIT" = 2) # For CRAN
 if (!requireNamespace("rmarkdown") ||
     !rmarkdown::pandoc_available("1.12.3")) {
   warning(call. = FALSE, "These vignettes assume rmarkdown and pandoc version 1.12.3. These were not found. Older versions will not work.")
