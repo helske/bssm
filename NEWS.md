@@ -11,7 +11,7 @@ bssm 2.0.2 (Release date: 2023-10-18)
    * Removed explicit C++ version requirement as required by new CRAN policies.
    * Removed `magrittr` dependency and switched to native pipe, leading to 
      requirement for R 4.1.0+.
-   * Added Sys.setenv("OMP_THREAD_LIMIT" = 2) to fix weird CRAN issues with 
+   * Added Sys.setenv("OMP_NUM_THREADS" = 2) to fix weird CRAN issues with 
      parallelisation on Debian.
 
 bssm 2.0.1 (Release date: 2022-05-02)

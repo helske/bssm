@@ -89,7 +89,7 @@
 #' time ts ts.union tsp tsp<- sd na.omit
 #' @useDynLib bssm
 #' @examples
-#' Sys.setenv("OMP_THREAD_LIMIT" = 2) # For CRAN
+#' Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 #' # Create a local level model (latent random walk + noise) to the Nile
 #' # dataset using the bsm_lg function:
 #' model <- bsm_lg(Nile,
@@ -139,7 +139,7 @@ NULL
 #' \url{https://stat.fi/tup/tilastotietokannat/index_en.html}.
 #' @keywords datasets
 #' @examples
-#' Sys.setenv("OMP_THREAD_LIMIT" = 2) # For CRAN
+#' Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 #' data("drownings")
 #' model <- bsm_ng(drownings[, "deaths"], u = drownings[, "population"],
 #'   xreg = drownings[, "summer_temp"], distribution = "poisson",
@@ -167,7 +167,7 @@ NULL
 #' Time Series Analysis by State Space Methods. Oxford University Press.
 #' https://doi.org/10.1093/acprof:oso/9780199641178.001.0001
 #' @examples
-#' Sys.setenv("OMP_THREAD_LIMIT" = 2) # For CRAN
+#' Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 #' data("exchange")
 #' model <- svm(exchange, rho = uniform(0.97,-0.999,0.999),
 #'  sd_ar = halfnormal(0.175, 2), mu = normal(-0.87, 0, 2))
@@ -191,7 +191,7 @@ NULL
 #' Scand J Statist. 1-38. https://doi.org/10.1111/sjos.12492
 #'
 #' @examples
-#' Sys.setenv("OMP_THREAD_LIMIT" = 2) # For CRAN
+#' Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 #' # The data was generated as follows:
 #' set.seed(321)
 #' slope <- cumsum(c(0, rnorm(99, sd = 0.01)))
@@ -245,7 +245,7 @@ NULL
 #' https://doi.org/10.32614/RJ-2021-103
 #'
 #' @examples
-#' Sys.setenv("OMP_THREAD_LIMIT" = 2) # For CRAN
+#' Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 #' # reproducing the model:
 #' data("negbin_series")
 #' # Construct model for bssm

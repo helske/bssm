@@ -1,4 +1,4 @@
-Sys.setenv("OMP_THREAD_LIMIT" = 2)
+Sys.setenv("OMP_NUM_THREADS" = 2)
 
 library("testthat")
 test_check("bssm")

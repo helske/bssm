@@ -12,7 +12,7 @@ See example for code for reproducing the data. This was used in
 Vihola, Helske, Franks (2020).
 }
 \examples{
-Sys.setenv("OMP_THREAD_LIMIT" = 2) # For CRAN
+Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 # The data was generated as follows:
 set.seed(321)
 slope <- cumsum(c(0, rnorm(99, sd = 0.01)))

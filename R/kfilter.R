@@ -69,7 +69,7 @@ kfilter.nongaussian <- function(model, ...) {
 #' @export
 #' @examples
 #' \donttest{ # Takes a while on CRAN
-#' Sys.setenv("OMP_THREAD_LIMIT" = 2) # For CRAN
+#' Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 #' set.seed(1)
 #' mu <- -0.2
 #' rho <- 0.7
@@ -139,7 +139,7 @@ ekf <- function(model, iekf_iter = 0) {
 #' @export
 #' @examples
 #' \donttest{ # Takes a while on CRAN
-#' Sys.setenv("OMP_THREAD_LIMIT" = 2) # For CRAN
+#' Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 #' set.seed(1)
 #' mu <- -0.2
 #' rho <- 0.7
