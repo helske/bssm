@@ -64,7 +64,6 @@ statistics, and further diagnostics checks can be performed with the help of
 the \code{posterior} and \code{coda} packages.
 }
 \examples{
-Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 # Create a local level model (latent random walk + noise) to the Nile
 # dataset using the bsm_lg function:
 model <- bsm_lg(Nile,

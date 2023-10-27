@@ -31,7 +31,6 @@
 #' @export
 #' @rdname gaussian_approx
 #' @examples 
-#' Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 #' data("poisson_series")
 #' model <- bsm_ng(y = poisson_series, sd_slope = 0.01, sd_level = 0.1,
 #'   distribution = "poisson")

@@ -13,7 +13,6 @@ iterations. Here only 2000 iterations were used in order to reduce the size
 of the model object in CRAN.
 }
 \examples{
-Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 # reproducing the model:
 data("negbin_series")
 # Construct model for bssm

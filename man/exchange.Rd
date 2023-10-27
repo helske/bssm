@@ -16,13 +16,14 @@ Dataset containing daily log-returns from 1/10/81-28/6/85 as in Durbin and
 Koopman (2012).
 }
 \examples{
-Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
+\donttest{ # Don't test on CRAN as complains about parallelisation
 data("exchange")
 model <- svm(exchange, rho = uniform(0.97,-0.999,0.999),
  sd_ar = halfnormal(0.175, 2), mu = normal(-0.87, 0, 2))
 
 out <- particle_smoother(model, particles = 500)
 plot.ts(cbind(model$y, exp(out$alphahat)))
+}
 }
 \references{
 James Durbin, Siem Jan Koopman (2012).

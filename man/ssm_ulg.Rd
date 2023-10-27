@@ -99,7 +99,6 @@ and then check the expected structure of the model components from the
 output.
 }
 \examples{
-Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 
 # Regression model with time-varying coefficients
 set.seed(1)

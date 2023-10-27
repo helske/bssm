@@ -27,7 +27,6 @@ states \eqn{\alpha_t} given the data up to time \eqn{t}.
 }
 \examples{
 \donttest{ # Takes a while on CRAN
-Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 set.seed(1)
 mu <- -0.2
 rho <- 0.7

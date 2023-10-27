@@ -37,7 +37,6 @@ with stratification resampling, based on Van Der Merwe et al (2001).
 }
 \examples{
 \donttest{ # Takes a while
-Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 set.seed(1)
 n <- 50
 x <- y <- numeric(n)

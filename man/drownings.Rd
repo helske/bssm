@@ -19,7 +19,6 @@ unweighted average of three weather stations: Helsinki (Southern Finland),
 Jyvaskyla (Central Finland), and Sodankyla (Northern Finland).
 }
 \examples{
-Sys.setenv("OMP_NUM_THREADS" = 2) # For CRAN
 data("drownings")
 model <- bsm_ng(drownings[, "deaths"], u = drownings[, "population"],
   xreg = drownings[, "summer_temp"], distribution = "poisson",
