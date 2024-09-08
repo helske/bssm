@@ -12,7 +12,7 @@ developed](https://www.repostatus.org/badges/latest/active.svg)](https://www.rep
 Review](https://badges.ropensci.org/489_status.svg)](https://github.com/ropensci/software-review/issues/489)
 [![R-CMD-check](https://github.com/helske/bssm/workflows/R-CMD-check/badge.svg)](https://github.com/helske/bssm/actions)
 [![Codecov test
-coverage](https://codecov.io/gh/helske/bssm/branch/master/graph/badge.svg)](https://app.codecov.io/gh/helske/bssm?branch=master)
+coverage](https://codecov.io/gh/helske/bssm/graph/badge.svg)](https://app.codecov.io/gh/helske/bssm)
 [![CRAN
 version](http://www.r-pkg.org/badges/version/bssm)](https://CRAN.R-project.org/package=bssm)
 [![downloads](https://cranlogs.r-pkg.org/badges/bssm)](https://cranlogs.r-pkg.org/badges/bssm)
