@@ -66,7 +66,7 @@ void ssm_nlg::approximate() {
     // initial approximation is based on EKF (at and att)
     approximate_by_ekf();
     mode_estimate = approx_model.fast_smoother().head_cols(n);
-    if (!arma::is_finite(mode_estimate)) {
+    if (!mode_estimate.is_finite()) {
       return;
     }
     double ll;
@@ -112,7 +112,7 @@ void ssm_nlg::approximate() {
       double ll_new = log_signal_pdf(mode_estimate_new);
       abs_diff = ll_new - ll;
       rel_diff = abs_diff / std::abs(ll);
-      if (!arma::is_finite(mode_estimate_new) || !arma::is_finite(ll_new)) {
+      if (!mode_estimate_new.is_finite() || !std::isfinite(ll_new)) {
         mode_estimate.fill(std::numeric_limits<double>::infinity());
         return;
       }
@@ -131,7 +131,7 @@ void ssm_nlg::approximate() {
           abs_diff = ll_new - ll;
           rel_diff = abs_diff / std::abs(ll);
           ii++;
-          if (!arma::is_finite(mode_estimate) || !arma::is_finite(ll_new)) {
+          if (!mode_estimate.is_finite() || !std::isfinite(ll_new)) {
             mode_estimate.fill(std::numeric_limits<double>::infinity());
             return;
           }

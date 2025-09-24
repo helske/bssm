@@ -122,7 +122,7 @@ double ssm_ulg::log_likelihood() const {
     
     for (unsigned int t = 0; t < n; t++) {
       double F = arma::as_scalar(Z.col(t * Ztv).t() * Pt * Z.col(t * Ztv) + HH(t * Htv));
-      if (arma::is_finite(y_tmp(t)) && F > zero_tol) {
+      if (std::isfinite(y_tmp(t)) && F > zero_tol) {
         double v = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at);
         arma::vec K = Pt * Z.col(t * Ztv) / F;
         at = C.col(t * Ctv) + T.slice(t * Ttv) * (at + K * v);
@@ -171,7 +171,7 @@ arma::cube ssm_ulg::simulate_states(const unsigned int nsim, const bool use_anti
       }
       aplus.col(0) = a1 + L_P1 * um;
       for (unsigned int t = 0; t < n; t++) {
-        if (arma::is_finite(y(t))) {
+        if (std::isfinite(y(t))) {
           y(t) = xbeta(t) + D(t * Dtv) +
             arma::as_scalar(Z.col(t * Ztv).t() * aplus.col(t)) +
             H(t * Htv) * normal(engine);
@@ -199,7 +199,7 @@ arma::cube ssm_ulg::simulate_states(const unsigned int nsim, const bool use_anti
       }
       aplus.col(0) = a1 + L_P1 * um;
       for (unsigned int t = 0; t < n; t++) {
-        if (arma::is_finite(y(t))) {
+        if (std::isfinite(y(t))) {
           y(t) = xbeta(t) + D(t * Dtv) +
             arma::as_scalar(Z.col(t * Ztv).t() * aplus.col(t)) +
             H(t * Htv) * normal(engine);
@@ -227,7 +227,7 @@ arma::cube ssm_ulg::simulate_states(const unsigned int nsim, const bool use_anti
     }
     asim.slice(0).col(0) = L_P1 * um;
     for (unsigned int t = 0; t < n; t++) {
-      if (arma::is_finite(y(t))) {
+      if (std::isfinite(y(t))) {
         y(t) -= arma::as_scalar(Z.col(t * Ztv).t() * asim.slice(0).col(t)) +
           H(t * Htv) * normal(engine);
       }
@@ -267,7 +267,7 @@ arma::mat ssm_ulg::fast_smoother() const {
   
   for (unsigned int t = 0; t < n; t++) {
     Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt * Z.col(t * Ztv) + HH(t * Htv));
-    if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol) {
+    if (std::isfinite(y_tmp(t)) && Ft(t) > zero_tol) {
       Kt.col(t) = Pt * Z.col(t * Ztv) / Ft(t);
       vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
@@ -283,14 +283,14 @@ arma::mat ssm_ulg::fast_smoother() const {
   arma::mat rt(m, n);
   rt.col(n - 1).zeros();
   for (int t = (n - 1); t > 0; t--) {
-    if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol){
+    if (std::isfinite(y_tmp(t)) && Ft(t) > zero_tol){
       arma::mat L = T.slice(t * Ttv) * (arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t());
       rt.col(t - 1) = Z.col(t * Ztv) / Ft(t) * vt(t) + L.t() * rt.col(t);
     } else {
       rt.col(t - 1) = T.slice(t * Ttv).t() * rt.col(t);
     }
   }
-  if (arma::is_finite(y(0)) && Ft(0) > zero_tol){
+  if (std::isfinite(y(0)) && Ft(0) > zero_tol){
     arma::mat L = T.slice(0) * (arma::eye(m, m) - Kt.col(0) * Z.col(0).t());
     at.col(0) = a1 + P1 * (Z.col(0) / Ft(0) * vt(0) + L.t() * rt.col(0));
   } else {
@@ -328,7 +328,7 @@ arma::mat ssm_ulg::fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
   }
   
   for (unsigned int t = 0; t < n; t++) {
-    if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol) {
+    if (std::isfinite(y_tmp(t)) && Ft(t) > zero_tol) {
       vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
     } else {
@@ -340,13 +340,13 @@ arma::mat ssm_ulg::fast_smoother(const arma::vec& Ft, const arma::mat& Kt,
   rt.col(n - 1).zeros();
   
   for (int t = (n - 1); t > 0; t--) {
-    if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol){
+    if (std::isfinite(y_tmp(t)) && Ft(t) > zero_tol){
       rt.col(t - 1) = Z.col(t * Ztv) / Ft(t) * vt(t) + Lt.slice(t).t() * rt.col(t);
     } else {
       rt.col(t - 1) = T.slice(t * Ttv).t() * rt.col(t);
     }
   }
-  if (arma::is_finite(y(0)) && Ft(0) > zero_tol){
+  if (std::isfinite(y(0)) && Ft(0) > zero_tol){
     arma::mat L = T.slice(0) * (arma::eye(m, m) - Kt.col(0) * Z.col(0).t());
     at.col(0) = a1 + P1 * (Z.col(0) / Ft(0) * vt(0) + L.t() * rt.col(0));
   } else {
@@ -376,7 +376,7 @@ arma::mat ssm_ulg::fast_precomputing_smoother(arma::vec& Ft, arma::mat& Kt,
   }
   for (unsigned int t = 0; t < n; t++) {
     Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt * Z.col(t * Ztv) + HH(t * Htv));
-    if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol) {
+    if (std::isfinite(y_tmp(t)) && Ft(t) > zero_tol) {
       Kt.col(t) = Pt * Z.col(t * Ztv) / Ft(t);
       vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
@@ -394,14 +394,14 @@ arma::mat ssm_ulg::fast_precomputing_smoother(arma::vec& Ft, arma::mat& Kt,
   rt.col(n - 1).zeros();
   
   for (int t = (n - 1); t > 0; t--) {
-    if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol){
+    if (std::isfinite(y_tmp(t)) && Ft(t) > zero_tol){
       Lt.slice(t) = T.slice(t * Ttv) * (arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t());
       rt.col(t - 1) = Z.col(t * Ztv) / Ft(t) * vt(t) + Lt.slice(t).t() * rt.col(t);
     } else {
       rt.col(t - 1) = T.slice(t * Ttv).t() * rt.col(t);
     }
   }
-  if (arma::is_finite(y_tmp(0)) && Ft(0) > zero_tol){
+  if (std::isfinite(y_tmp(0)) && Ft(0) > zero_tol){
     arma::mat L = T.slice(0) * (arma::eye(m, m) - Kt.col(0) * Z.col(0).t());
     at.col(0) = a1 + P1 * (Z.col(0) / Ft(0) * vt(0) + L.t() * rt.col(0));
   } else {
@@ -432,7 +432,7 @@ void ssm_ulg::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
   for (unsigned int t = 0; t < n; t++) {
     Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt.slice(t) * Z.col(t * Ztv) +
       HH(t * Htv));
-    if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol) {
+    if (std::isfinite(y_tmp(t)) && Ft(t) > zero_tol) {
       Kt.col(t) = Pt.slice(t) * Z.col(t * Ztv) / Ft(t);
       vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
@@ -454,7 +454,7 @@ void ssm_ulg::smoother_ccov(arma::mat& at, arma::cube& Pt, arma::cube& ccov) con
   arma::mat Nt(m, m, arma::fill::zeros);
   
   for (int t = (n - 1); t >= 0; t--) {
-    if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol){
+    if (std::isfinite(y_tmp(t)) && Ft(t) > zero_tol){
       arma::mat L = T.slice(t * Ttv) * (arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t());
       //P[t+1] stored to ccov_t
       ccov.slice(t) = Pt.slice(t) * L.t() * (arma::eye(m, m) - Nt * ccov.slice(t));
@@ -489,7 +489,7 @@ double ssm_ulg::filter(arma::mat& at, arma::mat& att, arma::cube& Pt,
   
   for (unsigned int t = 0; t < n; t++) {
     double F = arma::as_scalar(Z.col(t * Ztv).t() * Pt.slice(t) * Z.col(t * Ztv) + HH(t * Htv));
-    if (arma::is_finite(y_tmp(t)) && F > zero_tol) {
+    if (std::isfinite(y_tmp(t)) && F > zero_tol) {
       double v = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
       arma::vec K = Pt.slice(t) * Z.col(t * Ztv) / F;
       att.col(t) = at.col(t) + K * v;
@@ -524,7 +524,7 @@ void ssm_ulg::smoother(arma::mat& at, arma::cube& Pt) const {
   for (unsigned int t = 0; t < n; t++) {
     Ft(t) = arma::as_scalar(Z.col(t * Ztv).t() * Pt.slice(t) * Z.col(t * Ztv) +
       HH(t * Htv));
-    if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol) {
+    if (std::isfinite(y_tmp(t)) && Ft(t) > zero_tol) {
       Kt.col(t) = Pt.slice(t) * Z.col(t * Ztv) / Ft(t);
       vt(t) = arma::as_scalar(y_tmp(t) - D(t * Dtv) - Z.col(t * Ztv).t() * at.col(t));
       at.col(t + 1) = C.col(t * Ctv) + T.slice(t * Ttv) * (at.col(t) + Kt.col(t) * vt(t));
@@ -541,7 +541,7 @@ void ssm_ulg::smoother(arma::mat& at, arma::cube& Pt) const {
   arma::mat Nt(m, m, arma::fill::zeros);
   
   for (int t = (n - 1); t >= 0; t--) {
-    if (arma::is_finite(y_tmp(t)) && Ft(t) > zero_tol){
+    if (std::isfinite(y_tmp(t)) && Ft(t) > zero_tol){
       arma::mat L = T.slice(t * Ttv) * (arma::eye(m, m) - Kt.col(t) * Z.col(t * Ztv).t());
       rt = Z.col(t * Ztv) / Ft(t) * vt(t) + L.t() * rt;
       Nt = arma::symmatu(Z.col(t * Ztv) * Z.col(t * Ztv).t() / Ft(t) + L.t() * Nt * L);
@@ -572,7 +572,7 @@ double ssm_ulg::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::vec normalized_weights(nsim);
   double loglik = 0.0;
   
-  if(arma::is_finite(y(0))) {
+  if(std::isfinite(y(0))) {
     
     for (unsigned int i = 0; i < nsim; i++) {
       double mu = arma::as_scalar(D(0) + Z.col(0).t() *
@@ -616,7 +616,7 @@ double ssm_ulg::bsf_filter(const unsigned int nsim, arma::cube& alpha,
         T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
     }
     
-    if ((t < (n - 1)) && arma::is_finite(y(t + 1))) {
+    if ((t < (n - 1)) && std::isfinite(y(t + 1))) {
       for (unsigned int i = 0; i < nsim; i++) {
         double mu = arma::as_scalar(D((t + 1) * Dtv) + Z.col(Ztv * (t + 1)).t() *
           alpha.slice(i).col(t + 1));

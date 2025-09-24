@@ -31,7 +31,7 @@ double ssm_sde::bsf_filter(const unsigned int nsim,
   arma::vec normalized_weights(nsim);
   double loglik = 0.0;
   
-  if(arma::is_finite(y(0))) {
+  if (std::isfinite(y(0))) {
     weights.col(0) = log_obs_density(y(0), alpha.tube(0, 0), theta);
     double max_weight = weights.col(0).max();
     weights.col(0) = arma::exp(weights.col(0) - max_weight);
@@ -61,7 +61,7 @@ double ssm_sde::bsf_filter(const unsigned int nsim,
         drift, diffusion, ddiffusion, positive, coarse_engine);
     }
     
-    if ((t < (n - 1)) && arma::is_finite(y(t + 1))) {
+    if ((t < (n - 1)) && std::isfinite(y(t + 1))) {
       weights.col(t + 1) = log_obs_density(y(t + 1), alpha.tube(0, t + 1), theta);
       
       double max_weight = weights.col(t + 1).max();

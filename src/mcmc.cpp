@@ -350,7 +350,7 @@ void mcmc::pm_mcmc(
   model.update_model(theta, update_fn); // just in case
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(theta, prior_fn);
-  if (!arma::is_finite(logprior)) {
+  if (!std::isfinite(logprior)) {
     Rcpp::stop("Initial prior probability is not finite.");
   }
   arma::cube alpha(m, n + 1, nsim);
@@ -542,7 +542,7 @@ void mcmc::da_mcmc(T model,
   model.update_model(theta, update_fn); // just in case
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(theta, prior_fn);
-  if (!arma::is_finite(logprior)) {
+  if (!std::isfinite(logprior)) {
     Rcpp::stop("Initial prior probability is not finite.");
   }
   arma::cube alpha(m, n + 1, nsim);
@@ -698,7 +698,7 @@ void mcmc::pm_mcmc(
   model.update_model(theta); // just in case
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(theta);
-  if (!arma::is_finite(logprior)) {
+  if (!std::isfinite(logprior)) {
     Rcpp::stop("Initial prior probability is not finite.");
   }
   arma::cube alpha(m, n + 1, nsim);
@@ -845,7 +845,7 @@ void mcmc::da_mcmc(ssm_sde model,
   model.update_model(theta); // just in case
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(theta);
-  if (!arma::is_finite(logprior)) {
+  if (!std::isfinite(logprior)) {
     Rcpp::stop("Initial prior probability is not finite.");
   }
   

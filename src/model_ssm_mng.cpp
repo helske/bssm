@@ -221,7 +221,7 @@ void ssm_mng::update_scales() {
   
   for(unsigned int t = 0; t < n; t++) {
     for(unsigned int i = 0; i < p; i++) {
-      if (arma::is_finite(y(i, t))) {
+      if (std::isfinite(y(i, t))) {
         switch(distribution(i)) {
         case 0  :
           scales(t) += -0.5 * (mode_estimate(i, t) + 
@@ -361,7 +361,7 @@ arma::vec ssm_mng::log_weights(const unsigned int t,  const arma::cube& alpha) c
   for (unsigned int i = 0; i < alpha.n_slices; i++) {
     arma::vec simsignal = D.col(t * Dtv) + Z.slice(t * Ztv) * alpha.slice(i).col(t);
     for(unsigned int j = 0; j < p; j++) {
-      if (arma::is_finite(y(j, t))) {
+      if (std::isfinite(y(j, t))) {
         switch(distribution(j)) {
         // case 0  :
         //   weights(i) += -0.5 * (simsignal(j) + std::pow(y(j,t) / phi(j), 2.0) * 
@@ -412,7 +412,7 @@ arma::vec ssm_mng::log_obs_density(const unsigned int t,
   for (unsigned int i = 0; i < alpha.n_slices; i++) {
     arma::vec simsignal = D.col(t * Dtv) + Z.slice(t * Ztv) * alpha.slice(i).col(t);
     for(unsigned int j = 0; j < p; j++) {
-      if (arma::is_finite(y(j, t))) {
+      if (std::isfinite(y(j, t))) {
         switch(distribution(j)) {
         // case 0  :
         //   weights(i) += -0.5 * (simsignal(j) + std::pow(y(j,t) / phi(j), 2.0) * 

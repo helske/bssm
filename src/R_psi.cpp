@@ -198,7 +198,7 @@ Rcpp::List psi_smoother_nlg(const arma::mat& y, SEXP Z, SEXP H,
   unsigned n = model.n;
 
   model.approximate();
-  if(!arma::is_finite(model.mode_estimate)) {
+  if(!model.mode_estimate.is_finite()) {
     Rcpp::warning("Approximation did not converge. ");
   }
   arma::cube alpha(m, n + 1, nsim, arma::fill::zeros);

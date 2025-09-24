@@ -1,3 +1,7 @@
+bssm 2.0.3 (Release date: 2025-09-24)
+=====================================
+   * Syntax changes in C++ for finite value checks due to changes in Armadillo.
+
 bssm 2.0.2 (Release date: 2023-10-18)
 =====================================
    * Switched to markdown NEWS with a plan to be more clear about the future

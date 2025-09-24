@@ -68,7 +68,7 @@ Rcpp::List gaussian_approx_model_nlg(const arma::mat& y, SEXP Z, SEXP H,
     time_varying, 1, iekf_iter, max_iter, conv_tol);
 
   model.approximate();
-  if(!arma::is_finite(model.mode_estimate)) {
+  if(!model.mode_estimate.is_finite()) {
     Rcpp::warning("Approximation did not converge. ");
   }
   return Rcpp::List::create(Rcpp::Named("y") = model.approx_model.y,

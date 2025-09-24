@@ -117,7 +117,7 @@ void approx_mcmc::amcmc(T model, const unsigned int method, const bool end_ram,
   
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(theta, prior_fn);
-  if (!arma::is_finite(logprior)) {
+  if (!std::isfinite(logprior)) {
     Rcpp::stop("Initial prior probability is not finite.");
   }
   // placeholders
@@ -233,7 +233,7 @@ void approx_mcmc::amcmc(ssm_sde model, const unsigned int nsim, const bool end_r
   unsigned n = model.n;
   // compute the log[p(theta)]
   double logprior = model.log_prior_pdf(model.theta);
-  if (!arma::is_finite(logprior)) {
+  if (!std::isfinite(logprior)) {
     Rcpp::stop("Initial prior probability is not finite.");
   }
   
@@ -273,7 +273,7 @@ void approx_mcmc::amcmc(ssm_sde model, const unsigned int nsim, const bool end_r
     // compute prior
     double logprior_prop = model.log_prior_pdf(theta_prop);
     
-    if (arma::is_finite(logprior_prop)) {
+    if (std::isfinite(logprior_prop)) {
       // update parameters
       model.theta = theta_prop;
       
@@ -1527,7 +1527,7 @@ void approx_mcmc::ekf_mcmc(ssm_nlg model, const bool end_ram) {
   
   // compute the log-likelihood
   double loglik = model.ekf_loglik();
-  if (!arma::is_finite(loglik)) {
+  if (!std::isfinite(loglik)) {
     Rcpp::stop("Initial approximate likelihood is not finite.");
   }
   double acceptance_prob = 0.0;

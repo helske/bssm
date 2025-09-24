@@ -245,7 +245,7 @@ void ssm_ung::update_scales() {
   switch(distribution) {
   case 0  :
     for(unsigned int t = 0; t < n; t++) {
-      if (arma::is_finite(y(t))) {
+      if (std::isfinite(y(t))) {
         scales(t) = -0.5 * (mode_estimate(t) + std::pow(y(t) / phi, 2.0) *
           std::exp(-mode_estimate(t))) +
           0.5 * std::pow((approx_model.y(t) - mode_estimate(t)) / approx_model.H(t), 2.0);
@@ -254,7 +254,7 @@ void ssm_ung::update_scales() {
     break;
   case 1  :
     for(unsigned int t = 0; t < n; t++) {
-      if (arma::is_finite(y(t))) {
+      if (std::isfinite(y(t))) {
         scales(t) = y(t) * mode_estimate(t) -
           u(t) * std::exp(mode_estimate(t)) +
           0.5 * std::pow((approx_model.y(t) - mode_estimate(t)) / approx_model.H(t), 2.0);
@@ -263,7 +263,7 @@ void ssm_ung::update_scales() {
     break;
   case 2  :
     for(unsigned int t = 0; t < n; t++) {
-      if (arma::is_finite(y(t))) {
+      if (std::isfinite(y(t))) {
         scales(t) = y(t) * mode_estimate(t) -
           u(t) * std::log1p(std::exp(mode_estimate(t))) +
           0.5 * std::pow((approx_model.y(t) - mode_estimate(t)) / approx_model.H(t), 2.0);
@@ -272,7 +272,7 @@ void ssm_ung::update_scales() {
     break;
   case 3  :
     for(unsigned int t = 0; t < n; t++) {
-      if (arma::is_finite(y(t))) {
+      if (std::isfinite(y(t))) {
         scales(t) = y(t) * mode_estimate(t) -
           (y(t) + phi) *
           std::log(phi + u(t) * std::exp(mode_estimate(t))) +
@@ -282,7 +282,7 @@ void ssm_ung::update_scales() {
     break;
   case 4  :
     for(unsigned int t = 0; t < n; t++) {
-      if (arma::is_finite(y(t))) {
+      if (std::isfinite(y(t))) {
         scales(t) = -phi * (mode_estimate(t) + (y(t) * exp(-mode_estimate(t)) / u(t))) +
           0.5 * std::pow((approx_model.y(t) - mode_estimate(t)) / approx_model.H(t), 2.0);
       } 
@@ -388,7 +388,7 @@ arma::vec ssm_ung::log_weights(
   
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
   
-  if (arma::is_finite(y(t))) {
+  if (std::isfinite(y(t))) {
     switch(distribution) {
     case 0  :
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
@@ -449,7 +449,7 @@ arma::vec ssm_ung::log_obs_density(const unsigned int t,
   
   arma::vec weights(alpha.n_slices, arma::fill::zeros);
   
-  if (arma::is_finite(y(t))) {
+  if (std::isfinite(y(t))) {
     switch(distribution) {
     case 0  :
       for (unsigned int i = 0; i < alpha.n_slices; i++) {
@@ -546,7 +546,7 @@ double ssm_ung::psi_filter(const unsigned int nsim, arma::cube& alpha,
   std::uniform_real_distribution<> unif(0.0, 1.0);
   arma::vec normalized_weights(nsim);
   double loglik = 0.0;
-  if(arma::is_finite(y(0))) {
+  if(std::isfinite(y(0))) {
     weights.col(0) = log_weights(0, alpha) - scales(0);
     
     double max_weight = weights.col(0).max();
@@ -586,7 +586,7 @@ double ssm_ung::psi_filter(const unsigned int nsim, arma::cube& alpha,
         Ct.slice(t + 1) * (alphatmp.col(i) - alphahat.col(t)) + Vt.slice(t + 1) * um;
     }
     
-    if ((t < (n - 1)) && arma::is_finite(y(t + 1))) {
+    if ((t < (n - 1)) && std::isfinite(y(t + 1))) {
       weights.col(t + 1) = log_weights(t + 1, alpha) - scales(t + 1);
       
       double max_weight = weights.col(t + 1).max();
@@ -630,7 +630,7 @@ double ssm_ung::bsf_filter(const unsigned int nsim, arma::cube& alpha,
   arma::vec normalized_weights(nsim);
   double loglik = 0.0;
   
-  if(arma::is_finite(y(0))) {
+  if(std::isfinite(y(0))) {
     weights.col(0) = log_obs_density(0, alpha);
     double max_weight = weights.col(0).max();
     weights.col(0) = arma::exp(weights.col(0) - max_weight);
@@ -669,7 +669,7 @@ double ssm_ung::bsf_filter(const unsigned int nsim, arma::cube& alpha,
         T.slice(t * Ttv) * alphatmp.col(i) + R.slice(t * Rtv) * uk;
     }
     
-    if ((t < (n - 1)) && arma::is_finite(y(t + 1))) {
+    if ((t < (n - 1)) && std::isfinite(y(t + 1))) {
       weights.col(t + 1) = log_obs_density(t + 1, alpha);
       
       double max_weight = weights.col(t + 1).max();
